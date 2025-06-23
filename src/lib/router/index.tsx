@@ -66,6 +66,9 @@ const TermsAndConditionsPageLazy = lazy(
 );
 const PaymentPageLazy = lazy(() => import('src/pages/payment'));
 const PaymentSmsPageLazy = lazy(() => import('src/pages/payment/sms'));
+const AiMajorMatchPageLazy = lazy(
+  () => import('src/pages/ai-major-match/AiMajorMatch')
+);
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -123,6 +126,7 @@ function RouterProvider() {
               />
               <Route path="/payment" element={<PaymentPageLazy />} />
               <Route path="/payment/sms" element={<PaymentSmsPageLazy />} />
+              <Route path="/ai-major-match" element={<AiMajorMatchPageLazy />} />
               <Route path="*" element={<Custom404PageLazy />} />
             </Route>
           </Route>

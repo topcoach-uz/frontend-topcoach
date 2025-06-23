@@ -1,0 +1,202 @@
+.container {
+    background-color: #fcfcfc;
+    padding: 40px 0 80px 0;
+  }
+  
+  .topBanner {
+    display: none;
+  }
+  
+  .content {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header {
+    margin-bottom: 56px;
+    max-width: 700px;
+    text-align: center;
+  }
+  
+  .status {
+    display: inline-block;
+    background-color: #8b0000;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .resultsList {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    width: 100%;
+  }
+  
+  .majorCard {
+    background-color: white;
+    border-radius: 24px;
+    padding: 40px;
+    text-align: left;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #8b0000;
+    }
+  }
+  
+  .majorHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .matchPercentage {
+    background-color: #fce8e6;
+    color: #8b0000;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  
+  .summary {
+    margin-bottom: 32px;
+    color: #555;
+  }
+  
+  .section {
+    margin-bottom: 40px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .sectionTitle {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #333;
+  }
+  
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .tag {
+    background-color: #f5f5f5;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    border: 1px solid #eee;
+  }
+  
+  .careerTag {
+    background-color: #8b0000;
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+  }
+  
+  .rightForYou {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .reasoningList {
+    list-style: none;
+    padding-left: 0;
+  
+    li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 12px;
+      color: #555;
+      line-height: 1.6;
+  
+      &::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: -2px;
+        color: #8b0000;
+        font-size: 20px;
+        line-height: 1;
+      }
+    }
+  }
+  
+  .universityList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .university {
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    transition: all 0.3s ease;
+    gap: 10px;
+  
+    &:hover {
+      border-color: #e0e0e0;
+      background-color: #f7f7f7;
+    }
+  
+    :global(.ant-btn) {
+      border-radius: 8px;
+      padding: 4px 14px !important;
+      height: auto !important;
+      font-size: 13px !important;
+    }
+  }
+  
+  .retakeButton {
+    width: 250px !important;
+    height: 50px !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+    margin-top: 48px;
+    transition: all 0.3s ease !important;
+  
+    &:hover {
+      background: #c42843 !important;
+      color: #fff !important;
+    }
+  } 

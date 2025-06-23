@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import { useTypedSelector } from 'src/app/store';
 
 interface INavLink {
   path: string;
@@ -9,6 +10,7 @@ interface INavLink {
 export default function useNavigation() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
 
   const navLinks: INavLink[] = [
     {
@@ -18,6 +20,10 @@ export default function useNavigation() {
     {
       path: '/mentors',
       text: t('header.mentors'),
+    },
+    {
+      path: '/ai-major-match',
+      text: t('header.ai_major_match', 'AI Major Match'),
     },
     {
       path: '/universities',
