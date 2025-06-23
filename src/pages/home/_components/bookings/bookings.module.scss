@@ -1,0 +1,11 @@
+@import '/src/styles/variables.scss';
+
+.bookings_section {
+  margin: 40px 0;
+}
+
+.upcoming {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}

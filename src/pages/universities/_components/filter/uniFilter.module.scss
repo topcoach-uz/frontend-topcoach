@@ -1,0 +1,28 @@
+@import 'src/styles/variables.scss';
+
+.aside {
+  background-color: $colorBgContainer;
+}
+
+.filter {
+  padding: 40px 20px;
+  width: 352px;
+  position: sticky;
+  top: 100px;
+
+  @media (max-width: 1024px) {
+    padding: 0;
+    padding-right: 20px;
+  }
+}
+
+.degree {
+  padding-bottom: 16px;
+}
+
+.check {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+}

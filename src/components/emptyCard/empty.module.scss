@@ -1,0 +1,23 @@
+@import 'src/styles/variables.scss';
+
+.empty {
+  @include flex(column, center, center);
+  align-items: center;
+}
+
+.round {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 100px;
+  background-color: $colorBgLayout;
+}
+
+.description {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}

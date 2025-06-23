@@ -1,0 +1,19 @@
+@import '/src/styles/variables.scss';
+
+.checkListItem {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+
+  & > div {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+.completeButton {
+  font-size: 12px;
+  font-weight: $fontWeightMedium;
+}

@@ -1,0 +1,53 @@
+@import '/src/styles/variables.scss';
+
+.container {
+  margin-bottom: 100px;
+  position: relative;
+}
+
+.carousel {
+  width: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  padding-bottom: 40px;
+
+  /* Height to ensure content visibility */
+  height: auto;
+  min-height: 400px;
+}
+
+.carouselItem {
+  background: $colorBgLayout;
+  border-radius: 24px;
+  overflow: hidden; /* Make sure items don't leak outside */
+  width: 100% !important;
+
+  &:nth-child(2n) {
+    .elementWrapper {
+      flex-direction: row-reverse;
+    }
+  }
+}
+
+.dot {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  margin: 0 8px !important;
+  border: none;
+  background: #b9b9b9 !important;
+  opacity: 1 !important;
+}
+
+.active {
+  background: $colorPrimary !important;
+}
+
+.swiperPagination {
+  position: relative;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  bottom: 0 !important;
+}

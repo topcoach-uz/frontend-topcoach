@@ -1,0 +1,36 @@
+@import '/src/styles/variables.scss';
+
+.individual {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.individualDetail {
+  width: calc((100% - 10px) / 2);
+
+  @include flex-center;
+  flex-direction: column;
+  padding: 16px 0;
+
+  border: 2px solid $colorTextTertiary;
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.individualDetailActive {
+  @extend .individualDetail;
+
+  background-color: $colorPaymentActive;
+  border: 2px solid $colorPrimary;
+  color: $colorPrimary;
+}

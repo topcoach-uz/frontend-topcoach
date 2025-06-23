@@ -1,0 +1,13 @@
+.selectWrapper {
+  margin-left: auto;
+  margin-right: auto;
+  width: max-content;
+}
+
+.select {
+  width: 408px !important;
+
+  @media (max-width: 560px) {
+    width: 300px !important;
+  }
+}

@@ -1,0 +1,17 @@
+@import '/src/styles/variables.scss';
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin: 0 8px;
+  border: none;
+  position: relative;
+  top: 20px;
+  background: #b9b9b9;
+}
+
+.active {
+  background: $colorPrimary;
+}

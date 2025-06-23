@@ -1,0 +1,25 @@
+@import '/src/styles/variables.scss';
+
+.background_item_wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.items_list {
+  display: flex;
+  list-style-type: none;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  li {
+    font-size: $fontSizeTitle9;
+    font-weight: $fontWeightMedium;
+    border-radius: 6px;
+    background-color: $colorFillQuaternary;
+    color: $colorText;
+    padding: 4px 12px;
+    border: 1px solid $colorBorder;
+    line-height: 20px;
+  }
+}

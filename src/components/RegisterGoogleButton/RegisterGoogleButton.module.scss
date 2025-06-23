@@ -1,0 +1,12 @@
+@import '/src/styles/variables.scss';
+
+.google_button {
+  border-radius: 10px;
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 24px;
+  font-weight: $fontWeightSemibold;
+  font-size: $fontSizeTitle7;
+  height: 44px;
+}

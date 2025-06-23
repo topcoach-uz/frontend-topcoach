@@ -1,0 +1,15 @@
+@import '/src/styles/variables.scss';
+
+.phone {
+  color: $colorTextSecondary;
+
+  &:hover {
+    color: $colorPrimary !important;
+  }
+}
+
+.socialsLink {
+  &:hover path {
+    fill-opacity: 1;
+  }
+}

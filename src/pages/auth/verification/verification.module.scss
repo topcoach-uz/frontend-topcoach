@@ -1,0 +1,47 @@
+@import '/src/styles/variables.scss';
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: $colorBgContainer;
+}
+
+.wrapper {
+  max-width: 540px;
+  width: max-content;
+}
+
+.list {
+  color: $colorTextDescription;
+  font-size: 16px;
+  padding-left: 20px;
+  line-height: 22.4px;
+}
+
+.logo_wrapper {
+  margin-bottom: 24px;
+}
+
+.info_message {
+  border: 1px solid $blue3;
+  background-color: $blue1;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: start;
+  gap: 16px;
+}
+
+.info_description {
+}
+
+.tick_wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}

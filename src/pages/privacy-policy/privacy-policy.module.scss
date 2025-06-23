@@ -1,0 +1,59 @@
+@import '/src/styles/variables.scss';
+
+.privacyPolicyContainer {
+  margin: 20px;
+  line-height: 1.5;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: $colorTextHeading;
+}
+
+.lastUpdated {
+  font-size: 14px;
+  color: $colorText;
+}
+
+.section {
+  margin-top: 30px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: $colorTextHeading;
+  margin-bottom: 10px;
+}
+
+.subsectionTitle {
+  font-size: 16px;
+  font-weight: bold;
+  color: $colorText;
+}
+
+.subsectionTitle2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: $colorText;
+}
+
+.list {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.list li {
+  font-size: 14px;
+  color: $colorTextSecondary;
+}
+
+ul.list {
+  // margin-top: 10px;
+}
+
+ul.list li {
+  font-size: 14px;
+  color: $colorText;
+}

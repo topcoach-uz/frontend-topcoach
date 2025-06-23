@@ -1,0 +1,60 @@
+@import '/src/styles/variables.scss';
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background-color: $colorBgContainer;
+  border-radius: 8px;
+  height: max-content;
+
+  cursor: pointer;
+
+  h2 {
+    font-size: 14px;
+    font-weight: 400;
+    color: $colorText;
+  }
+}
+
+.svg {
+  svg {
+    transition: transform 0.3s ease;
+    transform: rotate(180deg);
+  }
+}
+
+.svgActive {
+  svg {
+    transform: rotate(0deg);
+  }
+}
+
+.body {
+  padding: 16px 24px;
+  background-color: $colorBgContainer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  p {
+    color: $colorTextSecondary;
+    line-height: 140%;
+    font-size: 14px;
+
+    ul {
+      padding-left: 20px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+  }
+}
+.bodyNone {
+  visibility: hidden;
+  height: 0;
+  opacity: 0;
+  padding: 0;
+
+  p {
+    display: none;
+  }
+}

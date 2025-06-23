@@ -1,0 +1,57 @@
+@import 'src/styles/variables.scss';
+
+.form-item {
+  &-input {
+    &-otp {
+      @include flex(row, center, center);
+
+      .ant-input {
+        border-radius: 18px;
+        width: 60px;
+        height: 60px;
+
+        font-size: 20px;
+        font-weight: 700;
+      }
+    }
+    &-mask {
+      .ant-input {
+        height: 44px;
+        border-radius: 12px;
+        background-color: $input-color;
+        border-left: none;
+
+        &:focus,
+        &:hover {
+          border-color: $gray300;
+          box-shadow: none;
+        }
+
+        &-group {
+          height: 44px;
+          &-addon {
+            border-radius: 12px;
+            border-right: none;
+            padding-right: 0;
+            padding-left: 18px;
+            border-color: $gray300;
+
+            color: $text-primary;
+            font-weight: 600;
+            font-size: 16;
+          }
+        }
+      }
+    }
+  }
+  &-select {
+    .ant-select {
+      &-selector {
+        padding-left: 52px !important;
+      }
+      &-arrow {
+        inset-inline-start: 22px;
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+@import '/src/styles/variables.scss';
+
+.footer {
+  background-color: $colorBgContainerDark;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.container {
+  display: flex;
+  font-size: 45px;
+
+  @media (max-width: 1200px) {
+    flex-direction: column;
+    gap: 50px;
+  }
+}
+
+.logo {
+  height: 100%;
+  width: max-content;
+  max-width: 415px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-self: stretch;
+  flex: 1 0 0;
+  color: white;
+
+  @media (max-width: 1268px) {
+    gap: 16px;
+  }
+
+  @media (max-width: 512px) {
+    width: 100%;
+  }
+}
+
+.links {
+  display: flex;
+  gap: 60px;
+
+  @media (max-width: 800px) {
+    flex-wrap: wrap;
+    justify-content: center;
+    & > div {
+      flex: 1 1 0px;
+    }
+  }
+
+  @media (max-width: 512px) {
+    flex-wrap: nowrap;
+    flex-direction: column;
+  }
+}

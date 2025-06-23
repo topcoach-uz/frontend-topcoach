@@ -1,0 +1,80 @@
+@import '/src/styles/variables.scss';
+
+.hamburger {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transform: scale(0.6);
+}
+
+.bar {
+  width: 30px;
+  height: 3px;
+  background: $colorTextLight;
+  // transition: all 0.3s ease-in-out;
+}
+
+/* When menu is open */
+.topOpen {
+  transform: translateY(9px) rotate(-45deg);
+}
+
+.middleOpen {
+  opacity: 0;
+}
+
+.bottomOpen {
+  transform: translateY(-9px) rotate(45deg);
+}
+
+.logo_link {
+  // position: absolute;
+  // right: 24px;
+  // top: 13px;
+}
+
+.logout_button {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  color: $colorTextLight !important;
+}
+
+.logout_icon {
+  path {
+    stroke: $colorTextLight;
+  }
+}
+
+.drawer {
+  :global(.ant-drawer-content) {
+    background: $colorPrimary;
+  }
+
+  :global(.ant-drawer-close) {
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease-in;
+
+    &:hover {
+      color: $colorTextLight;
+    }
+  }
+
+  :global(.languageOptionWrapper) {
+    color: $colorTextLight;
+  }
+
+  :global(.ant-select-arrow) {
+    svg {
+      color: $colorTextLight;
+    }
+  }
+}

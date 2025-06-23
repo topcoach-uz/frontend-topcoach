@@ -1,0 +1,19 @@
+@import 'src/styles/variables.scss';
+
+.link {
+  color: rgba(255, 255, 255, 0.65);
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  gap: 8px;
+
+  &:hover {
+    color: white;
+  }
+}
+
+.links {
+  display: flex;
+  column-gap: 8px;
+  background-color: #fff;
+  gap: 4px;
+}

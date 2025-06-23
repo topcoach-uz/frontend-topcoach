@@ -1,0 +1,25 @@
+.mentor_avatar {
+  width: 90%;
+}
+
+.title_wrapper {
+  // max-width: 580px;
+  @media (max-width: 1024px) {
+    & > div {
+      justify-content: center;
+      text-align: center !important;
+    }
+  }
+}
+
+.image_wrapper {
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  img {
+    object-fit: cover;
+  }
+}

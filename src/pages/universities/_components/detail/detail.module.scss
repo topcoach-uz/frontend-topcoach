@@ -1,0 +1,133 @@
+@import 'src/styles/variables.scss';
+
+.detail {
+  width: 100%;
+  padding: 40px 80px;
+  background-color: $colorBgContainer;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 20px;
+  }
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.like {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: 12px;
+  border: 1px solid $red2;
+  background-color: $red1;
+
+  cursor: pointer;
+}
+
+.img {
+  padding: 20px 0;
+
+  img {
+    width: 100%;
+  }
+}
+
+.bottom {
+  margin-top: 28px;
+  padding: 12px;
+  border-top: 1px solid $colorBorder;
+}
+
+.majorTitle {
+  display: flex;
+
+  h2 {
+    color: $colorTextBase;
+    font-size: 28px;
+    font-weight: 600;
+  }
+}
+
+.majorTab {
+  margin-top: 24px;
+}
+
+.minors {
+  p {
+    padding: 16px;
+  }
+}
+
+.mentors {
+  margin: 24px 0;
+}
+
+.mentor {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.name {
+  color: $colorTextBase;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.minorTitles {
+  color: $colorTextBase;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.details {
+  color: $colorTextSecondary;
+  // text-align: justify;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 140%;
+
+  margin: 8px 0;
+}
+
+.ranking {
+  color: $colorTextSecondary;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 140%;
+
+  margin-bottom: 24px;
+}
+
+.quote {
+  color: $colorTextSecondary;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 140%;
+
+  margin: 8px 0;
+}
+
+.allMajors {
+  margin-top: 20px;
+  height: 400px;
+  overflow-y: auto;
+}
+
+.major {
+  font-size: 16px;
+  margin: 4px 0;
+  color: $colorText;
+}
+
+.imageSkeleton {
+  width: 100% !important;
+  margin-top: 70px;
+}

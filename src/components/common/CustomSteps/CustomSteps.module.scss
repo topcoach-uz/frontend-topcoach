@@ -1,0 +1,30 @@
+@import '/src/styles/variables.scss';
+
+.stepsContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.stepWrapper {
+  padding: 20px 30px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.step {
+  border-radius: 9999px;
+  transition: background-color 0.3s;
+  background: $colorPrimary;
+  height: 4px;
+  width: 100%;
+}
+
+.step:hover {
+  background-color: $colorPrimaryHover;
+}
+
+.active {
+  background-color: $colorPrimary !important;
+}

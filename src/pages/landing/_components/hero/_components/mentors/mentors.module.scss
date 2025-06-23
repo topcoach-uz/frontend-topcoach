@@ -1,0 +1,71 @@
+.mentor_list_wrapper {
+}
+
+.mentor_pictures {
+  position: absolute;
+  top: 75px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: left ease-in 0.2s;
+
+  & > div:nth-of-type(2) {
+    position: relative;
+  }
+}
+
+.mentor_pictures_left {
+  @extend .mentor_pictures;
+  left: 20px;
+  transform: translateX(-500px);
+  opacity: 0;
+  animation: slideInFromLeft 1s forwards;
+  animation-delay: 1s;
+
+  @keyframes slideInFromLeft {
+    from {
+    }
+    to {
+      transform: translate(0);
+      opacity: 1;
+    }
+  }
+  & > div:nth-of-type(2) {
+    right: 50px;
+  }
+}
+
+.mentor_pictures_right {
+  @extend .mentor_pictures;
+  right: 20px;
+  transform: translateX(500px);
+  opacity: 0;
+  animation: slideInFromRight 1s forwards;
+  animation-delay: 1s;
+
+  @keyframes slideInFromRight {
+    from {
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  & > div:nth-of-type(2) {
+    left: 50px;
+  }
+}
+
+.mentor_picture_wrapper {
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.mentor_picture {
+  transition: all 0.2s ease-in;
+  border-radius: 6px;
+  width: 117px;
+  height: 156px;
+  object-fit: cover;
+  object-position: top;
+}

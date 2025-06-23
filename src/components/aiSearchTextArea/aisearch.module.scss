@@ -1,0 +1,36 @@
+@import 'src/styles/variables.scss';
+
+.search {
+  width: 100%;
+}
+
+.searchNotAuth {
+  background-color: transparent;
+}
+
+.textArea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid $colorBorder;
+  border-radius: 12px;
+  position: relative;
+
+  @media (max-width: 1024px) {
+    padding-right: 50px;
+  }
+}
+
+.switchInside {
+  display: flex;
+  gap: 6px;
+}
+
+.filterButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.textAreaInput {
+  padding-right: 50px;
+}

@@ -1,0 +1,7 @@
+@import 'src/styles/variables.scss';
+
+.custom404 {
+  @include flex(column, center, center);
+  padding-top: 120px;
+  padding-bottom: 120px;
+}

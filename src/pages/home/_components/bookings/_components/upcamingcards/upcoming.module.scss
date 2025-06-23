@@ -1,0 +1,61 @@
+@import 'src/styles/variables.scss';
+
+.upcoming {
+  border: 1px solid $colorBorder;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.meeting {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.link {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.bottom {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dots {
+  cursor: pointer;
+  background-color: $colorBgContainer;
+}
+.reasons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reason {
+  display: flex;
+  padding: 1px 8px;
+  align-items: center;
+  gap: 4px;
+
+  border-radius: 6px;
+  border: 1px solid $colorBorder;
+  background: $colorFillQuaternary;
+  cursor: pointer;
+}
+
+.active {
+  background-color: #e6f4ff;
+}
+
+.displayNone {
+  display: none !important;
+}

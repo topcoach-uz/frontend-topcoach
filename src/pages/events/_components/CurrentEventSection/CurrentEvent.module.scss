@@ -1,0 +1,107 @@
+@import 'src/styles/variables.scss';
+
+.eventImage {
+  position: relative;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  border-radius: 16px;
+  overflow: hidden;
+
+  img {
+    max-height: 400px;
+    min-height: 200px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.9) 100%
+    );
+  }
+
+  @media (max-width: 768px) {
+    &::after {
+      height: 100%;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0.9) 100%
+      );
+    }
+  }
+}
+
+.eventContent {
+  position: absolute;
+  bottom: 3px;
+  width: 100%;
+  padding: 33px 24px;
+  border-radius: 16px;
+  overflow: hidden;
+
+  * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
+}
+
+.choice {
+  display: flex;
+  justify-content: space-around;
+
+  margin-top: 12px;
+}
+
+.under {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: 1px solid $colorBorder;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.countries {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+
+  cursor: pointer;
+}
+
+.country {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: 1px solid $colorBorder;
+  border-radius: 24px;
+
+  cursor: pointer;
+}
+
+.countryActive {
+  background-color: $colorPaymentActive;
+  border-color: $colorPrimary;
+}
+
+.inputCountry {
+  margin-top: 16px;
+}

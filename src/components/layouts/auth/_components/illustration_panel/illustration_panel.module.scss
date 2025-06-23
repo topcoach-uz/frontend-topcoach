@@ -1,0 +1,79 @@
+@import '/src/styles/variables.scss';
+
+.page_wrapper {
+  background: linear-gradient(
+    209deg,
+    var(--Secondary-colorPrimary, #a61d31) 0%,
+    var(--Secondary-colorPrimaryActive, #800f24) 100%
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.top {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+  z-index: 1;
+  position: relative;
+
+  img {
+    border-radius: 8px;
+    object-position: top;
+    object-fit: cover;
+  }
+}
+
+.firstImg {
+  width: 147px;
+  height: 157px;
+}
+
+.secondImg {
+  width: 147px;
+  height: 194px;
+}
+
+.thirdImg {
+  width: 177px;
+  height: 118px;
+}
+
+.fourthImg {
+  width: 147px;
+  height: 194px;
+}
+
+.fivethImg {
+  width: 164px;
+  height: 118px;
+}
+
+.bottom {
+  display: flex;
+  gap: 24px;
+  align-items: start;
+  z-index: 1;
+  position: relative;
+
+  img {
+    border-radius: 8px;
+    object-fit: cover;
+    object-position: top;
+  }
+}
+
+.circle_blur {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 548px;
+  height: 548px;
+  background: rgba(242, 163, 163, 0.2);
+  filter: blur(80px);
+}

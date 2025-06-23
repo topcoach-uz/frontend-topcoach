@@ -1,0 +1,24 @@
+@import 'src/styles/variables.scss';
+
+.language_option_wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.languageSelect {
+}
+
+.icon {
+  color: $colorTextBase;
+  font-size: 14px;
+  position: relative;
+  left: -20px;
+  top: 0;
+}

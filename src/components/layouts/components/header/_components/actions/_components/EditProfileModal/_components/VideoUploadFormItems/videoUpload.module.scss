@@ -1,0 +1,9 @@
+.videoUpload {
+  :global(.ant-upload-list-item-name) {
+    overflow: hidden;
+    width: 80px;
+    display: inline-block !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

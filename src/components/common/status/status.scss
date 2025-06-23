@@ -1,0 +1,45 @@
+@import 'src/styles/variables.scss';
+
+.common_status {
+  @include flex(row, center, center);
+  display: inline-flex;
+  padding: 10px 14px;
+  border-radius: 50px;
+
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+  color: $text-primary;
+  background-color: $gray;
+
+  &-info {
+    color: $primary;
+    background-color: $light-info;
+  }
+  &-warning {
+    color: $warning;
+    background-color: $light-warning;
+  }
+  &-success {
+    color: $success;
+    background-color: $light-success;
+  }
+  &-danger {
+    color: $danger;
+    background-color: $light-danger;
+  }
+  &-type {
+    &-primary {
+      padding: 8px 12px;
+      font-weight: 600;
+      color: $white;
+      background-color: $primary;
+    }
+    &-danger {
+      padding: 8px 12px;
+      font-weight: 600;
+      color: $white;
+      background-color: $red;
+    }
+  }
+}

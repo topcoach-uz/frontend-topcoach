@@ -1,0 +1,32 @@
+@import '/src/styles/variables.scss';
+
+.interval_picker_wrapper {
+  margin-right: 16px;
+  margin-left: 16px;
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+.item {
+  position: relative;
+  display: block;
+  min-height: 32px;
+  padding: 4.75px 12px;
+  color: $colorText;
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  border-radius: 4px;
+
+  &:hover {
+    background: $colorBgTextHover;
+  }
+}
+
+.active {
+  background: $colorPrimary !important;
+  color: $colorTextLight !important;
+}

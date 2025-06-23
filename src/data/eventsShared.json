@@ -1,0 +1,19 @@
+[
+  {
+    "id": "0",
+    "img": "/img/events/unlocking_top100.JPG"
+  },
+  {
+    "id": "1",
+    "img": "/img/events/bootcamp_samarkand.jpg"
+  },
+  {
+    "id": "2",
+    "img": "/img/events/bootcamp_nukus.jpg"
+  },
+  { "id": "3", "img": "/img/events/top_uni_masters.JPG" },
+  {
+    "id": "4",
+    "img": "/img/events/top_uni_bachelors.jpg"
+  }
+]

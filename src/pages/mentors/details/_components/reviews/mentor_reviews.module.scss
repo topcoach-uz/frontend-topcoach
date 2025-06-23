@@ -1,0 +1,16 @@
+.review_list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card_wrapper {
+  display: flex;
+  align-items: start;
+  gap: 14px;
+}
+
+.review_description {
+  font-family: 'Nunito Sans', serif !important;
+}

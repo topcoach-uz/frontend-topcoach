@@ -1,0 +1,25 @@
+@import '/src/styles/variables.scss';
+
+.button {
+  background: $colorBgContainer;
+  border: 1px solid $colorBorder;
+  border-radius: 12px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease-in;
+  cursor: pointer;
+  font-size: $fontSizeTitle5;
+  padding: 0 28px;
+  margin-top: 50px;
+  width: max-content;
+
+  &:hover {
+    border: 1px solid $colorPrimary;
+  }
+
+  @media (max-width: 1050px) {
+    width: auto;
+  }
+}

@@ -1,0 +1,35 @@
+:root {
+  --color-black: #1d1d1b;
+  --color-white: #fff;
+  --color-dark-brown: #13110c;
+  --color-red: #a81928;
+}
+
+.white-logo {
+  --color-black: #ffffff;
+  --color-white: #fff;
+  --color-dark-brown: #ffffff;
+}
+
+.st0 {
+  fill: var(--color-black);
+}
+
+.st1 {
+  fill: var(--color-red);
+}
+
+.st2,
+.st3 {
+  fill: var(--color-white);
+}
+
+.st4 {
+  fill: var(--color-dark-brown);
+}
+
+.st3 {
+  stroke: var(--color-black);
+  stroke-miterlimit: 10;
+  stroke-width: 5.13px;
+}

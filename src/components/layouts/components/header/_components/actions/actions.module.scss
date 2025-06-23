@@ -1,0 +1,35 @@
+@import '/src/styles/variables.scss';
+
+.actions_wrapper {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.mode_switch {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding-left: 10px;
+  padding-right: 10px;
+  transform: translateX(10px);
+}
+
+.language_select {
+  display: flex;
+  align-items: center;
+}
+
+.profile_button {
+  border: none;
+  background-color: transparent;
+
+  display: flex;
+  gap: 8px;
+}
+
+.dropdown_icon {
+  path {
+    stroke: $colorText;
+  }
+}

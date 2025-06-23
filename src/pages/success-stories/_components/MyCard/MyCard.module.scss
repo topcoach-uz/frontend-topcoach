@@ -1,0 +1,99 @@
+@import '/src/styles/variables.scss';
+
+.cardContainer {
+  cursor: pointer;
+  position: relative;
+  width: max-content;
+  height: max-content;
+}
+
+.cardContainerHovered {
+  .imgContainer::before {
+    opacity: 1;
+  }
+
+  .textContainer {
+    color: white;
+    transition: all 0.5s;
+    transform: translateY(-20px);
+
+    .title {
+      padding-bottom: 0;
+    }
+    .description {
+      opacity: 1;
+      height: auto;
+      font-size: $fontSizeTitle6;
+      font-weight: 300;
+      line-height: 1.5;
+      margin-top: 10px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+.imgContainer {
+  width: 350px;
+  height: 350px;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.2s ease-in;
+    opacity: 0.7;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  @media (max-width: 370px) {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+.textContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  width: 100%;
+  height: 100%;
+
+  .title {
+    padding-bottom: 30px;
+  }
+  .description {
+    opacity: 0;
+    height: 0;
+    transition: all 0.5s;
+    pointer-events: none;
+  }
+}
+
+.title {
+  font-size: $fontSizeTitle4 !important;
+}
+
+.description {
+  text-align: center !important;
+}

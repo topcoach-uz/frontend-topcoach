@@ -1,0 +1,20 @@
+@import '/src/styles/variables.scss';
+
+.session_time {
+  font-size: $fontSizeTitle9;
+  font-weight: $fontWeightMedium;
+  border-radius: 6px;
+  background-color: $colorFillQuaternary;
+  padding: 4px 12px;
+  border: 1px solid $colorBorder;
+  width: max-content;
+  color: $colorText;
+}
+
+.sessionNameTime {
+  @media (max-width: 560px) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}

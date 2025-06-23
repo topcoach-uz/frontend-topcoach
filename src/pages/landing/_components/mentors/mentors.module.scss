@@ -1,0 +1,49 @@
+@import 'src/styles/variables.scss';
+
+.container {
+  position: relative;
+  min-height: 400px;
+  border-radius: 24px !important;
+}
+
+.mentors {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+
+  @media (max-width: 1024px) {
+    flex-direction: column-reverse;
+  }
+}
+
+.info {
+  padding: 0 64px;
+  width: 50%;
+
+  @media (max-width: 1024px) {
+    padding: 24px;
+    width: 100%;
+  }
+}
+
+.img {
+  width: max-content;
+  height: 100%;
+  display: flex;
+  justify-content: end;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    height: auto;
+  }
+
+  img {
+    // border-top-right-radius: 24px;
+    // border-bottom-right-radius: 24px;
+    object-fit: cover;
+
+    @media (max-width: 1024px) {
+    }
+  }
+}

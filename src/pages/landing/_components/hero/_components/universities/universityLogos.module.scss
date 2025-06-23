@@ -1,0 +1,43 @@
+.carousel {
+  overflow: hidden;
+  width: 100%;
+}
+
+.carouselTrack {
+  animation: scroll 30s linear infinite;
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100px;
+  width: max-content;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+
+  li {
+    flex: 0 0 10%;
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 70px;
+      height: 70px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    li {
+      flex: 0 0 7%;
+    }
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

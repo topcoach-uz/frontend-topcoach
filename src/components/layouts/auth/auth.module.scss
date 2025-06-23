@@ -1,0 +1,46 @@
+@import 'src/styles/variables.scss';
+
+.page_wrapper {
+  background-color: $colorBgContainer;
+  display: flex;
+  height: auto;
+  min-height: 100vh;
+
+  & > div {
+    flex: 0 0 50%;
+  }
+
+  @media (max-width: 1230px) {
+    height: auto;
+
+    & > div:first-of-type {
+      flex: 0 0 100%;
+    }
+  }
+}
+
+.left_side {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column-reverse;
+  gap: 50px;
+  position: relative;
+}
+
+.language_select_wrapper {
+  margin-bottom: 50px;
+}
+
+.auth_wrapper {
+  width: 358px;
+  margin-top: 50px;
+
+  @media (max-width: 375px) {
+    width: 320px;
+  }
+}
+
+.logo {
+  margin-bottom: 24px;
+}

@@ -1,0 +1,15 @@
+.container {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.storiesWrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(345px, 1fr));
+  justify-items: center;
+  gap: 20px;
+
+  @media (max-width: 370px) {
+    justify-items: normal;
+  }
+}

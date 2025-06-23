@@ -1,0 +1,90 @@
+{
+  "en": [
+    {
+      "name": "Unlocking Top 100",
+      "date": "November 17, 2024"
+    },
+    {
+      "name": "Regional Admissions Bootcamp: Samarkand",
+      "date": "October 17 - October 19, 2024"
+    },
+    {
+      "name": "Regional Admissions Bootcamp: Nukus",
+      "date": "October 10 - October 12, 2024"
+    },
+    {
+      "name": "Top100Camp – Summer Camps: Masters Season",
+      "date": "August 19 - August 25, 2024"
+    },
+    {
+      "name": "Top100Camp – Summer Camps: Bachelor’s Season",
+      "date": "July 15 - July 21, 2024"
+    }
+  ],
+  "uz": [
+    {
+      "name": "Unlocking Top100",
+      "date": "2024-yil 17-noyabr"
+    },
+    {
+      "name": "Regional Admissions Bootcamp: Samarqand",
+      "date": "2024-yil 17-19-oktabr"
+    },
+    {
+      "name": "Regional Admissions Bootcamp: Nukus",
+      "date": "2024-yil 10-12-oktabr"
+    },
+    {
+      "name": "Top100Camp – Yozgi Oromgoh: Magistratura Mavsumi",
+      "date": "2024-yil 19-25-avgust"
+    },
+    {
+      "name": "Top100Camp – Yozgi Oromgoh: Bakalavr Mavsumi",
+      "date": "2024-yil 10-12-oktabr"
+    }
+  ],
+  "ru": [
+    {
+      "name": "Unlocking Top100",
+      "date": "17 ноября 2024 года"
+    },
+    {
+      "name": "Региональный буткемп: Самарканд",
+      "date": "17 по 19 октября 2024 годa "
+    },
+    {
+      "name": "Региональный буткемп: Нукус",
+      "date": "10 по 12 октября 2024 года"
+    },
+    {
+      "name": "Top100Camp – Летний лагерь: Магистратура",
+      "date": "19 по 25 августа 2024 года"
+    },
+    {
+      "name": "Top100Camp – Летний лагерь: Бакалавриат",
+      "date": "15 по 21 июля 2024 года"
+    }
+  ],
+  "kk": [
+    {
+      "name": "Unlocking Top100",
+      "date": "2024-jıl 17-noyabr"
+    },
+    {
+      "name": "Regionlıq Qabıl Bootcamp: Samarqand",
+      "date": "2024-jıl 17-19-oktabr"
+    },
+    {
+      "name": "Regionlıq Qabıl Bootcamp: Núkis",
+      "date": "2024-jıl 10-12-oktabr"
+    },
+    {
+      "name": "Top100Camp – Jazgı Lager: Magistratura Mawsımı",
+      "date": "2024-jıl 19-25-avgust"
+    },
+    {
+      "name": "Top100Camp – Jazgı Lager: Bakalavrlıq Mawsımı",
+      "date": "2024-jıl 15-21-iyul"
+    }
+  ]
+}

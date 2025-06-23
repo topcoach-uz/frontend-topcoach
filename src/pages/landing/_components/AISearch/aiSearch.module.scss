@@ -1,0 +1,81 @@
+@import 'src/styles/variables.scss';
+
+.section {
+  padding: 96px 0;
+  background-color: $colorTertiaryActive;
+  position: relative;
+  &::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    content: '';
+    background-color: rgba(128, 15, 36, 0.8);
+    z-index: 2;
+  }
+}
+
+.backgroundImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  object-fit: cover;
+}
+
+.container {
+  display: flex;
+  gap: 64px;
+  position: relative;
+  z-index: 3;
+  justify-content: center;
+}
+
+.aisearch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 64px;
+}
+
+.action {
+  flex: 0 0 51%;
+
+  @media (max-width: 1024px) {
+    flex: 0 0 80%;
+  }
+
+  @media (max-width: 560px) {
+    flex: 0 0 100%;
+  }
+}
+
+.images {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.top {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+
+  img {
+    border-radius: 8px;
+  }
+}
+.bottom {
+  display: flex;
+  gap: 24px;
+  justify-content: baseline;
+
+  img {
+    border-radius: 8px;
+  }
+}
