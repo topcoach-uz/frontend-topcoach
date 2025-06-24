@@ -2,6 +2,7 @@ import { Checkbox, CollapseProps } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useState } from 'react';
 import { api } from 'src/app/api';
+import { UniversitySectorEnum } from 'src/app/api/Api';
 import { useTypedSelector } from 'src/app/store';
 import useParamsHook from 'src/hooks/params';
 import useApi from 'src/hooks/useApi';
@@ -224,7 +225,7 @@ export default function useUniversityFilter({ checked }: Props) {
       label: t('universities.scholarships'),
       children: (
         <div className={styles.check}>
-          {responseFilter?.data.sector?.map((sector, i) => (
+          {Object.values(UniversitySectorEnum).map((sector, i) => (
             <Checkbox
               key={i + sector}
               value={sector} // Use the English name as the value
