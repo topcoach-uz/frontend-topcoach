@@ -10,7 +10,7 @@ function MenteeHomePage() {
       <BannerSection />
       {/* <HomeAiSearchSection /> */}
       <BookingsSection />
-      <FavoriteUniversitiesSection />
+      {/* <FavoriteUniversitiesSection /> */}
       <EventsSection />
     </div>
   );
