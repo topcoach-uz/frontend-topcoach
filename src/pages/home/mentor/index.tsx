@@ -8,7 +8,7 @@ export default function MentorHome() {
     <main>
       <ProfileStatusSection />
       <BookingsSection />
-      <FavoriteUniversitiesSection />
+      {/* <FavoriteUniversitiesSection /> */}
       <EventsSection />
     </main>
   );
