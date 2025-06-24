@@ -16,9 +16,9 @@ import useParamsHook from 'src/hooks/params';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import UniversityCard from 'src/pages/home/_components/university/card';
 import { scrollToTop } from 'src/utils';
-import UniversityFilter from '../filter';
+import UniversityFilter from 'src/pages/universities/_components/filter';
 import styles from './university.module.scss';
-import UniverAiSearchCard from '../univerAiSearchCard';
+import UniverAiSearchCard from 'src/pages/universities/_components/univerAiSearchCard';
 import Loader from 'src/components/loader';
 
 interface Props {
