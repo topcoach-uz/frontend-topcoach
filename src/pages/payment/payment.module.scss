@@ -1,4 +1,4 @@
-@import 'src/styles/variables.scss';
+@import "src/styles/variables.scss";
 
 .payment {
   display: flex;
@@ -60,18 +60,19 @@
   display: flex;
   align-items: center;
 
-  width: 100px;
+  width: calc((100% - 20px) / 3);
   height: 64px;
+  cursor: pointer;
 
   img {
     width: 100%;
   }
-
-  cursor: pointer;
 }
 
 .paymentImages {
   display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
   gap: 10px;
   margin-top: 16px;
 }

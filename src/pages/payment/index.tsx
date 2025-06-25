@@ -1,37 +1,37 @@
-import { Form, message } from 'antd';
-import { useForm } from 'antd/es/form/Form';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from 'src/app/api';
-import { useTypedSelector } from 'src/app/store';
-import { CustomButton, CustomText } from 'src/components/common';
-import { InputFormItem } from 'src/components/form';
-import styles from './payment.module.scss';
-import useParamsHook from 'src/hooks/params';
-import { themeFontSize, themeFontWeight } from 'src/constants/theme';
-import { ArrowLeft } from 'iconsax-react';
-import CustomSelect from 'src/components/common/select';
+import { Form, message } from "antd";
+import { useForm } from "antd/es/form/Form";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "src/app/api";
+import { useTypedSelector } from "src/app/store";
+import { CustomButton, CustomText } from "src/components/common";
+import { InputFormItem } from "src/components/form";
+import styles from "./payment.module.scss";
+import useParamsHook from "src/hooks/params";
+import { themeFontSize, themeFontWeight } from "src/constants/theme";
+import { ArrowLeft } from "iconsax-react";
+import CustomSelect from "src/components/common/select";
 
 function PaymentPage() {
   const colors = useTypedSelector((state) => state.layout.colors);
   const [form] = useForm();
   const navigate = useNavigate();
   const { searchParams } = useParamsHook();
-  const amount = searchParams.get('amount');
-  const currencyName = searchParams.get('currencyName');
-  const method = 'click';
-  const sessionId = searchParams.get('sessionId') ?? '';
-  const planId = searchParams.get('planId') ?? '';
-  const mentorId = searchParams.get('mentorId') ?? '';
-  const returnUrl = 'https://topcoach.uz/';
+  const amount = searchParams.get("amount");
+  const currencyName = searchParams.get("currencyName");
+  const method = "click";
+  const sessionId = searchParams.get("sessionId") ?? "";
+  const planId = searchParams.get("planId") ?? "";
+  const mentorId = searchParams.get("mentorId") ?? "";
+  const returnUrl = "https://topcoach.uz/";
 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
     form.validateFields().then((values) => {
       const payload = {
-        cardNumber: values.cardNumber.replace(/\s/g, ''),
-        expireDate: values.phone.replace('/', ''),
+        cardNumber: values.cardNumber.replace(/\s/g, ""),
+        expireDate: values.phone.replace("/", ""),
         cardType: values.cardType,
       };
 
@@ -44,7 +44,7 @@ function PaymentPage() {
           // @ts-ignore
           navigate(
             // @ts-ignore
-            `/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`
+            `/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`,
           );
         })
         .catch((err) => {
@@ -57,10 +57,10 @@ function PaymentPage() {
   };
 
   const handleRedirectToPayme = () => {
-    console.log('clicked');
+    console.log("clicked");
     api.payments
       .getRedirectUrl(
-        'payme',
+        "payme",
         // @ts-ignore
         sessionId
           ? {
@@ -73,7 +73,7 @@ function PaymentPage() {
               returnUrl,
               planId,
               mentorId,
-            }
+            },
       )
       .then((res) => {
         window.location.href = res.data?.url;
@@ -83,7 +83,7 @@ function PaymentPage() {
   const handleRedirectToClick = () => {
     api.payments
       .getRedirectUrl(
-        'click',
+        "click",
         // @ts-ignore
         sessionId
           ? {
@@ -96,7 +96,30 @@ function PaymentPage() {
               returnUrl,
               planId,
               mentorId,
+            },
+      )
+      .then((res) => {
+        window.location.href = res.data?.url;
+      });
+  };
+
+  const handleRedirectToAtmos = () => {
+    api.payments
+      .getRedirectUrl(
+        "atmos",
+        // @ts-ignore
+        sessionId
+          ? {
+              sessionId,
+              returnUrl,
+              planId,
+              mentorId,
             }
+          : {
+              returnUrl,
+              planId,
+              mentorId,
+            },
       )
       .then((res) => {
         window.location.href = res.data?.url;
@@ -104,8 +127,8 @@ function PaymentPage() {
   };
 
   const cardType = [
-    { label: 'Humo', value: 'humo' },
-    { label: 'Uzcard', value: 'uzcard' },
+    { label: "Humo", value: "humo" },
+    { label: "Uzcard", value: "uzcard" },
   ];
 
   return (
@@ -118,7 +141,7 @@ function PaymentPage() {
       >
         Back
       </CustomButton>
-      <div className={styles.payment + ' container'}>
+      <div className={styles.payment + " container"}>
         <CustomText fontSize={36} fontWeight={500} color={colors.colorText}>
           Payment
         </CustomText>
@@ -128,7 +151,7 @@ function PaymentPage() {
           </CustomText>
           <div className={styles.type}>
             <div className={styles.card}>
-              <div style={{ display: 'flex', gap: '5px' }}>
+              <div style={{ display: "flex", gap: "5px" }}>
                 <CustomText
                   fontSize={themeFontSize.fontSizeTitle4}
                   fontWeight={themeFontWeight.fontWeightSemibold}
@@ -169,7 +192,7 @@ function PaymentPage() {
                     rules={[
                       {
                         required: true,
-                        message: 'Please, choose your meeting type',
+                        message: "Please, choose your meeting type",
                       },
                     ]}
                     required={true}
@@ -183,7 +206,7 @@ function PaymentPage() {
                 </Form>
               </div>
             </div>
-            <div style={{ width: '100%' }}>
+            <div style={{ width: "100%" }}>
               <div className={styles.payme}>
                 <CustomText color={colors.colorText}>
                   Pay via the app
@@ -200,6 +223,12 @@ function PaymentPage() {
                     className={styles.paymeImg}
                   >
                     <img src="/img/click.jpg" alt="img error" />
+                  </div>
+                  <div
+                    onClick={() => handleRedirectToAtmos()}
+                    className={styles.paymeImg}
+                  >
+                    <img src="/img/atmos.png" alt="img error" />
                   </div>
                 </div>
               </div>

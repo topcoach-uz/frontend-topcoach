@@ -10,13 +10,13 @@
  */
 
 export enum LoginMethod {
-  Email = 'email',
-  Google = 'google',
+  Email = "email",
+  Google = "google",
 }
 
 export enum UserRole {
-  Student = 'Student',
-  Mentor = 'Mentor',
+  Student = "Student",
+  Mentor = "Mentor",
 }
 
 export interface SocialsSchema {
@@ -50,13 +50,13 @@ export interface ContactsSchema {
 }
 
 export enum ContinentsEnum {
-  Africa = 'Africa',
-  Antarctica = 'Antarctica',
-  Asia = 'Asia',
-  Europe = 'Europe',
-  NorthAmerica = 'North America',
-  Oceania = 'Oceania',
-  SouthAmerica = 'South America',
+  Africa = "Africa",
+  Antarctica = "Antarctica",
+  Asia = "Asia",
+  Europe = "Europe",
+  NorthAmerica = "North America",
+  Oceania = "Oceania",
+  SouthAmerica = "South America",
 }
 
 export interface LocationsSchema {
@@ -80,11 +80,11 @@ export interface LocationsSchema {
 }
 
 export enum MediaEnum {
-  Image = 'image',
-  Video = 'video',
-  Gif = 'gif',
-  Docx = 'docx',
-  Pdf = 'pdf',
+  Image = "image",
+  Video = "video",
+  Gif = "gif",
+  Docx = "docx",
+  Pdf = "pdf",
 }
 
 export interface MediaSchema {
@@ -124,23 +124,23 @@ export interface ProfilesSchema {
 }
 
 export enum RoleEnum {
-  Owner = 'Owner',
-  Admin = 'Admin',
-  ContentManager = 'Content Manager',
-  User = 'User',
+  Owner = "Owner",
+  Admin = "Admin",
+  ContentManager = "Content Manager",
+  User = "User",
 }
 
 export enum MentorProfileStatusEnum {
-  Pending = 'pending',
-  Accepted = 'accepted',
-  Rejected = 'rejected',
+  Pending = "pending",
+  Accepted = "accepted",
+  Rejected = "rejected",
 }
 
 export enum MentorExperienceLevel {
-  Junior = 'junior',
-  Senior = 'senior',
-  Expert = 'expert',
-  Probono = 'probono',
+  Junior = "junior",
+  Senior = "senior",
+  Expert = "expert",
+  Probono = "probono",
 }
 
 export interface MentorProfilesSchema {
@@ -186,9 +186,9 @@ export interface ReviewsSchema {
 }
 
 export enum SessionTypeEnum {
-  Individual30M = 'individual30m',
-  Group = 'Group',
-  Individual60M = 'individual60m',
+  Individual30M = "individual30m",
+  Group = "Group",
+  Individual60M = "individual60m",
 }
 
 export interface SessionCancelsSchema {
@@ -251,15 +251,16 @@ export interface ReportsSchema {
 }
 
 export enum PaymentStatusEnum {
-  Pending = 'pending',
-  Success = 'success',
-  Rejected = 'rejected',
-  Refunded = 'refunded',
+  Pending = "pending",
+  Success = "success",
+  Rejected = "rejected",
+  Refunded = "refunded",
 }
 
 export enum PaymentMethodEnum {
-  Click = 'click',
-  Payme = 'payme',
+  Click = "click",
+  Payme = "payme",
+  Atmos = "atmos",
 }
 
 export interface PaymentsSchema {
@@ -279,8 +280,8 @@ export interface PaymentsSchema {
 }
 
 export enum UniversitySectorEnum {
-  Public = 'public',
-  Private = 'private',
+  Public = "public",
+  Private = "private",
 }
 
 export interface CurrenciesSchema {
@@ -324,16 +325,16 @@ export interface TuitionFeesSchema {
 }
 
 export enum RankEnum {
-  QS = 'QS',
-  THE = 'THE',
-  ARWU = 'ARWU',
-  USNWR = 'USNWR',
-  CWUR = 'CWUR',
-  NTU = 'NTU',
-  URAP = 'URAP',
-  Leiden = 'Leiden',
-  SCImago = 'SCImago',
-  RUR = 'RUR',
+  QS = "QS",
+  THE = "THE",
+  ARWU = "ARWU",
+  USNWR = "USNWR",
+  CWUR = "CWUR",
+  NTU = "NTU",
+  URAP = "URAP",
+  Leiden = "Leiden",
+  SCImago = "SCImago",
+  RUR = "RUR",
 }
 
 export interface RankingsSchema {
@@ -402,8 +403,8 @@ export interface DegreesSchema {
 }
 
 export enum MajorTypeEnum {
-  Undergraduate = 'undergraduate',
-  Graduate = 'graduate',
+  Undergraduate = "undergraduate",
+  Graduate = "graduate",
 }
 
 export interface MajorsSchema {
@@ -448,9 +449,9 @@ export interface ReqExamsSchema {
 }
 
 export enum ScholarshipsTypesEnum {
-  Full = 'full',
-  Partial = 'partial',
-  None = 'none',
+  Full = "full",
+  Partial = "partial",
+  None = "none",
 }
 
 export interface ScholarshipsSchema {
@@ -537,9 +538,9 @@ export interface UniversitiesSchema {
 }
 
 export enum BookingStatusEnum {
-  Pending = 'pending',
-  Active = 'active',
-  Inactive = 'inactive',
+  Pending = "pending",
+  Active = "active",
+  Inactive = "inactive",
 }
 
 export interface BookingsSchema {
@@ -644,11 +645,11 @@ export interface UpdateProfileResDto {
 }
 
 export enum MEDIA_TAGS {
-  IntroVideo = 'intro_video',
-  ProfilePicture = 'profile_picture',
-  FreeTrialVideo = 'free_trial_video',
-  General = 'general',
-  DemoLession = 'demo_lession',
+  IntroVideo = "intro_video",
+  ProfilePicture = "profile_picture",
+  FreeTrialVideo = "free_trial_video",
+  General = "general",
+  DemoLession = "demo_lession",
 }
 
 export interface UpdateMentorVideosDto {
@@ -718,62 +719,62 @@ export interface ReportUserDto {
 }
 
 export enum TABLE_NAMES {
-  Users = 'users',
-  Profiles = 'profiles',
-  BillingCards = 'billing_cards',
-  UserVerifications = 'user_verifications',
-  UsersPasswords = 'users_passwords',
-  SmsVerifications = 'sms_verifications',
-  ResetPasswords = 'reset_passwords',
-  UserTokens = 'user_tokens',
-  Media = 'media',
-  Locations = 'locations',
-  Contacts = 'contacts',
-  Socials = 'socials',
-  Currencies = 'currencies',
-  Universities = 'universities',
-  UserAiQueries = 'user_ai_queries',
-  ApplicationFees = 'application_fees',
-  TuitionFees = 'tuition_fees',
-  Rankings = 'rankings',
-  UniversityTypes = 'university_types',
-  Degrees = 'degrees',
-  Majors = 'majors',
-  Exams = 'exams',
-  RequiredExams = 'required_exams',
-  Scholarships = 'scholarships',
-  Deadlines = 'deadlines',
-  AcceptanceRates = 'acceptance_rates',
-  Links = 'links',
-  Certifications = 'certifications',
-  MentorProfiles = 'mentor_profiles',
-  Reports = 'reports',
-  Reviews = 'reviews',
-  SessionCancels = 'session_cancels',
-  Sessions = 'sessions',
-  Calendars = 'calendars',
-  Bookings = 'bookings',
-  Payments = 'payments',
-  PaymentPlans = 'payment_plans',
-  Events = 'events',
-  Essays = 'essays',
-  Applications = 'applications',
-  UserEssays = 'user_essays',
-  EventForms = 'event_forms',
-  AdditionalEventForms = 'additional_event_forms',
-  AdditionalEventFormsResponses = 'additional_event_forms_responses',
-  Blogs = 'blogs',
+  Users = "users",
+  Profiles = "profiles",
+  BillingCards = "billing_cards",
+  UserVerifications = "user_verifications",
+  UsersPasswords = "users_passwords",
+  SmsVerifications = "sms_verifications",
+  ResetPasswords = "reset_passwords",
+  UserTokens = "user_tokens",
+  Media = "media",
+  Locations = "locations",
+  Contacts = "contacts",
+  Socials = "socials",
+  Currencies = "currencies",
+  Universities = "universities",
+  UserAiQueries = "user_ai_queries",
+  ApplicationFees = "application_fees",
+  TuitionFees = "tuition_fees",
+  Rankings = "rankings",
+  UniversityTypes = "university_types",
+  Degrees = "degrees",
+  Majors = "majors",
+  Exams = "exams",
+  RequiredExams = "required_exams",
+  Scholarships = "scholarships",
+  Deadlines = "deadlines",
+  AcceptanceRates = "acceptance_rates",
+  Links = "links",
+  Certifications = "certifications",
+  MentorProfiles = "mentor_profiles",
+  Reports = "reports",
+  Reviews = "reviews",
+  SessionCancels = "session_cancels",
+  Sessions = "sessions",
+  Calendars = "calendars",
+  Bookings = "bookings",
+  Payments = "payments",
+  PaymentPlans = "payment_plans",
+  Events = "events",
+  Essays = "essays",
+  Applications = "applications",
+  UserEssays = "user_essays",
+  EventForms = "event_forms",
+  AdditionalEventForms = "additional_event_forms",
+  AdditionalEventFormsResponses = "additional_event_forms_responses",
+  Blogs = "blogs",
 }
 
 export enum PermissionEnum {
-  CreateOwn = 'createOwn',
-  CreateAny = 'createAny',
-  ReadOwn = 'readOwn',
-  ReadAny = 'readAny',
-  UpdateOwn = 'updateOwn',
-  UpdateAny = 'updateAny',
-  DeleteOwn = 'deleteOwn',
-  DeleteAny = 'deleteAny',
+  CreateOwn = "createOwn",
+  CreateAny = "createAny",
+  ReadOwn = "readOwn",
+  ReadAny = "readAny",
+  UpdateOwn = "updateOwn",
+  UpdateAny = "updateAny",
+  DeleteOwn = "deleteOwn",
+  DeleteAny = "deleteAny",
 }
 
 export interface CanAccessDto {
@@ -896,8 +897,8 @@ export interface ResetPasswordConfirmDto {
 }
 
 export enum EventFormTypeEnum {
-  Undergraduate = 'undergraduate',
-  Postgraduate = 'postgraduate',
+  Undergraduate = "undergraduate",
+  Postgraduate = "postgraduate",
 }
 
 export interface EventsSchema {
@@ -947,13 +948,13 @@ export interface EventsSchema {
 }
 
 export enum EventInputTypeEnum {
-  Text = 'Text',
-  LargeText = 'LargeText',
-  File = 'File',
-  Image = 'Image',
-  Date = 'Date',
-  MultipleChoice = 'multipleChoice',
-  SingleChoice = 'singleChoice',
+  Text = "Text",
+  LargeText = "LargeText",
+  File = "File",
+  Image = "Image",
+  Date = "Date",
+  MultipleChoice = "multipleChoice",
+  SingleChoice = "singleChoice",
 }
 
 export interface AdditionalEventFormsSchema {
@@ -971,10 +972,10 @@ export interface AdditionalEventFormsSchema {
 }
 
 export enum ApplicationStatusEnum {
-  Draft = 'draft',
-  Pending = 'pending',
-  Rejected = 'rejected',
-  Successful = 'successful',
+  Draft = "draft",
+  Pending = "pending",
+  Rejected = "rejected",
+  Successful = "successful",
 }
 
 export interface ApplicationsSchema {
@@ -1055,7 +1056,6 @@ export interface EventsListResponseDto {
   startDate: string;
   /** @format date-time */
   endDate: string;
-  media: MediaSchema[];
 }
 
 export interface EventsResponseDto {
@@ -1069,8 +1069,8 @@ export interface EventSingleParamDto {
 }
 
 export enum SortOrderEnum {
-  ASC = 'ASC',
-  DESC = 'DESC',
+  ASC = "ASC",
+  DESC = "DESC",
 }
 
 export interface PartialTypeClass {
@@ -1085,6 +1085,8 @@ export interface PartialTypeClass {
   title?: string | null | TranslationDto;
   /** Multilingual content (display value) */
   subtitle?: string | null | TranslationDto;
+  author?: string;
+  showOnHomePage?: boolean;
   /** @format date-time */
   publishedDate?: string;
   /** @example {"en":{"blocks":[{"type":"paragraph","data":{"text":"English content"}}]},"uz":{"blocks":[{"type":"paragraph","data":{"text":"Uzbek content"}}]},"ru":{"blocks":[{"type":"paragraph","data":{"text":"Russian content"}}]},"kk":{"blocks":[{"type":"paragraph","data":{"text":"Kazakh content"}}]}} */
@@ -1333,10 +1335,10 @@ export interface UpdateUsersDto {
 }
 
 export enum PaymentPlanTypeEnum {
-  Individual30M = 'individual30m',
-  Individual60M = 'individual60m',
-  FullGuidence = 'fullGuidence',
-  Intensive = 'intensive',
+  Individual30M = "individual30m",
+  Individual60M = "individual60m",
+  FullGuidence = "fullGuidence",
+  Intensive = "intensive",
 }
 
 export interface PaymentPlansSchema {
@@ -1371,6 +1373,8 @@ export interface BlogsSchema {
   title: string | null | TranslationDto;
   /** Multilingual content (display value) */
   subtitle: string | null | TranslationDto;
+  author: string;
+  showOnHomePage: boolean;
   /** @format date-time */
   publishedDate: string;
   /** @example {"en":{"blocks":[{"type":"paragraph","data":{"text":"English content"}}]},"uz":{"blocks":[{"type":"paragraph","data":{"text":"Uzbek content"}}]},"ru":{"blocks":[{"type":"paragraph","data":{"text":"Russian content"}}]},"kk":{"blocks":[{"type":"paragraph","data":{"text":"Kazakh content"}}]}} */
@@ -1418,8 +1422,9 @@ export interface RateSessionDto {
 }
 
 export enum CardTypeEnum {
-  Uzcard = 'uzcard',
-  Humo = 'humo',
+  Uzcard = "uzcard",
+  Humo = "humo",
+  Currency = "currency",
 }
 
 export interface BaseCreatePaymentDto {
@@ -1428,6 +1433,7 @@ export interface BaseCreatePaymentDto {
   userId: string;
   save: boolean;
   cardType: CardTypeEnum;
+  ipAddress: string;
 }
 
 export interface CreatePaymentDtoResponse {
@@ -1709,10 +1715,10 @@ export interface AddToFavoritesResDto {
 }
 
 export enum MediaRelationName {
-  University = 'university',
-  UserProfile = 'userProfile',
-  Session = 'session',
-  Blog = 'blog',
+  University = "university",
+  UserProfile = "userProfile",
+  Session = "session",
+  Blog = "blog",
 }
 
 export interface CreateMediaRequestDto {
@@ -1728,6 +1734,16 @@ export interface UploadMediaRequestDto {
 export interface UploadMediaResponseDto {
   url: string;
   mimetype: string;
+}
+
+export interface AnswerDto {
+  questionId: string;
+  /** Answer score from -2 to 2 */
+  answer: number;
+}
+
+export interface SubmitAssessmentDto {
+  answers: AnswerDto[];
 }
 
 export interface TranslationDto {
@@ -1808,19 +1824,12 @@ export interface RichTextTranslationDto {
   };
 }
 
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  HeadersDefaults,
-  ResponseType,
-} from 'axios';
-import axios from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
+import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, 'data' | 'params' | 'url' | 'responseType'> {
+export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -1835,44 +1844,32 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  'body' | 'method' | 'query' | 'path'
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, 'data' | 'cancelToken'> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
 }
 
 export enum ContentType {
-  Json = 'application/json',
-  FormData = 'multipart/form-data',
-  UrlEncoded = 'application/x-www-form-urlencoded',
-  Text = 'text/plain',
+  Json = "application/json",
+  FormData = "multipart/form-data",
+  UrlEncoded = "application/x-www-form-urlencoded",
+  Text = "text/plain",
 }
 
 export class HttpClient<SecurityDataType = unknown> {
   public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
+  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || 'https://topcoach.uz/api',
-    });
+  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "https://topcoach.uz/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -1882,10 +1879,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
-  ): AxiosRequestConfig {
+  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -1893,11 +1887,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
-          {}),
+        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -1905,7 +1895,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }
 
   protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === 'object' && formItem !== null) {
+    if (typeof formItem === "object" && formItem !== null) {
       return JSON.stringify(formItem);
     } else {
       return `${formItem}`;
@@ -1918,15 +1908,11 @@ export class HttpClient<SecurityDataType = unknown> {
     }
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
+      const propertyContent: any[] = property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem)
-        );
+        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
       }
 
       return formData;
@@ -1943,28 +1929,18 @@ export class HttpClient<SecurityDataType = unknown> {
     ...params
   }: FullRequestParams): Promise<AxiosResponse<T>> => {
     const secureParams =
-      ((typeof secure === 'boolean' ? secure : this.secure) &&
+      ((typeof secure === "boolean" ? secure : this.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === 'object'
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== 'string'
-    ) {
+    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
       body = JSON.stringify(body);
     }
 
@@ -1972,7 +1948,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type ? { 'Content-Type': type } : {}),
+        ...(type ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -1990,9 +1966,7 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * TopCoach backend API
  */
-export class Api<
-  SecurityDataType extends unknown,
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   health = {
     /**
  * No description
@@ -2108,9 +2082,26 @@ export class Api<
         }
       >({
         path: `/health`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Health
+     * @name SimpleHealth
+     * @request GET:/health/simple
+     * @secure
+     * @response `200` `void`
+     */
+    simpleHealth: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/health/simple`,
+        method: "GET",
+        secure: true,
         ...params,
       }),
   };
@@ -2128,9 +2119,9 @@ export class Api<
     getUsers: (params: RequestParams = {}) =>
       this.request<UsersSchema[], any>({
         path: `/users`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2147,11 +2138,11 @@ export class Api<
     updateProfile: (data: UpdateUserDto, params: RequestParams = {}) =>
       this.request<UsersSchema, any>({
         path: `/users`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2168,9 +2159,9 @@ export class Api<
     getUserById: (id: string, params: RequestParams = {}) =>
       this.request<UserDetailsResponseDto, any>({
         path: `/users/user/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2184,17 +2175,14 @@ export class Api<
      * @secure
      * @response `200` `UpdateProfileResDto` Profile image updated successfully
      */
-    updateProfileImage: (
-      data: UpdateProfileImageDto,
-      params: RequestParams = {}
-    ) =>
+    updateProfileImage: (data: UpdateProfileImageDto, params: RequestParams = {}) =>
       this.request<UpdateProfileResDto, any>({
         path: `/users/update-profile-image`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2207,13 +2195,10 @@ export class Api<
      * @secure
      * @response `200` `void` Video uploaded successfully
      */
-    uploadMentorVideos: (
-      data: UpdateMentorVideosDto,
-      params: RequestParams = {}
-    ) =>
+    uploadMentorVideos: (data: UpdateMentorVideosDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/users/mentor/videos`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -2233,9 +2218,9 @@ export class Api<
     getMe: (params: RequestParams = {}) =>
       this.request<GetMeResDto, any>({
         path: `/users/me`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2252,7 +2237,7 @@ export class Api<
     checkEmail: (data: CheckEmailDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/users/check-email`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2272,9 +2257,9 @@ export class Api<
     getMentors: (params: RequestParams = {}) =>
       this.request<MentorsResponseDto[], any>({
         path: `/users/mentors`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2291,11 +2276,11 @@ export class Api<
     reportUser: (data: ReportUserDto, params: RequestParams = {}) =>
       this.request<ReportsSchema, any>({
         path: `/users/report`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2312,9 +2297,9 @@ export class Api<
     getBalance: (mentorId: string, params: RequestParams = {}) =>
       this.request<BookingsSchema, any>({
         path: `/users/balance/${mentorId}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2332,14 +2317,14 @@ export class Api<
         resource: TABLE_NAMES;
         action: PermissionEnum;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<CanAccessDto, any>({
         path: `/users/canAccess`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2355,7 +2340,7 @@ export class Api<
     getAiQuery: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/users/ai-query/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2372,7 +2357,7 @@ export class Api<
     sendTestEmail: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/users/send-test-email`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -2394,11 +2379,11 @@ export class Api<
     login: (data: LoginDto, params: RequestParams = {}) =>
       this.request<LoginResponseDto, void>({
         path: `/auth/login`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2416,7 +2401,7 @@ export class Api<
     refreshToken: (params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/refresh`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -2435,7 +2420,7 @@ export class Api<
     logout: (params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/logout`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -2450,13 +2435,10 @@ export class Api<
      * @response `201` `void` User registered. Confirmation email sent.
      * @response `500` `void` Internal server error
      */
-    registerMentorByEmail: (
-      data: RegisterMentorEmailDto,
-      params: RequestParams = {}
-    ) =>
+    registerMentorByEmail: (data: RegisterMentorEmailDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/mentor/register/email`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -2473,13 +2455,10 @@ export class Api<
      * @response `201` `void` User registered. Confirmation email sent.
      * @response `500` `void` Internal server error
      */
-    registerStudentByEmail: (
-      data: RegisterStudentEmailDto,
-      params: RequestParams = {}
-    ) =>
+    registerStudentByEmail: (data: RegisterStudentEmailDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/student/register/email`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -2500,7 +2479,7 @@ export class Api<
     resendCode: (data: ResendCodeDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/register/resend`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2521,7 +2500,7 @@ export class Api<
     resendEmail: (data: ResendEmailDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/resend/email`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2544,14 +2523,14 @@ export class Api<
       query: {
         token: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<LoginResponseDto, void>({
         path: `/auth/verify/email`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2570,7 +2549,7 @@ export class Api<
     verifyPhone: (data: VerifyPhoneDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/verify/phone`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2589,7 +2568,7 @@ export class Api<
     googleLogin: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/auth/google`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2606,7 +2585,7 @@ export class Api<
     googleRedirect: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/auth/google/callback`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2623,7 +2602,7 @@ export class Api<
     linkCalendar: (data: CalendarLinkDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/auth/google/calendar/link`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2645,7 +2624,7 @@ export class Api<
     smsWebhook: (data: SMSCallbackDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/sms/callback`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2666,11 +2645,11 @@ export class Api<
     exchangeTokens: (data: ExchangeTokenDto, params: RequestParams = {}) =>
       this.request<ExchangeTokenResDto, void>({
         path: `/auth/exchange`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2688,7 +2667,7 @@ export class Api<
     resetPassword: (data: ResetPasswordDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/reset/password`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2707,13 +2686,10 @@ export class Api<
      * @response `404` `void` User not found
      * @response `500` `void` Internal server error
      */
-    resetPasswordConfirm: (
-      data: ResetPasswordConfirmDto,
-      params: RequestParams = {}
-    ) =>
+    resetPasswordConfirm: (data: ResetPasswordConfirmDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/auth/reset/password/confirm`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2732,7 +2708,7 @@ export class Api<
     checkFileAccess: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/auth/file-access`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2750,7 +2726,7 @@ export class Api<
     campsList: (params: RequestParams = {}) =>
       this.request<any, EventsResponseDto[]>({
         path: `/camps`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2768,11 +2744,11 @@ export class Api<
       query: {
         ids: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, any>({
         path: `/camps`,
-        method: 'DELETE',
+        method: "DELETE",
         query: query,
         secure: true,
         ...params,
@@ -2790,7 +2766,7 @@ export class Api<
     getCurrentActiveEvent: (params: RequestParams = {}) =>
       this.request<any, EventsSchema>({
         path: `/camps/latest`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2804,14 +2780,10 @@ export class Api<
      * @secure
      * @response `201` `void`
      */
-    apply: (
-      id: string,
-      data: CreateApplicationDto,
-      params: RequestParams = {}
-    ) =>
+    apply: (id: string, data: CreateApplicationDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/camps/${id}/apply`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -2830,7 +2802,7 @@ export class Api<
     getMyEvents: (params: RequestParams = {}) =>
       this.request<any, ApplicationsSchema[]>({
         path: `/camps/me`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2844,10 +2816,10 @@ export class Api<
      * @secure
      * @response `default` `EventsResponseDto` Event
      */
-    campsDetail: ({ id }: EventSingleParamDto, params: RequestParams = {}) =>
+    campsDetail: (id: EventSingleParamDto, params: RequestParams = {}) =>
       this.request<any, EventsResponseDto>({
         path: `/camps/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -2874,14 +2846,14 @@ export class Api<
         /** Pagination end index */
         _end?: number;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<SessionsSchema[], void>({
         path: `/sessions/me`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2898,7 +2870,7 @@ export class Api<
     createSession: (data: CreateSessionDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -2918,9 +2890,9 @@ export class Api<
     sessionsList: (params: RequestParams = {}) =>
       this.request<SessionsSchema[], void>({
         path: `/sessions`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -2939,11 +2911,11 @@ export class Api<
         ids: string;
       },
       data: string[],
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, void>({
         path: `/sessions`,
-        method: 'PUT',
+        method: "PUT",
         query: query,
         body: data,
         secure: true,
@@ -2965,11 +2937,11 @@ export class Api<
       query: {
         ids: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, void>({
         path: `/sessions`,
-        method: 'DELETE',
+        method: "DELETE",
         query: query,
         secure: true,
         ...params,
@@ -2988,7 +2960,7 @@ export class Api<
     cancelSession: (data: CancelSessionDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/cancel`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3008,7 +2980,7 @@ export class Api<
     bookSession: (data: BookSessionDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/book`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3028,7 +3000,7 @@ export class Api<
     withdrawFromSession: (data: BookSessionDto, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/withdraw`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3048,11 +3020,11 @@ export class Api<
     rateSession: (data: RateSessionDto, params: RequestParams = {}) =>
       this.request<SessionsSchema[], void>({
         path: `/sessions/rate`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3069,7 +3041,7 @@ export class Api<
     findOne: (id: string, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3087,7 +3059,7 @@ export class Api<
     update: (id: string, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/${id}`,
-        method: 'PUT',
+        method: "PUT",
         secure: true,
         ...params,
       }),
@@ -3105,7 +3077,7 @@ export class Api<
     remove: (id: string, params: RequestParams = {}) =>
       this.request<void, void>({
         path: `/sessions/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -3120,14 +3092,10 @@ export class Api<
      * @secure
      * @response `default` `CreatePaymentDtoResponse`
      */
-    initPayment: (
-      method: string,
-      data: BaseCreatePaymentDto,
-      params: RequestParams = {}
-    ) =>
+    initPayment: (method: string, data: BaseCreatePaymentDto, params: RequestParams = {}) =>
       this.request<any, CreatePaymentDtoResponse>({
         path: `/payments/init/${method}`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3143,14 +3111,10 @@ export class Api<
      * @secure
      * @response `default` `DefaultResponseDto`
      */
-    validateAndPay: (
-      method: string,
-      data: InitBookingDto,
-      params: RequestParams = {}
-    ) =>
+    validateAndPay: (method: string, data: InitBookingDto, params: RequestParams = {}) =>
       this.request<any, DefaultResponseDto>({
         path: `/payments/validate/${method}`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3166,14 +3130,10 @@ export class Api<
      * @secure
      * @response `default` `BuySubscriptionResponseDto`
      */
-    buySubscription: (
-      method: string,
-      data: BuySubscriptionDto,
-      params: RequestParams = {}
-    ) =>
+    buySubscription: (method: string, data: BuySubscriptionDto, params: RequestParams = {}) =>
       this.request<any, BuySubscriptionResponseDto>({
         path: `/payments/subscription/${method}`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3189,13 +3149,10 @@ export class Api<
      * @secure
      * @response `default` `GetRedirectUrlResponseDto`
      */
-    getRedirectUrlForAll: (
-      data: GetRedirectUrlDto,
-      params: RequestParams = {}
-    ) =>
+    getRedirectUrlForAll: (data: GetRedirectUrlDto, params: RequestParams = {}) =>
       this.request<any, GetRedirectUrlResponseDto>({
         path: `/payments/redirect/all`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3211,14 +3168,10 @@ export class Api<
      * @secure
      * @response `201` `void`
      */
-    cancelPayment: (
-      method: string,
-      data: CancelPaymentDto,
-      params: RequestParams = {}
-    ) =>
+    cancelPayment: (method: string, data: CancelPaymentDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/payments/cancel-test/${method}`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3234,14 +3187,10 @@ export class Api<
      * @secure
      * @response `default` `GetRedirectUrlSingleResponseDto`
      */
-    getRedirectUrl: (
-      method: string,
-      data: GetRedirectUrlDto,
-      params: RequestParams = {}
-    ) =>
+    getRedirectUrl: (method: string, data: GetRedirectUrlDto, params: RequestParams = {}) =>
       this.request<any, GetRedirectUrlSingleResponseDto>({
         path: `/payments/redirect/${method}`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3260,7 +3209,7 @@ export class Api<
     clickCallback: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/payments/callback/click`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -3277,7 +3226,24 @@ export class Api<
     paymeCallback: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/payments/callback/payme`,
-        method: 'POST',
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags payments
+     * @name AtmosCallback
+     * @request POST:/payments/callback/atmos
+     * @secure
+     * @response `200` `void`
+     */
+    atmosCallback: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/payments/callback/atmos`,
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -3295,11 +3261,11 @@ export class Api<
       query: {
         currency: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<any, PaymentPlansSchema[]>({
         path: `/payments/plans`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
         ...params,
@@ -3314,13 +3280,10 @@ export class Api<
      * @secure
      * @response `201` `void`
      */
-    checkPaymentStatus: (
-      data: GetPaymentStatusDto,
-      params: RequestParams = {}
-    ) =>
+    checkPaymentStatus: (data: GetPaymentStatusDto, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/payments/status/check`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -3340,9 +3303,9 @@ export class Api<
     getAllUsdRates: (params: RequestParams = {}) =>
       this.request<GetAllExchangeRatesResponseDto, any>({
         path: `/payments/rates/usd/all`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3356,14 +3319,10 @@ export class Api<
      * @secure
      * @response `default` `GetExchangeRateResponseDto`
      */
-    getExchangeRate: (
-      base: string,
-      target: string,
-      params: RequestParams = {}
-    ) =>
+    getExchangeRate: (base: string, target: string, params: RequestParams = {}) =>
       this.request<any, GetExchangeRateResponseDto>({
         path: `/payments/rates/${base}/${target}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3415,14 +3374,14 @@ export class Api<
         requiredCertificates?: string[] | null;
         majorType: MajorTypeEnum;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<UniversitiesResponseDto, void>({
         path: `/university`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3440,11 +3399,11 @@ export class Api<
       query: {
         ids: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, void>({
         path: `/university`,
-        method: 'DELETE',
+        method: "DELETE",
         query: query,
         secure: true,
         ...params,
@@ -3463,9 +3422,9 @@ export class Api<
     getFilters: (params: RequestParams = {}) =>
       this.request<FiltersDto, void>({
         path: `/university/filters`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3482,9 +3441,9 @@ export class Api<
     getUnivsList: (params: RequestParams = {}) =>
       this.request<UnivsListDto[], void>({
         path: `/university/list`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3503,11 +3462,11 @@ export class Api<
         /** User ai query */
         query: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<any, void | AIUnivSearchResponseDTO>({
         path: `/university/query/ai`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
         ...params,
@@ -3527,14 +3486,14 @@ export class Api<
       query: {
         id: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<AddToFavoritesResDto, void>({
         path: `/university/add-to-favorite`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3552,14 +3511,14 @@ export class Api<
       query: {
         id: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<AddToFavoritesResDto, void>({
         path: `/university/remove-from-favorite`,
-        method: 'GET',
+        method: "GET",
         query: query,
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
 
@@ -3577,9 +3536,9 @@ export class Api<
     universityDetail: (id: any, params: RequestParams = {}) =>
       this.request<UniversitiesSchema, void>({
         path: `/university/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
-        format: 'json',
+        format: "json",
         ...params,
       }),
   };
@@ -3596,7 +3555,7 @@ export class Api<
     findAll: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/reviews`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3613,7 +3572,7 @@ export class Api<
     create: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/reviews`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -3632,11 +3591,11 @@ export class Api<
         ids: string;
       },
       data: string[],
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, any>({
         path: `/reviews`,
-        method: 'PUT',
+        method: "PUT",
         query: query,
         body: data,
         secure: true,
@@ -3657,11 +3616,11 @@ export class Api<
       query: {
         ids: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, any>({
         path: `/reviews`,
-        method: 'DELETE',
+        method: "DELETE",
         query: query,
         secure: true,
         ...params,
@@ -3679,7 +3638,7 @@ export class Api<
     findOne: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/reviews/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3696,7 +3655,7 @@ export class Api<
     update: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/reviews/${id}`,
-        method: 'PUT',
+        method: "PUT",
         secure: true,
         ...params,
       }),
@@ -3713,7 +3672,7 @@ export class Api<
     remove: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/reviews/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -3730,7 +3689,7 @@ export class Api<
     findAll: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/blogs`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3746,7 +3705,7 @@ export class Api<
     create: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/blogs`,
-        method: 'POST',
+        method: "POST",
         secure: true,
         ...params,
       }),
@@ -3764,11 +3723,11 @@ export class Api<
         ids: string;
       },
       data: string[],
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, any>({
         path: `/blogs`,
-        method: 'PUT',
+        method: "PUT",
         query: query,
         body: data,
         secure: true,
@@ -3788,12 +3747,28 @@ export class Api<
       query: {
         ids: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<void, any>({
         path: `/blogs`,
-        method: 'DELETE',
+        method: "DELETE",
         query: query,
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name GetBlogsForHomePage
+     * @request GET:/blogs/home
+     * @secure
+     * @response `200` `void`
+     */
+    getBlogsForHomePage: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/blogs/home`,
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3809,7 +3784,7 @@ export class Api<
     findOne: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/blogs/${id}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -3825,7 +3800,7 @@ export class Api<
     update: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/blogs/${id}`,
-        method: 'PUT',
+        method: "PUT",
         secure: true,
         ...params,
       }),
@@ -3841,7 +3816,7 @@ export class Api<
     remove: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/blogs/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -3858,7 +3833,7 @@ export class Api<
     createMedia: (data: CreateMediaRequestDto, params: RequestParams = {}) =>
       this.request<any, void>({
         path: `/media/create`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -3877,10 +3852,81 @@ export class Api<
     upload: (data: UploadMediaRequestDto, params: RequestParams = {}) =>
       this.request<any, void | UploadMediaResponseDto[]>({
         path: `/media/upload`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.FormData,
+        ...params,
+      }),
+  };
+  aiAssessment = {
+    /**
+     * No description
+     *
+     * @tags AI Assessment
+     * @name GetQuestions
+     * @request GET:/ai-assessment/questions
+     * @secure
+     * @response `200` `void`
+     */
+    getQuestions: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/ai-assessment/questions`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AI Assessment
+     * @name StartAssessment
+     * @request POST:/ai-assessment/start
+     * @secure
+     * @response `201` `void`
+     */
+    startAssessment: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/ai-assessment/start`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AI Assessment
+     * @name SubmitAssessment
+     * @request POST:/ai-assessment/submit
+     * @secure
+     * @response `201` `void`
+     */
+    submitAssessment: (data: SubmitAssessmentDto, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/ai-assessment/submit`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AI Assessment
+     * @name GetAssessmentResult
+     * @request GET:/ai-assessment/result/{sessionId}
+     * @secure
+     * @response `200` `void`
+     */
+    getAssessmentResult: (sessionId: string, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/ai-assessment/result/${sessionId}`,
+        method: "GET",
+        secure: true,
         ...params,
       }),
   };
