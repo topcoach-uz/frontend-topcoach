@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install
 COPY . .
+RUN chmod +x ./node_modules/.bin/* || true
 RUN yarn build
 
 # Use Nginx to serve the built app
