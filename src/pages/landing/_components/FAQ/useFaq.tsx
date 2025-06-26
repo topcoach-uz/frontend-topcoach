@@ -31,26 +31,21 @@ const itemsEn: CollapseProps['items'] = [
     children: (
       <div>
         <p>
-          Mentors are categorized into three levels based on their experience:
-        </p>
-        <p>
-          We offer three levels of mentors on our platform:
+        We offer three levels of mentors based on experience and track record:
           <strong>Junior</strong>, <strong>Senior</strong>, and{' '}
-          <strong>Expert</strong> Expert. Below is a general overview of each
-          level and how we determine placement:
+          <strong>Expert</strong> Expert. Each level reflects the mentor's background, number of students supported, and overall impact.
         </p>
         <ul>
           <li>
             <strong> Junior Mentor</strong>
             <ul>
               <li>Recently admitted to a top university.</li>
-              <li>May have limited experience supporting other applicants.</li>
+              <li>May have limited experience mentoring others.</li>
               <li>
-                Currently assisting students or beginning their mentorship
-                journey.
+              Currently supporting students or just starting their mentorship journey.
               </li>
               <li>
-                Strong motivation to help others succeed and grow as a mentor.
+              Highly motivated to help others and grow as a mentor.
               </li>
             </ul>
           </li>
@@ -58,22 +53,18 @@ const itemsEn: CollapseProps['items'] = [
             <strong>Senior Mentor</strong>
             <ul>
               <li>
-                Has a solid understanding of the admissions process and has
-                personally gone through it successfully.
+              Has successfully gone through the admissions process themselves.
               </li>
               <li>
-                Experience mentoring students and supporting them in receiving
-                university offers.
+              Experienced in guiding students through applications.
               </li>
               <li>
-                Typically has supported students who received
+                Typically supported students who received
                 <strong>around 10 acceptance letters</strong> (this is a
                 guideline, not a fixed requirement).
               </li>
               <li>
-                While specific years of experience are not required, mentors at
-                this level demonstrate a consistent track record of effective
-                support.
+              While no minimum years of experience are required, Senior Mentors demonstrate a proven ability to offer effective support.
               </li>
             </ul>
           </li>
@@ -81,46 +72,51 @@ const itemsEn: CollapseProps['items'] = [
             <strong>Expert Mentor</strong>
             <ul>
               <li>
-                Recognized for their deep knowledge and high level of expertise
-                in university admissions.
+              Known for deep expertise in university admissions.
               </li>
               <li>
-                Demonstrated success in mentoring a large number of students.
+              Has mentored a large number of students, often helping them secure <strong>20–30+ acceptance letters</strong>.
               </li>
               <li>
-                Often considered for this role if they have helped students
-                receive <strong>20–30+ acceptance letters</strong> .
+              Should have at least <strong>3 years</strong> of relevant experience in admissions mentoring or a related field.
               </li>
               <li>
-                Should have
-                <strong>
-                  at least 3 years of relevant mentorship experience
-                </strong>
-                in admissions or a related field.
+              Recognized in specialized areas (e.g. Ivy League, medical schools, arts programs, etc.).
               </li>
               <li>
-                Strong reputation or proven results in a specialized area (e.g.
-                Ivy League, medical schools, arts programs, etc.).
+              Strong reputation and track record of success.
               </li>
             </ul>
-            <strong>Important Note:</strong>
-            <p>
-              Acceptance letters and experience are considered case by case.
-              These are general recommendations to guide level placement. If you
-              have fewer acceptance letters or slightly different experience,
-              you may still qualify for a Senior or Expert level based on your
-              overall profile, mentoring approach, and demonstrated impact.
-            </p>
-            <p>
-              We carefully review each mentor’s background to ensure the best
-              fit on the platform.
-            </p>
           </li>
-        </ul>
+          <li>
+            <strong>Pro Bono Mentor</strong>
+            <ul>
+              <li>
+              The Pro Bono Mentor role is a social-impact position for mentors who volunteer their time:
+              </li>
+              <li>
+              Works voluntarily an by personal choice.
+              </li>
+              <li>
+              Must commit to conducting at least 4 hours per month or 8 sessions.
+              </li>
+              <li>
+              If this monthly target is reached, we offer compensation based on our new contract.
+              </li>
+              <li>
+              Mentors interested in becoming a Junior Mentor are required to first complete a minimum of 4 pro bono hours or 8 sessions as hands-on experience.
+              </li>
+            </ul>
+          </li>
+          <strong>Important Note:</strong>
         <p>
-          You can browse mentor profiles and choose the one that fits your
-          needs, or use our AI-powered matching system.
+        These guidelines serve as general recommendations for mentor placement. Mentors with slightly different backgrounds or fewer acceptance letters may still qualify for a higher level based on their overall profile, impact, and mentoring approach.
         </p>
+        <p>
+          We carefully review each mentor’s background to ensure the best
+          fit on the platform.
+        </p>
+        </ul>
       </div>
     ),
   },
@@ -132,33 +128,19 @@ const itemsEn: CollapseProps['items'] = [
         <p>We offer the following session types:</p>
         <ul>
           <li>
-            Individual Sessions: One-on-one mentorship (30 or 60 minutes).
+            Individual Sessions: One-on-one mentorship sessions available in 30-minute or 60-minute formats. Ideal for quick guidance, essay reviews, or mock interviews.
           </li>
           <li>
-            Full Guidance Package: A 4-hour package providing in-depth
-            application support.
+            Full Guidance Package: A 4-hour package designed to provide in-depth, personalized support on your application — including university selection, personal statements, and application strategy.
           </li>
           <li>
-            Intensive Course: An 8-hour program for those who need full
-            mentorship through the application process.
+            Intensive Course: An 8-hour mentorship program for students who want full guidance throughout the entire university application process, from start to finish.
+          </li>
+          <li>
+          Subscription Plans (New!): Looking for ongoing support? You can now choose from our monthly subscription options, which allow you to book regular sessions with your mentor at a discounted rate. Perfect for students who prefer consistent check-ins, structured progress, and long-term accountability.
           </li>
         </ul>
       </div>
-    ),
-  },
-  {
-    key: '1321',
-    label: 'Who are Pro Bono Mentors?',
-    children: (
-      <p>
-        Pro bono mentors are people who genuinely care about making a
-        difference. They’re experienced students or professionals who choose to
-        mentor for free because they believe in equal access to opportunities.
-        By volunteering their time and knowledge, they help students,
-        especially, those who may not be able to afford paid mentorship,
-        navigate their journey toward top universities. It's their way of giving
-        back and creating real social impact.
-      </p>
     ),
   },
   {
@@ -207,21 +189,41 @@ const itemsEn: CollapseProps['items'] = [
     label: 'How much does a mentorship session cost?',
     children: (
       <div>
-        <p>The pricing depends on the mentor level:</p>
-        <ul>
-          <li>
-            Junior Coach: From $12.50 for 30 minutes to $130 for the intensive
-            course.
-          </li>
-          <li>
-            Senior Coach: From $25 for 30 minutes to $260 for the intensive
-            course.
-          </li>
-          <li>
-            Expert Coach: From $40 for 30 minutes to $550 for the intensive
-            course.
-          </li>
-        </ul>
+        <p>The Pricing Depends on the Mentor Level:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor Level</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 min Session</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 min Session</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Full Guidance (4 hrs)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensive Course (8 hrs)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Junior Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Senior Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Expert Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     ),
   },
@@ -243,6 +245,27 @@ const itemsEn: CollapseProps['items'] = [
     children:
       'Coaches at TopCoach advance based on their experience and success. To move from Junior to Senior, a coach needs to complete 150 hours of mentoring sessions. To progress from Senior to Expert, they must complete an additional 100 hours. Additionally, coaches receive bonuses for each mentee accepted into a top university.',
   },
+  {
+    key: '10',
+    label: 'How can one sign up as a Mentor?',
+    children: (
+      <div>
+        <p>
+          If you are interested in becoming a mentor on TopCoach, we have a simple step-by-step guide to walk you through the process.
+        </p>
+        <p>
+          Follow this tutorial:&nbsp;
+          <a
+            href="https://scribehow.com/shared/How_To_Sign_Up_As_A_Mentor_On_TopCoach__iuj_5hetTIy8CR3748A83g"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            How to Sign Up as a Mentor on TopCoach
+          </a>
+        </p>
+      </div>
+    ),
+  },
 ];
 
 const itemsUz: CollapseProps['items'] = [
@@ -257,87 +280,65 @@ const itemsUz: CollapseProps['items'] = [
     label: 'Qanday qilib to‘g‘ri mentorni tanlashim mumkin?',
     children: (
       <div>
-        <p>Mentorlar ularning tajribasiga qarab uch darajaga bo‘linadi:</p>
         <p>
-          Platformamizda uch darajadagi mentor mavjud: <strong>Junior</strong>,
-          <strong>Senior</strong> va <strong>Expert</strong>. Quyida har bir
-          daraja va qanday aniqlanishi haqida umumiy ma’lumot berilgan:
+        Biz tajriba va tajribaga asoslangan uch darajadagi murabbiylarni taklif etamiz: <strong>Junior</strong>,
+          <strong>Senior</strong> va <strong>Expert</strong>. QHar bir daraja murabbiyning kelib chiqishi, qo‘llab-quvvatlangan talabalar soni va umumiy ta’sirini aks ettiradi.
         </p>
         <ul>
           <li>
-            <strong>Junior Mentor</strong>
+            <strong>Kichik murabbiy</strong>
             <ul>
-              <li>Yaqinda nufuzli universitetga qabul qilingan.</li>
+              <li>Yaqinda top universitetga o‘qishga kirgan.</li>
               <li>
-                Boshqa abituriyentlarga yordam berish tajribasi cheklangan
-                bo‘lishi mumkin.
+              Boshqalarga murabbiylik qilish tajribasi cheklangan bo‘lishi mumkin.
               </li>
               <li>
-                Hozirda talabalarga yordam berishni boshlagan yoki boshlamoqda.
+              Hozirda talabalarni qo‘llab-quvvatlamoqda yoki endigina murabbiylik faoliyatini boshlagan.
               </li>
               <li>
-                Boshqalarga yordam berishga kuchli motivatsiyaga ega va mentor
-                sifatida o‘sishni xohlaydi.
+              Boshqalarga yordam berish va ustoz sifatida o‘sishga yuqori darajada qiziqish bildiradi.
               </li>
             </ul>
           </li>
           <li>
-            <strong>Senior Mentor</strong>
+            <strong>Katta murabbiy</strong>
             <ul>
               <li>
-                Qabul jarayonini yaxshi tushunadi va uni shaxsan o‘zi
-                muvaffaqiyatli bosib o‘tgan.
+              O‘zi qabul jarayonidan muvaffaqiyatli o‘tgan.
               </li>
               <li>
-                Talabalarni universitetga kirishda qo‘llab-quvvatlash
-                tajribasiga ega.
+              Talabalarni ilovalar orqali yo‘naltirish tajribasiga ega.
               </li>
               <li>
-                Odatda 10 ta atrofida qabul xati olgan talabalarni
-                qo‘llab-quvvatlagan (bu faqat tavsiya, qat’iy talab emas).
+              Odatda 10 ga yaqin qabul xati olgan talabalar ko‘maklashilgan (bu qat’iy talab emas, balki ko‘rsatma).
               </li>
               <li>
-                Aniq yillik tajriba talabi yo‘q, ammo bu darajadagi mentorlar
-                samarali yordam ko‘rsatgan izchil tajribaga ega bo‘lishi kera
+              Kamida bir necha yillik tajriba talab qilinmasa-da, katta murabbiylar samarali yordam ko‘rsatish qobiliyatini namoyish etadilar.
               </li>
             </ul>
           </li>
           <li>
-            <strong>Expert Mentor</strong>
+            <strong>Ekspert murabbiy</strong>
             <ul>
               <li>
-                Universitetga kirish bo‘yicha chuqur bilim va yuqori tajribaga
-                ega sifatida tan olingan.
+              Universitetga qabul qilishda chuqur tajribasi bilan tanilgan.
               </li>
-              <li>Ko‘plab talabalarni muvaffaqiyatli mentorlik qilgan.</li>
+              <li>U ko‘plab talabalarga mentorlik qilgan, ko‘pincha ularga 20-30 dan ortiq qabul xatlarini olishga yordam bergan.</li>
               <li>
-                Odatda 20–30 dan ortiq qabul xati olgan talabalar bilan ishlagan
-                bo‘lsa, ushbu darajaga mos deb hisoblanadi.
+              Qabulda murabbiylik yoki tegishli sohada kamida 3 yillik tegishli tajribaga ega bo‘lishi kerak.
               </li>
               <li>
-                Kamida 3 yillik tegishli mentorlik tajribasiga ega bo‘lishi
-                kerak.
-              </li>
-              <li>
-                Maxsus yo‘nalishlarda (masalan, Ivy League, tibbiyot maktablari,
-                san’at dasturlari) mustahkam obro‘-e’tibor yoki natijalarga ega.
+              Ixtisoslashgan sohalarda (masalan Ayvi ligasi, tibbiyot maktablari, san’at dasturlari va boshqalar).
               </li>
             </ul>
             <strong>Muhim eslatma:</strong>
             <p>
-              Qabul xatlari va tajriba har bir holatda alohida ko‘rib chiqiladi.
-              Bu ko‘rsatmalar umumiy tavsiyalar bo‘lib, sizning mentorlik
-              darajangizni aniqlashga yordam beradi. Agar sizda kamroq qabul
-              xatlari yoki biroz boshqacha tajriba bo‘lsa ham, sizning umumiy
-              profilingiz va natijalaringiz asosida <strong>Senior</strong> yoki
-              <strong>Expert</strong> darajasiga mos deb topilishingiz mumkin.
+            Ushbu ko‘rsatmalar murabbiylarni joylashtirish bo‘yicha umumiy tavsiyalar bo‘lib xizmat qiladi. Biroz boshqacha kelib chiqishga ega yoki qabul qilish xatlari soni kamroq bo‘lgan murabbiylar o‘zlarining umumiy profillari, ta’siri va murabbiylik yondashuvi asosida yuqori darajaga ko‘tarilishlari mumkin.
             </p>
           </li>
         </ul>
         <p>
-          Siz mentor profillarini ko‘rib chiqishingiz yoki bizning sun’iy
-          intellekt asosidagi moslashtirish tizimimizdan foydalanishingiz
-          mumkin.
+        Biz platformaga eng mos kelishini ta’minlash uchun har bir murabbiyning tajribasini diqqat bilan o‘rganib chiqamiz.
         </p>
       </div>
     ),
@@ -349,33 +350,18 @@ const itemsUz: CollapseProps['items'] = [
       <div>
         <p>Biz quyidagi seans turlarini taklif qilamiz:</p>
         <ul>
-          <li>Individual Seanslar: Birga-bir mentorlik (30 yoki 60 daqiqa).</li>
+          <li>Individual Seanslar: Yakkama-yakka mentorlik sessiyalari 30 daqiqa yoki 60 daqiqalik formatlarda mavjud. Tezkor ko‘rsatmalar, insho sharhlari yoki soxta intervyular uchun juda mos keladi.</li>
           <li>
-            To‘liq Yo‘nalish Paketi: 4 soatlik chuqur ariza qo‘llab-quvvatlash
-            paketi.
+            To‘liq Yo‘nalish Paketi: Arizangiz bo‘yicha chuqur, moslashtirilgan yordam ko‘rsatish uchun mo‘ljallangan 4 soatlik paket - jumladan, universitetni tanlash, shaxsiy bayonotlar va ariza berish strategiyasi.
           </li>
           <li>
-            Intensiv Kurs: Ariza topshirish jarayonida to‘liq mentorlik uchun 8
-            soatlik dastur.
+            Intensiv Kurs: Universitetga hujjat topshirish jarayonining boshidan oxirigacha to‘liq rahbarlik qilishni istagan talabalar uchun 8 soatlik murabbiylik dasturi.
+          </li>
+          <li>
+          Obuna tariflari (Yangi!): Davomiy yordam kerakmi? Endi siz bizning oylik obuna variantlarimizdan tanlashingiz mumkin, bu sizga ustozingiz bilan chegirmali narxda muntazam uchrashuvlarni band qilish imkonini beradi. Doimiy ro‘yxatdan o‘tish, tizimli rivojlanish va uzoq muddatli javobgarlikni afzal ko‘radigan talabalar uchun ayni muddao."
           </li>
         </ul>
       </div>
-    ),
-  },
-  {
-    key: '1321',
-    label: 'Pro Bono Mentorlar kimlar?',
-    children: (
-      <p>
-        Pro bono murabbiylari - bu o‘zgarish qilish haqida chin dildan
-        qayg‘uradigan odamlardir. Ular tajribali talabalar yoki mutaxassislar
-        bo‘lib, bepul murabbiylik qilishni tanlaydilar, chunki ular teng
-        imkoniyatlarga ega bo‘lishga ishonadilar. Ular o‘z vaqtlari va
-        bilimlarini ko‘ngilli sifatida sarflab, talabalarga, ayniqsa, haq
-        to‘lanadigan murabbiylikka qurbi yetmaydiganlarga eng yaxshi
-        universitetlarga yo‘l topishda yordam berishadi. Bu ularning qaytarib
-        berish va haqiqiy ijtimoiy ta’sir yaratish usulidir.
-      </p>
     ),
   },
   {
@@ -424,24 +410,44 @@ const itemsUz: CollapseProps['items'] = [
     label: 'Mentorlik seansi qancha turadi?',
     children: (
       <div>
-        <p>Seans narxi mentor darajasiga qarab farq qiladi:</p>
-        <ul>
-          <li>
-            Junior Coach: 30 daqiqa uchun $12.50 dan, intensiv kurs uchun $130
-            gacha.
-          </li>
-          <li>
-            Senior Coach: 30 daqiqa uchun $25 dan, intensiv kurs uchun $260
-            gacha.
-          </li>
-          <li>
-            Expert Coach: 30 daqiqa uchun $40 dan, intensiv kurs uchun $550
-            gacha.
-          </li>
-        </ul>
+        <p>➤ Narx belgilash mentor darajasiga bog‘liq:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor darajasi</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 daqiqa</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 daqiqa</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>To‘liq rahbarlik (4 soat)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 soat)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Kichik murabbiy</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Katta murabbiy</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Mutaxassis murabbiy</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     ),
-  },
+  },  
   {
     key: '7',
     label: 'Agar rejalashtirilgan seansni oʻtkazib yuborsam nima bo‘ladi?',
@@ -460,6 +466,27 @@ const itemsUz: CollapseProps['items'] = [
     children:
       'TopCoach murabbiylari tajribasi va muvaffaqiyatiga qarab ko‘tariladi. Kichikdan kattaga o‘tish uchun murabbiy 150 soatlik murabbiylik mashg‘ulotlarini o‘tkazishi kerak. Senior darajasidan Ekspert darajasiga o‘tish uchun ular qo‘shimcha 100 soat o‘qishlari kerak. Bundan tashqari, murabbiylar eng yaxshi universitetga qabul qilingan har bir shogird uchun mukofot oladilar.',
   },
+  {
+    key: '10',
+    label: 'Qanday qilib murabbiy sifatida ro‘yxatdan o‘tish mumkin?',
+    children: (
+      <div>
+        <p>
+          Agar siz TopCoach platformasida murabbiy bo‘lishni istasangiz, bizda sizga bu jarayonda yordam beradigan oddiy qo‘llanma mavjud.
+        </p>
+        <p>
+          Qo‘llanmani bu yerda ko‘ring:&nbsp;
+          <a
+            href="https://scribehow.com/shared/How_To_Sign_Up_As_A_Mentor_On_TopCoach__iuj_5hetTIy8CR3748A83g"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TopCoach’da murabbiy sifatida ro‘yxatdan o‘tish bo‘yicha qo‘llanma
+          </a>
+        </p>
+      </div>
+    ),
+  },  
 ];
 
 const itemsRu: CollapseProps['items'] = [
