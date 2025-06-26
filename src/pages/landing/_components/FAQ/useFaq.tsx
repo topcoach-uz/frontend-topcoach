@@ -31,9 +31,7 @@ const itemsEn: CollapseProps['items'] = [
     children: (
       <div>
         <p>
-        We offer three levels of mentors based on experience and track record:
-          <strong>Junior</strong>, <strong>Senior</strong>, and{' '}
-          <strong>Expert</strong> Expert. Each level reflects the mentor's background, number of students supported, and overall impact.
+        We offer four levels of mentors based on experience and track record: <strong>Junior</strong>, <strong>Senior</strong>, <strong>Expert</strong>, and <strong>Pro Bono</strong>. Each level reflects the mentor's background, number of students supported, and overall impact.
         </p>
         <ul>
           <li>
@@ -60,7 +58,7 @@ const itemsEn: CollapseProps['items'] = [
               </li>
               <li>
                 Typically supported students who received
-                <strong>around 10 acceptance letters</strong> (this is a
+                around 10 acceptance letters (this is a
                 guideline, not a fixed requirement).
               </li>
               <li>
@@ -75,10 +73,10 @@ const itemsEn: CollapseProps['items'] = [
               Known for deep expertise in university admissions.
               </li>
               <li>
-              Has mentored a large number of students, often helping them secure <strong>20–30+ acceptance letters</strong>.
+              Has mentored a large number of students, often helping them secure 20–30+ acceptance letters.
               </li>
               <li>
-              Should have at least <strong>3 years</strong> of relevant experience in admissions mentoring or a related field.
+              Should have at least 3 years of relevant experience in admissions mentoring or a related field.
               </li>
               <li>
               Recognized in specialized areas (e.g. Ivy League, medical schools, arts programs, etc.).
@@ -92,7 +90,7 @@ const itemsEn: CollapseProps['items'] = [
             <strong>Pro Bono Mentor</strong>
             <ul>
               <li>
-              The Pro Bono Mentor role is a social-impact position for mentors who volunteer their time:
+              The Pro Bono Mentor role is a social-impact position for mentors who volunteer their time.
               </li>
               <li>
               Works voluntarily an by personal choice.
@@ -112,11 +110,11 @@ const itemsEn: CollapseProps['items'] = [
         <p>
         These guidelines serve as general recommendations for mentor placement. Mentors with slightly different backgrounds or fewer acceptance letters may still qualify for a higher level based on their overall profile, impact, and mentoring approach.
         </p>
+        </ul>
         <p>
           We carefully review each mentor’s background to ensure the best
           fit on the platform.
         </p>
-        </ul>
       </div>
     ),
   },
@@ -128,16 +126,16 @@ const itemsEn: CollapseProps['items'] = [
         <p>We offer the following session types:</p>
         <ul>
           <li>
-            Individual Sessions: One-on-one mentorship sessions available in 30-minute or 60-minute formats. Ideal for quick guidance, essay reviews, or mock interviews.
+            <strong>Individual Sessions:</strong> One-on-one mentorship sessions available in 30-minute or 60-minute formats. Ideal for quick guidance, essay reviews, or mock interviews.
           </li>
           <li>
-            Full Guidance Package: A 4-hour package designed to provide in-depth, personalized support on your application — including university selection, personal statements, and application strategy.
+          <strong>Full Guidance Package:</strong> A 4-hour package designed to provide in-depth, personalized support on your application — including university selection, personal statements, and application strategy.
           </li>
           <li>
-            Intensive Course: An 8-hour mentorship program for students who want full guidance throughout the entire university application process, from start to finish.
+          <strong>Intensive Course:</strong> An 8-hour mentorship program for students who want full guidance throughout the entire university application process, from start to finish.
           </li>
           <li>
-          Subscription Plans (New!): Looking for ongoing support? You can now choose from our monthly subscription options, which allow you to book regular sessions with your mentor at a discounted rate. Perfect for students who prefer consistent check-ins, structured progress, and long-term accountability.
+          <strong>Subscription Plans (New!):</strong> Looking for ongoing support? You can now choose from our monthly subscription options, which allow you to book regular sessions with your mentor at a discounted rate. Perfect for students who prefer consistent check-ins, structured progress, and long-term accountability.
           </li>
         </ul>
       </div>
@@ -281,8 +279,7 @@ const itemsUz: CollapseProps['items'] = [
     children: (
       <div>
         <p>
-        Biz tajriba va tajribaga asoslangan uch darajadagi murabbiylarni taklif etamiz: <strong>Junior</strong>,
-          <strong>Senior</strong> va <strong>Expert</strong>. QHar bir daraja murabbiyning kelib chiqishi, qo‘llab-quvvatlangan talabalar soni va umumiy ta’sirini aks ettiradi.
+        Biz tajriba va tajribaga asoslangan to'rt darajadagi murabbiylarni taklif etamiz: <strong>Junior</strong>, <strong>Senior</strong>, <strong>Expert</strong>, va <strong>Pro Bono</strong>. Har bir daraja murabbiyning kelib chiqishi, qo‘llab-quvvatlangan talabalar soni va umumiy ta’sirini aks ettiradi.
         </p>
         <ul>
           <li>
@@ -350,15 +347,15 @@ const itemsUz: CollapseProps['items'] = [
       <div>
         <p>Biz quyidagi seans turlarini taklif qilamiz:</p>
         <ul>
-          <li>Individual Seanslar: Yakkama-yakka mentorlik sessiyalari 30 daqiqa yoki 60 daqiqalik formatlarda mavjud. Tezkor ko‘rsatmalar, insho sharhlari yoki soxta intervyular uchun juda mos keladi.</li>
+          <li><strong>Individual Seanslar:</strong> Yakkama-yakka mentorlik sessiyalari 30 daqiqa yoki 60 daqiqalik formatlarda mavjud. Tezkor ko‘rsatmalar, insho sharhlari yoki soxta intervyular uchun juda mos keladi.</li>
           <li>
-            To‘liq Yo‘nalish Paketi: Arizangiz bo‘yicha chuqur, moslashtirilgan yordam ko‘rsatish uchun mo‘ljallangan 4 soatlik paket - jumladan, universitetni tanlash, shaxsiy bayonotlar va ariza berish strategiyasi.
+          <strong>To‘liq Yo‘nalish Paketi:</strong> Arizangiz bo‘yicha chuqur, moslashtirilgan yordam ko‘rsatish uchun mo‘ljallangan 4 soatlik paket - jumladan, universitetni tanlash, shaxsiy bayonotlar va ariza berish strategiyasi.
           </li>
           <li>
-            Intensiv Kurs: Universitetga hujjat topshirish jarayonining boshidan oxirigacha to‘liq rahbarlik qilishni istagan talabalar uchun 8 soatlik murabbiylik dasturi.
+          <strong>Intensiv Kurs:</strong> Universitetga hujjat topshirish jarayonining boshidan oxirigacha to‘liq rahbarlik qilishni istagan talabalar uchun 8 soatlik murabbiylik dasturi.
           </li>
           <li>
-          Obuna tariflari (Yangi!): Davomiy yordam kerakmi? Endi siz bizning oylik obuna variantlarimizdan tanlashingiz mumkin, bu sizga ustozingiz bilan chegirmali narxda muntazam uchrashuvlarni band qilish imkonini beradi. Doimiy ro‘yxatdan o‘tish, tizimli rivojlanish va uzoq muddatli javobgarlikni afzal ko‘radigan talabalar uchun ayni muddao."
+          <strong>Obuna tariflari (Yangi!):</strong> Davomiy yordam kerakmi? Endi siz bizning oylik obuna variantlarimizdan tanlashingiz mumkin, bu sizga ustozingiz bilan chegirmali narxda muntazam uchrashuvlarni band qilish imkonini beradi. Doimiy ro‘yxatdan o‘tish, tizimli rivojlanish va uzoq muddatli javobgarlikni afzal ko‘radigan talabalar uchun ayni muddao.
           </li>
         </ul>
       </div>
@@ -410,7 +407,7 @@ const itemsUz: CollapseProps['items'] = [
     label: 'Mentorlik seansi qancha turadi?',
     children: (
       <div>
-        <p>➤ Narx belgilash mentor darajasiga bog‘liq:</p>
+        <p> Narx belgilash mentor darajasiga bog‘liq:</p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
             <tr>
