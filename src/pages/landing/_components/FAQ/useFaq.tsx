@@ -498,25 +498,22 @@ const itemsRu: CollapseProps['items'] = [
     label: 'Как выбрать подходящего наставника?',
     children: (
       <div>
-        <p>Наставники делятся на три уровня в зависимости от их опыта:</p>
         <p>
-          На нашей платформе доступны три уровня менторов:{' '}
-          <strong>Junior</strong>, <strong>Senior</strong> и{' '}
-          <strong>Expert</strong>. Ниже представлен общий обзор каждого уровня и
-          критерии, по которым мы определяем назначение:
+        Уровни менторов на нашей платформе Мы предлагаем четыре уровня менторов в 
+        зависимости от их опыта и достижений: <strong>Junior</strong>, <strong>Senior</strong>, <strong>Expert</strong>, и <strong>Pro Bono</strong>. Каждый уровень 
+        отражает профессиональный путь ментора, количество поддержанных студентов и достигнутый эффект.
         </p>
         <ul>
           <li>
             <strong>Junior Mentor</strong>
             <ul>
               <li>Недавно поступил(а) в ведущий университет.</li>
-              <li>Может иметь ограниченный опыт помощи другим абитуриентам.</li>
+              <li>Может иметь ограниченный опыт наставничества.</li>
               <li>
-                В настоящее время помогает студентам или только начинает этот
-                путь.
+              В настоящее время оказывает поддержку студентам или только начинает путь ментора.
               </li>
               <li>
-                Сильная мотивация помогать другим и развиваться как ментор.
+              Обладает сильной мотивацией помогать другим и развиваться как ментор.
               </li>
             </ul>
           </li>
@@ -524,20 +521,16 @@ const itemsRu: CollapseProps['items'] = [
             <strong> Senior Mentor</strong>
             <ul>
               <li>
-                Имеет чёткое понимание процесса поступления и успешно прошёл(а)
-                его сам(а).
+              Самостоятельно прошёл процесс поступления в университет.
               </li>
               <li>
-                Имеет опыт наставничества и помощи студентам в получении писем о
-                зачислении.
+              Имеет опыт сопровождения студентов при подаче заявлений.
               </li>
               <li>
-                Обычно помог студентам получить около 10 писем о приёме (это
-                ориентир, а не строгое требование).
+              Обычно поддержал студентов, получивших около 10 писем о приёме (это рекомендация, а не строгий критерий).
               </li>
               <li>
-                Годы опыта не являются обязательным условием, но на этом уровне
-                ожидается устойчивая история эффективной помощи.
+              Несмотря на отсутствие требований к стажу, демонстрирует стабильные и эффективные результаты.
               </li>
             </ul>
           </li>
@@ -545,42 +538,50 @@ const itemsRu: CollapseProps['items'] = [
             <strong>Expert Mentor</strong>
             <ul>
               <li>
-                Признан(а) экспертом с глубокими знаниями в области поступления.
+              Обладает глубокими знаниями в области поступления в вузы.
               </li>
               <li>
-                Продемонстрировал(а) успех в наставничестве большого количества
-                студентов.
+              Помог большому количеству студентов, часто с результатом 20–30+ писем о приёме.
               </li>
               <li>
-                Обычно рассматривается на эту роль, если помог(ла) студентам
-                получить 20–30+ писем о зачислении.
+              Должен иметь не менее 3 лет опыта в сфере менторства по поступлению или смежных областях.
               </li>
               <li>
-                Должен(на) иметь не менее 3 лет релевантного опыта
-                наставничества.
+              Признан в специализированных сферах (например, Ivy League, медицинские школы, творческие программы и др.).
               </li>
               <li>
-                Имеет сильную репутацию или доказанные результаты в конкретных
-                областях (например, Ivy League, медицинские школы, программы по
-                искусству и т.д.).
+              Имеет отличную репутацию и доказанные успехи.
               </li>
             </ul>
           </li>
-          <strong>Важно:</strong>
+          <li>
+            <strong>Pro Bono</strong>
+            <ul>
+              <li>
+              Pro Bono Mentor — это социальная роль для менторов, которые работают на добровольной основе:
+              </li>
+              <li>
+              Работают безвозмездно по собственному желанию.
+              </li>
+              <li>
+              Обязуются проводить не менее 4 часов в месяц или 8 сессий.
+              </li>
+              <li>
+              При выполнении ежемесячного плана возможна компенсация в соответствии с новым контрактом.
+              </li>
+              <li>
+              Чтобы стать Junior Mentor, необходимо предварительно пройти не менее 4 часов или 8 сессий в формате pro bono в качестве практики.
+              </li>
+            </ul>
+          </li>
+          <strong>Важное замечание:</strong>
           <p>
             {' '}
-            Письма о зачислении и опыт рассматриваются индивидуально в каждом
-            случае. Это лишь рекомендации, которые помогают нам определить
-            уровень. Даже с меньшим количеством писем или отличающимся опытом вы
-            можете быть отнесены к уровню <strong>Senior</strong> или{' '}
-            <strong>Expert</strong> в зависимости от вашего общего профиля и
-            вклада.
+            Эти критерии являются общими рекомендациями. Менторы с другим опытом или меньшим количеством писем о приёме могут быть квалифицированы на более высокий уровень в зависимости от их общего профиля, подхода и реального вклада.
           </p>
         </ul>
         <p>
-          Вы можете просмотреть профили наставников и выбрать подходящего, либо
-          воспользоваться системой подбора с использованием искусственного
-          интеллекта.
+        Мы тщательно проверяем опыт каждого ментора, чтобы обеспечить наилучшее соответствие.
         </p>
       </div>
     ),
@@ -606,22 +607,6 @@ const itemsRu: CollapseProps['items'] = [
           </li>
         </ul>
       </div>
-    ),
-  },
-  {
-    key: '1321',
-    label: 'Кто такие менторы Pro Bono?',
-    children: (
-      <p>
-        Pro bono менторы - это люди, которые искренне заботятся о том, чтобы
-        внести свой вклад. Это опытные студенты или профессионалы, которые
-        выбирают наставничество бесплатно, потому что верят в равный доступ к
-        возможностям. Добровольно жертвуя своим временем и знаниями, они
-        помогают студентам, особенно тем, кто не может позволить себе
-        оплачиваемое наставничество, ориентироваться в своем пути к лучшим
-        университетам. Это их способ отдать и создать реальный социальный
-        эффект.
-      </p>
     ),
   },
   {
@@ -672,22 +657,44 @@ const itemsRu: CollapseProps['items'] = [
     label: 'Сколько стоит сеанс наставничества?',
     children: (
       <div>
-        <p>Стоимость зависит от уровня наставника:</p>
-        <ul>
-          <li>
-            Младший наставник: от $12.50 за 30 минут до $130 за интенсивный
-            курс.
-          </li>
-          <li>
-            Старший наставник: от $25 за 30 минут до $260 за интенсивный курс.
-          </li>
-          <li>
-            Эксперт-наставник: от $40 за 30 минут до $550 за интенсивный курс.
-          </li>
-        </ul>
+        <p>Ценообразование зависит от уровня наставника:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Уровень наставника</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 мин</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 мин</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Полное руководство (4 часа)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Интенсивный курс (8 часов)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Junior Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Senior Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Expert Coach</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     ),
-  },
+  },  
   {
     key: '7',
     label: 'Что делать, если я пропустил запланированный сеанс?',
@@ -706,6 +713,27 @@ const itemsRu: CollapseProps['items'] = [
     children:
       'Тренеры в TopCoach продвигаются вверх в зависимости от их опыта и успеха. Чтобы перейти от младшего к старшему, тренер должен пройти 150 часов наставничества. Чтобы пройти путь от Старшего к Эксперту, им необходимо выполнить дополнительные 100 часов. Кроме того, тренеры получают бонусы за каждого студента, поступившего в топ-университет.',
   },
+  {
+    key: '10',
+    label: 'Как зарегистрироваться в качестве наставника?',
+    children: (
+      <div>
+        <p>
+          Если вы хотите стать наставником на платформе TopCoach, мы подготовили для вас простое пошаговое руководство.
+        </p>
+        <p>
+          Ознакомьтесь с инструкцией здесь:&nbsp;
+          <a
+            href="https://scribehow.com/shared/How_To_Sign_Up_As_A_Mentor_On_TopCoach__iuj_5hetTIy8CR3748A83g"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Как зарегистрироваться в качестве наставника на TopCoach
+          </a>
+        </p>
+      </div>
+    ),
+  },  
 ];
 
 const itemsKk: CollapseProps['items'] = [
@@ -720,40 +748,34 @@ const itemsKk: CollapseProps['items'] = [
     label: 'Qalay durıs mentor saylaw kerek?',
     children: (
       <div>
-        <p>Mentorlar óz tájiriybelerine qarap úsh derejede bólinip turadı:</p>
         <p>
-          Platformámızda üç dárájedegi mentorlar bar: <strong>Junior</strong>,
-          <strong>Senior</strong>, hám <strong>Expert</strong>. Ár bir dáráje
-          túralı ámáli túsinikteme tómendegi dey:
+        Платформамыздағы Mentor дәрежелери Біз платформамызда тәжирибеси мен нәтижесине қарай тóрт дәрежедеги Mentor ұсынамыз: <strong>Junior</strong>,
+          <strong>Senior</strong>, <strong>Expert</strong>, hám <strong>Pro Bono</strong>. Әр дәрежеде mentor-дың тәжірибеси, қолдаған студентлер саны және нәтижелиги есапқа алынады.
         </p>
         <ul>
           <li>
             <strong>Junior Mentor</strong>
             <ul>
-              <li>Jańa nufuzlı universitetke qabıl etilgen.</li>
-              <li>Basqa úmitkerlerge járm etmekte az tásirı bolıwı múmkin.</li>
+              <li>Жақында атақты университетке түскен.</li>
+              <li>Басқа студентлерге бағыт беру тәжирибеси аз болуы мүмкин.</li>
               <li>
-                Qazir studentlerge járm etip baslap júr nemese jármshılıqtı jańa
-                baslap atır.
+              Қазір студентлерге көмектесип жатыр немесе жаңа mentorлық жолын бастаған.
               </li>
               <li>
-                Basqalardıń jetistikke jetkiziwine járm etmekte kúshli
-                motivatsiyaga iye.
+              Басқаларға көмектесип, өзі де өсип-дамуға мотивациясы күшли.
               </li>
             </ul>
           </li>
           <li>
             <strong>Senior Mentor</strong>
             <ul>
-              <li>Qabıl jarayanın jaqsı túsinedi hám ózinan tabıslı ótken.</li>
-              <li>Studentlerge universitet qabılına járm etken tásiri bar.</li>
+              <li>Университетке қабылдану жолын сәтли аяқлаған.</li>
+              <li>Студентлерге өтініш беруде бағыт берип келген.</li>
               <li>
-                Ádette 10-ga jaqın qabıl hatın alıwğa járm etken studentler
-                boladı (bular usınıs, shárt emes).
+              Әдетте шамамен 10 қабыл хат алған студентлерге көмектескен (бұл тек ұсыныс, қатан талап емес).
               </li>
               <li>
-                Jıldıq tásiri shárt emes, bıraq bul dárájedegi mentorlar áserli
-                jármshılıqtı kórsetken bolıwı kerek.
+              Жыллық тәжирибе міндет емес, бірақ нақты нәтижелер көрсете алған болуы керек.
               </li>
             </ul>
           </li>
@@ -761,36 +783,45 @@ const itemsKk: CollapseProps['items'] = [
             <strong>Expert Mentor</strong>
             <ul>
               <li>
-                Universitet qabılı boyınsha teren bilim hám joqarı dárájedegi
-                tásiri bar dep tanıladı.
+              Университетке қабыл саласында терең білімге ие.
               </li>
-              <li>Kóp studentlerge tabıslı járm etken.</li>
+              <li>Көп студентлерге mentor болган, 20–30+ қабыл хаты бар студентлерге көмектескен.</li>
               <li>
-                Ádette 20–30-dan artıq qabıl hatı alıwğa járm etken studentler
-                bar bolsa, bul dárájege tiyisli dep esaplanadı.
+              Кеминде 3 жыл тиісті тәжирибеси болуы керек.
               </li>
-              <li>Keminde 3 jıllıq tiyisli mentorlıq tásiri bolıwı kerek.</li>
+              <li>Белгілі бір бағытта (мысалы, Ivy League, медуниверситет, өнер бағдарламалары) танылган.</li>
               <li>
-                Arnalas tarawlarda (mas., Ivy League, meditsina mektepteri, óner
-                bağdarlamaları) joqarı abroý nemese dəlilledengen natıjalar
-                boladı.
+              Жақсы атаққа ие және айқын нәтижелерге қол жеткізген.
               </li>
             </ul>
-            <strong>Mańızlı eskerw:</strong>
+            <strong>Маңызды ескертпе:</strong>
             <p>
-              Qabıl hatları hám tásiri – ár bir holat boyınsha dárájeli túrde
-              qaraladı. Bul usınıstar mentor dárájesin belgilewge járdem beredi.
-              Áger qabıl hatları azraq bolsa da, nemese tásiri basqasha bolsa
-              da, sizdiń jálpi profilingiz hám natıjalarıńız negizinde{' '}
-              <strong>Senior</strong>
-              nemese <strong>Expert</strong> bolıp belgilenwińiz múmkin.
+            Әр mentor-дың тәжирибеси жеке талданады — платформамызда ең сәйкесін таңдап беремиз.
+            </p>
+          </li>
+          <li>
+            <strong>Pro Bono Mentor</strong>
+            <ul>
+              <li>
+              Pro Bono Mentor — бұл әлеуметтік жобаға үлес қосатын, өз еркімен тегін жұмыс істейтиң mentor.
+              </li>
+              <li>Өз еркімен тегін жұмыс істейди.</li>
+              <li>
+              Ай сайын ең азы 4 сағат немесе 8 сессия өткізуге міндетли.
+              </li>
+              <li>Егер бұл талап орындалса, жаңа келісим шарт негізинде төлем берилиши мүмкин.</li>
+              <li>
+              Junior Mentor болғысы келген адам алдын ала кеминде 4 сағат немесе 8 сессия pro bono тәжирибе жинауы керек.
+              </li>
+            </ul>
+            <strong>Маңызды ескертпе:</strong>
+            <p>
+            Әр mentor-дың тәжирибеси жеке талданады — платформамызда ең сәйкесін таңдап беремиз.
             </p>
           </li>
         </ul>
         <p>
-          Siz mentor profillerin kórip shıġıwıńız yamasa bizdiń jasalma
-          intellekt sistemasındaġı maslastırıw qásiyetinen paydalanıwıńız
-          múmkin.
+        Сіз mentor профиллерин қарап, өзіңізге лайықтысын таңлай аласыз немесе AI таңдау жүйемизді қолдана аласыз.
         </p>
       </div>
     ),
@@ -814,22 +845,6 @@ const itemsKk: CollapseProps['items'] = [
           </li>
         </ul>
       </div>
-    ),
-  },
-  {
-    key: '1321',
-    label: 'Pro Bono Mentorlar kimler?',
-    children: (
-      <p>
-        Pro bono tárbiyashıları - bul shın mánisinde ózgeris islewdi qáleytuǵın
-        adamlar. Olar tájiriybeli studentler yamasa qánigeler bolıp,
-        imkaniyatlardan teń paydalanıwǵa isenetuǵınlıǵı sebepli biypul
-        tárbiyalanıwdı tańlaydı. Olar óz waqtı hám bilimlerin ıqtıyarlı túrde
-        ajıratıp, studentlerge, ásirese, haqı tólenetuǵın tárbiyalanıwǵa shaması
-        kelmeytuǵın studentlerge joqarı oqıw orınlarına barıw jolın ashıwda
-        járdem beredi. Bul olardıń qaytıp beriw hám haqıyqıy sociallıq tásir
-        jaratıw usılı.
-      </p>
     ),
   },
   {
@@ -874,27 +889,47 @@ const itemsKk: CollapseProps['items'] = [
   },
   {
     key: '6',
-    label: 'Mentorlıq seansı baxası qansha?',
+    label: 'Mentorlıq sessiya qánsha turadı?',
     children: (
       <div>
-        <p>Seans baxası mentor dárájesine qarap ózgeredi:</p>
-        <ul>
-          <li>
-            Junior Coach: 30 minut ushın $12.50-dan, intensiv kurs ushın $130-ġa
-            deyin.
-          </li>
-          <li>
-            Senior Coach: 30 minut ushın $25-dan, intensiv kurs ushın $260-ġa
-            deyin.
-          </li>
-          <li>
-            Expert Coach: 30 minut ushın $40-dan, intensiv kurs ushın $550-ġa
-            deyin.
-          </li>
-        </ul>
+        <p> Bahalar ustazdıń dárejesine baylanıslı:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor dárejesi</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 min Sessiya</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 min Sessiya</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Tolıq basshilıq (4 saat)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 saat)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Jas trener</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Starshiy trener</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+            </tr>
+            <tr>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>Qánige trener</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     ),
-  },
+  },  
   {
     key: '7',
     label: 'Eger belgilengen seanstı ótkerip jiberseńiz ne boladı?',
@@ -913,4 +948,25 @@ const itemsKk: CollapseProps['items'] = [
     children:
       'TopCoach trenerleri óz tájiriybesi hám tabısı tiykarında joqarı basqıshqa kóteriledi. "Junior"dan "Senior"ǵa ótiw ushın trener 150 saatlıq tárbiyalanıw sabaqların ótiwi kerek. "Senior"dan "Expert" dárejesine ótiw ushın qosımsha 100 saat ótiwi kerek. Bunnan tısqarı, trenerlerge joqarı oqıw ornına qabıl etilgen hár bir oqıwshı ushın qosımsha pul beriledi.',
   },
+  {
+    key: '10',
+    label: 'Qanday qilib mentor bolıp tırkelıwge boladı?',
+    children: (
+      <div>
+        <p>
+          Áger siz TopCoach platformasında mentor bolıwǵa qızıǵıpsańız, biz siz ushın basqıshlardı kórsetetin onay qosjalama tayarladıq.
+        </p>
+        <p>
+          Qóllanbani mına jerde kóriń:&nbsp;
+          <a
+            href="https://scribehow.com/shared/How_To_Sign_Up_As_A_Mentor_On_TopCoach__iuj_5hetTIy8CR3748A83g"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            TopCoach platformasında mentor bolıp tırkelıw qosjalaması
+          </a>
+        </p>
+      </div>
+    ),
+  },  
 ];
