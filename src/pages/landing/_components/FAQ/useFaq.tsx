@@ -794,10 +794,6 @@ const itemsKk: CollapseProps['items'] = [
               Жақсы атаққа ие және айқын нәтижелерге қол жеткізген.
               </li>
             </ul>
-            <strong>Маңызды ескертпе:</strong>
-            <p>
-            Әр mentor-дың тәжирибеси жеке талданады — платформамызда ең сәйкесін таңдап беремиз.
-            </p>
           </li>
           <li>
             <strong>Pro Bono Mentor</strong>
