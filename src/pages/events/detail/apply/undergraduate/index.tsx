@@ -1,41 +1,31 @@
 import { Breadcrumb, Flex, Form, Spin } from "antd";
-import FormMaker from "src/components/form/FormMaker";
-import MainTitleDescription from "src/components/mainTitleDesc";
-import styles from "./apply.module.scss";
-import { CustomButton, CustomText } from "src/components/common";
-import { ArrowRight } from "src/components/icons";
-import useApply from "../useApply";
-import CountDown from "src/pages/events/_components/countdown";
-import useGraduate from "./useGraduate";
-import { EVENT_DEADLINE } from "src/pages/events/_components/CurrentEventSection/useCurrentEvent";
-import useApi from "src/hooks/useApi";
-import { api } from "src/app/api";
-import { EventFormTypeEnum, EventsSchema } from "src/app/api/Api";
-import { AxiosResponse } from "axios";
 import { useTranslation } from "react-i18next";
+import { EventFormTypeEnum } from "src/app/api/Api";
+import { CustomButton } from "src/components/common";
+import FormMaker from "src/components/form/FormMaker";
+import { ArrowRight } from "src/components/icons";
+import MainTitleDescription from "src/components/mainTitleDesc";
+import CountDown from "src/pages/events/_components/countdown";
+import { EVENT_DEADLINE } from "src/pages/events/_components/CurrentEventSection/useCurrentEvent";
 import {
-  transformFormItems,
   hasFileUploadFields,
   sortFormItemsFileUploadLast,
+  transformFormItems,
 } from "src/utils/formTransformer";
+import styles from "../apply.module.scss";
+import useApply from "../useApply";
+import useUndergraduate from "./useUndergraduate";
 
-export default function ApplyToEventGraduatePage() {
+export default function ApplyToEventPage() {
   const { breadcrumbItems } = useApply();
   const { i18n } = useTranslation();
 
-  const { onComplete, form, loading } = useGraduate();
-
-  const { response: graduateData } = useApi<
-    AxiosResponse<EventsSchema>
-  >(() => api.camps.getCurrentActiveEvent());
-
-  const graduateForm = graduateData?.data.forms.find(
-    (form) => form.type === EventFormTypeEnum.Postgraduate
-  );
+  const { submitLoading, form, onComplete, undergraduateForm } =
+    useUndergraduate();
 
   const currentLocale = i18n.language as "en" | "kk" | "ru" | "uz";
-  const dynamicFormItems = graduateForm
-    ? transformFormItems(graduateForm, currentLocale)
+  const dynamicFormItems = undergraduateForm
+    ? transformFormItems(undergraduateForm, currentLocale)
     : null;
 
   if (dynamicFormItems?.formItems) {
@@ -44,10 +34,8 @@ export default function ApplyToEventGraduatePage() {
     );
   }
 
-  console.log("dynamicFormItems", dynamicFormItems);
-
-  const showFileUploadWarning = graduateForm
-    ? hasFileUploadFields(graduateForm)
+  const showFileUploadWarning = undergraduateForm
+    ? hasFileUploadFields(undergraduateForm)
     : false;
 
   return (
@@ -56,7 +44,7 @@ export default function ApplyToEventGraduatePage() {
         <Breadcrumb items={breadcrumbItems} />
         <Flex justify="space-between" align="center">
           <MainTitleDescription
-            title="Top 100 Uni Camp 2025 Masters'"
+            title="Top 100 Uni Camp 2025 Bachelor's"
             description="Deadline: May 26th, 2025"
           />
           <Flex vertical align="center" gap={10}>
@@ -81,9 +69,6 @@ export default function ApplyToEventGraduatePage() {
             </div>
           )}
 
-          <CustomText fontSize={24} fontWeight={600}>
-            Essay Questions
-          </CustomText>
           <FormMaker
             formItems={dynamicFormItems?.formItemEssay || []}
           />
@@ -97,7 +82,7 @@ export default function ApplyToEventGraduatePage() {
             >
               Submit
             </CustomButton>
-            {loading && (
+            {submitLoading && (
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <Spin size="large" />
                 <p>Submitting your form...</p>

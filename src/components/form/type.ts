@@ -1,20 +1,21 @@
-import { FormInstance } from 'antd';
-import { FormItemProps } from 'antd/lib';
-import { HTMLInputTypeAttribute } from 'react';
+import { FormInstance } from "antd";
+import { Rule } from "antd/es/form";
+import { FormItemProps } from "antd/lib";
+import { HTMLInputTypeAttribute } from "react";
 
 export interface IFormItemTypePart {
   name: string;
   label: string;
   type:
-    | 'upload'
-    | 'select'
-    | 'input'
-    | 'datePicker'
-    | 'rangePicker'
-    | 'imageUpload'
-    | 'avatarUpload'
-    | 'checkbox'
-    | 'button';
+    | "upload"
+    | "select"
+    | "input"
+    | "datePicker"
+    | "rangePicker"
+    | "imageUpload"
+    | "avatarUpload"
+    | "checkbox"
+    | "button";
   rootClassName?: string;
   style?: React.CSSProperties;
   textarea?: boolean;
@@ -22,10 +23,10 @@ export interface IFormItemTypePart {
   isFile?: boolean; // Optional flag for file upload inputs
   placeholder?: string;
   options?: Array<{ label: string; value: string }>; // Optional options for select inputs
-  picker?: 'date' | 'week' | 'year' | 'month' | 'quarter';
-  mode?: 'tags' | 'multiple';
+  picker?: "date" | "week" | "year" | "month" | "quarter";
+  mode?: "tags" | "multiple";
   form?: FormInstance;
-  listType?: 'text' | 'picture' | 'picture-card' | 'picture-circle';
+  listType?: "text" | "picture" | "picture-card" | "picture-circle";
   maxCount?: number;
   col?: number;
   row?: number;
@@ -35,17 +36,18 @@ export interface IFormItemTypePart {
   inputType?: InputType;
   formItemProps?: FormItemProps;
   mask?: string;
+  rules?: Rule[];
 }
 
 export type IFormItemType = IFormItemTypePart | undefined;
 
 export type InputType =
-  | 'password'
-  | 'otp'
-  | 'mask'
-  | 'textarea'
-  | 'text'
-  | 'number';
+  | "password"
+  | "otp"
+  | "mask"
+  | "textarea"
+  | "text"
+  | "number";
 
 // export interface IFormItemType extends CombinedProps {}
 
