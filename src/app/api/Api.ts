@@ -1459,6 +1459,12 @@ export interface BuySubscriptionDto {
   mentorId: string;
 }
 
+export interface BuySubscriptionPlanDto {
+  cardToken: string;
+  smsCode: string;
+  planId: string;
+}
+
 export interface BuySubscriptionResponseDto {
   paymentStatus: PaymentStatusEnum;
   message: string;

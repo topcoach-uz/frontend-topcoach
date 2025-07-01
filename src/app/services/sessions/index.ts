@@ -1,6 +1,7 @@
 import {
   BookSessionDto,
   BuySubscriptionDto,
+  BuySubscriptionPlanDto,
   CancelSessionDto,
   InitBookingDto,
   RateSessionDto,
@@ -59,7 +60,7 @@ export const sessionsApi = RtkApi.injectEndpoints({
     }),
     buySubscription: build.mutation<
       void,
-      { method: string; body: BuySubscriptionDto }
+      { method: string; body: BuySubscriptionPlanDto }
     >({
       query: ({ method, body }) => ({
         url: `/payments/subscription/${method}`,

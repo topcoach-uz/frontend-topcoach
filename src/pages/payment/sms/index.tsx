@@ -5,6 +5,7 @@ import {
   useBuySubscriptionMutation,
   useValidateAndPayMutation,
 } from 'src/app/services/sessions';
+import { BuySubscriptionPlanDto } from 'src/app/api/Api';
 import { CustomButton, CustomText } from 'src/components/common';
 import { InputFormItem } from 'src/components/form';
 import { themeFontSize } from 'src/constants/theme';
@@ -41,12 +42,13 @@ export default function PaymentSmsPage() {
             planId,
           },
         })
+          .unwrap()
           .then((res) => {
-            message.success(res.data?.message);
+            message.success('Payment successful!');
             navigate(-2);
           })
           .catch((err) => {
-            message.error(err.response.data.message, 7);
+            message.error(err.data?.message || 'Payment failed', 7);
           });
       } else {
         validateAndPay({
@@ -61,11 +63,11 @@ export default function PaymentSmsPage() {
         })
           .unwrap()
           .then((res) => {
-            message.success(res.data?.message);
+            message.success('Payment successful!');
             navigate('/');
           })
           .catch((err) => {
-            message.error(err.response.data.message, 7);
+            message.error(err.data?.message || 'Payment failed', 7);
           });
       }
     });
