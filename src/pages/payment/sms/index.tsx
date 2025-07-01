@@ -23,7 +23,7 @@ export default function PaymentSmsPage() {
   const cardToken = searchParams.get('cardToken') ?? '';
   const planId = searchParams.get('planId') ?? '';
   const mentorId = searchParams.get('mentorId') ?? '';
-  const buyType = searchParams.get('buyType') as PaymentTypeEnum;
+  const buyType = searchParams.get('type'); // 'subscription' for subscriptions
   const sessionId = searchParams.get('sessionId') ?? '';
   const navigate = useNavigate();
   const [validateAndPay, { isLoading }] = useValidateAndPayMutation();
@@ -32,25 +32,23 @@ export default function PaymentSmsPage() {
 
   const handleConfirmPayment = async () => {
     form.validateFields().then(() => {
-      if (buyType === PaymentTypeEnum.Package) {
+      if (buyType === 'subscription' || planId) {
         buySubscription({
           method: 'click',
           body: {
             cardToken,
             smsCode: otpValue,
             planId,
-            mentorId,
           },
         })
           .then((res) => {
-            // @ts-ignore
             message.success(res.data?.message);
             navigate(-2);
           })
           .catch((err) => {
             message.error(err.response.data.message, 7);
           });
-      } else if (buyType === PaymentTypeEnum.Individual) {
+      } else {
         validateAndPay({
           method: 'click',
           body: {
@@ -63,7 +61,6 @@ export default function PaymentSmsPage() {
         })
           .unwrap()
           .then((res) => {
-            // @ts-ignore
             message.success(res.data?.message);
             navigate('/');
           })

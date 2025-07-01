@@ -60,3 +60,46 @@ export const enhancedApi = RtkApi.enhanceEndpoints({
     getPost: () => 'test',
   }),
 });
+
+export const plansApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getPaymentPlans: builder.query<any[], void>({
+      query: () => 'payments/plans',
+    }),
+  }),
+});
+
+export const { useGetPaymentPlansQuery } = plansApi;
+
+export const subscriptionPlansApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getSubscriptionPlans: builder.query<any[], void>({
+      query: () => 'subscriptions/plans',
+    }),
+    getSubscriptionUsage: builder.query<any, void>({
+      query: () => `subscriptions/usage?ts=${Date.now()}`,
+      providesTags: ['SubscriptionUsage'],
+    }),
+    getCurrentSubscription: builder.query<any, void>({
+      query: () => `subscriptions/current?ts=${Date.now()}`,
+      providesTags: ['CurrentSubscription'],
+    }),
+    cancelSubscription: builder.mutation<any, void>({
+      query: () => ({
+        url: 'subscriptions/cancel',
+        method: 'POST',
+      }),
+      invalidatesTags: ['CurrentSubscription', 'SubscriptionUsage'],
+    }),
+    downgradeSubscription: builder.mutation<any, { planId: string }>({
+      query: (body) => ({
+        url: 'subscriptions/downgrade',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['CurrentSubscription', 'SubscriptionUsage'],
+    }),
+  }),
+});
+
+export const { useGetSubscriptionPlansQuery, useGetSubscriptionUsageQuery, useGetCurrentSubscriptionQuery, useCancelSubscriptionMutation, useDowngradeSubscriptionMutation } = subscriptionPlansApi;

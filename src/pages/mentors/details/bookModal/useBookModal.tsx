@@ -1,10 +1,10 @@
-import { message } from 'antd';
+import { message, Modal, Button } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import dayjs, { Dayjs } from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import weekday from 'dayjs/plugin/weekday';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MentorExperienceLevel } from 'src/app/api/Api';
 import { useBookSessionMutation } from 'src/app/services/sessions';
 import { useTypedSelector } from 'src/app/store';
@@ -15,6 +15,7 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 import useTimezone from 'src/hooks/useTimezone';
 import { PaymentTypeEnum } from 'src/pages/payment/sms';
 import { IHandleBookArgs } from '..';
+import { useGetSubscriptionUsageQuery } from 'src/app/services/api';
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);
@@ -27,6 +28,9 @@ interface Props {
 export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
   const colors = useColors();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const splittedPathname = pathname.split('/');
+  const mentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
   const { balance: mentorBalance, lastMentorData: mentorData } =
     useTypedSelector((state) => state.mentor);
 
@@ -82,6 +86,12 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     chosenIntervalId: null,
   });
 
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data: usageData, isLoading: usageLoading, refetch: refetchUsage } = useGetSubscriptionUsageQuery(undefined, { skip: !isAuthenticated });
+
+  const [quotaModalVisible, setQuotaModalVisible] = useState(false);
+  const [quotaSessionId, setQuotaSessionId] = useState<string | null>(null);
+
   const handleOk = async () => {
     if (step === 0) {
       if (sessionData.date === null) {
@@ -105,49 +115,44 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
         return;
       }
 
-      // if the last mentor level is probono, book without payment
-      if (mentorData?.mentorProfile?.level === MentorExperienceLevel.Probono) {
+      // Refetch usage before booking for extra robustness
+      const usageResult = await refetchUsage();
+      const latestUsage = usageResult.data?.usage;
+      // Optionally, check quota for the session type here
+      // (Assume session type is available as bookingInfo.planType or similar)
+      let feature = '';
+      const mentorLevel = (bookingInfo as any)?.mentorLevel;
+      if (mentorLevel && mentorLevel.toLowerCase?.() === MentorExperienceLevel.Probono.toLowerCase?.()) feature = 'proBonoSessions';
+      else if (bookingInfo?.planType === 'individual30m') feature = 'juniorCoachSessions';
+      else if (bookingInfo?.planType === 'individual60m') feature = 'seniorCoachSessions';
+      if (feature && latestUsage) {
+        const u = latestUsage.find((x: any) => x.feature === feature);
+        if (u && u.used >= u.limit) {
+          setQuotaSessionId(sessionData.chosenIntervalId.value);
+          setQuotaModalVisible(true);
+        return;
+      }
+      }
+
+      // Book session and handle quota/payment logic
         bookSession({
           id: sessionData.chosenIntervalId.value,
           comment: form.getFieldValue('reason'),
         })
           .unwrap()
-          .then(() => {
+        .then((res: any) => {
+          if (res && res.paymentRequired) {
+            setQuotaSessionId(sessionData.chosenIntervalId.value);
+            setQuotaModalVisible(true);
+            return;
+          }
             message.success('Session booked successfully');
             handleModalClose();
           })
           .catch((err) => {
-            message.error(err.data.message);
+          message.error(err.data?.message || 'Booking failed.');
           });
-
         return;
-      }
-
-      if (
-        mentorBalance?.totalMinutes &&
-        // @ts-ignore
-        mentorBalance?.totalMinutes - mentorBalance?.usedMinutes >= 60
-      ) {
-        bookSession({
-          id: sessionData.chosenIntervalId.value,
-          comment: form.getFieldValue('reason'),
-        })
-          .unwrap()
-          .then(() => {
-            message.success('Session booked successfully');
-            handleModalClose();
-          })
-          .catch((err) => {
-            message.error(err.data.message);
-          });
-
-        return;
-      }
-
-      navigate(
-        // @ts-ignore
-        `/payment?mentorId=${mentorData?.id}&sessionId=${sessionData.chosenIntervalId.value}&buyType=${PaymentTypeEnum.Individual}&${searchParams.toString()}`
-      );
     }
 
     if (!sessionData) {
@@ -203,6 +208,41 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     });
   };
 
+  // Custom quota exceeded modal
+  const QuotaExceededModal = (
+    <Modal
+      open={quotaModalVisible}
+      onCancel={() => setQuotaModalVisible(false)}
+      footer={null}
+      title="Session Quota Exceeded"
+      centered
+    >
+      <div style={{ marginBottom: 16 }}>
+        <p>You have used all included sessions for your plan.</p>
+        <p>Please upgrade your plan or pay for this session to continue.</p>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <Button onClick={() => setQuotaModalVisible(false)}>Cancel</Button>
+        <Button onClick={() => { setQuotaModalVisible(false); navigate('/'); }}>Upgrade Plan</Button>
+        <Button type="primary" onClick={() => {
+          setQuotaModalVisible(false);
+          if (quotaSessionId) {
+            // Dynamically build payment URL with all required params in correct order
+            const params = new URLSearchParams();
+            params.set('mentorId', mentorId);
+            params.set('sessionId', quotaSessionId);
+            // Set buyType based on planType or default to 'individual'
+            params.set('buyType', bookingInfo?.planType || 'individual');
+            if (bookingInfo?.planId) params.set('planId', bookingInfo.planId);
+            navigate(`/payment?${params.toString()}`);
+          }
+        }}>
+          Pay for This Session
+        </Button>
+      </div>
+    </Modal>
+  );
+
   return {
     colors,
     // timezone
@@ -234,6 +274,11 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
 
     // Question input
     form,
+
+    usageData,
+    usageLoading,
+
+    QuotaExceededModal,
   };
 }
 

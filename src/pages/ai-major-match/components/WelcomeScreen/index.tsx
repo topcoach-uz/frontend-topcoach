@@ -4,10 +4,34 @@ import useColors from 'src/hooks/useColors';
 
 interface WelcomeScreenProps {
   onStart: () => void;
+  canUseAiMajorMatch: boolean;
+  aiMajorMatchUsage?: { used: number; limit: number };
 }
 
-export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
+export const WelcomeScreen = ({ onStart, canUseAiMajorMatch, aiMajorMatchUsage }: WelcomeScreenProps) => {
   const colors = useColors();
+  
+  const getUsageText = () => {
+    if (!aiMajorMatchUsage) return '';
+    return `${aiMajorMatchUsage.used}/${aiMajorMatchUsage.limit} assessments used`;
+  };
+  
+  const getButtonText = () => {
+    if (!canUseAiMajorMatch) {
+      return 'Upgrade Plan to Continue';
+    }
+    return 'Start Assessment';
+  };
+  
+  const handleButtonClick = () => {
+    if (!canUseAiMajorMatch) {
+      // Navigate to subscription page or show upgrade modal
+      window.location.href = '/subscriptions';
+      return;
+    }
+    onStart();
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -64,13 +88,39 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
             </div>
           </div>
 
+          {aiMajorMatchUsage && (
+            <div className={styles.usageInfo}>
+              <CustomText
+                fontSize={14}
+                color={canUseAiMajorMatch ? colors.colorTextSecondary : colors.colorError}
+                centered
+              >
+                {getUsageText()}
+              </CustomText>
+            </div>
+          )}
+
+          {!canUseAiMajorMatch && (
+            <div className={styles.upgradeMessage}>
+              <CustomText
+                fontSize={16}
+                color={colors.colorError}
+                centered
+                className={styles.upgradeText}
+              >
+                You've used all your AI Major Match assessments. Upgrade your plan to continue!
+              </CustomText>
+            </div>
+          )}
+
           <CustomButton
             type="primary"
             size="large"
             className={styles.startButton}
-            onClick={onStart}
+            onClick={handleButtonClick}
+            disabled={!canUseAiMajorMatch}
           >
-            Start Assessment
+            {getButtonText()}
           </CustomButton>
         </div>
       </div>

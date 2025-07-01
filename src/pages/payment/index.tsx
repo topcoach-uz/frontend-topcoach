@@ -56,74 +56,49 @@ function PaymentPage() {
     });
   };
 
-  const handleRedirectToPayme = () => {
-    console.log("clicked");
-    api.payments
-      .getRedirectUrl(
-        "payme",
-        // @ts-ignore
-        sessionId
-          ? {
-              sessionId: sessionId,
-              returnUrl,
-              planId,
-              mentorId,
-            }
-          : {
-              returnUrl,
-              planId,
-              mentorId,
-            },
-      )
-      .then((res) => {
-        window.location.href = res.data?.url;
-      });
-  };
+  // Helper to POST to backend and redirect (unified for session and subscription)
+  const handleProviderRedirect = async (provider: 'payme' | 'click' | 'atmos') => {
+    const planId = searchParams.get('planId');
+    const sessionId = searchParams.get('sessionId');
+    const mentorId = searchParams.get('mentorId');
+    const returnUrl = 'https://topcoach.uz/';
+    const isSubscription = !!planId && !mentorId && !sessionId;
 
-  const handleRedirectToClick = () => {
-    api.payments
-      .getRedirectUrl(
-        "click",
-        // @ts-ignore
-        sessionId
-          ? {
-              sessionId,
-              returnUrl,
-              planId,
-              mentorId,
-            }
-          : {
-              returnUrl,
-              planId,
-              mentorId,
-            },
-      )
-      .then((res) => {
-        window.location.href = res.data?.url;
-      });
-  };
+    if (!planId && !sessionId) {
+      message.error('Missing plan or session information.');
+      return;
+    }
 
-  const handleRedirectToAtmos = () => {
-    api.payments
-      .getRedirectUrl(
-        "atmos",
-        // @ts-ignore
-        sessionId
-          ? {
-              sessionId,
-              returnUrl,
-              planId,
-              mentorId,
-            }
-          : {
-              returnUrl,
-              planId,
-              mentorId,
-            },
-      )
-      .then((res) => {
-        window.location.href = res.data?.url;
-      });
+    // Check authentication (assume JWT is handled globally, but can check user state)
+    // If you have an auth state, check it here
+    // if (!isAuthenticated) {
+    //   message.error('You must be logged in to pay.');
+    //   return;
+    // }
+
+    let payload: any = { returnUrl };
+    if (isSubscription) {
+      payload.planId = planId;
+    } else {
+      if (planId) payload.planId = planId;
+      if (mentorId) payload.mentorId = mentorId;
+      if (sessionId) payload.sessionId = sessionId;
+    }
+
+    setIsLoading(true);
+    try {
+      // Use the same API for both flows
+      const res = await api.payments.getRedirectUrl(provider, payload);
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        message.error('No redirect URL received.');
+      }
+    } catch (err: any) {
+      message.error(err.response?.data?.message || 'Payment redirect failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const cardType = [
@@ -213,19 +188,19 @@ function PaymentPage() {
                 </CustomText>
                 <div className={styles.paymentImages}>
                   <div
-                    onClick={() => handleRedirectToPayme()}
+                    onClick={() => handleProviderRedirect('payme')}
                     className={styles.paymeImg}
                   >
                     <img src="/img/payme.png" alt="img error" />
                   </div>
                   <div
-                    onClick={() => handleRedirectToClick()}
+                    onClick={() => handleProviderRedirect('click')}
                     className={styles.paymeImg}
                   >
                     <img src="/img/click.jpg" alt="img error" />
                   </div>
                   <div
-                    onClick={() => handleRedirectToAtmos()}
+                    onClick={() => handleProviderRedirect('atmos')}
                     className={styles.paymeImg}
                   >
                     <img src="/img/atmos.png" alt="img error" />

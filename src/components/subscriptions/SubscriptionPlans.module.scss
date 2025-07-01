@@ -1,0 +1,236 @@
+@import 'src/styles/variables.scss';
+
+.plansContainer {
+  display: flex;
+  gap: 42px;
+  justify-content: center;
+  margin: 34px 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.planCard {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 5px 22px rgba(0,0,0,0.09);
+  border: 2px solid transparent;
+  min-width: 355px;
+  max-width: 385px;
+  min-height: 520px;
+  padding: 36px 24px 24px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+  font-size: 1.03rem;
+  
+  &:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.13);
+    border-color: #e0e0e0;
+  }
+}
+
+.current {
+  border-color: $colorPrimary;
+  box-shadow: 0 6px 32px rgba(230,57,70,0.12);
+}
+
+.popularBadge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: $colorPrimary;
+  color: #fff;
+  font-weight: 700;
+  font-size: 10.5px;
+  border-radius: 7px;
+  padding: 4px 12px;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.currentPlanBadge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: #27ae60;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 7px;
+  padding: 4px 12px;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.planName {
+  font-size: 1.42rem;
+  font-weight: 800;
+  margin-bottom: 9px;
+  color: #232323;
+}
+
+.free {
+  color: $colorSuccess;
+}
+
+.price {
+  font-size: 1.92rem;
+  font-weight: 900;
+  margin-bottom: 9px;
+  color: #b02a37;
+}
+
+.description {
+  color: $colorTextDescription;
+  font-size: 1.03rem;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.features {
+  width: 100%;
+  margin-bottom: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  font-size: 1.03rem;
+  margin-bottom: 13px;
+  color: #232323;
+}
+
+.bulletCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #27ae60;
+  margin-right: 12px;
+  box-shadow: 0 2px 6px rgba(39,174,96,0.10);
+  flex-shrink: 0;
+}
+
+.featureText {
+  display: inline-block;
+  line-height: 1.6;
+  font-size: 1.03rem;
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 11px;
+  font-size: 1.06rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: #fff;
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-top: 14px;
+  margin-bottom: 0;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+  &:hover:enabled {
+    background: #2563eb;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.13);
+  }
+  &:disabled,
+  &.disabledBtn {
+    background: #e5e7eb;
+    color: #b0b0b0;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.freeBtn {
+  background: #27ae60;
+  color: #fff;
+  &:hover {
+    background: #219150;
+  }
+}
+
+.premiumBtn {
+  background: #6d28d9;
+  color: #fff;
+  &:hover {
+    background: #5b21b6;
+  }
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 48px;
+  margin-top: 32px;
+  margin-bottom: 0;
+}
+
+.usageInfo {
+  font-size: 0.98rem;
+  color: #2e7d32;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+  text-align: center;
+  background: #f6fff6;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.planWarning {
+  color: #b02a37;
+  background: #fff3e0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+  font-size: 0.98rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+@media (max-width: 1200px) {
+  .plansContainer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .planCard {
+    min-width: 94vw;
+    max-width: 98vw;
+    min-height: 410px;
+    padding: 16px 3vw 16px 3vw;
+  }
+}
+
+@media (max-width: 900px) {
+  .plansContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .planCard {
+    min-width: 98vw;
+    max-width: 99vw;
+    min-height: 330px;
+    padding: 10px 1vw 10px 1vw;
+  }
+} 

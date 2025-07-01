@@ -58,9 +58,9 @@ export const Results = ({ results, onRetake }: ResultsProps) => {
             <div key={index} className={styles.majorCard}>
               <div className={styles.majorHeader}>
                 <div>
-                  <CustomText as="h2" fontSize={28} fontWeight={700}>
-                    #{index + 1} {major.major}
-                  </CustomText>
+                <CustomText as="h2" fontSize={28} fontWeight={700}>
+                  #{index + 1} {major.major}
+                </CustomText>
                   <CustomText as="h3" fontSize={16} fontWeight={600} color={colors.colorTextSecondary}>
                     {major.category}
                   </CustomText>
@@ -71,8 +71,8 @@ export const Results = ({ results, onRetake }: ResultsProps) => {
               </div>
               <div className={styles.section}>
                 <CustomText>
-                  {major.summary}
-                </CustomText>
+                {major.summary}
+              </CustomText>
               </div>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
