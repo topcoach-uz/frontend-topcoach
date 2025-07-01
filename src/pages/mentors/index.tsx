@@ -27,6 +27,17 @@ export default function MentorsPage() {
     { label: 'Junior', value: MentorExperienceLevel.Junior },
   ];
 
+  // Dynamic subtitle based on selected filter
+  const mentorSubtitles: Record<string, string> = {
+    all: 'Connect with experienced mentors who can guide you through your university application journey.',
+    [MentorExperienceLevel.Probono]: 'Pro Bono Mentors volunteer their time to help students succeed, offering free guidance and making a social impact.',
+    [MentorExperienceLevel.Junior]: 'Junior Mentors are recent admits to top universities, eager to share fresh, relatable advice.',
+    [MentorExperienceLevel.Senior]: 'Senior Mentors have guided multiple students to acceptance and offer proven, practical insights.',
+    [MentorExperienceLevel.Expert]: 'Expert Mentors are leaders in admissions, with years of experience and a strong record of success.',
+  };
+  
+  const subtitle = mentorSubtitles[selectedLevel] || mentorSubtitles.all;
+
   // Filter mentors based on selected level
   let filteredMentors = useMemo(() => {
     if (selectedLevel === 'all') {
@@ -55,7 +66,7 @@ export default function MentorsPage() {
           <div className={styles.top}>
             <MainTitleDescription
               title={t('mentors.mentorTitle')}
-              description={t('mentors.mentorText')}
+              description={subtitle}
             />
           </div>
           {/* // Mentor Level Filter */}
