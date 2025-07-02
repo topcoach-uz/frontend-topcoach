@@ -1,6 +1,5 @@
 import { Breadcrumb, Flex, Form, Spin } from "antd";
 import { useTranslation } from "react-i18next";
-import { EventFormTypeEnum } from "src/app/api/Api";
 import { CustomButton } from "src/components/common";
 import FormMaker from "src/components/form/FormMaker";
 import { ArrowRight } from "src/components/icons";
@@ -17,7 +16,7 @@ import useApply from "../useApply";
 import useUndergraduate from "./useUndergraduate";
 
 export default function ApplyToEventPage() {
-  const { breadcrumbItems } = useApply();
+  const { breadcrumbItems, commonFormItems } = useApply();
   const { i18n } = useTranslation();
 
   const { submitLoading, form, onComplete, undergraduateForm } =
@@ -25,14 +24,17 @@ export default function ApplyToEventPage() {
 
   const currentLocale = i18n.language as "en" | "kk" | "ru" | "uz";
   const dynamicFormItems = undergraduateForm
-    ? transformFormItems(undergraduateForm, currentLocale)
+    ? transformFormItems(undergraduateForm, currentLocale, form)
     : null;
 
-  if (dynamicFormItems?.formItems) {
-    dynamicFormItems.formItems = sortFormItemsFileUploadLast(
-      dynamicFormItems.formItems
-    );
-  }
+  // Concatenate static form items with dynamic additional responses
+  const allFormItems = [
+    ...commonFormItems,
+    ...(dynamicFormItems?.formItems || []),
+  ];
+
+  // Sort all form items to put file uploads at the end
+  const sortedFormItems = sortFormItemsFileUploadLast(allFormItems);
 
   const showFileUploadWarning = undergraduateForm
     ? hasFileUploadFields(undergraduateForm)
@@ -57,7 +59,7 @@ export default function ApplyToEventPage() {
           layout="vertical"
           scrollToFirstError={{ behavior: "smooth", block: "center" }}
         >
-          <FormMaker formItems={dynamicFormItems?.formItems || []} />
+          <FormMaker formItems={sortedFormItems} />
 
           {showFileUploadWarning && (
             <div className={styles.fileTypeInfo}>

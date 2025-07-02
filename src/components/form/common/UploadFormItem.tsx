@@ -1,9 +1,9 @@
-import { Col, Form, Upload } from 'antd';
-import { FormItemProps, UploadProps } from 'antd/lib';
-import { DocumentUpload } from 'iconsax-react';
-import { useState } from 'react';
-import { CustomButton } from 'src/components/common';
-import { colors } from 'src/constants/theme';
+import { Col, Form, Upload } from "antd";
+import { FormItemProps, UploadProps } from "antd/lib";
+import { DocumentUpload } from "iconsax-react";
+import { useState } from "react";
+import { CustomButton } from "src/components/common";
+import { colors } from "src/constants/theme";
 
 interface Props {
   title?: string;
@@ -24,13 +24,13 @@ export default function UploadFormItem({
   label,
   message,
   formItemProps,
-  title = 'Click to Upload',
-  reUploadTitle = 'Re-upload',
+  title = "Click to Upload",
+  reUploadTitle = "Re-upload",
   ...rest
 }: UploadFormItemProps) {
   const [buttonTitle, setButtonTitle] = useState(title);
 
-  const handleChange: UploadProps['onChange'] = (info) => {
+  const handleChange: UploadProps["onChange"] = (info) => {
     if (info.fileList.length > 0) {
       setButtonTitle(reUploadTitle);
     } else {
@@ -47,7 +47,11 @@ export default function UploadFormItem({
         shouldUpdate
         {...formItemProps}
       >
-        <Upload {...rest} beforeUpload={() => false} onChange={handleChange}>
+        <Upload
+          {...rest}
+          beforeUpload={() => false}
+          onChange={handleChange}
+        >
           <CustomButton
             type="primary"
             icon={<DocumentUpload size="24" color={colors.white} />}

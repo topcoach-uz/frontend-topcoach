@@ -52,7 +52,7 @@ export default function useUndergraduate() {
       passportIssuingAuthority: values.passportIssuingAuthority,
       region: values.region,
       parentFullName: values.parentFullName,
-      parentPhoneNumber: values.parentPhone,
+      parentPhoneNumber: values.parentPhoneNumber,
       parentEmail: values.parentEmail,
       emergencyContact: values.emergencyContact,
       birthDate: dayjs(values.birthDate).format("YYYY-MM-DD"),
@@ -75,7 +75,7 @@ export default function useUndergraduate() {
     Object.entries(requestPayload).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         // Handle arrays (e.g., essays)
-        value.forEach((item, index) => {
+        value.forEach((item) => {
           if (typeof item === "object") {
             // If the array contains objects, stringify them
             formData.append(key, JSON.stringify(item));
@@ -94,6 +94,7 @@ export default function useUndergraduate() {
   };
 
   // Function to submit the data to your API
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmitEvent = async (payload: any) => {
     setSubmitLoading(true);
     api.camps

@@ -5,6 +5,7 @@ import {
   AdditionalEventFormsSchema,
   EssaysSchema,
 } from "src/app/api/Api";
+import { FormInstance, UploadFile } from "antd";
 
 // Define translation interface for type safety
 interface TranslationObject {
@@ -22,7 +23,8 @@ interface TranslationObject {
  */
 export function transformFormItems(
   forms: EventFormsSchema,
-  currentLocale: "en" | "kk" | "ru" | "uz" = "en"
+  currentLocale: "en" | "kk" | "ru" | "uz" = "en",
+  form: FormInstance
 ): {
   formItems: IFormItemType[];
   formItemEssay: IFormItemType[];
@@ -59,6 +61,7 @@ export function transformFormItems(
         let options:
           | Array<{ label: string; value: string }>
           | undefined;
+        const otherProperties: Partial<IFormItemType> = {};
 
         switch (additionalForm.inputType) {
           case EventInputTypeEnum.Text:
@@ -72,6 +75,7 @@ export function transformFormItems(
           case EventInputTypeEnum.File:
             type = "upload";
             inputType = undefined;
+            otherProperties.maxCount = 1;
             break;
           case EventInputTypeEnum.Image:
             type = "imageUpload";
@@ -84,6 +88,7 @@ export function transformFormItems(
           case EventInputTypeEnum.MultipleChoice:
             type = "select";
             inputType = undefined;
+            otherProperties.mode = "multiple";
             options = additionalForm.options?.map((option) => ({
               label: option,
               value: option.toLowerCase().replace(/\s+/g, "_"),
@@ -105,11 +110,13 @@ export function transformFormItems(
         const formItem: IFormItemType = {
           name: `additional_${additionalForm.id}`,
           label,
+          form,
           type,
           ...(inputType && { inputType }),
           message: `Please enter ${label.toLowerCase()}`,
           placeholder: notes || `Enter ${label.toLowerCase()}`,
           col: 12, // Default column span
+          ...otherProperties,
           ...(options && { options }),
           ...(additionalForm.inputType ===
             EventInputTypeEnum.LargeText && {
@@ -176,12 +183,16 @@ export function prepareFormDataForSubmission(
   essays: Array<{ essayId: string; content: string }>;
 } {
   // Extract additional form responses
-  const additionalResponses = formSchema.additionalForms.map(
-    (form) => ({
+  const additionalResponses = formSchema.additionalForms
+    .filter(
+      (form) =>
+        form.inputType !== EventInputTypeEnum.Image &&
+        form.inputType !== EventInputTypeEnum.File
+    )
+    .map((form) => ({
       id: form.id,
       response: formValues[`additional_${form.id}`] || "",
-    })
-  );
+    }));
 
   // Extract essay responses
   const essays = formSchema.essays.map((essay) => ({
@@ -237,7 +248,10 @@ export function createDynamicSubmissionPayload(
       const fieldValue = formValues[`additional_${form.id}`];
       if (fieldValue) {
         fileUploads[form.id] =
-          (fieldValue as { file?: unknown })?.file || fieldValue;
+          form.inputType === EventInputTypeEnum.File
+            ? (fieldValue as { file?: unknown })?.file || fieldValue
+            : (fieldValue as UploadFile[])?.[0]?.originFileObj ||
+              fieldValue;
       }
     }
   });

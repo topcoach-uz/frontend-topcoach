@@ -20,7 +20,7 @@ import {
 } from "src/utils/formTransformer";
 
 export default function ApplyToEventGraduatePage() {
-  const { breadcrumbItems } = useApply();
+  const { breadcrumbItems, commonFormItems } = useApply();
   const { i18n } = useTranslation();
 
   const { onComplete, form, loading } = useGraduate();
@@ -35,14 +35,17 @@ export default function ApplyToEventGraduatePage() {
 
   const currentLocale = i18n.language as "en" | "kk" | "ru" | "uz";
   const dynamicFormItems = graduateForm
-    ? transformFormItems(graduateForm, currentLocale)
+    ? transformFormItems(graduateForm, currentLocale, form)
     : null;
 
-  if (dynamicFormItems?.formItems) {
-    dynamicFormItems.formItems = sortFormItemsFileUploadLast(
-      dynamicFormItems.formItems
-    );
-  }
+  // Concatenate static form items with dynamic additional responses
+  const allFormItems = [
+    ...commonFormItems,
+    ...(dynamicFormItems?.formItems || []),
+  ];
+
+  // Sort all form items to put file uploads at the end
+  const sortedFormItems = sortFormItemsFileUploadLast(allFormItems);
 
   console.log("dynamicFormItems", dynamicFormItems);
 
@@ -69,7 +72,7 @@ export default function ApplyToEventGraduatePage() {
           layout="vertical"
           scrollToFirstError={{ behavior: "smooth", block: "center" }}
         >
-          <FormMaker formItems={dynamicFormItems?.formItems || []} />
+          <FormMaker formItems={sortedFormItems} />
 
           {showFileUploadWarning && (
             <div className={styles.fileTypeInfo}>
