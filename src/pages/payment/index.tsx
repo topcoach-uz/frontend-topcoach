@@ -27,6 +27,11 @@ function PaymentPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  if (!planId) {
+    message.error('Missing plan information.');
+    return;
+  }
+
   const handleSubmit = async () => {
     form.validateFields().then((values) => {
       const payload = {

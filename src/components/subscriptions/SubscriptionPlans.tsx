@@ -126,8 +126,8 @@ const SubscriptionPlans: React.FC = () => {
     }
     // Find the real plan from backend data
     const apiPlan = plansData?.find((p) => p.name.toLowerCase() === plan.name.toLowerCase());
-    if (!apiPlan) {
-      message.error('Plan not found. Please try again.');
+    if (!apiPlan || !apiPlan.id) {
+      message.error('Plan not found or missing ID. Please try again.');
       return;
     }
     navigate(`/payment?planId=${apiPlan.id}&amount=${apiPlan.price}&type=subscription`);
