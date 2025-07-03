@@ -30,6 +30,21 @@ export default function useSignUp({ form }: Props) {
     },
     {
       col: 24,
+      name: 'phone_number',
+      label: t('signUp.phoneNumber'),
+      type: 'input',
+      inputType: 'text',
+      placeholder: t('signUp.phoneNumberPlaceholder'),
+      message: t('signUp.phoneNumberError'),
+      formItemProps: {
+        rules: [
+          { required: true, message: t('signUp.phoneNumberError') },
+          { pattern: /^\+?\d{9,15}$/, message: t('signUp.phoneNumberFormatError') },
+        ],
+      },
+    },
+    {
+      col: 24,
       name: 'password',
       label: t('signUp.password'),
       type: 'input',

@@ -24,6 +24,7 @@ export default function StudentRegistrationPage() {
           email: values.email?.trim(),
           password: values.password?.trim(),
           name: values.name?.trim(),
+          phoneNumber: values.phone_number?.trim(),
         } as any)
         .then((res) => {
           navigate(`/auth/verification?email=${values.email}`);

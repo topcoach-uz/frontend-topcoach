@@ -18,7 +18,7 @@ import {
 } from 'src/app/slices/authSlice';
 import { UserRole } from 'src/app/api/Api';
 import { UserType } from 'src/app/type';
-import { message } from 'antd';
+import { message, Form, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 export default function GoogleAuthenticationPage() {
@@ -29,6 +29,9 @@ export default function GoogleAuthenticationPage() {
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const [step, setStep] = useState<'role' | 'phone'>('role');
+  const [selectedRole, setSelectedRole] = useState<UserType | undefined>(undefined);
+  const [phoneForm] = Form.useForm();
 
   const { data, isLoading, refetch } = useGetMeQuery(undefined, {
     skip: !exchangeSuccess,
@@ -48,10 +51,47 @@ export default function GoogleAuthenticationPage() {
     window.location.href = '/';
   }
 
-  const [selected, setSelected] = useState<UserType>(UserRole.Student);
+  const handleRoleChange = (key: UserType) => {
+    setSelectedRole(key);
+  };
 
-  const handleChange = (key: UserType) => {
-    setSelected(key);
+  const handleRoleSubmit = () => {
+    if (!selectedRole) {
+      message.error('Please select a role');
+      return;
+    }
+    setStep('phone');
+  };
+
+  const handlePhoneSubmit = async () => {
+    try {
+      const values = await phoneForm.validateFields();
+      setSubmitting(true);
+      
+      // Update user profile with phone number
+      await dispatch(
+        updateProfile({
+          phoneNumber: values.phoneNumber,
+        })
+      ).unwrap();
+
+      // Continue with role-specific flow
+      if (selectedRole === UserRole.Mentor) {
+        navigate('/auth/signup/mentor?step=1');
+      } else {
+        await dispatch(
+          updateProfile({
+            // @ts-ignore
+            profile: { profileComplete: true },
+          })
+        ).unwrap();
+        navigate('/');
+      }
+    } catch (err: any) {
+      message.error(err.message || 'Failed to update phone number', 10);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -69,36 +109,6 @@ export default function GoogleAuthenticationPage() {
       });
   }, [exchangeToken]);
 
-  const handleSubmit = async () => {
-    if (selected === UserRole.Mentor) {
-      setSubmitting(true);
-      // @ts-ignore
-      dispatch(updateProfile({ profile: { role: UserRole.Mentor } }))
-        .unwrap()
-        .then(() => {
-          navigate('/auth/signup/mentor?step=1');
-        })
-        .catch((err) => {
-          message.error(err.message, 10);
-        })
-        .finally(() => setSubmitting(false));
-    } else {
-      setSubmitting(true);
-      dispatch(
-        updateProfile({
-          // @ts-ignore
-          profile: { profileComplete: true },
-        })
-      )
-        .unwrap()
-        .then((res) => {
-          navigate('/');
-        })
-        .catch((err) => message.error(err.message, 10))
-        .finally(() => setSubmitting(false));
-    }
-  };
-
   if (isLoading) {
     return <Loader />;
   }
@@ -108,22 +118,61 @@ export default function GoogleAuthenticationPage() {
       <Link className={styles.logo} to="/">
         <Logo />
       </Link>
-      <TitleDescriptionPair
-        title="Welcome!"
-        description="Are you a mentor or a student?"
-      />
+      
+      {step === 'role' ? (
+        <>
+          <TitleDescriptionPair
+            title="Welcome!"
+            description="Are you a mentor or a student?"
+          />
 
-      <div className={styles.container}>
-        <RoleCard handleChange={handleChange} selected={selected} />
-        <CustomButton
-          onClick={handleSubmit}
-          type="primary"
-          width="100%"
-          loading={submitting}
-        >
-          {t('btn.continue')}
-        </CustomButton>
-      </div>
+          <div className={styles.container}>
+            <RoleCard handleChange={handleRoleChange} selected={selectedRole as UserType} />
+            <CustomButton
+              onClick={handleRoleSubmit}
+              type="primary"
+              width="100%"
+              disabled={!selectedRole}
+            >
+              {t('btn.continue')}
+            </CustomButton>
+          </div>
+        </>
+      ) : (
+        <>
+          <TitleDescriptionPair
+            title="Complete Your Profile"
+            description="Please provide your phone number to continue"
+          />
+
+          <div className={styles.container}>
+            <Form form={phoneForm} layout="vertical">
+              <Form.Item
+                name="phoneNumber"
+                label={t('signUp.phoneNumber')}
+                rules={[
+                  { required: true, message: t('signUp.phoneNumberError') },
+                  { pattern: /^\+?\d{9,15}$/, message: t('signUp.phoneNumberFormatError') },
+                ]}
+              >
+                <Input
+                  placeholder={t('signUp.phoneNumberPlaceholder')}
+                  size="large"
+                />
+              </Form.Item>
+            </Form>
+            
+            <CustomButton
+              onClick={handlePhoneSubmit}
+              type="primary"
+              width="100%"
+              loading={submitting}
+            >
+              {t('btn.continue')}
+            </CustomButton>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -135,8 +135,7 @@ export default function useEditProfile({
       selectedUniversities: selectedUniversitiesForUpdate,
     };
 
-    const isImageChanged =
-      fileList.length > 0 && fileList[0].uid !== 'fromBackend';
+    const isImageChanged = Array.isArray(fileList) && fileList.length > 0 && fileList[0].uid !== 'fromBackend';
 
     const normalizeValue = (value: any) => value?.trim?.() || '';
 
@@ -261,5 +260,6 @@ export default function useEditProfile({
     universityList,
     showManualUniversity,
     fileList,
+    userData,
   };
 }
