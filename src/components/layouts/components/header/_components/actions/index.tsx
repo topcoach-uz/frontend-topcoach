@@ -8,6 +8,7 @@ import styles from './actions.module.scss';
 import ActionsMobileVersion from './mobile/index.tsx';
 import useActions from './useActions.tsx';
 import { useTranslation } from 'react-i18next';
+import { useTypedSelector } from 'src/app/store';
 
 export default function Actions() {
   const {
@@ -26,6 +27,8 @@ export default function Actions() {
   } = useActions();
   const { screenSize } = useScreenSize();
   const { i18n } = useTranslation();
+  const userData = useTypedSelector((state) => state.auth.profile);
+  const role = userData?.profile?.role;
 
   const isMobileVersion =
     i18n.language === 'en' ? screenSize < 1200 : screenSize < 1400;
@@ -37,6 +40,7 @@ export default function Actions() {
         <EditProfileModal
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}
+          role={role || ''}
         />
         <ActionsMobileVersion
           handleDarkMode={handleDarkMode}
@@ -53,6 +57,7 @@ export default function Actions() {
       <EditProfileModal
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
+        role={role || ''}
       />
       <button className={styles.mode_switch} onClick={handleDarkMode}>
         {isDark ? <SunIcon /> : <MoonIcon />}
