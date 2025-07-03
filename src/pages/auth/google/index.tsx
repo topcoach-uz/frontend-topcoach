@@ -37,19 +37,18 @@ export default function GoogleAuthenticationPage() {
     skip: !exchangeSuccess,
   });
 
-  if (data?.id) {
-    dispatch(loginCheck());
-  }
+  // Handle user data when it's loaded
+  useEffect(() => {
+    if (data?.id) {
+      dispatch(loginCheck());
+    }
+  }, [data?.id, dispatch]);
 
   useEffect(() => {
     if (exchangeSuccess) {
       refetch();
     }
-  }, [exchangeSuccess]);
-
-  if (data?.profile.profileComplete) {
-    window.location.href = '/';
-  }
+  }, [exchangeSuccess, refetch]);
 
   const handleRoleChange = (key: UserType) => {
     setSelectedRole(key);
@@ -109,7 +108,8 @@ export default function GoogleAuthenticationPage() {
       });
   }, [exchangeToken]);
 
-  if (isLoading) {
+  // Show loader while exchanging tokens or loading user data
+  if (isLoading || !exchangeSuccess) {
     return <Loader />;
   }
 
