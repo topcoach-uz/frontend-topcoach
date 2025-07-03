@@ -47,6 +47,8 @@ export default function EditProfileModal({
 
   const canCloseModal = true; // Assuming canCloseModal is always true
 
+  const phoneNumberMissing = !userData?.phoneNumber || (userData as any)?.phone_number_missing;
+
   const handleForceClose = () => {
     Modal.confirm({
       title: 'Update Phone Number Required',
@@ -67,7 +69,7 @@ export default function EditProfileModal({
     <>
       <Modal
         open={isModalVisible}
-        onCancel={handleForceClose}
+        onCancel={phoneNumberMissing ? handleForceClose : handleCancel}
         title={t('editProfile.title')}
         okText="Update profile"
         cancelText="Cancel"
