@@ -359,7 +359,7 @@ const SubscriptionPlans: React.FC = () => {
                 }
               </div>
               {/* Usage info for current plan */}
-              {isCurrentPlan && (
+              {/* {isCurrentPlan && (
                 <div style={{ width: '100%' }}>
                   {usageArr.map((u, idx) => (
                     // Only show usage info for features that are in the visible features list, have a limit > 0, and used > 0
@@ -375,7 +375,7 @@ const SubscriptionPlans: React.FC = () => {
                     ) : null
                   ))}
                 </div>
-              )}
+              )} */}
             </div>
           );
         })}
