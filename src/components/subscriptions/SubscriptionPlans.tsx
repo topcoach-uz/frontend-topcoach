@@ -62,7 +62,7 @@ const SubscriptionPlans: React.FC = () => {
         '1 AI-powered major match',
       ],
       button: 'Join for Free',
-      // buttonClass: styles.freeBtn,
+      buttonClass: styles.freeBtn,
     },
     {
       key: 'standard',
