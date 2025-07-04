@@ -50,7 +50,7 @@ const SubscriptionPlans: React.FC = () => {
       key: 'free',
       id: 'aa63df56-4b93-470b-b861-98628dd186a1',
       name: 'Free',
-      price: '$0',
+      price: '$0/month',
       priceValue: 0,
       description: 'Full access to TopCoach and 1 AI match to discover your path.',
       features: [
@@ -62,7 +62,7 @@ const SubscriptionPlans: React.FC = () => {
         '1 AI-powered major match',
       ],
       button: 'Join for Free',
-      buttonClass: styles.freeBtn,
+      // buttonClass: styles.freeBtn,
     },
     {
       key: 'standard',
