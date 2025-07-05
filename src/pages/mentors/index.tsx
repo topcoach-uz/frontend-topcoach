@@ -22,9 +22,9 @@ export default function MentorsPage() {
   const mentorLevelOptions = [
     { label: 'All', value: 'all' },
     { label: 'Pro bono', value: MentorExperienceLevel.Probono },
-    { label: 'Expert', value: MentorExperienceLevel.Expert },
-    { label: 'Senior', value: MentorExperienceLevel.Senior },
     { label: 'Junior', value: MentorExperienceLevel.Junior },
+    { label: 'Senior', value: MentorExperienceLevel.Senior },
+    { label: 'Expert', value: MentorExperienceLevel.Expert },
   ];
 
   // Dynamic title and subtitle based on selected filter

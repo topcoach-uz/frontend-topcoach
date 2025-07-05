@@ -107,7 +107,7 @@ export default function UniversitySection({
           <div className={styles.search}>
             <MultiAiSearchTextArea
               setText={setSearchText}
-              placeholderText="Discover your path with Artificial Intelligence."
+              placeholderText="Discover your correct path."
               isInUniversityPage={true}
             />
           </div>
@@ -168,24 +168,6 @@ export default function UniversitySection({
             {t('landing.submit')}
           </CustomButton>
         )}
-
-        <div className={styles.switchInside}>
-          <Switch
-            checked={checked}
-            className={styles.switch}
-            onChange={handleSwitch}
-          />
-          <CustomText
-            fontSize={14}
-            fontWeight={400}
-            mt={8}
-            style={{ whiteSpace: 'nowrap' }}
-            color={colors.colorTextPlaceholder}
-            onClick={() => handleSwitch && handleSwitch(true)}
-          >
-            {t('landing.aiSearch')}
-          </CustomText>
-        </div>
       </div>
 
       <Drawer

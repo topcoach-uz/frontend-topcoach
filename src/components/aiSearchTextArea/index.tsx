@@ -147,25 +147,7 @@ export default function AiSearchTextArea({
           />
         )}
         {!isInUniversityPage && (
-          <div className={styles.switchInside}>
-            <Switch
-              checked={checked}
-              className={styles.switch}
-              onChange={handleSwitch}
-            />
-            <CustomText
-              fontSize={14}
-              fontWeight={400}
-              color={
-                isDark
-                  ? themeColors.dark.colorTextPlaceholder
-                  : themeColors.light.colorTextPlaceholder
-              }
-              onClick={() => handleSwitch(true)}
-            >
-              {t('landing.aiSearch')}
-            </CustomText>
-          </div>
+          <></>
         )}
       </div>
       {/* {isInUniversityPage && (
