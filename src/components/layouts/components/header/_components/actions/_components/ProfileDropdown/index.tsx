@@ -39,7 +39,7 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
 
   return (
     <div>
-      {role === UserRole.Mentor ? (
+      {(role === UserRole.Mentor || role === UserRole.Student) ? (
         <Dropdown menu={{ items: profileMenuItems }} trigger={['click']}>
           <Flex style={{ cursor: 'pointer' }} gap={4}>
             <div className={styles.avatar_wrapper}>
@@ -53,19 +53,9 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
                 />
               )}
             </div>
-            {/* <DownOutlined style={{ color: colors.colorTextBase, fontSize: 14 }} /> */}
             <DownOutlined style={{ color: 'white', fontSize: 14 }} />
           </Flex>
         </Dropdown>
-      ) : role === UserRole.Student ? (
-        <CustomButton
-          icon={<LogoutIcon className={styles.logout_icon} />}
-          type="text"
-          className={styles.logout_button}
-          onClick={handleLogout}
-        >
-          {t('header.logout')}
-        </CustomButton>
       ) : (
         <></>
       )}

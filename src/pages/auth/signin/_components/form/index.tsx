@@ -13,6 +13,8 @@ import styles from './signin_form.module.scss';
 import useSignInForm from './useSignInForm';
 import FormError from 'src/components/form/common/FormError';
 import { useTranslation } from 'react-i18next';
+import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
+import { useUpdatePhoneNumberMutation } from 'src/app/services/users';
 
 export default function SigninForm() {
   const { form } = useSignInForm();
@@ -21,6 +23,9 @@ export default function SigninForm() {
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [pendingTokens, setPendingTokens] = useState<{ access: string; refresh: string } | null>(null);
+  const [updatePhoneNumber, { isLoading: updatingPhone }] = useUpdatePhoneNumberMutation();
 
   const formItems: IFormItemType[] = [
     {
@@ -54,6 +59,12 @@ export default function SigninForm() {
       .then((res: any) => {
         const access_token = res.data?.user?.access;
         const refresh_token = res.data?.user?.refresh;
+        if (res.data?.phoneNumberRequired) {
+          setPendingTokens({ access: access_token, refresh: refresh_token });
+          setShowPhoneModal(true);
+          setLoading(false);
+          return;
+        }
         if (!!access_token && !!refresh_token) {
           dispatch(
             login({
@@ -75,35 +86,60 @@ export default function SigninForm() {
       });
   };
 
+  const handlePhoneModalSubmit = (phoneNumber: string) => {
+    if (!pendingTokens) return;
+    // Set tokens so the user is authenticated for the update
+    localStorage.setItem('access', pendingTokens.access);
+    localStorage.setItem('refresh', pendingTokens.refresh);
+    api.instance.defaults.headers['Authorization'] = `Bearer ${pendingTokens.access}`;
+    updatePhoneNumber({ phoneNumber })
+      .unwrap()
+      .then(() => {
+        setShowPhoneModal(false);
+        window.location.reload();
+      })
+      .catch((err) => {
+        message.error(err?.data?.message || 'Failed to update phone number');
+      });
+  };
+
   return (
-    <Form form={form} layout="vertical" onFinish={handleSubmit}>
-      <FormMaker formItems={formItems}></FormMaker>
+    <>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <FormMaker formItems={formItems}></FormMaker>
 
-      <CustomButton
-        style={{
-          padding: 0,
-          height: 32,
-          fontSize: themeFontSize.fontSizeTitle8,
-          marginLeft: 'auto',
-          display: 'block',
-        }}
-        type="link"
-        onClick={() => navigate('/auth/forgot-password')}
-      >
-        {t('signIn.forgotPassword')}
-      </CustomButton>
+        <CustomButton
+          style={{
+            padding: 0,
+            height: 32,
+            fontSize: themeFontSize.fontSizeTitle8,
+            marginLeft: 'auto',
+            display: 'block',
+          }}
+          type="link"
+          onClick={() => navigate('/auth/forgot-password')}
+        >
+          {t('signIn.forgotPassword')}
+        </CustomButton>
 
-      <FormError formError={error} />
+        <FormError formError={error} />
 
-      <CustomButton
-        type="primary"
-        htmlType="submit"
-        block
-        style={{ marginTop: 8 }}
-        loading={loading} // Disable button while loading
-      >
-        {t('signIn.logIn')}
-      </CustomButton>
-    </Form>
+        <CustomButton
+          type="primary"
+          htmlType="submit"
+          block
+          style={{ marginTop: 8 }}
+          loading={loading} // Disable button while loading
+        >
+          {t('signIn.logIn')}
+        </CustomButton>
+      </Form>
+      <PhoneNumberModal
+        visible={showPhoneModal}
+        onSubmit={handlePhoneModalSubmit}
+        onCancel={() => {}}
+        loading={updatingPhone}
+      />
+    </>
   );
 }
