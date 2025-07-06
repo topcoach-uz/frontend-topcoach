@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Input, Button, Typography, Space, Alert, Card, Divider } from 'antd';
+import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
 import { useUpdateTelegramPhoneNumberMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 
@@ -23,7 +23,10 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
     try {
       await updateTelegramPhoneNumber({ phoneNumber: phoneNumber.trim() });
       refetch();
-    } catch (error) {
+    } catch (error: any) {
+      // Show error to user
+      const backendMsg = error?.data?.message || error?.message || 'Failed to update Telegram phone number';
+      message.error(backendMsg);
       console.error('Failed to update Telegram phone number:', error);
     }
   };
