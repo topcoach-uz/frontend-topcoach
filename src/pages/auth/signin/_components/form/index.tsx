@@ -105,35 +105,35 @@ export default function SigninForm() {
 
   return (
     <>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <FormMaker formItems={formItems}></FormMaker>
+    <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <FormMaker formItems={formItems}></FormMaker>
 
-        <CustomButton
-          style={{
-            padding: 0,
-            height: 32,
-            fontSize: themeFontSize.fontSizeTitle8,
-            marginLeft: 'auto',
-            display: 'block',
-          }}
-          type="link"
-          onClick={() => navigate('/auth/forgot-password')}
-        >
-          {t('signIn.forgotPassword')}
-        </CustomButton>
+      <CustomButton
+        style={{
+          padding: 0,
+          height: 32,
+          fontSize: themeFontSize.fontSizeTitle8,
+          marginLeft: 'auto',
+          display: 'block',
+        }}
+        type="link"
+        onClick={() => navigate('/auth/forgot-password')}
+      >
+        {t('signIn.forgotPassword')}
+      </CustomButton>
 
-        <FormError formError={error} />
+      <FormError formError={error} />
 
-        <CustomButton
-          type="primary"
-          htmlType="submit"
-          block
-          style={{ marginTop: 8 }}
-          loading={loading} // Disable button while loading
-        >
-          {t('signIn.logIn')}
-        </CustomButton>
-      </Form>
+      <CustomButton
+        type="primary"
+        htmlType="submit"
+        block
+        style={{ marginTop: 8 }}
+        loading={loading} // Disable button while loading
+      >
+        {t('signIn.logIn')}
+      </CustomButton>
+    </Form>
       <PhoneNumberModal
         visible={showPhoneModal}
         onSubmit={handlePhoneModalSubmit}

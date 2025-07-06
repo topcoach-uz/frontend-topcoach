@@ -196,19 +196,19 @@ function PaymentPage() {
                     onClick={() => handleProviderRedirect('payme')}
                     className={styles.paymeImg}
                   >
-                    <img src="/img/payme.png" alt="img error" />
+                    <img src="/img/payme.png" alt="img error" loading="lazy" />
                   </div>
                   <div
                     onClick={() => handleProviderRedirect('click')}
                     className={styles.paymeImg}
                   >
-                    <img src="/img/click.jpg" alt="img error" />
+                    <img src="/img/click.jpg" alt="img error" loading="lazy" />
                   </div>
                   <div
                     onClick={() => handleProviderRedirect('atmos')}
                     className={styles.paymeImg}
                   >
-                    <img src="/img/atmos.png" alt="img error" />
+                    <img src="/img/atmos.png" alt="img error" loading="lazy" />
                   </div>
                 </div>
               </div>

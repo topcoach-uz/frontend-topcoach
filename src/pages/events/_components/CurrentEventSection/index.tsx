@@ -82,7 +82,7 @@ export default function CurrentEvent() {
       <div className={'container ' + styles.container}>
         <div className={styles.eventImage}>
           {/* @ts-expect-error url hasn't been typed yet */}
-          <img src={upcomingEventData?.data?.media?.[0]?.url} alt="" />
+          <img src={upcomingEventData?.data?.media?.[0]?.url} alt="" loading="lazy" />
           <Flex
             className={styles.eventContent}
             vertical={screenSize < 768}

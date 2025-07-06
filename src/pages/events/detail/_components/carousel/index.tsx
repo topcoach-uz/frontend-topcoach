@@ -33,7 +33,7 @@ export default function EventsDetailCarousel({
     <Carousel infinite draggable arrows autoplay className={styles.carousel}>
       {generalImages.map((img, i) => (
         <div key={img.id || i} style={contentStyle} className={styles.img}>
-          <img src={img.url} alt="event image" />
+          <img src={img.url} alt="event image" loading="lazy" />
         </div>
       ))}
     </Carousel>

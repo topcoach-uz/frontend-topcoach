@@ -113,7 +113,7 @@ export default function UniversityDetailSection({
 
       <div className={styles.img}>
         {img ? (
-          <img src={img} alt="img error" />
+          <img src={img} alt="img error" loading="lazy" />
         ) : (
           <Skeleton.Image></Skeleton.Image>
         )}

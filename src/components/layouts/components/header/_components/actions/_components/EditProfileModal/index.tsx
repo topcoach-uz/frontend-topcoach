@@ -65,22 +65,22 @@ export default function EditProfileModal({
           >
             {role !== 'Student' && (
               <>
-                <AvatarFormItem
-                  name="avatar"
-                  form={form}
-                  accept="image/*"
-                  uploadText={t('shared.uploadText')}
-                  replaceText={t('shared.replaceText')}
-                  message="You can't leave this field empty"
-                />
-                <CustomText
-                  fontSize={14}
-                  fontWeight={400}
-                  ml={10}
-                  color={colors.colorTextDescription}
-                >
-                  {t('shared.imgUpload')}
-                </CustomText>
+            <AvatarFormItem
+              name="avatar"
+              form={form}
+              accept="image/*"
+              uploadText={t('shared.uploadText')}
+              replaceText={t('shared.replaceText')}
+              message="You can't leave this field empty"
+            />
+            <CustomText
+              fontSize={14}
+              fontWeight={400}
+              ml={10}
+              color={colors.colorTextDescription}
+            >
+              {t('shared.imgUpload')}
+            </CustomText>
               </>
             )}
           </Flex>
@@ -106,49 +106,49 @@ export default function EditProfileModal({
             </>
           ) : (
             <>
-              <FormMaker formItems={formItems} />
-              <SelectFormItem
-                name="selectedUniversities"
-                label={t('shared.university')}
-                placeholder={t('shared.universityPlaceholder')}
-                optionFilterProp="label"
-                col={24}
-                allowClear
-                showSearch
-                required={!showManualUniversity}
-                disabled={showManualUniversity}
-                message={!showManualUniversity ? t('signUp.universityError') : ''}
+          <FormMaker formItems={formItems} />
+          <SelectFormItem
+            name="selectedUniversities"
+            label={t('shared.university')}
+            placeholder={t('shared.universityPlaceholder')}
+            optionFilterProp="label"
+            col={24}
+            allowClear
+            showSearch
+            required={!showManualUniversity}
+            disabled={showManualUniversity}
+            message={!showManualUniversity ? t('signUp.universityError') : ''}
+            // @ts-ignore
+            options={
+              universityList?.map((uni) => ({
                 // @ts-ignore
-                options={
-                  universityList?.map((uni) => ({
-                    // @ts-ignore
-                    label: uni.name, // Ensure label is always a string
-                    value: uni.id,
-                  })) || []
-                }
-              />
-              <Form.Item name="customUniversity" valuePropName="checked">
-                <Flex gap={10} style={{ cursor: 'pointer' }}>
-                  <Checkbox
-                    defaultChecked={showManualUniversity}
+                label: uni.name, // Ensure label is always a string
+                value: uni.id,
+              })) || []
+            }
+          />
+          <Form.Item name="customUniversity" valuePropName="checked">
+            <Flex gap={10} style={{ cursor: 'pointer' }}>
+              <Checkbox
+                defaultChecked={showManualUniversity}
                     checked={customUniversityValue}
-                  >
-                    {t('shared.notListed')}
-                  </Checkbox>
-                </Flex>
-              </Form.Item>
-              {showManualUniversity && (
-                <InputFormItem
-                  name="university"
-                  col={24}
-                  label={t('shared.universityType')}
-                  placeholder={t('shared.universityTypePlaceholder')}
-                  inputType="text"
-                  message={t('signUp.universityError')}
-                />
-              )}
-              <Link to="/auth/forgot-password/sent">Reset Password</Link>
-              <VideoUploadFormItems form={form} />
+              >
+                {t('shared.notListed')}
+              </Checkbox>
+            </Flex>
+          </Form.Item>
+          {showManualUniversity && (
+            <InputFormItem
+              name="university"
+              col={24}
+              label={t('shared.universityType')}
+              placeholder={t('shared.universityTypePlaceholder')}
+              inputType="text"
+              message={t('signUp.universityError')}
+            />
+          )}
+          <Link to="/auth/forgot-password/sent">Reset Password</Link>
+          <VideoUploadFormItems form={form} />
             </>
           )}
         </Form>

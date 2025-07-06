@@ -3,10 +3,11 @@ import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
-import { useUpdatePhoneNumberMutation } from 'src/app/services/users';
+import { useUpdatePhoneNumberMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 import CheckListItem from '../../home/mentor/_components/CheckListItem';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Card, Flex, Button } from 'antd';
+import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 
 import HomeAiSearchSection from '../_components/aiSearch';
 import BannerSection from '../_components/banner';
@@ -21,7 +22,11 @@ function MenteeHomePage() {
   const phoneMissing = !profile?.phoneNumber || profile.phoneNumber.trim() === '';
   const nameMissing = !profile?.profile?.name;
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [updatePhoneNumber, { isLoading: updatingPhone }] = useUpdatePhoneNumberMutation();
+  const { data: telegramStatus } = useGetTelegramStatusQuery();
+  
+  const telegramMissing = telegramStatus?.status !== 'connected';
 
   const checklist = [
     {
@@ -40,6 +45,14 @@ function MenteeHomePage() {
         window.dispatchEvent(new CustomEvent('openEditProfileModal'));
       },
     },
+    {
+      stepName: 'Telegram Connection',
+      isComplete: !telegramMissing,
+      buttonText: telegramStatus?.status === 'pending' ? 'Continue' : 'Connect',
+      onClick: () => {
+        setShowTelegramModal(true);
+      },
+    },
   ];
 
   const handlePhoneModalSubmit = (phoneNumber: string) => {
@@ -53,7 +66,7 @@ function MenteeHomePage() {
 
   return (
     <div>
-      {nameMissing || phoneMissing ? (
+      {nameMissing || phoneMissing || telegramMissing ? (
         <div className={'container ' + styles.container} style={{ marginBottom: 8 }}>
           <div>
             <CustomText
@@ -82,6 +95,10 @@ function MenteeHomePage() {
         onSubmit={handlePhoneModalSubmit}
         onCancel={() => setShowPhoneModal(false)}
         loading={updatingPhone}
+      />
+      <TelegramConnectionModal
+        visible={showTelegramModal}
+        onClose={() => setShowTelegramModal(false)}
       />
     </div>
   );

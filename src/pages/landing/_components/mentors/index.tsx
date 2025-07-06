@@ -69,7 +69,7 @@ export default function MentorsSectionLanding() {
               </CustomButton>
             </div>
             <div className={styles.img}>
-              <img src={'/img/mentor.png'} alt="Img error" />
+              <img src={'/img/mentor.png'} alt="Img error" loading="lazy" />
             </div>
           </CustomCard>
         </div>
