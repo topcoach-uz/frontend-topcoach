@@ -18,10 +18,11 @@ import {
   hasFileUploadFields,
   sortFormItemsFileUploadLast,
 } from "src/utils/formTransformer";
+import { getLocalizedText } from "src/utils/translationUtils";
 
 export default function ApplyToEventGraduatePage() {
   const { breadcrumbItems, commonFormItems } = useApply();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const { onComplete, form, loading } = useGraduate();
 
@@ -47,11 +48,28 @@ export default function ApplyToEventGraduatePage() {
   // Sort all form items to put file uploads at the end
   const sortedFormItems = sortFormItemsFileUploadLast(allFormItems);
 
-  console.log("dynamicFormItems", dynamicFormItems);
-
   const showFileUploadWarning = graduateForm
     ? hasFileUploadFields(graduateForm)
     : false;
+
+  // Get dynamic title and description from API
+  const eventTitle = graduateData?.data
+    ? getLocalizedText(graduateData.data.title, currentLocale)
+    : t("apply.graduate.title");
+  const eventDeadline = graduateData?.data?.deadline
+    ? new Date(graduateData.data.deadline).toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      )
+    : "";
+
+  const eventDeadlineDate = graduateData?.data?.deadline
+    ? new Date(graduateData.data.deadline)
+    : new Date(EVENT_DEADLINE);
 
   return (
     <main>
@@ -59,11 +77,11 @@ export default function ApplyToEventGraduatePage() {
         <Breadcrumb items={breadcrumbItems} />
         <Flex justify="space-between" align="center">
           <MainTitleDescription
-            title="Top 100 Uni Camp 2025 Masters'"
-            description="Deadline: May 26th, 2025"
+            title={eventTitle}
+            description={`${t("apply.deadline")}: ${eventDeadline}`}
           />
           <Flex vertical align="center" gap={10}>
-            <CountDown targetDate={EVENT_DEADLINE} />
+            <CountDown targetDate={eventDeadlineDate} />
           </Flex>
         </Flex>
         <Form
@@ -76,16 +94,12 @@ export default function ApplyToEventGraduatePage() {
 
           {showFileUploadWarning && (
             <div className={styles.fileTypeInfo}>
-              <p>
-                Allowed file types are Text (TXT), PDF, Word Document
-                (DOC), Word Document (DOCX), Image (JPEG/JPG), Image
-                (PNG), Image (GIF)
-              </p>
+              <p>{t("apply.fileTypeWarning")}</p>
             </div>
           )}
 
           <CustomText fontSize={24} fontWeight={600}>
-            Essay Questions
+            {t("apply.essayQuestions")}
           </CustomText>
           <FormMaker
             formItems={dynamicFormItems?.formItemEssay || []}
@@ -98,12 +112,12 @@ export default function ApplyToEventGraduatePage() {
               htmlType="submit"
               mt={40}
             >
-              Submit
+              {t("apply.submit")}
             </CustomButton>
             {loading && (
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <Spin size="large" />
-                <p>Submitting your form...</p>
+                <p>{t("apply.submitting")}</p>
               </div>
             )}
           </Form.Item>

@@ -3,10 +3,12 @@ import { useForm } from "antd/es/form/Form";
 import { Link, useLocation } from "react-router-dom";
 import { useScreenSize } from "src/hooks/useScreenSize";
 import { IFormItemType } from "src/components/form/type";
+import { useTranslation } from "react-i18next";
 
 export default function useApply() {
   const [form] = useForm();
   const { screenSize } = useScreenSize();
+  const { t } = useTranslation();
 
   const { pathname } = useLocation();
   const splittedPath = pathname.split("/");
@@ -14,16 +16,18 @@ export default function useApply() {
 
   const breadcrumbItems: BreadcrumbItemType[] = [
     {
-      title: <Link to="/">Home</Link>,
+      title: <Link to="/">{t("apply.breadcrumb.home")}</Link>,
     },
     {
-      title: <Link to="/events">Events</Link>,
+      title: <Link to="/events">{t("apply.breadcrumb.events")}</Link>,
     },
     {
-      title: <Link to={`/events`}>Event Information</Link>,
+      title: (
+        <Link to={`/events`}>{t("apply.breadcrumb.eventInfo")}</Link>
+      ),
     },
     {
-      title: "Apply to Event",
+      title: t("apply.breadcrumb.applyToEvent"),
     },
   ];
 
@@ -34,19 +38,19 @@ export default function useApply() {
     {
       name: "fullName",
       type: "input",
-      label: "Full Name",
+      label: t("apply.form.fullName"),
       inputType: "text",
-      message: "Please enter your full name",
-      placeholder: "Your full name",
+      message: t("apply.form.fullNameMessage"),
+      placeholder: t("apply.form.fullNamePlaceholder"),
       col,
     },
     {
       name: "birthDate", // Note: Undergraduate form uses dateOfBirth, but backend expects birthDate
       type: "datePicker",
       htmlType: "date",
-      label: "Date of Birth",
-      message: "Please select your date of birth",
-      placeholder: "Select your date of birth",
+      label: t("apply.form.dateOfBirth"),
+      message: t("apply.form.dateOfBirthMessage"),
+      placeholder: t("apply.form.dateOfBirthPlaceholder"),
       col,
     },
     {
@@ -54,9 +58,9 @@ export default function useApply() {
       type: "input",
       htmlType: "number",
       inputType: "text",
-      label: "Passport Number",
-      message: "Please enter your passport number",
-      placeholder: "Your passport number",
+      label: t("apply.form.passportNumber"),
+      message: t("apply.form.passportNumberMessage"),
+      placeholder: t("apply.form.passportNumberPlaceholder"),
       col,
     },
     {
@@ -64,38 +68,38 @@ export default function useApply() {
       type: "input",
       htmlType: "number",
       inputType: "text",
-      label: "Passport ID",
-      message: "Please enter your passport ID",
-      placeholder: "Passport series and number (e.g., 34567)",
+      label: t("apply.form.passportId"),
+      message: t("apply.form.passportIdMessage"),
+      placeholder: t("apply.form.passportIdPlaceholder"),
       col,
     },
     {
       name: "passportIssuingAuthority",
       type: "input",
-      label: "Passport Issuing Authority",
+      label: t("apply.form.passportIssuingAuthority"),
       inputType: "text",
-      message: "Please enter your passport issuing authority",
-      placeholder:
-        "Name of the issuing body (e.g., Ministry of Internal Affairs)",
+      message: t("apply.form.passportIssuingAuthorityMessage"),
+      placeholder: t(
+        "apply.form.passportIssuingAuthorityPlaceholder"
+      ),
       col,
     },
     {
       name: "region",
       type: "input",
       inputType: "text",
-      label: "Region",
-      message: "Please enter your region",
-      placeholder:
-        "Your region (e.g., Tashkent City, Samarkand Region)",
+      label: t("apply.form.region"),
+      message: t("apply.form.regionMessage"),
+      placeholder: t("apply.form.regionPlaceholder"),
       col,
     },
     {
       name: "parentFullName",
       type: "input",
       inputType: "text",
-      label: "Parent/Guardian Full Name",
-      message: "Please enter your parent/guardian full name",
-      placeholder: "Your parent's or guardian's full name",
+      label: t("apply.form.parentFullName"),
+      message: t("apply.form.parentFullNameMessage"),
+      placeholder: t("apply.form.parentFullNamePlaceholder"),
       col,
     },
     {
@@ -103,9 +107,9 @@ export default function useApply() {
       type: "input",
       inputType: "text",
       mask: "+998 (00) 000-00-00",
-      label: "Parent/Guardian Phone Number",
-      message: "Please enter your parent/guardian phone number",
-      placeholder: "+998 (XX) XXX-XX-XX",
+      label: t("apply.form.parentPhoneNumber"),
+      message: t("apply.form.parentPhoneNumberMessage"),
+      placeholder: t("apply.form.parentPhoneNumberPlaceholder"),
       col,
     },
     {
@@ -113,18 +117,17 @@ export default function useApply() {
       type: "input",
       inputType: "text",
       htmlType: "email",
-      label: "Parent/Guardian Email (optional)",
-      placeholder: "parent.email@example.com",
+      label: t("apply.form.parentEmail"),
+      placeholder: t("apply.form.parentEmailPlaceholder"),
       col,
     },
     {
       name: "emergencyContact",
       type: "input",
       inputType: "text",
-      label: "Emergency Contact Information",
-      message: "Please enter your emergency contact information",
-      placeholder:
-        "Contact person and phone number (e.g., Uncle John +998 XX XXX XX XX)",
+      label: t("apply.form.emergencyContact"),
+      message: t("apply.form.emergencyContactMessage"),
+      placeholder: t("apply.form.emergencyContactPlaceholder"),
       col,
     },
   ];

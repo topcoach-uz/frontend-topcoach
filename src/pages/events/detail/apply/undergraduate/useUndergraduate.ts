@@ -97,8 +97,13 @@ export default function useUndergraduate() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmitEvent = async (payload: any) => {
     setSubmitLoading(true);
+    if (!formRelatedData?.data.id) {
+      message.error("Event ID is not available.", 12);
+      setSubmitLoading(false);
+      return;
+    }
     api.camps
-      .apply("32a745af-f682-4e4e-bcf3-1e5927399c44", payload)
+      .apply(formRelatedData?.data.id, payload)
       .then((response) => {
         message.success("Form submitted successfully!");
         console.log("API response:", response);
@@ -123,5 +128,6 @@ export default function useUndergraduate() {
     submitLoading,
     undergraduateForm,
     eventDataLoading,
+    formRelatedData,
   };
 }

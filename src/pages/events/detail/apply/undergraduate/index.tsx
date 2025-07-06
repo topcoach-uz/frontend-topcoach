@@ -11,16 +11,22 @@ import {
   sortFormItemsFileUploadLast,
   transformFormItems,
 } from "src/utils/formTransformer";
+import { getLocalizedText } from "src/utils/translationUtils";
 import styles from "../apply.module.scss";
 import useApply from "../useApply";
 import useUndergraduate from "./useUndergraduate";
 
 export default function ApplyToEventPage() {
   const { breadcrumbItems, commonFormItems } = useApply();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
-  const { submitLoading, form, onComplete, undergraduateForm } =
-    useUndergraduate();
+  const {
+    submitLoading,
+    form,
+    onComplete,
+    undergraduateForm,
+    formRelatedData,
+  } = useUndergraduate();
 
   const currentLocale = i18n.language as "en" | "kk" | "ru" | "uz";
   const dynamicFormItems = undergraduateForm
@@ -40,17 +46,35 @@ export default function ApplyToEventPage() {
     ? hasFileUploadFields(undergraduateForm)
     : false;
 
+  // Get dynamic title and description from API
+  const eventTitle = formRelatedData?.data
+    ? getLocalizedText(formRelatedData.data.title, currentLocale)
+    : t("apply.undergraduate.title");
+  const eventDeadline = formRelatedData?.data?.deadline
+    ? new Date(formRelatedData.data.deadline).toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      )
+    : "";
+  const eventDeadlineDate = formRelatedData?.data?.deadline
+    ? new Date(formRelatedData.data.deadline)
+    : new Date(EVENT_DEADLINE);
+
   return (
     <main>
       <div className={"container " + styles.container}>
         <Breadcrumb items={breadcrumbItems} />
         <Flex justify="space-between" align="center">
           <MainTitleDescription
-            title="Top 100 Uni Camp 2025 Bachelor's"
-            description="Deadline: May 26th, 2025"
+            title={eventTitle}
+            description={`${t("apply.deadline")}: ${eventDeadline}`}
           />
           <Flex vertical align="center" gap={10}>
-            <CountDown targetDate={EVENT_DEADLINE} />
+            <CountDown targetDate={eventDeadlineDate} />
           </Flex>
         </Flex>
         <Form
@@ -63,11 +87,7 @@ export default function ApplyToEventPage() {
 
           {showFileUploadWarning && (
             <div className={styles.fileTypeInfo}>
-              <p>
-                Allowed file types are Text (TXT), PDF, Word Document
-                (DOC), Word Document (DOCX), Image (JPEG/JPG), Image
-                (PNG), Image (GIF)
-              </p>
+              <p>{t("apply.fileTypeWarning")}</p>
             </div>
           )}
 
@@ -82,12 +102,12 @@ export default function ApplyToEventPage() {
               htmlType="submit"
               mt={40}
             >
-              Submit
+              {t("apply.submit")}
             </CustomButton>
             {submitLoading && (
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <Spin size="large" />
-                <p>Submitting your form...</p>
+                <p>{t("apply.submitting")}</p>
               </div>
             )}
           </Form.Item>
