@@ -1,4 +1,4 @@
-@import 'src/styles/variables.scss';
+@import "src/styles/variables.scss";
 
 .container {
   padding-top: 40px;
@@ -6,6 +6,11 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
+
+  :global(.ant-upload-list-picture-card button) {
+    color: var(--colorText);
+    cursor: pointer;
+  }
 }
 
 .choice {

@@ -2,6 +2,7 @@ import { Breadcrumb, Flex } from 'antd';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import styles from './application-closed.module.scss';
 import { BreadcrumbItemType } from 'antd/es/breadcrumb/Breadcrumb';
+import { useTranslation } from 'react-i18next';
 
 interface ApplicationClosedProps {
   breadcrumbItems: BreadcrumbItemType[];
@@ -10,6 +11,8 @@ interface ApplicationClosedProps {
 export default function ApplicationClosed({
   breadcrumbItems,
 }: ApplicationClosedProps) {
+  const { t } = useTranslation();
+  
   return (
     <main>
       <div className={'container ' + styles.container}>
@@ -22,8 +25,8 @@ export default function ApplicationClosed({
             style={{ textAlign: 'center' }}
           >
             <MainTitleDescription
-              title="Application Closed"
-              description="The application period for this event has ended."
+              title={t("apply.applicationClosed.title")}
+              description={t("apply.applicationClosed.description")}
               centered={true}
             />
             <div
@@ -42,9 +45,7 @@ export default function ApplicationClosed({
                   lineHeight: '1.5',
                 }}
               >
-                Thank you for your interest in our program. Please check back
-                for future opportunities or contact us for more information
-                about upcoming events.
+                {t("apply.applicationClosed.message")}
               </p>
             </div>
           </Flex>

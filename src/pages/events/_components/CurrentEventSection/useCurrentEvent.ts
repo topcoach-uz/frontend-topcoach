@@ -1,17 +1,17 @@
-import { Modal } from 'antd';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useTypedSelector } from 'src/app/store';
+import { Modal } from "antd";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useTypedSelector } from "src/app/store";
 // Import the JSON file
-import upcomingEventTranslations from 'public/JSON/upcomingEventTranslations.json';
+import upcomingEventTranslations from "public/JSON/upcomingEventTranslations.json";
 
 export default function useCurrentEvent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   // Get the data based on the current language
   const upcomingEventData =
     upcomingEventTranslations[
@@ -23,12 +23,12 @@ export default function useCurrentEvent() {
       setIsModalOpen(true);
     } else {
       Modal.confirm({
-        title: 'You need to sign in first',
-        content: 'Please sign in to apply for the event.',
-        okText: 'Sign In',
-        cancelText: 'Cancel',
+        title: t("events.modal.signInRequired"),
+        content: t("events.modal.signInContent"),
+        okText: t("events.modal.signInButton"),
+        cancelText: t("events.modal.cancel"),
         onOk() {
-          navigate('/auth/signin?redirect=/events/apply');
+          navigate("/auth/signin?redirect=/events/apply");
         },
       });
     }
@@ -43,7 +43,7 @@ export default function useCurrentEvent() {
   };
 
   const onApplyClick = () => {
-    navigate('apply');
+    navigate("apply");
   };
 
   return {
@@ -55,5 +55,3 @@ export default function useCurrentEvent() {
     onApplyClick,
   };
 }
-
-export const EVENT_DEADLINE = new Date('2025-05-30T18:59:00Z');

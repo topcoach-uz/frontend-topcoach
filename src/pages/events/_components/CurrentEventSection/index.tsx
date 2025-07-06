@@ -1,59 +1,75 @@
-import { Flex, Form, message } from 'antd';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CustomModal, CustomText } from 'src/components/common';
-import FormMaker from 'src/components/form/FormMaker';
-import { IFormItemType } from 'src/components/form/type';
-import MainTitleDescription from 'src/components/mainTitleDesc';
+import { Flex, Form, message } from "antd";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  CustomButton,
+  CustomModal,
+  CustomText,
+} from "src/components/common";
+import FormMaker from "src/components/form/FormMaker";
+import { IFormItemType } from "src/components/form/type";
+import { LikeIcon } from "src/components/icons";
+import CountDown from "src/pages/events/_components/countdown";
+import MainTitleDescription from "src/components/mainTitleDesc";
 import {
   themeColors,
   themeFontSize,
   themeFontWeight,
-} from 'src/constants/theme';
-import COUNTRY_LIST from 'src/data/countries.json';
-import useColors from 'src/hooks/useColors';
-import { useScreenSize } from 'src/hooks/useScreenSize';
-import styles from './CurrentEvent.module.scss';
-import useApi from 'src/hooks/useApi';
-import { api } from 'src/app/api';
-import { EventsSchema } from 'src/app/api/Api';
-import { AxiosResponse } from 'axios';
-import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
-import useCurrentEvent from './useCurrentEvent';
+} from "src/constants/theme";
+import COUNTRY_LIST from "src/data/countries.json";
+import useColors from "src/hooks/useColors";
+import { useScreenSize } from "src/hooks/useScreenSize";
+import styles from "./CurrentEvent.module.scss";
+import useApi from "src/hooks/useApi";
+import { api } from "src/app/api";
+import { EventsSchema } from "src/app/api/Api";
+import { AxiosResponse } from "axios";
+import RichTextRenderer from "src/pages/universities/_components/detail/richText";
+import useCurrentEvent from "./useCurrentEvent";
 
 export default function CurrentEvent() {
   const navigate = useNavigate();
   const colors = useColors();
   const { screenSize } = useScreenSize();
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const [form] = Form.useForm();
-  const { response: upcomingEventData } = useApi<AxiosResponse<EventsSchema>>(
-    () => api.camps.getCurrentActiveEvent()
-  );
+  const { response: upcomingEventData } = useApi<
+    AxiosResponse<EventsSchema>
+  >(() => api.camps.getCurrentActiveEvent());
+
+  // Calculate deadline and check if it has passed
+  const eventDeadlineDate = upcomingEventData?.data?.deadline
+    ? new Date(upcomingEventData.data.deadline)
+    : null;
+
+  const isDeadlinePassed = eventDeadlineDate
+    ? eventDeadlineDate < new Date()
+    : true;
 
   // const { handleMakeParams } = useParamsHook();
   const {
     handleCancel,
     handleOk,
     isModalOpen,
+    showModal,
     // upcomingEventData,
     // onApplyClick,
-    // showModal,
   } = useCurrentEvent();
 
-  const [selectedCountry, setSelectedCountry] = useState<string>(''); // Default to 'Uzbekistan'
+  const [selectedCountry, setSelectedCountry] = useState<string>(""); // Default to 'Uzbekistan'
 
   const handleCountryClick = (country: string) => {
     setSelectedCountry(country);
   };
 
   const handleApply = (type: string) => {
-    const specifiedCountry = form.getFieldValue('country');
+    const specifiedCountry = form.getFieldValue("country");
     if (
       !selectedCountry ||
-      (selectedCountry === 'others' && !specifiedCountry)
+      (selectedCountry === "others" && !specifiedCountry)
     ) {
-      message.warning('Please select a country before proceeding.');
+      message.warning("Please select a country before proceeding.");
       return;
     }
 
@@ -62,27 +78,30 @@ export default function CurrentEvent() {
     )?.label;
 
     navigate(
-      `/events/${type}?country=${selectedCountry == 'others' ? specifiedCountryName : selectedCountry}`
+      `/events/${type}?country=${selectedCountry == "others" ? specifiedCountryName : selectedCountry}`
     );
   };
 
   const formItems: IFormItemType[] = [
     {
-      name: 'country',
-      label: 'Country',
-      type: 'select',
-      placeholder: 'Select your country',
-      message: 'Please select your country',
+      name: "country",
+      label: "Country",
+      type: "select",
+      placeholder: "Select your country",
+      message: "Please select your country",
       options: COUNTRY_LIST,
     },
   ];
 
   return (
     <section>
-      <div className={'container ' + styles.container}>
+      <div className={"container " + styles.container}>
         <div className={styles.eventImage}>
-          {/* @ts-expect-error url hasn't been typed yet */}
-          <img src={upcomingEventData?.data?.media?.[0]?.url} alt="" loading="lazy" />
+          <img
+            // @ts-expect-error url has not been typed yet
+            src={upcomingEventData?.data?.media?.[0]?.url}
+            alt=""
+          />
           <Flex
             className={styles.eventContent}
             vertical={screenSize < 768}
@@ -96,25 +115,31 @@ export default function CurrentEvent() {
               titleColor={themeColors.dark.colorTextBase}
               descriptionColor={themeColors.dark.colorTextDescription}
             />
-            {/* <Flex
-              style={{ marginTop: 12, marginRight: 12 }}
-              vertical
-              align="center"
-              gap={10}
-            >
-              <CustomButton
-                iconPosition="start"
-                icon={
-                  <LikeIcon stroke="red" fill="red" className={styles.heart} />
-                }
-                onClick={showModal}
-                darkMode={false}
-                textColor={themeColors.light.colorTextBase}
+            {!isDeadlinePassed && eventDeadlineDate && (
+              <Flex
+                style={{ marginTop: 12, marginRight: 12 }}
+                vertical
+                align="center"
+                gap={10}
               >
-                Apply now
-              </CustomButton>
-              <CountDown targetDate={EVENT_DEADLINE} />
-            </Flex> */}
+                <CustomButton
+                  iconPosition="start"
+                  icon={
+                    <LikeIcon
+                      stroke="red"
+                      fill="red"
+                      className={styles.heart}
+                    />
+                  }
+                  onClick={showModal}
+                  darkMode={false}
+                  textColor={themeColors.light.colorTextBase}
+                >
+                  {t("events.apply.applyNow")}
+                </CustomButton>
+                <CountDown targetDate={eventDeadlineDate} />
+              </Flex>
+            )}
           </Flex>
         </div>
         <CustomText
@@ -127,11 +152,11 @@ export default function CurrentEvent() {
           }
           mb={28}
           style={{
-            display: 'inline-block',
-            textAlign: 'center',
-            width: '100%',
+            display: "inline-block",
+            textAlign: "center",
+            width: "100%",
             // Use whiteSpace to preserve single newlines within the title if any
-            whiteSpace: 'pre-line',
+            whiteSpace: "pre-line",
           }}
         >
           {upcomingEventData?.data?.summary as string}
@@ -142,43 +167,53 @@ export default function CurrentEvent() {
           blocks={upcomingEventData?.data.content?.blocks ?? []}
         />
 
-        <CustomModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-          <CustomText color={colors.colorText} fontSize={22} fontWeight={600}>
+        <CustomModal
+          open={isModalOpen}
+          onOk={handleOk}
+          onCancel={handleCancel}
+        >
+          <CustomText
+            color={colors.colorText}
+            fontSize={22}
+            fontWeight={600}
+          >
             Select Your Application Type
           </CustomText>
           <CustomText fontSize={20}>Are you a citizen of:</CustomText>
           <div className={styles.countries}>
             <div
-              onClick={() => handleCountryClick('Uzbekistan')}
-              className={`${styles.country} ${selectedCountry === 'Uzbekistan' ? styles.countryActive : ''}`}
+              onClick={() => handleCountryClick("Uzbekistan")}
+              className={`${styles.country} ${selectedCountry === "Uzbekistan" ? styles.countryActive : ""}`}
             >
               Uzbekistan
             </div>
             <div
-              onClick={() => handleCountryClick('others')}
-              className={`${styles.country} ${selectedCountry === 'others' ? styles.countryActive : ''}`}
+              onClick={() => handleCountryClick("others")}
+              className={`${styles.country} ${selectedCountry === "others" ? styles.countryActive : ""}`}
             >
               Others
             </div>
           </div>
-          {selectedCountry === 'others' && (
+          {selectedCountry === "others" && (
             <div className={styles.inputCountry}>
               <Form form={form} layout="vertical">
                 <FormMaker formItems={formItems} />
               </Form>
             </div>
           )}
-          <CustomText mt={16}>Which program are you applying for?</CustomText>
+          <CustomText mt={16}>
+            Which program are you applying for?
+          </CustomText>
           <div className={styles.choice}>
             <div
               className={styles.under}
-              onClick={() => handleApply('undergraduate')}
+              onClick={() => handleApply("undergraduate")}
             >
               Undergraduate
             </div>
             <div
               className={styles.under}
-              onClick={() => handleApply('graduate')}
+              onClick={() => handleApply("graduate")}
             >
               Graduate
             </div>
