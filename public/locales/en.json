@@ -288,7 +288,7 @@
   "signUp.paswordRule3": "At least 1 lowercase letter",
   "signUp.paswordRule4": "At least 1 number",
   "signUp.paswordRule5": "At least 1 special character",
-  "signUp.phoneNumber": "Phone number (optional)",
+  "signUp.phoneNumber": "Phone number",
   "signUp.phoneNumberPlaceholder": "+998901234567",
   "signUp.rediredToLogin": "You will be automatically redirected to the login page in a few seconds.",
   "signUp.resend": "Resend",

@@ -44,16 +44,6 @@ export function PhoneNumberModal({
   // Uzbekistan phone number validation: +998XXXXXXXXX (13 chars)
   const uzPhonePattern = /^\+998\d{9}$/;
 
-  // Handle Save button click
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
-      onSubmit(values.phoneNumber);
-    } catch (err) {
-      // Validation error, do nothing (AntD will show error)
-    }
-  };
-
   return (
     <Modal
       open={visible}
@@ -76,11 +66,8 @@ export function PhoneNumberModal({
           name="phoneNumber"
           label={t('editProfile.phoneNumberLabel')}
           rules={[
-            { required: true, message: t('Phone Number is required') },
-            {
-              pattern: uzPhonePattern,
-              message: 'Phone number must be in the format +998XXXXXXXXX',
-            },
+            { required: true, message: t('Phone number is required') },
+            { pattern: uzPhonePattern, message: 'Phone number must be in the format +998XXXXXXXXX' },
           ]}
         >
           <Input
@@ -97,7 +84,14 @@ export function PhoneNumberModal({
           </Button>
           <Button
             type="primary"
-            onClick={handleSave}
+            onClick={async () => {
+              try {
+                const values = await form.validateFields();
+                onSubmit(values.phoneNumber);
+              } catch (err) {
+                // Validation error, do nothing
+              }
+            }}
             loading={loading}
             style={{ minWidth: 100 }}
           >
