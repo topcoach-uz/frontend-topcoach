@@ -44,6 +44,16 @@ export function PhoneNumberModal({
   // Uzbekistan phone number validation: +998XXXXXXXXX (13 chars)
   const uzPhonePattern = /^\+998\d{9}$/;
 
+  // Handle Save button click
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      onSubmit(values.phoneNumber);
+    } catch (err) {
+      // Validation error, do nothing (AntD will show error)
+    }
+  };
+
   return (
     <Modal
       open={visible}
@@ -61,7 +71,6 @@ export function PhoneNumberModal({
         form={form}
         layout="vertical"
         initialValues={{ phoneNumber: initialPhoneNumber }}
-        onFinish={(values) => onSubmit(values.phoneNumber)}
       >
         <Form.Item
           name="phoneNumber"
@@ -88,7 +97,7 @@ export function PhoneNumberModal({
           </Button>
           <Button
             type="primary"
-            htmlType="submit"
+            onClick={handleSave}
             loading={loading}
             style={{ minWidth: 100 }}
           >
