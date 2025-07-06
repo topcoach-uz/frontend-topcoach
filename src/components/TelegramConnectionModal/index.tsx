@@ -15,19 +15,20 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   onClose,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [updateTelegramPhoneNumber, { isLoading }] = useUpdateTelegramPhoneNumberMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
 
   const handleSubmit = async () => {
     if (!phoneNumber.trim()) return;
+    setErrorMsg('');
     try {
       await updateTelegramPhoneNumber({ phoneNumber: phoneNumber.trim() });
       refetch();
     } catch (error: any) {
-      // Show error to user
       const backendMsg = error?.data?.message || error?.message || 'Failed to update Telegram phone number';
-      message.error(backendMsg);
-      console.error('Failed to update Telegram phone number:', error);
+      setErrorMsg(backendMsg);
+      // No toast, just inline error
     }
   };
 
@@ -156,6 +157,11 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 size="large"
                 style={{ margin: '12px 0' }}
               />
+              {errorMsg && (
+                <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
+                  {errorMsg}
+                </div>
+              )}
               <Button
                 type="primary"
                 onClick={handleSubmit}
