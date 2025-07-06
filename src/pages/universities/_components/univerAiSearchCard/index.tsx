@@ -43,7 +43,7 @@ function UniverAiSearchCard({
       <div className={styles.university}>
         <div className={styles.top}>
           <div className={styles.img}>
-            <img src={image} alt="img error" />
+            <img src={image} alt="img error" loading="lazy" />
           </div>
           <div className={styles.topData}>
             <div className={styles.uniName}>

@@ -1459,6 +1459,12 @@ export interface BuySubscriptionDto {
   mentorId: string;
 }
 
+export interface BuySubscriptionPlanDto {
+  cardToken: string;
+  smsCode: string;
+  planId: string;
+}
+
 export interface BuySubscriptionResponseDto {
   paymentStatus: PaymentStatusEnum;
   message: string;
@@ -2359,6 +2365,46 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/users/send-test-email`,
         method: "POST",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Users
+     * @name UpdateTelegramPhoneNumber
+     * @summary Update Telegram phone number
+     * @request PUT:/users/telegram-phone-number
+     * @secure
+     * @response `200` `DefaultResponseDto` Telegram phone number updated successfully
+     */
+    updateTelegramPhoneNumber: (data: { phoneNumber: string }, params: RequestParams = {}) =>
+      this.request<DefaultResponseDto, any>({
+        path: `/users/telegram-phone-number`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Users
+     * @name GetTelegramStatus
+     * @summary Get Telegram connection status
+     * @request GET:/telegram/status
+     * @secure
+     * @response `200` `{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }` Status retrieved successfully
+     */
+    getTelegramStatus: (params: RequestParams = {}) =>
+      this.request<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, any>({
+        path: `/telegram/status`,
+        method: "GET",
+        secure: true,
+        format: "json",
         ...params,
       }),
   };

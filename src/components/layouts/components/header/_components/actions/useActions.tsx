@@ -52,7 +52,7 @@ export default function useActions() {
   // Profile
 
   const profileMenuItems: MenuProps['items'] = [
-    ...(userData?.profile?.role === UserRole.Mentor
+    ...((userData?.profile?.role === UserRole.Mentor || userData?.profile?.role === UserRole.Student)
       ? [
           {
             label: t('header.editProfile'),

@@ -17,6 +17,8 @@ const AiMajorMatchPage = () => {
     error,
     handleStart,
     handleSubmit,
+    canUseAiMajorMatch,
+    aiMajorMatchUsage,
   } = useAiMajorMatch();
 
   const handleRetake = () => {
@@ -36,7 +38,13 @@ const AiMajorMatchPage = () => {
 
   return (
     <div className={styles.container}>
-      {step === 'intro' && <WelcomeScreen onStart={handleStart} />}
+      {step === 'intro' && (
+        <WelcomeScreen 
+          onStart={handleStart} 
+          canUseAiMajorMatch={canUseAiMajorMatch}
+          aiMajorMatchUsage={aiMajorMatchUsage}
+        />
+      )}
       {step === 'assessment' && questions && (
         <Questionnaire
           questions={questions}

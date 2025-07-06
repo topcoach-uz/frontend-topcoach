@@ -20,14 +20,14 @@ function DetailedInfo({ form, formButtonsProps, formError }: Props) {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const { t } = useTranslation();
   const formItems: IFormItemType[] = [
-    {
-      inputType: 'text',
-      type: 'input',
-      name: 'phone_number',
-      label: t('signUp.phoneNumber'),
-      placeholder: t('signUp.phoneNumberPlaceholder'),
-      col: 24,
-    },
+    // {
+    //   inputType: 'text',
+    //   type: 'input',
+    //   name: 'phone_number',
+    //   label: t('signUp.phoneNumber'),
+    //   placeholder: t('signUp.phoneNumberPlaceholder'),
+    //   col: 24,
+    // },
     {
       name: 'socials',
       type: 'input',

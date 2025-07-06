@@ -46,7 +46,7 @@ export default function MentorList({ mentorImages }: Props) {
 const Picture = ({ img }: { img: string }) => {
   return (
     <div className={styles.mentor_picture_wrapper}>
-      <img className={styles.mentor_picture} src={img} alt="mentor" />
+      <img className={styles.mentor_picture} src={img} alt="mentor" loading="lazy" />
     </div>
   );
 };

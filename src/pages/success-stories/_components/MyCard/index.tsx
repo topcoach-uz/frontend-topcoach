@@ -28,7 +28,7 @@ export default function MyCard({ title, image, id, hoverText }: Props) {
       onClick={() => navigate(`${id}`)}
     >
       <div className={styles.imgContainer}>
-        <img src={image} alt={title} />
+        <img src={image} alt={title} loading="lazy" />
       </div>
       <div className={styles.textContainer}>
         <CustomText

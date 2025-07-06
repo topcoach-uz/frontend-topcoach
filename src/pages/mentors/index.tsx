@@ -22,10 +22,27 @@ export default function MentorsPage() {
   const mentorLevelOptions = [
     { label: 'All', value: 'all' },
     { label: 'Pro bono', value: MentorExperienceLevel.Probono },
-    { label: 'Expert', value: MentorExperienceLevel.Expert },
-    { label: 'Senior', value: MentorExperienceLevel.Senior },
     { label: 'Junior', value: MentorExperienceLevel.Junior },
+    { label: 'Senior', value: MentorExperienceLevel.Senior },
+    { label: 'Expert', value: MentorExperienceLevel.Expert },
   ];
+
+  // Dynamic title and subtitle based on selected filter
+  let title = t('mentors.mentorTitle');
+  let subtitle = 'Connect with experienced mentors who can guide you through your university application journey.';
+  if (selectedLevel === MentorExperienceLevel.Probono) {
+    title = 'Pro Bono Mentors';
+    subtitle = 'These kinds of mentors volunteer their time to help students succeed, offering free guidance and making a social impact.';
+  } else if (selectedLevel === MentorExperienceLevel.Expert) {
+    title = 'Expert Mentors';
+    subtitle = 'Expert Mentors are leaders in admissions, with years of experience and a strong record of success.';
+  } else if (selectedLevel === MentorExperienceLevel.Senior) {
+    title = 'Senior Mentors';
+    subtitle = 'Senior Mentors have guided multiple students to acceptance and offer proven, practical insights.';
+  } else if (selectedLevel === MentorExperienceLevel.Junior) {
+    title = 'Junior Mentors';
+    subtitle = 'Junior Mentors are recent admits to top universities, eager to share fresh, relatable advice.';
+  }
 
   // Filter mentors based on selected level
   let filteredMentors = useMemo(() => {
@@ -54,8 +71,8 @@ export default function MentorsPage() {
         <div className={'container ' + styles.mentors}>
           <div className={styles.top}>
             <MainTitleDescription
-              title={t('mentors.mentorTitle')}
-              description={t('mentors.mentorText')}
+              title={title}
+              description={subtitle}
             />
           </div>
           {/* // Mentor Level Filter */}

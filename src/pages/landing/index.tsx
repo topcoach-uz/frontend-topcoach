@@ -8,6 +8,7 @@ import styles from './landing.module.scss';
 import { useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
+import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
 
 export default function LandingPage() {
   const { searchParams } = useParamsHook();
@@ -30,6 +31,7 @@ export default function LandingPage() {
       <LandingEventsSection />
       <ReviewsSection />
       <MentorsSectionLanding />
+      <SubscriptionPlans />
       <FaqSection />
     </main>
   );

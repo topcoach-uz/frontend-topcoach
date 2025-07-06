@@ -130,11 +130,7 @@ export default function useMentorSignup() {
 
     if (!isAuthenticated) {
       // When the user is registering by email:
-      const phoneNumber = val.phone_number?.trim()
-        ? { phoneNumber: val.phone_number?.trim() }
-        : {};
       const values = {
-        ...phoneNumber,
         email: val.email?.trim(),
         name: val.name?.trim(),
         password: val.password,
@@ -200,9 +196,6 @@ export default function useMentorSignup() {
         formData.append('profileImage', fileList?.[0]?.originFileObj); // Append the image file
       }
       setLoading(true);
-      const phoneNumber = val.phone_number?.trim()
-        ? { phoneNumber: val.phone_number?.trim() }
-        : {};
       Promise.allSettled([
         api.users.updateProfileImage(formData as any).catch((err) => {
           if (Array.isArray(err.response.data.message)) {
@@ -215,7 +208,6 @@ export default function useMentorSignup() {
         }),
         dispatch(
           updateProfile({
-            ...phoneNumber,
             // @ts-ignore
             mentorProfile: {
               major: val.major?.trim(),

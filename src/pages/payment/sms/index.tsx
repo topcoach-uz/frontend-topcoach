@@ -5,6 +5,7 @@ import {
   useBuySubscriptionMutation,
   useValidateAndPayMutation,
 } from 'src/app/services/sessions';
+import { BuySubscriptionPlanDto } from 'src/app/api/Api';
 import { CustomButton, CustomText } from 'src/components/common';
 import { InputFormItem } from 'src/components/form';
 import { themeFontSize } from 'src/constants/theme';
@@ -23,7 +24,7 @@ export default function PaymentSmsPage() {
   const cardToken = searchParams.get('cardToken') ?? '';
   const planId = searchParams.get('planId') ?? '';
   const mentorId = searchParams.get('mentorId') ?? '';
-  const buyType = searchParams.get('buyType') as PaymentTypeEnum;
+  const buyType = searchParams.get('type'); // 'subscription' for subscriptions
   const sessionId = searchParams.get('sessionId') ?? '';
   const navigate = useNavigate();
   const [validateAndPay, { isLoading }] = useValidateAndPayMutation();
@@ -32,25 +33,24 @@ export default function PaymentSmsPage() {
 
   const handleConfirmPayment = async () => {
     form.validateFields().then(() => {
-      if (buyType === PaymentTypeEnum.Package) {
+      if (buyType === 'subscription' || planId) {
         buySubscription({
           method: 'click',
           body: {
             cardToken,
             smsCode: otpValue,
             planId,
-            mentorId,
           },
         })
+          .unwrap()
           .then((res) => {
-            // @ts-ignore
-            message.success(res.data?.message);
+            message.success('Payment successful!');
             navigate(-2);
           })
           .catch((err) => {
-            message.error(err.response.data.message, 7);
+            message.error(err.data?.message || 'Payment failed', 7);
           });
-      } else if (buyType === PaymentTypeEnum.Individual) {
+      } else {
         validateAndPay({
           method: 'click',
           body: {
@@ -63,12 +63,11 @@ export default function PaymentSmsPage() {
         })
           .unwrap()
           .then((res) => {
-            // @ts-ignore
-            message.success(res.data?.message);
+            message.success('Payment successful!');
             navigate('/');
           })
           .catch((err) => {
-            message.error(err.response.data.message, 7);
+            message.error(err.data?.message || 'Payment failed', 7);
           });
       }
     });

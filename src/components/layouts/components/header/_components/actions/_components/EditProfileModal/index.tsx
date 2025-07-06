@@ -11,6 +11,7 @@ import useColors from 'src/hooks/useColors';
 import VideoUploadFormItems from './_components/VideoUploadFormItems';
 import useEditProfile from './useEditProfile';
 import { Link } from 'react-router-dom';
+import { useTypedSelector } from 'src/app/store';
 
 interface Props {
   isModalVisible: boolean;
@@ -36,6 +37,10 @@ export default function EditProfileModal({
 
   const loading = Object.values(loadingObj).some((value) => value);
 
+  const userData = useTypedSelector((state) => state.auth.profile);
+  const role = userData?.profile?.role;
+  const customUniversityValue = Form.useWatch('customUniversity', form);
+
   const formItems = getFormItems(t);
 
   return (
@@ -49,7 +54,7 @@ export default function EditProfileModal({
         maskClosable={false}
         onOk={handleUpdateProfile}
         destroyOnClose={true}
-        style={{ top: 0 }}
+        style={{ top: 48 }}
       >
         <Form layout="vertical" form={form}>
           <Flex
@@ -58,6 +63,8 @@ export default function EditProfileModal({
             style={{ height: 'max-content' }}
             vertical={fileList?.length >= 1}
           >
+            {role !== 'Student' && (
+              <>
             <AvatarFormItem
               name="avatar"
               form={form}
@@ -74,10 +81,32 @@ export default function EditProfileModal({
             >
               {t('shared.imgUpload')}
             </CustomText>
+              </>
+            )}
           </Flex>
 
+          {/* Only show full name and phone number for students */}
+          {role === 'Student' ? (
+            <>
+              <InputFormItem
+                name="name"
+                label={t('shared.fullNameLabel')}
+                placeholder={t('shared.fullNamePlaceholder')}
+                inputType="text"
+                message={"You can't leave this field empty"}
+              />
+              <InputFormItem
+                name="phoneNumber"
+                label={t('editProfile.phoneNumberLabel')}
+                inputType="text"
+                htmlType="tel"
+                placeholder={t('editProfile.phoneNumberPlaceholder')}
+                message={"You can't leave this field empty"}
+              />
+            </>
+          ) : (
+            <>
           <FormMaker formItems={formItems} />
-
           <SelectFormItem
             name="selectedUniversities"
             label={t('shared.university')}
@@ -98,18 +127,16 @@ export default function EditProfileModal({
               })) || []
             }
           />
-
           <Form.Item name="customUniversity" valuePropName="checked">
             <Flex gap={10} style={{ cursor: 'pointer' }}>
               <Checkbox
                 defaultChecked={showManualUniversity}
-                checked={Form.useWatch('customUniversity', form)}
+                    checked={customUniversityValue}
               >
                 {t('shared.notListed')}
               </Checkbox>
             </Flex>
           </Form.Item>
-
           {showManualUniversity && (
             <InputFormItem
               name="university"
@@ -120,10 +147,10 @@ export default function EditProfileModal({
               message={t('signUp.universityError')}
             />
           )}
-
           <Link to="/auth/forgot-password/sent">Reset Password</Link>
-
           <VideoUploadFormItems form={form} />
+            </>
+          )}
         </Form>
       </Modal>
     </>

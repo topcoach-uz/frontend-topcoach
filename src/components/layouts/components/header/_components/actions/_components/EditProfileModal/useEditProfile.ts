@@ -74,33 +74,63 @@ export default function useEditProfile({
 
   useEffect(() => {
     if (userData?.profile) {
+      // Always set name and phoneNumber
       form.setFieldsValue({
         name: userData?.profile?.name,
-        email: userData?.email,
         phoneNumber: userData?.phoneNumber,
-        major: userData?.mentorProfile?.major,
-        selectedUniversities: userData?.selectedUniversities?.[0]?.id,
-        // @ts-ignore
-        linkedin: userData?.profile?.contacts?.socials?.linkedin,
-        avatar: [image],
       });
-      if (userData.mentorProfile?.university) {
+      // Only set mentor-specific fields for mentors
+      if (userData.profile.role !== 'Student') {
         form.setFieldsValue({
-          customUniversity: true,
-          university: userData?.mentorProfile?.university,
-          selectedUniversities: [],
+          email: userData?.email,
+          major: userData?.mentorProfile?.major,
+          selectedUniversities: userData?.selectedUniversities?.[0]?.id,
+          // @ts-ignore
+          linkedin: userData?.profile?.contacts?.socials?.linkedin,
+          avatar: [image],
         });
-      } else {
-        form.setFieldsValue({
-          customUniversity: false,
-          university: undefined,
-        });
+        if (userData.mentorProfile?.university) {
+          form.setFieldsValue({
+            customUniversity: true,
+            university: userData?.mentorProfile?.university,
+            selectedUniversities: [],
+          });
+        } else {
+          form.setFieldsValue({
+            customUniversity: false,
+            university: undefined,
+          });
+        }
       }
     }
   }, [isModalVisible]);
 
   const handleUpdateProfile = async () => {
     const values = await form.validateFields();
+    // If student, only update name and phoneNumber
+    if (userData?.profile?.role === 'Student') {
+      const data: UpdateUserDto = {
+        phoneNumber: values.phoneNumber?.trim(),
+        // @ts-ignore
+        profile: {
+          name: values.name?.trim(),
+        },
+      };
+      setLoading((prev) => ({ ...prev, dataLoading: true }));
+      dispatch(updateProfile(data))
+        .unwrap()
+        .then(() => {
+          message.success('Profile updated successfully');
+        })
+        .catch((err) => {
+          message.error(err.message);
+        })
+        .finally(() => {
+          setLoading((prev) => ({ ...prev, dataLoading: false }));
+          setSuccess((prev) => ({ ...prev, data: true }));
+        });
+      return;
+    }
 
     const university = values.customUniversity
       ? { university: values.university?.trim() }

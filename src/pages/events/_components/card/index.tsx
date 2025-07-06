@@ -18,7 +18,7 @@ export default function EventCard({ date, img, name, id }: Props) {
   return (
     <div className={styles.card} onClick={() => navigate(`/events/${id}`)}>
       <div className={styles.img_mask}>
-        <img src={img} alt={name} className={styles.event_image} />
+        <img src={img} alt={name} className={styles.event_image} loading="lazy" />
       </div>
       <div className={styles.card_description}>
         <CustomText color={colors.colorTextSecondary} lineHeight={1.4}>

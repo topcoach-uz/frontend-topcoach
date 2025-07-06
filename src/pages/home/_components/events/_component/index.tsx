@@ -32,7 +32,7 @@ export default function EventCardComp({
       onClick={() => navigate('/events/')}
     >
       <div className={styles.img}>
-        <img src={img} alt="Img error" />
+        <img src={img} alt="Img error" loading="lazy" />
       </div>
       <div className={styles.info}>
         <div>

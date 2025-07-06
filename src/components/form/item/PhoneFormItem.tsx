@@ -1,9 +1,24 @@
 import { phoneMask } from 'src/constants/form';
 import InputFormItem, { InputFormItemProps } from '../common/InputFormItem';
+import { Modal, Form, Input, Button, Space } from 'antd';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PhoneOutlined } from '@ant-design/icons';
 
 interface Props extends InputFormItemProps {}
 
+interface PhoneNumberModalProps {
+  visible: boolean;
+  onSubmit: (phoneNumber: string) => void;
+  onCancel: () => void;
+  loading?: boolean;
+  initialPhoneNumber?: string;
+}
+
 export default function PhoneFormItem({ mask, ...rest }: Props) {
+  const [form] = Form.useForm();
+  const { t } = useTranslation();
+
   return (
     <InputFormItem
       name="phone"
@@ -13,5 +28,77 @@ export default function PhoneFormItem({ mask, ...rest }: Props) {
       addonBefore="+998"
       {...rest}
     />
+  );
+}
+
+export function PhoneNumberModal({
+  visible,
+  onSubmit,
+  onCancel,
+  loading = false,
+  initialPhoneNumber = '',
+}: PhoneNumberModalProps) {
+  const [form] = Form.useForm();
+  const { t } = useTranslation();
+
+  // Uzbekistan phone number validation: +998XXXXXXXXX (13 chars)
+  const uzPhonePattern = /^\+998\d{9}$/;
+
+  return (
+    <Modal
+      open={visible}
+      onCancel={onCancel}
+      footer={null}
+      title={<div style={{ textAlign: 'center', fontWeight: 600 }}>{t('editProfile.phoneNumberLabel')}</div>}
+      maskClosable={false}
+      destroyOnClose
+      centered
+    >
+      <div style={{ marginBottom: 16, textAlign: 'center', color: '#888' }}>
+        Please enter your phone number. This is required for account security and notifications.
+      </div>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ phoneNumber: initialPhoneNumber }}
+      >
+        <Form.Item
+          name="phoneNumber"
+          label={t('editProfile.phoneNumberLabel')}
+          rules={[
+            { required: true, message: t('Phone number is required') },
+            { pattern: uzPhonePattern, message: 'Phone number must be in the format +998XXXXXXXXX' },
+          ]}
+        >
+          <Input
+            prefix={<PhoneOutlined />}
+            placeholder="e.g. +998901234567"
+            autoFocus
+            maxLength={13}
+            size="large"
+          />
+        </Form.Item>
+        <Space style={{ width: '100%', justifyContent: 'center' }}>
+          <Button onClick={onCancel} style={{ minWidth: 100 }}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={async () => {
+              try {
+                const values = await form.validateFields();
+                onSubmit(values.phoneNumber);
+              } catch (err) {
+                // Validation error, do nothing
+              }
+            }}
+            loading={loading}
+            style={{ minWidth: 100 }}
+          >
+            Save
+          </Button>
+        </Space>
+      </Form>
+    </Modal>
   );
 }

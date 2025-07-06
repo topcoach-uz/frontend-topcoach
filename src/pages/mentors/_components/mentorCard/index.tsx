@@ -78,7 +78,7 @@ export default function MentorCard({
         </CustomText>
       </CustomCard>
       <div className={styles.img}>
-        {imgSrc ? <img src={imgSrc} alt="img error" /> : <Skeleton.Image />}
+        {imgSrc ? <img src={imgSrc} alt="img error" loading="lazy" /> : <Skeleton.Image />}
       </div>
       <CustomText
         fontSize={20}

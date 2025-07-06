@@ -8,6 +8,7 @@ import styles from './actions.module.scss';
 import ActionsMobileVersion from './mobile/index.tsx';
 import useActions from './useActions.tsx';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 export default function Actions() {
   const {
@@ -29,6 +30,12 @@ export default function Actions() {
 
   const isMobileVersion =
     i18n.language === 'en' ? screenSize < 1200 : screenSize < 1400;
+
+  useEffect(() => {
+    const handler = () => setIsModalVisible(true);
+    window.addEventListener('openEditProfileModal', handler);
+    return () => window.removeEventListener('openEditProfileModal', handler);
+  }, [setIsModalVisible]);
 
   // Mobile version
   if (isMobileVersion) {
