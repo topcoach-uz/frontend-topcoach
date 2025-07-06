@@ -5,7 +5,6 @@ import FormMaker from "src/components/form/FormMaker";
 import { ArrowRight } from "src/components/icons";
 import MainTitleDescription from "src/components/mainTitleDesc";
 import CountDown from "src/pages/events/_components/countdown";
-import { EVENT_DEADLINE } from "src/pages/events/_components/CurrentEventSection/useCurrentEvent";
 import {
   hasFileUploadFields,
   sortFormItemsFileUploadLast,
@@ -15,6 +14,7 @@ import { getLocalizedText } from "src/utils/translationUtils";
 import styles from "../apply.module.scss";
 import useApply from "../useApply";
 import useUndergraduate from "./useUndergraduate";
+import ApplicationClosed from "../../_components/application-closed";
 
 export default function ApplyToEventPage() {
   const { breadcrumbItems, commonFormItems } = useApply();
@@ -62,7 +62,17 @@ export default function ApplyToEventPage() {
     : "";
   const eventDeadlineDate = formRelatedData?.data?.deadline
     ? new Date(formRelatedData.data.deadline)
-    : new Date(EVENT_DEADLINE);
+    : null;
+
+  // Check if the deadline has passed
+  const isDeadlinePassed = eventDeadlineDate
+    ? eventDeadlineDate < new Date()
+    : true;
+
+  // If deadline has passed, show the application closed page
+  if (isDeadlinePassed) {
+    return <ApplicationClosed breadcrumbItems={breadcrumbItems} />;
+  }
 
   return (
     <main>
@@ -74,7 +84,9 @@ export default function ApplyToEventPage() {
             description={`${t("apply.deadline")}: ${eventDeadline}`}
           />
           <Flex vertical align="center" gap={10}>
-            <CountDown targetDate={eventDeadlineDate} />
+            {eventDeadlineDate && (
+              <CountDown targetDate={eventDeadlineDate} />
+            )}
           </Flex>
         </Flex>
         <Form

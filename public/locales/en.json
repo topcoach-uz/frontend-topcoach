@@ -434,5 +434,6 @@
   "events.modal.signInRequired": "You need to sign in first",
   "events.modal.signInContent": "Please sign in to apply for the event.",
   "events.modal.signInButton": "Sign In",
-  "events.modal.cancel": "Cancel"
+  "events.modal.cancel": "Cancel",
+  "events.apply.applyNow": "Apply now"
 }

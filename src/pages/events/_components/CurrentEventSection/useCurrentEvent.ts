@@ -55,5 +55,3 @@ export default function useCurrentEvent() {
     onApplyClick,
   };
 }
-
-export const EVENT_DEADLINE = new Date("2025-05-30T18:59:00Z");

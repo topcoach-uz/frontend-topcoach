@@ -431,5 +431,6 @@
   "events.modal.signInRequired": "Aldında sistemağa kirıw kerek",
   "events.modal.signInContent": "Istapaqa ótinim beru úshin sistemağa kiriń.",
   "events.modal.signInButton": "Kirıw",
-  "events.modal.cancel": "Biykar qılıw"
+  "events.modal.cancel": "Biykar qılıw",
+  "events.apply.applyNow": "Qazi arız beriw"
 }

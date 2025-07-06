@@ -360,6 +360,7 @@
   "events.modal.signInContent": "Tadbirga ariza berish uchun tizimga kiring.",
   "events.modal.signInButton": "Kirish",
   "events.modal.cancel": "Bekor qilish",
+  "events.apply.applyNow": "Hozir ariza bering",
   "apply.breadcrumb.home": "Bosh sahifa",
   "apply.breadcrumb.events": "Tadbirlar",
   "apply.breadcrumb.eventInfo": "Tadbir haqida ma'lumot",

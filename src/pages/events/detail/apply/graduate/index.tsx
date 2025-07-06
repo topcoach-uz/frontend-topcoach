@@ -7,7 +7,6 @@ import { ArrowRight } from "src/components/icons";
 import useApply from "../useApply";
 import CountDown from "src/pages/events/_components/countdown";
 import useGraduate from "./useGraduate";
-import { EVENT_DEADLINE } from "src/pages/events/_components/CurrentEventSection/useCurrentEvent";
 import useApi from "src/hooks/useApi";
 import { api } from "src/app/api";
 import { EventFormTypeEnum, EventsSchema } from "src/app/api/Api";
@@ -19,6 +18,7 @@ import {
   sortFormItemsFileUploadLast,
 } from "src/utils/formTransformer";
 import { getLocalizedText } from "src/utils/translationUtils";
+import ApplicationClosed from "../../_components/application-closed";
 
 export default function ApplyToEventGraduatePage() {
   const { breadcrumbItems, commonFormItems } = useApply();
@@ -69,7 +69,17 @@ export default function ApplyToEventGraduatePage() {
 
   const eventDeadlineDate = graduateData?.data?.deadline
     ? new Date(graduateData.data.deadline)
-    : new Date(EVENT_DEADLINE);
+    : null;
+
+  // Check if deadline has passed
+  const isDeadlinePassed = eventDeadlineDate
+    ? eventDeadlineDate < new Date()
+    : true;
+
+  // If deadline has passed, show ApplicationClosed component
+  if (isDeadlinePassed) {
+    return <ApplicationClosed breadcrumbItems={breadcrumbItems} />;
+  }
 
   return (
     <main>
@@ -81,7 +91,9 @@ export default function ApplyToEventGraduatePage() {
             description={`${t("apply.deadline")}: ${eventDeadline}`}
           />
           <Flex vertical align="center" gap={10}>
-            <CountDown targetDate={eventDeadlineDate} />
+            {eventDeadlineDate && (
+              <CountDown targetDate={eventDeadlineDate} />
+            )}
           </Flex>
         </Flex>
         <Form

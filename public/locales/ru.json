@@ -431,5 +431,6 @@
   "events.modal.signInRequired": "Сначала нужно войти в систему",
   "events.modal.signInContent": "Пожалуйста, войдите в систему, чтобы подать заявку на мероприятие.",
   "events.modal.signInButton": "Войти",
-  "events.modal.cancel": "Отмена"
+  "events.modal.cancel": "Отмена",
+  "events.apply.applyNow": "Подать заявку"
 }
