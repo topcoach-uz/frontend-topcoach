@@ -2395,13 +2395,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Users
      * @name GetTelegramStatus
      * @summary Get Telegram connection status
-     * @request GET:/users/telegram-status
+     * @request GET:/telegram/status
      * @secure
      * @response `200` `{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }` Status retrieved successfully
      */
     getTelegramStatus: (params: RequestParams = {}) =>
       this.request<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, any>({
-        path: `/users/telegram-status`,
+        path: `/telegram/status`,
         method: "GET",
         secure: true,
         format: "json",
