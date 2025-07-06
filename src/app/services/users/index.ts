@@ -37,7 +37,7 @@ export const authApi = RtkApi.injectEndpoints({
       invalidatesTags: ['GetMe'],
     }),
     getTelegramStatus: build.query<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, void>({
-      query: () => ({ url: '/telegram/status' }),
+      query: () => ({ url: '/users/telegram-status' }),
       providesTags: ['TelegramStatus'],
     }),
   }),
