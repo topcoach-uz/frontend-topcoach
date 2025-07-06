@@ -11,11 +11,11 @@ import i18n from './lib/i18n';
 function App() {
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    waitForBackendHealth().catch(() =>
-      setError('Server is starting, please try again in a moment.')
-    );
-  }, []);
+  // useEffect(() => {
+  //   waitForBackendHealth().catch(() =>
+  //     setError('Server is starting, please try again in a moment.')
+  //   );
+  // }, []);
 
   return (
     <>

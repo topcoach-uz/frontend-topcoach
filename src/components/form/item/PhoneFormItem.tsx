@@ -41,6 +41,9 @@ export function PhoneNumberModal({
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
+  // Uzbekistan phone number validation: +998XXXXXXXXX (13 chars)
+  const uzPhonePattern = /^\+998\d{9}$/;
+
   return (
     <Modal
       open={visible}
@@ -66,8 +69,8 @@ export function PhoneNumberModal({
           rules={[
             { required: true, message: t('Phone Number is required') },
             {
-              pattern: /^\+?\d{9,15}$/,
-              message: t('signUp.phoneNumberFormatError'),
+              pattern: uzPhonePattern,
+              message: 'Phone number must be in the format +998XXXXXXXXX',
             },
           ]}
         >
@@ -75,7 +78,7 @@ export function PhoneNumberModal({
             prefix={<PhoneOutlined />}
             placeholder="e.g. +998901234567"
             autoFocus
-            maxLength={16}
+            maxLength={13}
             size="large"
           />
         </Form.Item>
