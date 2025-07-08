@@ -19,8 +19,18 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const [updateTelegramPhoneNumber, { isLoading }] = useUpdateTelegramPhoneNumberMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
 
+  // International phone number validation: +[country code][number] (E.164 format)
+  const internationalPhonePattern = /^\+[1-9]\d{9,14}$/;
+
   const handleSubmit = async () => {
     if (!phoneNumber.trim()) return;
+    
+    // Client-side validation
+    if (!internationalPhonePattern.test(phoneNumber.trim())) {
+      setErrorMsg('Please enter a valid international phone number (e.g., +1234567890)');
+      return;
+    }
+    
     setErrorMsg('');
     try {
       await updateTelegramPhoneNumber({ phoneNumber: phoneNumber.trim() });
@@ -147,15 +157,16 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
             <div style={{ width: '100%' }}>
               <Title level={5} style={{ marginBottom: 4 }}>Telegram Phone Number</Title>
               <Text type="secondary">
-                Enter the phone number associated with your Telegram account (e.g., +998901234567)
+                Enter the phone number associated with your Telegram account (e.g., +1234567890)
               </Text>
               <Input
-                placeholder="+998901234567"
+                placeholder="+1234567890"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 prefix={<PhoneOutlined />}
                 size="large"
                 style={{ margin: '12px 0' }}
+                maxLength={16}
               />
               {errorMsg && (
                 <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
