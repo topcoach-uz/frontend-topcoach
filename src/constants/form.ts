@@ -1,7 +1,7 @@
 import { Gutter } from 'antd/es/grid/row';
 
-// Pattern for form fields
-export const phonePattern = /^\(\d{2}\)-\d{3}-\d{2}-\d{2}$/;
+// Pattern for form fields - International E.164 format
+export const phonePattern = /^\+[1-9]\d{9,14}$/;
 export const smsPattern = /^\d-\d-\d-\d$/;
 export const innPattern = /^\d{3}-\d{3}-\d{3}$/;
 export const sourceNumberPattern = /^\d{4}$/;

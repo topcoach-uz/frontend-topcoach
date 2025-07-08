@@ -25,7 +25,6 @@ export default function PhoneFormItem({ mask, ...rest }: Props) {
       label="Telefon raqam"
       message="Telefon raqamni kiriting"
       mask={mask || phoneMask}
-      addonBefore="+998"
       {...rest}
     />
   );
@@ -41,8 +40,8 @@ export function PhoneNumberModal({
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
-  // Uzbekistan phone number validation: +998XXXXXXXXX (13 chars)
-  const uzPhonePattern = /^\+998\d{9}$/;
+  // International phone number validation: +[country code][number] (E.164 format)
+  const internationalPhonePattern = /^\+[1-9]\d{9,14}$/;
 
   return (
     <Modal
@@ -67,14 +66,14 @@ export function PhoneNumberModal({
           label={t('editProfile.phoneNumberLabel')}
           rules={[
             { required: true, message: t('Phone number is required') },
-            { pattern: uzPhonePattern, message: 'Phone number must be in the format +998XXXXXXXXX' },
+            { pattern: internationalPhonePattern, message: 'Please enter a valid international phone number (e.g., +1234567890)' },
           ]}
         >
           <Input
             prefix={<PhoneOutlined />}
-            placeholder="e.g. +998901234567"
+            placeholder="e.g. +1234567890"
             autoFocus
-            maxLength={13}
+            maxLength={16}
             size="large"
           />
         </Form.Item>
