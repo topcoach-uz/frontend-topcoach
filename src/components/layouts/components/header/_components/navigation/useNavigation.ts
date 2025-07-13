@@ -34,13 +34,17 @@ export default function useNavigation() {
       text: t('header.events'),
     },
     {
+      path: '/programs',
+      text: t('header.programs', 'Programs'),
+    },
+    {
       path: '/success-stories',
       text: t('header.blog'),
     },
-    {
-      path: '/contact',
-      text: t('header.contacts'),
-    },
+    //     {
+    //   path: '/contact',
+    //   text: t('header.contacts'),
+    // },
     {
       path: '/faq',
       text: t('header.faq'),

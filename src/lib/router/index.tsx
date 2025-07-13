@@ -16,6 +16,7 @@ import { CustomRouter } from "./CustomRouter";
 import customHistory from "../history";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
+import { GlobalModals } from "src/components/GlobalModals";
 
 // Pages
 
@@ -87,6 +88,7 @@ const PaymentSmsPageLazy = lazy(
 const AiMajorMatchPageLazy = lazy(
   () => import("src/pages/ai-major-match/AiMajorMatch")
 );
+const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -95,6 +97,7 @@ function RouterProvider() {
 
   return (
     <CustomRouter history={customHistory}>
+      <GlobalModals />
       <Routes>
         <Route element={<RootLayout />}>
           {/* Help */}
@@ -127,6 +130,7 @@ function RouterProvider() {
                 path="/events/:id"
                 element={<EventDetailsPageLazy />}
               />
+              <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route
                 path="/events/undergraduate"
                 element={<ApplyToEventUndergraduatePageLazy />}

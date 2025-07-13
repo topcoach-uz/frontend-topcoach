@@ -8,6 +8,7 @@ import {
 } from 'src/app/services/api/ai-assessment';
 import { useGetSubscriptionUsageQuery } from 'src/app/services/api';
 import { AiAssessmentResult } from 'src/app/api/types';
+import { message } from 'antd';
 
 export const useAiMajorMatch = () => {
   const navigate = useNavigate();
@@ -75,10 +76,15 @@ export const useAiMajorMatch = () => {
     }
 
     try {
-      await startAssessment();
+      await startAssessment().unwrap();
       await refetchUsage(); // Refetch usage after starting assessment
       setStep('assessment');
-    } catch (error) {
+    } catch (error: any) {
+      // Check for profile requirements error
+      if (error?.data?.error === 'PROFILE_REQUIREMENTS_NOT_MET') {
+        // Modal is now handled globally, just return
+        return;
+      }
       console.error(error);
     }
   };

@@ -206,31 +206,42 @@
   font-weight: 500;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .plansContainer {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 18px;
+    gap: 24px;
   }
   .planCard {
-    min-width: 94vw;
-    max-width: 98vw;
-    min-height: 410px;
-    padding: 16px 3vw 16px 3vw;
+    min-width: 260px;
+    max-width: 320px;
+    min-height: 420px;
+    padding: 28px 14px 18px 14px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .plansContainer {
     flex-direction: column;
+    gap: 18px;
     align-items: center;
-    gap: 12px;
+    margin: 18px 0;
   }
   .planCard {
-    min-width: 98vw;
+    min-width: 0;
+    width: 98vw;
+    max-width: 420px;
+    min-height: 320px;
+    padding: 18px 6vw 18px 6vw;
+    border-radius: 16px;
+    font-size: 0.98rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .planCard {
+    width: 99vw;
     max-width: 99vw;
-    min-height: 330px;
-    padding: 10px 1vw 10px 1vw;
+    padding: 10px 2vw 10px 2vw;
+    border-radius: 10px;
+    font-size: 0.93rem;
   }
 } 

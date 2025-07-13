@@ -3,6 +3,7 @@ import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import { refreshToken } from 'src/app/api/axiosInstance';
 import { logout } from 'src/app/slices/authSlice';
+import { show } from 'src/app/slices/profilePopupSlice';
 import { store } from 'src/app/store';
 
 /**
@@ -30,6 +31,18 @@ export const rtkQueryErrorLogger: Middleware =
       }
 
       const status = payload?.status;
+      const errorCode = payload?.data?.error;
+
+      // Handle profile requirements error
+      if (errorCode === 'PROFILE_REQUIREMENTS_NOT_MET') {
+        // Show the profile requirements modal
+        store.dispatch(show());
+        
+        // Also show a toast message for immediate feedback
+        const errorMessage = payload?.data?.message || 'Please complete your profile requirements to continue.';
+        message.warning(errorMessage);
+        return;
+      }
 
       if (status === 500) {
         message.warning(

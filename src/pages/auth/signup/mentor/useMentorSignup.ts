@@ -208,6 +208,7 @@ export default function useMentorSignup() {
         }),
         dispatch(
           updateProfile({
+            phoneNumber: val.phoneNumber?.trim(),
             // @ts-ignore
             mentorProfile: {
               major: val.major?.trim(),
