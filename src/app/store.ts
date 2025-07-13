@@ -3,6 +3,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import layout from 'src/app/slices/layoutSlice';
 import auth from 'src/app/slices/authSlice';
 import mentor from 'src/app/slices/mentorSlice';
+import profilePopup from 'src/app/slices/profilePopupSlice';
 import { RtkApi } from './services/api';
 import { rtkQueryErrorLogger } from './services/api/middlewares';
 
@@ -15,6 +16,7 @@ export const createStore = (
       auth,
       layout,
       mentor,
+      profilePopup,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(RtkApi.middleware, rtkQueryErrorLogger),

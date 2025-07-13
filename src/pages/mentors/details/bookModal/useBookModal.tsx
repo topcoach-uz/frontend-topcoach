@@ -150,6 +150,10 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
             handleModalClose();
           })
           .catch((err) => {
+            if (err?.data?.error === 'PROFILE_REQUIREMENTS_NOT_MET') {
+              // Modal is now handled globally, just return
+              return;
+            }
           message.error(err.data?.message || 'Booking failed.');
           });
         return;

@@ -20,14 +20,22 @@ function DetailedInfo({ form, formButtonsProps, formError }: Props) {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const { t } = useTranslation();
   const formItems: IFormItemType[] = [
-    // {
-    //   inputType: 'text',
-    //   type: 'input',
-    //   name: 'phone_number',
-    //   label: t('signUp.phoneNumber'),
-    //   placeholder: t('signUp.phoneNumberPlaceholder'),
-    //   col: 24,
-    // },
+    {
+      name: 'phoneNumber',
+      type: 'input',
+      inputType: 'text',
+      htmlType: 'text',
+      label: t('signUp.phoneNumber'),
+      placeholder: t('signUp.phoneNumberPlaceholder'),
+      message: t('signUp.phoneNumberError'),
+      col: 24,
+      formItemProps: {
+        rules: [
+          { required: true, message: t('signUp.phoneNumberError') },
+          { pattern: /^\+\d{9,15}$/, message: t('signUp.phoneNumberFormatError') },
+        ],
+      },
+    },
     {
       name: 'socials',
       type: 'input',

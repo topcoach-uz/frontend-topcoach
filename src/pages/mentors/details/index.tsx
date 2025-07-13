@@ -19,6 +19,10 @@ import MentorBookingPaymentModal from './bookModal/_components/payment';
 import styles from './mentor_details.module.scss';
 import { useTranslation } from 'react-i18next';
 import Reviews from './_components/reviews';
+import { useGetMeQuery } from 'src/app/services/users';
+import { useAppDispatch } from 'src/app/store';
+import { show as showProfilePopup } from 'src/app/slices/profilePopupSlice';
+import { useGetTelegramStatusQuery } from 'src/app/services/users';
 
 export default function MentorDetailsPage() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -29,6 +33,9 @@ export default function MentorDetailsPage() {
   const splittedPathname = pathname.split('/');
   const mentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
   const { t } = useTranslation();
+  const { data: currentUser } = useGetMeQuery();
+  const { data: telegramStatus } = useGetTelegramStatusQuery();
+  const dispatch = useAppDispatch();
 
   const {
     data: mentorData,
@@ -70,9 +77,16 @@ export default function MentorDetailsPage() {
       message.error('No available sessions to book');
       return;
     }
-    // customHistory.push('?booking=true');
+
+    // Check for required profile fields before opening booking modal
+    const missingPhone = !currentUser?.phoneNumber;
+    const missingTelegram = telegramStatus?.status !== 'connected';
+    if (missingPhone || missingTelegram) {
+      dispatch(showProfilePopup());
+      return;
+    }
+
     setPaymentModalOpen(true);
-    // message.success('Your session has been booked successfully');
   };
 
   const noSessions =

@@ -26,7 +26,11 @@ const AiMajorMatchPage = () => {
     setStep('intro');
   };
 
-  if (isLoading) {
+  // Determine if we should show the loader: only after all questions are answered and while waiting for OpenAI's response
+  const allQuestionsAnswered = questions && Object.keys(answers).length === questions.length;
+  const isWaitingForOpenAI = step === 'assessment' && allQuestionsAnswered && isLoading;
+
+  if (isWaitingForOpenAI) {
     return <AnalysisLoader />;
   }
 

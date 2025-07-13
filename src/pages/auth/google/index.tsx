@@ -20,6 +20,7 @@ import { UserRole } from 'src/app/api/Api';
 import { UserType } from 'src/app/type';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
 
 export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ export default function GoogleAuthenticationPage() {
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [pendingPhone, setPendingPhone] = useState<string>('');
 
   const { data, isLoading, refetch } = useGetMeQuery(undefined, {
     skip: !exchangeSuccess,
@@ -83,20 +86,28 @@ export default function GoogleAuthenticationPage() {
         })
         .finally(() => setSubmitting(false));
     } else {
-      setSubmitting(true);
-      dispatch(
-        updateProfile({
-          // @ts-ignore
-          profile: { profileComplete: true },
-        })
-      )
-        .unwrap()
-        .then((res) => {
-          navigate('/');
-        })
-        .catch((err) => message.error(err.message, 10))
-        .finally(() => setSubmitting(false));
+      // Student: require phone number before completing profile
+      setShowPhoneModal(true);
     }
+  };
+
+  const handlePhoneModalSubmit = (phoneNumber: string) => {
+    setSubmitting(true);
+    dispatch(
+      updateProfile({
+        phoneNumber: phoneNumber,
+        profile: { profileComplete: true }, // keep as partial update
+      })
+    )
+      .unwrap()
+      .then(() => {
+        setShowPhoneModal(false);
+        navigate('/');
+      })
+      .catch((err) => {
+        message.error(err.message, 10);
+      })
+      .finally(() => setSubmitting(false));
   };
 
   if (isLoading) {
@@ -124,6 +135,12 @@ export default function GoogleAuthenticationPage() {
           {t('btn.continue')}
         </CustomButton>
       </div>
+      <PhoneNumberModal
+        visible={showPhoneModal}
+        onSubmit={handlePhoneModalSubmit}
+        onCancel={() => setShowPhoneModal(false)}
+        loading={submitting}
+      />
     </div>
   );
 }
