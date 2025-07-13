@@ -16,11 +16,14 @@ import {
   setProfile,
   updateProfile,
 } from 'src/app/slices/authSlice';
-import { UserRole } from 'src/app/api/Api';
+import { UserRole, ProfilesSchema } from 'src/app/api/Api';
 import { UserType } from 'src/app/type';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
+
+// Define a partial type for profile updates
+type PartialProfileUpdate = Partial<Pick<ProfilesSchema, 'profileComplete' | 'role'>>;
 
 export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
@@ -93,10 +96,15 @@ export default function GoogleAuthenticationPage() {
 
   const handlePhoneModalSubmit = (phoneNumber: string) => {
     setSubmitting(true);
+    const profileUpdate: PartialProfileUpdate = {
+      profileComplete: true,
+      role: UserRole.Student
+    };
+    
     dispatch(
       updateProfile({
         phoneNumber: phoneNumber,
-        profile: { profileComplete: true }, // keep as partial update
+        profile: profileUpdate as any, // Type assertion needed due to API type mismatch
       })
     )
       .unwrap()
