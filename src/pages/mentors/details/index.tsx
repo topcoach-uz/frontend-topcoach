@@ -33,8 +33,15 @@ export default function MentorDetailsPage() {
   const splittedPathname = pathname.split('/');
   const mentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
   const { t } = useTranslation();
-  const { data: currentUser } = useGetMeQuery();
-  const { data: telegramStatus } = useGetTelegramStatusQuery();
+  const isAuthenticated = useTypedSelector(
+    (state) => state.auth.isAuthenticated
+  );
+  const { data: currentUser } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const dispatch = useAppDispatch();
 
   const {
@@ -48,9 +55,6 @@ export default function MentorDetailsPage() {
   useEffect(() => {
     refetch();
   }, [refetch]);
-  const isAuthenticated = useTypedSelector(
-    (state) => state.auth.isAuthenticated
-  );
 
   const handleBook = (bookingArgs: IHandleBookArgs) => {
     setPaymentModalOpen(false);
