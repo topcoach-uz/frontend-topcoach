@@ -4,6 +4,7 @@ import { CustomCard } from 'src/components/cards';
 import { CustomText } from 'src/components/common';
 import { themeFontSize } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
+import { useTypedSelector } from 'src/app/store';
 
 interface Props {}
 
@@ -12,7 +13,10 @@ export default function PackageBalance({}: Props) {
   const { pathname } = useLocation();
   const splittedPathname = pathname.split('/');
   const mentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
-  const { data } = useGetMentorBalanceQuery({ mentorId });
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data } = useGetMentorBalanceQuery({ mentorId }, {
+    skip: !isAuthenticated,
+  });
   // @ts-ignore
   const totalMinutesLeft = data?.totalMinutes - data?.usedMinutes;
 
