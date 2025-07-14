@@ -5,19 +5,19 @@ import styles from './programs.module.scss';
 
 const images = [
   {
-    src: '/img/azizbek_programss.png',
+    src: '/img/zafar_programs.jpeg',
     alt: 'Zafar',
     name: 'Zafar',
     subtitle: `Incoming student at Babson College Class of '29`,
   },
   {
-    src: '/img/viola_programs.jpg',
+    src: '/img/viola_programs.jpeg',
     alt: 'Viola Fur',
     name: 'Viola Fur',
     subtitle: `Graduate of Oxford and Yale\n8 years of experience in admissions`,
   },
   {
-    src: '/img/azizbek_programs.png',
+    src: '/img/azizbek_programs.jpeg',
     alt: 'Azizbek',
     name: 'Azizbek',
     subtitle: `Incoming student at Harvard University Class of '29`,
@@ -38,7 +38,7 @@ export default function ProgramsPage() {
           centered
           className={styles.heading}
         >
-          TopCoach Admission Programs
+          TopCoach Admissions Program
         </CustomText>
         <br />
         <br />
