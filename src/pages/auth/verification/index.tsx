@@ -19,11 +19,14 @@ export default function VerificationPage() {
   const verified =
     searchParams.get('verified') && !!searchParams.get('verified');
   const email = searchParams.get('email') ?? '';
+  const token = searchParams.get('token') ?? '';
 
   const isVerified = verified ?? false;
 
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(30);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
 
   useEffect(() => {
     if (isResendDisabled) {
@@ -41,6 +44,27 @@ export default function VerificationPage() {
       return () => clearInterval(timer);
     }
   }, [isResendDisabled]);
+
+  // Handle token verification
+  useEffect(() => {
+    if (token && !isVerified && !isProcessing) {
+      setIsProcessing(true);
+      setVerificationError('');
+      
+      // Call the backend verification endpoint using the API
+      api.auth
+        .verifyEmail({ token })
+        .then(() => {
+          // Success - redirect to home with verified=true
+          window.location.href = '/?verified=true';
+        })
+        .catch((error) => {
+          console.error('Verification error:', error);
+          setVerificationError(error?.response?.data?.message || 'Verification failed. Please try again.');
+          setIsProcessing(false);
+        });
+    }
+  }, [token, isVerified, isProcessing]);
 
   if (verified) {
     setTimeout(() => {
@@ -79,19 +103,52 @@ export default function VerificationPage() {
           fontWeight={themeFontWeight.fontWeightSemibold}
           fontSize={32}
         >
-          {isVerified ? t('signUp.verified') : t('signUp.emailSend')}
+          {isProcessing 
+            ? 'Verifying Email...' 
+            : isVerified 
+              ? t('signUp.verified') 
+              : verificationError 
+                ? 'Verification Failed' 
+                : t('signUp.emailSend')}
         </CustomText>
         <CustomText
           color={colors.colorTextDescription}
           lineHeight="22px"
           mb={24}
         >
-          {isVerified
-            ? t('signUp.rediredToLogin')
-            : t('signUp.emailVerification').replace('{{email}}', email)}
+          {isProcessing 
+            ? 'Please wait while we verify your email address...'
+            : isVerified
+              ? t('signUp.rediredToLogin')
+              : verificationError
+                ? verificationError
+                : t('signUp.emailVerification').replace('{{email}}', email)}
         </CustomText>
-        {isVerified ? (
+        {isProcessing ? (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <div style={{ marginBottom: '10px' }}>Processing...</div>
+          </div>
+        ) : isVerified ? (
           ''
+        ) : verificationError ? (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <CustomText
+              color={colors.colorError || '#ff4d4f'}
+              style={{ marginBottom: '20px' }}
+            >
+              {verificationError}
+            </CustomText>
+            <Button
+              type="primary"
+              onClick={() => window.location.reload()}
+              style={{ marginRight: '10px' }}
+            >
+              Try Again
+            </Button>
+            <Button onClick={() => navigate('/auth/signin')}>
+              Go to Login
+            </Button>
+          </div>
         ) : (
           <>
             <div className={styles.info_message}>
