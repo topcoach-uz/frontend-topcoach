@@ -204,6 +204,10 @@ function RouterProvider() {
               path="/auth/verification"
               element={<VerificationPageLazy />}
             />
+            <Route
+              path="/auth/verify/email"
+              element={<VerificationPageLazy />}
+            />
           </Route>
         </Route>
       </Routes>
