@@ -176,6 +176,8 @@
   "landing.uniSeach": "Search for a university",
   "landing.viewAll": "View all",
   "mentors.available": "Available sessions",
+  "mentors.availableSession": "available session",
+  "mentors.availableSessions": "available sessions",
   "mentors.background": "Background",
   "mentors.bookingText": "Book sessions from the options based on your needs",
   "mentors.completedSessions": "Sessions completed",

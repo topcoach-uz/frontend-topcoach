@@ -19,6 +19,7 @@ interface MentorCardProps {
   name: string;
   level?: string;
   classname?: string;
+  availableSessions?: number;
 }
 
 export default function MentorCard({
@@ -31,6 +32,7 @@ export default function MentorCard({
   id,
   level,
   classname,
+  availableSessions = 0,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
@@ -47,74 +49,96 @@ export default function MentorCard({
       shadowed={false}
       className={styles.card}
       onClick={handleCardClick}
+      bordered
     >
-      <CustomCard
-        bgColor={
-          level === 'expert'
-            ? themeColors.light.red2
-            : level === 'senior'
-              ? themeColors.light.blue2
-              : level == 'junior'
-                ? themeColors.light.green2
-                : themeColors.light.gold2
-        }
-        padding={8}
-        className={styles.coach}
-      >
-        <CustomText
-          fontSize={14}
-          fontWeight={500}
-          color={
+      <div className={styles.imgContainer}>
+        <div className={styles.img}>
+          {imgSrc ? <img src={imgSrc} alt="img error" loading="lazy" /> : <Skeleton.Image />}
+        </div>
+        
+        {/* Coach level badge */}
+        <CustomCard
+          bgColor={
             level === 'expert'
-              ? themeColors.light.red8
+              ? themeColors.light.red2
               : level === 'senior'
-                ? themeColors.light.blue8
-                : level === 'junior'
-                  ? themeColors.light.green8
-                  : themeColors.light.gold8
+                ? themeColors.light.blue2
+                : level == 'junior'
+                  ? themeColors.light.green2
+                  : themeColors.light.gold2
           }
+          padding={8}
+          className={styles.coach}
         >
-          {level} coach
-        </CustomText>
-      </CustomCard>
-      <div className={styles.img}>
-        {imgSrc ? <img src={imgSrc} alt="img error" loading="lazy" /> : <Skeleton.Image />}
+          <CustomText
+            fontSize={14}
+            fontWeight={500}
+            color={
+              level === 'expert'
+                ? themeColors.light.red8
+                : level === 'senior'
+                  ? themeColors.light.blue8
+                  : level === 'junior'
+                    ? themeColors.light.green8
+                    : themeColors.light.gold8
+            }
+          >
+            {level} coach
+          </CustomText>
+        </CustomCard>
+
+        {/* Name overlay on image */}
+        <div className={styles.nameOverlay}>
+          <CustomText
+            fontSize={18}
+            fontWeight={700}
+            color="#ffffff"
+            style={{ 
+              lineHeight: '1.2',
+              textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+            }}
+          >
+            {name.toUpperCase()}
+          </CustomText>
+        </div>
       </div>
-      <CustomText
-        fontSize={20}
-        fontWeight={600}
-        color={colors.colorTextBase}
-        mt={8}
-        mb={4}
-      >
-        {name}
-      </CustomText>
-      <CustomText
-        fontSize={16}
-        fontWeight={400}
-        color={colors.colorTextDescription}
-        lineHeight="24px"
-        className={styles.university}
-      >
-        {university}
-      </CustomText>
-      <div className={styles.rates}>
-        {/* <MentorStarIcon />
-        <CustomText
-          color={colors.colorTextSecondary}
-          pr={12}
-          borderRight={`1px solid ${colors.colorBorder}`}
-          ml={4}
-        >
-          {rating}
-        </CustomText> */}
-        <CustomText
-          //  ml={12}
-          color={colors.colorTextSecondary}
-        >
-          {sessionNumber}{' '}
-          {sessionNumber < 2 ? t('mentors.session') : t('mentors.sessions')}
-        </CustomText>
+
+      {/* Text details section */}
+      <div className={styles.textSection}>
+        <div className={styles.universitySection}>
+          <CustomText
+            fontSize={16}
+            fontWeight={600}
+            color={colors.colorTextBase}
+            mb={8}
+            style={{ lineHeight: '1.3' }}
+          >
+            {university}
+          </CustomText>
+          {major && (
+            <CustomText
+              fontSize={14}
+              fontWeight={400}
+              color={colors.colorTextDescription}
+              lineHeight="1.4"
+              mb={12}
+            >
+              {major}
+            </CustomText>
+          )}
+        </div>
+
+        {/* Available sessions */}
+        <div className={styles.sessionsSection}>
+          <CustomText
+            color={colors.colorTextSecondary}
+            fontSize={15}
+            fontWeight={500}
+          >
+            {availableSessions}{' '}
+            {availableSessions < 2 ? t('mentors.availableSession') : t('mentors.availableSessions')}
+          </CustomText>
+        </div>
       </div>
     </CustomCard>
   );

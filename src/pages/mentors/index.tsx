@@ -32,38 +32,52 @@ export default function MentorsPage() {
   let subtitle = 'Connect with experienced mentors who can guide you through your university application journey.';
   if (selectedLevel === MentorExperienceLevel.Probono) {
     title = 'Pro Bono Mentors';
-    subtitle = 'These kinds of mentors volunteer their time to help students succeed, offering free guidance and making a social impact.';
-  } else if (selectedLevel === MentorExperienceLevel.Expert) {
-    title = 'Expert Mentors';
-    subtitle = 'Expert Mentors are leaders in admissions, with years of experience and a strong record of success.';
-  } else if (selectedLevel === MentorExperienceLevel.Senior) {
-    title = 'Senior Mentors';
-    subtitle = 'Senior Mentors have guided multiple students to acceptance and offer proven, practical insights.';
+    subtitle = 'Connect with pro bono mentors who offer free guidance for your university application journey.';
   } else if (selectedLevel === MentorExperienceLevel.Junior) {
     title = 'Junior Mentors';
-    subtitle = 'Junior Mentors are recent admits to top universities, eager to share fresh, relatable advice.';
+    subtitle = 'Connect with junior mentors who provide affordable guidance for your university application journey.';
+  } else if (selectedLevel === MentorExperienceLevel.Senior) {
+    title = 'Senior Mentors';
+    subtitle = 'Connect with senior mentors who offer comprehensive guidance for your university application journey.';
+  } else if (selectedLevel === MentorExperienceLevel.Expert) {
+    title = 'Expert Mentors';
+    subtitle = 'Connect with expert mentors who provide premium guidance for your university application journey.';
   }
 
-  // Filter mentors based on selected level
-  let filteredMentors = useMemo(() => {
-    if (selectedLevel === 'all') {
-      return response?.data || [];
+  const filteredMentors = useMemo(() => {
+    if (!response?.data) return [];
+    
+    let mentors = response.data;
+    
+    if (selectedLevel !== 'all') {
+      mentors = mentors.filter(
+        (mentor) => mentor.mentorProfile?.level === selectedLevel
+      );
     }
-
-    return (
-      response?.data?.filter(
-        (mentor) => mentor?.mentorProfile?.level === selectedLevel
-      ) || []
-    );
+    
+    return mentors;
   }, [response?.data, selectedLevel]);
 
-  if (isAuthenticated) {
-    filteredMentors = filteredMentors.filter(
-      (mentor) => mentor.id !== meData?.id
-    );
-  }
-
-  const sortedMentors = sortMentors(filteredMentors);
+  const sortedMentors = useMemo(() => {
+    return [...filteredMentors].sort((a, b) => {
+      // Sort by available sessions (higher first), then by completed sessions, then by name
+      const aAvailableSessions = a.sessionStats?.availableSessions || 0;
+      const bAvailableSessions = b.sessionStats?.availableSessions || 0;
+      
+      if (aAvailableSessions !== bAvailableSessions) {
+        return bAvailableSessions - aAvailableSessions;
+      }
+      
+      const aCompletedSessions = a.numberOfSessions || 0;
+      const bCompletedSessions = b.numberOfSessions || 0;
+      
+      if (aCompletedSessions !== bCompletedSessions) {
+        return bCompletedSessions - aCompletedSessions;
+      }
+      
+      return (a.profile.name || '').localeCompare(b.profile.name || '');
+    });
+  }, [filteredMentors]);
 
   return (
     <main>
@@ -104,6 +118,7 @@ export default function MentorsPage() {
                       mentor?.mentorProfile?.university
                     }
                     level={mentor.mentorProfile?.level}
+                    availableSessions={mentor.sessionStats?.availableSessions || 0}
                   />
                 );
               })
@@ -122,21 +137,3 @@ export default function MentorsPage() {
     </main>
   );
 }
-
-const sortMentors = (mentors: MentorsResponseDto[]) => {
-  return mentors.sort((a, b) => {
-    if (
-      a.mentorProfile?.level === MentorExperienceLevel.Probono &&
-      b.mentorProfile?.level !== MentorExperienceLevel.Probono
-    ) {
-      return -1;
-    }
-    if (
-      a.mentorProfile?.level !== MentorExperienceLevel.Probono &&
-      b.mentorProfile?.level === MentorExperienceLevel.Probono
-    ) {
-      return 1;
-    }
-    return 0;
-  });
-};
