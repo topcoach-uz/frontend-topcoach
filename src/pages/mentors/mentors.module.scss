@@ -1,8 +1,10 @@
 @import 'src/styles/variables.scss';
 
 .mentors {
-  // max-width: 1350px;
+  width: 100%;
+  max-width: 1400px;
   margin: 40px auto;
+  padding: 0 20px;
 }
 
 .top {
@@ -27,8 +29,24 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   margin-bottom: 16px;
-  margin-top: 24px;
+  margin-top: 32px;
+  width: 100%;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }

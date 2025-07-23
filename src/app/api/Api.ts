@@ -124,9 +124,10 @@ export interface ProfilesSchema {
 }
 
 export enum RoleEnum {
-  Owner = "Owner",
+  SuperAdmin = "SuperAdmin",
   Admin = "Admin",
-  ContentManager = "Content Manager",
+  Manager = "Manager",
+  Assistant = "Assistant",
   User = "User",
 }
 
@@ -710,6 +711,12 @@ export interface MentorsResponseDto {
   mentorProfile: MentorProfilesSchema;
   numberOfSessions: number;
   totalMinutes: number;
+  sessionStats: {
+    totalSessions: number;
+    totalCompletedSessions: number;
+    totalMinutes: number;
+    availableSessions: number;
+  };
 }
 
 export interface ReportUserDto {
