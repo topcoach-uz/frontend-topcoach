@@ -135,8 +135,7 @@ export default function MentorCard({
             fontSize={15}
             fontWeight={500}
           >
-            {availableSessions}{' '}
-            {availableSessions < 2 ? t('mentors.availableSession') : t('mentors.availableSessions')}
+            {availableSessions} {availableSessions === 1 ? t('mentors.availableSession') : t('mentors.availableSessions')}
           </CustomText>
         </div>
       </div>
