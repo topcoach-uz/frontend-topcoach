@@ -24,7 +24,7 @@ function MenteeHomePage() {
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [updatePhoneNumber, { isLoading: updatingPhone }] = useUpdatePhoneNumberMutation();
-  const { data: telegramStatus } = useGetTelegramStatusQuery();
+  const { data: telegramStatus, refetch: refetchTelegramStatus } = useGetTelegramStatusQuery();
   
   const telegramMissing = telegramStatus?.status !== 'connected';
 
@@ -64,6 +64,14 @@ function MenteeHomePage() {
       });
   };
 
+  const handleTelegramModalClose = () => {
+    setShowTelegramModal(false);
+    // Force refetch telegram status when modal closes
+    setTimeout(() => {
+      refetchTelegramStatus();
+    }, 1000);
+  };
+
   return (
     <div>
       {nameMissing || phoneMissing || telegramMissing ? (
@@ -98,7 +106,7 @@ function MenteeHomePage() {
       />
       <TelegramConnectionModal
         visible={showTelegramModal}
-        onClose={() => setShowTelegramModal(false)}
+        onClose={handleTelegramModalClose}
       />
     </div>
   );
