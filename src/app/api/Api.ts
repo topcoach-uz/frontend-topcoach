@@ -710,6 +710,13 @@ export interface MentorsResponseDto {
   mentorProfile: MentorProfilesSchema;
   numberOfSessions: number;
   totalMinutes: number;
+  sessionStats?: {
+    availableSessions: number;
+    totalSessions: number;
+    totalCompletedSessions: number;
+    upcomingSessions: SessionsSchema[];
+    totalMinutes: number;
+  };
 }
 
 export interface ReportUserDto {
