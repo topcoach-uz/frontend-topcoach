@@ -17,6 +17,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [verifyTelegramOTP, { isLoading }] = useVerifyTelegramOTPMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
   const typedTelegramStatus = telegramStatus as { status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string } | undefined;
@@ -30,11 +31,16 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
         otp: otp.trim() 
       });
       message.success('Telegram connected successfully!');
-      // Add a small delay to ensure backend has time to update
-      setTimeout(() => {
-        refetch();
-      }, 500);
-      onClose();
+      
+      // Show loading state while updating status
+      setIsUpdatingStatus(true);
+      
+      // Wait for backend to update database, then refetch
+      setTimeout(async () => {
+        await refetch();
+        setIsUpdatingStatus(false);
+        onClose();
+      }, 1000);
     } catch (error: any) {
       const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
       setErrorMsg(backendMsg);
@@ -119,16 +125,29 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
             {/* Status Display */}
             <div style={{ textAlign: 'center' }}>
-              {getStatusIcon()}
-              <div style={{ marginTop: 8 }}>
-                <Text strong style={{ fontSize: 16 }}>
-                  {getStatusText()}
-                </Text>
-              </div>
+              {isUpdatingStatus ? (
+                <div>
+                  <div style={{ fontSize: 48, color: '#1890ff' }}>⏳</div>
+                  <div style={{ marginTop: 8 }}>
+                    <Text strong style={{ fontSize: 16 }}>
+                      Updating status...
+                    </Text>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {getStatusIcon()}
+                  <div style={{ marginTop: 8 }}>
+                    <Text strong style={{ fontSize: 16 }}>
+                      {getStatusText()}
+                    </Text>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Connected State */}
-            {typedTelegramStatus?.status === 'connected' && (
+            {(typedTelegramStatus?.status === 'connected' || isUpdatingStatus) && (
               <Card type="inner" style={{ width: '100%', background: '#e6f7ff', borderColor: '#91d5ff' }}>
                 <Text>Your Telegram account is now connected to TopCoach.</Text>
                 <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
@@ -140,7 +159,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
             )}
 
             {/* Connection Form */}
-            {typedTelegramStatus?.status !== 'connected' && (
+            {typedTelegramStatus?.status !== 'connected' && !isUpdatingStatus && (
               <div style={{ width: '100%' }}>
                 <Title level={5} style={{ marginBottom: 4 }}>Step 1: Share Contact</Title>
                 <Text type="secondary">
@@ -181,7 +200,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 <Button
                   type="primary"
                   onClick={handleSubmit}
-                  loading={isLoading}
+                  loading={isLoading || isUpdatingStatus}
                   disabled={!phoneNumber.trim() || !otp.trim() || otp.length !== 4}
                   size="large"
                   style={{ width: '100%' }}
