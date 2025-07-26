@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
-import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined, RobotOutlined, SafetyOutlined } from '@ant-design/icons';
+import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
 import { useVerifyTelegramOTPMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 
 const { Text, Title } = Typography;
@@ -19,16 +19,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [verifyTelegramOTP, { isLoading }] = useVerifyTelegramOTPMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (visible) {
-      setPhoneNumber('');
-      setOtp('');
-      setErrorMsg('');
-      refetch(); // Refetch status when modal opens
-    }
-  }, [visible, refetch]);
+  const typedTelegramStatus = telegramStatus as { status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string } | undefined;
 
   const handleSubmit = async () => {
     if (!phoneNumber.trim() || !otp.trim()) return;
@@ -38,18 +29,9 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
         phoneNumber: phoneNumber.trim(), 
         otp: otp.trim() 
       });
-      
-      // Force refetch after successful connection
-      setTimeout(() => {
-        refetch();
-      }, 500);
-      
+      refetch();
       message.success('Telegram connected successfully!');
-      
-      // Close modal after a short delay to show success state
-      setTimeout(() => {
-        onClose();
-      }, 1500);
+      onClose();
     } catch (error: any) {
       const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
       setErrorMsg(backendMsg);
@@ -57,7 +39,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   };
 
   const getStatusIcon = () => {
-    switch (telegramStatus?.status) {
+    switch (typedTelegramStatus?.status) {
       case 'connected':
         return <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 48 }} />;
       case 'pending':
@@ -65,12 +47,12 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       case 'failed':
         return <ExclamationCircleTwoTone twoToneColor="#ff4d4f" style={{ fontSize: 48 }} />;
       default:
-        return <RobotOutlined style={{ fontSize: 48, color: '#8B0000' }} />;
+        return null;
     }
   };
 
   const getStatusText = () => {
-    switch (telegramStatus?.status) {
+    switch (typedTelegramStatus?.status) {
       case 'connected':
         return 'Connected';
       case 'pending':
@@ -84,12 +66,34 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
 
   const MAIN_RED = '#C8102E';
 
+  // Custom stepper data and rendering
+  const steps = [
+    {
+      title: 'Share Contact with Bot',
+      description: (
+        <>
+          Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <SendOutlined /></a> and click <b>'Share my contact'</b>
+        </>
+      ),
+      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'process',
+    },
+    {
+      title: 'Enter Verification Code',
+      description: 'Enter the 4-digit code you received from the bot',
+      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'wait',
+    },
+    {
+      title: 'Connection Complete',
+      description: 'You will receive session confirmations and updates',
+      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'wait',
+    },
+  ];
+
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center', position: 'relative' }}>
-          <Title level={3} style={{ margin: 0, color: MAIN_RED, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <RobotOutlined style={{ fontSize: 24 }} />
+        <div style={{ textAlign: 'center' }}>
+          <Title level={3} style={{ margin: 0, color: MAIN_RED }}>
             Connect Telegram
           </Title>
         </div>
@@ -97,67 +101,27 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={650}
+      width={600}
       centered
-      styles={{
-        header: {
-          borderBottom: '1px solid #f0f0f0',
-          paddingBottom: 16,
-        },
-        body: {
-          padding: '24px 32px',
-        }
-      }}
     >
       <div style={{ padding: '20px 0' }}>
-        <Card 
-          style={{ 
-            border: 'none', 
-            boxShadow: 'none',
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-            borderRadius: 12
-          }}
-        >
+        <Card style={{ border: 'none', boxShadow: 'none' }}>
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
             {/* Status Display */}
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ 
-                display: 'inline-block',
-                padding: '16px',
-                borderRadius: '50%',
-                background: telegramStatus?.status === 'connected' ? '#f6ffed' : '#fff7e6',
-                border: `2px solid ${telegramStatus?.status === 'connected' ? '#b7eb8f' : '#ffd591'}`,
-                marginBottom: 12
-              }}>
-                {getStatusIcon()}
-              </div>
+            <div style={{ textAlign: 'center' }}>
+              {getStatusIcon()}
               <div style={{ marginTop: 8 }}>
-                <Text strong style={{ fontSize: 18, color: telegramStatus?.status === 'connected' ? '#52c41a' : '#8B0000' }}>
+                <Text strong style={{ fontSize: 16 }}>
                   {getStatusText()}
                 </Text>
               </div>
             </div>
 
             {/* Connected State */}
-            {telegramStatus?.status === 'connected' && (
-              <Card 
-                type="inner" 
-                style={{ 
-                  width: '100%', 
-                  background: 'linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%)', 
-                  borderColor: '#91d5ff',
-                  borderRadius: 8,
-                  border: '1px solid #91d5ff'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <SafetyOutlined style={{ color: '#52c41a', fontSize: 16 }} />
-                  <Text strong style={{ color: '#52c41a' }}>Successfully Connected!</Text>
-                </div>
-                <Text style={{ color: '#1890ff' }}>
-                  Your Telegram account is now connected to TopCoach. You'll receive:
-                </Text>
-                <ul style={{ margin: '8px 0 0 16px', padding: 0, color: '#1890ff' }}>
+            {typedTelegramStatus?.status === 'connected' && (
+              <Card type="inner" style={{ width: '100%', background: '#e6f7ff', borderColor: '#91d5ff' }}>
+                <Text>Your Telegram account is now connected to TopCoach.</Text>
+                <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
                   <li>Session confirmations</li>
                   <li>Session updates and changes</li>
                   <li>Session cancellations</li>
@@ -166,139 +130,54 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
             )}
 
             {/* Connection Form */}
-            {telegramStatus?.status !== 'connected' && (
+            {typedTelegramStatus?.status !== 'connected' && (
               <div style={{ width: '100%' }}>
-                {/* Steps */}
-                <div style={{ marginBottom: 24 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    marginBottom: 12,
-                    padding: '12px 16px',
-                    background: telegramStatus?.status === 'connected' ? '#f6ffed' : '#fff7e6',
-                    borderRadius: 8,
-                    border: `1px solid ${telegramStatus?.status === 'connected' ? '#b7eb8f' : '#ffd591'}`
-                  }}>
-                    <div style={{ 
-                      width: 24, 
-                      height: 24, 
-                      borderRadius: '50%', 
-                      background: telegramStatus?.status === 'connected' ? '#52c41a' : '#faad14',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 12
-                    }}>
-                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>1</Text>
-                    </div>
-                    <div>
-                      <Text strong>Share Contact with Bot</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <SendOutlined /></a> and click <b>'Share my contact'</b>
-                      </Text>
-                    </div>
-                  </div>
-                  
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    marginBottom: 12,
-                    padding: '12px 16px',
-                    background: '#f0f0f0',
-                    borderRadius: 8,
-                    border: '1px solid #d9d9d9'
-                  }}>
-                    <div style={{ 
-                      width: 24, 
-                      height: 24, 
-                      borderRadius: '50%', 
-                      background: '#d9d9d9',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 12
-                    }}>
-                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>2</Text>
-                    </div>
-                    <div>
-                      <Text strong>Enter Verification Code</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        Enter the 4-digit code you received from the bot
-                      </Text>
-                    </div>
-                  </div>
-                </div>
+                <Title level={5} style={{ marginBottom: 4 }}>Step 1: Share Contact</Title>
+                <Text type="secondary">
+                  Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot</a> and click "Share my contact"
+                </Text>
                 
-                <Divider style={{ margin: '24px 0' }} />
+                <Divider />
                 
-                <div style={{ 
-                  background: '#fafafa', 
-                  padding: '20px', 
-                  borderRadius: 8, 
-                  border: '1px solid #f0f0f0' 
-                }}>
-                  <Title level={5} style={{ marginBottom: 16, color: MAIN_RED }}>
-                    <PhoneOutlined style={{ marginRight: 8 }} />
-                    Enter Verification Details
-                  </Title>
-                  
-                  <Input
-                    placeholder="Phone number (e.g., +998901234567)"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    prefix={<PhoneOutlined style={{ color: '#8B0000' }} />}
-                    size="large"
-                    style={{ 
-                      margin: '12px 0',
-                      borderRadius: 8,
-                      border: '1px solid #d9d9d9'
-                    }}
-                  />
-                  
-                  <Input
-                    placeholder="4-digit verification code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    maxLength={4}
-                    size="large"
-                    style={{ 
-                      margin: '12px 0',
-                      borderRadius: 8,
-                      border: '1px solid #d9d9d9'
-                    }}
-                  />
-                  
-                  {errorMsg && (
-                    <Alert
-                      message={errorMsg}
-                      type="error"
-                      showIcon
-                      style={{ marginBottom: 16, borderRadius: 8 }}
-                    />
-                  )}
-                  
-                  <Button
-                    type="primary"
-                    onClick={handleSubmit}
-                    loading={isLoading}
-                    disabled={!phoneNumber.trim() || !otp.trim() || otp.length !== 4}
-                    size="large"
-                    style={{ 
-                      width: '100%',
-                      height: 48,
-                      borderRadius: 8,
-                      background: MAIN_RED,
-                      borderColor: MAIN_RED,
-                      fontSize: 16,
-                      fontWeight: 600
-                    }}
-                    icon={<SafetyOutlined />}
-                  >
-                    {isLoading ? 'Verifying...' : 'Verify and Connect'}
-                  </Button>
-                </div>
+                <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Details</Title>
+                <Text type="secondary">
+                  Enter your phone number and the 4-digit verification code you received
+                </Text>
+                
+                <Input
+                  placeholder="Phone number (e.g., +998901234567)"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  prefix={<PhoneOutlined />}
+                  size="large"
+                  style={{ margin: '12px 0' }}
+                />
+                
+                <Input
+                  placeholder="4-digit verification code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  maxLength={4}
+                  size="large"
+                  style={{ margin: '12px 0' }}
+                />
+                
+                {errorMsg && (
+                  <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
+                    {errorMsg}
+                  </div>
+                )}
+                
+                <Button
+                  type="primary"
+                  onClick={handleSubmit}
+                  loading={isLoading}
+                  disabled={!phoneNumber.trim() || !otp.trim() || otp.length !== 4}
+                  size="large"
+                  style={{ width: '100%' }}
+                >
+                  Verify and Connect
+                </Button>
               </div>
             )}
           </Space>
