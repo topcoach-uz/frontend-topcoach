@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
 import { useVerifyTelegramOTPMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
@@ -29,14 +29,24 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
         phoneNumber: phoneNumber.trim(), 
         otp: otp.trim() 
       });
-      refetch();
       message.success('Telegram connected successfully!');
+      // Add a small delay to ensure backend has time to update
+      setTimeout(() => {
+        refetch();
+      }, 500);
       onClose();
     } catch (error: any) {
       const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
       setErrorMsg(backendMsg);
     }
   };
+
+  // Refetch data when modal opens to ensure we have the latest status
+  useEffect(() => {
+    if (visible) {
+      refetch();
+    }
+  }, [visible, refetch]);
 
   const getStatusIcon = () => {
     switch (typedTelegramStatus?.status) {
