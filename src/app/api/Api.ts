@@ -2856,7 +2856,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     apply: (id: string, data: CreateApplicationDto, params: RequestParams = {}) =>
       this.request<void, any>({
-        path: `/camps/${id}/apply`,
+        path: `/camps/${id.id}`,
         method: "POST",
         body: data,
         secure: true,
