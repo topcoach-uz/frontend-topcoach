@@ -124,10 +124,9 @@ export interface ProfilesSchema {
 }
 
 export enum RoleEnum {
-  SuperAdmin = "SuperAdmin",
+  Owner = "Owner",
   Admin = "Admin",
-  Manager = "Manager",
-  Assistant = "Assistant",
+  ContentManager = "Content Manager",
   User = "User",
 }
 
@@ -711,12 +710,6 @@ export interface MentorsResponseDto {
   mentorProfile: MentorProfilesSchema;
   numberOfSessions: number;
   totalMinutes: number;
-  sessionStats: {
-    totalSessions: number;
-    totalCompletedSessions: number;
-    totalMinutes: number;
-    availableSessions: number;
-  };
 }
 
 export interface ReportUserDto {
@@ -2414,6 +2407,27 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Users
+     * @name VerifyTelegramOTP
+     * @summary Verify Telegram OTP
+     * @request POST:/telegram/verify-otp
+     * @secure
+     * @response `200` `{ success: boolean; message: string }` OTP verified successfully
+     */
+    verifyTelegramOTP: (data: { phoneNumber: string; otp: string }, params: RequestParams = {}) =>
+      this.request<{ success: boolean; message: string }, any>({
+        path: `/telegram/verify-otp`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
   };
   auth = {
     /**
@@ -2871,7 +2885,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     campsDetail: (id: EventSingleParamDto, params: RequestParams = {}) =>
       this.request<any, EventsResponseDto>({
-        path: `/camps/${id.id}`,
+        path: `/camps/${id}`,
         method: "GET",
         secure: true,
         ...params,

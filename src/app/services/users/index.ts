@@ -36,6 +36,14 @@ export const authApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['GetMe'],
     }),
+    verifyTelegramOTP: build.mutation<{ success: boolean; message: string }, { phoneNumber: string; otp: string }>({
+      query: (body) => ({
+        url: '/telegram/verify-otp',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['GetMe', 'TelegramStatus'],
+    }),
     getTelegramStatus: build.query<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, void>({
       query: () => ({ url: '/users/telegram-status' }),
       providesTags: ['TelegramStatus'],

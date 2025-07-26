@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
-import { useUpdateTelegramPhoneNumberMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import { useVerifyTelegramOTPMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 
 const { Text, Title } = Typography;
 
@@ -15,20 +15,25 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   onClose,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [updateTelegramPhoneNumber, { isLoading }] = useUpdateTelegramPhoneNumberMutation();
+  const [verifyTelegramOTP, { isLoading }] = useVerifyTelegramOTPMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
 
   const handleSubmit = async () => {
-    if (!phoneNumber.trim()) return;
+    if (!phoneNumber.trim() || !otp.trim()) return;
     setErrorMsg('');
     try {
-      await updateTelegramPhoneNumber({ phoneNumber: phoneNumber.trim() });
+      await verifyTelegramOTP({ 
+        phoneNumber: phoneNumber.trim(), 
+        otp: otp.trim() 
+      });
       refetch();
+      message.success('Telegram connected successfully!');
+      onClose();
     } catch (error: any) {
-      const backendMsg = error?.data?.message || error?.message || 'Failed to update Telegram phone number';
+      const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
       setErrorMsg(backendMsg);
-      // No toast, just inline error
     }
   };
 
@@ -63,18 +68,18 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   // Custom stepper data and rendering
   const steps = [
     {
-      title: 'Add Telegram Phone Number',
-      description: 'Enter the phone number associated with your Telegram account',
-      status: telegramStatus?.phoneNumber ? 'finish' : 'process',
-    },
-    {
-      title: 'Start Telegram Bot',
+      title: 'Share Contact with Bot',
       description: (
         <>
           Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <SendOutlined /></a> and click <b>'Share my contact'</b>
         </>
       ),
-      status: telegramStatus?.status === 'connected' ? 'finish' : telegramStatus?.status === 'pending' ? 'process' : 'wait',
+      status: telegramStatus?.status === 'connected' ? 'finish' : 'process',
+    },
+    {
+      title: 'Enter Verification Code',
+      description: 'Enter the 4-digit code you received from the bot',
+      status: telegramStatus?.status === 'connected' ? 'finish' : 'wait',
     },
     {
       title: 'Connection Complete',
@@ -85,139 +90,35 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
 
   return (
     <Modal
-      title={null}
+      title={
+        <div style={{ textAlign: 'center' }}>
+          <Title level={3} style={{ margin: 0, color: MAIN_RED }}>
+            Connect Telegram
+          </Title>
+        </div>
+      }
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={540}
+      width={600}
       centered
-      bodyStyle={{ padding: 0 }}
-      closable={false}
     >
-      <div style={{ position: 'relative' }}>
-        <Card
-          style={{
-            borderRadius: 16,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-            border: telegramStatus?.status !== 'connected' ? '2px solid #C8102E' : 'none',
-          }}
-          bodyStyle={{ padding: 32, paddingLeft: 32 }}
-        >
-          <span
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: 18,
-              right: 24,
-              fontSize: 22,
-              color: '#b02a37',
-              cursor: 'pointer',
-              zIndex: 10,
-              transition: 'color 0.2s, font-weight 0.2s',
-            }}
-            onMouseOver={e => (e.currentTarget.style.color = '#ff4d4f')}
-            onMouseOut={e => (e.currentTarget.style.color = '#b02a37')}
-            aria-label="Close"
-          >
-            ×
-          </span>
-          <Space direction="vertical" size="large" style={{ width: '100%' }} align="center">
-            {/* Large Status Icon (only for known status) */}
-            {getStatusIcon() && getStatusIcon()}
-            <Title level={4} style={{ marginBottom: 0 }}>{getStatusText()}</Title>
-            {telegramStatus?.status === 'connected' ? (
-              <Text type="success">Your Telegram account is successfully connected. You will receive session notifications.</Text>
-            ) : telegramStatus?.status === 'pending' ? (
-              <Text type="warning">Please complete the connection by following the steps below.</Text>
-            ) : telegramStatus?.status === 'failed' ? (
-              <Text type="danger">Connection failed. Please try again.</Text>
-            ) : (
-              <Text type="secondary">Connect your Telegram account to receive notifications.</Text>
-            )}
-
-            <Divider style={{ margin: '1px 0' }} />
-
-            {/* Custom Steps Card */}
-            <div style={{ width: '100%' }}>
-              {steps.map((step, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 5 }}>
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: step.status === 'finish' ? '#52c41a' : step.status === 'process' ? MAIN_RED : '#fff1f0',
-                    color: step.status === 'finish' ? '#fff' : step.status === 'process' ? '#fff' : MAIN_RED,
-                    fontWeight: 700,
-                    fontSize: 16,
-                    border: step.status === 'finish' ? '2px solid #52c41a' : step.status === 'process' ? `2px solid ${MAIN_RED}` : `2px solid ${MAIN_RED}33`,
-                    marginRight: 16,
-                    marginTop: 2,
-                  }}>
-                    {step.status === 'finish' ? <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 20 }} /> : idx + 1}
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700 }}>{step.title}</div>
-                    <div style={{ color: '#888' }}>{step.description}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Phone Number Input */}
-            {telegramStatus?.status !== 'connected' && (
-              <div style={{ width: '100%' }}>
-                <Title level={5} style={{ marginBottom: 4 }}>Telegram Phone Number</Title>
-                <Text type="secondary">
-                  Enter the phone number associated with your Telegram account (e.g., +998901234567)
+      <div style={{ padding: '20px 0' }}>
+        <Card style={{ border: 'none', boxShadow: 'none' }}>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            {/* Status Display */}
+            <div style={{ textAlign: 'center' }}>
+              {getStatusIcon()}
+              <div style={{ marginTop: 8 }}>
+                <Text strong style={{ fontSize: 16 }}>
+                  {getStatusText()}
                 </Text>
-                <Input
-                  placeholder="+998901234567"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  prefix={<PhoneOutlined />}
-                  size="large"
-                  style={{ margin: '12px 0' }}
-                />
-                {errorMsg && (
-                  <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
-                    {errorMsg}
-                  </div>
-                )}
-                <Button
-                  type="primary"
-                  onClick={handleSubmit}
-                  loading={isLoading}
-                  disabled={!phoneNumber.trim()}
-                  size="large"
-                  style={{ width: '100%' }}
-                >
-                  {telegramStatus?.phoneNumber ? 'Update Phone Number' : 'Add Phone Number'}
-                </Button>
               </div>
-            )}
-
-            {/* Instructions for Pending State */}
-            {/* {telegramStatus?.status === 'pending' && (
-              <Card type="inner" style={{ width: '100%', marginTop: 16, background: '#f6ffed', borderColor: '#b7eb8f' }}>
-                <Text strong>Next Steps:</Text>
-                <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
-                  <li>Open Telegram and search for <Text code>@topcoach_official_bot</Text></li>
-                  <li>Start the bot by clicking <Text code>Start</Text></li>
-                  <li>Click <Text code>Share my contact</Text> when prompted</li>
-                  <li>Wait for the success message</li>
-                </ol>
-                <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                  Once connected, you'll receive notifications for session confirmations, updates, and cancellations.
-                </Text>
-              </Card>
-            )} */}
+            </div>
 
             {/* Connected State */}
             {telegramStatus?.status === 'connected' && (
-              <Card type="inner" style={{ width: '100%', marginTop: 16, background: '#e6f7ff', borderColor: '#91d5ff' }}>
+              <Card type="inner" style={{ width: '100%', background: '#e6f7ff', borderColor: '#91d5ff' }}>
                 <Text>Your Telegram account is now connected to TopCoach.</Text>
                 <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
                   <li>Session confirmations</li>
@@ -225,6 +126,58 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                   <li>Session cancellations</li>
                 </ul>
               </Card>
+            )}
+
+            {/* Connection Form */}
+            {telegramStatus?.status !== 'connected' && (
+              <div style={{ width: '100%' }}>
+                <Title level={5} style={{ marginBottom: 4 }}>Step 1: Share Contact</Title>
+                <Text type="secondary">
+                  Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot</a> and click "Share my contact"
+                </Text>
+                
+                <Divider />
+                
+                <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Details</Title>
+                <Text type="secondary">
+                  Enter your phone number and the 4-digit verification code you received
+                </Text>
+                
+                <Input
+                  placeholder="Phone number (e.g., +998901234567)"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  prefix={<PhoneOutlined />}
+                  size="large"
+                  style={{ margin: '12px 0' }}
+                />
+                
+                <Input
+                  placeholder="4-digit verification code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  maxLength={4}
+                  size="large"
+                  style={{ margin: '12px 0' }}
+                />
+                
+                {errorMsg && (
+                  <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
+                    {errorMsg}
+                  </div>
+                )}
+                
+                <Button
+                  type="primary"
+                  onClick={handleSubmit}
+                  loading={isLoading}
+                  disabled={!phoneNumber.trim() || !otp.trim() || otp.length !== 4}
+                  size="large"
+                  style={{ width: '100%' }}
+                >
+                  Verify and Connect
+                </Button>
+              </div>
             )}
           </Space>
         </Card>
