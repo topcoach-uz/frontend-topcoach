@@ -14,7 +14,7 @@ export default function EventsDetailsPage() {
   const params = useParams();
   const eventId = params.id || '';
   const { response: eventData, isLoading } = useApi(() =>
-    api.camps.campsDetail(eventId)
+    api.camps.campsDetail({ id: eventId })
   );
   const event = eventData?.data;
 
