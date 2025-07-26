@@ -57,5 +57,6 @@ export const {
   useInvalidateGetMeMutation,
   useUpdatePhoneNumberMutation,
   useUpdateTelegramPhoneNumberMutation,
+  useVerifyTelegramOTPMutation,
   useGetTelegramStatusQuery,
 } = authApi;
