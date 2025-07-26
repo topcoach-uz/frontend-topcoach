@@ -2856,7 +2856,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     apply: (id: string, data: CreateApplicationDto, params: RequestParams = {}) =>
       this.request<void, any>({
-        path: `/camps/${id.id}`,
+        path: `/camps/${id}/apply`,
         method: "POST",
         body: data,
         secure: true,
@@ -2890,7 +2890,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      * @response `default` `EventsResponseDto` Event
      */
-    campsDetail: (id: EventSingleParamDto, params: RequestParams = {}) =>
+    campsDetail: (id: string, params: RequestParams = {}) =>
       this.request<any, EventsResponseDto>({
         path: `/camps/${id}`,
         method: "GET",
