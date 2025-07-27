@@ -26,6 +26,9 @@ function MenteeHomePage() {
   const [updatePhoneNumber, { isLoading: updatingPhone }] = useUpdatePhoneNumberMutation();
   const { data: telegramStatus, refetch: refetchTelegramStatus } = useGetTelegramStatusQuery();
   
+  // Debug logging
+  console.log('Telegram Status:', telegramStatus);
+  
   const telegramMissing = telegramStatus?.status !== 'connected';
 
   const checklist = [
@@ -64,14 +67,6 @@ function MenteeHomePage() {
       });
   };
 
-  const handleTelegramModalClose = () => {
-    setShowTelegramModal(false);
-    // Force refetch telegram status when modal closes
-    setTimeout(() => {
-      refetchTelegramStatus();
-    }, 1000);
-  };
-
   return (
     <div>
       {nameMissing || phoneMissing || telegramMissing ? (
@@ -106,7 +101,13 @@ function MenteeHomePage() {
       />
       <TelegramConnectionModal
         visible={showTelegramModal}
-        onClose={handleTelegramModalClose}
+        onClose={() => {
+          setShowTelegramModal(false);
+          // Force refetch after modal closes
+          setTimeout(() => {
+            refetchTelegramStatus();
+          }, 500);
+        }}
       />
     </div>
   );
