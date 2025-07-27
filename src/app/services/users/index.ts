@@ -47,6 +47,7 @@ export const authApi = RtkApi.injectEndpoints({
     getTelegramStatus: build.query<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, void>({
       query: () => ({ url: '/users/telegram-status' }),
       providesTags: ['TelegramStatus'],
+      pollingInterval: 3000, // Poll every 3 seconds
     }),
   }),
 });

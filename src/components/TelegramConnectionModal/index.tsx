@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
 import { useVerifyTelegramOTPMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import { RtkApi } from 'src/app/services/api';
 
-const { Text, Title } = Typography;
+const { Title, Text } = Typography;
 
 interface TelegramConnectionModalProps {
   visible: boolean;
@@ -35,11 +36,18 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       // Show loading state while updating status
       setIsUpdatingStatus(true);
       
+      // Manually invalidate cache and force refetch
+      RtkApi.util.invalidateTags(['TelegramStatus']);
+      
       // Wait for backend to update database, then refetch
       setTimeout(async () => {
         await refetch();
-        setIsUpdatingStatus(false);
-        onClose();
+        // Second refetch after a short delay
+        setTimeout(async () => {
+          await refetch();
+          setIsUpdatingStatus(false);
+          onClose();
+        }, 500);
       }, 1000);
     } catch (error: any) {
       const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
