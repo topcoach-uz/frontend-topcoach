@@ -178,11 +178,11 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 
                 <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Details</Title>
                 <Text type="secondary">
-                    Enter the phone number you shared with the bot and the 4-digit verification code you received
+                  Enter the phone number you shared with the bot and the 4-digit verification code you received
                 </Text>
                 
                 <Input
-                  placeholder="Phone number (e.g., +998901234567)"
+                  placeholder="Phone number you shared with the bot (e.g., +998901234567)"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   prefix={<PhoneOutlined />}
