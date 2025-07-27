@@ -178,7 +178,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 
                 <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Details</Title>
                 <Text type="secondary">
-                  Enter your phone number and the 4-digit verification code you received
+                    Enter the phone number you shared with the bot and the 4-digit verification code you received
                 </Text>
                 
                 <Input
