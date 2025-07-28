@@ -25,10 +25,15 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const handleSubmit = async () => {
     if (!code.trim()) return;
     setErrorMsg('');
+    
+    console.log('Attempting to verify code:', code.trim());
+    
     try {
-      await verifyTelegramCode({ 
+      const result = await verifyTelegramCode({ 
         code: code.trim()
       });
+      
+      console.log('Verification result:', result);
       message.success('Telegram connected successfully!');
       
       // Show loading state while updating status
@@ -48,6 +53,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
         }, 500);
       }, 1000);
     } catch (error: any) {
+      console.error('Verification error:', error);
       const backendMsg = error?.data?.message || error?.message || 'Failed to verify code';
       setErrorMsg(backendMsg);
     }
