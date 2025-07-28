@@ -36,6 +36,14 @@ export const authApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['GetMe', 'TelegramStatus'],
     }),
+    verifyTelegramCode: build.mutation<{ success: boolean; message: string }, { code: string }>({
+      query: (body) => ({
+        url: '/telegram/verify-code',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['GetMe', 'TelegramStatus'],
+    }),
     getTelegramStatus: build.query<{ status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string }, void>({
       query: () => ({ url: '/users/telegram-status' }),
       providesTags: ['TelegramStatus']
@@ -49,5 +57,6 @@ export const {
   useInvalidateGetMeMutation,
   useUpdateTelegramPhoneNumberMutation,
   useVerifyTelegramOTPMutation,
+  useVerifyTelegramCodeMutation,
   useGetTelegramStatusQuery,
 } = authApi;
