@@ -91,16 +91,7 @@ export default function EditProfileModal({
               <InputFormItem
                 name="name"
                 label={t('shared.fullNameLabel')}
-                placeholder={t('shared.fullNamePlaceholder')}
                 inputType="text"
-                message={"You can't leave this field empty"}
-              />
-              <InputFormItem
-                name="phoneNumber"
-                label={t('editProfile.phoneNumberLabel')}
-                inputType="text"
-                htmlType="tel"
-                placeholder={t('editProfile.phoneNumberPlaceholder')}
                 message={"You can't leave this field empty"}
               />
             </>
@@ -164,15 +155,6 @@ const getFormItems = (t: TFunction): IFormItemType[] => [
     label: t('shared.fullNameLabel'),
     placeholder: t('shared.fullNamePlaceholder'),
     inputType: 'text',
-    message: "You can't leave this field empty",
-  },
-  {
-    name: 'phoneNumber',
-    type: 'input',
-    label: t('editProfile.phoneNumberLabel'),
-    inputType: 'text',
-    htmlType: 'tel',
-    placeholder: t('editProfile.phoneNumberPlaceholder'),
     message: "You can't leave this field empty",
   },
   {

@@ -20,14 +20,6 @@ export const authApi = RtkApi.injectEndpoints({
       queryFn: () => ({ data: undefined }),
       invalidatesTags: ['GetMe'],
     }),
-    updatePhoneNumber: build.mutation<void, { phoneNumber: string }>({
-      query: (body) => ({
-        url: '/users/phone-number',
-        method: 'PUT',
-        body,
-      }),
-      invalidatesTags: ['GetMe'],
-    }),
     updateTelegramPhoneNumber: build.mutation<void, { phoneNumber: string }>({
       query: (body) => ({
         url: '/users/telegram-phone-number',
@@ -55,7 +47,6 @@ export const {
   useGetMeQuery,
   useLinkCalendarMutation,
   useInvalidateGetMeMutation,
-  useUpdatePhoneNumberMutation,
   useUpdateTelegramPhoneNumberMutation,
   useVerifyTelegramOTPMutation,
   useGetTelegramStatusQuery,

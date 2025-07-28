@@ -83,9 +83,8 @@ export default function MentorDetailsPage() {
     }
 
     // Check for required profile fields before opening booking modal
-    const missingPhone = !currentUser?.phoneNumber;
     const missingTelegram = telegramStatus?.status !== 'connected';
-    if (missingPhone || missingTelegram) {
+    if (missingTelegram) {
       dispatch(showProfilePopup());
       return;
     }

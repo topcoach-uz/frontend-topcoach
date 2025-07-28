@@ -21,22 +21,6 @@ function DetailedInfo({ form, formButtonsProps, formError }: Props) {
   const { t } = useTranslation();
   const formItems: IFormItemType[] = [
     {
-      name: 'phoneNumber',
-      type: 'input',
-      inputType: 'text',
-      htmlType: 'text',
-      label: t('signUp.phoneNumber'),
-      placeholder: t('signUp.phoneNumberPlaceholder'),
-      message: t('signUp.phoneNumberError'),
-      col: 24,
-      formItemProps: {
-        rules: [
-          { required: true, message: t('signUp.phoneNumberError') },
-          { pattern: /^\+\d{9,15}$/, message: t('signUp.phoneNumberFormatError') },
-        ],
-      },
-    },
-    {
       name: 'socials',
       type: 'input',
       inputType: 'text',
