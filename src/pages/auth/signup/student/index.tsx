@@ -24,7 +24,6 @@ export default function StudentRegistrationPage() {
           email: values.email?.trim(),
           password: values.password?.trim(),
           name: values.name?.trim(),
-          phoneNumber: values.phoneNumber?.trim(),
         } as any)
         .then((res) => {
           navigate(`/auth/verification?email=${values.email}`);
@@ -35,7 +34,7 @@ export default function StudentRegistrationPage() {
             'User already registered with this email'
           ) {
             setErrorMessage(t('signUp.emailAreadyExists'));
-            message.error('dsdsds');
+            message.error('Email aready exists');
           }
 
           if (

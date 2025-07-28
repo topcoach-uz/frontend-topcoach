@@ -134,7 +134,6 @@ export default function useMentorSignup() {
         email: val.email?.trim(),
         name: val.name?.trim(),
         password: val.password,
-        phoneNumber: val.phoneNumber?.trim(),
         socials: {
           linkedin: val.socials?.trim(),
         },
@@ -209,7 +208,6 @@ export default function useMentorSignup() {
         }),
         dispatch(
           updateProfile({
-            phoneNumber: val.phoneNumber?.trim(),
             // @ts-ignore
             mentorProfile: {
               major: val.major?.trim(),
