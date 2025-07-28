@@ -6,7 +6,6 @@ import RadioGroupFormItem from './common/RadioGroupFormItem';
 import SegmentedFormItem from './common/SegmentedFormItem';
 import SelectFormItem from './common/SelectFormItem';
 import UploadFormItem from './common/UploadFormItem';
-import PhoneFormItem from './item/PhoneFormItem';
 
 export {
   // Common form items
@@ -18,7 +17,4 @@ export {
   SegmentedFormItem,
   SelectFormItem,
   UploadFormItem,
-
-  // Specific form items
-  PhoneFormItem,
 };

@@ -15,7 +15,6 @@ import {
   CheckboxFormItem,
   DateFormItem,
   InputFormItem,
-  PhoneFormItem,
   SelectFormItem,
   UploadFormItem,
 } from 'src/components/form';
@@ -194,11 +193,6 @@ function Help() {
               inputType="textarea"
             />
 
-            <PhoneFormItem
-              inputType="number"
-              label="Ism"
-              placeholder="xx.xx.xxxx"
-            />
             <SelectFormItem
               placeholder="70x100"
               options={[
