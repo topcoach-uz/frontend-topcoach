@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
-import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined } from '@ant-design/icons';
-import { useVerifyTelegramOTPMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined, KeyOutlined } from '@ant-design/icons';
+import { useVerifyTelegramCodeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 import { RtkApi } from 'src/app/services/api';
 
 const { Title, Text } = Typography;
@@ -15,21 +15,19 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   visible,
   onClose,
 }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
+  const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [verifyTelegramOTP, { isLoading }] = useVerifyTelegramOTPMutation();
+  const [verifyTelegramCode, { isLoading }] = useVerifyTelegramCodeMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
   const typedTelegramStatus = telegramStatus as { status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string } | undefined;
 
   const handleSubmit = async () => {
-    if (!phoneNumber.trim() || !otp.trim()) return;
+    if (!code.trim()) return;
     setErrorMsg('');
     try {
-      await verifyTelegramOTP({ 
-        phoneNumber: phoneNumber.trim(), 
-        otp: otp.trim() 
+      await verifyTelegramCode({ 
+        code: code.trim()
       });
       message.success('Telegram connected successfully!');
       
@@ -50,7 +48,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
         }, 500);
       }, 1000);
     } catch (error: any) {
-      const backendMsg = error?.data?.message || error?.message || 'Failed to verify OTP';
+      const backendMsg = error?.data?.message || error?.message || 'Failed to verify code';
       setErrorMsg(backendMsg);
     }
   };
@@ -102,8 +100,8 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'process',
     },
     {
-      title: 'Enter Verification Code',
-      description: 'Enter the 4-digit code you received from the bot',
+      title: 'Enter Connection Code',
+      description: 'Enter the 6-character code you received from the bot',
       status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'wait',
     },
     {
@@ -176,40 +174,46 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 
                 <Divider />
                 
-                <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Details</Title>
+                <Title level={5} style={{ marginBottom: 4 }}>Step 2: Enter Connection Code</Title>
                 <Text type="secondary">
-                  Enter the phone number you shared with the bot and the 4-digit verification code you received
+                  Enter the 6-character connection code you received from the bot
                 </Text>
                 
                 <Input
-                  placeholder="Phone number you shared with the bot (e.g., +998901234567)"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  prefix={<PhoneOutlined />}
+                  placeholder="6-character connection code (e.g., A1B2C3)"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6))}
+                  maxLength={6}
+                  prefix={<KeyOutlined />}
                   size="large"
                   style={{ margin: '12px 0' }}
                 />
                 
-                <Input
-                  placeholder="4-digit verification code"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  maxLength={4}
-                  size="large"
-                  style={{ margin: '12px 0' }}
-                />
+                <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
+                  💡 <strong>Tips:</strong> Make sure you're using the code from the Telegram bot, not your phone number. 
+                  Codes are case-insensitive and expire after 10 minutes.
+                </div>
                 
                 {errorMsg && (
-                  <div style={{ color: '#ff4d4f', marginBottom: 8, marginTop: 4 }}>
-                    {errorMsg}
-                  </div>
+                  <Alert
+                    message="Connection Failed"
+                    description={errorMsg}
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                    action={
+                      <Button size="small" type="link" onClick={() => setErrorMsg('')}>
+                        Dismiss
+                      </Button>
+                    }
+                  />
                 )}
                 
                 <Button
                   type="primary"
                   onClick={handleSubmit}
                   loading={isLoading || isUpdatingStatus}
-                  disabled={!phoneNumber.trim() || !otp.trim() || otp.length !== 4}
+                  disabled={!code.trim() || code.length !== 6}
                   size="large"
                   style={{ width: '100%' }}
                 >
