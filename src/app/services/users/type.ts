@@ -29,7 +29,6 @@ export interface IGetMe {
   applications: string[];
   //   likedUniversities: UniversitiesSchema[];
   phone_number_missing?: boolean;
-  phoneNumberRequired?: boolean;
 }
 
 export interface ProfilesSchema {
