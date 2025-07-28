@@ -212,8 +212,8 @@ const SubscriptionPlans: React.FC = () => {
   };
 
   // Debug logs to help diagnose current plan issue
-  console.log('DEBUG current subscription:', current);
-  console.log('DEBUG curatedPlans:', curatedPlans.map(p => ({ key: p.key, id: p.id })));
+  // console.log('DEBUG current subscription:', current);
+  // console.log('DEBUG curatedPlans:', curatedPlans.map(p => ({ key: p.key, id: p.id })));
 
   if (isLoading) return <div>Loading subscription plans...</div>;
   if (error) return <div>Failed to load plans.</div>;
