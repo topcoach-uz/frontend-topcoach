@@ -24,9 +24,39 @@ export const updateProfile = createAsyncThunk(
     try {
       const response = await api.users.updateProfile(data);
       return response.data;
-    } catch (err) {
-      // @ts-ignore
-      return rejectWithValue(err?.response?.data);
+    } catch (err: any) {
+      console.error('Profile update error:', err);
+      
+      // Handle different error types
+      if (err?.response?.status === 502) {
+        return rejectWithValue({
+          message: 'Server is temporarily unavailable. Please try again in a few moments.',
+          status: 502
+        });
+      }
+      
+      if (err?.response?.status >= 500) {
+        return rejectWithValue({
+          message: 'Server error occurred. Please try again later.',
+          status: err.response.status
+        });
+      }
+      
+      if (err?.response?.data?.message) {
+        return rejectWithValue(err.response.data);
+      }
+      
+      if (err?.message) {
+        return rejectWithValue({
+          message: err.message,
+          status: err.status || 500
+        });
+      }
+      
+      return rejectWithValue({
+        message: 'An unexpected error occurred. Please try again.',
+        status: 500
+      });
     }
   }
 );

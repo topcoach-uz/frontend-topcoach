@@ -16,6 +16,7 @@ const getLanguage = () => {
 const axiosInstance = axios.create({
   baseURL: baseUrl,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30 seconds timeout
 });
 
 // Request Interceptor to add Authorization header
