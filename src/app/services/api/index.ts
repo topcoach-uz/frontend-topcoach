@@ -19,6 +19,7 @@ const baseQuery = fetchBaseQuery({
 
     return headers;
   },
+  timeout: 30000, // 30 seconds timeout
 });
 
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 0 });
