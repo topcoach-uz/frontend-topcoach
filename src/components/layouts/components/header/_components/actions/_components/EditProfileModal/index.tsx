@@ -170,7 +170,7 @@ const getFormItems = (t: TFunction): IFormItemType[] => [
     name: 'summary',
     type: 'input',
     label: t('Overview/Summary'),
-    placeholder: t('shared.summaryPlaceholder'),
+    placeholder: t('Please provide a brief overview of your background and expertise'),
     inputType: 'textarea',
     col: 24,
     row: 4,
