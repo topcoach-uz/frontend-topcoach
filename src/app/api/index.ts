@@ -1,5 +1,5 @@
 import { Api, ApiConfig } from './Api';
-import axiosInstance from './axiosInstance';
+import { axiosInstance } from './axiosInstance';
 
 export class CustomApi<
   SecurityDataType = unknown,
