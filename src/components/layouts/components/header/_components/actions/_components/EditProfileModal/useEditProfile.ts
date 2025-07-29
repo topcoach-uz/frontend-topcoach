@@ -189,10 +189,23 @@ export default function useEditProfile({
         normalizeValue(userData?.profile?.contacts?.socials?.linkedin);
 
     const isDemoLessonChanged =
-      values.demoLesson?.uid !== 'fromBackendDemoLesson';
+      values.demoLesson?.uid !== 'fromBackendDemoLesson' && 
+      values.demoLesson?.file?.status !== 'removed';
 
     const isIntroductionVideoChanged =
-      values.introductionVideo?.uid !== 'fromBackendIntroductionVideo';
+      values.introductionVideo?.uid !== 'fromBackendIntroductionVideo' && 
+      values.introductionVideo?.file?.status !== 'removed';
+
+    console.log('Change detection:', {
+      isImageChanged,
+      isDataChanged,
+      isDemoLessonChanged,
+      isIntroductionVideoChanged,
+      demoLessonUid: values.demoLesson?.uid,
+      introVideoUid: values.introductionVideo?.uid,
+      demoLessonFileStatus: values.demoLesson?.file?.status,
+      introVideoFileStatus: values.introductionVideo?.file?.status
+    });
 
     if (
       !isImageChanged &&
@@ -245,6 +258,9 @@ export default function useEditProfile({
     }
 
     if (isDemoLessonChanged) {
+      console.log('Uploading demo lesson video:', values.demoLesson);
+      console.log('Demo lesson file:', values.demoLesson?.file);
+      console.log('Demo lesson uid:', values.demoLesson?.uid);
       const formData = new FormData();
       formData.append('video', values.demoLesson.file as Blob);
       formData.append('tags', MEDIA_TAGS.DemoLession);
@@ -255,7 +271,9 @@ export default function useEditProfile({
           message.success('Demo lesson uploaded');
         })
         .catch((err) => {
-          message.error(err?.response?.data.message);
+          console.error('Demo lesson upload error:', err);
+          const errorMessage = err?.response?.data?.message || err?.message || 'Failed to upload demo lesson video';
+          message.error(errorMessage);
         })
         .finally(() => {
           setLoading((prev) => ({ ...prev, demoLessonLoading: false }));
@@ -264,6 +282,9 @@ export default function useEditProfile({
     }
 
     if (isIntroductionVideoChanged) {
+      console.log('Uploading introduction video:', values.introductionVideo);
+      console.log('Introduction video file:', values.introductionVideo?.file);
+      console.log('Introduction video uid:', values.introductionVideo?.uid);
       const formData = new FormData();
       formData.append('video', values.introductionVideo.file as Blob);
       formData.append('tags', MEDIA_TAGS.IntroVideo);
@@ -274,7 +295,9 @@ export default function useEditProfile({
           message.success('Introduction video uploaded');
         })
         .catch((err) => {
-          message.error(err?.response?.data.message);
+          console.error('Introduction video upload error:', err);
+          const errorMessage = err?.response?.data?.message || err?.message || 'Failed to upload introduction video';
+          message.error(errorMessage);
         })
         .finally(() => {
           setLoading((prev) => ({ ...prev, introVideoLoading: false }));
