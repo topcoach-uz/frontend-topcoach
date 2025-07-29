@@ -167,6 +167,16 @@ const getFormItems = (t: TFunction): IFormItemType[] => [
     message: "You can't leave this field empty",
   },
   {
+    name: 'summary',
+    type: 'input',
+    label: t('shared.summary'),
+    placeholder: t('shared.summaryPlaceholder'),
+    inputType: 'textarea',
+    col: 24,
+    row: 4,
+    message: "Please provide a brief overview of your background and expertise",
+  },
+  {
     name: 'linkedin',
     type: 'input',
     label: t('shared.linkedIn'),
