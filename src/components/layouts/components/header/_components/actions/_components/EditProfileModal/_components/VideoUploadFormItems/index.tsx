@@ -53,7 +53,7 @@ export default function VideoUploadFormItems({ form }: Props) {
   useEffect(() => {
     setCurrentIntroVideo();
     setCurrentDemoLesson();
-  }, []);
+  }, [form]);
 
   return (
     <Flex
