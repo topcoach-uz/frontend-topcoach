@@ -7,10 +7,11 @@ import VideoPreview from 'src/components/common/video-preview';
 import { Dispatch, SetStateAction, useState } from 'react';
 import axios from 'axios';
 import { baseUrl } from 'src/app/services/api/const';
+import { ACCESS_TOKEN } from 'src/constants/storage';
 
 // Custom video upload function with longer timeout
 const uploadVideoWithTimeout = async (formData: FormData, endpoint: string) => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem(ACCESS_TOKEN);
   
   const response = await axios.post(`${baseUrl}${endpoint}`, formData, {
     headers: {
