@@ -5,6 +5,23 @@ import { api } from 'src/app/api';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import VideoPreview from 'src/components/common/video-preview';
 import { Dispatch, SetStateAction, useState } from 'react';
+import axios from 'axios';
+import { baseUrl } from 'src/app/services/api/const';
+
+// Custom video upload function with longer timeout
+const uploadVideoWithTimeout = async (formData: FormData, endpoint: string) => {
+  const token = localStorage.getItem('access_token');
+  
+  const response = await axios.post(`${baseUrl}${endpoint}`, formData, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 300000, // 5 minutes timeout for video uploads
+  });
+  
+  return response.data;
+};
 
 interface Props {
   modalOpen: boolean;
@@ -32,8 +49,8 @@ export default function VideoUploadModal({
 
       setLoading(true);
       Promise.all([
-        api.users.uploadMentorVideos(introductionVideoFormData as any),
-        api.users.uploadMentorVideos(demoLessonFormData as any),
+        uploadVideoWithTimeout(introductionVideoFormData, '/users/mentor/videos'),
+        uploadVideoWithTimeout(demoLessonFormData, '/users/mentor/videos'),
       ])
         .then((res) => {
           message.success('Videos uploaded successfully', 7);

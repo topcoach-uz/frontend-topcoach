@@ -9,6 +9,23 @@ import { setProfileImage, updateProfile } from 'src/app/slices/authSlice';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import useApi from 'src/hooks/useApi';
 import { getLatestCreatedImg } from 'src/utils';
+import axios from 'axios';
+import { baseUrl } from 'src/app/services/api/const';
+
+// Custom video upload function with longer timeout
+const uploadVideoWithTimeout = async (formData: FormData, endpoint: string) => {
+  const token = localStorage.getItem('access_token');
+  
+  const response = await axios.post(`${baseUrl}${endpoint}`, formData, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 300000, // 5 minutes timeout for video uploads
+  });
+  
+  return response.data;
+};
 
 interface Props {
   isModalVisible: boolean;
@@ -265,8 +282,8 @@ export default function useEditProfile({
       formData.append('video', values.demoLesson.file as Blob);
       formData.append('tags', MEDIA_TAGS.DemoLession);
       setLoading((prev) => ({ ...prev, demoLessonLoading: true }));
-      api.users
-        .uploadMentorVideos(formData as any)
+      
+      uploadVideoWithTimeout(formData, '/users/mentor/videos')
         .then(() => {
           message.success('Demo lesson uploaded');
         })
@@ -289,8 +306,8 @@ export default function useEditProfile({
       formData.append('video', values.introductionVideo.file as Blob);
       formData.append('tags', MEDIA_TAGS.IntroVideo);
       setLoading((prev) => ({ ...prev, introVideoLoading: true }));
-      api.users
-        .uploadMentorVideos(formData as any)
+      
+      uploadVideoWithTimeout(formData, '/users/mentor/videos')
         .then(() => {
           message.success('Introduction video uploaded');
         })

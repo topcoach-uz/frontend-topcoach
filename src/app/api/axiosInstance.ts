@@ -19,6 +19,32 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 seconds timeout
 });
 
+// Create a separate instance for video uploads with longer timeout
+const videoUploadInstance = axios.create({
+  baseURL: baseUrl,
+  headers: { 'Content-Type': 'multipart/form-data' },
+  timeout: 300000, // 5 minutes timeout for video uploads
+});
+
+// Add request interceptor to both instances
+const addAuthInterceptor = (instance: any) => {
+  instance.interceptors.request.use(
+    (config: any) => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error: any) => {
+      return Promise.reject(error);
+    }
+  );
+};
+
+addAuthInterceptor(axiosInstance);
+addAuthInterceptor(videoUploadInstance);
+
 // Request Interceptor to add Authorization header
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -102,4 +128,4 @@ export const refreshToken = async (originalUrl?: string, error?: Error) => {
   return Promise.reject(error);
 };
 
-export default axiosInstance;
+export { axiosInstance, videoUploadInstance };

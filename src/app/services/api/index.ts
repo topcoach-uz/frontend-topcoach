@@ -22,6 +22,21 @@ const baseQuery = fetchBaseQuery({
   timeout: 30000, // 30 seconds timeout
 });
 
+// Create a separate base query for video uploads with longer timeout
+const videoUploadBaseQuery = fetchBaseQuery({
+  baseUrl: baseUrl,
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+  timeout: 300000, // 5 minutes timeout for video uploads
+});
+
+export { baseQuery, videoUploadBaseQuery };
+
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 0 });
 
 /**
