@@ -31,31 +31,50 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
     try {
       const result = await verifyTelegramCode({ 
         code: code.trim()
-      });
+      }).unwrap(); // Use unwrap() to properly handle errors
       
       console.log('Verification result:', result);
-      message.success('Telegram connected successfully!');
       
-      // Show loading state while updating status
-      setIsUpdatingStatus(true);
-      
-      // Manually invalidate cache and force refetch
-      RtkApi.util.invalidateTags(['TelegramStatus']);
-      
-      // Wait for backend to update database, then refetch
-      setTimeout(async () => {
-        await refetch();
-        // Second refetch after a short delay
+      // Only show success if we actually got a successful result
+      if (result && result.success) {
+        message.success('Telegram connected successfully!');
+        
+        // Show loading state while updating status
+        setIsUpdatingStatus(true);
+        
+        // Manually invalidate cache and force refetch
+        RtkApi.util.invalidateTags(['TelegramStatus']);
+        
+        // Wait for backend to update database, then refetch
         setTimeout(async () => {
           await refetch();
-          setIsUpdatingStatus(false);
-          onClose();
-        }, 500);
-      }, 1000);
+          // Second refetch after a short delay
+          setTimeout(async () => {
+            await refetch();
+            setIsUpdatingStatus(false);
+            onClose();
+          }, 500);
+        }, 1000);
+      } else {
+        // Handle case where result exists but success is false
+        setErrorMsg(result?.message || 'Failed to verify code');
+      }
     } catch (error: any) {
       console.error('Verification error:', error);
-      const backendMsg = error?.data?.message || error?.message || 'Failed to verify code';
-      setErrorMsg(backendMsg);
+      // Handle different error formats
+      let errorMessage = 'Failed to verify code';
+      
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.error?.data?.message) {
+        errorMessage = error.error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      setErrorMsg(errorMessage);
     }
   };
 
