@@ -210,6 +210,8 @@
   "shared.modalOk": "OK",
   "shared.notListed": "My University is not listed",
   "shared.replaceText": "Re-Upload",
+  "shared.summary": "Overview",
+  "shared.summaryPlaceholder": "Tell students about your background, expertise, and what you can help them with...",
   "shared.university": "Select university",
   "shared.universityPlaceholder": "Select your university",
   "shared.universityType": "University",
