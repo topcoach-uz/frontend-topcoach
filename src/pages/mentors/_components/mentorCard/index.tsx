@@ -8,6 +8,7 @@ import { themeColors } from 'src/constants/theme';
 import { UserIcon } from 'src/components/icons';
 import { Skeleton } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { getUniversityFlag } from 'src/utils/countryFlags';
 
 interface MentorCardProps {
   id: string;
@@ -111,8 +112,11 @@ export default function MentorCard({
             fontWeight={600}
             color={colors.colorTextBase}
             mb={8}
-            style={{ lineHeight: '1.3' }}
+            style={{ lineHeight: '1.3', display: 'flex', alignItems: 'center' }}
           >
+            <span style={{ marginRight: '8px', fontSize: '18px' }}>
+              {getUniversityFlag(university)}
+            </span>
             {university}
           </CustomText>
           {major && (
