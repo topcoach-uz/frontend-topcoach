@@ -84,6 +84,7 @@ export default function useEditProfile({
         form.setFieldsValue({
           email: userData?.email,
           major: userData?.mentorProfile?.major,
+          summary: userData?.mentorProfile?.summary,
           selectedUniversities: userData?.selectedUniversities?.[0]?.id,
           // @ts-ignore
           linkedin: userData?.profile?.contacts?.socials?.linkedin,
@@ -149,6 +150,7 @@ export default function useEditProfile({
       // @ts-ignore
       mentorProfile: {
         major: values.major?.trim(),
+        summary: values.summary?.trim(),
         ...university,
       },
       // @ts-ignore
@@ -178,6 +180,8 @@ export default function useEditProfile({
         normalizeValue(userData?.mentorProfile?.university) ||
       normalizeValue(values.major) !==
         normalizeValue(userData?.mentorProfile?.major) ||
+      normalizeValue(values.summary) !==
+        normalizeValue(userData?.mentorProfile?.summary) ||
       normalizeValue(values.name) !== normalizeValue(userData?.profile?.name) ||
       normalizeValue(values.selectedUniversities) !==
         normalizeValue(userData?.selectedUniversities?.[0]?.id) ||
