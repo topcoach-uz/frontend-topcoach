@@ -61,9 +61,11 @@ export default function Actions() {
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
       />
+      {/* Dark mode toggle disabled
       <button className={styles.mode_switch} onClick={handleDarkMode}>
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
+      */}
       <LanguageSelect />
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
