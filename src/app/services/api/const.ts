@@ -7,4 +7,6 @@ export const apiTagTypes = [
   'MySessions',
   'GetMentorBalance',
   'GetMentorDetail',
+  'CourseEnrollment',
+  'ProgramPricing',
 ];
