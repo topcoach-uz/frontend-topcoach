@@ -89,6 +89,7 @@ const AiMajorMatchPageLazy = lazy(
   () => import("src/pages/ai-major-match/AiMajorMatch")
 );
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
+const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -131,6 +132,7 @@ function RouterProvider() {
                 element={<EventDetailsPageLazy />}
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
+              <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route
                 path="/events/undergraduate"
                 element={<ApplyToEventUndergraduatePageLazy />}

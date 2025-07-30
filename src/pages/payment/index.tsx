@@ -1,6 +1,6 @@
 import { Form, message } from "antd";
 import { useForm } from "antd/es/form/Form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "src/app/api";
 import { useTypedSelector } from "src/app/store";
@@ -11,6 +11,7 @@ import useParamsHook from "src/hooks/params";
 import { themeFontSize, themeFontWeight } from "src/constants/theme";
 import { ArrowLeft } from "iconsax-react";
 import CustomSelect from "src/components/common/select";
+import { Spin } from "antd";
 
 function PaymentPage() {
   const colors = useTypedSelector((state) => state.layout.colors);
@@ -23,13 +24,56 @@ function PaymentPage() {
   const sessionId = searchParams.get("sessionId") ?? "";
   const planId = searchParams.get("planId") ?? "";
   const mentorId = searchParams.get("mentorId") ?? "";
-  const returnUrl = "https://topcoach.uz/";
+  const enrollmentId = searchParams.get("enrollmentId") ?? "";
+  const paymentType = searchParams.get("type") ?? "";
+  
+  // Debug logging
+  console.log('Payment page params:', {
+    amount,
+    currencyName,
+    sessionId,
+    planId,
+    mentorId,
+    enrollmentId,
+    paymentType
+  });
+  
+  const returnUrl = paymentType === "course" 
+    ? "https://topcoach.uz/programs/success?success=true" 
+    : "https://topcoach.uz/";
 
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!planId) {
-    message.error('Missing plan information.');
+  // Check if we have required parameters
+  if (!planId && !sessionId && !enrollmentId) {
+    message.error('Missing payment information.');
     return;
+  }
+
+  // For course payments, we need to get the enrollment details to show proper amount
+  const [enrollmentDetails, setEnrollmentDetails] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // Fetch enrollment details for course payments
+  useEffect(() => {
+    if (enrollmentId && paymentType === 'course') {
+      setLoadingDetails(true);
+      // You can add an API call here to get enrollment details if needed
+      // For now, we'll use the amount from URL params
+      setLoadingDetails(false);
+    }
+  }, [enrollmentId, paymentType]);
+
+  // Show loading while fetching details
+  if (loadingDetails) {
+    return (
+      <div className="container">
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large" />
+          <p>Loading payment details...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async () => {
@@ -61,45 +105,44 @@ function PaymentPage() {
     });
   };
 
-  // Helper to POST to backend and redirect (unified for session and subscription)
-  const handleProviderRedirect = async (provider: 'payme' | 'click' | 'atmos') => {
-    const planId = searchParams.get('planId');
-    const sessionId = searchParams.get('sessionId');
-    const mentorId = searchParams.get('mentorId');
-    const returnUrl = 'https://topcoach.uz/';
-    const isSubscription = !!planId && !mentorId && !sessionId;
-
-    if (!planId && !sessionId) {
-      message.error('Missing plan or session information.');
+  // Helper to POST to backend and redirect (for subscription and session payments)
+  const handleProviderRedirect = async (provider: string) => {
+    if (!planId && !sessionId && !enrollmentId) {
+      message.error('No payment information found');
       return;
-    }
-
-    // Check authentication (assume JWT is handled globally, but can check user state)
-    // If you have an auth state, check it here
-    // if (!isAuthenticated) {
-    //   message.error('You must be logged in to pay.');
-    //   return;
-    // }
-
-    let payload: any = { returnUrl };
-    if (isSubscription) {
-      payload.planId = planId;
-    } else {
-      if (planId) payload.planId = planId;
-      if (mentorId) payload.mentorId = mentorId;
-      if (sessionId) payload.sessionId = sessionId;
     }
 
     setIsLoading(true);
     try {
-      // Use the same API for both flows
+      let payload;
+      
+      if (paymentType === 'course' && enrollmentId) {
+        // Course payment: only send enrollmentId
+        payload = { 
+          enrollmentId,
+          returnUrl
+        };
+      } else {
+        // Subscription/session payment: send planId and other fields
+        payload = { 
+          planId, 
+          returnUrl,
+          ...(sessionId && { sessionId }),
+          ...(mentorId && { mentorId })
+        };
+      }
+      
+      console.log('Payment payload:', payload);
+      
       const res = await api.payments.getRedirectUrl(provider, payload);
-      if (res.data?.url) {
-        window.location.href = res.data.url;
+      
+      if (res.data?.url || res.data?.redirectUrl) {
+        window.location.href = res.data.url || res.data.redirectUrl;
       } else {
         message.error('No redirect URL received.');
       }
     } catch (err: any) {
+      console.error('Payment redirect error:', err);
       message.error(err.response?.data?.message || 'Payment redirect failed.');
     } finally {
       setIsLoading(false);
@@ -144,8 +187,19 @@ function PaymentPage() {
                   color={colors.colorText}
                   // fontWeight={themeFontWeight.fontWeightSemibold}
                 >
-                  {amount} {currencyName}
+                  {paymentType === 'course' 
+                    ? `$${amount || '0'}` 
+                    : `${amount || '0'} ${currencyName || 'USD'}`
+                  }
                 </CustomText>
+                {paymentType === 'course' && (
+                  <div style={{ marginTop: '8px', marginBottom: '16px' }}>
+                    <CustomText
+                      fontSize={themeFontSize.fontSizeTitle5}
+                      color={colors.colorTextSecondary || '#666'}>                    
+                    </CustomText>
+                  </div>
+                )}
               </div>
               <div className={styles.cardDetails}>
                 <Form form={form} layout="vertical">

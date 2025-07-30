@@ -1479,10 +1479,11 @@ export interface BuySubscriptionResponseDto {
 }
 
 export interface GetRedirectUrlDto {
-  sessionId: string;
+  sessionId?: string;
   returnUrl: string;
-  planId: string;
-  mentorId: string;
+  planId?: string;
+  mentorId?: string;
+  eventFormId?: string;
 }
 
 export interface GetRedirectUrlResponseUrlDto {
@@ -3261,9 +3262,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @secure
      * @response `default` `GetRedirectUrlSingleResponseDto`
      */
-    getRedirectUrl: (method: string, data: GetRedirectUrlDto, params: RequestParams = {}) =>
+    getRedirectUrl: (method: string, data: CreateInvoiceDto, params: RequestParams = {}) =>
       this.request<any, GetRedirectUrlSingleResponseDto>({
         path: `/payments/redirect/${method}`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags payments
+     * @name GetCourseRedirectUrl
+     * @request POST:/payments/course/redirect/{method}
+     * @secure
+     * @response `default` `GetRedirectUrlSingleResponseDto`
+     */
+    getCourseRedirectUrl: (method: string, data: { enrollmentId: string; returnUrl: string }, params: RequestParams = {}) =>
+      this.request<any, GetRedirectUrlSingleResponseDto>({
+        path: `/payments/course/redirect/${method}`,
         method: "POST",
         body: data,
         secure: true,
@@ -4004,4 +4024,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
+}
+
+export interface CreateInvoiceDto {
+  sessionId?: string;
+  returnUrl: string;
+  planId?: string;
+  mentorId?: string;
+  eventFormId?: string;
+  enrollmentId?: string;
 }
