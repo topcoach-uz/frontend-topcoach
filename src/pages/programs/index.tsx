@@ -268,6 +268,13 @@ const ProgramsPage: React.FC = () => {
     }
   };
 
+  // Helper function to check if user is enrolled in specific plan
+  const isEnrolledInPlan = (planType: CourseTypeEnum) => {
+    const isEnrolled = enrollmentStatus?.enrollment?.courseType === planType;
+    console.log(`Checking enrollment for ${planType}:`, isEnrolled, enrollmentStatus?.enrollment);
+    return isEnrolled;
+  };
+
   return (
     <div className="programs-page">
       {/* Hero Section */}
@@ -518,10 +525,10 @@ const ProgramsPage: React.FC = () => {
                 block
                 onClick={() => handleEnroll(plan.type)}
                 loading={selectedPlan === plan.type && creatingEnrollment}
-                disabled={!!enrollmentStatus?.isEnrolled}
+                disabled={isEnrolledInPlan(plan.type)}
                 className="enroll-button"
               >
-                {enrollmentStatus?.isEnrolled ? 'Already Enrolled' : `Enroll in ${plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'}`}
+                {isEnrolledInPlan(plan.type) ? 'Already Enrolled' : `Enroll in ${plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'}`}
               </Button>
             </Card>
           ))}
