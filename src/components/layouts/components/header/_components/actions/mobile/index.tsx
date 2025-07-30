@@ -28,9 +28,11 @@ export default function ActionsMobileVersion({
 
   return (
     <div className={styles.actions_wrapper}>
+      {/* Dark mode toggle disabled
       <button className={styles.mode_switch} onClick={handleDarkMode}>
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
+      */}
       {screenSize > 560 && <LanguageSelect />}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
