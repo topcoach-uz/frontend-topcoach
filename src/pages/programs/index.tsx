@@ -83,7 +83,7 @@ const mentors: Mentor[] = [
       'Top 0.1% of applicants (1st in Uzbekistan)'
     ],
     stats: {
-      studentsMentored: '50+',
+      studentsMentored: '20+',
     }
   },
   {
@@ -115,7 +115,7 @@ const mentors: Mentor[] = [
       'Students secured positions with MIT, Cambridge, GWU PhD candidates'
     ],
     stats: {
-      studentsMentored: '20+',
+      studentsMentored: '50+',
     }
   }
 ];
@@ -174,12 +174,13 @@ const ProgramsPage: React.FC = () => {
           price: pricing.standardPrice,
           currency: pricing.currency,
           features: [
-            'Recorded video lessons',
-            'Course materials and resources',
-            'Community access',
-            'Email support',
-            'Progress tracking',
-            'Certificate of completion'
+            '4 core modules (Introduction, Portfolio, Personal Statement, Supplemental essays + Scholarship)',
+            '25+ recorded video lessons by professional mentors',
+            'Downloadable templates and sample documents (CV, PS, essays)',
+            'Access to 3 live Zoom sessions (orientation + Q&A)',
+            'Homework assignments',
+            'Access to an exclusive Telegram community for networking',
+            'Admission Checklist & Timeline for structured preparation'
           ]
         },
         {
@@ -188,13 +189,14 @@ const ProgramsPage: React.FC = () => {
           currency: pricing.currency,
           features: [
             'Everything in Standard',
-            'Live Zoom sessions with mentors',
-            '1:1 personalized sessions',
-            'Priority support',
-            'Essay review and feedback',
-            'Mock interview sessions',
-            'Application strategy consultation',
-            'Exclusive networking events'
+            'Small group mentoring (6 students per co-mentor)',
+            '2 individual 1x1 sessions monthly with a co-mentor',
+            'Access to 9 live Zoom sessions',
+            'Homework with written feedback',
+            '1 Q&A session with a co-mentor in a month',
+            'Priority chat support on Telegram',
+            '3 Guest Speaker sessions',
+            'Offline networking event'
           ],
           popular: true
         }
@@ -286,7 +288,7 @@ const ProgramsPage: React.FC = () => {
               <span>Premium University Admissions Course</span>
             </div>
             <h1 className="hero-title">
-              Master University Admissions
+              TopCoach Admissions Program
               <span className="highlight"> with Elite Mentors</span>
             </h1>
             <p className="hero-subtitle">
