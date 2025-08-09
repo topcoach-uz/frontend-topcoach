@@ -62,7 +62,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             headers['Authorization'] = `Bearer ${token}`;
           }
           
-          const proxyUrl = `http://localhost:3000/api/admin/courses/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`;
+          const proxyUrl = `/api/admin/courses/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`;
           const response = await fetch(proxyUrl, {
             method: 'GET',
             headers,

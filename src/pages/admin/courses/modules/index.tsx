@@ -60,7 +60,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch(`http://localhost:3000/api${url}`, {
+    const response = await fetch(`/api${url}`, {
       headers,
     });
     
@@ -80,7 +80,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch(`http://localhost:3000/api${url}`, {
+    const response = await fetch(`/api${url}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(data),
@@ -101,7 +101,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch(`http://localhost:3000/api${url}`, {
+    const response = await fetch(`/api${url}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(data),
@@ -122,7 +122,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch(`http://localhost:3000/api${url}`, {
+    const response = await fetch(`/api${url}`, {
       method: 'DELETE',
       headers,
     });
@@ -150,7 +150,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch('http://localhost:3000/api/admin/courses/upload', {
+    const response = await fetch('/api/admin/courses/upload', {
       method: 'POST',
       headers,
       body: formData,
