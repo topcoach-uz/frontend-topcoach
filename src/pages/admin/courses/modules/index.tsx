@@ -150,7 +150,7 @@ const courseApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch('/api/admin/courses/upload', {
+    const response = await fetch('/api/course-admin/courses/upload', {
       method: 'POST',
       headers,
       body: formData,
@@ -219,7 +219,7 @@ interface Mentor {
   avatar?: string;
 }
 
-const CourseModulesAdmin: React.FC = () => {
+const CourseManagementAdmin: React.FC = () => {
   const [modules, setModules] = useState<Module[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(false);
@@ -256,7 +256,7 @@ const CourseModulesAdmin: React.FC = () => {
   const fetchModules = async () => {
     setLoading(true);
     try {
-      const response = await courseApi.get('/admin/courses/modules');
+      const response = await courseApi.get('/course-admin/courses/modules');
       
       // Handle both array and object responses
       const modulesData = response.data || response || [];
@@ -289,13 +289,13 @@ const CourseModulesAdmin: React.FC = () => {
   const handleCreateModule = async (values: any) => {
     try {
       if (editingModule) {
-        await courseApi.put(`/admin/courses/modules/${editingModule.id}`, values);
+        await courseApi.put(`/course-admin/courses/modules/${editingModule.id}`, values);
         notification.success({
           message: 'Success',
           description: 'Module updated successfully',
         });
       } else {
-        await courseApi.post('/admin/courses/modules', {
+        await courseApi.post('/course-admin/courses/modules', {
           ...values,
           mentorName: values.mentorName, // Send mentor name instead of mentorId
         });
@@ -318,7 +318,7 @@ const CourseModulesAdmin: React.FC = () => {
 
   const handleDeleteModule = async (moduleId: string) => {
     try {
-      await courseApi.delete(`/admin/courses/modules/${moduleId}`);
+      await courseApi.delete(`/course-admin/courses/modules/${moduleId}`);
       notification.success({
         message: 'Success',
         description: 'Module deleted successfully',
@@ -337,13 +337,13 @@ const CourseModulesAdmin: React.FC = () => {
   const handleCreateLesson = async (values: any) => {
     try {
       if (editingLesson) {
-        await courseApi.put(`/admin/courses/lessons/${editingLesson.id}`, values);
+        await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, values);
         notification.success({
           message: 'Success',
           description: 'Lesson updated successfully',
         });
       } else {
-        await courseApi.post('/admin/courses/lessons', values);
+        await courseApi.post('/course-admin/courses/lessons', values);
         notification.success({
           message: 'Success',
           description: 'Lesson created successfully',
@@ -365,7 +365,7 @@ const CourseModulesAdmin: React.FC = () => {
   const handleDeleteLesson = async (lessonId: string) => {
     try {
       console.log('Attempting to delete lesson:', lessonId);
-      const result = await courseApi.delete(`/admin/courses/lessons/${lessonId}`);
+      const result = await courseApi.delete(`/course-admin/courses/lessons/${lessonId}`);
       console.log('Delete result:', result);
       notification.success({
         message: 'Success',
@@ -385,13 +385,13 @@ const CourseModulesAdmin: React.FC = () => {
   const handleCreateResource = async (values: any) => {
     try {
       if (editingResource) {
-        await courseApi.put(`/admin/courses/resources/${editingResource.id}`, values);
+        await courseApi.put(`/course-admin/courses/resources/${editingResource.id}`, values);
         notification.success({
           message: 'Success',
           description: 'Resource updated successfully',
         });
       } else {
-        await courseApi.post('/admin/courses/resources', values);
+        await courseApi.post('/course-admin/courses/resources', values);
         notification.success({
           message: 'Success',
           description: 'Resource created successfully',
@@ -412,7 +412,7 @@ const CourseModulesAdmin: React.FC = () => {
 
   const handleDeleteResource = async (resourceId: string) => {
     try {
-      await courseApi.delete(`/admin/courses/resources/${resourceId}`);
+      await courseApi.delete(`/course-admin/courses/resources/${resourceId}`);
       notification.success({
         message: 'Success',
         description: 'Resource deleted successfully',
@@ -1143,4 +1143,4 @@ const CourseModulesAdmin: React.FC = () => {
   );
 };
 
-export default CourseModulesAdmin; 
+export default CourseManagementAdmin; 
