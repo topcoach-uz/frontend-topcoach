@@ -1,0 +1,548 @@
+.video-player-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  cursor: pointer;
+
+  &:hover {
+    .controls-overlay {
+      opacity: 1;
+    }
+  }
+
+  .video-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+    cursor: pointer;
+  }
+
+  .video-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    padding: 20px;
+    z-index: 10;
+
+    h3 {
+      color: white;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    span {
+      color: white;
+      font-size: 14px;
+    }
+  }
+
+  .controls-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+    padding: 20px;
+    transition: opacity 0.3s ease;
+    z-index: 15;
+
+    &.hide {
+      opacity: 0;
+    }
+
+    &.show {
+      opacity: 1;
+    }
+
+    .progress-container {
+      position: relative;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      cursor: pointer;
+      margin-bottom: 15px;
+
+      &:hover {
+        .progress-thumb {
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      .progress-bar {
+        position: relative;
+        height: 100%;
+        border-radius: 2px;
+        overflow: hidden;
+
+        .buffered-progress {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          background: rgba(255,255,255,0.5);
+          border-radius: 2px;
+        }
+
+        .played-progress {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          background: #dc2626;
+          border-radius: 2px;
+          transition: width 0.1s ease;
+        }
+      }
+
+      .progress-thumb {
+        position: absolute;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        background: #dc2626;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: none;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+        pointer-events: none;
+      }
+    }
+
+    .main-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+
+      .left-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .control-btn {
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background: rgba(255,255,255,0.1);
+          }
+
+          &.play-btn {
+            font-size: 24px;
+          }
+
+          svg {
+            font-size: 18px;
+          }
+        }
+
+        .volume-control {
+          position: relative;
+          display: flex;
+          align-items: center;
+
+          .volume-btn {
+            position: relative;
+            
+            &:hover {
+              background: rgba(255,255,255,0.15) !important;
+            }
+            
+            &:active {
+              background: rgba(255,255,255,0.2) !important;
+            }
+          }
+
+          .volume-slider {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.95);
+            padding: 15px 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            min-width: 40px;
+
+            &.show {
+              opacity: 1;
+              visibility: visible;
+            }
+
+            .volume-percentage {
+              color: white;
+              font-size: 12px;
+              font-weight: 500;
+              text-align: center;
+              min-width: 30px;
+              user-select: none;
+              pointer-events: none;
+            }
+
+            .volume-track {
+              position: relative;
+              width: 6px;
+              height: 80px;
+              background: rgba(255,255,255,0.3);
+              border-radius: 3px;
+              display: flex;
+              align-items: flex-end;
+              overflow: visible;
+              cursor: pointer;
+              transition: background 0.2s ease;
+              user-select: none;
+              -webkit-user-select: none;
+              -moz-user-select: none;
+              -ms-user-select: none;
+
+              &:hover {
+                background: rgba(255,255,255,0.4);
+              }
+
+              &:active {
+                background: rgba(255,255,255,0.5);
+              }
+
+              &.active {
+                background: rgba(255,255,255,0.6);
+              }
+
+              .volume-range {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: transparent;
+                outline: none;
+                cursor: pointer;
+                opacity: 0;
+                z-index: 2;
+                margin: 0;
+                -webkit-appearance: none;
+                appearance: none;
+
+                &::-webkit-slider-thumb {
+                  appearance: none;
+                  -webkit-appearance: none;
+                  width: 16px;
+                  height: 16px;
+                  background: #8b0000;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+                  transition: none;
+                  transform: none;
+                  position: relative;
+                  z-index: 10;
+                  pointer-events: none;
+                }
+
+                &::-moz-range-thumb {
+                  width: 16px;
+                  height: 16px;
+                  background: #8b0000;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+                  transition: none;
+                  transform: none;
+                  position: relative;
+                  z-index: 10;
+                  pointer-events: none;
+                }
+
+                &::-webkit-slider-track {
+                  background: transparent;
+                  border: none;
+                  outline: none;
+                }
+
+                &::-moz-range-track {
+                  background: transparent;
+                  border: none;
+                  outline: none;
+                }
+
+                &:focus {
+                  outline: none;
+                }
+
+                &:active {
+                  &::-webkit-slider-thumb {
+                    transform: none;
+                    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+                  }
+                  
+                  &::-moz-range-thumb {
+                    transform: none;
+                    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+                  }
+                }
+              }
+
+              .volume-fill {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: #8b0000;
+                border-radius: 3px;
+                transition: height 0.1s ease;
+                z-index: 1;
+                pointer-events: none;
+              }
+            }
+
+            // Volume level indicator
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -6px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 0;
+              height: 0;
+              border-left: 6px solid transparent;
+              border-right: 6px solid transparent;
+              border-top: 6px solid rgba(0,0,0,0.95);
+            }
+          }
+        }
+
+        .time-display {
+          color: white;
+          font-size: 14px;
+          font-family: monospace;
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+      }
+
+      .right-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .speed-control {
+          position: relative;
+
+          .speed-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+
+            &:hover {
+              background: rgba(255,255,255,0.1);
+            }
+
+            .speed-text {
+              font-size: 12px;
+              font-weight: 500;
+            }
+          }
+
+          .speed-menu {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            border-radius: 6px;
+            padding: 8px 0;
+            margin-bottom: 10px;
+            min-width: 80px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+
+            .speed-option {
+              display: block;
+              width: 100%;
+              padding: 8px 16px;
+              background: none;
+              border: none;
+              color: white;
+              cursor: pointer;
+              text-align: left;
+              font-size: 14px;
+              transition: background 0.2s ease;
+
+              &:hover {
+                background: rgba(255,255,255,0.1);
+              }
+
+              &.active {
+                background: #667eea;
+                color: white;
+              }
+            }
+          }
+        }
+
+        .control-btn {
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
+          }
+
+          svg {
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  .click-to-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    &:hover {
+      background: rgba(0,0,0,0.8);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    svg {
+      font-size: 40px;
+      color: #dc2626;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .video-player-container {
+    .controls-overlay {
+      padding: 15px;
+
+      .main-controls {
+        .left-controls {
+          gap: 8px;
+
+          .control-btn {
+            padding: 6px;
+
+            &.play-btn {
+              font-size: 20px;
+            }
+
+            svg {
+              font-size: 16px;
+            }
+          }
+
+          .time-display {
+            font-size: 12px;
+          }
+        }
+
+        .right-controls {
+          gap: 8px;
+
+          .control-btn {
+            padding: 6px;
+
+            svg {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+    }
+
+    .click-to-play {
+      width: 60px;
+      height: 60px;
+
+      svg {
+        font-size: 30px;
+      }
+    }
+  }
+} 

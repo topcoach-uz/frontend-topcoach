@@ -125,6 +125,7 @@ export interface ProfilesSchema {
 
 export enum RoleEnum {
   Owner = "Owner",
+  SuperAdmin = "SuperAdmin",
   Admin = "Admin",
   ContentManager = "Content Manager",
   User = "User",
