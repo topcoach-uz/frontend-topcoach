@@ -20,12 +20,14 @@ import {
   useGetActivePricingQuery,
   useGetEnrollmentStatusQuery,
   useCreateEnrollmentMutation,
+  useGetUserProgressQuery,
   CourseEnrollmentDto,
   ProgramPricingDto
 } from 'src/app/services/courses';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import { useAppDispatch } from 'src/app/store';
 import { show } from 'src/app/slices/profilePopupSlice';
+import { useNavigate } from 'react-router-dom';
 import './index.scss';
 
 // Local enums for course types and payment status
@@ -149,6 +151,7 @@ const courseModules: CourseModule[] = [
 
 const ProgramsPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { profile, isAuthenticated } = useTypedSelector(state => state.auth);
   const [selectedPlan, setSelectedPlan] = useState<CourseTypeEnum | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
@@ -158,6 +161,9 @@ const ProgramsPage: React.FC = () => {
   const { data: pricing, isLoading: pricingLoading } = useGetActivePricingQuery();
   const { data: enrollmentStatus, isLoading: statusLoading } = useGetEnrollmentStatusQuery(undefined, {
     skip: !isAuthenticated
+  });
+  const { data: userProgress } = useGetUserProgressQuery(undefined, {
+    skip: !isAuthenticated || !enrollmentStatus?.isEnrolled
   });
   const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
     skip: !isAuthenticated
@@ -246,15 +252,23 @@ const ProgramsPage: React.FC = () => {
         amount: Number(plan.price) // Convert to number to fix validation error
       }).unwrap();
 
-      // Redirect to payment page
+      console.log('Enrollment created:', enrollment);
+
+      // Redirect to payment page with enrollment details
       const paymentUrl = `/payment?enrollmentId=${enrollment.id}&type=course&amount=${plan.price}`;
-      console.log('Payment URL:', paymentUrl);
+      console.log('Redirecting to payment URL:', paymentUrl);
       window.location.href = paymentUrl;
-      
-    } catch (error: any) {
+
+    } catch (error) {
       console.error('Enrollment error:', error);
-      message.error(error?.data?.message || 'Failed to enroll in course');
+      message.error('Failed to create enrollment. Please try again.');
+    } finally {
+      setSelectedPlan(null);
     }
+  };
+
+  const handleContinueLearning = () => {
+    navigate('/learning');
   };
 
   const getStatusColor = (status: CoursePaymentStatusEnum) => {
@@ -288,12 +302,13 @@ const ProgramsPage: React.FC = () => {
               <span>Premium University Admissions Course</span>
             </div>
             <h1 className="hero-title">
-              TopCoach Admissions Program
-              <span className="highlight"> with Elite Mentors</span>
+          TopCoach Admissions Program
+              {/* <span className="highlight"> with Elite Mentors</span> */}
             </h1>
             <p className="hero-subtitle">
-              Join our comprehensive course designed by students who secured full scholarships to Harvard, 
-              Babson, Oxford, and Yale. Get the insider knowledge that led to $737,000+ in scholarships.
+              Transform your college journey with insider strategies!
+              Join the course created by students who earned full scholarships to Harvard, Yale, Oxford, and Babson, 
+              unlocking over $737,000 in funding. Your breakthrough starts here! You can do it too!
             </p>
             <div className="hero-stats">
               <div className="stat">
@@ -323,7 +338,7 @@ const ProgramsPage: React.FC = () => {
             <div className="hero-illustration">
               <div className="premium-badge">
                 <CrownOutlined />
-                <span>Elite Program</span>
+                <span>Your best College support</span>
               </div>
             </div>
           </div>
@@ -338,16 +353,65 @@ const ProgramsPage: React.FC = () => {
               <div className="enrollment-message">
                 <CheckCircleOutlined />
                 <span>You're enrolled in the {enrollmentStatus.enrollment.courseType} plan!</span>
-                <Tag color={getStatusColor(enrollmentStatus.enrollment.paymentStatus as CoursePaymentStatusEnum)}>
+                {/* <Tag color={getStatusColor(enrollmentStatus.enrollment.paymentStatus as CoursePaymentStatusEnum)}>
                   {enrollmentStatus.enrollment.paymentStatus.toUpperCase()}
-                </Tag>
+                </Tag> */}
               </div>
             }
-            description="Once we launch the programs, you will have full access to all course materials and sessions."
+            description="You now have full access to all course materials and learning sessions."
             type="success"
             showIcon={false}
             className="enrollment-alert"
           />
+          
+          {/* Continue Learning Section */}
+          {userProgress && (
+            <div className="continue-learning-section">
+              <Card className="learning-card">
+                <div className="learning-header">
+                  <h3>Your Learning Progress</h3>
+                  <p>Track your journey through the course</p>
+                </div>
+                
+                <div className="learning-stats">
+                  <div className="stat-item">
+                    <div className="stat-number">{userProgress.completedLessons || 0}</div>
+                    <div className="stat-label">Lessons Completed</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{userProgress.totalLessons || 0}</div>
+                    <div className="stat-label">Total Lessons</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{Math.round(userProgress.overallProgress || 0)}%</div>
+                    <div className="stat-label">Overall Progress</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-number">{Math.round((userProgress.totalTimeWatched || 0) / 60)}m</div>
+                    <div className="stat-label">Time Watched</div>
+                  </div>
+                </div>
+                
+                <div className="progress-bar-container">
+                  <Progress 
+                    percent={userProgress.overallProgress || 0} 
+                    strokeColor="#8b0000"
+                    trailColor="#f0f0f0"
+                  />
+                </div>
+                
+                <Button 
+                  type="primary" 
+                  size="large"
+                  onClick={handleContinueLearning}
+                  icon={<PlayCircleOutlined />}
+                  className="continue-learning-btn"
+                >
+                  Continue Learning
+                </Button>
+              </Card>
+            </div>
+          )}
         </section>
       )}
 
@@ -525,12 +589,12 @@ const ProgramsPage: React.FC = () => {
                 type={plan.popular ? 'primary' : 'default'}
                 size="large"
                 block
-                onClick={() => handleEnroll(plan.type)}
+                onClick={isEnrolledInPlan(plan.type) ? handleContinueLearning : () => handleEnroll(plan.type)}
                 loading={selectedPlan === plan.type && creatingEnrollment}
-                disabled={isEnrolledInPlan(plan.type)}
+                disabled={false}
                 className="enroll-button"
               >
-                {isEnrolledInPlan(plan.type) ? 'Already Enrolled' : `Enroll in ${plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'}`}
+                {isEnrolledInPlan(plan.type) ? 'Continue Learning' : `Enroll in ${plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'}`}
               </Button>
             </Card>
           ))}

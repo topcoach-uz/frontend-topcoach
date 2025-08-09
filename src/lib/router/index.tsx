@@ -90,6 +90,9 @@ const AiMajorMatchPageLazy = lazy(
 );
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
+const LearningPageLazy = lazy(() => import("src/pages/learning"));
+const CourseModulesAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
+const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -133,6 +136,10 @@ function RouterProvider() {
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
+              <Route path="/learning" element={<LearningPageLazy />} />
+              <Route path="/learning/:lessonId" element={<LearningPageLazy />} />
+              <Route path="/admin" element={<AdminNavLazy />} />
+              <Route path="/admin/courses/modules" element={<CourseModulesAdminLazy />} />
               <Route
                 path="/events/undergraduate"
                 element={<ApplyToEventUndergraduatePageLazy />}

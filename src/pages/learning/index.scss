@@ -1,0 +1,229 @@
+.learning-page {
+  height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+
+  .learning-sidebar {
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
+    z-index: 10;
+    height: 100vh;
+    overflow: hidden;
+
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    // Remove default trigger styling
+    .ant-layout-sider-trigger {
+      display: none;
+    }
+  }
+
+  .learning-content {
+    background: #f5f5f5;
+    flex: 1;
+    overflow: hidden;
+
+    .content-area {
+      padding: 24px;
+      overflow-y: auto;
+      height: 100vh;
+    }
+  }
+
+  .lesson-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    .lesson-header {
+      background: #8b0000;
+      color: white;
+      padding: 24px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+
+      .lesson-title-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+
+        h1 {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 700;
+          flex: 1;
+        }
+      }
+
+      .module-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        opacity: 0.9;
+
+        .module-name {
+          font-weight: 600;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 12px;
+          border-radius: 16px;
+        }
+
+        .mentor-name {
+          opacity: 0.8;
+        }
+      }
+    }
+
+    .lesson-content {
+      padding: 32px;
+
+      .lesson-description {
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        margin-top: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+
+        h3 {
+          margin: 0 0 16px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        p {
+          margin: 0;
+          color: #6b7280;
+          line-height: 1.6;
+          font-size: 14px;
+        }
+      }
+
+      .live-session-placeholder {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 2px dashed #dee2e6;
+
+        h3 {
+          margin: 0 0 16px 0;
+          font-size: 24px;
+          color: #495057;
+        }
+
+        p {
+          margin: 0;
+          color: #6c757d;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  .no-lesson-selected {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+      font-size: 16px;
+    }
+  }
+}
+
+.learning-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f5f5f5;
+
+  .ant-spin {
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+}
+
+.learning-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f5f5f5;
+  text-align: center;
+
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .learning-page {
+    .learning-sidebar {
+      position: fixed;
+      z-index: 1000;
+      height: 100vh;
+    }
+
+    .learning-content {
+      margin-left: 0;
+
+      .content-area {
+        padding: 16px;
+      }
+    }
+
+    .lesson-container {
+      .lesson-header {
+        padding: 16px 20px;
+
+        h1 {
+          font-size: 24px;
+        }
+      }
+
+      .lesson-content {
+        padding: 20px;
+      }
+    }
+  }
+} 
