@@ -24,7 +24,7 @@ const AdminNav: React.FC = () => {
       title: 'Course Modules',
       description: 'Manage course content, lessons, and resources',
       icon: <BookOutlined />,
-      path: '/admin/courses/modules',
+      path: '/course-admin/courses/modules',
       color: '#1890ff'
     }
   ];
@@ -34,13 +34,13 @@ const AdminNav: React.FC = () => {
     return (
       <div className="admin-nav">
         <div className="admin-nav-header">
-          <h2>Admin Panel</h2>
-          <p>Please log in to access the admin panel</p>
+          <h2>Course Management Panel</h2>
+          <p>Please log in to access the course management panel</p>
         </div>
         
         <Alert
           message="Authentication Required"
-          description="You need to be logged in to access the admin panel. Please log in first."
+          description="You need to be logged in to access the course management panel. Please log in first."
           type="warning"
           showIcon
           icon={<LockOutlined />}
@@ -55,13 +55,13 @@ const AdminNav: React.FC = () => {
     return (
       <div className="admin-nav">
         <div className="admin-nav-header">
-          <h2>Admin Panel</h2>
+          <h2>Course Management Panel</h2>
           <p>Access restricted to SuperAdmin users only</p>
         </div>
         
         <Alert
           message="Access Denied"
-          description={`You need SuperAdmin privileges to access the admin panel. Your current role is: ${user?.managementRole || 'Unknown'}. Please contact your system administrator.`}
+          description={`You need SuperAdmin privileges to access the course management panel. Your current role is: ${user?.managementRole || 'Unknown'}. Please contact your system administrator.`}
           type="error"
           showIcon
           icon={<LockOutlined />}
@@ -73,10 +73,10 @@ const AdminNav: React.FC = () => {
 
   return (
     <div className="admin-nav">
-      <div className="admin-nav-header">
-        <h2>Admin Panel</h2>
-        <p>Quick access to administrative functions</p>
-      </div>
+              <div className="admin-nav-header">
+          <h2>Course Management Panel</h2>
+          <p>Quick access to course administrative functions</p>
+        </div>
       
       <div className="admin-nav-grid">
         {adminLinks.map((link, index) => (
