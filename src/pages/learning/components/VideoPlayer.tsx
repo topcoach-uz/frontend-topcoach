@@ -19,6 +19,28 @@ interface VideoPlayerProps {
   onComplete: () => void;
 }
 
+// Utility function to convert Google Drive sharing links to direct video URLs
+const convertGoogleDriveUrl = (url: string): string => {
+  // Check if it's a Google Drive sharing link
+  const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+  if (driveMatch) {
+    const fileId = driveMatch[1];
+    // Try multiple Google Drive URL formats for better compatibility
+    // Format 1: Direct streaming (works for some videos)
+    // Format 2: Download format (works for others)
+    // Format 3: Embed format (most compatible)
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  }
+  
+  // Check if it's already a direct Google Drive URL
+  if (url.includes('drive.google.com')) {
+    return url;
+  }
+  
+  // Return original URL if it's not a Google Drive link
+  return url;
+};
+
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   src, 
   title, 
@@ -40,22 +62,55 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [buffered, setBuffered] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [useIframe, setUseIframe] = useState(false);
   const volumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  // Check if it's a Google Drive URL
+  const isGoogleDrive = src.includes('drive.google.com');
+  
+  // Convert Google Drive URL if needed
+  const videoSrc = convertGoogleDriveUrl(src);
+
+  // Debug: Log video source
+  useEffect(() => {
+    console.log('VideoPlayer - Video source:', {
+      originalSrc: src,
+      convertedSrc: videoSrc,
+      isGoogleDrive,
+      title,
+      timestamp: new Date().toISOString()
+    });
+  }, [src, videoSrc, isGoogleDrive, title]);
+
+  // For Google Drive videos, use iframe after a short delay
+  useEffect(() => {
+    if (isGoogleDrive) {
+      const timer = setTimeout(() => {
+        setUseIframe(true);
+        setIsLoading(false);
+      }, 2000); // Give video element 2 seconds to try loading
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isGoogleDrive]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    console.log('VideoPlayer: Loading video with src:', src);
-
     const handleLoadedMetadata = () => {
-      console.log('VideoPlayer: Metadata loaded, duration:', video.duration);
+      console.log('Video loaded metadata:', {
+        duration: video.duration,
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        readyState: video.readyState
+      });
       setDuration(video.duration);
       setIsLoading(false);
+      setError(null);
     };
 
     const handleTimeUpdate = () => {
@@ -65,7 +120,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     const handleEnded = () => {
-      console.log('VideoPlayer: Video ended');
       setIsPlaying(false);
       onComplete();
     };
@@ -83,54 +137,102 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setIsMuted(video.muted);
     };
 
-    // Add error handling
     const handleError = (e: Event) => {
-      console.error('VideoPlayer: Error loading video:', e);
-      console.error('VideoPlayer: Error details:', video.error);
-      setIsLoading(false);
-      setHasError(true);
+      console.error('Video error:', {
+        error: video.error,
+        errorCode: video.error?.code,
+        errorMessage: video.error?.message,
+        src,
+        title
+      });
       
-      // Get specific error message
+      let errorMessage = 'Failed to load video';
       if (video.error) {
         switch (video.error.code) {
           case 1:
-            setErrorMessage('Video loading was aborted');
+            errorMessage = 'Video loading aborted';
             break;
           case 2:
-            setErrorMessage('Network error - video URL not accessible');
+            errorMessage = 'Network error - check your connection';
             break;
           case 3:
-            setErrorMessage('Video decoding failed - file may be corrupted');
+            errorMessage = 'Video decoding failed - unsupported format';
             break;
           case 4:
-            setErrorMessage('Video format not supported');
+            errorMessage = 'Video URL not found or inaccessible';
             break;
           default:
-            setErrorMessage('Failed to load video. Please check the URL.');
+            errorMessage = `Video error: ${video.error.message}`;
         }
-      } else {
-        setErrorMessage('Failed to load video. Please check the URL.');
       }
+      
+      setError(errorMessage);
+      setIsLoading(false);
     };
 
     const handleCanPlay = () => {
-      console.log('VideoPlayer: Can play video');
+      console.log('Video can play:', {
+        src,
+        title,
+        readyState: video.readyState
+      });
       setIsLoading(false);
+      setError(null);
     };
 
-    const handleCanPlayThrough = () => {
-      console.log('VideoPlayer: Can play through video');
-      setIsLoading(false);
-    };
-
-    const handleLoadStart = () => {
-      console.log('VideoPlayer: Load started');
+    const handleWaiting = () => {
+      console.log('Video waiting for data');
       setIsLoading(true);
     };
 
-    const handleLoadedData = () => {
-      console.log('VideoPlayer: Data loaded');
-      setIsLoading(false);
+    // Keyboard shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!showControls) return;
+      
+      switch (e.key) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          video.currentTime = Math.max(0, video.currentTime - 10);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          video.currentTime = Math.min(video.duration, video.currentTime + 10);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setVolume(Math.min(1, volume + 0.1));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setVolume(Math.max(0, volume - 0.1));
+          break;
+        case 'm':
+          e.preventDefault();
+          toggleMute();
+          break;
+        case 'f':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'r':
+          e.preventDefault();
+          restart();
+          break;
+      }
+    };
+
+    // Handle clicking outside volume control
+    const handleClickOutside = (e: MouseEvent) => {
+      const volumeControl = document.querySelector('.volume-control');
+      if (volumeControl && !volumeControl.contains(e.target as Node)) {
+        setShowVolumeSlider(false);
+        volumeTimeoutRef.current = null; // Clear timeout
+      }
     };
 
     // Add event listeners
@@ -141,9 +243,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.addEventListener('volumechange', handleVolumeChange);
     video.addEventListener('error', handleError);
     video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('canplaythrough', handleCanPlayThrough);
-    video.addEventListener('loadstart', handleLoadStart);
-    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('waiting', handleWaiting);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
 
     // Cleanup
     return () => {
@@ -154,11 +256,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeEventListener('volumechange', handleVolumeChange);
       video.removeEventListener('error', handleError);
       video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('canplaythrough', handleCanPlayThrough);
-      video.removeEventListener('loadstart', handleLoadStart);
-      video.removeEventListener('loadeddata', handleLoadedData);
+      video.removeEventListener('waiting', handleWaiting);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [src, onProgressUpdate, onComplete]);
+  }, [src, onProgressUpdate, onComplete, showControls, volume]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -279,23 +381,67 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       }}
     >
-      <video
-        ref={videoRef}
-        className="video-element"
-        src={src}
-        preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onWaiting={() => setIsLoading(true)}
-        onCanPlay={() => setIsLoading(false)}
-        onClick={togglePlay}
-      />
+      {useIframe ? (
+        <iframe
+          src={videoSrc}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="video-element"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          className="video-element"
+          src={videoSrc}
+          preload="metadata"
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onWaiting={() => setIsLoading(true)}
+          onCanPlay={() => setIsLoading(false)}
+          onClick={togglePlay}
+        />
+      )}
 
       {/* Loading Overlay */}
-      {isLoading && (
+      {isLoading && !error && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
           <span>Loading...</span>
+        </div>
+      )}
+
+      {/* Error Overlay */}
+      {error && (
+        <div className="error-overlay">
+          <div className="error-content">
+            <div className="error-icon">⚠️</div>
+            <h3>Video Error</h3>
+            <p>{error}</p>
+            <div className="error-details">
+              <p><strong>Original URL:</strong> {src}</p>
+              <p><strong>Converted URL:</strong> {videoSrc}</p>
+              <p><strong>Title:</strong> {title}</p>
+            </div>
+            <button 
+              className="retry-button"
+              onClick={() => {
+                setError(null);
+                setIsLoading(true);
+                if (isGoogleDrive) {
+                  setUseIframe(true);
+                  setIsLoading(false);
+                } else {
+                  const video = videoRef.current;
+                  if (video) {
+                    video.load();
+                  }
+                }
+              }}
+            >
+              {isGoogleDrive ? 'Use Google Drive Player' : 'Retry'}
+            </button>
+          </div>
         </div>
       )}
 
