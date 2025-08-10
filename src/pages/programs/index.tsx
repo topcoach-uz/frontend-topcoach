@@ -297,18 +297,18 @@ const ProgramsPage: React.FC = () => {
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-text">
-            <div className="hero-badge">
+            {/* <div className="hero-badge">
               <CrownOutlined />
               <span>Premium University Admissions Course</span>
-            </div>
+            </div> */}
             <h1 className="hero-title">
           TopCoach Admissions Program
               {/* <span className="highlight"> with Elite Mentors</span> */}
             </h1>
             <p className="hero-subtitle">
-              Transform your college journey with insider strategies!
+              Transform your college journey with insider strategies! <br />
               Join the course created by students who earned full scholarships to Harvard, Yale, Oxford, and Babson, 
-              unlocking over $737,000 in funding. Your breakthrough starts here! You can do it too!
+              unlocking over $737,000 in funding. <br /> Your breakthrough starts here! You can do it too!
             </p>
             <div className="hero-stats">
               <div className="stat">
@@ -419,7 +419,7 @@ const ProgramsPage: React.FC = () => {
       <section className="mentors-section">
         <div className="section-header">
           <div className="header-content">
-            <h2>Learn from Elite Mentors</h2>
+            <h2>Learn from experienced Mentors</h2>
             <p>Our mentors secured full scholarships to top universities and have helped students achieve similar success</p>
           </div>
         </div>

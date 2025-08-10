@@ -180,16 +180,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   return (
     <Card className="pdf-viewer-card" title={title}>
       <div className="pdf-container">
-        <div className="pdf-preview">
-          <div className="pdf-icon">
-            <FileTextOutlined />
-          </div>
-          <h3>{title}</h3>
-          <p>
-            Click the buttons below to view or download this document.
-          </p>
-        </div>
-
+        {/* PDF Actions - Keep the three buttons */}
         <div className="pdf-actions">
           <Button
             type="primary"
@@ -238,6 +229,23 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               Completed
             </Button>
           )}
+        </div>
+
+        {/* PDF Content - Show PDF directly on website */}
+        <div className="pdf-content">
+          <iframe
+            src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+            title={title}
+            width="100%"
+            height="600px"
+            style={{ border: 'none', borderRadius: '8px' }}
+            onLoad={() => {
+              console.log('PDF iframe loaded successfully');
+            }}
+            onError={() => {
+              console.error('PDF iframe failed to load');
+            }}
+          />
         </div>
       </div>
     </Card>
