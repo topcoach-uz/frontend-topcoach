@@ -9,7 +9,8 @@ import {
   SettingOutlined,
   FullscreenOutlined,
   FullscreenExitOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import './VideoPlayer.scss';
 
@@ -19,6 +20,26 @@ interface VideoPlayerProps {
   onProgressUpdate: (progress: number) => void;
   onComplete: () => void;
 }
+
+// Utility function to convert YouTube URLs to embed URLs
+const convertYouTubeUrl = (url: string): string => {
+  // Extract video ID from various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/v\/([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const videoId = match[1];
+      return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`;
+    }
+  }
+  
+  return url;
+};
 
 // Utility function to convert Google Drive sharing links to direct video URLs
 const convertGoogleDriveUrl = (url: string): string => {
@@ -62,35 +83,38 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGoogleDriveOptions, setShowGoogleDriveOptions] = useState(false);
+  const [useEmbed, setUseEmbed] = useState(false);
   const volumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
+  // Check if it's a YouTube URL
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
+  
   // Check if it's a Google Drive URL
   const isGoogleDrive = src.includes('drive.google.com');
   
-  // Convert Google Drive URL if needed
-  const videoSrc = convertGoogleDriveUrl(src);
+  // Convert URLs if needed
+  const videoSrc = isYouTube ? convertYouTubeUrl(src) : convertGoogleDriveUrl(src);
 
   // Debug: Log video source
   useEffect(() => {
     console.log('VideoPlayer - Video source:', {
       originalSrc: src,
       convertedSrc: videoSrc,
+      isYouTube,
       isGoogleDrive,
       title,
       timestamp: new Date().toISOString()
     });
-  }, [src, videoSrc, isGoogleDrive, title]);
+  }, [src, videoSrc, isYouTube, isGoogleDrive, title]);
 
-  // For Google Drive videos, try direct video loading first
+  // For YouTube videos, use embed if direct video fails
   useEffect(() => {
-    if (isGoogleDrive) {
-      // Try to load Google Drive video directly in video element
-      // If it fails, we'll show the error with options
-      console.log('Attempting to load Google Drive video directly:', videoSrc);
+    if (isYouTube) {
+      console.log('Detected YouTube URL, will use embed if needed:', videoSrc);
     }
-  }, [isGoogleDrive, videoSrc]);
+  }, [isYouTube, videoSrc]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -132,99 +156,71 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setIsMuted(video.muted);
     };
 
-
-
-    // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!showControls) return;
-      
       switch (e.key) {
         case ' ':
-        case 'k':
           e.preventDefault();
           togglePlay();
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          video.currentTime = Math.max(0, video.currentTime - 10);
+          if (video.currentTime > 10) {
+            video.currentTime -= 10;
+          } else {
+            video.currentTime = 0;
+          }
           break;
         case 'ArrowRight':
           e.preventDefault();
-          video.currentTime = Math.min(video.duration, video.currentTime + 10);
+          video.currentTime += 10;
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setVolume(Math.min(1, volume + 0.1));
+          if (video.volume < 1) {
+            video.volume = Math.min(1, video.volume + 0.1);
+          }
           break;
         case 'ArrowDown':
           e.preventDefault();
-          setVolume(Math.max(0, volume - 0.1));
-          break;
-        case 'm':
-          e.preventDefault();
-          toggleMute();
+          if (video.volume > 0) {
+            video.volume = Math.max(0, video.volume - 0.1);
+          }
           break;
         case 'f':
           e.preventDefault();
           toggleFullscreen();
           break;
-        case 'r':
+        case 'm':
           e.preventDefault();
-          restart();
+          toggleMute();
           break;
       }
     };
 
-    // Handle clicking outside volume control
     const handleClickOutside = (e: MouseEvent) => {
-      const volumeControl = document.querySelector('.volume-control');
-      if (volumeControl && !volumeControl.contains(e.target as Node)) {
-        setShowVolumeSlider(false);
-        volumeTimeoutRef.current = null; // Clear timeout
+      if (showSpeedMenu && !(e.target as Element).closest('.speed-control')) {
+        setShowSpeedMenu(false);
       }
     };
 
-    // Add event listeners
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('ended', handleEnded);
     video.addEventListener('progress', handleProgress);
     video.addEventListener('volumechange', handleVolumeChange);
-    video.addEventListener('error', handleError);
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('waiting', handleWaiting);
     document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
 
-    // Cleanup
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('progress', handleProgress);
       video.removeEventListener('volumechange', handleVolumeChange);
-      video.removeEventListener('error', handleError);
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('waiting', handleWaiting);
       document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
-  }, [src, onProgressUpdate, onComplete, showControls, volume]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.playbackRate = playbackRate;
-    }
-  }, [playbackRate]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.volume = volume;
-      video.muted = isMuted;
-    }
-  }, [volume, isMuted]);
+  }, [onProgressUpdate, onComplete, showSpeedMenu]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -233,21 +229,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (isPlaying) {
       video.pause();
     } else {
-      video.play();
+      video.play().catch((error) => {
+        console.error('Failed to play video:', error);
+        setError('Failed to play video. Please try again.');
+      });
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const video = videoRef.current;
-    const progressBar = progressRef.current;
-    if (!video || !progressBar) return;
+    const progressContainer = progressRef.current;
+    if (!video || !progressContainer) return;
 
-    const rect = progressBar.getBoundingClientRect();
+    const rect = progressContainer.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
-    const progressBarWidth = rect.width;
-    const seekTime = (clickX / progressBarWidth) * video.duration;
-    
+    const width = rect.width;
+    const seekTime = (clickX / width) * video.duration;
     video.currentTime = seekTime;
   };
 
@@ -262,28 +259,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    const video = videoRef.current;
+    if (video) {
+      video.muted = !video.muted;
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
+    const video = videoRef.current;
+    if (video) {
+      const newVolume = parseFloat(e.target.value);
+      video.volume = newVolume;
+      setVolume(newVolume);
+      setIsMuted(newVolume === 0);
     }
-    
-    // Keep volume slider open when adjusting
-    setShowVolumeSlider(true);
-    if (volumeTimeoutRef.current) {
-      clearTimeout(volumeTimeoutRef.current);
-    }
-    const newTimeout = setTimeout(() => {
-      setShowVolumeSlider(false);
-      volumeTimeoutRef.current = null;
-    }, 2000);
-    volumeTimeoutRef.current = newTimeout;
   };
 
   const formatTime = (time: number) => {
@@ -293,7 +282,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const handleSpeedChange = (speed: number) => {
-    setPlaybackRate(speed);
+    const video = videoRef.current;
+    if (video) {
+      video.playbackRate = speed;
+      setPlaybackRate(speed);
+    }
     setShowSpeedMenu(false);
   };
 
@@ -308,8 +301,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const handleError = (e: any) => {
     console.error('Video error:', e);
-    setError('Failed to load video. Please try again.');
-    setIsLoading(false);
+    
+    if (isYouTube && !useEmbed) {
+      // For YouTube, try using embed instead
+      setUseEmbed(true);
+      setError('Switching to YouTube embed...');
+      setTimeout(() => {
+        setError(null);
+        setIsLoading(true);
+      }, 1000);
+    } else {
+      setError('Failed to load video. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   const handleCanPlay = () => {
@@ -333,6 +337,38 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }, 3000);
   };
+
+  // If it's YouTube and we need to use embed, show iframe instead
+  if (isYouTube && useEmbed) {
+    return (
+      <div className="video-player-container youtube-embed">
+        <div className="video-title">
+          <h3>{title}</h3>
+        </div>
+        <div className="youtube-embed-container">
+          <iframe
+            src={videoSrc}
+            title={title}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+        <div className="video-actions">
+          <button 
+            className="complete-button"
+            onClick={onComplete}
+            style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
+          >
+            <CheckCircleOutlined />
+            Mark as Complete
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -529,6 +565,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               >
                 Retry
               </button>
+              {isYouTube && !useEmbed && (
+                <button 
+                  className="embed-button"
+                  onClick={() => {
+                    setUseEmbed(true);
+                    setError(null);
+                  }}
+                >
+                  Use YouTube Embed
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -543,6 +590,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <PlayCircleOutlined />
         </div>
       )}
+
+      {/* Complete Button */}
+      <div className="video-actions">
+        <button 
+          className="complete-button"
+          onClick={onComplete}
+          style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
+        >
+          <CheckCircleOutlined />
+          Mark as Complete
+        </button>
+      </div>
     </div>
   );
 };

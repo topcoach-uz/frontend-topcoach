@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Tooltip } from 'antd';
+import { Card, Button, message, Tooltip, Alert } from 'antd';
 import { 
   DownloadOutlined, 
   EyeOutlined,
   FileTextOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './PDFViewer.scss';
@@ -25,6 +26,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   isCompleted = false 
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
+  const [isGoogleDrive, setIsGoogleDrive] = useState(false);
 
   // Debug: Log completion status
   useEffect(() => {
@@ -36,9 +39,49 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     });
   }, [lessonId, title, isCompleted]);
 
+  // Check if this is a Google Drive URL
+  useEffect(() => {
+    const isGoogleDriveUrl = pdfUrl.includes('drive.google.com') || pdfUrl.includes('docs.google.com');
+    setIsGoogleDrive(isGoogleDriveUrl);
+    
+    if (isGoogleDriveUrl) {
+      console.log('Detected Google Drive URL:', pdfUrl);
+    }
+  }, [pdfUrl]);
+
   // Check if this is an external URL
   const isExternalUrl = !pdfUrl.startsWith(window.location.origin) && !pdfUrl.startsWith('/');
-  const downloadButtonText = isExternalUrl ? 'Open PDF' : 'Download PDF';
+  const downloadButtonText = 'Download PDF';
+
+  // Convert Google Drive URL to direct download URL
+  const getGoogleDriveDirectUrl = (url: string) => {
+    if (url.includes('drive.google.com/file/d/')) {
+      const fileId = url.match(/\/file\/d\/([^\/]+)/)?.[1];
+      if (fileId) {
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+      }
+    }
+    return url;
+  };
+
+  // Convert Google Drive URL to embed URL
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    if (url.includes('drive.google.com/file/d/')) {
+      const fileId = url.match(/\/file\/d\/([^\/]+)/)?.[1];
+      if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+    }
+    return url;
+  };
+
+  // Get the appropriate URL for iframe
+  const getIframeUrl = () => {
+    if (isGoogleDrive) {
+      return getGoogleDriveEmbedUrl(pdfUrl);
+    }
+    return pdfUrl;
+  };
 
   const handleDownload = async () => {
     setIsLoading(true);
@@ -97,59 +140,35 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           
           message.destroy();
           message.success('PDF downloaded successfully');
-          
         } catch (proxyError) {
-          console.error('Proxy download error:', proxyError);
+          console.error('Proxy download failed:', proxyError);
           message.destroy();
           
-          // Fallback: try direct download with user instruction
-          message.info('Proxy unavailable. Trying alternative method...');
-          
-          // Show user instruction for manual download
-          message.info('Right-click the PDF link and select "Save as..." to download');
-          
-          // Open PDF in new tab for manual download
+          // Fallback: open in new tab
+          message.warning('Direct download failed. Opening PDF in new tab.');
           window.open(pdfUrl, '_blank');
         }
       } else {
-        // For same-origin URLs, we can fetch and download
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        const headers: Record<string, string> = {};
-        
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-        
-        const response = await fetch(pdfUrl, {
-          method: 'GET',
-          headers,
-        });
+        // For internal URLs, use direct download
+        const response = await fetch(pdfUrl);
         
         if (!response.ok) {
-          throw new Error(`Failed to fetch PDF: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Get the PDF as a blob
         const pdfBlob = await response.blob();
-        
-        // Create a blob URL
         const blobUrl = window.URL.createObjectURL(pdfBlob);
         
-        // Create a temporary link to download the PDF
         const link = document.createElement('a');
         link.href = blobUrl;
-        
-        // Create a clean filename
         const cleanTitle = title.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
         link.download = `${cleanTitle}.pdf`;
         link.style.display = 'none';
         
-        // Add to DOM, click, and remove
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        // Clean up the blob URL
         window.URL.revokeObjectURL(blobUrl);
         
         message.destroy();
@@ -175,6 +194,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (onComplete) {
       onComplete();
     }
+  };
+
+  const handleIframeError = () => {
+    console.error('PDF iframe failed to load');
+    setIframeError(true);
+  };
+
+  const handleIframeLoad = () => {
+    console.log('PDF iframe loaded successfully');
+    setIframeError(false);
   };
 
   return (
@@ -231,21 +260,50 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           )}
         </div>
 
+        {/* Google Drive Warning */}
+        {/* {isGoogleDrive && (
+          <Alert
+            message="Google Drive PDF"
+            description="This PDF is hosted on Google Drive. If you can't view it directly, the 'View PDF' and 'Open PDF' buttons above will open it in a new tab."
+            type="info"
+            showIcon
+            icon={<ExclamationCircleOutlined />}
+            style={{ marginBottom: '16px' }}
+          />
+        )} */}
+
         {/* PDF Content - Show PDF directly on website */}
         <div className="pdf-content">
-          <iframe
-            src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
-            title={title}
-            width="100%"
-            height="600px"
-            style={{ border: 'none', borderRadius: '8px' }}
-            onLoad={() => {
-              console.log('PDF iframe loaded successfully');
-            }}
-            onError={() => {
-              console.error('PDF iframe failed to load');
-            }}
-          />
+          {iframeError ? (
+            <div className="pdf-error-fallback">
+              <div className="pdf-icon">
+                <FileTextOutlined />
+              </div>
+              <h3>PDF Preview Unavailable</h3>
+              <p>
+                The PDF cannot be displayed directly due to access restrictions. 
+                Please use the buttons above to view or download the PDF.
+              </p>
+              <Button 
+                type="primary" 
+                onClick={handleViewInNewTab}
+                icon={<EyeOutlined />}
+              >
+                Open PDF in New Tab
+              </Button>
+            </div>
+          ) : (
+            <iframe
+              src={getIframeUrl()}
+              title={title}
+              width="100%"
+              height="600px"
+              style={{ border: 'none', borderRadius: '8px' }}
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+            />
+          )}
         </div>
       </div>
     </Card>
