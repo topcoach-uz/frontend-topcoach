@@ -186,7 +186,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           </div>
           <h3>{title}</h3>
           <p>
-            Click the buttons below to view or download this PDF document.
+            Click the buttons below to view or download this document.
           </p>
         </div>
 
