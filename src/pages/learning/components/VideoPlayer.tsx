@@ -25,10 +25,7 @@ const convertGoogleDriveUrl = (url: string): string => {
   const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
   if (driveMatch) {
     const fileId = driveMatch[1];
-    // Try multiple Google Drive URL formats for better compatibility
-    // Format 1: Direct streaming (works for some videos)
-    // Format 2: Download format (works for others)
-    // Format 3: Embed format (most compatible)
+    // Use the embed format which is most reliable for videos
     return `https://drive.google.com/file/d/${fileId}/preview`;
   }
   
@@ -85,15 +82,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     });
   }, [src, videoSrc, isGoogleDrive, title]);
 
-  // For Google Drive videos, use iframe after a short delay
+  // For Google Drive videos, use iframe immediately to avoid confusion
   useEffect(() => {
     if (isGoogleDrive) {
-      const timer = setTimeout(() => {
-        setUseIframe(true);
-        setIsLoading(false);
-      }, 2000); // Give video element 2 seconds to try loading
-      
-      return () => clearTimeout(timer);
+      setUseIframe(true);
+      setIsLoading(false);
     }
   }, [isGoogleDrive]);
 
@@ -147,7 +140,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
       
       let errorMessage = 'Failed to load video';
-      if (video.error) {
+      if (isGoogleDrive) {
+        errorMessage = 'Google Drive video requires special handling. Click "Use Google Drive Player" below.';
+      } else if (video.error) {
         switch (video.error.code) {
           case 1:
             errorMessage = 'Video loading aborted';
@@ -381,15 +376,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       }}
     >
-      {useIframe ? (
-        <iframe
-          src={videoSrc}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="video-element"
-        />
-      ) : (
+             {useIframe ? (
+         <iframe
+           src={videoSrc}
+           title={title}
+           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+           allowFullScreen
+           className="video-element"
+           style={{ border: 'none' }}
+           onLoad={() => {
+             console.log('Google Drive iframe loaded successfully');
+             setIsLoading(false);
+             setError(null);
+           }}
+           onError={() => {
+             console.error('Google Drive iframe failed to load');
+             setError('Failed to load Google Drive video. Please check the file permissions.');
+             setIsLoading(false);
+           }}
+         />
+       ) : (
         <video
           ref={videoRef}
           className="video-element"
