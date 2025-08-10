@@ -25,8 +25,8 @@ const convertGoogleDriveUrl = (url: string): string => {
   const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
   if (driveMatch) {
     const fileId = driveMatch[1];
-    // Use the embed format which is most reliable for videos
-    return `https://drive.google.com/file/d/${fileId}/preview`;
+    // Try to get direct video URL using the download method
+    return `https://drive.google.com/uc?export=download&id=${fileId}`;
   }
   
   // Check if it's already a direct Google Drive URL
@@ -60,7 +60,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [useIframe, setUseIframe] = useState(false);
   const volumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -82,13 +81,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     });
   }, [src, videoSrc, isGoogleDrive, title]);
 
-  // For Google Drive videos, use iframe with custom controls
+  // For Google Drive videos, try direct video loading first
   useEffect(() => {
     if (isGoogleDrive) {
-      setUseIframe(true);
-      setIsLoading(false);
+      // Try to load Google Drive video directly in video element
+      // If it fails, we'll show the error with options
+      console.log('Attempting to load Google Drive video directly:', videoSrc);
     }
-  }, [isGoogleDrive]);
+  }, [isGoogleDrive, videoSrc]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -141,7 +141,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       let errorMessage = 'Failed to load video';
       if (isGoogleDrive) {
-        errorMessage = 'Google Drive video requires public access. Please make the file public or use a different video hosting service.';
+        errorMessage = 'Google Drive video cannot be played directly. Please use YouTube, Vimeo, or upload the video to your server.';
       } else if (video.error) {
         switch (video.error.code) {
           case 1:
@@ -376,38 +376,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       }}
     >
-                    {useIframe ? (
-         <iframe
-           src={videoSrc}
-           title={title}
-           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-           allowFullScreen
-           className="video-element iframe-video"
-           style={{ border: 'none' }}
-           onLoad={() => {
-             console.log('Google Drive iframe loaded successfully');
-             setIsLoading(false);
-             setError(null);
-           }}
-           onError={() => {
-             console.error('Google Drive iframe failed to load');
-             setError('Google Drive video requires public access. Please make the file public or use a different video hosting service.');
-             setIsLoading(false);
-           }}
-         />
-       ) : (
-         <video
-           ref={videoRef}
-           className="video-element"
-           src={videoSrc}
-           preload="metadata"
-           onPlay={() => setIsPlaying(true)}
-           onPause={() => setIsPlaying(false)}
-           onWaiting={() => setIsLoading(true)}
-           onCanPlay={() => setIsLoading(false)}
-           onClick={togglePlay}
-         />
-       )}
+                    <video
+         ref={videoRef}
+         className="video-element"
+         src={videoSrc}
+         preload="metadata"
+         onPlay={() => setIsPlaying(true)}
+         onPause={() => setIsPlaying(false)}
+         onWaiting={() => setIsLoading(true)}
+         onCanPlay={() => setIsLoading(false)}
+         onClick={togglePlay}
+       />
 
       {/* Loading Overlay */}
       {isLoading && !error && (
@@ -434,7 +413,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 className="retry-button"
                 onClick={() => {
                   if (isGoogleDrive) {
-                    // Open in Google Drive to check permissions
+                    // Open in Google Drive to view
                     window.open(src, '_blank');
                   } else {
                     setError(null);
@@ -446,17 +425,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   }
                 }}
               >
-                {isGoogleDrive ? 'Open in Google Drive' : 'Retry'}
+                {isGoogleDrive ? 'View in Google Drive' : 'Retry'}
               </button>
               
               {isGoogleDrive && (
                 <button 
                   className="help-button"
                   onClick={() => {
-                    window.open('https://support.google.com/drive/answer/2494822?hl=en', '_blank');
+                    // Copy the video URL to clipboard for admin to use
+                    navigator.clipboard.writeText(src).then(() => {
+                      alert('Video URL copied to clipboard. Please upload this video to YouTube or Vimeo and update the lesson.');
+                    });
                   }}
                 >
-                  How to Make Public
+                  Copy URL for Upload
                 </button>
               )}
             </div>
