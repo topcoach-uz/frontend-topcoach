@@ -1,36 +1,11 @@
 .pdf-viewer-card {
   .pdf-container {
-    .pdf-preview {
-      text-align: center;
-      padding: 40px 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 24px;
-
-      .pdf-icon {
-        font-size: 48px;
-        color: #dc3545;
-        margin-bottom: 16px;
-      }
-
-      h3 {
-        margin: 0 0 12px 0;
-        font-size: 18px;
-        color: #333;
-      }
-
-      p {
-        margin: 0;
-        color: #666;
-        font-size: 14px;
-      }
-    }
-
     .pdf-actions {
       display: flex;
       gap: 12px;
       margin-bottom: 24px;
       flex-wrap: wrap;
+      justify-content: center;
 
       .view-button {
         background: #8b0000;
@@ -67,6 +42,18 @@
         background: #16a34a;
         border-color: #16a34a;
         color: white;
+      }
+    }
+
+    .pdf-content {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e9ecef;
+      
+      iframe {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
     }
   }

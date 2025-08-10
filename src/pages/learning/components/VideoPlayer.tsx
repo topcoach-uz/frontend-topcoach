@@ -132,56 +132,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setIsMuted(video.muted);
     };
 
-    const handleError = (e: Event) => {
-      console.error('Video error:', {
-        error: video.error,
-        errorCode: video.error?.code,
-        errorMessage: video.error?.message,
-        src,
-        title
-      });
-      
-      let errorMessage = 'Failed to load video';
-      if (isGoogleDrive) {
-        errorMessage = 'Google Drive video loaded. Click "Watch Video" to view it, then mark as completed.';
-        setShowGoogleDriveOptions(true);
-      } else if (video.error) {
-        switch (video.error.code) {
-          case 1:
-            errorMessage = 'Video loading aborted';
-            break;
-          case 2:
-            errorMessage = 'Network error - check your connection';
-            break;
-          case 3:
-            errorMessage = 'Video decoding failed - unsupported format';
-            break;
-          case 4:
-            errorMessage = 'Video URL not found or inaccessible';
-            break;
-          default:
-            errorMessage = `Video error: ${video.error.message}`;
-        }
-      }
-      
-      setError(errorMessage);
-      setIsLoading(false);
-    };
 
-    const handleCanPlay = () => {
-      console.log('Video can play:', {
-        src,
-        title,
-        readyState: video.readyState
-      });
-      setIsLoading(false);
-      setError(null);
-    };
-
-    const handleWaiting = () => {
-      console.log('Video waiting for data');
-      setIsLoading(true);
-    };
 
     // Keyboard shortcuts
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -355,6 +306,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
+  const handleError = (e: any) => {
+    console.error('Video error:', e);
+    setError('Failed to load video. Please try again.');
+    setIsLoading(false);
+  };
+
+  const handleCanPlay = () => {
+    setIsLoading(false);
+    setError(null);
+  };
+
+  const handleWaiting = () => {
+    setIsLoading(true);
+  };
+
   const handleMouseMove = () => {
     setShowControls(true);
     if (volumeTimeoutRef.current) {
@@ -379,223 +345,203 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       }}
     >
-      {/* For Google Drive videos, show completion interface instead of video player */}
-      {isGoogleDrive ? (
-        <div className="google-drive-completion-interface">
-          <div className="completion-content">
-            <div className="video-icon">🎥</div>
-            <h3>{title}</h3>
-            <p>This video is hosted on Google Drive. Click "Watch Video" to view it in a new tab, then mark it as completed.</p>
-            <div className="completion-buttons">
+      <video
+        ref={videoRef}
+        className="video-element"
+        src={videoSrc}
+        preload="metadata"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onWaiting={handleWaiting}
+        onCanPlay={handleCanPlay}
+        onError={handleError}
+        onClick={togglePlay}
+      />
+
+      {/* Loading Overlay */}
+      {isLoading && !error && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <span>Loading...</span>
+        </div>
+      )}
+
+      {/* Video Title */}
+      <div className="video-title">
+        <h3>{title}</h3>
+      </div>
+
+      {/* Controls Overlay */}
+      <div className={`controls-overlay ${showControls ? 'show' : 'hide'}`}>
+        {/* Progress Bar */}
+        <div 
+          className="progress-container"
+          ref={progressRef}
+          onClick={handleSeek}
+        >
+          <div className="progress-bar">
+            <div 
+              className="buffered-progress" 
+              style={{ width: `${buffered}%` }}
+            ></div>
+            <div 
+              className="played-progress" 
+              style={{ width: `${(currentTime / duration) * 100}%` }}
+            ></div>
+          </div>
+          <div 
+            className="progress-thumb"
+            style={{ left: `${(currentTime / duration) * 100}%` }}
+          ></div>
+        </div>
+
+        {/* Main Controls */}
+        <div className="main-controls">
+          <div className="left-controls">
+            <button 
+              className="control-btn play-btn"
+              onClick={togglePlay}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            </button>
+
+            <button 
+              className="control-btn restart-btn"
+              onClick={restart}
+              aria-label="Restart"
+            >
+              <ReloadOutlined />
+            </button>
+
+            {/* Volume Control */}
+            <div className="volume-control">
               <button 
-                className="watch-button"
-                onClick={() => {
-                  window.open(src, '_blank');
+                className="control-btn volume-btn"
+                onClick={toggleMute}
+                onMouseEnter={() => {
+                  setShowVolumeSlider(true);
+                  if (volumeTimeoutRef.current) {
+                    clearTimeout(volumeTimeoutRef.current);
+                    volumeTimeoutRef.current = null;
+                  }
                 }}
+                aria-label={isMuted ? 'Unmute' : 'Mute'}
               >
-                Watch Video
+                {isMuted || volume === 0 ? (
+                  <MutedOutlined />
+                ) : volume < 0.5 ? (
+                  <AudioOutlined />
+                ) : (
+                  <SoundOutlined />
+                )}
               </button>
+              
+              {showVolumeSlider && (
+                <div className="volume-slider">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    onMouseLeave={() => {
+                      if (volumeTimeoutRef.current) {
+                        clearTimeout(volumeTimeoutRef.current);
+                      }
+                      volumeTimeoutRef.current = setTimeout(() => {
+                        setShowVolumeSlider(false);
+                        volumeTimeoutRef.current = null;
+                      }, 2000);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="center-controls">
+            <span className="time-display">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
+
+          <div className="right-controls">
+            <div className="speed-control">
               <button 
-                className="complete-button"
+                className="control-btn speed-btn"
+                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                aria-label="Playback Speed"
+              >
+                <SettingOutlined />
+              </button>
+              
+              {showSpeedMenu && (
+                <div className="speed-menu">
+                  {speeds.map(speed => (
+                    <button
+                      key={speed}
+                      className={`speed-option ${playbackRate === speed ? 'active' : ''}`}
+                      onClick={() => handleSpeedChange(speed)}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button 
+              className="control-btn fullscreen-btn"
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Overlay */}
+      {error && (
+        <div className="error-overlay">
+          <div className="error-content">
+            <div className="error-icon">⚠️</div>
+            <h3>Video Error</h3>
+            <p>{error}</p>
+            <div className="error-details">
+              <p><strong>Original URL:</strong> {src}</p>
+              <p><strong>Converted URL:</strong> {videoSrc}</p>
+              <p><strong>Title:</strong> {title}</p>
+            </div>
+            <div className="error-buttons">
+              <button 
+                className="retry-button"
                 onClick={() => {
-                  onComplete();
+                  setError(null);
+                  setIsLoading(true);
+                  const video = videoRef.current;
+                  if (video) {
+                    video.load();
+                  }
                 }}
               >
-                <CheckCircleOutlined /> Mark as Completed
+                Retry
               </button>
             </div>
           </div>
         </div>
-      ) : (
-        <>
-          <video
-            ref={videoRef}
-            className="video-element"
-            src={videoSrc}
-            preload="metadata"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onWaiting={() => setIsLoading(true)}
-            onCanPlay={() => setIsLoading(false)}
-            onClick={togglePlay}
-          />
+      )}
 
-          {/* Loading Overlay */}
-          {isLoading && !error && (
-            <div className="loading-overlay">
-              <div className="loading-spinner"></div>
-              <span>Loading...</span>
-            </div>
-          )}
-
-          {/* Video Title */}
-          <div className="video-title">
-            <h3>{title}</h3>
-          </div>
-
-          {/* Controls Overlay */}
-          <div className={`controls-overlay ${showControls ? 'show' : 'hide'}`}>
-            {/* Progress Bar */}
-            <div 
-              className="progress-container"
-              ref={progressRef}
-              onClick={handleSeek}
-            >
-              <div className="progress-bar">
-                <div 
-                  className="buffered-progress" 
-                  style={{ width: `${buffered}%` }}
-                ></div>
-                <div 
-                  className="played-progress" 
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
-                ></div>
-              </div>
-              <div 
-                className="progress-thumb"
-                style={{ left: `${(currentTime / duration) * 100}%` }}
-              ></div>
-            </div>
-
-            {/* Main Controls */}
-            <div className="main-controls">
-              <div className="left-controls">
-                <button 
-                  className="control-btn play-btn"
-                  onClick={togglePlay}
-                  aria-label={isPlaying ? 'Pause' : 'Play'}
-                >
-                  {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                </button>
-
-                <button 
-                  className="control-btn restart-btn"
-                  onClick={restart}
-                  aria-label="Restart"
-                >
-                  <ReloadOutlined />
-                </button>
-
-                {/* Volume Control */}
-                <div className="volume-control">
-                  <button 
-                    className="control-btn volume-btn"
-                    onClick={toggleMute}
-                    onMouseEnter={() => {
-                      setShowVolumeSlider(true);
-                      if (volumeTimeoutRef.current) {
-                        clearTimeout(volumeTimeoutRef.current);
-                        volumeTimeoutRef.current = null;
-                      }
-                    }}
-                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted || volume === 0 ? (
-                      <MutedOutlined />
-                    ) : volume < 0.5 ? (
-                      <AudioOutlined />
-                    ) : (
-                      <SoundOutlined />
-                    )}
-                  </button>
-                  
-                  {showVolumeSlider && (
-                    <div className="volume-slider">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={volume}
-                        onChange={handleVolumeChange}
-                        onMouseLeave={() => {
-                          if (volumeTimeoutRef.current) {
-                            clearTimeout(volumeTimeoutRef.current);
-                          }
-                          volumeTimeoutRef.current = setTimeout(() => {
-                            setShowVolumeSlider(false);
-                            volumeTimeoutRef.current = null;
-                          }, 2000);
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="center-controls">
-                <span className="time-display">
-                  {formatTime(currentTime)} / {formatTime(duration)}
-                </span>
-              </div>
-
-              <div className="right-controls">
-                <div className="speed-control">
-                  <button 
-                    className="control-btn speed-btn"
-                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                    aria-label="Playback Speed"
-                  >
-                    <SettingOutlined />
-                  </button>
-                  
-                  {showSpeedMenu && (
-                    <div className="speed-menu">
-                      {speeds.map(speed => (
-                        <button
-                          key={speed}
-                          className={`speed-option ${playbackRate === speed ? 'active' : ''}`}
-                          onClick={() => handleSpeedChange(speed)}
-                        >
-                          {speed}x
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <button 
-                  className="control-btn fullscreen-btn"
-                  onClick={toggleFullscreen}
-                  aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                >
-                  {isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Error Overlay */}
-          {error && (
-            <div className="error-overlay">
-              <div className="error-content">
-                <div className="error-icon">⚠️</div>
-                <h3>Video Error</h3>
-                <p>{error}</p>
-                <div className="error-details">
-                  <p><strong>Original URL:</strong> {src}</p>
-                  <p><strong>Converted URL:</strong> {videoSrc}</p>
-                  <p><strong>Title:</strong> {title}</p>
-                </div>
-                <div className="error-buttons">
-                  <button 
-                    className="retry-button"
-                    onClick={() => {
-                      setError(null);
-                      setIsLoading(true);
-                      const video = videoRef.current;
-                      if (video) {
-                        video.load();
-                      }
-                    }}
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+      {/* Click to Play Overlay */}
+      {!isPlaying && !showControls && (
+        <div className="click-to-play" onClick={(e) => {
+          e.stopPropagation();
+          togglePlay();
+        }}>
+          <PlayCircleOutlined />
+        </div>
       )}
     </div>
   );
