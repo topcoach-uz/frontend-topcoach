@@ -40,6 +40,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [buffered, setBuffered] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const volumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -48,7 +50,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const video = videoRef.current;
     if (!video) return;
 
+    console.log('VideoPlayer: Loading video with src:', src);
+
     const handleLoadedMetadata = () => {
+      console.log('VideoPlayer: Metadata loaded, duration:', video.duration);
       setDuration(video.duration);
       setIsLoading(false);
     };
@@ -60,6 +65,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     const handleEnded = () => {
+      console.log('VideoPlayer: Video ended');
       setIsPlaying(false);
       onComplete();
     };
@@ -77,74 +83,82 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setIsMuted(video.muted);
     };
 
-    // Keyboard shortcuts
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!showControls) return;
+    // Add error handling
+    const handleError = (e: Event) => {
+      console.error('VideoPlayer: Error loading video:', e);
+      console.error('VideoPlayer: Error details:', video.error);
+      setIsLoading(false);
+      setHasError(true);
       
-      switch (e.key) {
-        case ' ':
-        case 'k':
-          e.preventDefault();
-          togglePlay();
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          video.currentTime = Math.max(0, video.currentTime - 10);
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          video.currentTime = Math.min(video.duration, video.currentTime + 10);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setVolume(Math.min(1, volume + 0.1));
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          setVolume(Math.max(0, volume - 0.1));
-          break;
-        case 'm':
-          e.preventDefault();
-          toggleMute();
-          break;
-        case 'f':
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case 'r':
-          e.preventDefault();
-          restart();
-          break;
+      // Get specific error message
+      if (video.error) {
+        switch (video.error.code) {
+          case 1:
+            setErrorMessage('Video loading was aborted');
+            break;
+          case 2:
+            setErrorMessage('Network error - video URL not accessible');
+            break;
+          case 3:
+            setErrorMessage('Video decoding failed - file may be corrupted');
+            break;
+          case 4:
+            setErrorMessage('Video format not supported');
+            break;
+          default:
+            setErrorMessage('Failed to load video. Please check the URL.');
+        }
+      } else {
+        setErrorMessage('Failed to load video. Please check the URL.');
       }
     };
 
-    // Handle clicking outside volume control
-    const handleClickOutside = (e: MouseEvent) => {
-      const volumeControl = document.querySelector('.volume-control');
-      if (volumeControl && !volumeControl.contains(e.target as Node)) {
-        setShowVolumeSlider(false);
-        volumeTimeoutRef.current = null; // Clear timeout
-      }
+    const handleCanPlay = () => {
+      console.log('VideoPlayer: Can play video');
+      setIsLoading(false);
     };
 
+    const handleCanPlayThrough = () => {
+      console.log('VideoPlayer: Can play through video');
+      setIsLoading(false);
+    };
+
+    const handleLoadStart = () => {
+      console.log('VideoPlayer: Load started');
+      setIsLoading(true);
+    };
+
+    const handleLoadedData = () => {
+      console.log('VideoPlayer: Data loaded');
+      setIsLoading(false);
+    };
+
+    // Add event listeners
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('ended', handleEnded);
     video.addEventListener('progress', handleProgress);
     video.addEventListener('volumechange', handleVolumeChange);
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('mousedown', handleClickOutside);
+    video.addEventListener('error', handleError);
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('canplaythrough', handleCanPlayThrough);
+    video.addEventListener('loadstart', handleLoadStart);
+    video.addEventListener('loadeddata', handleLoadedData);
 
+    // Cleanup
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('progress', handleProgress);
       video.removeEventListener('volumechange', handleVolumeChange);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousedown', handleClickOutside);
+      video.removeEventListener('error', handleError);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('canplaythrough', handleCanPlayThrough);
+      video.removeEventListener('loadstart', handleLoadStart);
+      video.removeEventListener('loadeddata', handleLoadedData);
     };
-  }, [onProgressUpdate, onComplete, showControls, volume]);
+  }, [src, onProgressUpdate, onComplete]);
 
   useEffect(() => {
     const video = videoRef.current;

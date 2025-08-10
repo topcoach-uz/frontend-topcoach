@@ -68,6 +68,77 @@
     }
   }
 
+  .error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 25;
+
+    .error-content {
+      text-align: center;
+      color: white;
+      max-width: 400px;
+      padding: 20px;
+
+      .error-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        margin: 0 0 10px 0;
+        font-size: 20px;
+        color: #ff6b6b;
+      }
+
+      p {
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .error-details {
+        background: rgba(255,255,255,0.1);
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+        text-align: left;
+        font-size: 12px;
+
+        p {
+          margin: 5px 0;
+          word-break: break-all;
+        }
+      }
+
+      .retry-button {
+        background: #1890ff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background: #40a9ff;
+        }
+
+        &:active {
+          background: #096dd9;
+        }
+      }
+    }
+  }
+
   .controls-overlay {
     position: absolute;
     bottom: 0;
