@@ -341,30 +341,35 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // If it's YouTube and we need to use embed, show iframe instead
   if (isYouTube && useEmbed) {
     return (
-      <div className="video-player-container youtube-embed">
+      <div className="video-player-container google-drive-video">
         <div className="video-title">
           <h3>{title}</h3>
         </div>
-        <div className="youtube-embed-container">
-          <iframe
-            src={videoSrc}
-            title={title}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-        <div className="video-actions">
-          <button 
-            className="complete-button"
-            onClick={onComplete}
-            style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-          >
-            <CheckCircleOutlined />
-            Mark as Complete
-          </button>
+        <div className="google-drive-content">
+          <div className="video-icon">
+            <PlayCircleOutlined />
+          </div>
+          <h3>Video Available</h3>
+          <p>
+            This video is hosted externally for your convenience and safety. 
+            Click the button below to view the video.
+          </p>
+          <div className="google-drive-buttons">
+            <button 
+              className="watch-button"
+              onClick={() => window.open(src, '_blank')}
+            >
+              <PlayCircleOutlined />
+              Watch Video
+            </button>
+            <button 
+              className="complete-button"
+              onClick={onComplete}
+            >
+              <CheckCircleOutlined />
+              Mark as Complete
+            </button>
+          </div>
         </div>
       </div>
     );
