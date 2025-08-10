@@ -375,6 +375,43 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
 
+  // If it's a Google Drive URL, show the Google Drive interface
+  if (isGoogleDrive) {
+    return (
+      <div className="video-player-container google-drive-video">
+        <div className="video-title">
+          <h3>{title}</h3>
+        </div>
+        <div className="google-drive-content">
+          <div className="video-icon">
+            <PlayCircleOutlined />
+          </div>
+          <h3>Video Available</h3>
+          <p>
+            This video is hosted externally for your convenience and safety. 
+            Click the button below to view the video.
+          </p>
+          <div className="google-drive-buttons">
+            <button 
+              className="watch-button"
+              onClick={() => window.open(src, '_blank')}
+            >
+              <PlayCircleOutlined />
+              Watch Video
+            </button>
+            <button 
+              className="complete-button"
+              onClick={onComplete}
+            >
+              <CheckCircleOutlined />
+              Mark as Complete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="video-player-container"
