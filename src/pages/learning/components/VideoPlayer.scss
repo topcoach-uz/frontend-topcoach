@@ -19,6 +19,32 @@
     object-fit: cover;
     background: #000;
     cursor: pointer;
+    
+    // Hide Google Drive controls when using iframe
+    &.iframe-video {
+      pointer-events: none;
+      
+      // Hide Google Drive's native controls
+      &::-webkit-media-controls {
+        display: none !important;
+      }
+      
+      &::-webkit-media-controls-panel {
+        display: none !important;
+      }
+      
+      &::-webkit-media-controls-play-button {
+        display: none !important;
+      }
+      
+      &::-webkit-media-controls-timeline {
+        display: none !important;
+      }
+      
+      &::-webkit-media-controls-volume-slider {
+        display: none !important;
+      }
+    }
   }
 
   .video-title {
