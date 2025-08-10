@@ -162,6 +162,37 @@
           background: #096dd9;
         }
       }
+
+      .error-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .retry-button {
+          background: #1890ff;
+        }
+
+        .help-button {
+          background: #52c41a;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background: #73d13d;
+          }
+
+          &:active {
+            background: #389e0d;
+          }
+        }
+      }
     }
   }
 
