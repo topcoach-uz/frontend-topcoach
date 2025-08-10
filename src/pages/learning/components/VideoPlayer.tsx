@@ -141,7 +141,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       let errorMessage = 'Failed to load video';
       if (isGoogleDrive) {
-        errorMessage = 'Google Drive video loaded. Use the controls below to play/pause and track progress.';
+        errorMessage = 'Google Drive video requires public access. Please make the file public or use a different video hosting service.';
       } else if (video.error) {
         switch (video.error.code) {
           case 1:
@@ -391,7 +391,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
            }}
            onError={() => {
              console.error('Google Drive iframe failed to load');
-             setError('Failed to load Google Drive video. Please check the file permissions.');
+             setError('Google Drive video requires public access. Please make the file public or use a different video hosting service.');
              setIsLoading(false);
            }}
          />
@@ -429,25 +429,37 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <p><strong>Converted URL:</strong> {videoSrc}</p>
               <p><strong>Title:</strong> {title}</p>
             </div>
-            <button 
-              className="retry-button"
-              onClick={() => {
-                setError(null);
-                setIsLoading(true);
-                if (isGoogleDrive) {
-                  // Reload iframe
-                  setUseIframe(false);
-                  setTimeout(() => setUseIframe(true), 100);
-                } else {
-                  const video = videoRef.current;
-                  if (video) {
-                    video.load();
+            <div className="error-buttons">
+              <button 
+                className="retry-button"
+                onClick={() => {
+                  if (isGoogleDrive) {
+                    // Open in Google Drive to check permissions
+                    window.open(src, '_blank');
+                  } else {
+                    setError(null);
+                    setIsLoading(true);
+                    const video = videoRef.current;
+                    if (video) {
+                      video.load();
+                    }
                   }
-                }
-              }}
-            >
-              {isGoogleDrive ? 'Reload Video' : 'Retry'}
-            </button>
+                }}
+              >
+                {isGoogleDrive ? 'Open in Google Drive' : 'Retry'}
+              </button>
+              
+              {isGoogleDrive && (
+                <button 
+                  className="help-button"
+                  onClick={() => {
+                    window.open('https://support.google.com/drive/answer/2494822?hl=en', '_blank');
+                  }}
+                >
+                  How to Make Public
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
