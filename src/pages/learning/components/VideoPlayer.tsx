@@ -82,7 +82,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     });
   }, [src, videoSrc, isGoogleDrive, title]);
 
-  // For Google Drive videos, use iframe immediately to avoid confusion
+  // For Google Drive videos, use iframe with custom controls
   useEffect(() => {
     if (isGoogleDrive) {
       setUseIframe(true);
@@ -141,7 +141,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       let errorMessage = 'Failed to load video';
       if (isGoogleDrive) {
-        errorMessage = 'Google Drive video requires special handling. Click "Use Google Drive Player" below.';
+        errorMessage = 'Google Drive video loaded. Use the controls below to play/pause and track progress.';
       } else if (video.error) {
         switch (video.error.code) {
           case 1:
@@ -376,13 +376,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       }}
     >
-             {useIframe ? (
+                    {useIframe ? (
          <iframe
            src={videoSrc}
            title={title}
            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
            allowFullScreen
-           className="video-element"
+           className="video-element iframe-video"
            style={{ border: 'none' }}
            onLoad={() => {
              console.log('Google Drive iframe loaded successfully');
@@ -396,18 +396,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
            }}
          />
        ) : (
-        <video
-          ref={videoRef}
-          className="video-element"
-          src={videoSrc}
-          preload="metadata"
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onWaiting={() => setIsLoading(true)}
-          onCanPlay={() => setIsLoading(false)}
-          onClick={togglePlay}
-        />
-      )}
+         <video
+           ref={videoRef}
+           className="video-element"
+           src={videoSrc}
+           preload="metadata"
+           onPlay={() => setIsPlaying(true)}
+           onPause={() => setIsPlaying(false)}
+           onWaiting={() => setIsLoading(true)}
+           onCanPlay={() => setIsLoading(false)}
+           onClick={togglePlay}
+         />
+       )}
 
       {/* Loading Overlay */}
       {isLoading && !error && (
@@ -435,8 +435,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 setError(null);
                 setIsLoading(true);
                 if (isGoogleDrive) {
-                  setUseIframe(true);
-                  setIsLoading(false);
+                  // Reload iframe
+                  setUseIframe(false);
+                  setTimeout(() => setUseIframe(true), 100);
                 } else {
                   const video = videoRef.current;
                   if (video) {
@@ -445,7 +446,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 }
               }}
             >
-              {isGoogleDrive ? 'Use Google Drive Player' : 'Retry'}
+              {isGoogleDrive ? 'Reload Video' : 'Retry'}
             </button>
           </div>
         </div>
