@@ -101,6 +101,23 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
   )[0];
 
+  // Debug: Log selected lesson data
+  useEffect(() => {
+    if (selectedLesson) {
+      console.log('Selected lesson data:', {
+        id: selectedLesson.id,
+        title: selectedLesson.title,
+        lessonType: selectedLesson.lessonType,
+        useVdoCipher: selectedLesson.useVdoCipher,
+        vdocipherVideoId: selectedLesson.vdocipherVideoId,
+        contentUrl: selectedLesson.contentUrl,
+        vdocipherOTP,
+        vdocipherPlaybackInfo,
+        isLoadingOTP
+      });
+    }
+  }, [selectedLesson, vdocipherOTP, vdocipherPlaybackInfo, isLoadingOTP]);
+
   // Find the selected module
   const selectedModule = courseStructure?.find(module => 
     module.lessons?.some(lesson => lesson.id === selectedLessonId)
@@ -108,7 +125,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
 
   // Generate OTP when VdoCipher lesson is selected
   useEffect(() => {
+    console.log('VdoCipher lesson check:', {
+      useVdoCipher: selectedLesson?.useVdoCipher,
+      vdocipherVideoId: selectedLesson?.vdocipherVideoId,
+      hasOTP: !!vdocipherOTP,
+      shouldGenerate: selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP
+    });
+    
     if (selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP) {
+      console.log('Generating VdoCipher OTP for video:', selectedLesson.vdocipherVideoId);
       generateVdoCipherOTP(selectedLesson.vdocipherVideoId);
     }
   }, [selectedLesson, vdocipherOTP]);
