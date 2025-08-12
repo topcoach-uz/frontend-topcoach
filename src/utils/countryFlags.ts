@@ -57,6 +57,8 @@ export const universityCountryFlags: Record<string, string> = {
   'Harvard Kennedy School': '🇺🇸',
   'University of Minnesota Twin Cities': '🇺🇸',
   'Pennsylvania State University': '🇺🇸',
+  'Harvard': '🇺🇸',
+  'Boston University': '🇺🇸',
   
   // Chinese Universities
   'Peking University': '🇨🇳',
@@ -101,6 +103,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Korea Advanced Institute of Science and Technology': '🇰🇷',
   'Yonsei University': '🇰🇷',
   'Korea University': '🇰🇷',
+  'Chonnam National University': '🇰🇷',
   
   // European Universities
   'ETH Zurich': '🇨🇭',
@@ -132,6 +135,9 @@ export const universityCountryFlags: Record<string, string> = {
   'New York University in Abu Dhabi': '🇦🇪',
   'New Uzbekistan University': '🇺🇿',
   'City University of Hong Kong': '🇭🇰',
+  'Qatar university': '🇶🇦',
+  'University of Lodz': '🇵🇱',
+
   
   // Additional common universities
   'University of California': '🇺🇸',
