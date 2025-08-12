@@ -38,6 +38,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     const loadVdoCipherScript = () => {
       return new Promise<void>((resolve, reject) => {
         if (window.VdoCipher) {
+          console.log('VdoCipher already loaded');
           resolve();
           return;
         }
@@ -47,7 +48,27 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         script.src = 'https://player.vdocipher.com/v2/api.js';
         script.onload = () => {
           console.log('VdoCipher script loaded successfully');
-          resolve();
+          
+          // Wait for VdoCipher to be available
+          let attempts = 0;
+          const maxAttempts = 50; // 5 seconds max wait
+          
+          const checkVdoCipher = () => {
+            attempts++;
+            if (window.VdoCipher) {
+              console.log('VdoCipher constructor is now available');
+              resolve();
+            } else if (attempts >= maxAttempts) {
+              console.error('VdoCipher constructor not available after 5 seconds');
+              reject(new Error('VdoCipher constructor not available'));
+            } else {
+              console.log(`Waiting for VdoCipher constructor... (attempt ${attempts}/${maxAttempts})`);
+              setTimeout(checkVdoCipher, 100);
+            }
+          };
+          
+          // Start checking after a short delay
+          setTimeout(checkVdoCipher, 100);
         };
         script.onerror = () => {
           console.error('Failed to load VdoCipher script');
@@ -127,6 +148,13 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           },
         };
 
+        // Final check before creating VdoCipher instance
+        if (!window.VdoCipher) {
+          throw new Error('VdoCipher constructor is not available');
+        }
+
+        console.log('Creating VdoCipher player instance...');
+        
         // Initialize VdoCipher player
         const vdoPlayer = new window.VdoCipher(playerRef.current, options);
         vdoPlayerRef.current = vdoPlayer;
