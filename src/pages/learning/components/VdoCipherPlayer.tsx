@@ -11,12 +11,6 @@ interface VdoCipherPlayerProps {
   onComplete: () => void;
 }
 
-declare global {
-  interface Window {
-    VdoCipher: any;
-  }
-}
-
 const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   videoId,
   otp,
@@ -26,71 +20,22 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   onComplete,
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
-  const vdoPlayerRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    // Load VdoCipher script if not already loaded
-    const loadVdoCipherScript = () => {
-      return new Promise<void>((resolve, reject) => {
-        if (window.VdoCipher) {
-          console.log('VdoCipher already loaded');
-          resolve();
-          return;
-        }
-
-        const script = document.createElement('script');
-        // Use the correct VdoCipher script URL
-        script.src = 'https://player.vdocipher.com/v2/api.js';
-        script.onload = () => {
-          console.log('VdoCipher script loaded successfully');
-          
-          // Wait for VdoCipher to be available
-          let attempts = 0;
-          const maxAttempts = 50; // 5 seconds max wait
-          
-          const checkVdoCipher = () => {
-            attempts++;
-            if (window.VdoCipher) {
-              console.log('VdoCipher constructor is now available');
-              resolve();
-            } else if (attempts >= maxAttempts) {
-              console.error('VdoCipher constructor not available after 5 seconds');
-              reject(new Error('VdoCipher constructor not available'));
-            } else {
-              console.log(`Waiting for VdoCipher constructor... (attempt ${attempts}/${maxAttempts})`);
-              setTimeout(checkVdoCipher, 100);
-            }
-          };
-          
-          // Start checking after a short delay
-          setTimeout(checkVdoCipher, 100);
-        };
-        script.onerror = () => {
-          console.error('Failed to load VdoCipher script');
-          reject(new Error('Failed to load VdoCipher script'));
-        };
-        document.head.appendChild(script);
-      });
-    };
-
     const initializePlayer = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        console.log('Initializing VdoCipher player with:', {
+        console.log('Initializing VdoCipher iframe player with:', {
           videoId,
           otp: otp ? 'present' : 'missing',
           playbackInfo: playbackInfo ? 'present' : 'missing',
           playerRef: !!playerRef.current
         });
-
-        await loadVdoCipherScript();
 
         if (!playerRef.current) {
           throw new Error('Player container not found');
@@ -104,81 +49,76 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           throw new Error('Playback info is missing');
         }
 
-        const options = {
-          otp,
-          playbackInfo,
-          theme: '9ae8bbe8bc964196a0fba8c0d4e65cd7', // Default theme
-          controls: {
-            fullscreen: true,
-            playPause: true,
-            volume: true,
-            seek: true,
-            speed: true,
-            quality: true,
-          },
-          events: {
-            onReady: () => {
-              console.log('VdoCipher player ready');
-              setIsLoading(false);
-            },
-            onPlay: () => {
-              console.log('Video started playing');
-              setIsPlaying(true);
-            },
-            onPause: () => {
-              console.log('Video paused');
-              setIsPlaying(false);
-            },
-            onEnded: () => {
-              console.log('Video ended');
-              setIsPlaying(false);
-              onComplete();
-            },
-            onTimeUpdate: (currentTime: number, duration: number) => {
-              setCurrentTime(currentTime);
-              setDuration(duration);
-              const progress = (currentTime / duration) * 100;
+        // Clear the container
+        playerRef.current.innerHTML = '';
+
+        // Create iframe with VdoCipher player
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`;
+        iframe.style.border = '0';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.borderRadius = '8px';
+        iframe.allow = 'encrypted-media';
+        iframe.allowFullscreen = true;
+
+        // Add iframe to container
+        playerRef.current.appendChild(iframe);
+
+        // Set up message listener for iframe communication
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== 'https://player.vdocipher.com') {
+            return;
+          }
+
+          const data = event.data;
+          console.log('VdoCipher iframe message:', data);
+
+          if (data.type === 'ready') {
+            console.log('VdoCipher iframe ready');
+            setIsLoading(false);
+          } else if (data.type === 'play') {
+            setIsPlaying(true);
+          } else if (data.type === 'pause') {
+            setIsPlaying(false);
+          } else if (data.type === 'ended') {
+            setIsPlaying(false);
+            onComplete();
+          } else if (data.type === 'timeupdate') {
+            if (data.currentTime && data.duration) {
+              const progress = (data.currentTime / data.duration) * 100;
               onProgressUpdate(progress);
-            },
-            onError: (error: any) => {
-              console.error('VdoCipher player error:', error);
-              setError('Failed to load video. Please try again.');
-              setIsLoading(false);
-            },
-          },
+            }
+          } else if (data.type === 'error') {
+            console.error('VdoCipher iframe error:', data.error);
+            setError('Video playback error. Please try again.');
+            setIsLoading(false);
+          }
         };
 
-        // Final check before creating VdoCipher instance
-        if (!window.VdoCipher) {
-          throw new Error('VdoCipher constructor is not available');
-        }
+        window.addEventListener('message', handleMessage);
 
-        console.log('Creating VdoCipher player instance...');
-        
-        // Initialize VdoCipher player
-        const vdoPlayer = new window.VdoCipher(playerRef.current, options);
-        vdoPlayerRef.current = vdoPlayer;
+        // Set loading to false after a reasonable timeout
+        setTimeout(() => {
+          if (isLoading) {
+            setIsLoading(false);
+          }
+        }, 3000);
+
+        // Cleanup function
+        return () => {
+          window.removeEventListener('message', handleMessage);
+        };
 
       } catch (error) {
-        console.error('Failed to initialize VdoCipher player:', error);
+        console.error('Failed to initialize VdoCipher iframe player:', error);
         setError('Failed to initialize video player');
         setIsLoading(false);
       }
     };
 
     initializePlayer();
-
-    // Cleanup function
-    return () => {
-      if (vdoPlayerRef.current) {
-        try {
-          vdoPlayerRef.current.destroy();
-        } catch (error) {
-          console.error('Error destroying VdoCipher player:', error);
-        }
-      }
-    };
-  }, [otp, playbackInfo, onProgressUpdate, onComplete]);
+  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading]);
 
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
@@ -214,12 +154,6 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     };
   }, []);
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   if (error) {
     return (
       <div className="vdocipher-player-container">
@@ -252,22 +186,13 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
       <div 
         ref={playerRef} 
         className="vdocipher-player"
-        style={{ width: '100%', height: '500px' }}
+        style={{ width: '100%', height: '500px', position: 'relative' }}
       />
 
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
           <span>Loading secure video...</span>
-        </div>
-      )}
-
-      {/* Progress Display */}
-      {duration > 0 && (
-        <div className="progress-display">
-          <span className="time-display">
-            {formatTime(currentTime)} / {formatTime(duration)}
-          </span>
         </div>
       )}
 
