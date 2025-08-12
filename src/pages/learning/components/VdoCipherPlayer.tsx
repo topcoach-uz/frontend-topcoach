@@ -43,9 +43,16 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         }
 
         const script = document.createElement('script');
-        script.src = 'https://unpkg.com/vdocipher-js@1.0.0/dist/vdocipher.js';
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load VdoCipher script'));
+        // Use the correct VdoCipher script URL
+        script.src = 'https://player.vdocipher.com/v2/api.js';
+        script.onload = () => {
+          console.log('VdoCipher script loaded successfully');
+          resolve();
+        };
+        script.onerror = () => {
+          console.error('Failed to load VdoCipher script');
+          reject(new Error('Failed to load VdoCipher script'));
+        };
         document.head.appendChild(script);
       });
     };
@@ -55,10 +62,25 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         setIsLoading(true);
         setError(null);
 
+        console.log('Initializing VdoCipher player with:', {
+          videoId,
+          otp: otp ? 'present' : 'missing',
+          playbackInfo: playbackInfo ? 'present' : 'missing',
+          playerRef: !!playerRef.current
+        });
+
         await loadVdoCipherScript();
 
-        if (!playerRef.current || !otp || !playbackInfo) {
-          throw new Error('Missing required parameters for VdoCipher player');
+        if (!playerRef.current) {
+          throw new Error('Player container not found');
+        }
+        
+        if (!otp) {
+          throw new Error('OTP is missing');
+        }
+        
+        if (!playbackInfo) {
+          throw new Error('Playback info is missing');
         }
 
         const options = {
