@@ -46,21 +46,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           throw new Error('OTP is missing');
         }
         
-        if (!playbackInfo) {
-          throw new Error('Playback info is missing');
-        }
+                       if (!playbackInfo) {
+                 throw new Error('Playback info is missing');
+               }
 
-        // Test if the video ID is valid by making a simple request
-        try {
-          const testResponse = await fetch(`https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`, {
-            method: 'HEAD'
-          });
-          console.log('VdoCipher URL test response:', testResponse.status);
-        } catch (error) {
-          console.warn('VdoCipher URL test failed:', error);
-        }
-
-        // Clear the container
+               // Clear the container
         playerRef.current.innerHTML = '';
 
         // Create iframe with VdoCipher player
