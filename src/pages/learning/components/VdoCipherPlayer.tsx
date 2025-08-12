@@ -23,7 +23,6 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const initializePlayer = async () => {
@@ -38,6 +37,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           playerRef: !!playerRef.current
         });
 
+        // Validate inputs
         if (!playerRef.current) {
           throw new Error('Player container not found');
         }
@@ -50,18 +50,43 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           throw new Error('Playback info is missing');
         }
 
+        // Test if the video ID is valid by making a simple request
+        try {
+          const testResponse = await fetch(`https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`, {
+            method: 'HEAD'
+          });
+          console.log('VdoCipher URL test response:', testResponse.status);
+        } catch (error) {
+          console.warn('VdoCipher URL test failed:', error);
+        }
+
         // Clear the container
         playerRef.current.innerHTML = '';
 
         // Create iframe with VdoCipher player
         const iframe = document.createElement('iframe');
-        iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`;
+        const iframeSrc = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`;
+        
+        console.log('Creating VdoCipher iframe with URL:', iframeSrc);
+        
+        iframe.src = iframeSrc;
         iframe.style.border = '0';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.borderRadius = '8px';
         iframe.allow = 'encrypted-media';
         iframe.allowFullscreen = true;
+
+        // Add load event listener to iframe
+        iframe.onload = () => {
+          console.log('VdoCipher iframe loaded successfully');
+        };
+
+        iframe.onerror = (error) => {
+          console.error('VdoCipher iframe failed to load:', error);
+          setError('Failed to load video player');
+          setIsLoading(false);
+        };
 
         // Add iframe to container
         playerRef.current.appendChild(iframe);
@@ -107,18 +132,9 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
 
         window.addEventListener('message', handleMessage);
 
-        // Set loading to false after a reasonable timeout (10 seconds)
-        const loadingTimeout = setTimeout(() => {
-          if (isLoading) {
-            console.log('Loading timeout reached, setting loading to false');
-            setIsLoading(false);
-          }
-        }, 10000);
-
         // Cleanup function
         return () => {
           window.removeEventListener('message', handleMessage);
-          clearTimeout(loadingTimeout);
         };
 
         // Cleanup function
@@ -134,7 +150,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     };
 
     initializePlayer();
-  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading, retryCount]);
+  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading]);
 
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
@@ -183,11 +199,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             <p>{error}</p>
             <button 
               className="retry-button"
-              onClick={() => {
-                setError(null);
-                setIsLoading(true);
-                setRetryCount(prev => prev + 1);
-              }}
+              onClick={() => window.location.reload()}
             >
               Retry
             </button>
@@ -213,18 +225,9 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
           <span>Loading secure video...</span>
-          {retryCount > 0 && (
-            <button 
-              className="retry-button"
-              onClick={() => {
-                setIsLoading(true);
-                setRetryCount(prev => prev + 1);
-              }}
-              style={{ marginTop: '10px' }}
-            >
-              Retry Loading
-            </button>
-          )}
+          <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+            Video ID: {videoId}
+          </div>
         </div>
       )}
 
