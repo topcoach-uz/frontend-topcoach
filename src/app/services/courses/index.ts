@@ -70,6 +70,10 @@ export interface CourseLessonDto {
   duration: number;
   isActive: boolean;
   isPremium: boolean;
+  // VdoCipher fields for secure video hosting
+  useVdoCipher?: boolean;
+  vdocipherVideoId?: string;
+  vdocipherOtp?: string;
   resources: CourseResourceDto[];
 }
 

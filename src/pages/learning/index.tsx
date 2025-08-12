@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
+import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
 import ProgressTracker from './components/ProgressTracker';
 import { ACCESS_TOKEN } from 'src/constants/storage';
@@ -20,6 +21,9 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const { t } = useTranslation();
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [vdocipherOTP, setVdocipherOTP] = useState<string | null>(null);
+  const [vdocipherPlaybackInfo, setVdocipherPlaybackInfo] = useState<string | null>(null);
+  const [isLoadingOTP, setIsLoadingOTP] = useState(false);
   const dispatch = useDispatch();
 
   // API hooks
@@ -31,6 +35,83 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   });
   const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
+
+  // Generate VdoCipher OTP
+  const generateVdoCipherOTP = async (videoId: string) => {
+    try {
+      setIsLoadingOTP(true);
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch('/api/vdocipher/generate-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          videoId,
+          ttl: 300, // 5 minutes
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate OTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setVdocipherOTP(data.otp);
+      setVdocipherPlaybackInfo(data.playbackInfo);
+      
+      console.log('VdoCipher OTP generated successfully');
+    } catch (error) {
+      console.error('Failed to generate VdoCipher OTP:', error);
+      message.error('Failed to load secure video. Please try again.');
+    } finally {
+      setIsLoadingOTP(false);
+    }
+  };
+
+  // Clear VdoCipher data when lesson changes
+  useEffect(() => {
+    setVdocipherOTP(null);
+    setVdocipherPlaybackInfo(null);
+  }, [selectedLessonId]);
+
+  // Force refetch user progress after any completion
+  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
+  
+  useEffect(() => {
+    if (lastCompletionTime > 0) {
+      // Refetch user progress after a short delay to ensure server state is updated
+      const timer = setTimeout(() => {
+        refetchUserProgress();
+        setLastCompletionTime(0);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [lastCompletionTime, refetchUserProgress]);
+
+  // Find the selected lesson
+  const selectedLesson = courseStructure?.flatMap(module => 
+    module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
+  )[0];
+
+  // Find the selected module
+  const selectedModule = courseStructure?.find(module => 
+    module.lessons?.some(lesson => lesson.id === selectedLessonId)
+  );
+
+  // Generate OTP when VdoCipher lesson is selected
+  useEffect(() => {
+    if (selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP) {
+      generateVdoCipherOTP(selectedLesson.vdocipherVideoId);
+    }
+  }, [selectedLesson, vdocipherOTP]);
 
   // Throttle progress updates to every 5 seconds
   const handleProgressUpdate = (progress: number, lessonId: string, duration: number) => {
@@ -46,16 +127,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       });
     }
   };
-
-  // Find the selected lesson
-  const selectedLesson = courseStructure?.flatMap(module => 
-    module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
-  )[0];
-
-  // Find the selected module
-  const selectedModule = courseStructure?.find(module => 
-    module.lessons?.some(lesson => lesson.id === selectedLessonId)
-  );
 
   // Simple state for immediate UI feedback
   const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
@@ -84,21 +155,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       userProgress: userProgress?.progress?.find((l: any) => l.lessonId === selectedLessonId)
     });
   }, [selectedLessonId, isSelectedLessonCompleted, userProgress?.progress, isCurrentLessonCompleted, forceUpdate]);
-
-  // Force refetch user progress after any completion
-  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
-  
-  useEffect(() => {
-    if (lastCompletionTime > 0) {
-      // Refetch user progress after a short delay to ensure server state is updated
-      const timer = setTimeout(() => {
-        refetchUserProgress();
-        setLastCompletionTime(0);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [lastCompletionTime, refetchUserProgress]);
 
   // Ensure we have progress data
   const hasProgressData = userProgress && userProgress.progress && userProgress.progress.length > 0;
@@ -201,72 +257,110 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               </div>
 
               <div className="lesson-content">
-                {selectedLesson.lessonType === 'video' && selectedLesson.contentUrl && (
-                  <VideoPlayer
-                    src={selectedLesson.contentUrl}
-                    title={selectedLesson.title}
-                    onProgressUpdate={(progress) => {
-                      // Update progress every 5 seconds
-                      if (progress > 0) {
-                        handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
-                      }
-                    }}
-                    onComplete={async () => {
-                      try {
-                        // Check if user is enrolled
-                        if (!enrollmentStatus?.isEnrolled) {
-                          message.error('You must be enrolled in the course to mark lessons as completed');
-                          return;
-                        }
+                {selectedLesson.lessonType === 'video' && (
+                  <>
+                    {/* VdoCipher Player */}
+                    {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo && (
+                      <VdoCipherPlayer
+                        videoId={selectedLesson.vdocipherVideoId}
+                        otp={vdocipherOTP}
+                        playbackInfo={vdocipherPlaybackInfo}
+                        title={selectedLesson.title}
+                        onProgressUpdate={(progress) => {
+                          if (progress > 0) {
+                            handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
+                          }
+                        }}
+                        onComplete={async () => {
+                          try {
+                            if (!enrollmentStatus?.isEnrolled) {
+                              message.error('You must be enrolled in the course to mark lessons as completed');
+                              return;
+                            }
 
-                        // IMMEDIATE UI UPDATE - like real websites
-                        console.log('Before state update:', {
-                          lessonId: selectedLesson.id,
-                          currentCompletedLessons: Array.from(new Set()), // No longer needed
-                          forceUpdate
-                        });
-                        
-                        setIsCurrentLessonCompleted(true);
-                        
-                        setForceUpdate(prev => {
-                          const newValue = prev + 1;
-                          console.log('Force update changed:', { from: prev, to: newValue });
-                          return newValue;
-                        });
+                            setIsCurrentLessonCompleted(true);
+                            setForceUpdate(prev => prev + 1);
 
-                        const updateData = {
-                          isCompleted: true,
-                          progressPercentage: 100,
-                          timeWatched: selectedLesson.duration * 60,
-                        };
-                        
-                        console.log('Sending to server:', {
-                          lessonId: selectedLesson.id,
-                          data: updateData
-                        });
-                        
-                        // Server call in background (don't await - let it happen in background)
-                        updateLessonProgress({
-                          lessonId: selectedLesson.id,
-                          data: updateData
-                        }).unwrap().then(() => {
-                          console.log('Server update successful');
-                          // Refetch to sync with server
-                          refetchUserProgress();
-                        }).catch((error) => {
-                          console.error('Server update failed:', error);
-                          // Revert UI if server fails
-                          setIsCurrentLessonCompleted(false);
-                          message.error('Failed to save completion status');
-                        });
-                        
-                        message.success('Lesson completed!');
-                      } catch (error) {
-                        console.error('Error:', error);
-                        message.error('Failed to mark lesson as completed');
-                      }
-                    }}
-                  />
+                            const updateData = {
+                              isCompleted: true,
+                              progressPercentage: 100,
+                              timeWatched: selectedLesson.duration * 60,
+                            };
+                            
+                            updateLessonProgress({
+                              lessonId: selectedLesson.id,
+                              data: updateData
+                            }).unwrap().then(() => {
+                              refetchUserProgress();
+                            }).catch((error) => {
+                              console.error('Server update failed:', error);
+                              setIsCurrentLessonCompleted(false);
+                              message.error('Failed to save completion status');
+                            });
+                            
+                            message.success('Lesson completed!');
+                          } catch (error) {
+                            console.error('Error:', error);
+                            message.error('Failed to mark lesson as completed');
+                          }
+                        }}
+                      />
+                    )}
+
+                    {/* Loading state for VdoCipher */}
+                    {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && isLoadingOTP && (
+                      <div className="loading-container">
+                        <Spin size="large" />
+                        <p>Loading secure video...</p>
+                      </div>
+                    )}
+
+                    {/* Regular Video Player (fallback) */}
+                    {(!selectedLesson.useVdoCipher || !selectedLesson.vdocipherVideoId) && selectedLesson.contentUrl && (
+                      <VideoPlayer
+                        src={selectedLesson.contentUrl}
+                        title={selectedLesson.title}
+                        onProgressUpdate={(progress) => {
+                          if (progress > 0) {
+                            handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
+                          }
+                        }}
+                        onComplete={async () => {
+                          try {
+                            if (!enrollmentStatus?.isEnrolled) {
+                              message.error('You must be enrolled in the course to mark lessons as completed');
+                              return;
+                            }
+
+                            setIsCurrentLessonCompleted(true);
+                            setForceUpdate(prev => prev + 1);
+
+                            const updateData = {
+                              isCompleted: true,
+                              progressPercentage: 100,
+                              timeWatched: selectedLesson.duration * 60,
+                            };
+                            
+                            updateLessonProgress({
+                              lessonId: selectedLesson.id,
+                              data: updateData
+                            }).unwrap().then(() => {
+                              refetchUserProgress();
+                            }).catch((error) => {
+                              console.error('Server update failed:', error);
+                              setIsCurrentLessonCompleted(false);
+                              message.error('Failed to save completion status');
+                            });
+                            
+                            message.success('Lesson completed!');
+                          } catch (error) {
+                            console.error('Error:', error);
+                            message.error('Failed to mark lesson as completed');
+                          }
+                        }}
+                      />
+                    )}
+                  </>
                 )}
                 
                 {selectedLesson.lessonType === 'pdf' && selectedLesson.contentUrl && (
