@@ -16,9 +16,15 @@ import {
   Statistic,
   Progress,
   Switch,
-  Tabs 
+  Tabs,
+  Tag,
+  Avatar,
+  notification,
+  Tooltip,
+  List,
+  Divider
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined, UploadOutlined, EyeOutlined, LinkOutlined } from '@ant-design/icons';
 import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
@@ -26,6 +32,122 @@ import './index.scss';
 const { TextArea } = Input;
 const { Option } = Select;
 const { TabPane } = Tabs;
+
+// API client for course management
+const courseApi = {
+  get: async (url: string) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api${url}`, {
+      headers,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+    return response.json();
+  },
+  post: async (url: string, data: any) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api${url}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+    return response.json();
+  },
+  put: async (url: string, data: any) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api${url}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+    return response.json();
+  },
+  delete: async (url: string) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`/api${url}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+    
+    // Handle empty responses for DELETE requests
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    }
+    
+    // Return success object for empty responses
+    return { success: true };
+  },
+  upload: async (file: File) => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch('/api/course-admin/courses/upload', {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    }
+    return response.json();
+  },
+};
 
 interface Module {
   id: string;
@@ -106,9 +228,20 @@ const CourseManagementAdmin: React.FC = () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     
     if (!token) {
-      message.warning({
+      notification.warning({
         message: 'Access Required',
         description: 'Please log in to access admin panel',
+      });
+      return;
+    }
+    
+    try {
+      const modulesData = await courseApi.get('/course-admin/courses/modules');
+      setModules(Array.isArray(modulesData) ? modulesData : []);
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to fetch modules',
       });
     }
   }, [user]);
@@ -128,7 +261,7 @@ const CourseManagementAdmin: React.FC = () => {
       const modulesData = response.data || response || [];
       setModules(Array.isArray(modulesData) ? modulesData : []);
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to fetch modules',
       });
@@ -143,7 +276,7 @@ const CourseManagementAdmin: React.FC = () => {
       const response = await courseApi.get('/users/mentors');
       setMentors(response.data || response);
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to fetch mentors',
       });
@@ -156,7 +289,7 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingModule) {
         await courseApi.put(`/course-admin/courses/modules/${editingModule.id}`, values);
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Module updated successfully',
         });
@@ -165,7 +298,7 @@ const CourseManagementAdmin: React.FC = () => {
           ...values,
           mentorName: values.mentorName, // Send mentor name instead of mentorId
         });
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Module created successfully',
         });
@@ -174,7 +307,7 @@ const CourseManagementAdmin: React.FC = () => {
       setEditingModule(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to save module',
       });
@@ -185,13 +318,13 @@ const CourseManagementAdmin: React.FC = () => {
   const handleDeleteModule = async (moduleId: string) => {
     try {
       await courseApi.delete(`/course-admin/courses/modules/${moduleId}`);
-      message.success({
+      notification.success({
         message: 'Success',
         description: 'Module deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to delete module',
       });
@@ -204,13 +337,13 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingLesson) {
         await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, values);
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Lesson updated successfully',
         });
       } else {
         await courseApi.post('/course-admin/courses/lessons', values);
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Lesson created successfully',
         });
@@ -220,7 +353,7 @@ const CourseManagementAdmin: React.FC = () => {
       setSelectedModule(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to save lesson',
       });
@@ -233,14 +366,14 @@ const CourseManagementAdmin: React.FC = () => {
       console.log('Attempting to delete lesson:', lessonId);
       const result = await courseApi.delete(`/course-admin/courses/lessons/${lessonId}`);
       console.log('Delete result:', result);
-      message.success({
+      notification.success({
         message: 'Success',
         description: 'Lesson deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
       console.error('Error deleting lesson:', error);
-      message.error({
+      notification.error({
         message: 'Error',
         description: `Failed to delete lesson: ${error instanceof Error ? error.message : 'Unknown error'}`,
       });
@@ -252,13 +385,13 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingResource) {
         await courseApi.put(`/course-admin/courses/resources/${editingResource.id}`, values);
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Resource updated successfully',
         });
       } else {
         await courseApi.post('/course-admin/courses/resources', values);
-        message.success({
+        notification.success({
           message: 'Success',
           description: 'Resource created successfully',
         });
@@ -268,7 +401,7 @@ const CourseManagementAdmin: React.FC = () => {
       setSelectedLesson(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to save resource',
       });
@@ -279,13 +412,13 @@ const CourseManagementAdmin: React.FC = () => {
   const handleDeleteResource = async (resourceId: string) => {
     try {
       await courseApi.delete(`/course-admin/courses/resources/${resourceId}`);
-      message.success({
+      notification.success({
         message: 'Success',
         description: 'Resource deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to delete resource',
       });
@@ -299,7 +432,7 @@ const CourseManagementAdmin: React.FC = () => {
       const response = await courseApi.upload(file);
       return response.url || response.data?.url;
     } catch (error) {
-      message.error({
+      notification.error({
         message: 'Error',
         description: 'Failed to upload file',
       });
@@ -853,21 +986,21 @@ const CourseManagementAdmin: React.FC = () => {
                         
                         if (videoType === 'regular') {
                           return (
-                            <Form.Item 
-                              name="contentUrl" 
+          <Form.Item 
+            name="contentUrl" 
                               label="Video URL"
                               rules={[{ required: true, message: 'Please enter video URL' }]}
                               extra="Enter the direct URL to your video file (e.g., https://yourdomain.com/course-content/videos/lesson-1.mp4)"
-                            >
-                              <Input 
-                                placeholder="https://yourdomain.com/course-content/videos/lesson-1.mp4" 
-                                addonBefore={
-                                  <Select defaultValue="https://" style={{ width: 80 }}>
-                                    <Option value="https://">https://</Option>
-                                    <Option value="http://">http://</Option>
-                                  </Select>
-                                }
-                              />
+          >
+            <Input 
+              placeholder="https://yourdomain.com/course-content/videos/lesson-1.mp4" 
+              addonBefore={
+                <Select defaultValue="https://" style={{ width: 80 }}>
+                  <Option value="https://">https://</Option>
+                  <Option value="http://">http://</Option>
+                </Select>
+              }
+            />
                             </Form.Item>
                           );
                         }
