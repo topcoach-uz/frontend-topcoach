@@ -23,6 +23,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const initializePlayer = async () => {
@@ -74,11 +75,13 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           const data = event.data;
           console.log('VdoCipher iframe message:', data);
 
-          if (data.type === 'ready') {
+          // Handle different message types
+          if (data.type === 'ready' || data.type === '@vdo/readyToHandshake') {
             console.log('VdoCipher iframe ready');
             setIsLoading(false);
           } else if (data.type === 'play') {
             setIsPlaying(true);
+            setIsLoading(false);
           } else if (data.type === 'pause') {
             setIsPlaying(false);
           } else if (data.type === 'ended') {
@@ -93,17 +96,30 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             console.error('VdoCipher iframe error:', data.error);
             setError('Video playback error. Please try again.');
             setIsLoading(false);
+          } else if (data.type === 'loadedmetadata') {
+            console.log('Video metadata loaded');
+            setIsLoading(false);
+          } else if (data.type === 'canplay') {
+            console.log('Video can start playing');
+            setIsLoading(false);
           }
         };
 
         window.addEventListener('message', handleMessage);
 
-        // Set loading to false after a reasonable timeout
-        setTimeout(() => {
+        // Set loading to false after a reasonable timeout (10 seconds)
+        const loadingTimeout = setTimeout(() => {
           if (isLoading) {
+            console.log('Loading timeout reached, setting loading to false');
             setIsLoading(false);
           }
-        }, 3000);
+        }, 10000);
+
+        // Cleanup function
+        return () => {
+          window.removeEventListener('message', handleMessage);
+          clearTimeout(loadingTimeout);
+        };
 
         // Cleanup function
         return () => {
@@ -118,7 +134,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     };
 
     initializePlayer();
-  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading]);
+  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading, retryCount]);
 
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
@@ -167,7 +183,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             <p>{error}</p>
             <button 
               className="retry-button"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                setError(null);
+                setIsLoading(true);
+                setRetryCount(prev => prev + 1);
+              }}
             >
               Retry
             </button>
@@ -193,6 +213,18 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
           <span>Loading secure video...</span>
+          {retryCount > 0 && (
+            <button 
+              className="retry-button"
+              onClick={() => {
+                setIsLoading(true);
+                setRetryCount(prev => prev + 1);
+              }}
+              style={{ marginTop: '10px' }}
+            >
+              Retry Loading
+            </button>
+          )}
         </div>
       )}
 
