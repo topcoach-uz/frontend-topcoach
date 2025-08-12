@@ -235,21 +235,28 @@ const CourseManagementAdmin: React.FC = () => {
       return;
     }
     
-    try {
-      const modulesData = await courseApi.get('/course-admin/courses/modules');
-      setModules(Array.isArray(modulesData) ? modulesData : []);
-    } catch (error) {
-      notification.error({
-        message: 'Error',
-        description: 'Failed to fetch modules',
-      });
-    }
+    const loadModules = async () => {
+      try {
+        const modulesData = await courseApi.get('/course-admin/courses/modules');
+        setModules(Array.isArray(modulesData) ? modulesData : []);
+      } catch (error) {
+        notification.error({
+          message: 'Error',
+          description: 'Failed to fetch modules',
+        });
+      }
+    };
+    
+    loadModules();
   }, [user]);
 
   // Fetch modules and mentors
   useEffect(() => {
-    fetchModules();
-    fetchMentors();
+    const loadData = async () => {
+      await fetchModules();
+      await fetchMentors();
+    };
+    loadData();
   }, []);
 
   const fetchModules = async () => {
