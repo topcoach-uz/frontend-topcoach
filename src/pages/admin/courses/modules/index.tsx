@@ -237,9 +237,12 @@ const CourseManagementAdmin: React.FC = () => {
     
     const loadModules = async () => {
       try {
-        const modulesData = await courseApi.get('/course-admin/courses/modules');
+        const response = await courseApi.get('/course-admin/courses/modules');
+        const modulesData = response.data || [];
         setModules(Array.isArray(modulesData) ? modulesData : []);
+        console.log('Initial modules load:', modulesData);
       } catch (error) {
+        console.error('Error in initial modules load:', error);
         notification.error({
           message: 'Error',
           description: 'Failed to fetch modules',
@@ -262,15 +265,31 @@ const CourseManagementAdmin: React.FC = () => {
   const fetchModules = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      console.log('Fetching modules... Token exists:', !!token);
+      
       const response = await courseApi.get('/course-admin/courses/modules');
       
-      // Handle both array and object responses
-      const modulesData = response.data || response || [];
+      console.log('Raw API response:', response);
+      
+      // Backend returns { data: modules, total: count, message: '...' }
+      const modulesData = response.data || [];
+      console.log('Modules data:', modulesData);
+      console.log('Modules array check:', Array.isArray(modulesData));
+      
       setModules(Array.isArray(modulesData) ? modulesData : []);
+      
+      // Log each module and its lessons
+      if (Array.isArray(modulesData)) {
+        modulesData.forEach((module, index) => {
+          console.log(`Module ${index}:`, module.title, 'Lessons:', module.lessons?.length || 0);
+        });
+      }
     } catch (error) {
+      console.error('Error fetching modules:', error);
       notification.error({
         message: 'Error',
-        description: 'Failed to fetch modules',
+        description: `Failed to fetch modules: ${error instanceof Error ? error.message : 'Unknown error'}`,
       });
       setModules([]); // Set empty array on error
     } finally {
