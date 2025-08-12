@@ -1,167 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  Button,
-  Table,
-  Modal,
-  Form,
-  Input,
-  Select,
-  InputNumber,
-  Upload,
-  message,
-  notification,
-  Space,
-  Tag,
-  Popconfirm,
-  Tabs,
-  List,
-  Avatar,
-  Tooltip,
-  Divider,
-  Row,
-  Col,
+import { 
+  Table, 
+  Button, 
+  Modal, 
+  Form, 
+  Input, 
+  Select, 
+  InputNumber, 
+  Space, 
+  Popconfirm, 
+  message, 
+  Card, 
+  Row, 
+  Col, 
   Statistic,
-  Progress
+  Progress,
+  Switch,
+  Tabs 
 } from 'antd';
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  UploadOutlined,
-  EyeOutlined,
-  PlayCircleOutlined,
-  FileTextOutlined,
-  LinkOutlined,
-  UserOutlined,
-  ClockCircleOutlined,
-  BookOutlined,
-  VideoCameraOutlined,
-  InfoCircleOutlined
-} from '@ant-design/icons';
-import { useTypedSelector } from 'src/app/store';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined } from '@ant-design/icons';
+import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { TabPane } = Tabs;
-
-// API client for course management
-const courseApi = {
-  get: async (url: string) => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`/api${url}`, {
-      headers,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
-    }
-    return response.json();
-  },
-  post: async (url: string, data: any) => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`/api${url}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
-    }
-    return response.json();
-  },
-  put: async (url: string, data: any) => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`/api${url}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
-    }
-    return response.json();
-  },
-  delete: async (url: string) => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`/api${url}`, {
-      method: 'DELETE',
-      headers,
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
-    }
-    
-    // Handle empty responses for DELETE requests
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      return response.json();
-    }
-    
-    // Return success object for empty responses
-    return { success: true };
-  },
-  upload: async (file: File) => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch('/api/course-admin/courses/upload', {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-    }
-    return response.json();
-  },
-};
 
 interface Module {
   id: string;
@@ -196,6 +60,8 @@ interface Lesson {
   isActive: boolean;
   isPremium: boolean;
   resources: Resource[];
+  videoType?: 'regular' | 'vdocipher';
+  vdocipherVideoId?: string;
 }
 
 interface Resource {
@@ -233,14 +99,14 @@ const CourseManagementAdmin: React.FC = () => {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [activeTab, setActiveTab] = useState('modules');
   
-  const user = useTypedSelector((state) => state.auth.profile);
+  const user = useGetCourseStructureQuery();
 
   // Check authentication status
   useEffect(() => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     
     if (!token) {
-      notification.warning({
+      message.warning({
         message: 'Access Required',
         description: 'Please log in to access admin panel',
       });
@@ -262,7 +128,7 @@ const CourseManagementAdmin: React.FC = () => {
       const modulesData = response.data || response || [];
       setModules(Array.isArray(modulesData) ? modulesData : []);
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to fetch modules',
       });
@@ -277,7 +143,7 @@ const CourseManagementAdmin: React.FC = () => {
       const response = await courseApi.get('/users/mentors');
       setMentors(response.data || response);
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to fetch mentors',
       });
@@ -290,7 +156,7 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingModule) {
         await courseApi.put(`/course-admin/courses/modules/${editingModule.id}`, values);
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Module updated successfully',
         });
@@ -299,7 +165,7 @@ const CourseManagementAdmin: React.FC = () => {
           ...values,
           mentorName: values.mentorName, // Send mentor name instead of mentorId
         });
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Module created successfully',
         });
@@ -308,7 +174,7 @@ const CourseManagementAdmin: React.FC = () => {
       setEditingModule(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to save module',
       });
@@ -319,13 +185,13 @@ const CourseManagementAdmin: React.FC = () => {
   const handleDeleteModule = async (moduleId: string) => {
     try {
       await courseApi.delete(`/course-admin/courses/modules/${moduleId}`);
-      notification.success({
+      message.success({
         message: 'Success',
         description: 'Module deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to delete module',
       });
@@ -338,13 +204,13 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingLesson) {
         await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, values);
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Lesson updated successfully',
         });
       } else {
         await courseApi.post('/course-admin/courses/lessons', values);
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Lesson created successfully',
         });
@@ -354,7 +220,7 @@ const CourseManagementAdmin: React.FC = () => {
       setSelectedModule(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to save lesson',
       });
@@ -367,14 +233,14 @@ const CourseManagementAdmin: React.FC = () => {
       console.log('Attempting to delete lesson:', lessonId);
       const result = await courseApi.delete(`/course-admin/courses/lessons/${lessonId}`);
       console.log('Delete result:', result);
-      notification.success({
+      message.success({
         message: 'Success',
         description: 'Lesson deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
       console.error('Error deleting lesson:', error);
-      notification.error({
+      message.error({
         message: 'Error',
         description: `Failed to delete lesson: ${error instanceof Error ? error.message : 'Unknown error'}`,
       });
@@ -386,13 +252,13 @@ const CourseManagementAdmin: React.FC = () => {
     try {
       if (editingResource) {
         await courseApi.put(`/course-admin/courses/resources/${editingResource.id}`, values);
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Resource updated successfully',
         });
       } else {
         await courseApi.post('/course-admin/courses/resources', values);
-        notification.success({
+        message.success({
           message: 'Success',
           description: 'Resource created successfully',
         });
@@ -402,7 +268,7 @@ const CourseManagementAdmin: React.FC = () => {
       setSelectedLesson(null);
       fetchModules(); // Refresh the list
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to save resource',
       });
@@ -413,13 +279,13 @@ const CourseManagementAdmin: React.FC = () => {
   const handleDeleteResource = async (resourceId: string) => {
     try {
       await courseApi.delete(`/course-admin/courses/resources/${resourceId}`);
-      notification.success({
+      message.success({
         message: 'Success',
         description: 'Resource deleted successfully',
       });
       fetchModules(); // Refresh the list
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to delete resource',
       });
@@ -433,7 +299,7 @@ const CourseManagementAdmin: React.FC = () => {
       const response = await courseApi.upload(file);
       return response.url || response.data?.url;
     } catch (error) {
-      notification.error({
+      message.error({
         message: 'Error',
         description: 'Failed to upload file',
       });
@@ -446,12 +312,12 @@ const CourseManagementAdmin: React.FC = () => {
   // const handleCleanupProgress = async () => {
   //   try {
   //     await courseApi.post('/admin/courses/cleanup-progress', {});
-  //     notification.success({
+  //     message.success({
   //       message: 'Success',
   //       description: 'Progress cleanup completed successfully',
   //     });
   //   } catch (error) {
-  //     notification.error({
+  //     message.error({
   //       message: 'Error',
   //       description: 'Failed to cleanup progress',
   //     });
@@ -956,20 +822,118 @@ const CourseManagementAdmin: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item 
-            name="contentUrl" 
-            label="Content URL"
-            extra="Enter the direct URL to your video/PDF file (e.g., https://yourdomain.com/course-content/videos/lesson-1.mp4)"
+          {/* Video Configuration */}
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.lessonType !== currentValues.lessonType}
           >
-            <Input 
-              placeholder="https://yourdomain.com/course-content/videos/lesson-1.mp4" 
-              addonBefore={
-                <Select defaultValue="https://" style={{ width: 80 }}>
-                  <Option value="https://">https://</Option>
-                  <Option value="http://">http://</Option>
-                </Select>
+            {({ getFieldValue }) => {
+              const lessonType = getFieldValue('lessonType');
+              
+              if (lessonType === 'video') {
+                return (
+                  <>
+                    <Form.Item
+                      name="videoType"
+                      label="Video Type"
+                      rules={[{ required: true, message: 'Please select video type' }]}
+                    >
+                      <Select placeholder="Select video type">
+                        <Option value="regular">Regular Video (URL/File)</Option>
+                        <Option value="vdocipher">VdoCipher Secure Video</Option>
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                      noStyle
+                      shouldUpdate={(prevValues, currentValues) => prevValues.videoType !== currentValues.videoType}
+                    >
+                      {({ getFieldValue }) => {
+                        const videoType = getFieldValue('videoType');
+                        
+                        if (videoType === 'regular') {
+                          return (
+                            <Form.Item 
+                              name="contentUrl" 
+                              label="Video URL"
+                              rules={[{ required: true, message: 'Please enter video URL' }]}
+                              extra="Enter the direct URL to your video file (e.g., https://yourdomain.com/course-content/videos/lesson-1.mp4)"
+                            >
+                              <Input 
+                                placeholder="https://yourdomain.com/course-content/videos/lesson-1.mp4" 
+                                addonBefore={
+                                  <Select defaultValue="https://" style={{ width: 80 }}>
+                                    <Option value="https://">https://</Option>
+                                    <Option value="http://">http://</Option>
+                                  </Select>
+                                }
+                              />
+                            </Form.Item>
+                          );
+                        }
+                        
+                        if (videoType === 'vdocipher') {
+                          return (
+                            <>
+                              <Form.Item
+                                name="vdocipherVideoId"
+                                label="VdoCipher Video ID"
+                                rules={[{ required: true, message: 'Please enter VdoCipher Video ID' }]}
+                                extra="Enter your VdoCipher video ID (e.g., 1234567890abcdef)"
+                              >
+                                <Input placeholder="Enter VdoCipher Video ID" />
+                              </Form.Item>
+                              
+                              <div style={{ 
+                                backgroundColor: '#f6ffed', 
+                                border: '1px solid #b7eb8f', 
+                                borderRadius: '6px', 
+                                padding: '12px', 
+                                marginBottom: '16px' 
+                              }}>
+                                <h4 style={{ color: '#52c41a', margin: '0 0 8px 0' }}>🔒 VdoCipher Security Features</h4>
+                                <ul style={{ margin: '0', paddingLeft: '20px', color: '#52c41a' }}>
+                                  <li>Screen recording prevention</li>
+                                  <li>Download prevention</li>
+                                  <li>DRM protection</li>
+                                  <li>Domain restriction</li>
+                                  <li>Session-based access control</li>
+                                </ul>
+                              </div>
+                            </>
+                          );
+                        }
+                        
+                        return null;
+                      }}
+                    </Form.Item>
+                  </>
+                );
               }
-            />
+              
+              if (lessonType === 'pdf') {
+                return (
+                  <Form.Item 
+                    name="contentUrl" 
+                    label="PDF URL"
+                    rules={[{ required: true, message: 'Please enter PDF URL' }]}
+                    extra="Enter the direct URL to your PDF file"
+                  >
+                    <Input 
+                      placeholder="https://yourdomain.com/course-content/pdfs/lesson-1.pdf" 
+                      addonBefore={
+                        <Select defaultValue="https://" style={{ width: 80 }}>
+                          <Option value="https://">https://</Option>
+                          <Option value="http://">http://</Option>
+                        </Select>
+                      }
+                    />
+                  </Form.Item>
+                );
+              }
+              
+              return null;
+            }}
           </Form.Item>
 
           <Row gutter={16}>
