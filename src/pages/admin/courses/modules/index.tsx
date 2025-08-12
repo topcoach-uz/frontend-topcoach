@@ -184,6 +184,7 @@ interface Lesson {
   resources: Resource[];
   videoType?: 'regular' | 'vdocipher';
   vdocipherVideoId?: string;
+  useVdoCipher?: boolean;
 }
 
 interface Resource {
@@ -361,14 +362,25 @@ const CourseManagementAdmin: React.FC = () => {
   // Lesson Management
   const handleCreateLesson = async (values: any) => {
     try {
+      // Prepare lesson data with proper VdoCipher handling
+      const lessonData = {
+        ...values,
+        // Handle VdoCipher fields
+        useVdoCipher: values.videoType === 'vdocipher',
+        vdocipherVideoId: values.videoType === 'vdocipher' ? values.vdocipherVideoId : undefined,
+        contentUrl: values.videoType === 'regular' ? values.contentUrl : undefined,
+      };
+
+      console.log('Saving lesson with data:', lessonData);
+
       if (editingLesson) {
-        await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, values);
+        await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, lessonData);
         notification.success({
           message: 'Success',
           description: 'Lesson updated successfully',
         });
       } else {
-        await courseApi.post('/course-admin/courses/lessons', values);
+        await courseApi.post('/course-admin/courses/lessons', lessonData);
         notification.success({
           message: 'Success',
           description: 'Lesson created successfully',
@@ -915,7 +927,18 @@ const CourseManagementAdmin: React.FC = () => {
         <Form
           layout="vertical"
           onFinish={handleCreateLesson}
-          initialValues={editingLesson || { moduleId: selectedModule?.id }}
+          initialValues={
+            editingLesson 
+              ? {
+                  ...editingLesson,
+                  videoType: editingLesson.useVdoCipher ? 'vdocipher' : 'regular',
+                }
+              : { 
+                  moduleId: selectedModule?.id,
+                  lessonType: 'video',
+                  videoType: 'regular'
+                }
+          }
         >
           <Form.Item
             name="title"
