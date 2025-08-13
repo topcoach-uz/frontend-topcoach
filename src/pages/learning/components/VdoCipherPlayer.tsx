@@ -59,13 +59,15 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         
         console.log('Creating VdoCipher iframe with URL:', iframeSrc);
         
-        iframe.src = iframeSrc;
-        iframe.style.border = '0';
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.borderRadius = '8px';
-        iframe.allow = 'encrypted-media';
-        iframe.allowFullscreen = true;
+                       iframe.src = iframeSrc;
+               iframe.style.border = '0';
+               iframe.style.width = '100%';
+               iframe.style.height = '100%';
+               iframe.style.borderRadius = '8px';
+               iframe.style.objectFit = 'cover';
+               iframe.style.background = '#000';
+               iframe.allow = 'encrypted-media';
+               iframe.allowFullscreen = true;
 
         // Add load event listener to iframe
         iframe.onload = () => {
