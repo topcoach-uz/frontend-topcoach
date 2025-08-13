@@ -69,10 +69,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
                iframe.allow = 'encrypted-media';
                iframe.allowFullscreen = true;
 
-        // Add load event listener to iframe
-        iframe.onload = () => {
-          console.log('VdoCipher iframe loaded successfully');
-        };
+                       // Add load event listener to iframe
+               iframe.onload = () => {
+                 console.log('VdoCipher iframe loaded successfully');
+                 setIsLoading(false);
+               };
 
         iframe.onerror = (error) => {
           console.error('VdoCipher iframe failed to load:', error);
@@ -93,15 +94,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           console.log('VdoCipher iframe message:', data);
 
           // Handle different message types
-          console.log('Processing message type:', data.type, 'Current loading state:', isLoading);
-          
           if (data.type === 'ready' || data.type === '@vdo/readyToHandshake') {
-            console.log('VdoCipher iframe ready - setting loading to false');
+            console.log('VdoCipher iframe ready');
             setIsLoading(false);
           } else if (data.type === 'play') {
-            console.log('Video started playing - setting loading to false');
             setIsPlaying(true);
-            setIsLoading(false);
           } else if (data.type === 'pause') {
             setIsPlaying(false);
           } else if (data.type === 'ended') {
@@ -116,29 +113,14 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             console.error('VdoCipher iframe error:', data.error);
             setError('Video playback error. Please try again.');
             setIsLoading(false);
-          } else if (data.type === 'loadedmetadata') {
-            console.log('Video metadata loaded - setting loading to false');
-            setIsLoading(false);
-          } else if (data.type === 'canplay') {
-            console.log('Video can start playing - setting loading to false');
-            setIsLoading(false);
-          } else {
-            console.log('Unhandled message type:', data.type);
           }
         };
 
         window.addEventListener('message', handleMessage);
 
-        // Fallback timeout to prevent infinite loading
-        const fallbackTimeout = setTimeout(() => {
-          console.log('Fallback timeout reached - setting loading to false');
-          setIsLoading(false);
-        }, 5000);
-
         // Cleanup function
         return () => {
           window.removeEventListener('message', handleMessage);
-          clearTimeout(fallbackTimeout);
         };
 
         // Cleanup function
