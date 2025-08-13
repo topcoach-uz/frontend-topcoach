@@ -28,6 +28,9 @@
     overflow: hidden;
     background: #000;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     // VdoCipher player will be injected here
     iframe {
@@ -35,6 +38,8 @@
       height: 100%;
       border: none;
       border-radius: 8px;
+      object-fit: cover;
+      background: #000;
     }
   }
 
