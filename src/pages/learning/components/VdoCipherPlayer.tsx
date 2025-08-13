@@ -23,6 +23,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
   useEffect(() => {
     const initializePlayer = async () => {
@@ -64,8 +66,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
                iframe.style.width = '100%';
                iframe.style.height = '100%';
                iframe.style.borderRadius = '8px';
-               iframe.style.objectFit = 'cover';
                iframe.style.background = '#000';
+               iframe.style.display = 'block';
                iframe.allow = 'encrypted-media';
                iframe.allowFullscreen = true;
 
@@ -90,16 +92,23 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           }
 
           const data = event.data;
+          
+          // Prevent infinite re-renders by checking if we've already handled this message
+          if (data.type === '@vdo/readyToHandshake' && isReady) {
+            return;
+          }
+
           console.log('VdoCipher iframe message:', data);
 
           // Handle different message types
-          console.log('Processing message type:', data.type, 'Current loading state:', isLoading);
-          
           if (data.type === 'ready' || data.type === '@vdo/readyToHandshake') {
-            console.log('VdoCipher iframe ready - setting loading to false');
-            setIsLoading(false);
+            if (!isReady) {
+              console.log('VdoCipher iframe ready - setting loading to false');
+              setIsReady(true);
+              setIsLoading(false);
+            }
           } else if (data.type === 'play') {
-            console.log('Video started playing - setting loading to false');
+            console.log('Video started playing');
             setIsPlaying(true);
             setIsLoading(false);
           } else if (data.type === 'pause') {
@@ -117,27 +126,29 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             setError('Video playback error. Please try again.');
             setIsLoading(false);
           } else if (data.type === 'loadedmetadata') {
-            console.log('Video metadata loaded - setting loading to false');
+            console.log('Video metadata loaded');
             setIsLoading(false);
           } else if (data.type === 'canplay') {
-            console.log('Video can start playing - setting loading to false');
+            console.log('Video can start playing');
             setIsLoading(false);
-          } else {
-            console.log('Unhandled message type:', data.type);
           }
         };
 
+        // Store the handler reference to prevent multiple listeners
+        messageHandlerRef.current = handleMessage;
         window.addEventListener('message', handleMessage);
 
         // Fallback timeout to prevent infinite loading
         const fallbackTimeout = setTimeout(() => {
           console.log('Fallback timeout reached - setting loading to false');
           setIsLoading(false);
-        }, 5000);
+        }, 3000);
 
         // Cleanup function
         return () => {
-          window.removeEventListener('message', handleMessage);
+          if (messageHandlerRef.current) {
+            window.removeEventListener('message', messageHandlerRef.current);
+          }
           clearTimeout(fallbackTimeout);
         };
 
@@ -154,7 +165,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     };
 
     initializePlayer();
-  }, [otp, playbackInfo, onProgressUpdate, onComplete, isLoading]);
+  }, [otp, playbackInfo, onProgressUpdate, onComplete]);
 
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
