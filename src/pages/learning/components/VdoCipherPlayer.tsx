@@ -68,6 +68,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
                iframe.style.borderRadius = '8px';
                iframe.style.background = '#000';
                iframe.style.display = 'block';
+               iframe.style.position = 'absolute';
+               iframe.style.top = '0';
+               iframe.style.left = '0';
+               iframe.style.right = '0';
+               iframe.style.bottom = '0';
                iframe.allow = 'encrypted-media';
                iframe.allowFullscreen = true;
 
@@ -236,15 +241,12 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         style={{ width: '100%', height: '500px', position: 'relative' }}
       />
 
-      {isLoading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
-          <span>Loading secure video...</span>
-          <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-            Video ID: {videoId}
-          </div>
-        </div>
-      )}
+                   {isLoading && (
+               <div className="loading-overlay">
+                 <div className="loading-spinner"></div>
+                 <span>Loading video...</span>
+               </div>
+             )}
 
       {/* Complete Button */}
       <div className="video-actions">
