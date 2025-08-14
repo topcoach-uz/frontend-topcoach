@@ -284,6 +284,17 @@ const CourseManagementAdmin: React.FC = () => {
       if (Array.isArray(modulesData)) {
         modulesData.forEach((module, index) => {
           console.log(`Module ${index}:`, module.title, 'Lessons:', module.lessons?.length || 0);
+          if (module.lessons) {
+            module.lessons.forEach((lesson: any, lessonIndex: number) => {
+              console.log(`  Lesson ${lessonIndex}:`, {
+                title: lesson.title,
+                lessonType: lesson.lessonType,
+                contentUrl: lesson.contentUrl,
+                useVdoCipher: lesson.useVdoCipher,
+                vdocipherVideoId: lesson.vdocipherVideoId
+              });
+            });
+          }
         });
       }
     } catch (error) {
@@ -362,25 +373,29 @@ const CourseManagementAdmin: React.FC = () => {
   // Lesson Management
   const handleCreateLesson = async (values: any) => {
     try {
-      // Prepare lesson data with proper VdoCipher handling
+      // Prepare lesson data with proper handling for different lesson types
       const lessonData = {
         ...values,
-        // Handle VdoCipher fields
-        useVdoCipher: values.videoType === 'vdocipher',
-        vdocipherVideoId: values.videoType === 'vdocipher' ? values.vdocipherVideoId : undefined,
-        contentUrl: values.videoType === 'regular' ? values.contentUrl : undefined,
+        // Handle VdoCipher fields for video lessons
+        useVdoCipher: values.lessonType === 'video' && values.videoType === 'vdocipher',
+        vdocipherVideoId: values.lessonType === 'video' && values.videoType === 'vdocipher' ? values.vdocipherVideoId : undefined,
+        // Handle contentUrl for different lesson types
+        contentUrl: values.lessonType === 'pdf' ? values.contentUrl : 
+                   (values.lessonType === 'video' && values.videoType === 'regular') ? values.contentUrl : undefined,
       };
 
       console.log('Saving lesson with data:', lessonData);
 
       if (editingLesson) {
-        await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, lessonData);
+        const response = await courseApi.put(`/course-admin/courses/lessons/${editingLesson.id}`, lessonData);
+        console.log('Update response:', response);
         notification.success({
           message: 'Success',
           description: 'Lesson updated successfully',
         });
       } else {
-        await courseApi.post('/course-admin/courses/lessons', lessonData);
+        const response = await courseApi.post('/course-admin/courses/lessons', lessonData);
+        console.log('Create response:', response);
         notification.success({
           message: 'Success',
           description: 'Lesson created successfully',
@@ -931,7 +946,7 @@ const CourseManagementAdmin: React.FC = () => {
             editingLesson 
               ? {
                   ...editingLesson,
-                  videoType: editingLesson.useVdoCipher ? 'vdocipher' : 'regular',
+                  videoType: editingLesson.lessonType === 'video' ? (editingLesson.useVdoCipher ? 'vdocipher' : 'regular') : undefined,
                 }
               : { 
                   moduleId: selectedModule?.id,
