@@ -24,6 +24,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
   const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
   useEffect(() => {
@@ -172,6 +173,13 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     initializePlayer();
   }, [otp, playbackInfo, onProgressUpdate, onComplete]);
 
+  // Detect Safari browser
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
+    const isSafariBrowser = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+    setIsSafari(isSafariBrowser);
+  }, []);
+
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -234,6 +242,24 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
       <div className="video-title">
         <h3>{title}</h3>
       </div>
+
+      {isSafari && (
+        <div className="safari-warning">
+          <div className="warning-content">
+            <div className="warning-icon">⚠️</div>
+            <h4>Browser Compatibility Notice</h4>
+            <p>Safari may have issues with this video player. For the best experience, please use Chrome, Firefox, or Edge.</p>
+            <div className="browser-suggestions">
+              <span>Recommended browsers:</span>
+              <div className="browser-icons">
+                <span>🌐 Chrome</span>
+                <span>🦊 Firefox</span>
+                <span>🔷 Edge</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div 
         ref={playerRef} 
@@ -241,12 +267,12 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         style={{ width: '100%', height: '500px', position: 'relative' }}
       />
 
-                   {isLoading && (
-               <div className="loading-overlay">
-                 <div className="loading-spinner"></div>
-                 <span>Loading video...</span>
-               </div>
-             )}
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <span>Loading video...</span>
+        </div>
+      )}
 
       {/* Complete Button */}
       <div className="video-actions">
