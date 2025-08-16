@@ -172,7 +172,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
               header={
                 <div className="module-header">
                   <div className="module-info">
-                    <h3>{module.title}</h3>
+                    <h3>Module {moduleIndex + 1}</h3>
                     <div className="module-meta">
                       <span className="lesson-count">
                         {module.lessons?.length || 0} lessons
