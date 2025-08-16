@@ -216,12 +216,12 @@ export default function IndividualSessionsTab({
                 </CustomText>
               </Flex>
               {/* if the mentor level is probono, ai major search perks are not given */}
-              {!isProbono && (
+              {/* {!isProbono && (
                 <CustomText color={colors.colorText}>
                   You can use AI major search{' '}
                   {plan?.minutes === 30 ? '5 times' : '10 times'}{' '}
                 </CustomText>
-              )}
+              )} */}
               {!isProbono && (!totalMinutes || totalMinutes == 0) && (
                 <CustomText color={colors.colorText}>
                   {/* @ts-ignore */}

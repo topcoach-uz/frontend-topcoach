@@ -82,6 +82,29 @@
   font-weight: 600;
 }
 
+.giveaway {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 12;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .textSection {
   flex: 1;
   display: flex;

@@ -21,6 +21,7 @@ interface MentorCardProps {
   level?: string;
   classname?: string;
   availableSessions?: number;
+  isGiveaway?: boolean;
 }
 
 export default function MentorCard({
@@ -34,6 +35,7 @@ export default function MentorCard({
   level,
   classname,
   availableSessions = 0,
+  isGiveaway = false,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
@@ -87,6 +89,24 @@ export default function MentorCard({
             {level} coach
           </CustomText>
         </CustomCard>
+
+        {/* Giveaway badge */}
+        {isGiveaway && (
+          <CustomCard
+            bgColor="#FF6B35"
+            padding={8}
+            className={styles.giveaway}
+          >
+            <CustomText
+              fontSize={14}
+              fontWeight={600}
+              color="#ffffff"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              🎁 Giveaway
+            </CustomText>
+          </CustomCard>
+        )}
 
         {/* Name overlay on image */}
         <div className={styles.nameOverlay}>
