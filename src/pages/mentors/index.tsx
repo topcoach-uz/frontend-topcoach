@@ -19,6 +19,11 @@ export default function MentorsPage() {
   );
   const { t } = useTranslation();
 
+  // List of mentor IDs participating in the giveaway
+  const giveawayMentorIds = [
+    'e433af15-105e-448a-89e4-d48d104fca02','a6c78c0f-7649-460c-b309-74796c325481'
+  ];
+
   const mentorLevelOptions = [
     { label: 'All', value: 'all' },
     { label: 'Pro bono', value: MentorExperienceLevel.Probono },
@@ -119,6 +124,7 @@ export default function MentorsPage() {
                     }
                     level={mentor.mentorProfile?.level}
                     availableSessions={mentor.sessionStats?.availableSessions || 0}
+                    isGiveaway={giveawayMentorIds.includes(mentor.id)}
                   />
                 );
               })
