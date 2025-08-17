@@ -82,11 +82,13 @@ export default function MentorDetailsPage() {
       return;
     }
 
-    // Check for required profile fields before opening booking modal
-    const missingTelegram = telegramStatus?.status !== 'connected';
-    if (missingTelegram) {
-      dispatch(showProfilePopup());
-      return;
+    // Check for required profile fields before opening booking modal (only for students)
+    if (currentUser?.profile?.role === 'Student') {
+      const missingTelegram = telegramStatus?.status !== 'connected';
+      if (missingTelegram) {
+        dispatch(showProfilePopup());
+        return;
+      }
     }
 
     setPaymentModalOpen(true);
