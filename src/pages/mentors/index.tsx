@@ -119,7 +119,7 @@ export default function MentorsPage() {
                 
                 // Calculate giveaway sessions count for this mentor
                 const giveawaySessionsCount = giveawaySessions?.filter(
-                  session => session.mentor?.id === mentor.id && !session.giveawayBookedBy
+                  session => (session.mentor as any)?.id === mentor.id && !session.giveawayBookedBy
                 ).length || 0;
 
                 return (
