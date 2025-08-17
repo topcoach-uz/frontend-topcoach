@@ -227,8 +227,8 @@ const ProgramsPage: React.FC = () => {
       return;
     }
 
-    // Check if user is connected to Telegram bot
-    if (telegramStatus?.status !== 'connected') {
+    // Check if user is connected to Telegram bot (only for students)
+    if (profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
       dispatch(show());
       message.warning('Please connect your Telegram account to enroll in the course');
       return;

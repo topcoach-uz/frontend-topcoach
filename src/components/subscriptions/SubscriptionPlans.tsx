@@ -42,7 +42,7 @@ const SubscriptionPlans: React.FC = () => {
   const { data: usageData, isLoading: usageLoading } = useGetSubscriptionUsageQuery(undefined, { skip: !isAuthenticated });
   
   const currentPlanId = current?.plan?.id || 'aa63df56-4b93-470b-b861-98628dd186a1'; // Free as fallback
-  console.log('DEBUG currentPlanId used for matching:', currentPlanId);
+  // console.log('DEBUG currentPlanId used for matching:', currentPlanId);
 
   // Curated display data for each plan
   const curatedPlans = [
