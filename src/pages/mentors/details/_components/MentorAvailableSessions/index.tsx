@@ -64,7 +64,6 @@ export default function MentorAvailableSessions({
                 >
                   {name}
                 </CustomText>
-                {/* <div className={styles.session_time}>{duration} min</div> */}
                 <div className={styles.session_time}>
                   {t('mentors.duration')}
                 </div>
