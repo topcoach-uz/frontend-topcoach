@@ -120,7 +120,7 @@ export default function GiveawaySessions({
                   }}
                   onClick={() => onBookGiveawaySession(session.id)}
                 >
-                  🎁 Book Free Session
+                  Book Free Session
                 </CustomButton>
               )}
 
