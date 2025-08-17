@@ -11,6 +11,7 @@ import Background from './_components/background';
 import MentorAvailableSessions from './_components/MentorAvailableSessions';
 import MentorVideosView from './_components/MentorVideosView';
 import Overview from './_components/overview';
+import GiveawaySessions from './_components/GiveawaySessions';
 import PackageBalance from './_components/PackageBalance';
 import Socials from './_components/socials';
 import Statistics from './_components/statistics';
@@ -23,6 +24,7 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useAppDispatch } from 'src/app/store';
 import { show as showProfilePopup } from 'src/app/slices/profilePopupSlice';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
+import { useGetGiveawaySessionsQuery, useGetGiveawayStatusQuery, useBookGiveawaySessionMutation } from 'src/app/services/sessions';
 
 export default function MentorDetailsPage() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -43,6 +45,15 @@ export default function MentorDetailsPage() {
     skip: !isAuthenticated,
   });
   const dispatch = useAppDispatch();
+
+  // Fetch giveaway sessions and user status
+  const { data: giveawaySessions } = useGetGiveawaySessionsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: giveawayStatus } = useGetGiveawayStatusQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const [bookGiveawaySession] = useBookGiveawaySessionMutation();
 
   const {
     data: mentorData,
@@ -71,6 +82,11 @@ export default function MentorDetailsPage() {
     setPaymentModalOpen(false);
   };
 
+  // Get giveaway sessions for this mentor
+  const mentorGiveawaySessions = giveawaySessions?.filter(
+    session => (session.mentor as any)?.id === mentorId && !session.giveawayBookedBy
+  ) || [];
+
   const handleBookPayment = () => {
     if (!isAuthenticated) {
       message.error('Please login to book a session');
@@ -92,6 +108,37 @@ export default function MentorDetailsPage() {
     }
 
     setPaymentModalOpen(true);
+  };
+
+  const handleBookGiveawaySession = async (sessionId: string) => {
+    if (!isAuthenticated) {
+      message.error('Please login to book a giveaway session');
+      return;
+    }
+
+    // Check if user has already booked a giveaway session
+    if (giveawayStatus?.hasBookedGiveaway) {
+      message.error('You have already booked a giveaway session. Only one giveaway session per user is allowed.');
+      return;
+    }
+
+    // Check for required profile fields before booking (only for students)
+    if (currentUser?.profile?.role === 'Student') {
+      const missingTelegram = telegramStatus?.status !== 'connected';
+      if (missingTelegram) {
+        dispatch(showProfilePopup());
+        return;
+      }
+    }
+
+    try {
+      await bookGiveawaySession({ sessionId }).unwrap();
+      message.success('Giveaway session booked successfully!');
+      // Refresh the giveaway sessions data
+      window.location.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || 'Failed to book giveaway session');
+    }
   };
 
   const noSessions =
@@ -142,6 +189,11 @@ export default function MentorDetailsPage() {
             {screenSize < 1024 && (
               <Flex gap={24} style={{ width: '100%' }} vertical>
                 <Statistics />
+                <GiveawaySessions
+                  giveawaySessions={mentorGiveawaySessions}
+                  onBookGiveawaySession={handleBookGiveawaySession}
+                  hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
+                />
                 <MentorAvailableSessions
                   noSessions={noSessions}
                   availableSessions={availableSessions}
@@ -158,6 +210,11 @@ export default function MentorDetailsPage() {
           {screenSize > 1024 && (
             <Flex gap={24} style={{ width: '100%' }} vertical>
               <Statistics />
+              <GiveawaySessions
+                giveawaySessions={mentorGiveawaySessions}
+                onBookGiveawaySession={handleBookGiveawaySession}
+                hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
+              />
               <MentorAvailableSessions
                 availableSessions={availableSessions}
                 handleBookPayment={handleBookPayment}
