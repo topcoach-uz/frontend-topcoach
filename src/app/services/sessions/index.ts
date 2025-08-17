@@ -69,6 +69,19 @@ export const sessionsApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['GetMentorBalance'],
     }),
+    // Giveaway session endpoints
+    getGiveawaySessions: build.query<SessionsSchema[], void>({
+      query: () => ({ url: '/sessions/giveaway' }),
+      providesTags: ['GiveawaySessions'],
+    }),
+    getGiveawayStatus: build.query<{ hasBookedGiveaway: boolean; bookedSessionId?: string }, void>({
+      query: () => ({ url: '/sessions/giveaway/status' }),
+      providesTags: ['GiveawayStatus'],
+    }),
+    bookGiveawaySession: build.mutation<SessionsSchema, { sessionId: string }>({
+      query: (body) => ({ url: '/sessions/giveaway/book', method: 'POST', body }),
+      invalidatesTags: ['GiveawaySessions', 'GiveawayStatus', 'GetMe'],
+    }),
   }),
 });
 
@@ -81,4 +94,7 @@ export const {
   useBuySubscriptionMutation,
   useValidateAndPayMutation,
   useCancelSessionAsStudentMutation,
+  useGetGiveawaySessionsQuery,
+  useGetGiveawayStatusQuery,
+  useBookGiveawaySessionMutation,
 } = sessionsApi;

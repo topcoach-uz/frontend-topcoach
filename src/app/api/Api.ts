@@ -237,6 +237,8 @@ export interface SessionsSchema {
   reviews: ReviewsSchema;
   calendarInfo: CalendarsSchema;
   bookings: string[];
+  isGiveawaySession: boolean;
+  giveawayBookedBy?: string;
 }
 
 export interface ReportsSchema {
