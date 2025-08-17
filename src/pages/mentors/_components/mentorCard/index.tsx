@@ -22,6 +22,7 @@ interface MentorCardProps {
   classname?: string;
   availableSessions?: number;
   isGiveaway?: boolean;
+  giveawaySessionsCount?: number;
 }
 
 export default function MentorCard({
@@ -36,6 +37,7 @@ export default function MentorCard({
   classname,
   availableSessions = 0,
   isGiveaway = false,
+  giveawaySessionsCount = 0,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
@@ -161,6 +163,16 @@ export default function MentorCard({
           >
             {availableSessions} {availableSessions === 1 ? t('mentors.availableSession') : t('mentors.availableSessions')}
           </CustomText>
+          {giveawaySessionsCount > 0 && (
+            <CustomText
+              color="#FF6B35"
+              fontSize={13}
+              fontWeight={600}
+              style={{ marginTop: '4px' }}
+            >
+              🎁 {giveawaySessionsCount} giveaway {giveawaySessionsCount === 1 ? 'session' : 'sessions'}
+            </CustomText>
+          )}
         </div>
       </div>
     </CustomCard>

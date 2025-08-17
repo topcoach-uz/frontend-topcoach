@@ -10,6 +10,7 @@ import styles from './mentors.module.scss';
 import { useTranslation } from 'react-i18next';
 import CustomSelect from 'src/components/common/select';
 import { MentorExperienceLevel, MentorsResponseDto } from 'src/app/api/Api';
+import { useGetGiveawaySessionsQuery } from 'src/app/services/sessions';
 
 export default function MentorsPage() {
   const { response, isLoading, isError } = useApi(() => api.users.getMentors());
@@ -18,6 +19,9 @@ export default function MentorsPage() {
     (state) => state.auth
   );
   const { t } = useTranslation();
+
+  // Fetch giveaway sessions
+  const { data: giveawaySessions } = useGetGiveawaySessionsQuery();
 
   // List of mentor IDs participating in the giveaway
   const giveawayMentorIds = [
@@ -112,6 +116,11 @@ export default function MentorsPage() {
             {!isLoading ? (
               sortedMentors.map((mentor, index) => {
                 const profileImage = getLatestCreatedImg(mentor.profile.media);
+                
+                // Calculate giveaway sessions count for this mentor
+                const giveawaySessionsCount = giveawaySessions?.filter(
+                  session => session.mentor?.id === mentor.id && !session.giveawayBookedBy
+                ).length || 0;
 
                 return (
                   <MentorCard
@@ -130,6 +139,7 @@ export default function MentorsPage() {
                     level={mentor.mentorProfile?.level}
                     availableSessions={mentor.sessionStats?.availableSessions || 0}
                     isGiveaway={giveawayMentorIds.includes(mentor.id)}
+                    giveawaySessionsCount={giveawaySessionsCount}
                   />
                 );
               })
