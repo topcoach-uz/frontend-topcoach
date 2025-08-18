@@ -11,12 +11,14 @@ interface Props {
   giveawaySessions: any[];
   onBookGiveawaySession?: (session: any) => void;
   hasBookedGiveaway?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export default function GiveawaySessions({
   giveawaySessions,
   onBookGiveawaySession,
   hasBookedGiveaway = false,
+  isAuthenticated = false,
 }: Props) {
   const colors = useColors();
   const { t } = useTranslation();
@@ -105,40 +107,59 @@ export default function GiveawaySessions({
                 </CustomText>
               </div>
 
-              {!hasBookedGiveaway && onBookGiveawaySession && (
-                <CustomButton
-                  type="primary"
-                  height={40}
-                  width="max-content"
-                  style={{ 
-                    borderRadius: 8, 
-                    padding: '0 20px',
-                    backgroundColor: '#FF6B35',
-                    borderColor: '#FF6B35',
-                    fontWeight: 600,
-                    fontSize: 14
-                  }}
-                  onClick={() => onBookGiveawaySession(session)}
-                >
-                  Book Free Session
-                </CustomButton>
-              )}
+                                {!isAuthenticated && (
+                    <CustomButton
+                      type="primary"
+                      height={40}
+                      width="max-content"
+                      style={{ 
+                        borderRadius: 8, 
+                        padding: '0 20px',
+                        backgroundColor: '#FF6B35',
+                        borderColor: '#FF6B35',
+                        fontWeight: 600,
+                        fontSize: 14
+                      }}
+                      onClick={() => window.location.href = '/login'}
+                    >
+                      Login to Book
+                    </CustomButton>
+                  )}
 
-              {hasBookedGiveaway && (
-                <CustomText
-                  color="#FF6B35"
-                  fontSize={14}
-                  fontWeight={600}
-                  style={{ 
-                    padding: '8px 16px',
-                    backgroundColor: '#fff5f2',
-                    borderRadius: 6,
-                    border: '1px solid #FF6B35'
-                  }}
-                >
-                  🎁 Giveaway Claimed
-                </CustomText>
-              )}
+                  {isAuthenticated && !hasBookedGiveaway && onBookGiveawaySession && (
+                    <CustomButton
+                      type="primary"
+                      height={40}
+                      width="max-content"
+                      style={{ 
+                        borderRadius: 8, 
+                        padding: '0 20px',
+                        backgroundColor: '#FF6B35',
+                        borderColor: '#FF6B35',
+                        fontWeight: 600,
+                        fontSize: 14
+                      }}
+                      onClick={() => onBookGiveawaySession(session)}
+                    >
+                      Book Free Session
+                    </CustomButton>
+                  )}
+
+                  {isAuthenticated && hasBookedGiveaway && (
+                    <CustomText
+                      color="#FF6B35"
+                      fontSize={14}
+                      fontWeight={600}
+                      style={{ 
+                        padding: '8px 16px',
+                        backgroundColor: '#fff5f2',
+                        borderRadius: 6,
+                        border: '1px solid #FF6B35'
+                      }}
+                    >
+                      🎁 Giveaway Claimed
+                    </CustomText>
+                  )}
             </Flex>
           </CustomCard>
         ))}
