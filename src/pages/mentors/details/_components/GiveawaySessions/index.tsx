@@ -9,7 +9,7 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 
 interface Props {
   giveawaySessions: any[];
-  onBookGiveawaySession?: (sessionId: string) => void;
+  onBookGiveawaySession?: (session: any) => void;
   hasBookedGiveaway?: boolean;
 }
 
@@ -118,7 +118,7 @@ export default function GiveawaySessions({
                     fontWeight: 600,
                     fontSize: 14
                   }}
-                  onClick={() => onBookGiveawaySession(session.id)}
+                  onClick={() => onBookGiveawaySession(session)}
                 >
                   Book Free Session
                 </CustomButton>
@@ -136,7 +136,7 @@ export default function GiveawaySessions({
                     border: '1px solid #FF6B35'
                   }}
                 >
-                  ✓ Already Booked
+                  🎁 Giveaway Claimed
                 </CustomText>
               )}
             </Flex>
