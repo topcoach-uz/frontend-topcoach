@@ -20,8 +20,10 @@ export default function MentorsPage() {
   );
   const { t } = useTranslation();
 
-  // Fetch giveaway sessions
-  const { data: giveawaySessions } = useGetGiveawaySessionsQuery();
+  // Fetch giveaway sessions only if authenticated
+  const { data: giveawaySessions } = useGetGiveawaySessionsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   // List of mentor IDs participating in the giveaway
   const giveawayMentorIds = [

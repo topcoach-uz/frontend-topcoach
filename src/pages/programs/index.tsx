@@ -222,13 +222,13 @@ const ProgramsPage: React.FC = () => {
 
   const handleEnroll = async (planType: CourseTypeEnum) => {
     if (!isAuthenticated) {
-      message.warning('Please log in to enroll in the course');
-      window.location.href = '/auth/login';
+      message.info('Please log in to enroll in the course');
+      navigate('/auth/signin');
       return;
     }
 
     // Check if user is connected to Telegram bot (only for students)
-    if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
+if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
       dispatch(show());
       message.warning('Please connect your Telegram account to enroll in the course');
       return;

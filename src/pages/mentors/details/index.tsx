@@ -48,7 +48,7 @@ export default function MentorDetailsPage() {
   });
   const dispatch = useAppDispatch();
 
-  // Fetch giveaway sessions and user status
+  // Fetch giveaway sessions and user status only if authenticated
   const { data: giveawaySessions } = useGetGiveawaySessionsQuery(undefined, {
     skip: !isAuthenticated,
   });
@@ -88,6 +88,12 @@ export default function MentorDetailsPage() {
   const mentorGiveawaySessions = giveawaySessions?.filter(
     session => (session.mentor as any)?.id === mentorId && !session.giveawayBookedBy
   ) || [];
+
+  // For non-authenticated users, show all giveaway sessions (without booking status)
+  // If giveawaySessions is undefined (not fetched), show empty array for non-authenticated users
+  const allMentorGiveawaySessions = !isAuthenticated ? 
+    (giveawaySessions ? giveawaySessions.filter(session => (session.mentor as any)?.id === mentorId) : []) :
+    mentorGiveawaySessions;
 
   const handleBookPayment = () => {
     if (!isAuthenticated) {
@@ -207,9 +213,10 @@ export default function MentorDetailsPage() {
               <Flex gap={24} style={{ width: '100%' }} vertical>
                 <Statistics />
                 <GiveawaySessions
-                  giveawaySessions={mentorGiveawaySessions}
+                  giveawaySessions={allMentorGiveawaySessions}
                   onBookGiveawaySession={handleBookGiveawaySession}
                   hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
+                  isAuthenticated={isAuthenticated}
                 />
                 <MentorAvailableSessions
                   noSessions={noSessions}
@@ -228,9 +235,10 @@ export default function MentorDetailsPage() {
             <Flex gap={24} style={{ width: '100%' }} vertical>
               <Statistics />
               <GiveawaySessions
-                giveawaySessions={mentorGiveawaySessions}
+                giveawaySessions={allMentorGiveawaySessions}
                 onBookGiveawaySession={handleBookGiveawaySession}
                 hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
+                isAuthenticated={isAuthenticated}
               />
               <MentorAvailableSessions
                 availableSessions={availableSessions}

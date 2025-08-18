@@ -12,6 +12,7 @@ import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 import { useDispatch } from 'react-redux';
 import { coursesApi } from 'src/app/services/courses';
+import { useTypedSelector } from 'src/app/store';
 
 const { Sider, Content } = Layout;
 
@@ -25,6 +26,23 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const [vdocipherPlaybackInfo, setVdocipherPlaybackInfo] = useState<string | null>(null);
   const [isLoadingOTP, setIsLoadingOTP] = useState(false);
   const dispatch = useDispatch();
+  
+  // Check authentication
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      message.warning('Please log in to access the learning content');
+      window.location.href = '/auth/signin';
+      return;
+    }
+  }, [isAuthenticated]);
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // API hooks
   const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {

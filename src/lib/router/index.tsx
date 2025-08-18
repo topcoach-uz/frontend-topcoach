@@ -4,6 +4,7 @@ import {
   Route,
   BrowserRouter as Router,
   Routes,
+  Navigate,
 } from "react-router-dom";
 import { useTypedSelector } from "src/app/store";
 
@@ -136,8 +137,18 @@ function RouterProvider() {
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
-              <Route path="/learning" element={<LearningPageLazy />} />
-              <Route path="/learning/:lessonId" element={<LearningPageLazy />} />
+              <Route 
+                path="/learning" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
+              <Route 
+                path="/learning/:lessonId" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />
               <Route
