@@ -1,4 +1,4 @@
-import { Breadcrumb, Flex, message, Skeleton } from 'antd';
+import { Breadcrumb, Flex, message, Skeleton, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MEDIA_TAGS } from 'src/app/api/Api';
@@ -30,6 +30,8 @@ export default function MentorDetailsPage() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
   const [bookingInfo, setBookingInfo] = useState<IHandleBookArgs | null>(null);
+  const [giveawayConfirmModalOpen, setGiveawayConfirmModalOpen] = useState<boolean>(false);
+  const [selectedGiveawaySession, setSelectedGiveawaySession] = useState<any>(null);
   const { pathname } = useLocation();
   const { screenSize } = useScreenSize();
   const splittedPathname = pathname.split('/');
@@ -110,7 +112,7 @@ export default function MentorDetailsPage() {
     setPaymentModalOpen(true);
   };
 
-  const handleBookGiveawaySession = async (sessionId: string) => {
+  const handleBookGiveawaySession = (session: any) => {
     if (!isAuthenticated) {
       message.error('Please login to book a giveaway session');
       return;
@@ -131,14 +133,29 @@ export default function MentorDetailsPage() {
       }
     }
 
+    // Show confirmation modal
+    setSelectedGiveawaySession(session);
+    setGiveawayConfirmModalOpen(true);
+  };
+
+  const handleConfirmGiveawayBooking = async () => {
+    if (!selectedGiveawaySession) return;
+
     try {
-      await bookGiveawaySession({ sessionId }).unwrap();
+      await bookGiveawaySession({ sessionId: selectedGiveawaySession.id }).unwrap();
       message.success('Giveaway session booked successfully!');
+      setGiveawayConfirmModalOpen(false);
+      setSelectedGiveawaySession(null);
       // Refresh the giveaway sessions data
       window.location.reload();
     } catch (error: any) {
       message.error(error?.data?.message || 'Failed to book giveaway session');
     }
+  };
+
+  const handleCancelGiveawayBooking = () => {
+    setGiveawayConfirmModalOpen(false);
+    setSelectedGiveawaySession(null);
   };
 
   const noSessions =
@@ -236,6 +253,77 @@ export default function MentorDetailsPage() {
         handleClosePayment={handleClosePayment}
         handleBook={handleBook}
       />
+
+      {/* Giveaway Session Confirmation Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>🎁</span>
+            <span>Confirm Giveaway Session Booking</span>
+          </div>
+        }
+        open={giveawayConfirmModalOpen}
+        onOk={handleConfirmGiveawayBooking}
+        onCancel={handleCancelGiveawayBooking}
+        okText="Yes, Book Free Session"
+        cancelText="Cancel"
+        okButtonProps={{
+          style: {
+            backgroundColor: '#FF6B35',
+            borderColor: '#FF6B35',
+          }
+        }}
+        width={500}
+      >
+        {selectedGiveawaySession && (
+          <div style={{ padding: '16px 0' }}>
+            <p style={{ fontSize: '16px', marginBottom: '16px' }}>
+              Are you sure you want to book this <strong>free giveaway session</strong>?
+            </p>
+            
+            <div style={{ 
+              backgroundColor: '#fff5f2', 
+              padding: '16px', 
+              borderRadius: '8px',
+              border: '1px solid #FF6B35'
+            }}>
+              <h4 style={{ color: '#FF6B35', margin: '0 0 8px 0' }}>
+                Session Details:
+              </h4>
+              <p style={{ margin: '4px 0' }}>
+                <strong>Type:</strong> Free 30-Minute Session
+              </p>
+              <p style={{ margin: '4px 0' }}>
+                <strong>Date:</strong> {new Date(selectedGiveawaySession.date).toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+              <p style={{ margin: '4px 0' }}>
+                <strong>Time:</strong> {new Date(selectedGiveawaySession.date).toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </p>
+            </div>
+
+            <div style={{ 
+              marginTop: '16px', 
+              padding: '12px', 
+              backgroundColor: '#fff3cd', 
+              borderRadius: '6px',
+              border: '1px solid #ffeaa7'
+            }}>
+              <p style={{ margin: '0', fontSize: '14px', color: '#856404' }}>
+                <strong>⚠️ Important:</strong> You can only book one giveaway session per account. 
+                This action cannot be undone.
+              </p>
+            </div>
+          </div>
+        )}
+      </Modal>
     </main>
   );
 }
