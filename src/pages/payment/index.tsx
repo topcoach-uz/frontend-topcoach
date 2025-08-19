@@ -63,14 +63,14 @@ function PaymentPage() {
       const plan = plans.find(p => p.id === planId);
       const mentorLevel = mentorData?.mentorProfile?.level;
       
-      if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel]) {
+      if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel] && mentorLevel !== 'probono') {
         // If amount is not in URL, calculate it
         if (!amount) {
           const sessionAmount = plan.prices[mentorLevel];
           setCalculatedAmount(sessionAmount);
           
           // Determine currency based on amount size and plan currency
-          let currency = plan.currency?.name;
+          let currency = (plan.currency as any)?.name;
           if (!currency) {
             // If no currency specified, determine based on amount size
             // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
@@ -83,11 +83,11 @@ function PaymentPage() {
             mentorLevel,
             amount: sessionAmount,
             currency: currency,
-            originalCurrency: plan.currency?.name
+            originalCurrency: (plan.currency as any)?.name
           });
         } else {
           // If amount is in URL, just determine the currency
-          let currency = plan.currency?.name;
+          let currency = (plan.currency as any)?.name;
           if (!currency) {
             // Determine currency based on the amount in URL
             const urlAmount = parseFloat(amount);
@@ -100,7 +100,7 @@ function PaymentPage() {
             mentorLevel,
             urlAmount: amount,
             currency: currency,
-            originalCurrency: plan.currency?.name
+            originalCurrency: (plan.currency as any)?.name
           });
         }
       }
