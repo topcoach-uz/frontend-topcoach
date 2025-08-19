@@ -12,6 +12,8 @@ import { themeFontSize, themeFontWeight } from "src/constants/theme";
 import { ArrowLeft } from "iconsax-react";
 import CustomSelect from "src/components/common/select";
 import { Spin } from "antd";
+import { useGetPlansQuery } from "src/app/services/mentors";
+import { useGetMentorDetailQuery } from "src/app/services/mentors";
 
 function PaymentPage() {
   const colors = useTypedSelector((state) => state.layout.colors);
@@ -26,6 +28,7 @@ function PaymentPage() {
   const mentorId = searchParams.get("mentorId") ?? "";
   const enrollmentId = searchParams.get("enrollmentId") ?? "";
   const paymentType = searchParams.get("type") ?? "";
+  const buyType = searchParams.get("buyType") ?? "";
   
   // Debug logging
   console.log('Payment page params:', {
@@ -35,7 +38,8 @@ function PaymentPage() {
     planId,
     mentorId,
     enrollmentId,
-    paymentType
+    paymentType,
+    buyType
   });
   
   const returnUrl = paymentType === "course" 
@@ -43,6 +47,65 @@ function PaymentPage() {
     : "https://topcoach.uz/";
 
   const [isLoading, setIsLoading] = useState(false);
+  const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
+  const [calculatedCurrency, setCalculatedCurrency] = useState<string>("USD");
+
+  // Fetch data for session payments
+  const { data: plans } = useGetPlansQuery();
+  const { data: mentorData } = useGetMentorDetailQuery(
+    { mentorId },
+    { skip: !mentorId || paymentType === 'course' }
+  );
+
+  // Calculate amount for session payments
+  useEffect(() => {
+    if (sessionId && planId && mentorId && mentorData && plans) {
+      const plan = plans.find(p => p.id === planId);
+      const mentorLevel = mentorData?.mentorProfile?.level;
+      
+      if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel]) {
+        // If amount is not in URL, calculate it
+        if (!amount) {
+          const sessionAmount = plan.prices[mentorLevel];
+          setCalculatedAmount(sessionAmount);
+          
+          // Determine currency based on amount size and plan currency
+          let currency = plan.currency?.name;
+          if (!currency) {
+            // If no currency specified, determine based on amount size
+            // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
+            currency = sessionAmount > 1000 ? 'UZS' : 'USD';
+          }
+          
+          setCalculatedCurrency(currency);
+          console.log('Calculated session amount:', {
+            planType: plan.type,
+            mentorLevel,
+            amount: sessionAmount,
+            currency: currency,
+            originalCurrency: plan.currency?.name
+          });
+        } else {
+          // If amount is in URL, just determine the currency
+          let currency = plan.currency?.name;
+          if (!currency) {
+            // Determine currency based on the amount in URL
+            const urlAmount = parseFloat(amount);
+            currency = urlAmount > 1000 ? 'UZS' : 'USD';
+          }
+          
+          setCalculatedCurrency(currency);
+          console.log('URL amount currency detection:', {
+            planType: plan.type,
+            mentorLevel,
+            urlAmount: amount,
+            currency: currency,
+            originalCurrency: plan.currency?.name
+          });
+        }
+      }
+    }
+  }, [sessionId, planId, mentorId, mentorData, plans, amount]);
 
   // Check if we have required parameters
   if (!planId && !sessionId && !enrollmentId) {
@@ -75,6 +138,42 @@ function PaymentPage() {
       </div>
     );
   }
+
+  // Determine the amount to display
+  const displayAmount = paymentType === 'course' 
+    ? amount 
+    : (calculatedAmount !== null ? calculatedAmount.toString() : amount);
+  
+  // Determine the currency to display
+  let displayCurrency = paymentType === 'course' ? 'USD' : (calculatedCurrency || currencyName || 'USD');
+  
+  // Enhanced currency detection for URL parameters
+  if (!calculatedAmount && amount) {
+    const amountValue = parseFloat(amount);
+    // If amount is very large (>10000), it's definitely UZS
+    if (amountValue > 10000) {
+      displayCurrency = 'UZS';
+    }
+    // If amount is between 1000-10000 and no currency specified, likely UZS
+    else if (amountValue > 1000 && !currencyName && !calculatedCurrency) {
+      displayCurrency = 'UZS';
+    }
+    // If amount is small (<100) and no currency specified, likely USD
+    else if (amountValue < 100 && !currencyName && !calculatedCurrency) {
+      displayCurrency = 'USD';
+    }
+  }
+  
+  // Debug logging
+  console.log('Payment display debug:', {
+    amount,
+    calculatedAmount,
+    currencyName,
+    calculatedCurrency,
+    displayAmount,
+    displayCurrency,
+    paymentType
+  });
 
   const handleSubmit = async () => {
     form.validateFields().then((values) => {
@@ -188,8 +287,10 @@ function PaymentPage() {
                   // fontWeight={themeFontWeight.fontWeightSemibold}
                 >
                   {paymentType === 'course' 
-                    ? `$${amount || '0'}` 
-                    : `${amount || '0'} ${currencyName || 'USD'}`
+                    ? `$${displayAmount || '0'}` 
+                    : displayCurrency === 'UZS' 
+                      ? `${displayAmount || '0'} UZS`
+                      : `$${displayAmount || '0'}`
                   }
                 </CustomText>
                 {paymentType === 'course' && (
