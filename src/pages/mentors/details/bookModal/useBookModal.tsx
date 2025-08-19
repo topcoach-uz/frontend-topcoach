@@ -237,8 +237,8 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
             const plan = plans.find(p => p.id === bookingInfo.planId);
             const mentorLevel = mentorData?.mentorProfile?.level;
             
-            if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel] && mentorLevel !== 'probono') {
-              const sessionAmount = plan.prices[mentorLevel];
+            if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
+              const sessionAmount = (plan.prices as any)[mentorLevel];
               
               // Determine currency based on amount size and plan currency
               let currency = (plan.currency as any)?.name;
