@@ -32,7 +32,8 @@ export default function MentorsPage() {
     '7f20bb05-8026-4f25-b081-7cd2b4db2a55','573ef815-5589-478e-bd20-46d3fe823224',
     '68af607b-fc31-482e-9ca5-211bdf048d49','bee6229b-9222-4d8a-af7a-df12845c84d5',
     '2bfd89d8-de12-45be-8bf1-7469196d9226','1ec89629-0fe4-47bd-8177-58e28c6b95f5',
-    'fe445679-4811-4f2f-9802-e6aff7ac2460','c226e300-58a9-4b92-baf0-64e4c59f470e'
+    'fe445679-4811-4f2f-9802-e6aff7ac2460','c226e300-58a9-4b92-baf0-64e4c59f470e',
+    'e9a6741b-d2f7-4cca-bb70-07fbb933933d'
   ];
 
   const mentorLevelOptions = [
