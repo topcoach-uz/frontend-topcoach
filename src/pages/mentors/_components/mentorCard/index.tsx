@@ -163,9 +163,9 @@ export default function MentorCard({
           >
             {availableSessions} {availableSessions === 1 ? t('mentors.availableSession') : t('mentors.availableSessions')}
           </CustomText>
-          {giveawaySessionsCount > 0 && (
+          {isGiveaway && (
             <CustomText
-              color="#FF6B35"
+              color={giveawaySessionsCount > 0 ? "#FF6B35" : "#999999"}
               fontSize={13}
               fontWeight={600}
               style={{ marginTop: '4px' }}
