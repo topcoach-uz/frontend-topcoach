@@ -237,11 +237,11 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
             const plan = plans.find(p => p.id === bookingInfo.planId);
             const mentorLevel = mentorData?.mentorProfile?.level;
             
-            if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel]) {
+            if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel] && mentorLevel !== 'probono') {
               const sessionAmount = plan.prices[mentorLevel];
               
               // Determine currency based on amount size and plan currency
-              let currency = plan.currency?.name;
+              let currency = (plan.currency as any)?.name;
               if (!currency) {
                 // If no currency specified, determine based on amount size
                 // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
