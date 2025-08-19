@@ -63,10 +63,10 @@ function PaymentPage() {
       const plan = plans.find(p => p.id === planId);
       const mentorLevel = mentorData?.mentorProfile?.level;
       
-      if (plan && mentorLevel && plan.prices && plan.prices[mentorLevel] && mentorLevel !== 'probono') {
+      if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
         // If amount is not in URL, calculate it
         if (!amount) {
-          const sessionAmount = plan.prices[mentorLevel];
+          const sessionAmount = (plan.prices as any)[mentorLevel];
           setCalculatedAmount(sessionAmount);
           
           // Determine currency based on amount size and plan currency
