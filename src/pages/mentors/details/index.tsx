@@ -32,6 +32,7 @@ export default function MentorDetailsPage() {
   const [bookingInfo, setBookingInfo] = useState<IHandleBookArgs | null>(null);
   const [giveawayConfirmModalOpen, setGiveawayConfirmModalOpen] = useState<boolean>(false);
   const [selectedGiveawaySession, setSelectedGiveawaySession] = useState<any>(null);
+  const [giveawaySuccessModalOpen, setGiveawaySuccessModalOpen] = useState<boolean>(false);
   const { pathname } = useLocation();
   const { screenSize } = useScreenSize();
   const splittedPathname = pathname.split('/');
@@ -149,11 +150,10 @@ export default function MentorDetailsPage() {
 
     try {
       await bookGiveawaySession({ sessionId: selectedGiveawaySession.id }).unwrap();
-      message.success('Giveaway session booked successfully!');
       setGiveawayConfirmModalOpen(false);
       setSelectedGiveawaySession(null);
-      // Refresh the giveaway sessions data
-      window.location.reload();
+      // Show success modal
+      setGiveawaySuccessModalOpen(true);
     } catch (error: any) {
       message.error(error?.data?.message || 'Failed to book giveaway session');
     }
@@ -162,6 +162,12 @@ export default function MentorDetailsPage() {
   const handleCancelGiveawayBooking = () => {
     setGiveawayConfirmModalOpen(false);
     setSelectedGiveawaySession(null);
+  };
+
+  const handleSuccessModalClose = () => {
+    setGiveawaySuccessModalOpen(false);
+    // Redirect to homepage
+    window.location.href = '/';
   };
 
   const noSessions =
@@ -331,6 +337,74 @@ export default function MentorDetailsPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Giveaway Session Success Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '24px' }}>🎉</span>
+            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#52c41a' }}>CONGRATULATIONS!</span>
+          </div>
+        }
+        open={giveawaySuccessModalOpen}
+        onOk={handleSuccessModalClose}
+        onCancel={handleSuccessModalClose}
+        okText="Okay"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        okButtonProps={{
+          style: {
+            backgroundColor: '#52c41a',
+            borderColor: '#52c41a',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            padding: '8px 24px',
+            height: 'auto'
+          }
+        }}
+        width={500}
+        closable={false}
+      >
+        <div style={{ padding: '24px 0', textAlign: 'center' }}>
+          <div style={{ 
+            backgroundColor: '#f6ffed', 
+            padding: '24px', 
+            borderRadius: '12px',
+            border: '2px solid #b7eb8f',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ color: '#52c41a', margin: '0 0 16px 0', fontSize: '18px' }}>
+              You have successfully booked your session!
+            </h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '16px', color: '#333' }}>
+              Please, check the Telegram bot for the reminder.
+            </p>
+            <div style={{ 
+              backgroundColor: '#e6f7ff', 
+              padding: '16px', 
+              borderRadius: '8px',
+              border: '1px solid #91d5ff',
+              marginTop: '16px'
+            }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#1890ff', fontWeight: 'bold' }}>
+                📱 Telegram Bot Link:
+              </p>
+              <a 
+                href="https://t.me/topcoach_official_bot" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  color: '#1890ff', 
+                  textDecoration: 'none',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}
+              >
+                @topcoach_official_bot
+              </a>
+            </div>
+          </div>
+        </div>
       </Modal>
     </main>
   );
