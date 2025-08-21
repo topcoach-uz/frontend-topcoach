@@ -18,6 +18,7 @@ export const universityCountryFlags: Record<string, string> = {
   'The University of Edinburgh': '🇬🇧',
   'University of Leeds': '🇬🇧',
   'University of London': '🇬🇧',
+  'University of Birmingham': '🇬🇧',
   
   // German Universities
   'Berlin School of Economics and Law': '🇩🇪',
