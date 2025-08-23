@@ -225,61 +225,67 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     >
       <div style={{ marginBottom: 16 }}>
         <p>You have used all included sessions for your plan.</p>
-        <p>Please upgrade your plan or pay for this session to continue.</p>
+        {mentorData?.mentorProfile?.level === MentorExperienceLevel.Probono ? (
+          <p>Please upgrade your plan to continue.</p>
+        ) : (
+          <p>Please upgrade your plan or pay for this session to continue.</p>
+        )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
         <Button onClick={() => setQuotaModalVisible(false)}>Cancel</Button>
         <Button onClick={() => { setQuotaModalVisible(false); navigate('/'); }}>Upgrade Plan</Button>
-        <Button type="primary" onClick={() => {
-          setQuotaModalVisible(false);
-          if (quotaSessionId && bookingInfo?.planId && mentorData && plans) {
-            // Calculate amount based on mentor level and plan type
-            const plan = plans.find(p => p.id === bookingInfo.planId);
-            const mentorLevel = mentorData?.mentorProfile?.level;
-            
-            if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
-              const sessionAmount = (plan.prices as any)[mentorLevel];
+        {mentorData?.mentorProfile?.level !== MentorExperienceLevel.Probono && (
+          <Button type="primary" onClick={() => {
+            setQuotaModalVisible(false);
+            if (quotaSessionId && bookingInfo?.planId && mentorData && plans) {
+              // Calculate amount based on mentor level and plan type
+              const plan = plans.find(p => p.id === bookingInfo.planId);
+              const mentorLevel = mentorData?.mentorProfile?.level;
               
-              // Determine currency based on amount size and plan currency
-              let currency = (plan.currency as any)?.name;
-              if (!currency) {
-                // If no currency specified, determine based on amount size
-                // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
-                currency = sessionAmount > 1000 ? 'UZS' : 'USD';
+              if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
+                const sessionAmount = (plan.prices as any)[mentorLevel];
+                
+                // Determine currency based on amount size and plan currency
+                let currency = (plan.currency as any)?.name;
+                if (!currency) {
+                  // If no currency specified, determine based on amount size
+                  // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
+                  currency = sessionAmount > 1000 ? 'UZS' : 'USD';
+                }
+                
+                // Dynamically build payment URL with all required params including amount
+                const params = new URLSearchParams();
+                params.set('mentorId', mentorId);
+                params.set('sessionId', quotaSessionId);
+                params.set('planId', bookingInfo.planId);
+                params.set('amount', sessionAmount.toString());
+                params.set('currencyName', currency);
+                params.set('buyType', bookingInfo?.planType || 'individual');
+                
+                console.log('Quota exceeded payment URL params:', {
+                  mentorId,
+                  sessionId: quotaSessionId,
+                  planId: bookingInfo.planId,
+                  amount: sessionAmount,
+                  currency,
+                  planType: bookingInfo?.planType
+                });
+                
+                navigate(`/payment?${params.toString()}`);
+              } else {
+                // Fallback without amount (will be calculated on payment page)
+                const params = new URLSearchParams();
+                params.set('mentorId', mentorId);
+                params.set('sessionId', quotaSessionId);
+                params.set('planId', bookingInfo.planId);
+                params.set('buyType', bookingInfo?.planType || 'individual');
+                navigate(`/payment?${params.toString()}`);
               }
-              
-              // Dynamically build payment URL with all required params including amount
-              const params = new URLSearchParams();
-              params.set('mentorId', mentorId);
-              params.set('sessionId', quotaSessionId);
-              params.set('planId', bookingInfo.planId);
-              params.set('amount', sessionAmount.toString());
-              params.set('currencyName', currency);
-              params.set('buyType', bookingInfo?.planType || 'individual');
-              
-              console.log('Quota exceeded payment URL params:', {
-                mentorId,
-                sessionId: quotaSessionId,
-                planId: bookingInfo.planId,
-                amount: sessionAmount,
-                currency,
-                planType: bookingInfo?.planType
-              });
-              
-              navigate(`/payment?${params.toString()}`);
-            } else {
-              // Fallback without amount (will be calculated on payment page)
-              const params = new URLSearchParams();
-              params.set('mentorId', mentorId);
-              params.set('sessionId', quotaSessionId);
-              params.set('planId', bookingInfo.planId);
-              params.set('buyType', bookingInfo?.planType || 'individual');
-              navigate(`/payment?${params.toString()}`);
             }
-          }
-        }}>
-          Pay for This Session
-        </Button>
+          }}>
+            Pay for This Session
+          </Button>
+        )}
       </div>
     </Modal>
   );
