@@ -52,16 +52,41 @@ function PaymentPage() {
 
   // Fetch data for session payments
   const { data: plans } = useGetPlansQuery();
-  const { data: mentorData } = useGetMentorDetailQuery(
+  const { data: mentorDetail } = useGetMentorDetailQuery(
     { mentorId },
-    { skip: !mentorId || paymentType === 'course' }
+    { skip: !mentorId }
   );
 
-  // Calculate amount for session payments
+  // Check for payment status on page load
   useEffect(() => {
-    if (sessionId && planId && mentorId && mentorData && plans) {
+    const checkPaymentStatus = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentStatus = urlParams.get('payment_status');
+      const error = urlParams.get('error');
+      
+      if (paymentStatus === 'success') {
+        message.success('Payment completed successfully!');
+        // Redirect to appropriate success page
+        if (paymentType === 'course') {
+          navigate('/programs/success?success=true');
+        } else {
+          navigate('/');
+        }
+      } else if (error) {
+        console.log('Payment error detected:', error);
+        // Don't show error message immediately - let user try again
+        // message.error('Payment was not completed. Please try again.');
+      }
+    };
+
+    checkPaymentStatus();
+  }, [navigate, paymentType]);
+
+  // Calculate dynamic pricing for session payments
+  useEffect(() => {
+    if (sessionId && planId && mentorId && mentorDetail && plans) {
       const plan = plans.find(p => p.id === planId);
-      const mentorLevel = mentorData?.mentorProfile?.level;
+      const mentorLevel = mentorDetail?.mentorProfile?.level;
       
       if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
         // If amount is not in URL, calculate it
@@ -105,7 +130,7 @@ function PaymentPage() {
         }
       }
     }
-  }, [sessionId, planId, mentorId, mentorData, plans, amount]);
+  }, [sessionId, planId, mentorId, mentorDetail, plans, amount]);
 
   // Check if we have required parameters
   if (!planId && !sessionId && !enrollmentId) {
@@ -232,17 +257,37 @@ function PaymentPage() {
       }
       
       console.log('Payment payload:', payload);
+      console.log('Payment provider:', provider);
       
       const res = await api.payments.getRedirectUrl(provider, payload);
       
       if (res.data?.url || res.data?.redirectUrl) {
-        window.location.href = res.data.url || res.data.redirectUrl;
+        const redirectUrl = res.data.url || res.data.redirectUrl;
+        console.log('Redirecting to:', redirectUrl);
+        
+        // For Paycom, add a small delay to ensure backend processing
+        if (provider === 'payme') {
+          message.info('Redirecting to Paycom payment gateway...');
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 1000);
+        } else {
+          window.location.href = redirectUrl;
+        }
       } else {
         message.error('No redirect URL received.');
       }
     } catch (err: any) {
       console.error('Payment redirect error:', err);
-      message.error(err.response?.data?.message || 'Payment redirect failed.');
+      
+      // More specific error messages
+      if (err.response?.status === 400) {
+        message.error('Invalid payment request. Please check your payment details.');
+      } else if (err.response?.status === 500) {
+        message.error('Payment service temporarily unavailable. Please try again.');
+      } else {
+        message.error(err.response?.data?.message || 'Payment redirect failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

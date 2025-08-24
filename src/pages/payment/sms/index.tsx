@@ -32,8 +32,17 @@ export default function PaymentSmsPage() {
     useBuySubscriptionMutation();
 
   const handleConfirmPayment = async () => {
+    console.log('=== SMS PAYMENT CONFIRMATION START ===');
+    console.log('Card token:', cardToken);
+    console.log('SMS code:', otpValue);
+    console.log('Plan ID:', planId);
+    console.log('Mentor ID:', mentorId);
+    console.log('Session ID:', sessionId);
+    console.log('Buy type:', buyType);
+    
     form.validateFields().then(() => {
       if (buyType === 'subscription' || planId) {
+        console.log('Processing subscription payment...');
         buySubscription({
           method: 'click',
           body: {
@@ -44,13 +53,21 @@ export default function PaymentSmsPage() {
         })
           .unwrap()
           .then((res) => {
+            console.log('Subscription payment successful:', res);
             message.success('Payment successful!');
             navigate(-2);
           })
           .catch((err) => {
+            console.error('Subscription payment failed:', err);
+            console.error('Error details:', {
+              status: err.status,
+              data: err.data,
+              message: err.message
+            });
             message.error(err.data?.message || 'Payment failed', 7);
           });
       } else {
+        console.log('Processing session payment...');
         validateAndPay({
           method: 'click',
           body: {
@@ -63,11 +80,29 @@ export default function PaymentSmsPage() {
         })
           .unwrap()
           .then((res) => {
+            console.log('Session payment successful:', res);
             message.success('Payment successful!');
             navigate('/');
           })
           .catch((err) => {
-            message.error(err.data?.message || 'Payment failed', 7);
+            console.error('Session payment failed:', err);
+            console.error('Error details:', {
+              status: err.status,
+              data: err.data,
+              message: err.message
+            });
+            
+            // More specific error messages
+            let errorMessage = 'Payment failed';
+            if (err.data?.message) {
+              errorMessage = err.data.message;
+            } else if (err.status === 400) {
+              errorMessage = 'Invalid payment request. Please check your details.';
+            } else if (err.status === 500) {
+              errorMessage = 'Payment service error. Please try again.';
+            }
+            
+            message.error(errorMessage, 7);
           });
       }
     });
