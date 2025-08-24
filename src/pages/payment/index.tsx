@@ -348,34 +348,49 @@ function PaymentPage() {
       <CustomButton
         icon={<ArrowLeft />}
         onClick={() => navigate(-1)}
-        mt={100}
-        mb={10}
+        mt={80}
+        mb={15}
       >
         Back
       </CustomButton>
       <div className={styles.payment + " container"}>
-        <CustomText fontSize={36} fontWeight={500} color={colors.colorText}>
+        <CustomText fontSize={36} fontWeight={600} color={colors.colorText} style={{ marginBottom: '8px' }}>
           Payment
         </CustomText>
+        <CustomText fontSize={15} color={colors.colorTextSecondary} style={{ marginBottom: '25px', textAlign: 'center' }}>
+          Choose your preferred payment method
+        </CustomText>
+        
         <div className={styles.details}>
-          <CustomText color={colors.colorText} p={8}>
+          <CustomText color={colors.colorText} p={8} style={{ fontSize: '16px', fontWeight: '500' }}>
             Payment info
           </CustomText>
           <div className={styles.type}>
-            <div className={styles.card}>
-              <div style={{ display: "flex", gap: "5px" }}>
-                <CustomText
-                  fontSize={themeFontSize.fontSizeTitle4}
-                  fontWeight={themeFontWeight.fontWeightSemibold}
-                  color={colors.colorText}
-                >
-                  Amount:
+            {/* Payment Amount Display - Left Side */}
+            <div style={{
+              width: '40%',
+              padding: '20px',
+              borderRight: '1px solid #e0e0e0',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '200px'
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '16px',
+                padding: '20px',
+                color: 'white',
+                textAlign: 'center',
+                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                width: '100%',
+                maxWidth: '260px'
+              }}>
+                <CustomText fontSize={13} color="rgba(255,255,255,0.9)" style={{ marginBottom: '6px' }}>
+                  Payment Amount
                 </CustomText>
-                <CustomText
-                  fontSize={themeFontSize.fontSizeTitle4}
-                  color={colors.colorText}
-                  // fontWeight={themeFontWeight.fontWeightSemibold}
-                >
+                <CustomText fontSize={24} fontWeight={700} color="white" style={{ marginBottom: '3px' }}>
                   {paymentType === 'course' 
                     ? `$${displayAmount || '0'}` 
                     : displayCurrency === 'UZS' 
@@ -383,66 +398,37 @@ function PaymentPage() {
                       : `$${displayAmount || '0'}`
                   }
                 </CustomText>
-                {paymentType === 'course' && (
-                  <div style={{ marginTop: '8px', marginBottom: '16px' }}>
-                    <CustomText
-                      fontSize={themeFontSize.fontSizeTitle5}
-                      color={colors.colorTextSecondary || '#666'}>                    
-                    </CustomText>
-                  </div>
-                )}
-              </div>
-              <div className={styles.cardDetails}>
-                <Form form={form} layout="vertical">
-                  <InputFormItem
-                    inputType="mask"
-                    name="cardNumber"
-                    label="Card number"
-                    message="Please enter your card number"
-                    mask="0000 0000 0000 0000"
-                    placeholder="0000 0000 0000 0000"
-                  />
-
-                  <InputFormItem
-                    inputType="mask"
-                    name="phone"
-                    label="Card expiry date"
-                    message="Telefon raqamni kiriting"
-                    mask="00/00"
-                    placeholder="12/2029"
-                  />
-                  <Form.Item
-                    name="cardType"
-                    label="Enter card type"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please, choose your meeting type",
-                      },
-                    ]}
-                    required={true}
-                  >
-                    <CustomSelect
-                      options={cardType}
-                      style={{ width: 200, height: 40 }}
-                      placeholder="Humo or Uzcard"
-                    />
-                  </Form.Item>
-                </Form>
+                <CustomText fontSize={11} color="rgba(255,255,255,0.8)">
+                  {paymentType === 'course' ? 'Course Enrollment' : 
+                   paymentType === 'subscription' ? 'Subscription Plan' : 
+                   'Mentor Session'}
+                </CustomText>
               </div>
             </div>
-            <div style={{ width: "100%" }}>
+            
+            {/* Payment Providers - Right Side */}
+            <div style={{ 
+              width: '60%', 
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '200px'
+            }}>
               <div className={styles.payme}>
-                <CustomText color={colors.colorText}>
+                <CustomText color={colors.colorText} style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>
                   Pay via the app
                 </CustomText>
                 <div className={styles.paymentImages}>
+                  {/* Payme - Temporarily Disabled
                   <div
                     onClick={() => handleProviderRedirect('payme')}
                     className={styles.paymeImg}
                   >
                     <img src="/img/payme.png" alt="img error" loading="lazy" />
                   </div>
+                  */}
                   <div
                     onClick={() => handleProviderRedirect('click')}
                     className={styles.paymeImg}
@@ -460,9 +446,11 @@ function PaymentPage() {
             </div>
           </div>
         </div>
+        {/* Direct Card Payment Button - Temporarily Disabled
         <CustomButton type="primary" onClick={handleSubmit} loading={isLoading}>
           Next
         </CustomButton>
+        */}
       </div>
     </div>
   );
