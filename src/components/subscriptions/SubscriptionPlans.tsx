@@ -97,7 +97,8 @@ const SubscriptionPlans: React.FC = () => {
       },
     };
 
-    return plansData.map(plan => {
+    // Create plans and sort them in the correct order: Free, Standard, Premium
+    const plans = plansData.map(plan => {
       const config = planConfigs[plan.name] || {};
       return {
         key: config.key || plan.name.toLowerCase(),
@@ -112,6 +113,17 @@ const SubscriptionPlans: React.FC = () => {
         badge: config.badge,
       };
     });
+
+    console.log('Plans before sorting:', plans.map(p => p.name));
+    
+    // Sort plans in the correct order: Free, Standard, Premium
+    const planOrder = { 'Free': 0, 'Standard': 1, 'Premium': 2 };
+    const sortedPlans = plans.sort((a, b) => (planOrder[a.name as keyof typeof planOrder] || 999) - (planOrder[b.name as keyof typeof planOrder] || 999));
+    
+    console.log('Plans after sorting:', sortedPlans.map(p => p.name));
+    console.log('Plan order mapping:', planOrder);
+    
+    return sortedPlans;
   };
 
   const curatedPlans = getCuratedPlans();
@@ -277,6 +289,7 @@ const SubscriptionPlans: React.FC = () => {
                 isCurrentPlan && isAuthenticated ? styles.current : '',
                 isFreePlan ? styles.free : '',
               ].join(' ')}
+              data-plan={plan.key}
             >
               {plan.badge}
               {showCurrentBadge && (

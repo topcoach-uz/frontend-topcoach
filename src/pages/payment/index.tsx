@@ -96,15 +96,20 @@ function PaymentPage() {
       if (paymentStatus === 'success') {
         message.success('Payment completed successfully!');
         
-        // Redirect based on payment type
+        // Redirect based on payment type - avoid infinite loops
         if (paymentType === 'subscription') {
+          // Clear the URL parameters and redirect to home
+          window.history.replaceState({}, document.title, '/');
           navigate('/?payment_status=success&type=subscription');
         } else if (paymentType === 'session') {
+          // Clear the URL parameters and redirect to home
+          window.history.replaceState({}, document.title, '/');
           navigate('/?payment_status=success&type=session');
         } else if (paymentType === 'course') {
           navigate('/programs/success?success=true');
         } else {
-          // Default redirect
+          // Default redirect - clear parameters first
+          window.history.replaceState({}, document.title, '/');
           navigate('/');
         }
       } else if (error) {

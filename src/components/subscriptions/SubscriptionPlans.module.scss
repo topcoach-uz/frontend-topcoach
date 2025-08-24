@@ -31,6 +31,19 @@
     box-shadow: 0 14px 40px rgba(0,0,0,0.13);
     border-color: #e0e0e0;
   }
+  
+  // Force order: Free (0), Standard (1), Premium (2)
+  &[data-plan="free"] {
+    order: 0;
+  }
+  
+  &[data-plan="standard"] {
+    order: 1;
+  }
+  
+  &[data-plan="premium"] {
+    order: 2;
+  }
 }
 
 .current {
