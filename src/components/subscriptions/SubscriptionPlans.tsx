@@ -44,16 +44,12 @@ const SubscriptionPlans: React.FC = () => {
   const currentPlanId = current?.plan?.id || 'aa63df56-4b93-470b-b861-98628dd186a1'; // Free as fallback
   // console.log('DEBUG currentPlanId used for matching:', currentPlanId);
 
-  // Curated display data for each plan
-  const curatedPlans = [
-    {
-      key: 'free',
-      id: 'aa63df56-4b93-470b-b861-98628dd186a1',
-      name: 'Free',
-      price: '$0/month',
-      priceValue: 0,
-      description: 'Full access to TopCoach and 1 AI match to discover your path.',
-      features: [
+  // Create dynamic plans based on API data
+  const getCuratedPlans = () => {
+    if (!plansData) return [];
+    
+    const planFeatures: Record<string, string[]> = {
+      'Free': [
         'Full access to the platform',
         'University & major research tools',
         'Browse mentor profiles',
@@ -61,17 +57,7 @@ const SubscriptionPlans: React.FC = () => {
         'Event registration access',
         '1 AI-powered major match',
       ],
-      button: 'Join for Free',
-      buttonClass: styles.freeBtn,
-    },
-    {
-      key: 'standard',
-      id: 'f3cca6c0-91e4-4e85-b2d1-005c5bf642b2',
-      name: 'Standard',
-      price: '$17.99/month',
-      priceValue: 17.99,
-      description: 'Mentorship with pro guidance and advanced AI tools.',
-      features: [
+      'Standard': [
         'Everything in Free',
         '1× 30-minute junior coach session',
         '1× 30-minute pro bono session',
@@ -79,18 +65,7 @@ const SubscriptionPlans: React.FC = () => {
         'Priority access to all workshops',
         'Session reminders & smart booking',
       ],
-      button: 'Upgrade to Standard',
-      buttonClass: '',
-      badge: <div className={styles.popularBadge}><StarFilled /> Most Popular</div>,
-    },
-    {
-      key: 'premium',
-      id: 'e5143c4d-7f4d-4fbe-aa92-69b2f2647b43',
-      name: 'Premium',
-      price: '$59/month',
-      priceValue: 59,
-      description: 'All-access mentorship with senior guidance and max AI tools.',
-      features: [
+      'Premium': [
         'Everything in Standard',
         '1× 30-minute senior coach session',
         '1× 60-minute junior coach session',
@@ -98,10 +73,48 @@ const SubscriptionPlans: React.FC = () => {
         '1× 30-minute pro bono session',
         '20 AI-powered major match searches',
       ],
-      button: 'Go Premium',
-      buttonClass: styles.premiumBtn,
-    },
-  ];
+    };
+
+    const planConfigs: Record<string, any> = {
+      'Free': {
+        key: 'free',
+        button: 'Join for Free',
+        buttonClass: styles.freeBtn,
+        description: 'Full access to TopCoach and 1 AI match to discover your path.',
+      },
+      'Standard': {
+        key: 'standard',
+        button: 'Upgrade to Standard',
+        buttonClass: '',
+        description: 'Mentorship with pro guidance and advanced AI tools.',
+        badge: <div className={styles.popularBadge}><StarFilled /> Most Popular</div>,
+      },
+      'Premium': {
+        key: 'premium',
+        button: 'Go Premium',
+        buttonClass: styles.premiumBtn,
+        description: 'All-access mentorship with senior guidance and max AI tools.',
+      },
+    };
+
+    return plansData.map(plan => {
+      const config = planConfigs[plan.name] || {};
+      return {
+        key: config.key || plan.name.toLowerCase(),
+        id: plan.id,
+        name: plan.name,
+        price: plan.price === 0 ? '$0/month' : `$${plan.price}/month`,
+        priceValue: plan.price,
+        description: config.description || plan.description,
+        features: planFeatures[plan.name] || [],
+        button: config.button || `Upgrade to ${plan.name}`,
+        buttonClass: config.buttonClass || '',
+        badge: config.badge,
+      };
+    });
+  };
+
+  const curatedPlans = getCuratedPlans();
   
   const [showPayment, setShowPayment] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
@@ -130,6 +143,7 @@ const SubscriptionPlans: React.FC = () => {
       message.error('Plan not found or missing ID. Please try again.');
       return;
     }
+    // Use the actual plan price from the API, not hardcoded values
     navigate(`/payment?planId=${apiPlan.id}&amount=${apiPlan.price}&type=subscription`);
   };
 
@@ -274,7 +288,7 @@ const SubscriptionPlans: React.FC = () => {
               <div className={styles.price}>{plan.price}</div>
               <div className={styles.description}>{plan.description}</div>
               <ul className={styles.features}>
-                {plan.features.map((feature, i) => {
+                {plan.features.map((feature: string, i: number) => {
                   // Try to match feature to usage (by feature name or index)
                   let usageInfo = null;
                   if (isCurrentPlan && usageData && usageData.usage) {
