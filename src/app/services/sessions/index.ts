@@ -27,7 +27,7 @@ export const sessionsApi = RtkApi.injectEndpoints({
     }),
     cancelSessionAsStudent: build.mutation<void, BookSessionDto>({
       query: (body) => ({ url: '/sessions/withdraw', method: 'POST', body }),
-      invalidatesTags: ['GetMe'],
+      invalidatesTags: ['MySessions', 'GetMe'],
     }),
     // report session
     reportSession: build.mutation<void, ReportUserDto>({
@@ -82,6 +82,10 @@ export const sessionsApi = RtkApi.injectEndpoints({
       query: (body) => ({ url: '/sessions/giveaway/book', method: 'POST', body }),
       invalidatesTags: ['GiveawaySessions', 'GiveawayStatus', 'GetMe'],
     }),
+    cancelGiveawaySession: build.mutation<SessionsSchema, { sessionId: string }>({
+      query: (body) => ({ url: '/sessions/giveaway/cancel', method: 'POST', body }),
+      invalidatesTags: ['GiveawaySessions', 'GiveawayStatus', 'GetMe'],
+    }),
   }),
 });
 
@@ -97,4 +101,5 @@ export const {
   useGetGiveawaySessionsQuery,
   useGetGiveawayStatusQuery,
   useBookGiveawaySessionMutation,
+  useCancelGiveawaySessionMutation,
 } = sessionsApi;

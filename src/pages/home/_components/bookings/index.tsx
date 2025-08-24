@@ -17,11 +17,14 @@ export default function BookingsSection() {
   const { profile: meData } = useTypedSelector((state) => state.auth);
 
   const joinedSessions = meData?.joinedSessions;
+  
   const upcomingSessions = joinedSessions?.filter(
     (session) => new Date(session.date) > new Date() && !session.cancelStatus
   );
   const pastSessions = joinedSessions?.filter((session) => {
-    const sessionEndTime = new Date(session.date).getTime() + 60 * 60 * 1000; // Add 1 hour to the session start time
+    // Calculate session duration based on type
+    const sessionDuration = session.type === SessionTypeEnum.Individual30M ? 30 : 60; // minutes
+    const sessionEndTime = new Date(session.date).getTime() + sessionDuration * 60 * 1000; // Add duration to session start time
     return new Date().getTime() > sessionEndTime; // Check if the current time is past the session's end time
   });
   const cancelledSessions = joinedSessions?.filter(
