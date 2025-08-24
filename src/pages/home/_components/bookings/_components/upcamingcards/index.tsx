@@ -169,12 +169,13 @@ export default function UpcomingCard({
         subjectId,
         reasons: [finalReport],
         comment: finalComment,
-      });
+      }).unwrap();
+      message.success('Report submitted successfully');
       setIsModalVisibleReport(false);
       setSelectedReportReason('');
       form.resetFields();
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Something went wrong');
+      message.error(error?.data?.message || 'Something went wrong');
     }
   };
 
@@ -200,10 +201,8 @@ export default function UpcomingCard({
     setLoading(true);
     if (role === UserRole.Mentor) {
       cancelSession({ id, reason: finalReason })
-        .then((res: any) => {
-          if (res?.error?.status) {
-            throw res?.error?.data?.message;
-          }
+        .unwrap()
+        .then(() => {
           message.success('Meeting canceled successfully');
 
           if (onCancelOk) {
@@ -215,19 +214,16 @@ export default function UpcomingCard({
           form.resetFields();
         })
         .catch((error) => {
-          message.error(error || 'Something went wrong');
+          message.error(error?.data?.message || 'Something went wrong');
           setIsModalVisible(false);
-          throw error; // Propagate error for finally block
         })
         .finally(() => {
           setLoading(false);
         });
     } else if (role === UserRole.Student) {
       cancelAsStudent({ id, comment: finalReason })
-        .then((res: any) => {
-          if (res?.error?.status) {
-            throw res?.error?.data?.message;
-          }
+        .unwrap()
+        .then(() => {
           message.success('You have withdrawn from the session');
 
           if (onCancelOk) {
@@ -239,9 +235,8 @@ export default function UpcomingCard({
           form.resetFields();
         })
         .catch((error) => {
-          message.error(error || 'Something went wrong');
+          message.error(error?.data?.message || 'Something went wrong');
           setIsModalVisible(false);
-          throw error; // Propagate error for finally block
         })
         .finally(() => {
           setLoading(false);
@@ -262,7 +257,7 @@ export default function UpcomingCard({
 
     setLoading(true);
     try {
-      await rateSession({ id, rating: 4, comment: 'test' });
+      await rateSession({ id, rating: 4, comment: 'test' }).unwrap();
       message.success('Meeting rated successfully');
 
       if (onCancelOk) {
@@ -272,8 +267,8 @@ export default function UpcomingCard({
       setIsModalVisibleRate(false);
       form.resetFields();
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Something went wrong');
-      setIsModalVisible(false);
+      message.error(error?.data?.message || 'Something went wrong');
+      setIsModalVisibleRate(false);
     } finally {
       setLoading(false);
     }

@@ -32,7 +32,7 @@ export default function useBookings({ onCancelOk, id }: UpcomingCardProps) {
 
     setLoading(true);
     try {
-      await cancelSession({ id, reason: finalReason });
+      await cancelSession({ id, reason: finalReason }).unwrap();
       message.success('Meeting canceled successfully');
 
       if (onCancelOk) {
@@ -43,7 +43,7 @@ export default function useBookings({ onCancelOk, id }: UpcomingCardProps) {
       setSelectedReason('');
       form.resetFields();
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Something went wrong');
+      message.error(error?.data?.message || 'Something went wrong');
       setIsModalVisible(false);
     } finally {
       setLoading(false);
