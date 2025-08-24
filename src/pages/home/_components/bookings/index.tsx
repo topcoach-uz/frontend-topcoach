@@ -18,6 +18,10 @@ export default function BookingsSection() {
 
   const joinedSessions = meData?.joinedSessions;
   
+  // Debug logging for mentee sessions
+  console.log('Mentee joinedSessions:', joinedSessions);
+  console.log('Current time:', new Date());
+  
   const upcomingSessions = joinedSessions?.filter(
     (session) => new Date(session.date) > new Date() && !session.cancelStatus
   );
@@ -25,7 +29,20 @@ export default function BookingsSection() {
     // Calculate session duration based on type
     const sessionDuration = session.type === SessionTypeEnum.Individual30M ? 30 : 60; // minutes
     const sessionEndTime = new Date(session.date).getTime() + sessionDuration * 60 * 1000; // Add duration to session start time
-    return new Date().getTime() > sessionEndTime; // Check if the current time is past the session's end time
+    const isPast = new Date().getTime() > sessionEndTime;
+    
+    // Debug logging for past sessions filtering
+    console.log(`Session ${session.id}:`, {
+      date: session.date,
+      type: session.type,
+      duration: sessionDuration,
+      sessionEndTime: new Date(sessionEndTime),
+      isPast,
+      mentor: session.mentor?.id,
+      participants: session.participants?.length || 0
+    });
+    
+    return isPast; // Check if the current time is past the session's end time
   });
   const cancelledSessions = joinedSessions?.filter(
     (session) => session.cancelStatus !== null && session.cancelStatus.id
