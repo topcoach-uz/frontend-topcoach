@@ -312,8 +312,7 @@ function PaymentPage() {
         
         // For Paycom, add a small delay to ensure backend processing
         if (provider === 'payme') {
-          message.info('Redirecting to Paycom payment gateway...');
-          message.info('Please complete your payment on the Paycom page. You will be redirected back after payment.');
+          message.info('Redirecting to secure payment page...');
           setTimeout(() => {
             window.location.href = redirectUrl;
           }, 1000);
