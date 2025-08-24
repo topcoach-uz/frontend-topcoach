@@ -26,6 +26,7 @@ export default function PaymentSmsPage() {
   const mentorId = searchParams.get('mentorId') ?? '';
   const buyType = searchParams.get('type'); // 'subscription' for subscriptions
   const sessionId = searchParams.get('sessionId') ?? '';
+  const enrollmentId = searchParams.get('enrollmentId') ?? '';
   const navigate = useNavigate();
   const [validateAndPay, { isLoading }] = useValidateAndPayMutation();
   const [buySubscription, { isLoading: isSubscriptionLoading }] =
@@ -41,7 +42,23 @@ export default function PaymentSmsPage() {
     console.log('Buy type:', buyType);
     
     form.validateFields().then(() => {
-      if (buyType === 'subscription' || planId) {
+      // Determine payment type based on parameters
+      const isSubscription = buyType === 'subscription' || (planId && !mentorId && !sessionId);
+      const isCoursePayment = buyType === 'course' || enrollmentId;
+      const isSessionPayment = planId && mentorId && sessionId;
+      
+      console.log('Payment type detection:', {
+        isSubscription,
+        isCoursePayment,
+        isSessionPayment,
+        buyType,
+        planId,
+        mentorId,
+        sessionId,
+        enrollmentId
+      });
+      
+      if (isSubscription) {
         console.log('Processing subscription payment...');
         buySubscription({
           method: 'click',
@@ -55,7 +72,7 @@ export default function PaymentSmsPage() {
           .then((res) => {
             console.log('Subscription payment successful:', res);
             message.success('Payment successful!');
-            navigate(-2);
+            navigate('/?payment_status=success&type=subscription');
           })
           .catch((err) => {
             console.error('Subscription payment failed:', err);
@@ -66,7 +83,12 @@ export default function PaymentSmsPage() {
             });
             message.error(err.data?.message || 'Payment failed', 7);
           });
-      } else {
+      } else if (isCoursePayment) {
+        console.log('Processing course payment...');
+        // Course payments should use the redirect flow, not direct card payment
+        message.error('Course payments should use the redirect payment method');
+        navigate('/payment?' + new URLSearchParams(window.location.search).toString());
+      } else if (isSessionPayment) {
         console.log('Processing session payment...');
         validateAndPay({
           method: 'click',
@@ -82,7 +104,7 @@ export default function PaymentSmsPage() {
           .then((res) => {
             console.log('Session payment successful:', res);
             message.success('Payment successful!');
-            navigate('/');
+            navigate('/?payment_status=success&type=session');
           })
           .catch((err) => {
             console.error('Session payment failed:', err);
@@ -104,6 +126,9 @@ export default function PaymentSmsPage() {
             
             message.error(errorMessage, 7);
           });
+      } else {
+        console.error('Unknown payment type');
+        message.error('Unknown payment type. Please try again.');
       }
     });
   };

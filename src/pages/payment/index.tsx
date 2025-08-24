@@ -42,9 +42,37 @@ function PaymentPage() {
     buyType
   });
   
-  const returnUrl = paymentType === "course" 
-    ? "https://topcoach.uz/programs/success?success=true" 
-    : "https://topcoach.uz/";
+  // Determine payment scenario
+  const paymentScenario = (() => {
+    if (paymentType === 'course' && enrollmentId) {
+      return 'COURSE_PAYMENT';
+    } else if (paymentType === 'subscription' || (planId && !sessionId && !mentorId)) {
+      return 'SUBSCRIPTION_PAYMENT';
+    } else if (sessionId && mentorId && planId) {
+      return 'SESSION_BOOKING';
+    } else if (planId && mentorId && !sessionId) {
+      return 'PACKAGE_PURCHASE';
+    } else {
+      return 'UNKNOWN';
+    }
+  })();
+  
+  console.log('Payment scenario detected:', paymentScenario);
+  
+  // Determine return URL based on payment type
+  const getReturnUrl = () => {
+    if (paymentType === "course" && enrollmentId) {
+      return "https://topcoach.uz/programs/success?success=true";
+    } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
+      return "https://topcoach.uz/?payment_status=success&type=subscription";
+    } else if (sessionId && mentorId) {
+      return "https://topcoach.uz/?payment_status=success&type=session";
+    } else {
+      return "https://topcoach.uz/?payment_status=success";
+    }
+  };
+
+  const returnUrl = getReturnUrl();
 
   const [isLoading, setIsLoading] = useState(false);
   const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
@@ -62,14 +90,21 @@ function PaymentPage() {
     const checkPaymentStatus = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const paymentStatus = urlParams.get('payment_status');
+      const paymentType = urlParams.get('type');
       const error = urlParams.get('error');
       
       if (paymentStatus === 'success') {
         message.success('Payment completed successfully!');
-        // Redirect to appropriate success page
-        if (paymentType === 'course') {
+        
+        // Redirect based on payment type
+        if (paymentType === 'subscription') {
+          navigate('/?payment_status=success&type=subscription');
+        } else if (paymentType === 'session') {
+          navigate('/?payment_status=success&type=session');
+        } else if (paymentType === 'course') {
           navigate('/programs/success?success=true');
         } else {
+          // Default redirect
           navigate('/');
         }
       } else if (error) {
@@ -80,7 +115,7 @@ function PaymentPage() {
     };
 
     checkPaymentStatus();
-  }, [navigate, paymentType]);
+  }, [navigate]);
 
   // Calculate dynamic pricing for session payments
   useEffect(() => {
@@ -202,18 +237,22 @@ function PaymentPage() {
 
   const handleSubmit = async () => {
     form.validateFields().then((values) => {
+      console.log('Form values:', values);
+      
       const payload = {
         cardNumber: values.cardNumber.replace(/\s/g, ""),
-        expireDate: values.phone.replace("/", ""),
+        expireDate: values.expireDate.replace("/", ""), // Fixed: was using values.phone
         cardType: values.cardType,
       };
 
+      console.log('Payment payload:', payload);
       setIsLoading(true);
 
       const response = api.payments
         // @ts-ignore
         .initPayment(method, payload)
         .then((res) => {
+          console.log('Payment init successful:', res);
           // @ts-ignore
           navigate(
             // @ts-ignore
@@ -221,7 +260,8 @@ function PaymentPage() {
           );
         })
         .catch((err) => {
-          message.error(err.response.data.message);
+          console.error('Payment init failed:', err);
+          message.error(err.response?.data?.message || 'Payment initialization failed');
         })
         .finally(() => {
           setIsLoading(false);
@@ -268,6 +308,7 @@ function PaymentPage() {
         // For Paycom, add a small delay to ensure backend processing
         if (provider === 'payme') {
           message.info('Redirecting to Paycom payment gateway...');
+          message.info('Please complete your payment on the Paycom page. You will be redirected back after payment.');
           setTimeout(() => {
             window.location.href = redirectUrl;
           }, 1000);
