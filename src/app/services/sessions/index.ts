@@ -28,6 +28,16 @@ export const sessionsApi = RtkApi.injectEndpoints({
     cancelSessionAsStudent: build.mutation<void, BookSessionDto>({
       query: (body) => ({ url: '/sessions/withdraw', method: 'POST', body }),
       invalidatesTags: ['MySessions', 'GetMe'],
+      // Force refetch to ensure mentor's view is updated
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate and refetch all session-related queries
+          dispatch(sessionsApi.util.invalidateTags(['MySessions']));
+        } catch {
+          // Error handling is done in the component
+        }
+      },
     }),
     // report session
     reportSession: build.mutation<void, ReportUserDto>({
