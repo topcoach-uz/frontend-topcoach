@@ -9,11 +9,12 @@ import { InputFormItem } from "src/components/form";
 import styles from "./payment.module.scss";
 import useParamsHook from "src/hooks/params";
 import { themeFontSize, themeFontWeight } from "src/constants/theme";
-import { ArrowLeft } from "iconsax-react";
+import { ArrowLeft, ShieldTick, Card, Mobile } from "iconsax-react";
 import CustomSelect from "src/components/common/select";
 import { Spin } from "antd";
 import { useGetPlansQuery } from "src/app/services/mentors";
 import { useGetMentorDetailQuery } from "src/app/services/mentors";
+import { ReferralCodeInput } from "src/components/referral/ReferralCodeInput";
 
 function PaymentPage() {
   const colors = useTypedSelector((state) => state.layout.colors);
@@ -77,6 +78,11 @@ function PaymentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
   const [calculatedCurrency, setCalculatedCurrency] = useState<string>("USD");
+  
+  // Referral code state
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralDiscount, setReferralDiscount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState<number | null>(null);
 
   // Fetch data for session payments
   const { data: plans } = useGetPlansQuery();
@@ -195,8 +201,8 @@ function PaymentPage() {
   // Show loading while fetching details
   if (loadingDetails) {
     return (
-      <div className="container">
-        <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingContent}>
           <Spin size="large" />
           <p>Loading payment details...</p>
         </div>
@@ -211,6 +217,10 @@ function PaymentPage() {
   
   // Determine the currency to display
   let displayCurrency = paymentType === 'course' ? 'USD' : (calculatedCurrency || currencyName || 'USD');
+  
+  // Calculate final amount with referral discount
+  const originalAmount = parseFloat(displayAmount || '0');
+  const finalDisplayAmount = finalAmount !== null ? finalAmount : originalAmount;
   
   // Enhanced currency detection for URL parameters
   if (!calculatedAmount && amount) {
@@ -274,6 +284,19 @@ function PaymentPage() {
     });
   };
 
+  // Referral code handlers
+  const handleReferralCodeApplied = (code: string, discount: number, final: number) => {
+    setReferralCode(code);
+    setReferralDiscount(discount);
+    setFinalAmount(final);
+  };
+
+  const handleReferralCodeRemoved = () => {
+    setReferralCode(null);
+    setReferralDiscount(0);
+    setFinalAmount(null);
+  };
+
   // Helper to POST to backend and redirect (for subscription and session payments)
   const handleProviderRedirect = async (provider: string) => {
     if (!planId && !sessionId && !enrollmentId) {
@@ -289,7 +312,8 @@ function PaymentPage() {
         // Course payment: only send enrollmentId
         payload = { 
           enrollmentId,
-          returnUrl
+          returnUrl,
+          ...(referralCode && { referralCode })
         };
       } else {
         // Subscription/session payment: send planId and other fields
@@ -297,7 +321,8 @@ function PaymentPage() {
           planId, 
           returnUrl,
           ...(sessionId && { sessionId }),
-          ...(mentorId && { mentorId })
+          ...(mentorId && { mentorId }),
+          ...(referralCode && { referralCode })
         };
       }
       
@@ -344,113 +369,104 @@ function PaymentPage() {
   ];
 
   return (
-    <div className="container">
-      <CustomButton
-        icon={<ArrowLeft />}
-        onClick={() => navigate(-1)}
-        mt={80}
-        mb={15}
-      >
-        Back
-      </CustomButton>
-      <div className={styles.payment + " container"}>
-        <CustomText fontSize={36} fontWeight={600} color={colors.colorText} style={{ marginBottom: '8px' }}>
-          Payment
-        </CustomText>
-        <CustomText fontSize={15} color={colors.colorTextSecondary} style={{ marginBottom: '25px', textAlign: 'center' }}>
-          Choose your preferred payment method
-        </CustomText>
-        
-        <div className={styles.details}>
-          <CustomText color={colors.colorText} p={8} style={{ fontSize: '16px', fontWeight: '500' }}>
-            Payment info
-          </CustomText>
-          <div className={styles.type}>
-            {/* Payment Amount Display - Left Side */}
-            <div style={{
-              width: '40%',
-              padding: '20px',
-              borderRight: '1px solid #e0e0e0',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '200px'
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '16px',
-                padding: '20px',
-                color: 'white',
-                textAlign: 'center',
-                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
-                width: '100%',
-                maxWidth: '260px'
-              }}>
-                <CustomText fontSize={13} color="rgba(255,255,255,0.9)" style={{ marginBottom: '6px' }}>
-                  Payment Amount
-                </CustomText>
-                <CustomText fontSize={24} fontWeight={700} color="white" style={{ marginBottom: '3px' }}>
-                  {paymentType === 'course' 
-                    ? `$${displayAmount || '0'}` 
-                    : displayCurrency === 'UZS' 
-                      ? `${displayAmount || '0'} UZS`
-                      : `$${displayAmount || '0'}`
-                  }
-                </CustomText>
-                <CustomText fontSize={11} color="rgba(255,255,255,0.8)">
-                  {paymentType === 'course' ? 'Course Enrollment' : 
-                   paymentType === 'subscription' ? 'Subscription Plan' : 
-                   'Mentor Session'}
-                </CustomText>
+    <div className={styles.pageContainer}>
+      {/* Header Section */}
+      <div className={styles.header}>
+        <CustomButton
+          icon={<ArrowLeft />}
+          onClick={() => navigate(-1)}
+          className={styles.backButton}
+        >
+          Back
+        </CustomButton>
+      </div>
+
+      {/* Main Payment Container */}
+      <div className={styles.paymentContainer}>
+        {/* Payment Summary and Methods Row */}
+        <div className={styles.mainRow}>
+          {/* Payment Summary Card - Left Side */}
+          <div className={styles.summaryCard}>
+            <div className={styles.summaryHeader}>
+              <h2>Payment Summary</h2>
+              <div className={styles.secureBadge}>
+                <ShieldTick size={16} />
+                <span>Secure Payment</span>
               </div>
             </div>
             
-            {/* Payment Providers - Right Side */}
-            <div style={{ 
-              width: '60%', 
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '200px'
-            }}>
-              <div className={styles.payme}>
-                <CustomText color={colors.colorText} style={{ fontSize: '18px', fontWeight: '500', marginBottom: '8px' }}>
-                  Pay via the app
-                </CustomText>
-                <div className={styles.paymentImages}>
-                  {/* Payme - Temporarily Disabled
-                  <div
-                    onClick={() => handleProviderRedirect('payme')}
-                    className={styles.paymeImg}
-                  >
-                    <img src="/img/payme.png" alt="img error" loading="lazy" />
-                  </div>
-                  */}
-                  <div
-                    onClick={() => handleProviderRedirect('click')}
-                    className={styles.paymeImg}
-                  >
-                    <img src="/img/click.jpg" alt="img error" loading="lazy" />
-                  </div>
-                  <div
-                    onClick={() => handleProviderRedirect('atmos')}
-                    className={styles.paymeImg}
-                  >
-                    <img src="/img/atmos.png" alt="img error" loading="lazy" />
-                  </div>
+            <div className={styles.amountSection}>
+              <div className={styles.amountDisplay}>
+                <span className={styles.currency}>
+                  {displayCurrency === 'UZS' ? 'UZS' : '$'}
+                </span>
+                <span className={styles.amount}>
+                  {finalDisplayAmount.toFixed(2)}
+                </span>
+              </div>
+              <div className={styles.paymentType}>
+                {paymentType === 'course' ? 'Course Enrollment' : 
+                 paymentType === 'subscription' ? 'Subscription Plan' : 
+                 'Mentor Session'}
+              </div>
+            </div>
+
+            {/* Referral Code Section - Only for Course Payments */}
+            {paymentType === 'course' && (
+              <div className={styles.referralSection}>
+                <ReferralCodeInput
+                  onCodeApplied={handleReferralCodeApplied}
+                  onCodeRemoved={handleReferralCodeRemoved}
+                  originalAmount={originalAmount}
+                  currency={displayCurrency}
+                  disabled={isLoading}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Payment Methods - Right Side */}
+          <div className={styles.paymentMethods}>
+            <div className={styles.methodsHeader}>
+              <h3>Choose Payment Method</h3>
+              <p>Select your preferred way to pay</p>
+            </div>
+            
+            <div className={styles.methodsGrid}>
+              <div 
+                className={`${styles.methodCard} ${isLoading ? styles.disabled : ''}`}
+                onClick={() => !isLoading && handleProviderRedirect('click')}
+              >
+                <div className={styles.methodIcon}>
+                  <img src="/img/click.jpg" alt="Click" />
+                </div>
+                <div className={styles.methodInfo}>
+                  <h4>Click</h4>
+                  <p>Pay with Click App</p>
+                </div>
+                <div className={styles.methodArrow}>
+                  <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
+                </div>
+              </div>
+
+              <div 
+                className={`${styles.methodCard} ${isLoading ? styles.disabled : ''}`}
+                onClick={() => !isLoading && handleProviderRedirect('atmos')}
+              >
+                <div className={styles.methodIcon}>
+                  <img src="/img/atmos.png" alt="Atmos" />
+                </div>
+                <div className={styles.methodInfo}>
+                  <h4>Atmos</h4>
+                  <p>Pay with Atmos</p>
+                </div>
+                <div className={styles.methodArrow}>
+                  <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* Direct Card Payment Button - Temporarily Disabled
-        <CustomButton type="primary" onClick={handleSubmit} loading={isLoading}>
-          Next
-        </CustomButton>
-        */}
       </div>
     </div>
   );

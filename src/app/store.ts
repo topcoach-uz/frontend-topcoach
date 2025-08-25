@@ -6,6 +6,7 @@ import mentor from 'src/app/slices/mentorSlice';
 import profilePopup from 'src/app/slices/profilePopupSlice';
 import { RtkApi } from './services/api';
 import { rtkQueryErrorLogger } from './services/api/middlewares';
+import { referralApi } from './services/referralApi';
 
 export const createStore = (
   options?: ConfigureStoreOptions['preloadedState'] | undefined
@@ -13,13 +14,14 @@ export const createStore = (
   configureStore({
     reducer: {
       [RtkApi.reducerPath]: RtkApi.reducer,
+      [referralApi.reducerPath]: referralApi.reducer,
       auth,
       layout,
       mentor,
       profilePopup,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(RtkApi.middleware, rtkQueryErrorLogger),
+      getDefaultMiddleware().concat(RtkApi.middleware, referralApi.middleware, rtkQueryErrorLogger),
     ...options,
   });
 

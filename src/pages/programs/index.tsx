@@ -28,6 +28,7 @@ import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import { useAppDispatch } from 'src/app/store';
 import { show } from 'src/app/slices/profilePopupSlice';
 import { useNavigate } from 'react-router-dom';
+import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
 import './index.scss';
 
 // Local enums for course types and payment status
@@ -366,6 +367,9 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             showIcon={false}
             className="enrollment-alert"
           />
+          
+          {/* Referral Code Display - Only show for enrolled users */}
+          <ReferralCodeDisplay />
           
           {/* Continue Learning Section */}
           {userProgress && (
