@@ -259,9 +259,12 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
       console.log('Redirecting to payment URL:', paymentUrl);
       window.location.href = paymentUrl;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Enrollment error:', error);
-      message.error('Failed to create enrollment. Please try again.');
+      
+      // Extract the specific error message from the backend response
+      const errorMessage = error?.data?.message || error?.message || 'Failed to create enrollment. Please try again.';
+      message.error(errorMessage);
     } finally {
       setSelectedPlan(null);
     }
