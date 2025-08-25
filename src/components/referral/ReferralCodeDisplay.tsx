@@ -147,7 +147,7 @@ export const ReferralCodeDisplay: React.FC = () => {
                 </div>
                 <div className="stat-content">
                   <Text className="stat-number earnings">
-                    ${statsData.totalEarnings.toFixed(2)}
+                    ${statsData.totalCommission?.toFixed(2) || '0.00'}
                   </Text>
                   <Text type="secondary" className="stat-label">Total Earnings</Text>
                 </div>

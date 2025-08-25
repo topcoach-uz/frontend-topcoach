@@ -18,14 +18,9 @@ export interface ReferralCodeResponse {
 
 export interface ReferralStatsResponse {
   totalReferrals: number;
-  totalEarnings: number;
-  recentReferrals: Array<{
-    id: string;
-    refereeName: string;
-    amount: number;
-    commission: number;
-    createdAt: string;
-  }>;
+  totalCommission: number;
+  pendingCommission: number;
+  paidCommission: number;
 }
 
 export interface CalculateDiscountRequest {
