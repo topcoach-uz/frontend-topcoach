@@ -174,8 +174,8 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
               </Text>
             </div>
             <div className="price-row discount-row">
-              <Text type="success">Referral Discount (5%):</Text>
-              <Text type="success" className="discount-amount">
+              <Text>Referral Discount (5%):</Text>
+              <Text className="discount-amount">
                 -{formatCurrency(discountAmount)}
               </Text>
             </div>
