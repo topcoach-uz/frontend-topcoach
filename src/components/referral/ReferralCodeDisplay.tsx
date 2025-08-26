@@ -209,30 +209,22 @@ export const ReferralCodeDisplay: React.FC = () => {
                 onClick={() => shareToSocialMedia('telegram')}
                 className="social-button telegram"
                 icon={<span>📱</span>}
-              >
-                Telegram
-              </Button>
+              />
               <Button
                 onClick={() => shareToSocialMedia('whatsapp')}
                 className="social-button whatsapp"
                 icon={<span>💬</span>}
-              >
-                WhatsApp
-              </Button>
+              />
               <Button
                 onClick={() => shareToSocialMedia('x')}
                 className="social-button x"
                 icon={<span>𝕏</span>}
-              >
-                X
-              </Button>
+              />
               <Button
                 onClick={() => shareToSocialMedia('facebook')}
                 className="social-button facebook"
                 icon={<span>📘</span>}
-              >
-                Facebook
-              </Button>
+              />
             </div>
           </div>
         </div>

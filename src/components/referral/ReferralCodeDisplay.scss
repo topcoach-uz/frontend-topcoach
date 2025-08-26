@@ -305,12 +305,21 @@
 
         .social-button {
           height: 48px;
+          width: 48px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-weight: 600;
           border-radius: 8px;
           transition: all 0.3s ease;
 
           &:hover {
             transform: translateY(-2px);
+          }
+
+          .anticon, span {
+            font-size: 20px;
           }
 
           &.telegram {
