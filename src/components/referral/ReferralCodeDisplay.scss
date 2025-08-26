@@ -129,8 +129,12 @@
         .copy-button {
           background: linear-gradient(135deg, #a81928, #8b1420);
           border: none;
-          border-radius: 6px;
+          border-radius: 8px;
           font-weight: 600;
+          font-size: 14px;
+          padding: 8px 16px;
+          height: 36px;
+          min-width: 80px;
           transition: all 0.3s ease;
 
           &:hover {
@@ -144,8 +148,12 @@
           background: white;
           border: 1px solid #a81928;
           color: #a81928;
-          border-radius: 6px;
+          border-radius: 8px;
           font-weight: 600;
+          font-size: 14px;
+          padding: 8px 16px;
+          height: 36px;
+          min-width: 80px;
           transition: all 0.3s ease;
 
           &:hover {
