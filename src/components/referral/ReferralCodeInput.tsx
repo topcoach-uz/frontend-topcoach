@@ -169,7 +169,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
           <div className="discount-breakdown">
             <div className="price-row">
               <Text>Original Price:</Text>
-              <Text delete className="original-price">
+              <Text className="original-price">
                 {formatCurrency(originalAmount)}
               </Text>
             </div>
