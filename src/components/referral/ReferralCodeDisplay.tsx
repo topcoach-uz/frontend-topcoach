@@ -16,10 +16,14 @@ const { Text, Title, Paragraph } = Typography;
 export const ReferralCodeDisplay: React.FC = () => {
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   
-  const { data: referralCodeData, isLoading: isLoadingCode } = useGetMyReferralCodeQuery();
-  const { data: statsData, isLoading: isLoadingStats } = useGetReferralStatsQuery();
+  const { data: referralCodeData, isLoading: isLoadingCode, error: codeError } = useGetMyReferralCodeQuery();
+  const { data: statsData, isLoading: isLoadingStats, error: statsError } = useGetReferralStatsQuery();
 
   const referralCode = referralCodeData?.code;
+
+  // Debug logging
+  console.log('Referral stats data:', statsData);
+  console.log('Stats error:', statsError);
 
   const handleCopyCode = async () => {
     if (referralCode) {
@@ -72,6 +76,17 @@ export const ReferralCodeDisplay: React.FC = () => {
         <div className="loading-content">
           <div className="loading-spinner"></div>
           <Text type="secondary">Loading your referral information...</Text>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show error state if there are errors
+  if (codeError || statsError) {
+    return (
+      <Card className="referral-code-card error">
+        <div className="error-content">
+          <Text type="danger">Unable to load referral information. Please try again later.</Text>
         </div>
       </Card>
     );
@@ -137,7 +152,7 @@ export const ReferralCodeDisplay: React.FC = () => {
                   <UserOutlined />
                 </div>
                 <div className="stat-content">
-                  <Text className="stat-number">{statsData.totalReferrals}</Text>
+                  <Text className="stat-number">{statsData.totalReferrals || 0}</Text>
                   <Text type="secondary" className="stat-label">Total Referrals</Text>
                 </div>
               </div>
@@ -147,7 +162,7 @@ export const ReferralCodeDisplay: React.FC = () => {
                 </div>
                 <div className="stat-content">
                   <Text className="stat-number earnings">
-                    ${statsData.totalCommission?.toFixed(2) || '0.00'}
+                    ${(statsData.totalCommission || 0).toFixed(2)}
                   </Text>
                   <Text type="secondary" className="stat-label">Total Earnings</Text>
                 </div>

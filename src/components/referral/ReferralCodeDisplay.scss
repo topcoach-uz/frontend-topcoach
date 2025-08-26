@@ -40,6 +40,20 @@
     }
   }
 
+  &.error {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 1px solid #feb2b2;
+    
+    .error-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 40px 20px;
+      text-align: center;
+    }
+  }
+
   .referral-header {
     display: flex;
     align-items: center;
