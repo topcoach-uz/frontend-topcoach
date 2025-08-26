@@ -71,6 +71,22 @@
     .referral-title-section {
       flex: 1;
 
+      .enrollment-status {
+        margin-bottom: 16px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+
+        .enrollment-subtitle {
+          color: rgba(255, 255, 255, 0.7);
+          margin: 4px 0 0 0;
+          font-size: 13px;
+          line-height: 1.4;
+        }
+      }
+
       .referral-title {
         color: white;
         margin: 0 0 8px 0 !important;
