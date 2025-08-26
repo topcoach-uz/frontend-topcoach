@@ -4036,4 +4036,5 @@ export interface CreateInvoiceDto {
   mentorId?: string;
   eventFormId?: string;
   enrollmentId?: string;
+  referralCode?: string;
 }
