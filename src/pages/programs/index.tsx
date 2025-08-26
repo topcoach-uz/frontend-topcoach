@@ -608,7 +608,9 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
       {/* Referral Code Display - Only show for enrolled users */}
       {enrollmentStatus?.enrollment && (
         <section className="referral-section">
-          <ReferralCodeDisplay />
+          <div className="container">
+            <ReferralCodeDisplay />
+          </div>
         </section>
       )}
 
