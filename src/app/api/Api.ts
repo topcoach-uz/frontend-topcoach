@@ -29,7 +29,7 @@ export interface SocialsSchema {
   deletedAt: string;
   instagram?: string | null;
   facebook?: string | null;
-  twitter?: string | null;
+  x?: string | null;
   whatsapp?: string | null;
   telegram?: string | null;
   linkedin?: string | null;
@@ -818,7 +818,7 @@ export interface LoginResponseDto {
 export interface SocialsDto {
   instagram?: string | null;
   facebook?: string | null;
-  twitter?: string | null;
+  x?: string | null;
   whatsapp?: string | null;
   telegram?: string | null;
 }

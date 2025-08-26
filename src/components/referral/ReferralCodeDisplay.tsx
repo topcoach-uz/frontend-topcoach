@@ -51,7 +51,7 @@ export const ReferralCodeDisplay: React.FC = () => {
       case 'whatsapp':
         shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
         break;
-      case 'twitter':
+      case 'x':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
         break;
       case 'facebook':
@@ -89,12 +89,6 @@ export const ReferralCodeDisplay: React.FC = () => {
             <GiftOutlined className="referral-icon" />
           </div>
           <div className="referral-title-section">
-            <div className="enrollment-status">
-              <Text type="success" strong>✓ You're enrolled in the standard plan!</Text>
-              <Text type="secondary" className="enrollment-subtitle">
-                You now have full access to all course materials and learning sessions.
-              </Text>
-            </div>
             <Title level={4} className="referral-title">
               Your Referral Code
             </Title>
@@ -226,11 +220,11 @@ export const ReferralCodeDisplay: React.FC = () => {
                 WhatsApp
               </Button>
               <Button
-                onClick={() => shareToSocialMedia('twitter')}
-                className="social-button twitter"
-                icon={<span>🐦</span>}
+                onClick={() => shareToSocialMedia('x')}
+                className="social-button x"
+                icon={<span>𝕏</span>}
               >
-                Twitter
+                X
               </Button>
               <Button
                 onClick={() => shareToSocialMedia('facebook')}

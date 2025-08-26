@@ -138,13 +138,6 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
           >
             Apply
           </Button>
-          
-          {isLoading && (
-            <div className="validation-loading">
-              <Spin size="small" />
-              <Text type="secondary">Checking</Text>
-            </div>
-          )}
         </div>
       ) : (
         <div className="applied-code-section">
