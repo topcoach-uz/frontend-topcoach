@@ -98,33 +98,6 @@ const ProgramsSuccessPage: React.FC = () => {
               </Button>
             ]}
           />
-          
-          <div className="next-steps">
-            <h3>What's Next?</h3>
-            <div className="steps-grid">
-              <div className="step-item">
-                <div className="step-number">1</div>
-                <div className="step-content">
-                  <h4>Welcome Email</h4>
-                  <p>You'll receive a welcome email with your login credentials and course access information.</p>
-                </div>
-              </div>
-              <div className="step-item">
-                <div className="step-number">2</div>
-                <div className="step-content">
-                  <h4>Course Access</h4>
-                  <p>Once the program launches, you'll have full access to all course materials and sessions.</p>
-                </div>
-              </div>
-              <div className="step-item">
-                <div className="step-number">3</div>
-                <div className="step-content">
-                  <h4>Start Learning</h4>
-                  <p>Begin your journey with our comprehensive university admissions course.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </Card>
       </div>
     </div>
