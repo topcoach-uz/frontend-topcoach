@@ -368,9 +368,6 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             className="enrollment-alert"
           />
           
-          {/* Referral Code Display - Only show for enrolled users */}
-          <ReferralCodeDisplay />
-          
           {/* Continue Learning Section */}
           {userProgress && (
             <div className="continue-learning-section">
@@ -607,6 +604,13 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
           ))}
         </div>
       </section>
+
+      {/* Referral Code Display - Only show for enrolled users */}
+      {enrollmentStatus?.enrollment && (
+        <section className="referral-section">
+          <ReferralCodeDisplay />
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="cta-section">

@@ -1,8 +1,8 @@
 .referral-code-card {
   background: white;
-  border: 2px solid #dc143c;
+  border: none;
   border-radius: 16px;
-  box-shadow: 0 8px 25px rgba(220, 20, 60, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   margin: 20px 0;
   position: relative;
@@ -10,7 +10,7 @@
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 35px rgba(220, 20, 60, 0.25);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
   }
 
   .ant-card-body {
@@ -46,16 +46,16 @@
     gap: 16px;
     margin-bottom: 24px;
 
-    .referral-icon-container {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #dc143c, #b91c1c);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #dc143c;
-      box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+          .referral-icon-container {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #a81928, #8b1420);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #a81928;
+        box-shadow: 0 4px 12px rgba(168, 25, 40, 0.3);
 
       .referral-icon {
         font-size: 22px;
@@ -69,7 +69,7 @@
 
 
       .referral-title {
-        color: #dc143c;
+        color: #a81928;
         margin: 0 0 6px 0 !important;
         font-weight: 700;
         font-size: 20px;
@@ -97,14 +97,14 @@
       border: 1px solid #e9ecef;
 
       .referral-code-tag {
-        background: linear-gradient(135deg, #dc143c, #b91c1c);
+        background: linear-gradient(135deg, #a81928, #8b1420);
         color: white;
         font-size: 16px;
         font-weight: 700;
         padding: 10px 16px;
         border-radius: 8px;
         border: none;
-        box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
+        box-shadow: 0 3px 10px rgba(168, 25, 40, 0.3);
         letter-spacing: 0.5px;
       }
 
@@ -113,23 +113,23 @@
         gap: 8px;
 
         .copy-button {
-          background: linear-gradient(135deg, #dc143c, #b91c1c);
+          background: linear-gradient(135deg, #a81928, #8b1420);
           border: none;
           border-radius: 6px;
           font-weight: 600;
           transition: all 0.3s ease;
 
           &:hover {
-            background: linear-gradient(135deg, #b91c1c, #a01818);
+            background: linear-gradient(135deg, #8b1420, #6d1019);
             transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(220, 20, 60, 0.4);
+            box-shadow: 0 3px 8px rgba(168, 25, 40, 0.4);
           }
         }
 
         .share-button {
           background: white;
-          border: 1px solid #dc143c;
-          color: #dc143c;
+          border: 1px solid #a81928;
+          color: #a81928;
           border-radius: 6px;
           font-weight: 600;
           transition: all 0.3s ease;
@@ -169,14 +169,14 @@
         .stat-icon {
           width: 40px;
           height: 40px;
-          background: linear-gradient(135deg, #dc143c, #b91c1c);
+          background: linear-gradient(135deg, #a81928, #8b1420);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 16px;
           color: white;
-          box-shadow: 0 2px 8px rgba(220, 20, 60, 0.3);
+          box-shadow: 0 2px 8px rgba(168, 25, 40, 0.3);
         }
 
         .stat-content {
@@ -186,7 +186,7 @@
             display: block;
             font-size: 20px;
             font-weight: 700;
-            color: #dc143c;
+            color: #a81928;
             margin-bottom: 2px;
           }
 
@@ -213,7 +213,7 @@
 
       .benefits-icon {
         font-size: 16px;
-        color: #dc143c;
+        color: #a81928;
       }
 
       .ant-typography {
@@ -241,7 +241,7 @@
           position: absolute;
           left: 0;
           top: 0;
-          color: #dc143c;
+          color: #a81928;
           font-weight: bold;
           font-size: 14px;
         }
