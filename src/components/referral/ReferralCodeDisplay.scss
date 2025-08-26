@@ -324,67 +324,78 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
+        margin-top: 20px;
 
         .social-button {
           height: 48px;
-          width: 48px;
-          padding: 0;
+          padding: 0 16px;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
           font-weight: 600;
           border-radius: 8px;
+          border: none;
           transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
 
           &:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           }
 
-          .anticon, span {
-            font-size: 20px;
+          .social-button-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+          }
+
+          .social-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+          }
+
+          .social-text {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
           }
 
           &.telegram {
             background: #0088cc;
-            border-color: #0088cc;
             color: white;
 
             &:hover {
               background: #0077b3;
-              border-color: #0077b3;
             }
           }
 
           &.whatsapp {
             background: #25d366;
-            border-color: #25d366;
             color: white;
 
             &:hover {
               background: #20ba5a;
-              border-color: #20ba5a;
             }
           }
 
           &.x {
             background: #000000;
-            border-color: #000000;
             color: white;
 
             &:hover {
               background: #1a1a1a;
-              border-color: #1a1a1a;
             }
           }
 
           &.facebook {
             background: #1877f2;
-            border-color: #1877f2;
             color: white;
 
             &:hover {
               background: #166fe5;
-              border-color: #166fe5;
             }
           }
         }
