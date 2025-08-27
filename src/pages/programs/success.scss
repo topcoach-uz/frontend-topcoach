@@ -1,167 +1,133 @@
-// Programs Success Page Styles
 .programs-success-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    padding: 60px 0;
-    
-    .success-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-  
-    .success-card {
-      border-radius: 20px;
-      border: none;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      background: white;
-      overflow: hidden;
-    }
-  
-    .success-subtitle {
-      text-align: center;
-      
-      p {
-        font-size: 1.125rem;
-        color: #64748b;
-        margin-bottom: 24px;
-      }
-  
-      .enrollment-details {
-        display: flex;
-        justify-content: center;
-        gap: 32px;
-        flex-wrap: wrap;
-        margin-top: 24px;
-  
-        .detail-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 20px;
-          background: #f1f5f9;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          
-          .anticon {
-            color: #1e40af;
-            font-size: 16px;
-          }
-  
-          .status-completed {
-            color: #10b981;
-          }
-        }
-      }
-    }
-  
-    .next-steps {
-      margin-top: 48px;
-      padding: 40px;
-      background: #f8fafc;
-      border-radius: 16px;
-  
-      h3 {
-        font-size: 1.5rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  .success-container {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .success-card {
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    .ant-result {
+      padding: 40px 20px;
+
+      .ant-result-title {
+        font-size: 28px;
         font-weight: 700;
-        color: #1e293b;
+        color: #1890ff;
+        margin-bottom: 16px;
+      }
+
+      .ant-result-subtitle {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.6;
+      }
+
+      .success-subtitle {
         text-align: center;
-        margin-bottom: 32px;
-      }
-  
-      .steps-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 24px;
-  
-        @media (max-width: 768px) {
-          grid-template-columns: 1fr;
+
+        p {
+          margin-bottom: 16px;
+          font-size: 16px;
+          color: #666;
         }
-      }
-  
-      .step-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 24px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s ease;
-  
-        &:hover {
-          transform: translateY(-2px);
-        }
-  
-        .step-number {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, #1e40af, #3b82f6);
-          color: white;
-          border-radius: 50%;
+
+        .approval-notice {
+          background: #fff7e6;
+          border: 1px solid #ffd591;
+          border-radius: 8px;
+          padding: 16px;
+          margin: 20px 0;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 700;
-          font-size: 1.125rem;
-          flex-shrink: 0;
-        }
-  
-        .step-content {
-          h4 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 8px;
-          }
-  
-          p {
-            color: #64748b;
+          text-align: left;
+
+          span {
+            color: #d46b08;
+            font-size: 14px;
             line-height: 1.5;
-            font-size: 0.875rem;
+          }
+        }
+
+        .enrollment-details {
+          margin-top: 24px;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+
+          .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #666;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .anticon {
+              margin-right: 8px;
+              color: #1890ff;
+            }
+
+            strong {
+              color: #333;
+              margin-left: 4px;
+            }
+
+            .status-pending {
+              color: #faad14;
+            }
+
+            .status-completed {
+              color: #52c41a;
+            }
           }
         }
       }
-    }
-  }
-  
-  .programs-success-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    gap: 24px;
-    
-    p {
-      font-size: 1.125rem;
-      color: #64748b;
-    }
-  }
-  
-  // Responsive Design
-  @media (max-width: 768px) {
-    .programs-success-page {
-      padding: 40px 0;
-      
-      .success-subtitle {
-        .enrollment-details {
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-        }
-      }
-      
-      .next-steps {
-        padding: 24px;
-        
-        .steps-grid {
-          gap: 16px;
-        }
-        
-        .step-item {
-          padding: 16px;
+
+      .ant-result-extra {
+        margin-top: 32px;
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .ant-btn {
+          min-width: 160px;
+          height: 48px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
         }
       }
     }
-  } 
+  }
+}
+
+.programs-success-loading {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+
+  p {
+    margin-top: 16px;
+    font-weight: 500;
+  }
+} 

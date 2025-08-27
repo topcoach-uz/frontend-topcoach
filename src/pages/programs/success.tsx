@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, Result, Spin } from 'antd';
-import { CheckCircleOutlined, RocketOutlined, UserOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, RocketOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { useTypedSelector } from 'src/app/store';
 import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import './success.scss';
@@ -65,6 +65,12 @@ const ProgramsSuccessPage: React.FC = () => {
             subTitle={
               <div className="success-subtitle">
                 <p>Thank you for enrolling in our course program!</p>
+                <div className="approval-notice">
+                  <ClockCircleOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                  <span>
+                    <strong>Your application has been submitted!</strong> Our administrator will review and contact you within 12 hours.
+                  </span>
+                </div>
                 {enrollmentData && (
                   <div className="enrollment-details">
                     <div className="detail-item">
@@ -72,8 +78,8 @@ const ProgramsSuccessPage: React.FC = () => {
                       <span>Plan: <strong>{enrollmentData.courseType === 'standard' ? 'Standard' : 'Premium'}</strong></span>
                     </div>
                     <div className="detail-item">
-                      <RocketOutlined />
-                      <span>Status: <strong className="status-completed">Completed</strong></span>
+                      <ClockCircleOutlined />
+                      <span>Status: <strong className="status-pending">Pending Approval</strong></span>
                     </div>
                   </div>
                 )}

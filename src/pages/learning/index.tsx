@@ -44,6 +44,41 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     return null;
   }
 
+  // Check enrollment status and show appropriate message
+  if (enrollmentStatus && !enrollmentStatus.isEnrolled) {
+    return (
+      <div className="learning-error">
+        <h2>Not Enrolled</h2>
+        <p>You need to enroll in a course to access the learning content.</p>
+        <Button 
+          type="primary" 
+          onClick={() => window.location.href = '/programs'}
+          style={{ marginTop: '16px' }}
+        >
+          View Programs
+        </Button>
+      </div>
+    );
+  }
+
+  // Check if enrollment is pending approval
+  if (enrollmentStatus && enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
+    return (
+      <div className="learning-error">
+        <h2>Enrollment Pending Approval</h2>
+        <p>Your enrollment is currently pending approval. Our administrator will review and contact you within 12 hours.</p>
+        <p>You will be able to access the learning content once your enrollment is approved.</p>
+        <Button 
+          type="primary" 
+          onClick={() => window.location.href = '/programs'}
+          style={{ marginTop: '16px' }}
+        >
+          View Programs
+        </Button>
+      </div>
+    );
+  }
+
   // API hooks
   const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
     refetchOnMountOrArgChange: true,

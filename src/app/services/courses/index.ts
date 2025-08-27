@@ -12,6 +12,7 @@ export interface CourseEnrollmentDto {
   enrolledAt: string;
   createdAt: string;
   updatedAt: string;
+  status: 'pending' | 'completed' | 'rejected';
 }
 
 export interface CreateCourseEnrollmentDto {
@@ -22,6 +23,7 @@ export interface CreateCourseEnrollmentDto {
 export interface CourseEnrollmentStatusDto {
   isEnrolled: boolean;
   enrollment?: CourseEnrollmentDto;
+  canAccessLearning: boolean;
 }
 
 export interface CoursePricingDto {

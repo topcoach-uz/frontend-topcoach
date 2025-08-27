@@ -355,21 +355,31 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
           <Alert
             message={
               <div className="enrollment-message">
-                <CheckCircleOutlined />
-                <span>You're enrolled in the {enrollmentStatus.enrollment.courseType} plan!</span>
-                {/* <Tag color={getStatusColor(enrollmentStatus.enrollment.paymentStatus as CoursePaymentStatusEnum)}>
-                  {enrollmentStatus.enrollment.paymentStatus.toUpperCase()}
-                </Tag> */}
+                {enrollmentStatus.canAccessLearning ? (
+                  <>
+                    <CheckCircleOutlined />
+                    <span>You're enrolled in the {enrollmentStatus.enrollment.courseType} plan!</span>
+                  </>
+                ) : (
+                  <>
+                    <ClockCircleOutlined />
+                    <span>Your enrollment is pending approval</span>
+                  </>
+                )}
               </div>
             }
-            description="You now have full access to all course materials and learning sessions."
-            type="success"
+            description={
+              enrollmentStatus.canAccessLearning 
+                ? "You now have full access to all course materials and learning sessions."
+                : "Our administrator will review and contact you within 12 hours."
+            }
+            type={enrollmentStatus.canAccessLearning ? "success" : "warning"}
             showIcon={false}
             className="enrollment-alert"
           />
           
-          {/* Continue Learning Section */}
-          {userProgress && (
+          {/* Continue Learning Section - Only show when enrollment is approved */}
+          {userProgress && enrollmentStatus.canAccessLearning && (
             <div className="continue-learning-section">
               <Card className="learning-card">
                 <div className="learning-header">
@@ -605,8 +615,8 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         </div>
       </section>
 
-      {/* Referral Code Display - Only show for enrolled users */}
-      {enrollmentStatus?.enrollment && (
+      {/* Referral Code Display - Only show for enrolled users with approved status */}
+      {enrollmentStatus?.enrollment && enrollmentStatus.canAccessLearning && (
         <section className="referral-section">
           <div className="container">
             <ReferralCodeDisplay />
