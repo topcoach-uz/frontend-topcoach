@@ -44,6 +44,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     return null;
   }
 
+  // API hooks
+  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
+  const [updateLessonProgress] = useUpdateLessonProgressMutation();
+
   // Check enrollment status and show appropriate message
   if (enrollmentStatus && !enrollmentStatus.isEnrolled) {
     return (
@@ -78,16 +88,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       </div>
     );
   }
-
-  // API hooks
-  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
-  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
-  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
-  const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
   // Generate VdoCipher OTP
   const generateVdoCipherOTP = async (videoId: string) => {
