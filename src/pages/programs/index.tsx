@@ -164,7 +164,7 @@ const ProgramsPage: React.FC = () => {
     skip: !isAuthenticated
   });
   const { data: userProgress } = useGetUserProgressQuery(undefined, {
-    skip: !isAuthenticated || !enrollmentStatus?.isEnrolled
+    skip: !isAuthenticated || !enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning
   });
   const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
     skip: !isAuthenticated
