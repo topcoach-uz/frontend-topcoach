@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Spin, Button, message } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import CourseSidebar from './components/CourseSidebar';
@@ -45,13 +45,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }
 
   // API hooks
+  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
   const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
     refetchOnMountOrArgChange: true,
+    skip: !enrollmentStatus?.canAccessLearning,
   });
   const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
     refetchOnMountOrArgChange: true,
+    skip: !enrollmentStatus?.canAccessLearning,
   });
-  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
   // Check enrollment status and show appropriate message
@@ -74,17 +76,35 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   // Check if enrollment is pending approval
   if (enrollmentStatus && enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
     return (
-      <div className="learning-error">
-        <h2>Enrollment Pending Approval</h2>
-        <p>Your enrollment is currently pending approval. Our administrator will review and contact you within 12 hours.</p>
-        <p>You will be able to access the learning content once your enrollment is approved.</p>
-        <Button 
-          type="primary" 
-          onClick={() => window.location.href = '/programs'}
-          style={{ marginTop: '16px' }}
-        >
-          View Programs
-        </Button>
+      <div className="learning-pending-approval">
+        <div className="pending-content">
+          <div className="pending-icon">
+            <ClockCircleOutlined />
+          </div>
+          <h2>Enrollment Pending Approval</h2>
+          <p className="pending-message">
+            Thank you for enrolling in our course! Your application has been submitted and is currently under review.
+          </p>
+          <p className="pending-details">
+            Our administrator will review your enrollment and contact you within 12 hours. You'll receive access to all learning materials once your enrollment is approved.
+          </p>
+          <div className="pending-actions">
+            <Button 
+              type="primary" 
+              size="large"
+              onClick={() => window.location.href = '/programs'}
+              icon={<RocketOutlined />}
+            >
+              Back to Programs
+            </Button>
+            <Button 
+              size="large"
+              onClick={() => window.location.href = '/'}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
