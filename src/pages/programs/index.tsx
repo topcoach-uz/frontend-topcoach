@@ -354,7 +354,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
           </div>
           <div className="hero-visual">
             <div className="hero-image">
-              <img src="/img/students.png" alt="Students studying together" />
+              <img src="/img/students.jpeg" alt="Students studying together" />
             </div>
           </div>
         </div>
