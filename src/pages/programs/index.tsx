@@ -13,7 +13,9 @@ import {
   DollarOutlined,
   BookOutlined,
   TeamOutlined,
-  CrownOutlined
+  CrownOutlined,
+  DownOutlined,
+  UpOutlined
 } from '@ant-design/icons';
 import { useTypedSelector } from 'src/app/store';
 import { 
@@ -114,7 +116,7 @@ const mentors: Mentor[] = [
     module: 'Portfolio Building',
     achievements: [
       'Manager of "Ibrat Debate" - biggest social project in Uzbekistan',
-      'Mentored 20+ students in building strong portfolios',
+      'Mentored 50+ students in building strong portfolios',
       'Students secured positions with MIT, Cambridge, GWU PhD candidates'
     ],
     stats: {
@@ -156,6 +158,7 @@ const ProgramsPage: React.FC = () => {
   const { profile, isAuthenticated } = useTypedSelector(state => state.auth);
   const [selectedPlan, setSelectedPlan] = useState<CourseTypeEnum | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  const [showDetailedSections, setShowDetailedSections] = useState(false);
   const dispatch = useAppDispatch();
 
   // API hooks
@@ -337,13 +340,21 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 </div>
               </div>
             </div>
+            <div className="hero-actions">
+              <Button 
+                type="primary" 
+                size="large"
+                onClick={() => document.querySelector('.pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
+                icon={<RocketOutlined />}
+                className="apply-now-btn"
+              >
+                Apply Now
+              </Button>
+            </div>
           </div>
           <div className="hero-visual">
-            <div className="hero-illustration">
-              <div className="premium-badge">
-                <CrownOutlined />
-                <span>Your best College support</span>
-              </div>
+            <div className="hero-image">
+              <img src="/img/students.png" alt="Students studying together" />
             </div>
           </div>
         </div>
@@ -481,10 +492,22 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             </Card>
           ))}
         </div>
+        <div className="mentors-actions">
+          <Button 
+            type="default"
+            size="large"
+            onClick={() => setShowDetailedSections(!showDetailedSections)}
+            icon={showDetailedSections ? <UpOutlined /> : <DownOutlined />}
+            className="learn-more-btn"
+          >
+            {showDetailedSections ? 'Show Less' : 'Learn More'}
+          </Button>
+        </div>
       </section>
 
-      {/* Course Modules */}
-      <section className="modules-section">
+      {/* Course Modules - Conditional */}
+      {showDetailedSections && (
+        <section className="modules-section">
         <div className="section-header">
           <div className="header-content">
             <h2>Comprehensive Course Modules</h2>
@@ -519,9 +542,11 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
           ))}
         </div>
       </section>
+      )}
 
-      {/* What Makes Us Different */}
-      <section className="different-section">
+      {/* What Makes Us Different - Conditional */}
+      {showDetailedSections && (
+        <section className="different-section">
         <div className="section-header">
           <div className="header-content">
             <h2>What Makes Us Different</h2>
@@ -559,6 +584,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
           </div>
         </div>
       </section>
+      )}
 
       {/* Pricing Section */}
       <section className="pricing-section">
