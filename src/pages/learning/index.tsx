@@ -45,7 +45,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }
 
   // API hooks
-  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
+  const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery();
   const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
     refetchOnMountOrArgChange: true,
     skip: !enrollmentStatus?.canAccessLearning,
@@ -56,8 +56,37 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   });
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
+  // Show loading while enrollment status is being fetched
+  if (enrollmentLoading) {
+    return (
+      <div className="learning-loading">
+        <Spin size="large" />
+        <p>Checking your enrollment status...</p>
+      </div>
+    );
+  }
+
+  // Debug: Log enrollment status
+  console.log('Learning page - Enrollment status:', enrollmentStatus);
+
   // Check enrollment status and show appropriate message
-  if (enrollmentStatus && !enrollmentStatus.isEnrolled) {
+  if (!enrollmentStatus) {
+    return (
+      <div className="learning-error">
+        <h2>Unable to Load Enrollment Status</h2>
+        <p>We're having trouble loading your enrollment information. Please try refreshing the page or contact support.</p>
+        <Button 
+          type="primary" 
+          onClick={() => window.location.reload()}
+          style={{ marginTop: '16px' }}
+        >
+          Refresh Page
+        </Button>
+      </div>
+    );
+  }
+
+  if (!enrollmentStatus.isEnrolled) {
     return (
       <div className="learning-error">
         <h2>Not Enrolled</h2>
@@ -74,7 +103,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }
 
   // Check if enrollment is pending approval
-  if (enrollmentStatus && enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
+  if (enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
     return (
       <div className="learning-pending-approval">
         <div className="pending-content">
