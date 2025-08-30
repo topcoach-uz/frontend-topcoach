@@ -33,3 +33,35 @@
     stroke: $colorText;
   }
 }
+
+.aiMajorMatchButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease-in;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+  }
+
+  .aiIcon {
+    color: white;
+  }
+
+  // Mobile version - more compact
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+}

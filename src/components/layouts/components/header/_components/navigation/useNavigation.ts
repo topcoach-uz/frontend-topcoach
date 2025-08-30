@@ -5,6 +5,7 @@ import { useTypedSelector } from 'src/app/store';
 interface INavLink {
   path: string;
   text: string;
+  children?: INavLink[];
 }
 
 export default function useNavigation() {
@@ -22,32 +23,29 @@ export default function useNavigation() {
       text: t('header.mentors'),
     },
     {
-      path: '/ai-major-match',
-      text: t('header.ai_major_match', 'AI Major Match'),
-    },
-    {
-      path: '/universities',
-      text: t('header.universities'),
+      path: '/programs',
+      text: t('header.programs', 'Programs'),
     },
     {
       path: '/events',
       text: t('header.events'),
     },
     {
-      path: '/programs',
-      text: t('header.programs', 'Programs'),
-    },
-    {
-      path: '/success-stories',
-      text: t('header.blog'),
-    },
-    //     {
-    //   path: '/contact',
-    //   text: t('header.contacts'),
-    // },
-    {
-      path: '/faq',
-      text: t('header.faq'),
+      text: 'Learn more',
+      children: [
+        {
+          path: '/universities',
+          text: t('header.universities'),
+        },
+        {
+          path: '/success-stories',
+          text: t('header.blog'),
+        },
+        {
+          path: '/faq',
+          text: t('header.faq'),
+        },
+      ],
     },
   ];
 
