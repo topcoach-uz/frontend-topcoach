@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 
 interface INavLink {
-  path: string;
+  path?: string;
   text: string;
   children?: INavLink[];
 }
@@ -49,7 +49,9 @@ export default function useNavigation() {
     },
   ];
 
-  const isActive = (linkPath: string) => {
+  const isActive = (linkPath?: string) => {
+    if (!linkPath) return false;
+    
     if (linkPath === '/') {
       return pathname === '/';
     } else if (linkPath !== '/' && pathname.startsWith(linkPath)) {

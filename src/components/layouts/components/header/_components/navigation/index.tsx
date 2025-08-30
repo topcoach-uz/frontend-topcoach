@@ -77,8 +77,8 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
               </div>
             ) : (
               <a
-                className={`${styles.link} ${isActive(link.path) ? styles.link_active : ''}`}
-                href={link.path}
+                className={`${styles.link} ${link.path && isActive(link.path) ? styles.link_active : ''}`}
+                href={link.path || '#'}
               >
                 {link.text}
               </a>
