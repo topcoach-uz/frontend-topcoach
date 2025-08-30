@@ -68,7 +68,7 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
                       <Link
                         key={j}
                         className={`${styles.dropdownLink} ${isActive(child.path) ? styles.dropdownLink_active : ''}`}
-                        to={child.path}
+                        to={child.path || '/'}
                       >
                         {child.text}
                       </Link>
