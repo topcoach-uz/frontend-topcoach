@@ -24,13 +24,6 @@ export default function Footer() {
                 style={{ color: 'white' }}
                 fontSize={16}
                 fontWeight={500}
-              >
-                {t('footer.XCDM')}
-              </CustomText>
-              <CustomText
-                style={{ color: 'white' }}
-                fontSize={16}
-                fontWeight={500}
                 className={styles.copyright}
               >
                 {t('footer.allRightsReserved')}
