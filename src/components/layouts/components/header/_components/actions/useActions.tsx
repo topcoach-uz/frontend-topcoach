@@ -22,6 +22,7 @@ export default function useActions() {
     (state) => state.auth.isAuthenticated
   );
   const userData = useTypedSelector((state) => state.auth.profile);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const handleDarkMode = () => {
     if (isDark) {
@@ -36,6 +37,12 @@ export default function useActions() {
     if (!isAuthenticated) {
       dispatch(loginCheck());
     }
+    // Set loading to false after a short delay to prevent layout shift
+    const timer = setTimeout(() => {
+      setIsAuthLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Hamburger menu
@@ -94,5 +101,8 @@ export default function useActions() {
     // Edit Profile Modal
     isModalVisible,
     setIsModalVisible,
+    
+    // Auth loading state
+    isAuthLoading,
   };
 }

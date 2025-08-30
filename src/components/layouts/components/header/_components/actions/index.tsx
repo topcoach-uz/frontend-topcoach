@@ -25,6 +25,9 @@ export default function Actions() {
     // Edit profile modal
     isModalVisible,
     setIsModalVisible,
+    
+    // Auth loading state
+    isAuthLoading,
   } = useActions();
   const { screenSize } = useScreenSize();
   const { i18n } = useTranslation();
@@ -79,11 +82,17 @@ export default function Actions() {
       </button>
       */}
       <LanguageSelect />
-      {isAuthenticated ? (
-        <ProfileDropdown profileMenuItems={profileMenuItems} />
-      ) : (
-        <AuthButtonGroup />
-      )}
+      <div className={styles.authContainer}>
+        {!isAuthLoading && (
+          <>
+            {isAuthenticated ? (
+              <ProfileDropdown profileMenuItems={profileMenuItems} />
+            ) : (
+              <AuthButtonGroup />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
