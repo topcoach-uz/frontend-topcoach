@@ -1,6 +1,7 @@
 import styles from './navigation.module.scss';
 import useNavigation from './useNavigation';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface Props {
   direction?: 'vertical' | 'horizontal';
@@ -64,24 +65,24 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
                     onMouseLeave={() => setIsHovering(false)}
                   >
                     {link.children.map((child, j) => (
-                      <a
+                      <Link
                         key={j}
                         className={`${styles.dropdownLink} ${isActive(child.path) ? styles.dropdownLink_active : ''}`}
-                        href={child.path}
+                        to={child.path}
                       >
                         {child.text}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <a
+              <Link
                 className={`${styles.link} ${link.path && isActive(link.path) ? styles.link_active : ''}`}
-                href={link.path || '#'}
+                to={link.path || '/'}
               >
                 {link.text}
-              </a>
+              </Link>
             )}
           </li>
         ))}

@@ -37,13 +37,17 @@ export default function useActions() {
     if (!isAuthenticated) {
       dispatch(loginCheck());
     }
-    // Set loading to false after a short delay to prevent layout shift
-    const timer = setTimeout(() => {
+    // Set loading to false immediately if already authenticated, or after auth check
+    if (isAuthenticated !== undefined) {
       setIsAuthLoading(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    } else {
+      const timer = setTimeout(() => {
+        setIsAuthLoading(false);
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated]);
 
   // Hamburger menu
   const [isMenuOpen, setIsMenu] = useState<boolean>(false);
