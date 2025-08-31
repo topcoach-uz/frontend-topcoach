@@ -235,7 +235,7 @@ export default function MentorDetailsPage() {
             )}
             <Background />
 
-            <Reviews data={mentorData?.receivedReviews || []} />
+            <Reviews data={(mentorData as any)?.receivedReviews || []} />
           </div>
           {screenSize > 1024 && (
             <Flex gap={24} style={{ width: '100%' }} vertical>

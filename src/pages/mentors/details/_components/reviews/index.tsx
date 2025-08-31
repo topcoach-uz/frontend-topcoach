@@ -51,8 +51,6 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
           <CustomText
             color={colors.colorTextSecondary}
             fontSize={themeFontSize.fontSizeTitle9}
-            textAlign="center"
-            py={32}
           >
             No reviews yet
           </CustomText>
@@ -67,8 +65,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        mt={32}
-        mb={16}
+        style={{ marginTop: 32, marginBottom: 16 }}
       >
         Reviews
       </CustomText>
@@ -78,7 +75,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
         className={styles.summary_card}
         bordered
         shadowed={false}
-        mb={24}
+        style={{ marginBottom: 24 }}
       >
         <div className={styles.summary_content}>
           <div className={styles.summary_left}>
@@ -105,7 +102,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
               >
                 {averageRating}
               </CustomText>
-              <Flex gap={4} mb={4}>
+              <Flex gap={4} style={{ marginBottom: 4 }}>
                 {createArray(1, 5).map((num) => (
                   <StarIcon
                     width={16}
@@ -166,14 +163,14 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                       color={colors.colorText}
                       fontSize={themeFontSize.fontSizeTitle9}
                       fontWeight={themeFontWeight.fontWeightSemibold}
-                      mb={4}
+                      style={{ marginBottom: 4 }}
                     >
                       {review.reviewer?.profile?.name || 'Anonymous'}
                     </CustomText>
                     <CustomText
                       color={colors.colorTextSecondary}
                       fontSize={12}
-                      mb={4}
+                      style={{ marginBottom: 4 }}
                     >
                       {dayjs(review.createdAt).format('MMM DD, YYYY')}
                     </CustomText>
@@ -193,8 +190,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                   className={styles.review_description}
                   color={colors.colorText}
                   fontSize={themeFontSize.fontSizeTitle9}
-                  mt={8}
-                  lineHeight={1.5}
+                  style={{ marginTop: 8, lineHeight: 1.5 }}
                 >
                   {review.summary}
                 </CustomText>

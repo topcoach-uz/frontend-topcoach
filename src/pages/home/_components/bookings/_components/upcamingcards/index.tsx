@@ -593,7 +593,7 @@ export default function UpcomingCard({
             <CustomText fontSize={16} fontWeight={600} color={colors.colorText}>
               {role === UserRole.Mentor 
                 ? 'Student'
-                : mentor?.profile?.name || 'Mentor'
+                : (mentor as any)?.profile?.name || 'Mentor'
               }
             </CustomText>
           </div>
