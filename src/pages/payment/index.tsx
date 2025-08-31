@@ -299,6 +299,12 @@ function PaymentPage() {
 
   // Helper to POST to backend and redirect (for subscription and session payments)
   const handleProviderRedirect = async (provider: string) => {
+    // Temporarily disable Click payments due to bank account migration
+    if (provider === 'click') {
+      message.warning('Click payments are temporarily unavailable. Please use Atmos for payments.');
+      return;
+    }
+
     if (!planId && !sessionId && !enrollmentId) {
       message.error('No payment information found');
       return;
@@ -434,15 +440,16 @@ function PaymentPage() {
             
             <div className={styles.methodsGrid}>
               <div 
-                className={`${styles.methodCard} ${isLoading ? styles.disabled : ''}`}
-                onClick={() => !isLoading && handleProviderRedirect('click')}
+                className={`${styles.methodCard} ${styles.disabled}`}
+                onClick={() => handleProviderRedirect('click')}
+                style={{ opacity: 0.6, cursor: 'not-allowed' }}
               >
                 <div className={styles.methodIcon}>
                   <img src="/img/click.jpg" alt="Click" />
                 </div>
                 <div className={styles.methodInfo}>
                   <h4>Click</h4>
-                  <p>Pay with Click App</p>
+                  <p style={{ color: '#ff4d4f' }}>Temporarily Unavailable</p>
                 </div>
                 <div className={styles.methodArrow}>
                   <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
