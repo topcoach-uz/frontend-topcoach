@@ -617,21 +617,22 @@ export default function UpcomingCard({
             <CustomText mb={4}>Comment</CustomText>
             <Form.Item
               name="rateText"
-              rules={hasUserRated() ? [] : [
-                {
-                  required: true,
-                  message: 'Please provide a comment',
-                },
-                {
-                  min: 10,
-                  message: 'Comment must be at least 10 characters long',
-                },
-              ]}
+              rules={
+                hasUserRated()
+                  ? []
+                  : [
+                      {
+                        required: true,
+                        message: 'Please provide a comment',
+                      },
+                      {
+                        min: 10,
+                        message: 'Comment must be at least 10 characters long',
+                      },
+                    ]
+              }
             >
-              <Input.TextArea
-                placeholder="It looks like the mentor didn’t join the scheduled meeting."
-                rows={4}
-              />
+              <Input.TextArea rows={4} />
             </Form.Item>
           </Form>
         </div>
