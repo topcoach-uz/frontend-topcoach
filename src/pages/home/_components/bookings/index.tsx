@@ -78,7 +78,8 @@ export default function BookingsSection() {
                 duration={
                   session.type == SessionTypeEnum.Individual30M ? 30 : 60
                 }
-                // cancelCheck={false}
+                cancelCheck={false}
+                rateCheck={true}
                 key={index}
                 {...session}
               />

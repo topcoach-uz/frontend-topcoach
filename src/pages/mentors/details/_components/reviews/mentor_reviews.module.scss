@@ -14,3 +14,83 @@
 .review_description {
   font-family: 'Nunito Sans', serif !important;
 }
+
+.no_reviews_card {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary_card {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.summary_content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.summary_left {
+  display: flex;
+  gap: 32px;
+}
+
+.total_reviews,
+.average_rating {
+  text-align: center;
+  min-width: 80px;
+}
+
+.rating_distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.rating_bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.bar_container {
+  flex: 1;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar_fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.review_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .summary_content {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .summary_left {
+    justify-content: space-around;
+  }
+  
+  .rating_distribution {
+    min-width: auto;
+  }
+}

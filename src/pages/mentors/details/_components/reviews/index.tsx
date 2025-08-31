@@ -7,13 +7,59 @@ import { createArray } from 'src/utils';
 import { StarIcon } from 'src/components/icons';
 import { Flex } from 'antd';
 import { ReviewsSchema } from 'src/app/api/Api';
+import dayjs from 'dayjs';
 
 interface ReviewProps {
-  data?: any;
+  data?: ReviewsSchema[];
 }
 
-export default function MentorDetailsReviews({ data }: ReviewProps) {
+export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
   const colors = useColors();
+
+  // Calculate average rating and total reviews
+  const totalReviews = data.length;
+  const averageRating = totalReviews > 0 
+    ? (data.reduce((sum, review) => sum + review.rating, 0) / totalReviews).toFixed(1)
+    : 0;
+
+  // Rating distribution
+  const ratingDistribution = {
+    5: data.filter(review => review.rating === 5).length,
+    4: data.filter(review => review.rating === 4).length,
+    3: data.filter(review => review.rating === 3).length,
+    2: data.filter(review => review.rating === 2).length,
+    1: data.filter(review => review.rating === 1).length,
+  };
+
+  if (totalReviews === 0) {
+    return (
+      <div>
+        <CustomText
+          fontWeight={themeFontWeight.fontWeightSemibold}
+          fontSize={themeFontSize.fontSizeTitle5}
+          color={colors.colorText}
+          mt={32}
+          mb={16}
+        >
+          Reviews
+        </CustomText>
+        <CustomCard
+          className={styles.no_reviews_card}
+          bordered
+          shadowed={false}
+        >
+          <CustomText
+            color={colors.colorTextSecondary}
+            fontSize={themeFontSize.fontSizeTitle9}
+            textAlign="center"
+            py={32}
+          >
+            No reviews yet
+          </CustomText>
+        </CustomCard>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -26,42 +72,131 @@ export default function MentorDetailsReviews({ data }: ReviewProps) {
       >
         Reviews
       </CustomText>
+
+      {/* Summary Statistics */}
+      <CustomCard
+        className={styles.summary_card}
+        bordered
+        shadowed={false}
+        mb={24}
+      >
+        <div className={styles.summary_content}>
+          <div className={styles.summary_left}>
+            <div className={styles.total_reviews}>
+              <CustomText
+                fontSize={24}
+                fontWeight={themeFontWeight.fontWeightBold}
+                color={colors.colorText}
+              >
+                {totalReviews}
+              </CustomText>
+              <CustomText
+                fontSize={14}
+                color={colors.colorTextSecondary}
+              >
+                Total Reviews
+              </CustomText>
+            </div>
+            <div className={styles.average_rating}>
+              <CustomText
+                fontSize={24}
+                fontWeight={themeFontWeight.fontWeightBold}
+                color={colors.colorText}
+              >
+                {averageRating}
+              </CustomText>
+              <Flex gap={4} mb={4}>
+                {createArray(1, 5).map((num) => (
+                  <StarIcon
+                    width={16}
+                    height={16}
+                    key={num}
+                    color={num <= Number(averageRating) ? '#FADB14' : '#0000000F'}
+                  />
+                ))}
+              </Flex>
+              <CustomText
+                fontSize={14}
+                color={colors.colorTextSecondary}
+              >
+                Average Rating
+              </CustomText>
+            </div>
+          </div>
+          <div className={styles.rating_distribution}>
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <div key={rating} className={styles.rating_bar}>
+                <CustomText fontSize={12} color={colors.colorTextSecondary}>
+                  {rating} ★
+                </CustomText>
+                <div className={styles.bar_container}>
+                  <div 
+                    className={styles.bar_fill}
+                    style={{ 
+                      width: `${totalReviews > 0 ? (ratingDistribution[rating as keyof typeof ratingDistribution] / totalReviews) * 100 : 0}%`,
+                      backgroundColor: rating === 5 ? '#8B0000' : 
+                                     rating === 4 ? '#52C41A' : 
+                                     rating === 3 ? '#FAAD14' : 
+                                     rating === 2 ? '#FA8C16' : '#FF4D4F'
+                    }}
+                  />
+                </div>
+                <CustomText fontSize={12} color={colors.colorTextSecondary}>
+                  {ratingDistribution[rating as keyof typeof ratingDistribution]}
+                </CustomText>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CustomCard>
+
+      {/* Individual Reviews */}
       <ul className={styles.review_list}>
-        {data.map(({ id, rating, summary }: ReviewsSchema) => (
-          <li key={id}>
+        {data.map((review) => (
+          <li key={review.id}>
             <CustomCard
               className={styles.card_wrapper}
               bordered
               shadowed={false}
             >
               <div>
-                <CustomText
-                  color={colors.colorText}
-                  fontSize={themeFontSize.fontSizeTitle9}
-                  fontWeight={themeFontWeight.fontWeightSemibold}
-                  mb={4}
-                >
-                  Jhon Do
-                </CustomText>
-                <Flex gap={8}>
-                  {createArray(1, 5).map((num) => (
-                    <StarIcon
-                      width={16}
-                      height={16}
-                      key={num}
-                      color={num <= rating ? '#FADB14' : '#0000000F'}
-                    />
-                  ))}
-                </Flex>
+                <div className={styles.review_header}>
+                  <div>
+                    <CustomText
+                      color={colors.colorText}
+                      fontSize={themeFontSize.fontSizeTitle9}
+                      fontWeight={themeFontWeight.fontWeightSemibold}
+                      mb={4}
+                    >
+                      {review.reviewer?.profile?.name || 'Anonymous'}
+                    </CustomText>
+                    <CustomText
+                      color={colors.colorTextSecondary}
+                      fontSize={12}
+                      mb={4}
+                    >
+                      {dayjs(review.createdAt).format('MMM DD, YYYY')}
+                    </CustomText>
+                  </div>
+                  <Flex gap={4}>
+                    {createArray(1, 5).map((num) => (
+                      <StarIcon
+                        width={16}
+                        height={16}
+                        key={num}
+                        color={num <= review.rating ? '#FADB14' : '#0000000F'}
+                      />
+                    ))}
+                  </Flex>
+                </div>
                 <CustomText
                   className={styles.review_description}
                   color={colors.colorText}
                   fontSize={themeFontSize.fontSizeTitle9}
-                  mt={4}
-                  mb={4}
+                  mt={8}
                   lineHeight={1.5}
                 >
-                  {summary}
+                  {review.summary}
                 </CustomText>
               </div>
             </CustomCard>

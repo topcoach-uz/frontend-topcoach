@@ -181,7 +181,12 @@ export interface ReviewsSchema {
   deletedAt: string;
   rating: number;
   summary: string;
-  reviewer: object;
+  reviewer: {
+    id: string;
+    profile: {
+      name: string;
+    };
+  };
   reviewee: object;
   session: object;
 }
@@ -234,7 +239,7 @@ export interface SessionsSchema {
   mentor: object;
   participants: string[];
   comments: any[];
-  reviews: ReviewsSchema;
+  reviews: ReviewsSchema[];
   calendarInfo: CalendarsSchema;
   bookings: string[];
   isGiveawaySession: boolean;

@@ -68,18 +68,43 @@ export default function UpcomingCard({
   const { t } = useTranslation();
 
   const [form] = Form.useForm();
+  const [rating, setRating] = useState<number>(0);
   const role = useTypedSelector((state) => state.auth.profile?.profile?.role);
+  const currentUser = useTypedSelector((state) => state.auth.profile);
+
+  // Helper function to check if current user has rated this session
+  const hasUserRated = () => {
+    if (!currentUser?.id || !reviews) return false;
+    return reviews.some((review: any) => review.reviewer?.id === currentUser.id);
+  };
+
+  // Helper function to get user's rating for this session
+  const getUserRating = () => {
+    if (!currentUser?.id || !reviews) return null;
+    const userReview = reviews.find((review: any) => review.reviewer?.id === currentUser.id);
+    return userReview ? { rating: userReview.rating, comment: userReview.summary } : null;
+  };
 
   useGetMeQuery(undefined, { skip: !cancelAsStudentSuccess });
 
   const menuItems: MenuProps['items'] = [
     {
-      label: t('homeMentor.rateMeeting'),
+      label: hasUserRated() ? 'View Rating' : t('homeMentor.rateMeeting'),
       key: '1',
       className:
         role == UserRole.Student && rateCheck ? '' : styles.displayNone,
       onClick: () => {
-        setIsModalVisibleRate(true);
+        if (hasUserRated()) {
+          // Show read-only rating modal
+          const userRating = getUserRating();
+          if (userRating) {
+            setRating(userRating.rating);
+            form.setFieldsValue({ rateText: userRating.comment });
+            setIsModalVisibleRate(true);
+          }
+        } else {
+          setIsModalVisibleRate(true);
+        }
       },
     },
     {
@@ -131,6 +156,8 @@ export default function UpcomingCard({
 
   const handleCancelRate = () => {
     setIsModalVisibleRate(false);
+    form.resetFields();
+    setRating(0);
   };
 
   const handleDetails = () => {
@@ -253,11 +280,22 @@ export default function UpcomingCard({
     }
 
     const formValues = form.getFieldsValue();
-    const finalReason = formValues.rateText;
+    const comment = formValues.rateText;
+
+    // Validate rating and comment are both provided
+    if (!rating || rating === 0) {
+      message.warning('Please provide a rating');
+      return;
+    }
+
+    if (!comment || comment.trim() === '') {
+      message.warning('Please provide a comment');
+      return;
+    }
 
     setLoading(true);
     try {
-      await rateSession({ id, rating: 4, comment: 'test' }).unwrap();
+      await rateSession({ id, rating, comment: comment.trim() }).unwrap();
       message.success('Meeting rated successfully');
 
       if (onCancelOk) {
@@ -266,6 +304,7 @@ export default function UpcomingCard({
 
       setIsModalVisibleRate(false);
       form.resetFields();
+      setRating(0);
     } catch (error: any) {
       message.error(error?.data?.message || 'Something went wrong');
       setIsModalVisibleRate(false);
@@ -535,16 +574,27 @@ export default function UpcomingCard({
 
       {/* Rate meeting -=-------------------------------------------------*/}
       <CustomModal
-        title="Rate meeting"
+        title={hasUserRated() ? "Your Rating" : "Rate meeting"}
         open={isModalVisibleRate}
-        onOk={handleRateMeeting}
+        onOk={hasUserRated() ? handleCancelRate : handleRateMeeting}
         onCancel={handleCancelRate}
         footer
+        okButtonProps={{ 
+          loading: loading,
+          style: hasUserRated() ? { display: 'none' } : undefined
+        }}
       >
         <div>
           <div style={{ marginBottom: '24px' }}>
-            <CustomText>{role === 'Mentor' ? 'Mentees' : 'Mentor'}</CustomText>
-            <CustomText>Xumoyunmirzo Yakubjonov</CustomText>
+            <CustomText fontSize={14} fontWeight={500} color={colors.colorTextSecondary}>
+              {role === UserRole.Mentor ? 'Student' : 'Mentor'}
+            </CustomText>
+            <CustomText fontSize={16} fontWeight={600} color={colors.colorText}>
+              {role === UserRole.Mentor 
+                ? participants?.[0]?.profile?.name || 'Student'
+                : mentor?.profile?.name || 'Mentor'
+              }
+            </CustomText>
           </div>
           <CustomText
             fontSize={14}
@@ -554,29 +604,28 @@ export default function UpcomingCard({
             Session day
           </CustomText>
           <CustomText color={colors.colorText} mt={2}>
-            Friday, Feb 8, 10:00 - 10:30
+            {dayjs(date).format('dddd, MMM D, YYYY')} • {dayjs(date).format('HH:mm')} - {dayjs(date).add(duration || 30, 'minute').format('HH:mm')}
           </CustomText>
         </div>
         <div style={{ marginTop: '24px' }}>
-          <Rate />
+          <CustomText mb={8}>Rating</CustomText>
+          <Rate value={rating} onChange={hasUserRated() ? undefined : setRating} disabled={hasUserRated()} />
         </div>
         <div style={{ marginTop: '24px' }}>
           <Form form={form} layout="vertical">
-            <CustomText mb={4}>Reasons</CustomText>
+            <CustomText mb={4}>Comment</CustomText>
             <Form.Item
               name="rateText"
-              // rules={[
-              //   {
-              //     validator: (_, value) => {
-              //       if (selectedReason === 'Other' && !value?.trim()) {
-              //         return Promise.reject(
-              //           'Please provide a reason for cancelling the meeting'
-              //         );
-              //       }
-              //       return Promise.resolve();
-              //     },
-              //   },
-              // ]}
+              rules={hasUserRated() ? [] : [
+                {
+                  required: true,
+                  message: 'Please provide a comment',
+                },
+                {
+                  min: 10,
+                  message: 'Comment must be at least 10 characters long',
+                },
+              ]}
             >
               <Input.TextArea
                 placeholder="It looks like the mentor didn’t join the scheduled meeting."
