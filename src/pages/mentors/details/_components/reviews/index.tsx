@@ -153,36 +153,36 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
               bordered
               shadowed={false}
             >
-              <div>
-                <div className={styles.review_header}>
-                  <div>
-                    <CustomText
-                      color={colors.colorText}
-                      fontSize={themeFontSize.fontSizeTitle9}
-                      fontWeight={themeFontWeight.fontWeightSemibold}
-                      style={{ marginBottom: 4 }}
-                    >
-                      {review.reviewer?.profile?.name || 'Anonymous'}
-                    </CustomText>
-                    <CustomText
-                      color={colors.colorTextSecondary}
-                      fontSize={12}
-                      style={{ marginBottom: 4 }}
-                    >
-                      {dayjs(review.createdAt).format('MMM DD, YYYY')}
-                    </CustomText>
+                              <div>
+                  <div className={styles.review_header}>
+                    <div>
+                      <CustomText
+                        color={colors.colorText}
+                        fontSize={themeFontSize.fontSizeTitle9}
+                        fontWeight={themeFontWeight.fontWeightSemibold}
+                      >
+                        {review.reviewer?.profile?.name || 'Anonymous'}
+                      </CustomText>
+                    </div>
+                    <div>
+                      <Flex gap={4}>
+                        {createArray(1, 5).map((num) => (
+                          <StarIcon
+                            width={16}
+                            height={16}
+                            key={num}
+                            color={num <= review.rating ? '#FADB14' : '#0000000F'}
+                          />
+                        ))}
+                      </Flex>
+                      <CustomText
+                        color={colors.colorTextSecondary}
+                        fontSize={12}
+                      >
+                        {dayjs(review.createdAt).format('MMM DD, YYYY')}
+                      </CustomText>
+                    </div>
                   </div>
-                  <Flex gap={4}>
-                    {createArray(1, 5).map((num) => (
-                      <StarIcon
-                        width={16}
-                        height={16}
-                        key={num}
-                        color={num <= review.rating ? '#FADB14' : '#0000000F'}
-                      />
-                    ))}
-                  </Flex>
-                </div>
                 <CustomText
                   className={styles.review_description}
                   color={colors.colorText}
