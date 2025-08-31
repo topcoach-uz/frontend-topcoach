@@ -131,10 +131,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                     className={styles.bar_fill}
                     style={{ 
                       width: `${totalReviews > 0 ? (ratingDistribution[rating as keyof typeof ratingDistribution] / totalReviews) * 100 : 0}%`,
-                      backgroundColor: rating === 5 ? '#8B0000' : 
-                                     rating === 4 ? '#52C41A' : 
-                                     rating === 3 ? '#FAAD14' : 
-                                     rating === 2 ? '#FA8C16' : '#FF4D4F'
+                      backgroundColor: '#FADB14'
                     }}
                   />
                 </div>
