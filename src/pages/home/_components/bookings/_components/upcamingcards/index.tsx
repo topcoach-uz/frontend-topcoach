@@ -49,6 +49,7 @@ export default function UpcomingCard({
   participants,
   type,
   duration,
+  reviews,
 }: UpcomingCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -591,7 +592,7 @@ export default function UpcomingCard({
             </CustomText>
             <CustomText fontSize={16} fontWeight={600} color={colors.colorText}>
               {role === UserRole.Mentor 
-                ? participants?.[0]?.profile?.name || 'Student'
+                ? 'Student'
                 : mentor?.profile?.name || 'Mentor'
               }
             </CustomText>
