@@ -121,7 +121,6 @@ export const MoonIcon = ({ ...rest }: Props) => (
 export const UzbekFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width={14}
     viewBox="0 0 16 10"
     fill="none"
   >
@@ -287,7 +286,6 @@ export const UzbekFlagIcon = () => (
 export const KarakalpakFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width={14}
     viewBox="0 0 16 10"
     fill="none"
   >
@@ -453,7 +451,6 @@ export const KarakalpakFlagIcon = () => (
 export const RussiaFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width={14}
     viewBox="0 0 16 16"
     fill="none"
   >
@@ -487,7 +484,6 @@ export const RussiaFlagIcon = () => (
 export const UKFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width={14}
     viewBox="0 0 16 16"
     fill="none"
   >

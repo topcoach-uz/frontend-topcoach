@@ -51,7 +51,7 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
           className={'languageOptionWrapper ' + styles.language_option_wrapper}
         >
           <UzbekFlagIcon />
-          O‘zbekcha
+          O'zbek
         </div>
       ),
       value: 'uz',
@@ -69,34 +69,54 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
       value: 'ru',
       className: styles.languageOption,
     },
-    {
-      label: (
-        <div
-          className={'languageOptionWrapper ' + styles.language_option_wrapper}
-        >
-          <KarakalpakFlagIcon />
-          Qoraqalpoq
-        </div>
-      ),
-      value: 'kk',
-      className: styles.languageOption,
-    },
+    // {
+    //   label: (
+    //     <div
+    //       className={'languageOptionWrapper ' + styles.language_option_wrapper}
+    //     >
+    //       <KarakalpakFlagIcon />
+    //       Qoraqalpoq
+    //     </div>
+    //   ),
+    //   value: 'kk',
+    //   className: styles.languageOption,
+    // },
   ];
+
+  // Get the current flag icon based on selected language
+  const getCurrentFlagIcon = () => {
+    switch (language) {
+      case 'en':
+        return <UKFlagIcon />;
+      case 'uz':
+        return <UzbekFlagIcon />;
+      case 'ru':
+        return <RussiaFlagIcon />;
+      case 'kk':
+        return <KarakalpakFlagIcon />;
+      default:
+        return <UKFlagIcon />;
+    }
+  };
 
   // return <MySelect />;
 
   return (
-    <CustomSelect
-      value={language}
-      style={{ width: language === 'kk' ? 170 : 155 }}
-      onChange={handleLanguageChange}
-      options={languageOptions}
-      variant="borderless"
-      fontSize={themeFontSize.fontSizeTitle8}
-      className={'languageSelect ' + styles.languageSelect}
-      suffixIcon={
-        <DownOutlined className={styles.icon} onClick={() => setOpen(true)} />
-      }
-    />
+    <div className={styles.languageSelectContainer}>
+      <CustomSelect
+        value={language}
+        style={{ width: 40, minWidth: 40 }}
+        onChange={handleLanguageChange}
+        options={languageOptions}
+        variant="borderless"
+        fontSize={themeFontSize.fontSizeTitle8}
+        className={'languageSelect ' + styles.languageSelect}
+        suffixIcon={null}
+        dropdownStyle={{ minWidth: 120 }}
+      />
+      <div className={styles.flagIconDisplay}>
+        {getCurrentFlagIcon()}
+      </div>
+    </div>
   );
 }

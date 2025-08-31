@@ -189,9 +189,9 @@ export const coursesApi = RtkApi.injectEndpoints({
       query: ({ lessonId, data }) => {
         console.log('RTK Query sending request:', { lessonId, data });
         return {
-          url: `courses/learning/progress/lesson/${lessonId}`,
-          method: 'PUT',
-          body: data,
+        url: `courses/learning/progress/lesson/${lessonId}`,
+        method: 'PUT',
+        body: data,
         };
       },
       async onQueryStarted({ lessonId, data }, { dispatch, queryFulfilled, getState }) {

@@ -309,13 +309,14 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
               <span>Premium University Admissions Course</span>
             </div> */}
             <h1 className="hero-title">
-          TopCoach Admissions Program
+              TopCoach Admissions <br />
+              <span style={{ marginLeft: '190px' }}>Program</span>
               {/* <span className="highlight"> with Elite Mentors</span> */}
             </h1>
             <p className="hero-subtitle">
               Transform your college journey with insider strategies! <br />
-              Join the course created by students who earned full scholarships to Harvard, Yale, Oxford, and Babson, 
-              unlocking over $737,000 in funding. <br /> Your breakthrough starts here! You can do it too!
+              Join the program developed by mentors who secured full scholarships to Harvard, Yale, Oxford, and Babson, 
+              unlocking over $737,000 in funding. <br /> Your breakthrough starts here!
             </p>
             <div className="hero-stats">
               <div className="stat">
@@ -442,6 +443,19 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
 
       {/* Mentors Section */}
       <section className="mentors-section">
+        {/* Background Image */}
+        <img 
+          src="/img/yale.jpeg" 
+          alt="University students background" 
+          className="mentors-bg-image"
+          onError={(e) => {
+            console.error('Background image failed to load:', e);
+            // Fallback to a different image if needed
+            e.currentTarget.src = '/img/students.jpeg';
+          }}
+          onLoad={() => console.log('Background image loaded successfully')}
+        />
+        
         <div className="section-header">
           <div className="header-content">
             <h2>Learn from experienced Mentors</h2>

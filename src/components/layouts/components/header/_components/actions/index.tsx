@@ -68,12 +68,28 @@ export default function Actions() {
       
       {/* AI Major Match Button */}
       <Link to="/ai-major-match" className={styles.aiMajorMatchButton}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.aiIcon}>
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        AI Major Match
+        <div className={styles.aiIconWrapper}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className={styles.aiIcon}>
+            <defs>
+              <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="100%" stopColor="#f0f0f0" />
+              </linearGradient>
+            </defs>
+            {/* Diamond shape */}
+            <path 
+              d="M12 2L22 12L12 22L2 12L12 2Z" 
+              fill="url(#aiGradient)" 
+              stroke="#ffffff" 
+              strokeWidth="1"
+            />
+            {/* AI text */}
+            <text x="12" y="15" textAnchor="middle" fill="#333333" fontSize="10" fontWeight="bold">
+              AI
+            </text>
+          </svg>
+        </div>
+        Major Match
       </Link>
 
       {/* Dark mode toggle disabled
