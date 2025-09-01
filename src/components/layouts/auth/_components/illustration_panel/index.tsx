@@ -35,9 +35,10 @@ export default function IllustrationPanel({ title = '' }: Props) {
 }
 
 const images = [
-  '/landing/Dostonbek Nuraliev.webp',
-  '/landing/Diyora Shodmonova.jpeg',
-  '/landing/Dono Abdurahmanova.webp',
+  '/landing/IMG_9601.webp',
+  '/landing/matt1.jpeg',
   '/landing/Jakhongir Sadiev.webp',
+  '/landing/Dono Abdurahmanova.webp',
+  '/landing/dinara1.jpeg',
   '/landing/Kuvonchbek Otabekov.webp',
 ];
