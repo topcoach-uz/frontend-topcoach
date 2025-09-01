@@ -246,9 +246,26 @@ const SubscriptionPlans: React.FC = () => {
 
   return (
     <section style={{ margin: '60px 0 40px 0' }}>
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#222', marginBottom: 8 }}>Choose Your Plan</h1>
-        <div style={{ color: '#888', fontSize: '1.2rem', fontWeight: 400 }}>
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: 32,
+        padding: '0 20px'
+      }}>
+        <h1 style={{ 
+          fontSize: '2.4rem', 
+          fontWeight: 900, 
+          color: '#222', 
+          marginBottom: 8,
+          lineHeight: 1.2
+        }}>Choose Your Plan</h1>
+        <div style={{ 
+          color: '#888', 
+          fontSize: '1.2rem', 
+          fontWeight: 400,
+          maxWidth: '600px',
+          margin: '0 auto',
+          lineHeight: 1.5
+        }}>
           Unlock your potential with the right mentorship plan for your admission journey.
         </div>
       </div>
