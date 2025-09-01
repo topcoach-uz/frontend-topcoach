@@ -310,7 +310,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             </div> */}
             <h1 className="hero-title">
               TopCoach Admissions <br />
-              <span style={{ marginLeft: '190px' }}>Program</span>
+              <span className="program-word">Program</span>
               {/* <span className="highlight"> with Elite Mentors</span> */}
             </h1>
             <p className="hero-subtitle">

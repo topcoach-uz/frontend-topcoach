@@ -67,6 +67,16 @@
       margin-bottom: 32px;
       letter-spacing: -0.02em;
       
+      .program-word {
+        margin-left: 190px; // Desktop alignment
+        
+        @media (max-width: 768px) {
+          margin-left: 0; // Center align on mobile
+          text-align: center;
+          display: block;
+        }
+      }
+      
       .highlight {
         background: linear-gradient(45deg, #f59e0b, #fbbf24);
         -webkit-background-clip: text;
@@ -76,6 +86,7 @@
 
       @media (max-width: 768px) {
         font-size: 2.75rem;
+        text-align: center; // Center the entire title on mobile
       }
     }
 
