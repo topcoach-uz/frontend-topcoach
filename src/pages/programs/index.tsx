@@ -74,84 +74,6 @@ interface PricingPlan {
   popular?: boolean;
 }
 
-const mentors: Mentor[] = [
-  {
-    id: '1',
-    name: 'Zafar Akhtamov',
-    university: 'Babson College',
-    scholarship: 'Full Ride $345,000',
-    image: 'img/zafar_programs.jpeg',
-    module: 'Foundations of Admissions & Supplemental Essays',
-    achievements: [
-      'FLEX alumni & UWC finalist stage participant',
-      'Co-founder & Head leader of biggest non-profit \'Blagoe delo\' \'24',
-      'Top 0.1% of applicants (1st in Uzbekistan)'
-    ],
-    stats: {
-      studentsMentored: '20+',
-    }
-  },
-  {
-    id: '2',
-    name: 'Viola Fur',
-    university: 'Oxford & Yale Graduate',
-    scholarship: 'Multiple Full Scholarships',
-    image: '/img/viola_programs.jpeg',
-    module: 'Essay Writing Excellence',
-    achievements: [
-      '8 years of experience in college admissions mentoring',
-      'Mentored 40+ students successfully',
-      'Offers from Oxford, Harvard, King\'s College, UCL, NYU, Toronto'
-    ],
-    stats: {
-      studentsMentored: '40+',
-    }
-  },
-  {
-    id: '3',
-    name: 'Azizbek Zaylobiddinov',
-    university: 'Harvard University',
-    scholarship: 'Full Ride $392,000',
-    image: '/img/azizbek_programs.jpeg',
-    module: 'Portfolio Building',
-    achievements: [
-      'Manager of "Ibrat Debate" - biggest social project in Uzbekistan',
-      'Mentored 50+ students in building strong portfolios',
-      'Students secured positions with MIT, Cambridge, GWU PhD candidates'
-    ],
-    stats: {
-      studentsMentored: '50+',
-    }
-  }
-];
-
-const courseModules: CourseModule[] = [
-  {
-    title: 'Foundations of Admissions',
-    description: 'Master the fundamentals of university admissions and understand what top universities truly look for in applicants.',
-    topics: ['Understanding Admissions Criteria', 'Building Academic Profile', 'Extracurricular Strategy', 'Research Opportunities'],
-    duration: '4 weeks'
-  },
-  {
-    title: 'Building a Successful Portfolio',
-    description: 'Create a compelling portfolio that showcases your achievements and demonstrates your potential to admissions committees.',
-    topics: ['Portfolio Structure', 'Achievement Documentation', 'Leadership Examples', 'Innovation Projects'],
-    duration: '3 weeks'
-  },
-  {
-    title: 'Personal Statement Mastery',
-    description: 'Write a personal statement that tells your unique story and stands out among thousands of applications.',
-    topics: ['Story Development', 'Writing Techniques', 'Editing Process', 'Common Mistakes'],
-    duration: '4 weeks'
-  },
-  {
-    title: 'Supplemental Essays',
-    description: 'Master the art of writing compelling supplemental essays tailored to each university\'s specific requirements.',
-    topics: ['Essay Types', 'University-Specific Essays', 'Why This School', 'Why This Major'],
-    duration: '3 weeks'
-  }
-];
-
 const ProgramsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -160,6 +82,85 @@ const ProgramsPage: React.FC = () => {
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [showDetailedSections, setShowDetailedSections] = useState(false);
   const dispatch = useAppDispatch();
+
+  // Define mentors inside component where t function is available
+  const mentors: Mentor[] = [
+    {
+      id: '1',
+      name: 'Zafar Akhtamov',
+      university: 'Babson College',
+      scholarship: 'Full Ride $345,000',
+      image: 'img/zafar_programs.jpeg',
+      module: t('programs.mentor.foundations'),
+      achievements: [
+        t('programs.mentor.flexAlumni'),
+        t('programs.mentor.cofounder'),
+        t('programs.mentor.topApplicant')
+      ],
+      stats: {
+        studentsMentored: '20+',
+      }
+    },
+    {
+      id: '2',
+      name: 'Viola Fur',
+      university: 'Oxford & Yale Graduate',
+      scholarship: 'Multiple Full Scholarships',
+      image: '/img/viola_programs.jpeg',
+      module: t('programs.mentor.essayWriting'),
+      achievements: [
+        t('programs.mentor.experience'),
+        t('programs.mentor.mentoredStudents'),
+        t('programs.mentor.offers')
+      ],
+      stats: {
+        studentsMentored: '40+',
+      }
+    },
+    {
+      id: '3',
+      name: 'Azizbek Zaylobiddinov',
+      university: 'Harvard University',
+      scholarship: 'Full Ride $392,000',
+      image: '/img/azizbek_programs.jpeg',
+      module: t('programs.mentor.portfolioBuilding'),
+      achievements: [
+        t('programs.mentor.ibratDebate'),
+        t('programs.mentor.portfolioStudents'),
+        t('programs.mentor.phdCandidates')
+      ],
+      stats: {
+        studentsMentored: '50+',
+      }
+    }
+  ];
+
+  const courseModules: CourseModule[] = [
+    {
+      title: t('programs.modules.foundations'),
+      description: t('programs.modules.foundationsDesc'),
+      topics: [t('programs.modules.admissionsCriteria'), t('programs.modules.academicProfile'), t('programs.modules.extracurricular'), t('programs.modules.research')],
+      duration: '4 ' + t('programs.modules.weeks')
+    },
+    {
+      title: t('programs.modules.portfolio'),
+      description: t('programs.modules.portfolioDesc'),
+      topics: [t('programs.modules.portfolioStructure'), t('programs.modules.achievementDoc'), t('programs.modules.leadership'), t('programs.modules.innovation')],
+      duration: '3 ' + t('programs.modules.weeks')
+    },
+    {
+      title: t('programs.modules.personalStatement'),
+      description: t('programs.modules.personalStatementDesc'),
+      topics: [t('programs.modules.storyDev'), t('programs.modules.writingTech'), t('programs.modules.editing'), t('programs.modules.mistakes')],
+      duration: '4 ' + t('programs.modules.weeks')
+    },
+    {
+      title: t('programs.modules.supplementalEssays'),
+      description: t('programs.modules.supplementalEssaysDesc'),
+      topics: [t('programs.modules.essayTypes'), t('programs.modules.universitySpecific'), t('programs.modules.whySchool'), t('programs.modules.whyMajor')],
+      duration: '3 ' + t('programs.modules.weeks')
+    }
+  ];
 
   // API hooks
   const { data: pricing, isLoading: pricingLoading } = useGetActivePricingQuery();
@@ -184,13 +185,13 @@ const ProgramsPage: React.FC = () => {
           price: pricing.standardPrice,
           currency: pricing.currency,
           features: [
-            '4 core modules (Introduction, Portfolio, Personal Statement, Supplemental essays + Scholarship)',
-            '20+ recorded video lessons by professional mentors',
-            'Downloadable templates and sample documents (CV, PS, essays)',
-            'Access to 3 live Zoom sessions (orientation + Q&A)',
-            'Homework assignments',
-            'Access to an exclusive Telegram community for networking',
-            'Admission Checklist & Timeline for structured preparation'
+            t('programs.pricing.standardFeatures'),
+            t('programs.pricing.standardVideos'),
+            t('programs.pricing.standardTemplates'),
+            t('programs.pricing.standardSessions'),
+            t('programs.pricing.standardHomework'),
+            t('programs.pricing.standardTelegram'),
+            t('programs.pricing.standardChecklist')
           ]
         },
         {
@@ -198,15 +199,15 @@ const ProgramsPage: React.FC = () => {
           price: pricing.premiumPrice,
           currency: pricing.currency,
           features: [
-            'Everything in Standard',
-            'Small group mentoring (6 students per co-mentor)',
-            '2 individual 1x1 sessions monthly with a co-mentor',
-            'Access to 9 live Zoom sessions',
-            'Homework with written feedback',
-            '1 Q&A session with a co-mentor in a month',
-            'Priority chat support on Telegram',
-            '3 Guest Speaker sessions',
-            'Offline networking event'
+            t('programs.pricing.premiumFeatures'),
+            t('programs.pricing.premiumGroup'),
+            t('programs.pricing.premiumSessions'),
+            t('programs.pricing.premiumZoom'),
+            t('programs.pricing.premiumHomework'),
+            t('programs.pricing.premiumQA'),
+            t('programs.pricing.premiumSupport'),
+            t('programs.pricing.premiumSpeakers'),
+            t('programs.pricing.premiumNetworking')
           ],
           popular: true
         }
@@ -309,35 +310,34 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
               <span>Premium University Admissions Course</span>
             </div> */}
             <h1 className="hero-title">
-              TopCoach Admissions <br />
-              <span className="program-word">Program</span>
-              {/* <span className="highlight"> with Elite Mentors</span> */}
+              {t('programs.hero.title')}
+              <span className="program-word">{t('programs.hero.program')}</span>
             </h1>
             <p className="hero-subtitle">
-              Transform your college journey with insider strategies! <br />
-              Join the program developed by mentors who secured full scholarships to Harvard, Yale, Oxford, and Babson, 
-              unlocking over $737,000 in funding. <br /> Your breakthrough starts here!
+              {t('programs.hero.subtitle')} <br />
+              {t('programs.hero.description')} <br /> 
+              {t('programs.hero.cta')}
             </p>
             <div className="hero-stats">
               <div className="stat">
                 <DollarOutlined />
                 <div className="stat-content">
                   <span className="stat-value">$737K+</span>
-                  <span className="stat-label">Scholarships Secured</span>
+                  <span className="stat-label">{t('programs.stats.scholarships')}</span>
                 </div>
               </div>
               <div className="stat">
                 <TeamOutlined />
                 <div className="stat-content">
                   <span className="stat-value">110+</span>
-                  <span className="stat-label">Students Mentored</span>
+                  <span className="stat-label">{t('programs.stats.students')}</span>
                 </div>
               </div>
               <div className="stat">
                 <TrophyOutlined />
                 <div className="stat-content">
                   <span className="stat-value">50+</span>
-                  <span className="stat-label">Universities Admitted</span>
+                  <span className="stat-label">{t('programs.stats.universities')}</span>
                 </div>
               </div>
             </div>
@@ -349,13 +349,13 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 icon={<RocketOutlined />}
                 className="apply-now-btn"
               >
-                Apply Now
+                {t('programs.stats.applyNow')}
               </Button>
             </div>
           </div>
           <div className="hero-visual">
             <div className="hero-image">
-              <img src="/img/students.jpeg" alt="Students studying together" />
+              <img src="/img/students.jpeg" alt={t('programs.stats.studentsStudying')} />
             </div>
           </div>
         </div>
@@ -370,20 +370,20 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 {enrollmentStatus.canAccessLearning ? (
                   <>
                     <CheckCircleOutlined />
-                    <span>You're enrolled in the {enrollmentStatus.enrollment.courseType} plan!</span>
+                    <span>{t('programs.enrollment.enrolled', { planType: enrollmentStatus.enrollment.courseType })}</span>
                   </>
                 ) : (
                   <>
                     <ClockCircleOutlined />
-                    <span>Your enrollment is pending approval</span>
+                    <span>{t('programs.enrollment.pending')}</span>
                   </>
                 )}
               </div>
             }
             description={
               enrollmentStatus.canAccessLearning 
-                ? "You now have full access to all course materials and learning sessions."
-                : "Our administrator will review and contact you within 12 hours."
+                ? t('programs.enrollment.accessGranted')
+                : t('programs.enrollment.pendingMessage')
             }
             type={enrollmentStatus.canAccessLearning ? "success" : "warning"}
             showIcon={false}
@@ -395,26 +395,26 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             <div className="continue-learning-section">
               <Card className="learning-card">
                 <div className="learning-header">
-                  <h3>Your Learning Progress</h3>
-                  <p>Track your journey through the course</p>
+                  <h3>{t('programs.enrollment.learningProgress')}</h3>
+                  <p>{t('programs.enrollment.trackJourney')}</p>
                 </div>
                 
                 <div className="learning-stats">
                   <div className="stat-item">
                     <div className="stat-number">{userProgress.completedLessons || 0}</div>
-                    <div className="stat-label">Lessons Completed</div>
+                    <div className="stat-label">{t('programs.enrollment.lessonsCompleted')}</div>
                   </div>
                   <div className="stat-item">
                     <div className="stat-number">{userProgress.totalLessons || 0}</div>
-                    <div className="stat-label">Total Lessons</div>
+                    <div className="stat-label">{t('programs.enrollment.totalLessons')}</div>
                   </div>
                   <div className="stat-item">
                     <div className="stat-number">{Math.round(userProgress.overallProgress || 0)}%</div>
-                    <div className="stat-label">Overall Progress</div>
+                    <div className="stat-label">{t('programs.enrollment.overallProgress')}</div>
                   </div>
                   <div className="stat-item">
                     <div className="stat-number">{Math.round((userProgress.totalTimeWatched || 0) / 60)}m</div>
-                    <div className="stat-label">Time Watched</div>
+                    <div className="stat-label">{t('programs.enrollment.timeWatched')}</div>
                   </div>
                 </div>
                 
@@ -433,7 +433,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                   icon={<PlayCircleOutlined />}
                   className="continue-learning-btn"
                 >
-                  Continue Learning
+                  {t('programs.enrollment.continueLearning')}
                 </Button>
               </Card>
             </div>
@@ -446,7 +446,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         {/* Background Image */}
         <img 
           src="/img/yale.jpeg" 
-          alt="University students background" 
+          alt={t('programs.stats.universityBackground')} 
           className="mentors-bg-image"
           onError={(e) => {
             console.error('Background image failed to load:', e);
@@ -458,8 +458,8 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         
         <div className="section-header">
           <div className="header-content">
-            <h2>Learn from experienced Mentors</h2>
-            <p>Our mentors secured full scholarships to top universities and have helped students achieve similar success</p>
+            <h2>{t('programs.mentors.title')}</h2>
+            <p>{t('programs.mentors.description')}</p>
           </div>
         </div>
         <div className="mentors-grid">
@@ -483,7 +483,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
               </div>
               
               <div className="mentor-achievements">
-                <h4>Key Achievements</h4>
+                <h4>{t('programs.mentor.keyAchievements')}</h4>
                 <ul>
                   {mentor.achievements.map((achievement, index) => (
                     <li key={index}>
@@ -499,7 +499,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                   <UserOutlined />
                   <div>
                     <span className="stat-number">{mentor.stats.studentsMentored}</span>
-                    <span className="stat-label">Students Mentored</span>
+                    <span className="stat-label">{t('programs.mentor.studentsMentored')}</span>
                   </div>
                 </div>
               </div>
@@ -514,7 +514,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             icon={showDetailedSections ? <UpOutlined /> : <DownOutlined />}
             className="learn-more-btn"
           >
-            {showDetailedSections ? 'Show Less' : 'Learn More'}
+            {showDetailedSections ? t('pricing.showLess') : t('pricing.learnMore')}
           </Button>
         </div>
       </section>
@@ -524,8 +524,8 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         <section className="modules-section">
         <div className="section-header">
           <div className="header-content">
-            <h2>Comprehensive Course Modules</h2>
-            <p>Everything you need to know about university admissions, taught by successful applicants</p>
+            <h2>{t('pricing.comprehensiveCourseModules')}</h2>
+            <p>{t('pricing.everythingYouNeed')}</p>
           </div>
         </div>
         <div className="modules-grid">
@@ -538,7 +538,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 </div>
               </div>
               <div className="module-topics">
-                <h4>What you'll learn:</h4>
+                <h4>{t('pricing.whatYoullLearn')}</h4>
                 <ul>
                   {module.topics.map((topic, topicIndex) => (
                     <li key={topicIndex}>
@@ -563,38 +563,24 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         <section className="different-section">
         <div className="section-header">
           <div className="header-content">
-            <h2>What Makes Us Different</h2>
-            <p>Why choose our program over others</p>
+            <h2>{t('pricing.whatMakesUsDifferent')}</h2>
+            <p>{t('pricing.uniqueApproach')}</p>
           </div>
         </div>
         <div className="different-grid">
           <div className="different-item">
             <div className="icon">
-              <TrophyOutlined />
-            </div>
-            <h3>Proven Track Record</h3>
-            <p>Our mentors secured full scholarships to Harvard, Babson, Oxford, and Yale</p>
-          </div>
-          <div className="different-item">
-            <div className="icon">
-              <UserOutlined />
-            </div>
-            <h3>Elite Mentorship</h3>
-            <p>Direct guidance from students who achieved top 0.1% status in admissions</p>
-          </div>
-          <div className="different-item">
-            <div className="icon">
               <StarOutlined />
             </div>
-            <h3>Comprehensive Support</h3>
-            <p>From application strategy to interview preparation, we cover it all</p>
+            <h3>{t('pricing.comprehensiveSupport')}</h3>
+            <p>{t('pricing.fromApplicationStrategy')}</p>
           </div>
           <div className="different-item">
             <div className="icon">
               <RocketOutlined />
             </div>
-            <h3>Results-Driven</h3>
-            <p>Focus on actionable strategies that lead to successful admissions</p>
+            <h3>{t('pricing.resultsDriven')}</h3>
+            <p>{t('pricing.focusOnActionable')}</p>
           </div>
         </div>
       </section>
@@ -604,8 +590,8 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
       <section className="pricing-section">
         <div className="section-header">
           <div className="header-content">
-            <h2>Choose Your Plan</h2>
-            <p>Take the first step towards your dream university with our proven programs</p>
+            <h2>{t('pricing.chooseYourPlan')}</h2>
+            <p>{t('pricing.takeFirstStep')}</p>
           </div>
         </div>
         <div className="pricing-grid">
@@ -618,15 +604,15 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
               {plan.popular && (
                 <div className="popular-badge">
                   <StarOutlined />
-                  Most Popular
+                  {t('pricing.mostPopular')}
                 </div>
               )}
               <div className="pricing-header">
-                <h3>{plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'} Package</h3>
+                <h3>{plan.type === CourseTypeEnum.STANDARD ? t('pricing.standard') : t('pricing.premium')} {t('pricing.package')}</h3>
                 <div className="price">
                   <span className="currency">{plan.currency}</span>
                   <span className="amount">{plan.price}</span>
-                  <span className="period">one-time</span>
+                  <span className="period">{t('pricing.oneTime')}</span>
                 </div>
               </div>
               <div className="pricing-features">
@@ -648,7 +634,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 disabled={false}
                 className="enroll-button"
               >
-                {isEnrolledInPlan(plan.type) ? 'Continue Learning' : `Enroll in ${plan.type === CourseTypeEnum.STANDARD ? 'Standard' : 'Premium'}`}
+                {isEnrolledInPlan(plan.type) ? t('pricing.continueLearning') : `${t('pricing.enrollInStandard')} ${plan.type === CourseTypeEnum.STANDARD ? t('pricing.standard') : t('pricing.premium')}`}
               </Button>
             </Card>
           ))}
@@ -667,15 +653,15 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
       {/* CTA Section */}
       <section className="cta-section">
         <div className="cta-content">
-          <h2>Ready to Start Your Journey?</h2>
-          <p>Join hundreds of successful students who have achieved their dreams with our guidance</p>
+          <h2>{t('pricing.readyToStart')}</h2>
+          <p>{t('pricing.joinHundreds')}</p>
           <Button 
             type="primary" 
             size="large"
             onClick={() => document.querySelector('.pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
             icon={<RocketOutlined />}
           >
-            Get Started Today
+            {t('pricing.getStartedToday')}
           </Button>
         </div>
       </section>

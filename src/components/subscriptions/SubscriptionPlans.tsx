@@ -9,6 +9,7 @@ import styles from './SubscriptionPlans.module.scss';
 import { CheckOutlined, StarFilled } from '@ant-design/icons';
 import { FaRocket } from 'react-icons/fa';
 import { GiLaurelsTrophy } from 'react-icons/gi';
+import { useTranslation } from 'react-i18next';
 
 interface Plan {
   id: string;
@@ -34,6 +35,7 @@ const SubscriptionPlans: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const profile = useTypedSelector((state) => state.auth.profile);
+  const { t } = useTranslation();
   
   // Use RTK Query to fetch current subscription
   const { data: current, isLoading: currentLoading, error: currentError } = useGetCurrentSubscriptionQuery(undefined, { skip: !isAuthenticated });
@@ -50,50 +52,49 @@ const SubscriptionPlans: React.FC = () => {
     
     const planFeatures: Record<string, string[]> = {
       'Free': [
-        'Full access to the platform',
-        'University & major research tools',
-        'Browse mentor profiles',
-        'Access to public workshops',
-        'Event registration access',
-        '1 AI-powered major match',
+        t('pricing.fullAccessPlatform'),
+        t('pricing.universityMajorResearch'),
+        t('pricing.browseMentorProfiles'),
+        t('pricing.accessPublicWorkshops'),
+        t('pricing.eventRegistrationAccess'),
+        t('pricing.aiPoweredMajorMatch'),
       ],
       'Standard': [
-        'Everything in Free',
-        '1× 30-minute junior coach session',
-        '1× 30-minute pro bono session',
-        '10 AI-powered major match searches',
-        'Priority access to all workshops',
-        'Session reminders & smart booking',
+        t('pricing.everythingInFree'),
+        t('pricing.juniorCoachSession'),
+        t('pricing.proBonoSession'),
+        t('pricing.standardAiSearches'),
+        t('pricing.priorityWorkshops'),
+        t('pricing.sessionReminders'),
       ],
       'Premium': [
-        'Everything in Standard',
-        '1× 30-minute senior coach session',
-        '1× 60-minute junior coach session',
-        '1× 30-minute junior coach session',
-        '1× 30-minute pro bono session',
-        '20 AI-powered major match searches',
+        t('pricing.everythingInStandard'),
+        t('pricing.seniorCoachSession'),
+        t('pricing.juniorCoachSession'),
+        t('pricing.proBonoSession'),
+        t('pricing.premiumAiSearches'),
       ],
     };
 
     const planConfigs: Record<string, any> = {
       'Free': {
         key: 'free',
-        button: 'Join for Free',
+        button: t('pricing.joinForFree'),
         buttonClass: styles.freeBtn,
-        description: 'Full access to TopCoach and 1 AI match to discover your path.',
+        description: t('pricing.fullAccessDescription'),
       },
       'Standard': {
         key: 'standard',
-        button: 'Upgrade to Standard',
+        button: t('pricing.upgradeToStandard'),
         buttonClass: '',
-        description: 'Mentorship with pro guidance and advanced AI tools.',
-        badge: <div className={styles.popularBadge}><StarFilled /> Most Popular</div>,
+        description: t('pricing.standardDescription'),
+        badge: <div className={styles.popularBadge}><StarFilled /> {t('pricing.mostPopular')}</div>,
       },
       'Premium': {
         key: 'premium',
-        button: 'Go Premium',
+        button: t('pricing.goPremium'),
         buttonClass: styles.premiumBtn,
-        description: 'All-access mentorship with senior guidance and max AI tools.',
+        description: t('pricing.premiumDescription'),
       },
     };
 
@@ -257,7 +258,7 @@ const SubscriptionPlans: React.FC = () => {
           color: '#222', 
           marginBottom: 8,
           lineHeight: 1.2
-        }}>Choose Your Plan</h1>
+        }}>{t('pricing.chooseYourPlan')}</h1>
         <div style={{ 
           color: '#888', 
           fontSize: '1.2rem', 
@@ -266,7 +267,7 @@ const SubscriptionPlans: React.FC = () => {
           margin: '0 auto',
           lineHeight: 1.5
         }}>
-          Unlock your potential with the right mentorship plan for your admission journey.
+          {t('pricing.unlockPotential')}
         </div>
       </div>
       
@@ -311,7 +312,7 @@ const SubscriptionPlans: React.FC = () => {
               {plan.badge}
               {showCurrentBadge && (
                 <div className={styles.currentPlanBadge}>
-                  Current Plan
+                  {t('pricing.currentPlan')}
                 </div>
               )}
               <div className={[styles.planName, isFreePlan ? styles.free : ''].join(' ')}>{plan.name}</div>
@@ -342,7 +343,7 @@ const SubscriptionPlans: React.FC = () => {
               <div className={styles.cardActions}>
                 {isCurrentPlan && usageArr.some((u) => u.used >= u.limit && u.limit > 0) && (
                   <div className={styles.planWarning}>
-                    You have reached your plan's limit for some features. Upgrade to unlock more!
+                    {t('pricing.planLimitWarning')}
                   </div>
                 )}
                 {isFreePlan ? (
@@ -351,21 +352,21 @@ const SubscriptionPlans: React.FC = () => {
                       className={[styles.actionBtn, plan.buttonClass].join(' ')}
                       onClick={() => navigate('/auth/signin')}
                     >
-                      Join for Free
+                      {t('pricing.joinForFree')}
                     </button>
                   ) : currentPlanId === plan.id ? (
                     <button
                       className={[styles.actionBtn, plan.buttonClass, styles.currentBtn].join(' ')}
                       disabled
                     >
-                      Current Plan
+                      {t('pricing.currentPlan')}
                     </button>
               ) : (
                 <button
                       className={[styles.actionBtn, plan.buttonClass].join(' ')}
                       onClick={() => setShowDowngradeModal(true)}
                     >
-                      Switch to Free
+                      {t('pricing.switchToFree')}
                     </button>
                   )
                 ) :
@@ -392,13 +393,13 @@ const SubscriptionPlans: React.FC = () => {
                       handlePlanClick(plan);
                     }}
                 >
-                    {isCurrentPlan ? 'Current Plan' : 
+                    {isCurrentPlan ? t('pricing.currentPlan') : 
                      isAuthenticated && currentPlanId !== 'aa63df56-4b93-470b-b861-98628dd186a1' && 
                      (() => {
                        const currentPlan = curatedPlans.find(p => p.id === currentPlanId);
                        return currentPlan && plan.priceValue < currentPlan.priceValue;
                      })() ? 
-                     `Switch to ${plan.name}` : plan.button}
+                     `${t('pricing.switchTo')} ${plan.name}` : plan.button}
                 </button>
                 }
               </div>
@@ -441,14 +442,14 @@ const SubscriptionPlans: React.FC = () => {
         onCancel={() => { setShowDowngradeModal(false); setTargetPlan(null); }}
         onOk={targetPlan ? handleConfirmDowngradeToPlan : handleConfirmDowngrade}
         confirmLoading={showDowngradeLoading || isDowngrading}
-        okText={targetPlan ? `Yes, switch to ${targetPlan.name}` : "Yes, downgrade to Free"}
+        okText={targetPlan ? `${t('pricing.yesSwitchTo')} ${targetPlan.name}` : `${t('pricing.yesDowngradeTo')} ${t('pricing.freePlan')}`}
         cancelText="Cancel"
-        title={targetPlan ? `Switch to ${targetPlan.name} Plan?` : "Downgrade to Free Plan?"}
+        title={targetPlan ? `${t('pricing.switchTo')} ${targetPlan.name} ${t('pricing.plan')}` : `${t('pricing.downgradeTo')} ${t('pricing.freePlan')} ${t('pricing.plan')}`}
       >
         <p>
           {targetPlan 
-            ? `Are you sure you want to switch from your current plan to ${targetPlan.name}? You will lose access to some premium features.`
-            : "Are you sure you want to downgrade to the Free plan? You will lose access to premium features."
+            ? `${t('pricing.confirmSwitchMessage')} ${targetPlan.name}? ${t('pricing.premiumFeaturesLost')}`
+            : `${t('pricing.confirmDowngradeMessage')} ${t('pricing.freePlan')}? ${t('pricing.premiumFeaturesLost')}`
           }
         </p>
       </Modal>

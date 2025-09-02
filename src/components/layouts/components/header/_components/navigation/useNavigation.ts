@@ -31,7 +31,7 @@ export default function useNavigation() {
       text: t('header.events'),
     },
     {
-      text: 'Learn more',
+      text: t('navigation.learnMore'),
       children: [
         {
           path: '/universities',

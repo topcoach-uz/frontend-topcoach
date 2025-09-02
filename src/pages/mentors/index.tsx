@@ -46,7 +46,7 @@ export default function MentorsPage() {
 
   // Dynamic title and subtitle based on selected filter
   let title = t('mentors.mentorTitle');
-  let subtitle = 'Connect with experienced mentors who can guide you through your university application journey.';
+  let subtitle = t('mentors.mentorText');
   if (selectedLevel === MentorExperienceLevel.Probono) {
     title = 'Pro Bono Mentors';
     subtitle = 'Connect with pro bono mentors who offer free guidance for your university application journey.';

@@ -1,6 +1,7 @@
 import { ArrowTopRight } from 'src/components/icons';
 import styles from './right_arrow.module.scss';
 import useColors from 'src/hooks/useColors';
+import { useTranslation } from 'react-i18next';
 
 interface Props
   extends React.DetailedHTMLProps<
@@ -10,6 +11,7 @@ interface Props
 
 export default function CustomRightArrow({ className, ...rest }: Props) {
   const colors = useColors();
+  const { t } = useTranslation();
 
   return (
     <button
@@ -17,7 +19,7 @@ export default function CustomRightArrow({ className, ...rest }: Props) {
       className={`${styles.button} ${className}`}
       {...rest}
     >
-      Read more
+      {t('landing.reviews.readMore')}
       <ArrowTopRight color={colors.colorTextBase} width={32} height={32} />
     </button>
   );

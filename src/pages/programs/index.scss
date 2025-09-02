@@ -68,7 +68,7 @@
       letter-spacing: -0.02em;
       
       .program-word {
-        margin-left: 190px; // Desktop alignment
+        margin-left: 20px; // Desktop alignment - reduced from 190px to 20px
         
         @media (max-width: 768px) {
           margin-left: 0; // Center align on mobile

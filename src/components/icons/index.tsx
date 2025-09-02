@@ -122,7 +122,10 @@ export const UzbekFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 16 10"
+    width="18"
+    height="18"
     fill="none"
+    style={{ minWidth: '18px', minHeight: '18px' }}
   >
     <path
       fillRule="evenodd"
@@ -287,7 +290,10 @@ export const KarakalpakFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 16 10"
+    width="18"
+    height="18"
     fill="none"
+    style={{ minWidth: '18px', minHeight: '18px' }}
   >
     <path
       fillRule="evenodd"
@@ -451,33 +457,26 @@ export const KarakalpakFlagIcon = () => (
 export const RussiaFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 16 16"
+    viewBox="0 0 16 10"
+    width="18"
+    height="18"
     fill="none"
+    style={{ minWidth: '18px', minHeight: '18px' }}
   >
-    <g clipPath="url(#clip0_5412_1943)">
-      <path
-        d="M14.2349 3.1954H1.76505C1.15839 3.1954 0.666626 3.68717 0.666626 4.29383V6.39847H15.3333V4.29383C15.3333 3.68717 14.8415 3.1954 14.2349 3.1954Z"
-        fill="#F5F5F5"
-      />
-      <path
-        d="M0.666626 11.7062C0.666626 12.3128 1.15839 12.8046 1.76505 12.8046H14.2349C14.8415 12.8046 15.3333 12.3128 15.3333 11.7062V9.60153H0.666626V11.7062Z"
-        fill="#FF4B55"
-      />
-      <path
-        d="M15.3333 6.39842H0.666626V9.60131H15.3333V6.39842Z"
-        fill="#41479B"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_5412_1943">
-        <rect
-          width="14.6667"
-          height="14.6667"
-          fill="white"
-          transform="translate(0.666626 0.666672)"
-        />
-      </clipPath>
-    </defs>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M1.9992 0.0761871H14.0007C14.7361 0.0761871 15.3333 0.677521 15.3333 1.41923V8.58097C15.3333 9.32268 14.7361 9.92381 14.0007 9.92381H1.9992C1.26377 9.92381 0.666626 9.32268 0.666626 8.58097V1.41923C0.666626 0.677521 1.26377 0.0761871 1.9992 0.0761871Z"
+      fill="#F5F5F5"
+    />
+    <path
+      d="M0.666626 11.7062C0.666626 12.3128 1.15839 12.8046 1.76505 12.8046H14.2349C14.8415 12.8046 15.3333 12.3128 15.3333 11.7062V9.60153H0.666626V11.7062Z"
+      fill="#FF4B55"
+    />
+    <path
+      d="M15.3333 6.39842H0.666626V9.60131H15.3333V6.39842Z"
+      fill="#41479B"
+    />
   </svg>
 );
 
@@ -485,7 +484,10 @@ export const UKFlagIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 16 16"
+    width="18"
+    height="18"
     fill="none"
+    style={{ minWidth: '18px', minHeight: '18px' }}
   >
     <g clipPath="url(#clip0_5412_1181)">
       <path

@@ -38,7 +38,9 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
         <div
           className={'languageOptionWrapper ' + styles.language_option_wrapper}
         >
-          <UKFlagIcon />
+          <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <UKFlagIcon />
+          </div>
           English
         </div>
       ),
@@ -50,7 +52,9 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
         <div
           className={'languageOptionWrapper ' + styles.language_option_wrapper}
         >
-          <UzbekFlagIcon />
+          <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <UzbekFlagIcon />
+          </div>
           O'zbek
         </div>
       ),
@@ -62,25 +66,29 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
         <div
           className={'languageOptionWrapper ' + styles.language_option_wrapper}
         >
-          <RussiaFlagIcon />
+          <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <RussiaFlagIcon />
+          </div>
           Русский
         </div>
       ),
       value: 'ru',
       className: styles.languageOption,
     },
-    // {
-    //   label: (
-    //     <div
-    //       className={'languageOptionWrapper ' + styles.language_option_wrapper}
-    //     >
-    //       <KarakalpakFlagIcon />
-    //       Qoraqalpoq
-    //     </div>
-    //   ),
-    //   value: 'kk',
-    //   className: styles.languageOption,
-    // },
+    {
+      label: (
+        <div
+          className={'languageOptionWrapper ' + styles.language_option_wrapper}
+        >
+          <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <KarakalpakFlagIcon />
+          </div>
+          Qoraqalpoq
+        </div>
+      ),
+      value: 'kk',
+      className: styles.languageOption,
+    },
   ];
 
   // Get the current flag icon based on selected language
