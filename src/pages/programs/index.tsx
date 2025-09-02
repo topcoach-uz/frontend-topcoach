@@ -185,7 +185,7 @@ const ProgramsPage: React.FC = () => {
           currency: pricing.currency,
           features: [
             '4 core modules (Introduction, Portfolio, Personal Statement, Supplemental essays + Scholarship)',
-            '25+ recorded video lessons by professional mentors',
+            '20+ recorded video lessons by professional mentors',
             'Downloadable templates and sample documents (CV, PS, essays)',
             'Access to 3 live Zoom sessions (orientation + Q&A)',
             'Homework assignments',
