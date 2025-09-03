@@ -83,6 +83,16 @@ const ProgramsPage: React.FC = () => {
   const [showDetailedSections, setShowDetailedSections] = useState(false);
   const dispatch = useAppDispatch();
 
+  // Helper function to get translated plan type
+  const getTranslatedPlanType = (planType: string): string => {
+    return planType === 'standard' ? t('pricing.standard') : t('pricing.premium');
+  };
+
+  // Helper function to get enrollment message key
+  const getEnrollmentMessageKey = (planType: string): string => {
+    return planType === 'standard' ? 'programs.enrollment.enrolledStandard' : 'programs.enrollment.enrolledPremium';
+  };
+
   // Define mentors inside component where t function is available
   const mentors: Mentor[] = [
     {
@@ -178,7 +188,6 @@ const ProgramsPage: React.FC = () => {
 
   useEffect(() => {
     if (pricing) {
-      console.log('Pricing data from API:', pricing);
       setPricingPlans([
         {
           type: CourseTypeEnum.STANDARD,
@@ -248,20 +257,14 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
         return;
       }
 
-      console.log('Selected plan for enrollment:', plan);
-      console.log('Plan price:', plan.price, 'Type:', typeof plan.price);
-
       // Create enrollment with proper number conversion
       const enrollment = await createEnrollment({
         courseType: planType,
         amount: Number(plan.price) // Convert to number to fix validation error
       }).unwrap();
 
-      console.log('Enrollment created:', enrollment);
-
       // Redirect to payment page with enrollment details
       const paymentUrl = `/payment?enrollmentId=${enrollment.id}&type=course&amount=${plan.price}`;
-      console.log('Redirecting to payment URL:', paymentUrl);
       window.location.href = paymentUrl;
 
     } catch (error: any) {
@@ -294,8 +297,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
 
   // Helper function to check if user is enrolled in specific plan
   const isEnrolledInPlan = (planType: CourseTypeEnum) => {
-    const isEnrolled = enrollmentStatus?.enrollment?.courseType === planType;
-    console.log(`Checking enrollment for ${planType}:`, isEnrolled, enrollmentStatus?.enrollment);
+    const isEnrolled = enrollmentStatus?.enrollment?.courseType === (planType === CourseTypeEnum.STANDARD ? 'standard' : 'premium');
     return isEnrolled;
   };
 
@@ -370,7 +372,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 {enrollmentStatus.canAccessLearning ? (
                   <>
                     <CheckCircleOutlined />
-                    <span>{t('programs.enrollment.enrolled', { planType: enrollmentStatus.enrollment.courseType })}</span>
+                    <span>{t(getEnrollmentMessageKey(enrollmentStatus.enrollment.courseType))}</span>
                   </>
                 ) : (
                   <>

@@ -572,6 +572,8 @@
   "programs.modules.weeks": "hafta",
   
   "programs.enrollment.enrolled": "Siz {planType} rejasiga yozilgansiz!",
+  "programs.enrollment.enrolledStandard": "Siz Standart rejasiga yozilgansiz!",
+  "programs.enrollment.enrolledPremium": "Siz Premium rejasiga yozilgansiz!",
   "programs.enrollment.pending": "Sizning yozilishingiz tasdiqlanishni kutmoqda",
   "programs.enrollment.accessGranted": "Endi sizda barcha kurs materiallari va o'quv sessiyalariga to'liq kirish mavjud.",
   "programs.enrollment.pendingMessage": "Bizning administrator 12 soat ichida ko'rib chiqadi va siz bilan bog'lanadi.",

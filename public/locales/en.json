@@ -576,6 +576,8 @@
   "programs.modules.weeks": "weeks",
   
   "programs.enrollment.enrolled": "You're enrolled in the {planType} plan!",
+  "programs.enrollment.enrolledStandard": "You're enrolled in the Standard plan!",
+  "programs.enrollment.enrolledPremium": "You're enrolled in the Premium plan!",
   "programs.enrollment.pending": "Your enrollment is pending approval",
   "programs.enrollment.accessGranted": "You now have full access to all course materials and learning sessions.",
   "programs.enrollment.pendingMessage": "Our administrator will review and contact you within 12 hours.",

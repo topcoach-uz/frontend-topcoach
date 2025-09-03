@@ -571,6 +571,8 @@
   "programs.modules.weeks": "недель",
   
   "programs.enrollment.enrolled": "Вы записаны на план {planType}!",
+  "programs.enrollment.enrolledStandard": "Вы записаны на план Стандарт!",
+  "programs.enrollment.enrolledPremium": "Вы записаны на план Премиум!",
   "programs.enrollment.pending": "Ваша запись ожидает одобрения",
   "programs.enrollment.accessGranted": "Теперь у вас есть полный доступ ко всем материалам курса и учебным сессиям.",
   "programs.enrollment.pendingMessage": "Наш администратор рассмотрит и свяжется с вами в течение 12 часов.",

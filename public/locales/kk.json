@@ -574,6 +574,8 @@
   "programs.modules.weeks": "apta",
   
   "programs.enrollment.enrolled": "Siz {planType} rejasına jazılǵansız!",
+  "programs.enrollment.enrolledStandard": "Siz Standart rejasına jazılǵansız!",
+  "programs.enrollment.enrolledPremium": "Siz Premium rejasına jazılǵansız!",
   "programs.enrollment.pending": "Sizning jazılıngızdı tasdıqlanıwdı kutpekte",
   "programs.enrollment.accessGranted": "Endi sizde barcha kurs materialları hám oqıw sessiyalarına tolıq kiriw bar.",
   "programs.enrollment.pendingMessage": "Bizning administrator 12 saat ishinde kórib shıqadı hám siz menen baylanısadı.",
