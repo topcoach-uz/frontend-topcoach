@@ -457,4 +457,5 @@ const SubscriptionPlans: React.FC = () => {
   );
 };
 
-export default SubscriptionPlans; 
+export default SubscriptionPlans;
+ 
