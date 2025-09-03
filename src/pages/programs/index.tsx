@@ -634,7 +634,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 disabled={false}
                 className="enroll-button"
               >
-                {isEnrolledInPlan(plan.type) ? t('pricing.continueLearning') : `${t('pricing.enrollInStandard')} ${plan.type === CourseTypeEnum.STANDARD ? t('pricing.standard') : t('pricing.premium')}`}
+                {isEnrolledInPlan(plan.type) ? t('pricing.continueLearning') : `${t('pricing.enrollIn')} ${plan.type === CourseTypeEnum.STANDARD ? t('pricing.standard') : t('pricing.premium')}`}
               </Button>
             </Card>
           ))}
