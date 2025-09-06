@@ -27,6 +27,7 @@ const Custom404PageLazy = lazy(() => import("src/pages/404"));
 const SuccessStoriesPageLazy = lazy(
   () => import("src/pages/success-stories")
 );
+const ContactFormPageLazy = lazy(() => import("src/pages/contact-form"));
 const SuccessStoriesDetailPageLazy = lazy(
   () => import("src/pages/success-stories/detail")
 );
@@ -137,6 +138,7 @@ function RouterProvider() {
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
+              <Route path="/contact-form" element={<ContactFormPageLazy />} />
               <Route 
                 path="/learning" 
                 element={

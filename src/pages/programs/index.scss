@@ -41,6 +41,61 @@
       }
     }
 
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      
+      .apply-now-btn {
+        background: #8b0000 !important;
+        border-color: #8b0000 !important;
+        width: 200px !important;
+        height: 50px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 20px !important;
+        box-sizing: border-box !important;
+        
+        &:hover {
+          background: #6b0000 !important;
+          border-color: #6b0000 !important;
+        }
+      }
+      
+      .contact-us-btn {
+        background: white !important;
+        border: 2px solid #8b0000 !important;
+        color: #8b0000 !important;
+        width: 200px !important;
+        height: 50px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 20px !important;
+        box-sizing: border-box !important;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: #8b0000 !important;
+          color: white !important;
+          border-color: #8b0000 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+        }
+      }
+    }
+
     .hero-badge {
       display: inline-flex;
       align-items: center;

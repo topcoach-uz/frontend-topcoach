@@ -15,7 +15,8 @@ import {
   TeamOutlined,
   CrownOutlined,
   DownOutlined,
-  UpOutlined
+  UpOutlined,
+  MessageOutlined
 } from '@ant-design/icons';
 import { useTypedSelector } from 'src/app/store';
 import { 
@@ -29,7 +30,7 @@ import {
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import { useAppDispatch } from 'src/app/store';
 import { show } from 'src/app/slices/profilePopupSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
 import './index.scss';
 
@@ -353,6 +354,15 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
               >
                 {t('programs.stats.applyNow')}
               </Button>
+              <Link to="/contact-form">
+                <Button 
+                  size="large"
+                  className="contact-us-btn"
+                  icon={<MessageOutlined />}
+                >
+                  {t('programs.stats.contactUs')}
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="hero-visual">
