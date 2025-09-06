@@ -102,11 +102,10 @@ export default function ContactFormPage() {
   return (
     <main className={styles.container}>
       <div className={'container ' + styles.content}>
-        <MainTitleDescription
-          title={t('contactForm.title')}
-          description={t('contactForm.description')}
-          mb={32}
-        />
+        <div className={styles.header_section}>
+          <h1 className={styles.title}>{t('contactForm.title')}</h1>
+          <p className={styles.description}>{t('contactForm.description')}</p>
+        </div>
 
         <Card className={styles.form_card}>
           <Form
