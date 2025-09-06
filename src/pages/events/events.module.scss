@@ -18,6 +18,13 @@
   border-radius: 16px;
   cursor: pointer;
   overflow: hidden;
+  position: relative;
+
+  .img_mask {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+  }
 
   img {
     border-radius: 16px;
@@ -34,6 +41,17 @@
       transform: scale(1.05);
     }
   }
+
+  .upcoming_badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .card_description {
@@ -45,5 +63,41 @@
     // display: inline-block !important;
     // text-overflow: ellipsis;
     // white-space: nowrap;
+  }
+}
+
+.events_tabs {
+  margin-top: 24px;
+
+  :global(.ant-tabs-tab) {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 12px 24px;
+  }
+
+  :global(.ant-tabs-tab-active) {
+    color: $colorPrimary;
+  }
+
+  :global(.ant-tabs-ink-bar) {
+    background: $colorPrimary;
+  }
+
+  :global(.ant-tabs-content-holder) {
+    padding-top: 24px;
+  }
+}
+
+.no_events {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+
+  p {
+    margin: 0;
   }
 }

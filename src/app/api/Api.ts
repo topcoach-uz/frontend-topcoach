@@ -2906,6 +2906,38 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         secure: true,
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name GetActiveWorkshops
+     * @request GET:/camps/workshops
+     * @response `200` `(EventsSchema)[]` List of active workshops
+     */
+    getActiveWorkshops: (params: RequestParams = {}) =>
+      this.request<EventsSchema[], any>({
+        path: `/camps/workshops`,
+        method: "GET",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name RegisterForWorkshop
+     * @request POST:/camps/workshops/{id}/register
+     * @secure
+     * @response `200` `{ success: boolean; message: string }` Registration result
+     */
+    registerForWorkshop: (id: string, params: RequestParams = {}) =>
+      this.request<{ success: boolean; message: string }, any>({
+        path: `/camps/workshops/${id}/register`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
   };
   sessions = {
     /**

@@ -1,0 +1,121 @@
+import { Card, Button, Progress, Tag, Space } from 'antd';
+import { CalendarOutlined, UserOutlined, ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { formatDateRange } from 'src/utils';
+import styles from './WorkshopCard.module.scss';
+
+interface WorkshopCardProps {
+  id: string;
+  title: string;
+  summary: string;
+  startDate: string;
+  endDate: string;
+  deadline: string; // Using deadline instead of registrationDeadline
+  maxParticipants?: number;
+  currentParticipants?: number;
+  img?: string;
+  locations: any[];
+}
+
+export default function WorkshopCard({
+  id,
+  title,
+  summary,
+  startDate,
+  endDate,
+  deadline,
+  maxParticipants,
+  currentParticipants,
+  img,
+  locations,
+}: WorkshopCardProps) {
+  const { t } = useTranslation();
+  
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
+  const isRegistrationOpen = deadlineDate > now && (currentParticipants || 0) < (maxParticipants || 0);
+  
+  const participationPercentage = maxParticipants ? ((currentParticipants || 0) / maxParticipants) * 100 : 0;
+
+  const handleRegister = () => {
+    // TODO: Implement workshop registration
+    console.log('Register for workshop:', id);
+  };
+
+  return (
+    <Card
+      className={styles.workshop_card}
+      cover={
+        img && (
+          <div className={styles.card_image}>
+            <img alt={title} src={img} />
+          </div>
+        )
+      }
+      actions={[
+        <Button
+          key="register"
+          type="primary"
+          disabled={!isRegistrationOpen}
+          onClick={handleRegister}
+          className={styles.register_button}
+        >
+          {isRegistrationOpen ? t('events.register') : t('events.registrationClosed')}
+        </Button>,
+      ]}
+    >
+      <div className={styles.card_content}>
+        <h3 className={styles.workshop_title}>{title}</h3>
+        
+        {summary && (
+          <p className={styles.workshop_summary}>{summary}</p>
+        )}
+
+        <Space direction="vertical" size="small" className={styles.workshop_info}>
+          <div className={styles.info_item}>
+            <CalendarOutlined className={styles.info_icon} />
+            <span>{formatDateRange(startDate, endDate)}</span>
+          </div>
+
+          <div className={styles.info_item}>
+            <ClockCircleOutlined className={styles.info_icon} />
+            <span>
+              {t('events.registrationDeadline')}: {new Date(deadline).toLocaleDateString()}
+            </span>
+          </div>
+
+          {locations && locations.length > 0 && (
+            <div className={styles.info_item}>
+              <EnvironmentOutlined className={styles.info_icon} />
+              <span>{locations[0]?.address || locations[0]?.region || 'TBA'}</span>
+            </div>
+          )}
+
+          <div className={styles.participants_info}>
+            <div className={styles.info_item}>
+              <UserOutlined className={styles.info_icon} />
+              <span>
+                {currentParticipants || 0}/{maxParticipants || 0} {t('events.participants')}
+              </span>
+            </div>
+            <Progress
+              percent={participationPercentage}
+              size="small"
+              status={participationPercentage >= 90 ? 'exception' : 'active'}
+              className={styles.progress_bar}
+            />
+          </div>
+        </Space>
+
+        <div className={styles.workshop_tags}>
+          <Tag color="blue">{t('events.workshop')}</Tag>
+          {isRegistrationOpen ? (
+            <Tag color="green">{t('events.openForRegistration')}</Tag>
+          ) : (
+            <Tag color="red">{t('events.registrationClosed')}</Tag>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
