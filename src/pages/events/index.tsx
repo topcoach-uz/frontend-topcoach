@@ -38,23 +38,27 @@ export default function EventsPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('events');
 
-  // Categorize events based on dates
+  // Categorize events based on dates (exclude workshops)
   const now = new Date();
-  const currentEvents = eventsData?.data.data.filter((event: Event) => {
+  const regularEvents = eventsData?.data.data.filter((event: any) => 
+    event.type !== 'workshop' && event.type !== 'Workshop'
+  ) || [];
+
+  const currentEvents = regularEvents.filter((event: Event) => {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
     return startDate <= now && endDate >= now;
-  }) || [];
+  });
 
-  const upcomingEvents = eventsData?.data.data.filter((event: Event) => {
+  const upcomingEvents = regularEvents.filter((event: Event) => {
     const startDate = new Date(event.startDate);
     return startDate > now;
-  }) || [];
+  });
 
-  const previousEvents = eventsData?.data.data.filter((event: Event) => {
+  const previousEvents = regularEvents.filter((event: Event) => {
     const endDate = new Date(event.endDate);
     return endDate < now;
-  }) || [];
+  });
 
   const activeWorkshops = workshopsData?.data || [];
 
