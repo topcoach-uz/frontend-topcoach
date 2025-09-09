@@ -28,8 +28,8 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
   const previewVideos: VideoPreview[] = [
     {
       id: '1',
-      title: t('videoPreview.video1.title'),
-      description: t('videoPreview.video1.description'),
+      title: t('videoPreview.video2.title'),
+      description: t('videoPreview.video2.description'),
       duration: '7:17',
       thumbnail: '/img/module2-cover.jpeg',
       videoUrl: 'https://www.youtube.com/embed/uaC3wW4JIJA?autoplay=1&rel=0',
@@ -37,8 +37,8 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
     },
     {
       id: '2',
-      title: t('videoPreview.video2.title'),
-      description: t('videoPreview.video2.description'),
+      title: t('videoPreview.video1.title'),
+      description: t('videoPreview.video1.description'),
       duration: '4:09',
       thumbnail: '/img/module3-cover.jpeg',
       videoUrl: 'https://www.youtube.com/embed/le6QJNo5D_0?autoplay=1&rel=0',
@@ -49,7 +49,7 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
       title: t('videoPreview.video3.title'),
       description: t('videoPreview.video3.description'),
       duration: '4:44',
-      thumbnail: '/img/module3-cover.jpeg',
+      thumbnail: '/img/module4-cover.jpeg',
       videoUrl: 'https://www.youtube.com/embed/qb48VUSmA_w?autoplay=1&rel=0',
       views: 100,
     }
