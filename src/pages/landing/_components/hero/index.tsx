@@ -93,7 +93,7 @@ const mentorImages = [
   '/landing/Kuvonchbek Otabekov.webp',
   '/landing/Javahir Saidov.webp',
   '/landing/Dono Abdurahmanova.webp',
-  '/landing/Seva Amar.webp',
+  '/landing/dilbarumarova.jpeg',
   '/landing/photo_2025-03-18_21-16-56.jpg',
   '/landing/dinara1.jpeg',
   '/landing/photo_2025-03-19_03-03-05.jpg',
