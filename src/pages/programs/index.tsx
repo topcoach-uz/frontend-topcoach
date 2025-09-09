@@ -32,6 +32,7 @@ import { useAppDispatch } from 'src/app/store';
 import { show } from 'src/app/slices/profilePopupSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
+import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
 import './index.scss';
 
 // Local enums for course types and payment status
@@ -366,9 +367,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             </div>
           </div>
           <div className="hero-visual">
-            <div className="hero-image">
-              <img src="/img/students.jpeg" alt={t('programs.stats.studentsStudying')} />
-            </div>
+            <VideoPreviewSection onVideoClick={(video) => console.log('Video clicked:', video)} />
           </div>
         </div>
       </section>
