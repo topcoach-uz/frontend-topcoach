@@ -32,7 +32,8 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
       description: t('videoPreview.video1.description'),
       duration: '7:17',
       thumbnail: '/img/module2-cover.png',
-      videoUrl: 'https://www.youtube.com/embed/uaC3wW4JIJA?autoplay=1&rel=0'
+      videoUrl: 'https://www.youtube.com/embed/uaC3wW4JIJA?autoplay=1&rel=0',
+      views: 100,
     },
     {
       id: '2',
@@ -40,7 +41,8 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
       description: t('videoPreview.video2.description'),
       duration: '4:09',
       thumbnail: '/img/module3-cover.png',
-      videoUrl: 'https://www.youtube.com/embed/le6QJNo5D_0?autoplay=1&rel=0'
+      videoUrl: 'https://www.youtube.com/embed/le6QJNo5D_0?autoplay=1&rel=0',
+      views: 100,
     },
     {
       id: '3',
@@ -48,7 +50,8 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
       description: t('videoPreview.video3.description'),
       duration: '4:44',
       thumbnail: '/img/module3-cover.png',
-      videoUrl: 'https://www.youtube.com/embed/qb48VUSmA_w?autoplay=1&rel=0'
+      videoUrl: 'https://www.youtube.com/embed/qb48VUSmA_w?autoplay=1&rel=0',
+      views: 100,
     }
   ];
 
