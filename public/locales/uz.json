@@ -171,7 +171,7 @@
   "landing.becomeMentorSubtitle": "Talabalarga orzularini amalga oshirishda yordam bering va tajribangiz bilan o‘rtoqlashing. Bizning platformamizda mentor bo‘ling va yangi avlodni ilhomlantiring!",
   "landing.becomeMentorTitle": "Eng yaxshi mentorlar qatorida bo‘ling!",
   "landing.contactUs": "Unda biz bilan bog‘laning!",
-  "landing.contactUsButton": "Biz bilan bog‘laning",
+  "landing.contactUsButton": "Ko'proq ma'lumot kerakmi?",
   "landing.eventsPrograms": "Tadbirlar va Dasturlar",
   "landing.faqExpanded": "Ko‘p beriladigan savollar",
   "landing.faqText": "Top Coach va murabbiylik turlari haqida bilishingiz kerak bo‘lgan barcha narsa.",
@@ -449,7 +449,7 @@
   "apply.applicationClosed.message": "Bizning dasturimizga qiziqish bildirganingiz uchun rahmat. Iltimos, kelajakdagi imkoniyatlar uchun kuzatib boring yoki kelgusi tadbirlar haqida qo'shimcha ma'lumot olish uchun biz bilan bog'laning.",
   
   "navigation.learnMore": "Resurslar",
-  "contactForm.title": "Ko'proq ma'lumot kerakmi?",
+  "contactForm.title": "Biz bilan bog'laning",
   "contactForm.description": "TopCoach Qabul qilish dasturi va akademik maqsadlaringizga erishishda qanday yordam bera olishimiz haqida ko'proq ma'lumot olish uchun jamoamiz bilan bog'laning. Jamoamiz 2 ish kuni ichida siz bilan bog'lanadi.",
   "contactForm.requiredFields": "Majburiy ma'lumotlar",
   "contactForm.optionalFields": "Qo'shimcha ma'lumotlar (ixtiyoriy)",
