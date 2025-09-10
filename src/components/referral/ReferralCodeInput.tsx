@@ -26,22 +26,38 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(originalAmount);
+  const [discountPercentage, setDiscountPercentage] = useState(5);
 
   const [validateCode, { isLoading }] = useValidateReferralCodeMutation();
 
   // Update final amount when original amount changes
   useEffect(() => {
     if (appliedCode) {
-      const discount = originalAmount * 0.05; // 5% discount
-      const final = originalAmount - discount;
-      setDiscountAmount(discount);
-      setFinalAmount(final);
-      onCodeApplied(appliedCode, discount, final);
+      // Re-validate the code to get the correct discount percentage
+      validateCode({ code: appliedCode }).unwrap().then(result => {
+        if (result.valid) {
+          const discountPercentage = result.discountPercentage || 5;
+          const discount = originalAmount * (discountPercentage / 100);
+          const final = originalAmount - discount;
+          setDiscountPercentage(discountPercentage);
+          setDiscountAmount(discount);
+          setFinalAmount(final);
+          onCodeApplied(appliedCode, discount, final);
+        }
+      }).catch(() => {
+        // Fallback to 5% if validation fails
+        const discount = originalAmount * 0.05;
+        const final = originalAmount - discount;
+        setDiscountPercentage(5);
+        setDiscountAmount(discount);
+        setFinalAmount(final);
+        onCodeApplied(appliedCode, discount, final);
+      });
     } else {
       setFinalAmount(originalAmount);
       onCodeRemoved();
     }
-  }, [originalAmount, appliedCode, onCodeApplied, onCodeRemoved]);
+  }, [originalAmount, appliedCode, onCodeApplied, onCodeRemoved, validateCode]);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
@@ -69,6 +85,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
         const final = originalAmount - discount;
         
         setAppliedCode(code.trim());
+        setDiscountPercentage(discountPercentage);
         setDiscountAmount(discount);
         setFinalAmount(final);
         
@@ -89,6 +106,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
     setAppliedCode(null);
     setDiscountAmount(0);
     setFinalAmount(originalAmount);
+    setDiscountPercentage(5);
     setCode('');
     onCodeRemoved();
     message.info('Referral code removed');
@@ -175,7 +193,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
               </Text>
             </div>
             <div className="price-row discount-row">
-              <Text>Referral Discount (5%):</Text>
+              <Text>Referral Discount ({discountPercentage}%):</Text>
               <Text className="discount-amount">
                 -{formatCurrency(discountAmount)}
               </Text>
