@@ -64,7 +64,8 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
       const result = await validateCode({ code: code.trim() }).unwrap();
       
       if (result.valid) {
-        const discount = originalAmount * 0.05; // 5% discount
+        const discountPercentage = result.discountPercentage || 5; // Default to 5% if not provided
+        const discount = originalAmount * (discountPercentage / 100);
         const final = originalAmount - discount;
         
         setAppliedCode(code.trim());

@@ -10,6 +10,7 @@ export interface ValidateReferralCodeResponse {
   valid: boolean;
   referrerName: string;
   message: string;
+  discountPercentage?: number;
 }
 
 export interface ReferralCodeResponse {
