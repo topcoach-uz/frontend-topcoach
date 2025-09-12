@@ -7,7 +7,6 @@ import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
 import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
-import ProgressTracker from './components/ProgressTracker';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 import { useDispatch } from 'react-redux';
@@ -203,6 +202,20 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
   )[0];
 
+  // Debug: Log selected lesson to catch undefined issues
+  console.log('Selected lesson debug:', {
+    selectedLessonId,
+    selectedLesson: selectedLesson ? {
+      id: selectedLesson.id,
+      title: selectedLesson.title,
+      lessonType: selectedLesson.lessonType,
+      useVdoCipher: selectedLesson.useVdoCipher,
+      vdocipherVideoId: selectedLesson.vdocipherVideoId,
+      contentUrl: selectedLesson.contentUrl
+    } : null,
+    courseStructure: courseStructure?.length || 0
+  });
+
   // Debug: Log selected lesson data
   useEffect(() => {
     if (selectedLesson) {
@@ -224,6 +237,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const selectedModule = courseStructure?.find(module => 
     module.lessons?.some(lesson => lesson.id === selectedLessonId)
   );
+
+  // Debug: Log selected module
+  console.log('Selected module debug:', {
+    selectedModule: selectedModule ? {
+      id: selectedModule.id,
+      title: selectedModule.title,
+      mentorName: selectedModule.mentorName,
+      mentor: selectedModule.mentor
+    } : null
+  });
 
   // Generate OTP when VdoCipher lesson is selected
   useEffect(() => {
@@ -376,16 +399,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       
       <Layout className="learning-content">
         <Content className="content-area">
-          {selectedLesson ? (
+          {selectedLesson && selectedLesson.id ? (
             <div className="lesson-container">
               <div className="lesson-header">
                 <div className="lesson-title-section">
                   <h1>{selectedLesson.title}</h1>
                 </div>
-                {selectedModule && (
+                {selectedModule && selectedModule.title && (
                   <div className="module-info">
                     <span className="module-name">{selectedModule.title}</span>
-                    <span className="mentor-name">by {selectedModule.mentorName || selectedModule.mentor?.email}</span>
+                    <span className="mentor-name">by {selectedModule.mentorName || selectedModule.mentor?.email || 'Unknown Mentor'}</span>
                   </div>
                 )}
               </div>

@@ -24,6 +24,15 @@ export const ReferralCodeDisplay: React.FC = () => {
   // Debug logging
   console.log('Referral stats data:', statsData);
   console.log('Stats error:', statsError);
+  
+  // Handle loading and error states
+  if (isLoadingStats) {
+    console.log('Loading referral stats...');
+  }
+  
+  if (statsError) {
+    console.error('Referral stats error:', statsError);
+  }
 
   const handleCopyCode = async () => {
     if (referralCode) {
