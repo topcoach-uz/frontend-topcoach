@@ -356,15 +356,22 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         theme="light"
         trigger={null} // Remove default trigger
       >
-        <CourseSidebar
-          key={`sidebar-${forceUpdate}`}
-          courseStructure={courseStructure}
-          userProgress={userProgress}
-          selectedLessonId={selectedLessonId}
-          onLessonSelect={setSelectedLessonId}
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed(!collapsed)}
-        />
+        {courseStructure && userProgress ? (
+          <CourseSidebar
+            key={`sidebar-${forceUpdate}`}
+            courseStructure={courseStructure}
+            userProgress={userProgress}
+            selectedLessonId={selectedLessonId}
+            onLessonSelect={setSelectedLessonId}
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed(!collapsed)}
+          />
+        ) : (
+          <div className="sidebar-loading">
+            <Spin size="small" />
+            <p>Loading sidebar...</p>
+          </div>
+        )}
       </Sider>
       
       <Layout className="learning-content">
@@ -387,7 +394,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                 {selectedLesson.lessonType === 'video' && (
                   <>
                     {/* VdoCipher Player */}
-                    {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo && (
+                    {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo ? (
                       <VdoCipherPlayer
                         videoId={selectedLesson.vdocipherVideoId}
                         otp={vdocipherOTP}
@@ -440,7 +447,13 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         <Spin size="large" />
                         <p>Loading secure video...</p>
                       </div>
-                    )}
+                    ) : selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId ? (
+                      <div className="video-loading">
+                        <Spin size="large" />
+                        <p>Loading video player...</p>
+                        {isLoadingOTP && <p>Generating video access...</p>}
+                      </div>
+                    ) : null}
 
                     {/* Regular Video Player (fallback) */}
                     {(!selectedLesson.useVdoCipher || !selectedLesson.vdocipherVideoId) && selectedLesson.contentUrl && (
@@ -490,7 +503,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   </>
                 )}
                 
-                {selectedLesson.lessonType === 'pdf' && selectedLesson.contentUrl && (
+                {selectedLesson.lessonType === 'pdf' && selectedLesson.contentUrl ? (
                   <PDFViewer
                     key={`${selectedLesson.id}-${forceUpdate}`}
                     pdfUrl={selectedLesson.contentUrl}
@@ -542,7 +555,12 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                     }}
                     isCompleted={isSelectedLessonCompleted}
                   />
-                )}
+                ) : selectedLesson.lessonType === 'pdf' ? (
+                  <div className="pdf-error">
+                    <h3>PDF Content Not Available</h3>
+                    <p>This lesson's PDF content is not available at the moment. Please try again later or contact support.</p>
+                  </div>
+                ) : null}
 
                 {selectedLesson.lessonType === 'live_session' && (
                   <div className="live-session-placeholder">
