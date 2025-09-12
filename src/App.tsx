@@ -7,6 +7,7 @@ import ReduxProvider from './lib/redux';
 import RouterProvider from './lib/router';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './lib/i18n';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
 function App() {
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,7 @@ function App() {
   // }, []);
 
   return (
-    <>
+    <ErrorBoundary>
       {error && (
         <div style={{ background: 'red', color: 'white', padding: 8, textAlign: 'center' }}>
           {error}
@@ -35,7 +36,7 @@ function App() {
           </AosProvider>
         </AntdProvider>
       </ReduxProvider>
-    </>
+    </ErrorBoundary>
   );
 }
 
