@@ -439,19 +439,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                           }
                         }}
                       />
-                    )}
-
-                    {/* Loading state for VdoCipher */}
-                    {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && isLoadingOTP && (
+                    ) : selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && isLoadingOTP ? (
                       <div className="loading-container">
                         <Spin size="large" />
                         <p>Loading secure video...</p>
                       </div>
-                    ) : selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId ? (
+                    ) : selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && !vdocipherOTP ? (
                       <div className="video-loading">
                         <Spin size="large" />
                         <p>Loading video player...</p>
-                        {isLoadingOTP && <p>Generating video access...</p>}
+                        <p>Generating video access...</p>
                       </div>
                     ) : null}
 
