@@ -45,6 +45,10 @@ export default function useNavigation() {
           path: '/faq',
           text: t('header.faq'),
         },
+        {
+          path: '/contact',
+          text: t('header.contact'),
+        },
       ],
     },
   ];
