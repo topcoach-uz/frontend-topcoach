@@ -47,6 +47,8 @@
   "Select a lesson to start learning": "Выберите урок для начала обучения",
   "Choose a lesson from the sidebar to begin your course.": "Выберите урок из боковой панели, чтобы начать курс.",
   "Course Content": "Содержание курса",
+  "Content not available": "Содержимое недоступно",
+  "This lesson has no video/PDF. Please contact support.": "В этом уроке нет видео/PDF. Пожалуйста, обратитесь в службу поддержки.",
   "events.register": "Зарегистрироваться",
   "events.registrationClosed": "Регистрация закрыта",
   "events.registrationDeadline": "Срок регистрации",

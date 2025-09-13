@@ -47,6 +47,8 @@
   "Select a lesson to start learning": "O'rganishni boshlash uchun darsni tanlang",
   "Choose a lesson from the sidebar to begin your course.": "Kursingizni boshlash uchun yon paneldan darsni tanlang.",
   "Course Content": "Kurs mazmuni",
+  "Content not available": "Mazmun mavjud emas",
+  "This lesson has no video/PDF. Please contact support.": "Bu darsda video/PDF yo'q. Iltimos, qo'llab-quvvatlash bilan bog'laning.",
   "events.register": "Ro'yxatdan o'tish",
   "events.registrationClosed": "Ro'yxatdan o'tish yopilgan",
   "events.registrationDeadline": "Ro'yxatdan o'tish muddati",

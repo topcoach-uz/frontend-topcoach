@@ -200,10 +200,93 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     }
   }, [lastCompletionTime, refetchUserProgress]);
 
-  // Find the selected lesson
+  // Find the selected lesson with safe fallback
   const selectedLesson = courseStructure?.flatMap(module => 
     module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
-  )[0];
+  )[0] || null;
+
+  // Restore last selected lesson from localStorage on page load
+  useEffect(() => {
+    if (courseStructure && courseStructure.length > 0 && userProgress) {
+      // Try to restore the last selected lesson
+      const lastSelectedLessonId = localStorage.getItem('topcoach-selected-lesson');
+      
+      if (lastSelectedLessonId) {
+        // Verify the lesson still exists in the course structure
+        const lessonExists = courseStructure.some(module => 
+          module.lessons?.some(lesson => lesson.id === lastSelectedLessonId)
+        );
+        
+        if (lessonExists) {
+          setSelectedLessonId(lastSelectedLessonId);
+          return;
+        } else {
+          // Clear invalid lesson ID from localStorage
+          localStorage.removeItem('topcoach-selected-lesson');
+        }
+      }
+      
+      // If no valid last lesson, find the next incomplete lesson (like Udemy/Coursera)
+      if (!selectedLessonId) {
+        const nextIncompleteLesson = findNextIncompleteLesson(courseStructure, userProgress);
+        if (nextIncompleteLesson) {
+          setSelectedLessonId(nextIncompleteLesson.id);
+        } else {
+          // If all lessons are completed, select the first lesson
+          const firstLesson = courseStructure[0]?.lessons?.[0];
+          if (firstLesson?.id) {
+            setSelectedLessonId(firstLesson.id);
+          }
+        }
+      }
+    }
+  }, [courseStructure, userProgress, selectedLessonId]);
+
+  // Helper function to find the next incomplete lesson
+  const findNextIncompleteLesson = (courseStructure: any[], userProgress: any) => {
+    if (!userProgress?.progress) return null;
+    
+    const completedLessonIds = new Set(
+      userProgress.progress
+        .filter((p: any) => p.isCompleted)
+        .map((p: any) => p.lessonId)
+    );
+    
+    // Find the first incomplete lesson
+    for (const module of courseStructure) {
+      if (module.lessons) {
+        for (const lesson of module.lessons) {
+          if (!completedLessonIds.has(lesson.id)) {
+            return lesson;
+          }
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Save selected lesson to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedLessonId) {
+      localStorage.setItem('topcoach-selected-lesson', selectedLessonId);
+    }
+  }, [selectedLessonId]);
+
+  // Clear stored lesson when course is completed
+  useEffect(() => {
+    if (userProgress && courseStructure) {
+      const totalLessons = courseStructure.reduce((total, module) => 
+        total + (module.lessons?.length || 0), 0
+      );
+      const completedLessons = userProgress.completedLessons || 0;
+      
+      // If all lessons are completed, clear the stored lesson
+      if (totalLessons > 0 && completedLessons >= totalLessons) {
+        localStorage.removeItem('topcoach-selected-lesson');
+      }
+    }
+  }, [userProgress, courseStructure]);
 
   // Debug: Log selected lesson to catch undefined issues
   console.log('Selected lesson debug:', {
@@ -216,7 +299,8 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       vdocipherVideoId: selectedLesson.vdocipherVideoId,
       contentUrl: selectedLesson.contentUrl
     } : null,
-    courseStructure: courseStructure?.length || 0
+    courseStructure: courseStructure?.length || 0,
+    lastSelectedFromStorage: localStorage.getItem('topcoach-selected-lesson')
   });
 
   // Debug: Log when lesson is selected
@@ -406,22 +490,39 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       
       <Layout className="learning-content">
         <Content className="content-area">
-          {selectedLesson && selectedLesson.id ? (
+          {!selectedLesson ? (
+            <div className="no-lesson-selected">
+              <h2>{t('Select a lesson to start learning')}</h2>
+              <p>{t('Choose a lesson from the sidebar to begin your course.')}</p>
+            </div>
+          ) : (
             <div className="lesson-container">
               <div className="lesson-header">
                 <div className="lesson-title-section">
-                  <h1>{selectedLesson.title}</h1>
+                  <h1>{selectedLesson.title || 'Untitled Lesson'}</h1>
                 </div>
-                {selectedModule && selectedModule.title && (
+                {selectedModule ? (
                   <div className="module-info">
-                    <span className="module-name">{selectedModule.title}</span>
-                    <span className="mentor-name">by {selectedModule.mentorName || selectedModule.mentor?.email || 'Unknown Mentor'}</span>
+                    <span className="module-name">{selectedModule.title || 'Untitled Module'}</span>
+                    <span className="mentor-name">
+                      by {selectedModule.mentorName || selectedModule.mentor?.email || 'Unknown Mentor'}
+                    </span>
                   </div>
-                )}
+                ) : null}
               </div>
 
               <div className="lesson-content">
-                {selectedLesson.lessonType === 'video' && (
+                {!selectedLesson ? (
+                  <div className="no-lesson-selected">
+                    <h2>{t('Select a lesson to start learning')}</h2>
+                    <p>{t('Choose a lesson from the sidebar to begin your course.')}</p>
+                  </div>
+                ) : !selectedLesson.contentUrl && !selectedLesson.useVdoCipher ? (
+                  <div className="lesson-error">
+                    <h2>{t('Content not available')}</h2>
+                    <p>{t('This lesson has no video/PDF. Please contact support.')}</p>
+                  </div>
+                ) : selectedLesson.lessonType === 'video' ? (
                   <div className="video-content">
                     {/* VdoCipher Player */}
                     {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo && (
@@ -429,9 +530,9 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         videoId={selectedLesson.vdocipherVideoId}
                         otp={vdocipherOTP}
                         playbackInfo={vdocipherPlaybackInfo}
-                        title={selectedLesson.title}
+                        title={selectedLesson.title || 'Untitled Video'}
                         onProgressUpdate={(progress) => {
-                          if (progress > 0) {
+                          if (progress > 0 && selectedLesson.id && selectedLesson.duration) {
                             handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
                           }
                         }}
@@ -448,7 +549,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                             const updateData = {
                               isCompleted: true,
                               progressPercentage: 100,
-                              timeWatched: selectedLesson.duration * 60,
+                              timeWatched: (selectedLesson.duration || 0) * 60,
                             };
                             
                             updateLessonProgress({
@@ -491,9 +592,9 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                     {(!selectedLesson.useVdoCipher || !selectedLesson.vdocipherVideoId) && selectedLesson.contentUrl && (
                       <VideoPlayer
                         src={selectedLesson.contentUrl}
-                        title={selectedLesson.title}
+                        title={selectedLesson.title || 'Untitled Video'}
                         onProgressUpdate={(progress) => {
-                          if (progress > 0) {
+                          if (progress > 0 && selectedLesson.id && selectedLesson.duration) {
                             handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
                           }
                         }}
@@ -510,7 +611,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                             const updateData = {
                               isCompleted: true,
                               progressPercentage: 100,
-                              timeWatched: selectedLesson.duration * 60,
+                              timeWatched: (selectedLesson.duration || 0) * 60,
                             };
                             
                             updateLessonProgress({
@@ -533,14 +634,13 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                       />
                     )}
                   </div>
-                )}
-                
-                {selectedLesson.lessonType === 'pdf' && selectedLesson.contentUrl ? (
-                  <PDFViewer
-                    key={`${selectedLesson.id}-${forceUpdate}`}
-                    pdfUrl={selectedLesson.contentUrl}
-                    lessonId={selectedLesson.id}
-                    title={selectedLesson.title}
+                ) : selectedLesson.lessonType === 'pdf' ? (
+                  selectedLesson.contentUrl ? (
+                    <PDFViewer
+                      key={`${selectedLesson.id}-${forceUpdate}`}
+                      pdfUrl={selectedLesson.contentUrl}
+                      lessonId={selectedLesson.id || ''}
+                      title={selectedLesson.title || 'Untitled PDF'}
                     onComplete={async () => {
                       try {
                         // Check if user is enrolled
@@ -556,7 +656,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         const updateData = {
                           isCompleted: true,
                           progressPercentage: 100,
-                          timeWatched: selectedLesson.duration * 60,
+                          timeWatched: (selectedLesson.duration || 0) * 60,
                         };
                         
                         console.log('Sending to server:', {
@@ -587,17 +687,21 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                     }}
                     isCompleted={isSelectedLessonCompleted}
                   />
-                ) : selectedLesson.lessonType === 'pdf' && (
-                  <div className="pdf-error">
-                    <h3>PDF Content Not Available</h3>
-                    <p>This lesson's PDF content is not available at the moment. Please try again later or contact support.</p>
-                  </div>
-                )}
-
-                {selectedLesson.lessonType === 'live_session' && (
+                    ) : (
+                      <div className="pdf-error">
+                        <h3>PDF Content Not Available</h3>
+                        <p>This lesson's PDF content is not available at the moment. Please try again later or contact support.</p>
+                      </div>
+                    )
+                ) : selectedLesson.lessonType === 'live_session' ? (
                   <div className="live-session-placeholder">
                     <h3>Live Session</h3>
                     <p>This is a live session. Please check your email for meeting details.</p>
+                  </div>
+                ) : (
+                  <div className="unknown-lesson-type">
+                    <h3>Unknown Lesson Type</h3>
+                    <p>This lesson type is not supported yet.</p>
                   </div>
                 )}
 
@@ -608,11 +712,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className="no-lesson-selected">
-              <h2>{t('Select a lesson to start learning')}</h2>
-              <p>{t('Choose a lesson from the sidebar to begin your course.')}</p>
             </div>
           )}
         </Content>

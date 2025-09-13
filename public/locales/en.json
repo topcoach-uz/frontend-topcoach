@@ -42,6 +42,8 @@
   "Select a lesson to start learning": "Select a lesson to start learning",
   "Choose a lesson from the sidebar to begin your course.": "Choose a lesson from the sidebar to begin your course.",
   "Course Content": "Course Content",
+  "Content not available": "Content not available",
+  "This lesson has no video/PDF. Please contact support.": "This lesson has no video/PDF. Please contact support.",
   "editProfile.phoneNumberLabel": "Phone Number",
   "editProfile.phoneNumberPlaceholder": "+998901234567",
   "editProfile.title": "Edit Profile",
