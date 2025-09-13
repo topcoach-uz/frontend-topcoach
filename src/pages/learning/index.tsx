@@ -29,6 +29,23 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   // Check authentication
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
 
+  // API hooks - ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL LOGIC
+  const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery();
+  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    skip: !enrollmentStatus?.canAccessLearning,
+  });
+  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    skip: !enrollmentStatus?.canAccessLearning,
+  });
+  const [updateLessonProgress] = useUpdateLessonProgressMutation();
+
+  // Additional state hooks - ALL HOOKS MUST BE AT THE TOP
+  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
+  const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,18 +59,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   if (!isAuthenticated) {
     return null;
   }
-
-  // API hooks
-  const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery();
-  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-    skip: !enrollmentStatus?.canAccessLearning,
-  });
-  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-    skip: !enrollmentStatus?.canAccessLearning,
-  });
-  const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
   // Show loading while enrollment status is being fetched
   if (enrollmentLoading) {
@@ -183,8 +188,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }, [selectedLessonId]);
 
   // Force refetch user progress after any completion
-  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
-  
   useEffect(() => {
     if (lastCompletionTime > 0) {
       // Refetch user progress after a short delay to ensure server state is updated
@@ -284,9 +287,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     }
   };
 
-  // Simple state for immediate UI feedback
-  const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
 
 
   // Initialize completed lessons from server data
