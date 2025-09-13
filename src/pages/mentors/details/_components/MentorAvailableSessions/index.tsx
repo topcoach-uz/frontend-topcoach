@@ -6,21 +6,28 @@ import useColors from 'src/hooks/useColors';
 import styles from './mentor_sessions.module.scss';
 import { useTranslation } from 'react-i18next';
 import { useScreenSize } from 'src/hooks/useScreenSize';
+import { useState } from 'react';
+import RequestSessionModal from '../RequestSessionModal';
 
 interface Props {
   availableSessions: { name: string; duration: number }[];
   handleBookPayment: () => void;
   noSessions: boolean;
+  mentorName: string;
+  mentorId: string;
 }
 
 export default function MentorAvailableSessions({
   availableSessions,
   handleBookPayment,
   noSessions,
+  mentorName,
+  mentorId,
 }: Props) {
   const colors = useColors();
   const { t } = useTranslation();
   const { screenSize } = useScreenSize();
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
 
   const thiryMinutSession = availableSessions.filter(
     (session) => session.duration === 30
@@ -84,6 +91,52 @@ export default function MentorAvailableSessions({
           </CustomCard>
         ))}
       </Flex>
+
+      {/* Request Session Button */}
+      <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
+        <CustomText
+          fontSize={themeFontSize.fontSizeTitle8}
+          color={colors.colorTextSecondary}
+          style={{ marginBottom: '12px', display: 'block' }}
+        >
+          {t('mentors.requestSession.helpText')}
+        </CustomText>
+        
+        <CustomButton
+          type="primary"
+          height={40}
+          width="100%"
+          style={{ 
+            borderRadius: 8,
+            backgroundColor: '#8b0000',
+            borderColor: '#8b0000',
+            color: 'white',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#6b0000';
+            e.currentTarget.style.borderColor = '#6b0000';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 0, 0, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#8b0000';
+            e.currentTarget.style.borderColor = '#8b0000';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          onClick={() => setRequestModalOpen(true)}
+        >
+          {t('mentors.requestSession.button')}
+        </CustomButton>
+      </div>
+
+      <RequestSessionModal
+        open={requestModalOpen}
+        onClose={() => setRequestModalOpen(false)}
+        mentorName={mentorName}
+        mentorId={mentorId}
+      />
     </CustomCard>
   );
 }

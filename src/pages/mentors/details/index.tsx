@@ -207,54 +207,79 @@ export default function MentorDetailsPage() {
         <Breadcrumb rootClassName={styles.breadcrumb} items={breadcrumbItems} />
         <Avatar />
 
-        <Flex gap={40} style={{ marginTop: '48px', justifyContent: 'center' }}>
-          <div className={styles.left_side}>
+        <div style={{ 
+          display: screenSize > 1024 ? 'flex' : 'none', 
+          gap: '40px', 
+          marginTop: '48px', 
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          width: '100%'
+        }}>
+          <div style={{ 
+            flex: '1',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '32px',
+            maxWidth: 'calc(100% - 400px)'
+          }}>
             <Overview />
             <Socials />
             <MentorVideosView
               demoLesson={demoLesson}
               introductionVideo={introVideo}
             />
-            {screenSize < 1024 && (
-              <Flex gap={24} style={{ width: '100%' }} vertical>
-                <Statistics />
-                <GiveawaySessions
-                  giveawaySessions={allMentorGiveawaySessions}
-                  onBookGiveawaySession={handleBookGiveawaySession}
-                  hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
-                  isAuthenticated={isAuthenticated}
-                />
-                <MentorAvailableSessions
-                  noSessions={noSessions}
-                  availableSessions={availableSessions}
-                  handleBookPayment={handleBookPayment}
-                />
-                {/* @ts-ignore */}
-                {isAuthenticated && <PackageBalance />}
-              </Flex>
-            )}
             <Background />
-
             <Reviews data={(mentorData as any)?.receivedReviews || []} />
           </div>
           {screenSize > 1024 && (
-            <Flex gap={24} style={{ width: '100%' }} vertical>
+            <div style={{ 
+              width: '380px',
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              alignSelf: 'flex-start'
+            }}>
               <Statistics />
+              <MentorAvailableSessions
+                availableSessions={availableSessions}
+                handleBookPayment={handleBookPayment}
+                noSessions={noSessions}
+                mentorName={mentorData?.profile?.name || 'Mentor'}
+                mentorId={mentorId}
+              />
               <GiveawaySessions
                 giveawaySessions={allMentorGiveawaySessions}
                 onBookGiveawaySession={handleBookGiveawaySession}
                 hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
                 isAuthenticated={isAuthenticated}
               />
-              <MentorAvailableSessions
-                availableSessions={availableSessions}
-                handleBookPayment={handleBookPayment}
-                noSessions={noSessions}
-              />
               {isAuthenticated && <PackageBalance />}
-            </Flex>
+            </div>
           )}
-        </Flex>
+        </div>
+
+        {/* Mobile sections - moved after the main flex container */}
+        {screenSize < 1024 && (
+          <div className={styles.mobile_layout}>
+            <Statistics />
+            <MentorAvailableSessions
+              noSessions={noSessions}
+              availableSessions={availableSessions}
+              handleBookPayment={handleBookPayment}
+              mentorName={mentorData?.profile?.name || 'Mentor'}
+              mentorId={mentorId}
+            />
+            <GiveawaySessions
+              giveawaySessions={allMentorGiveawaySessions}
+              onBookGiveawaySession={handleBookGiveawaySession}
+              hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
+              isAuthenticated={isAuthenticated}
+            />
+            {/* @ts-ignore */}
+            {isAuthenticated && <PackageBalance />}
+          </div>
+        )}
       </div>
       <BookModal
         bookingInfo={bookingInfo}

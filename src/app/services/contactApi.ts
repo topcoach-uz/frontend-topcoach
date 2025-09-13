@@ -17,6 +17,19 @@ export interface ContactFormResponse {
   message: string;
 }
 
+export interface MentorRequestForm {
+  mentorId: string;
+  mentorName: string;
+  fullName: string;
+  phoneNumber: string;
+  message: string;
+}
+
+export interface MentorRequestResponse {
+  success: boolean;
+  message: string;
+}
+
 export const contactApi = createApi({
   reducerPath: 'contactApi',
   baseQuery,
@@ -30,7 +43,15 @@ export const contactApi = createApi({
       }),
       invalidatesTags: ['ContactForm'],
     }),
+    submitMentorRequest: builder.mutation<MentorRequestResponse, MentorRequestForm>({
+      query: (formData) => ({
+        url: 'contact/mentor-request',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['ContactForm'],
+    }),
   }),
 });
 
-export const { useSubmitFormMutation } = contactApi;
+export const { useSubmitFormMutation, useSubmitMentorRequestMutation } = contactApi;
