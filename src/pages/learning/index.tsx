@@ -445,17 +445,25 @@ const LearningPage: React.FC<LearningPageProps> = () => {
           onClick={() => window.location.reload()}
           style={{ marginTop: '16px' }}
         >
-          Refresh Page
+          {t('Refresh Page')}
         </Button>
       </div>
     );
   }
 
+  // Handle case where course structure is empty or null
   if (!courseStructure || courseStructure.length === 0) {
     return (
       <div className="learning-error">
         <h2>{t('No course content available')}</h2>
-        <p>{t('Course content is being prepared. Please check back later or contact support if you believe this is an error.')}</p>
+        <p>{t('The course content is not available at the moment. Please try refreshing the page or contact support.')}</p>
+        <Button 
+          type="primary" 
+          onClick={() => window.location.reload()}
+          style={{ marginTop: '16px' }}
+        >
+          {t('Refresh Page')}
+        </Button>
       </div>
     );
   }
