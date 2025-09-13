@@ -69,8 +69,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     if (url.includes('drive.google.com/file/d/')) {
       const fileId = url.match(/\/file\/d\/([^\/]+)/)?.[1];
       if (fileId) {
-        // Try different Google Drive embed formats
-        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing`;
+        // Try multiple Google Drive embed formats
+        return `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&embedded=true`;
       }
     }
     return url;
@@ -283,7 +283,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
               <h3>PDF Preview Unavailable</h3>
               <p>
                 {isGoogleDrive 
-                  ? "This Google Drive file is not publicly accessible. Please contact your instructor to make the file public or use the download button below."
+                  ? "This Google Drive file is not publicly accessible. The file needs to be shared with 'Anyone with the link' permission. Please contact your instructor to fix this or use the download button below."
                   : "The PDF cannot be displayed directly due to access restrictions. Please use the buttons above to view or download the PDF."
                 }
               </p>
