@@ -8,6 +8,7 @@ import { StarIcon } from 'src/components/icons';
 import { Flex } from 'antd';
 import { ReviewsSchema } from 'src/app/api/Api';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 interface ReviewProps {
   data?: ReviewsSchema[];
@@ -15,6 +16,7 @@ interface ReviewProps {
 
 export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
   const colors = useColors();
+  const { t } = useTranslation();
 
   // Calculate average rating and total reviews
   const totalReviews = data.length;
@@ -41,7 +43,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
           mt={32}
           mb={16}
         >
-          Reviews
+          {t('mentors.reviews')}
         </CustomText>
         <CustomCard
           className={styles.no_reviews_card}
@@ -52,7 +54,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
             color={colors.colorTextSecondary}
             fontSize={themeFontSize.fontSizeTitle9}
           >
-            No reviews yet
+            {t('mentors.noReviewsYet')}
           </CustomText>
         </CustomCard>
       </div>
@@ -67,7 +69,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
         color={colors.colorText}
         style={{ marginTop: 32, marginBottom: 16 }}
       >
-        Reviews
+        {t('mentors.reviews')}
       </CustomText>
 
       {/* Summary Statistics */}
@@ -91,7 +93,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                 fontSize={14}
                 color={colors.colorTextSecondary}
               >
-                Total Reviews
+                {t('mentors.totalReviews')}
               </CustomText>
             </div>
             <div className={styles.average_rating}>
@@ -116,7 +118,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                 fontSize={14}
                 color={colors.colorTextSecondary}
               >
-                Average Rating
+                {t('mentors.averageRating')}
               </CustomText>
             </div>
           </div>
