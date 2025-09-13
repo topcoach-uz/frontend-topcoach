@@ -216,6 +216,11 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     courseStructure: courseStructure?.length || 0
   });
 
+  // Debug: Log when lesson is selected
+  if (selectedLesson && selectedLesson.id) {
+    console.log('Rendering lesson:', selectedLesson.title, 'Type:', selectedLesson.lessonType);
+  }
+
 
   // Debug: Log selected lesson data
   useEffect(() => {
@@ -283,48 +288,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
 
-  // Safety check: Ensure we have valid data before rendering
-  if (!selectedLesson || !selectedLesson.id) {
-    console.log('No valid lesson selected, showing placeholder');
-    return (
-      <Layout className="learning-page">
-        <Sider 
-          width={320} 
-          collapsedWidth={80}
-          collapsed={collapsed}
-          className="learning-sidebar"
-          theme="light"
-          trigger={null}
-        >
-          {courseStructure && userProgress ? (
-            <CourseSidebar
-              key={`sidebar-${forceUpdate}`}
-              courseStructure={courseStructure}
-              userProgress={userProgress}
-              selectedLessonId={selectedLessonId}
-              onLessonSelect={setSelectedLessonId}
-              collapsed={collapsed}
-              onToggleCollapse={() => setCollapsed(!collapsed)}
-            />
-          ) : (
-            <div className="sidebar-loading">
-              <Spin size="small" />
-              <p>Loading sidebar...</p>
-            </div>
-          )}
-        </Sider>
-        
-        <Layout className="learning-content">
-          <Content className="content-area">
-            <div className="lesson-placeholder">
-              <h2>{t('Select a lesson to start learning')}</h2>
-              <p>{t('Choose a lesson from the sidebar to begin your course.')}</p>
-            </div>
-          </Content>
-        </Layout>
-      </Layout>
-    );
-  }
 
   // Initialize completed lessons from server data
   useEffect(() => {
@@ -459,7 +422,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
 
               <div className="lesson-content">
                 {selectedLesson.lessonType === 'video' && (
-                  <>
+                  <div className="video-content">
                     {/* VdoCipher Player */}
                     {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo && (
                       <VdoCipherPlayer
@@ -569,7 +532,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         }}
                       />
                     )}
-                  </>
+                  </div>
                 )}
                 
                 {selectedLesson.lessonType === 'pdf' && selectedLesson.contentUrl ? (
