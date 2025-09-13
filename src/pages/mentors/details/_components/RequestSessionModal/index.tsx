@@ -107,7 +107,7 @@ export default function RequestSessionModal({
             />
           </Form.Item>
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '32px' }}>
             <Button size="large" onClick={handleCancel}>
               {t('btn.cancel')}
             </Button>
@@ -119,6 +119,13 @@ export default function RequestSessionModal({
               style={{
                 backgroundColor: '#8b0000',
                 borderColor: '#8b0000',
+                transition: 'opacity 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
               }}
             >
               {t('mentors.requestSession.submit')}
