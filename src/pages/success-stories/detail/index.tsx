@@ -27,6 +27,7 @@ export default function SuccessStoriesDetailPage() {
 
   // Get all stories to find the index of current story
   const { response: allStories } = useApi<AxiosResponse<BlogsType>>(
+    // @ts-expect-error types from backend hasn't been properly defined.
     () => api.blogs.findAll()
   );
 
