@@ -90,7 +90,7 @@
   "mentors.requestSession.messageRequired": "Please enter a message",
   "mentors.requestSession.messageMin": "Message must be at least 10 characters",
   "mentors.requestSession.submit": "Send Request",
-  "mentors.requestSession.success": "Your request has been sent successfully! The mentor will contact you soon.",
+  "mentors.requestSession.success": "Your request has been sent successfully! You will be notified when the mentor creates a session for your requested dates.",
   "mentors.requestSession.error": "Failed to send request. Please try again.",
   "mentors.requestSession.button": "Request Session",
   "mentors.requestSession.helpText": "Can't find a suitable time? Request a custom session based on your availability.",
@@ -720,5 +720,5 @@
   "programs.enrollment.totalLessons": "Total Lessons",
   "programs.enrollment.overallProgress": "Overall Progress",
   "programs.enrollment.timeWatched": "Time Watched",
-  "programs.enrollment.continueLearning": "Continue Learning"
+  "programs.enrollment.continueLearning": "Continue Learning",
 }
