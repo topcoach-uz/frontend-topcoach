@@ -82,6 +82,7 @@ export interface Data {
   content: Content;
   author: string;
   media: MediaSchema[];
+  createdAt: string;
 }
 
 export interface Content {
