@@ -20,15 +20,20 @@ export default function MyCard({ title, image, id, hoverText, createdAt }: Props
   const colors = useColors();
   const navigate = useNavigate();
 
-  // Generate random read time only once when component mounts
+  // Generate consistent read time and date based on card ID
   const [readTime, setReadTime] = useState<number>(0);
+  const [publishDate, setPublishDate] = useState<dayjs.Dayjs>(dayjs());
 
   useEffect(() => {
-    setReadTime(Math.floor(Math.random() * 5) + 3); // 3-7 minutes
-  }, []);
-
-  // Use actual blog date or fallback to current date
-  const publishDate = createdAt ? dayjs(createdAt) : dayjs();
+    // Generate consistent read time based on ID (3-7 minutes)
+    const idHash = id ? id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    setReadTime((idHash % 5) + 3);
+    
+    // Generate consistent date based on ID (within last 6 months)
+    const daysAgo = (idHash % 180); // 0-180 days ago
+    const consistentDate = dayjs().subtract(daysAgo, 'day');
+    setPublishDate(consistentDate);
+  }, [id]);
 
   return (
     <div
