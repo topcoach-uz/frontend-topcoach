@@ -1,6 +1,7 @@
 import { Breadcrumb, Flex, Skeleton } from 'antd';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
+import React, { useMemo } from 'react';
 import {
   CurrenciesSchema,
   TranslationDto,
@@ -22,7 +23,7 @@ interface Props extends Partial<UniversitiesSchema> {
   isLiked: boolean;
 }
 
-export default function UnivercityDetailOverview({
+const UnivercityDetailOverview = React.memo(function UnivercityDetailOverview({
   acceptanceRates,
   applicationFees,
   scholarships,
@@ -296,4 +297,6 @@ export default function UnivercityDetailOverview({
       </div>
     </div>
   );
-}
+});
+
+export default UnivercityDetailOverview;

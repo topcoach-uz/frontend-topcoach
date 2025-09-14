@@ -21,40 +21,49 @@ export default function SuccessStoriesPage() {
 
   return (
     <main>
-      <div className={'container ' + styles.container}>
-        <CustomText
-          as="h2"
-          color={colors.colorTextBase}
-          fontSize={32}
-          fontWeight={themeFontWeight.fontWeightSemibold}
-          mb={4}
-        >
-          {t('blog.title')}
-        </CustomText>
-        <CustomText
-          as="p"
-          lineHeight={1.4}
-          color={colors.colorTextSecondary}
-          mb={24}
-        >
-          {t('blog.text')}
-        </CustomText>
-        <ul className={styles.storiesWrapper}>
-          {successStories?.data?.map((story) => (
-            <MyCard
-              image={story.media[0]?.url || ''}
-              key={story.id}
-              hoverText={story.title}
-              id={story.id}
-              title={story?.author ?? ''}
+      <div className={styles.container}>
+        <div className={styles.heroSection}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>
+              SUCCESS STORIES
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Explore inspiring success stories from students who transformed their educational journey with TopCoach.
+            </p>
+          </div>
+        </div>
+        
+        <div className={styles.storiesSection}>
+          {successStories?.data ? (
+            <ul className={styles.storiesWrapper}>
+              {successStories.data.map((story) => (
+                <MyCard
+                  image={story.media[0]?.url || ''}
+                  key={story.id}
+                  hoverText={story.title}
+                  id={story.id}
+                  title={story?.author ?? ''}
+                  createdAt={story.createdAt}
+                />
+              ))}
+            </ul>
+          ) : (
+            <div className={styles.loadingState}>
+              <div className={styles.loadingSpinner}></div>
+              <div>Loading inspiring success stories...</div>
+            </div>
+          )}
+          
+          <div className={styles.paginationWrapper}>
+            <Pagination
+              current={1}
+              total={successStories?.total}
+              pageSize={6}
+              showSizeChanger={false}
+              showQuickJumper
             />
-          ))}
-        </ul>
-        <Pagination
-          style={{ marginTop: 16 }}
-          current={1}
-          total={successStories?.total}
-        />
+          </div>
+        </div>
       </div>
     </main>
   );

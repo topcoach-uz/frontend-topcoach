@@ -8,7 +8,7 @@ import { AiSearchStarsSvg } from 'src/assets/svg';
 import AiSearchTextArea from 'src/components/aiSearchTextArea';
 import { CustomCard } from 'src/components/cards';
 import { CustomButton, CustomText } from 'src/components/common';
-import CardSkeletons from 'src/components/common/cardSkeletons';
+import UniversityCardSkeletons from 'src/components/common/universityCardSkeletons';
 import MultiAiSearchTextArea from 'src/components/multiAiSeach';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useParamsHook from 'src/hooks/params';
@@ -192,9 +192,11 @@ export default function UniversitySection({
       {aiSearchLoading && <Loader height={80} />}
       {/* ai search results */}
 
-      {aiUni.length === 0 && formattedLocationData.length > 0 ? (
+      {aiUni.length === 0 ? (
         <ul className={styles.card_list}>
-          {!isLoading ? (
+            {isLoading ? (
+              <UniversityCardSkeletons />
+            ) : formattedLocationData.length > 0 ? (
             formattedLocationData?.map((university, index) => (
               // @ts-ignore
               <UniversityCard
@@ -210,7 +212,9 @@ export default function UniversitySection({
               />
             ))
           ) : (
-            <CardSkeletons />
+            <div style={{ textAlign: 'center', padding: '40px', color: colors.colorTextDescription }}>
+              No universities found. Try adjusting your filters.
+            </div>
           )}
         </ul>
       ) : (
@@ -230,7 +234,7 @@ export default function UniversitySection({
         </div>
       )}
 
-      {aiUni.length === 0 && formattedLocationData.length > 0 ? (
+      {aiUni.length === 0 && !isLoading && formattedLocationData.length > 0 ? (
         <Pagination
           style={{ marginTop: 16 }}
           current={page}
@@ -241,9 +245,7 @@ export default function UniversitySection({
           }}
           total={totalCount}
         />
-      ) : (
-        ''
-      )}
+      ) : null}
     </div>
   );
 }

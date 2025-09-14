@@ -1,0 +1,126 @@
+@import '/src/styles/variables.scss';
+
+// Use exact same classes as real university card
+.card {
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+.skeleton {
+  width: 100% !important;
+  height: 180px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden;
+}
+
+.description_wrapper {
+  padding: 16px;
+}
+
+.like_button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 6px;
+  background-color: $red1;
+  cursor: pointer;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.majors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.majorFlex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.major {
+  color: $colorText;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid $colorBorder;
+  background: $colorFillQuaternary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+}
+
+// Remove black dots from skeleton components
+:global(.ant-skeleton) {
+  .ant-skeleton-content {
+    .ant-skeleton-title,
+    .ant-skeleton-paragraph li,
+    .ant-skeleton-input,
+    .ant-skeleton-button {
+      background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.06) 25%, 
+        rgba(0, 0, 0, 0.15) 50%, 
+        rgba(0, 0, 0, 0.06) 75%
+      ) !important;
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  // Remove any black dots or bullets
+  .ant-skeleton-paragraph {
+    li {
+      list-style: none !important;
+      &::before {
+        display: none !important;
+      }
+    }
+  }
+  
+  // Override any default bullet points
+  .ant-skeleton-content .ant-skeleton-paragraph li::marker {
+    display: none !important;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Additional overrides to remove any black dots
+:global(.ant-skeleton-input) {
+  &::before,
+  &::after {
+    display: none !important;
+  }
+}
+
+:global(.ant-skeleton-content .ant-skeleton-paragraph) {
+  li {
+    &::before,
+    &::after {
+      content: none !important;
+    }
+  }
+}
