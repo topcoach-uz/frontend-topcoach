@@ -25,10 +25,10 @@ export default function SuccessStoriesPage() {
         <div className={styles.heroSection}>
           <div className={styles.heroContent}>
             <h1 className={styles.heroTitle}>
-              SUCCESS STORIES
+              {t('successStories.title')}
             </h1>
             <p className={styles.heroSubtitle}>
-              Explore inspiring success stories from students who transformed their educational journey with TopCoach.
+              {t('successStories.subtitle')}
             </p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function SuccessStoriesPage() {
         <div className={styles.storiesSection}>
           {successStories?.data ? (
             <ul className={styles.storiesWrapper}>
-              {successStories.data.map((story) => (
+              {successStories.data.map((story, index) => (
                 <MyCard
                   image={story.media[0]?.url || ''}
                   key={story.id}
@@ -44,6 +44,7 @@ export default function SuccessStoriesPage() {
                   id={story.id}
                   title={story?.author ?? ''}
                   createdAt={story.createdAt}
+                  index={index}
                 />
               ))}
             </ul>

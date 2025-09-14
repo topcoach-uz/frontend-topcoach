@@ -14,7 +14,7 @@ import dayjs from 'dayjs';
 export default function SuccessStoriesDetailPage() {
   const colors = useColors();
   const params = useParams();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { id } = params;
 
   const { response: storyData } = useApi<AxiosResponse<IBlog>>(
@@ -23,6 +23,27 @@ export default function SuccessStoriesDetailPage() {
     [id],
     !!id
   );
+
+  // Get all stories to find the index of current story
+  const { response: allStories } = useApi<AxiosResponse<BlogsType>>(
+    // @ts-expect-error types from backend hasn't been properly defined.
+    () => api.blogs.findAll()
+  );
+
+  // Find the index of current story
+  const storyIndex = allStories?.data?.data?.findIndex(story => story.id === id) ?? 0;
+  
+  // Get quote, title, read time, and date based on story index
+  const quotes = t('successStories.quotes', { returnObjects: true }) as string[];
+  const titles = t('successStories.titles', { returnObjects: true }) as string[];
+  const readTimes = [3, 4, 5, 6, 7, 8, 9, 10];
+  const dateOffsets = [15, 30, 45, 60, 90, 120, 150, 180];
+  
+  const quote = quotes[storyIndex % quotes.length];
+  const displayTitle = titles[storyIndex % titles.length];
+  const readTime = readTimes[storyIndex % readTimes.length];
+  const daysAgo = dateOffsets[storyIndex % dateOffsets.length];
+  const publishDate = dayjs().subtract(daysAgo, 'day');
 
   return (
     <main>
@@ -36,17 +57,17 @@ export default function SuccessStoriesDetailPage() {
       <div className={styles.heroSection}>
         <div className={styles.heroContent}>
           <div className={styles.categoryBadge}>
-            SUCCESS STORIES
+            {t('successStories.title')}
           </div>
           <h1 className={styles.heroTitle}>
-            {storyData?.data.title}
+            {displayTitle}
           </h1>
           <div className={styles.metadata}>
             <span className={styles.publishDate}>
-              {dayjs(storyData?.data.createdAt).format('MMM DD, YYYY')}
+              {publishDate.format('MMM DD, YYYY')}
             </span>
             <span className={styles.readTime}>
-              5 min read
+              {readTime} min read
             </span>
             <span className={styles.author}>
               {storyData?.data.author}
@@ -60,7 +81,7 @@ export default function SuccessStoriesDetailPage() {
           <div className={styles.featuredImage}>
             <div className={styles.quoteBubble}>
               <p className={styles.quote}>
-                "I never gave up on my dreams, and today I see the result of my hard work."
+                "{quote}"
               </p>
               <div className={styles.attribution}>
                 {storyData?.data.author}

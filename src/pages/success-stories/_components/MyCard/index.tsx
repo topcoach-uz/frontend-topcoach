@@ -5,6 +5,7 @@ import { CustomText } from 'src/components/common';
 import useColors from 'src/hooks/useColors';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   title?: string;
@@ -13,49 +14,48 @@ interface Props {
   image?: string;
   id?: string;
   createdAt?: string;
+  index?: number; // Add index prop for quote assignment
 }
 
-export default function MyCard({ title, image, id, hoverText, createdAt }: Props) {
+export default function MyCard({ title, image, id, hoverText, createdAt, index = 0 }: Props) {
   const [hovered, setHovered] = useState<boolean>(false);
   const colors = useColors();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Generate consistent read time, date, and quote based on card ID
   const [readTime, setReadTime] = useState<number>(0);
   const [publishDate, setPublishDate] = useState<dayjs.Dayjs>(dayjs());
   const [description, setDescription] = useState<string>('');
+  const [displayTitle, setDisplayTitle] = useState<string>('');
 
-  const inspirationalQuotes = [
-    "I never gave up on my dreams, and today I see the result of my hard work.",
-    "Turning challenges into milestones - that's what TopCoach taught me.",
-    "The biggest changes and opportunities in my life began at TopCoach, where I realized I was ready for greater success.",
-    "With the right guidance and determination, anything is possible.",
-    "TopCoach didn't just help me get into university - it helped me discover my potential.",
-    "Every setback was a setup for a comeback, thanks to the support I received.",
-    "The journey was tough, but the destination made it all worth it.",
-    "I learned that success isn't about perfection, it's about progress and persistence."
-  ];
+  // Get translated data from i18n
+  const inspirationalQuotes = t('successStories.quotes', { returnObjects: true }) as string[];
+  const storyTitles = t('successStories.titles', { returnObjects: true }) as string[];
+  const readTimes = [3, 4, 5, 6, 7, 8, 9, 10];
+  const dateOffsets = [15, 30, 45, 60, 90, 120, 150, 180];
 
   useEffect(() => {
     if (!id) return;
     
-    // Generate consistent read time based on ID (3-7 minutes)
-    const idHash = id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    setReadTime((idHash % 5) + 3);
+    // Use stored data based on index for consistency
+    const quoteIndex = index % inspirationalQuotes.length;
+    const titleIndex = index % storyTitles.length;
+    const readTimeIndex = index % readTimes.length;
+    const dateOffsetIndex = index % dateOffsets.length;
     
-    // Generate consistent date based on ID (within last 6 months)
-    const daysAgo = (idHash % 180); // 0-180 days ago
+    // Set values from stored data
+    setReadTime(readTimes[readTimeIndex]);
+    setDescription(inspirationalQuotes[quoteIndex]);
+    setDisplayTitle(storyTitles[titleIndex]);
+    
+    // Generate consistent date based on stored offset
+    const daysAgo = dateOffsets[dateOffsetIndex];
     const consistentDate = dayjs().subtract(daysAgo, 'day');
     setPublishDate(consistentDate);
     
-    // Generate consistent quote based on both ID and title for more variety
-    const titleHash = title ? title.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
-    const combinedHash = idHash + titleHash;
-    const quoteIndex = Math.abs(combinedHash) % inspirationalQuotes.length;
-    
-    console.log(`Card ID: ${id}, Title: ${title}, Combined Hash: ${combinedHash}, Quote Index: ${quoteIndex}, Quote: ${inspirationalQuotes[quoteIndex]}`);
-    setDescription(inspirationalQuotes[quoteIndex]);
-  }, [id, title]);
+    console.log(`Card Index: ${index}, Title: ${storyTitles[titleIndex]}, Quote: ${inspirationalQuotes[quoteIndex]}, Read Time: ${readTimes[readTimeIndex]} min, Date Offset: ${daysAgo} days`);
+  }, [id, index, inspirationalQuotes, storyTitles, readTimes, dateOffsets]);
 
   return (
     <div
@@ -70,12 +70,12 @@ export default function MyCard({ title, image, id, hoverText, createdAt }: Props
       
       <div className={styles.textContainer}>
         <div className={styles.category}>
-          SUCCESS STORIES
+          {t('successStories.title')}
         </div>
         
-        <h3 className={styles.title}>
-          {hoverText}
-        </h3>
+            <h3 className={styles.title}>
+              {displayTitle}
+            </h3>
         <p className={styles.description}>
           {description}
         </p>

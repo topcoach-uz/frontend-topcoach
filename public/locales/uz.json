@@ -1,8 +1,30 @@
 {
-  "blog.description": "Eng muhim voqealarimizni o‘rganing va ilhom oling",
+  "blog.description": "Eng muhim voqealarimizni o'rganing va ilhom oling",
   "blog.previous": "Oldingi tadbirlar",
-  "blog.text": "Muvaffaqiyatli mutaxassislar va innovatorlarning ilhomlantiruvchi hikoyalari va qimmatli fikrlarini o‘rganing.",
+  "blog.text": "Muvaffaqiyatli mutaxassislar va innovatorlarning ilhomlantiruvchi hikoyalari va qimmatli fikrlarini o'rganing.",
   "blog.title": "Bloglar va muvaffaqiyat natijalarimiz",
+  "successStories.title": "Muvaffaqiyat hikoyalari",
+  "successStories.subtitle": "TopCoach bilan ta'lim yo'lini o'zgartirgan talabalararning ilhomlantiruvchi muvaffaqiyat hikoyalarini o'rganing.",
+  "successStories.quotes": [
+    "Men hech qachon orzularimdan voz kechmadim va bugun o'z mehnatimning natijasini ko'raman.",
+    "Qiyinchiliklarni muvaffaqiyat bosqichlariga aylantirish - buni meni TopCoach o'rgatdi.",
+    "Hayotimdagi eng katta o'zgarishlar va imkoniyatlar TopCoach'da boshlandi, u yerda men katta muvaffaqiyatga tayyor ekanligimni tushundim.",
+    "To'g'ri yo'l-yo'riq va qat'iyat bilan hamma narsa mumkin.",
+    "TopCoach meni nafaqat universitetga kirishga yordam berdi - balki potentsialimni ochishga ham yordam berdi.",
+    "Har bir muvaffaqiyatsizlik qaytadan qaytish uchun tayyorgarlik edi, olgan yordam tufayli.",
+    "Yo'l qiyin edi, lekin manzil barchasiga arziydi.",
+    "Men muvaffaqiyatning mukammallikda emas, balki taraqqiyot va qat'iyatda ekanligini o'rgandim."
+  ],
+  "successStories.titles": [
+    "Rad etilishdan Duke universitetigacha: $270,000 stipendiya yo'li",
+    "To'siqlarni buzish: Qanday qilib men orzu qilgan universitetimga kirdim",
+    "Shubhadan muvaffaqiyatga: Mening TopCoach'dagi o'zgarish hikoyam",
+    "Barcha imkoniyatlarga qarshi: Orzularni haqiqatga aylantirish",
+    "Qat'iyatning kuchi: Mening universitetga qabul qilinish muvaffaqiyatim",
+    "Qiyinchiliklardan stipendiyalarga: Talaba yo'li",
+    "O'zimga ishonib: TopCoach qanday qilib hammasini o'zgartirdi",
+    "Kam o'tilgan yo'l: Mening akademik muvaffaqiyatga yo'lim"
+  ],
   "breadCrumb.home": "Bosh sahifa",
   "breadCrumb.mentors": "Mentorlar",
   "breadCrumb.mentorsInfo": "Mentor ma‘lumotlari",
