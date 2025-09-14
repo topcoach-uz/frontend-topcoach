@@ -9,16 +9,13 @@ i18n
   .use(initReactI18next) // Bind to React
   .init({
     fallbackLng: 'en', // Default language
-    debug: false, // Set to false in production
+    debug: true, // Set to false in production
     lng: localStorage.getItem('i18nextLng') || 'en', // Load from localStorage
     backend: {
       loadPath: '/locales/{{lng}}.json', // Path to translation files
     },
     interpolation: {
       escapeValue: false, // React already escapes by default
-    },
-    react: {
-      useSuspense: false, // Disable suspense to prevent loading issues
     },
   });
 

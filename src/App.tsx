@@ -11,28 +11,12 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [isI18nReady, setIsI18nReady] = useState(false);
-
-  useEffect(() => {
-    // Wait for i18n to be ready
-    if (i18n.isInitialized) {
-      setIsI18nReady(true);
-    } else {
-      i18n.on('initialized', () => {
-        setIsI18nReady(true);
-      });
-    }
-  }, []);
 
   // useEffect(() => {
   //   waitForBackendHealth().catch(() =>
   //     setError('Server is starting, please try again in a moment.')
   //   );
   // }, []);
-
-  if (!isI18nReady) {
-    return <div>Loading translations...</div>;
-  }
 
   return (
     <ErrorBoundary>
