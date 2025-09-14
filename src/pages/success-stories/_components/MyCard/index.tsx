@@ -20,20 +20,42 @@ export default function MyCard({ title, image, id, hoverText, createdAt }: Props
   const colors = useColors();
   const navigate = useNavigate();
 
-  // Generate consistent read time and date based on card ID
+  // Generate consistent read time, date, and quote based on card ID
   const [readTime, setReadTime] = useState<number>(0);
   const [publishDate, setPublishDate] = useState<dayjs.Dayjs>(dayjs());
+  const [description, setDescription] = useState<string>('');
+
+  const inspirationalQuotes = [
+    "I never gave up on my dreams, and today I see the result of my hard work.",
+    "Turning challenges into milestones - that's what TopCoach taught me.",
+    "The biggest changes and opportunities in my life began at TopCoach, where I realized I was ready for greater success.",
+    "With the right guidance and determination, anything is possible.",
+    "TopCoach didn't just help me get into university - it helped me discover my potential.",
+    "Every setback was a setup for a comeback, thanks to the support I received.",
+    "The journey was tough, but the destination made it all worth it.",
+    "I learned that success isn't about perfection, it's about progress and persistence."
+  ];
 
   useEffect(() => {
+    if (!id) return;
+    
     // Generate consistent read time based on ID (3-7 minutes)
-    const idHash = id ? id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    const idHash = id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
     setReadTime((idHash % 5) + 3);
     
     // Generate consistent date based on ID (within last 6 months)
     const daysAgo = (idHash % 180); // 0-180 days ago
     const consistentDate = dayjs().subtract(daysAgo, 'day');
     setPublishDate(consistentDate);
-  }, [id]);
+    
+    // Generate consistent quote based on both ID and title for more variety
+    const titleHash = title ? title.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    const combinedHash = idHash + titleHash;
+    const quoteIndex = Math.abs(combinedHash) % inspirationalQuotes.length;
+    
+    console.log(`Card ID: ${id}, Title: ${title}, Combined Hash: ${combinedHash}, Quote Index: ${quoteIndex}, Quote: ${inspirationalQuotes[quoteIndex]}`);
+    setDescription(inspirationalQuotes[quoteIndex]);
+  }, [id, title]);
 
   return (
     <div
@@ -55,7 +77,7 @@ export default function MyCard({ title, image, id, hoverText, createdAt }: Props
           {hoverText}
         </h3>
         <p className={styles.description}>
-          {title}'s journey showcases the power of determination and quality education.
+          {description}
         </p>
       </div>
       
