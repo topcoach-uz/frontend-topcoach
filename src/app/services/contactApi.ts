@@ -22,6 +22,7 @@ export interface MentorRequestForm {
   mentorName: string;
   fullName: string;
   phoneNumber: string;
+  preferredDates: string;
   message: string;
 }
 
