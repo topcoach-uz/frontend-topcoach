@@ -1,4 +1,4 @@
-import { Flex } from 'antd';
+import { Flex, message } from 'antd';
 import { CustomCard } from 'src/components/cards';
 import { CustomButton, CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
@@ -7,6 +7,7 @@ import styles from './mentor_sessions.module.scss';
 import { useTranslation } from 'react-i18next';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import { useState } from 'react';
+import { useTypedSelector } from 'src/app/store';
 import RequestSessionModal from '../RequestSessionModal';
 
 interface Props {
@@ -28,10 +29,23 @@ export default function MentorAvailableSessions({
   const { t } = useTranslation();
   const { screenSize } = useScreenSize();
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
 
   const thiryMinutSession = availableSessions.filter(
     (session) => session.duration === 30
   );
+
+  const handleRequestSession = () => {
+    if (!isAuthenticated) {
+      message.warning(t('mentors.requestSession.authRequired'));
+      // Store the current mentor page URL for redirect after login
+      const currentUrl = window.location.pathname + window.location.search;
+      localStorage.setItem('redirectAfterLogin', currentUrl);
+      window.location.href = '/auth/signin';
+      return;
+    }
+    setRequestModalOpen(true);
+  };
 
   return (
     <CustomCard shadowed={false} bordered borderRadius={16}>
@@ -125,7 +139,7 @@ export default function MentorAvailableSessions({
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = 'none';
           }}
-          onClick={() => setRequestModalOpen(true)}
+          onClick={handleRequestSession}
         >
           {t('mentors.requestSession.button')}
         </CustomButton>

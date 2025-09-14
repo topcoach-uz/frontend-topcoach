@@ -51,7 +51,14 @@ export default function GoogleAuthenticationPage() {
   }, [exchangeSuccess]);
 
   if (data?.profile.profileComplete) {
-    window.location.href = '/';
+    // Check for stored redirect URL
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+      localStorage.removeItem('redirectAfterLogin');
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = '/';
+    }
   }
 
   const [selected, setSelected] = useState<UserType>(UserRole.Student);
@@ -82,6 +89,8 @@ export default function GoogleAuthenticationPage() {
       dispatch(updateProfile({ profile: { role: UserRole.Mentor } }))
         .unwrap()
         .then(() => {
+          // For mentor signup, we don't redirect to the stored URL yet
+          // as they need to complete their profile first
           navigate('/auth/signup/mentor?step=1');
         })
         .catch((err) => {
@@ -99,7 +108,14 @@ export default function GoogleAuthenticationPage() {
       dispatch(updateProfile({ profile: profileUpdate as any }))
         .unwrap()
         .then(() => {
-          navigate('/');
+          // Check for stored redirect URL
+          const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          if (redirectUrl) {
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectUrl;
+          } else {
+            navigate('/');
+          }
         })
         .catch((err) => {
           message.error(err.message, 10);

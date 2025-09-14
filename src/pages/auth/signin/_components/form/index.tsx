@@ -73,7 +73,15 @@ export default function SigninForm() {
           );
           api.instance.defaults.headers['Authorization'] =
             `Bearer ${access_token}`;
-          window.location.href = '/';
+          
+          // Check for stored redirect URL
+          const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          if (redirectUrl) {
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectUrl;
+          } else {
+            window.location.href = '/';
+          }
         }
       })
       .catch((err: any) => {

@@ -259,7 +259,14 @@ export default function useMentorSignup() {
           });
 
           if (!rejected) {
-            navigate('/'); // Proceed only if all promises are resolved successfully
+            // Check for stored redirect URL
+            const redirectUrl = localStorage.getItem('redirectAfterLogin');
+            if (redirectUrl) {
+              localStorage.removeItem('redirectAfterLogin');
+              window.location.href = redirectUrl;
+            } else {
+              navigate('/');
+            }
             dispatch(
               // @ts-ignore
               setProfileImage(results[0]?.value?.data?.media?.url)

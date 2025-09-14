@@ -27,7 +27,8 @@ export default function RequestSessionModal({
         mentorName,
         fullName: values.fullName,
         phoneNumber: values.phoneNumber,
-        message: values.message,
+        preferredDates: values.preferredDates,
+        message: '', // Empty message since we removed the field
       }).unwrap();
       
       message.success(t('mentors.requestSession.success'));
@@ -56,6 +57,21 @@ export default function RequestSessionModal({
         <p style={{ marginBottom: '24px', color: '#666' }}>
           {t('mentors.requestSession.description')}
         </p>
+
+        <div style={{ 
+          background: '#e8f4fd', 
+          padding: '16px', 
+          borderRadius: '8px', 
+          marginBottom: '24px',
+          borderLeft: '4px solid #1890ff'
+        }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#1890ff', fontWeight: '500' }}>
+            📅 <strong>{t('mentors.requestSession.notificationTitle')}</strong>
+          </p>
+          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#666' }}>
+            {t('mentors.requestSession.notificationText')}
+          </p>
+        </div>
 
         <Form
           form={form}
@@ -92,17 +108,17 @@ export default function RequestSessionModal({
           </Form.Item>
 
           <Form.Item
-            name="message"
-            label={t('mentors.requestSession.message')}
+            name="preferredDates"
+            label={t('mentors.requestSession.preferredDates')}
             rules={[
-              { required: true, message: t('mentors.requestSession.messageRequired') },
-              { min: 10, message: t('mentors.requestSession.messageMin') }
+              { required: true, message: t('mentors.requestSession.preferredDatesRequired') },
+              { min: 5, message: t('mentors.requestSession.preferredDatesMin') }
             ]}
           >
             <Input.TextArea
-              placeholder={t('mentors.requestSession.messagePlaceholder')}
-              rows={4}
-              maxLength={500}
+              placeholder={t('mentors.requestSession.preferredDatesPlaceholder')}
+              rows={3}
+              maxLength={200}
               showCount
             />
           </Form.Item>

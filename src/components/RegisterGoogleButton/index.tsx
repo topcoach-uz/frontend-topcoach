@@ -17,6 +17,9 @@ export default function RegisterGoogleButton({
       className={styles.google_button}
       icon={<GoogleIcon />}
       onClick={() => {
+        // Store current URL for redirect after Google auth
+        const currentUrl = window.location.pathname + window.location.search;
+        localStorage.setItem('redirectAfterLogin', currentUrl);
         window.location.href = `${baseUrl}/auth/google`;
       }}
     >
