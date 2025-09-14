@@ -10,6 +10,7 @@ import { api } from 'src/app/api';
 import { AxiosResponse } from 'axios';
 import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
 import dayjs from 'dayjs';
+import { BlogsType } from '../index';
 
 export default function SuccessStoriesDetailPage() {
   const colors = useColors();
@@ -26,12 +27,11 @@ export default function SuccessStoriesDetailPage() {
 
   // Get all stories to find the index of current story
   const { response: allStories } = useApi<AxiosResponse<BlogsType>>(
-    // @ts-expect-error types from backend hasn't been properly defined.
     () => api.blogs.findAll()
   );
 
   // Find the index of current story
-  const storyIndex = allStories?.data?.data?.findIndex(story => story.id === id) ?? 0;
+  const storyIndex = allStories?.data?.data?.findIndex((story: any) => story.id === id) ?? 0;
   
   // Get quote, title, read time, and date based on story index
   const quotes = t('successStories.quotes', { returnObjects: true }) as string[];
