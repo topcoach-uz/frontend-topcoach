@@ -238,7 +238,8 @@ export default function MentorDetailsPage() {
               display: 'flex',
               flexDirection: 'column',
               gap: '24px',
-              alignSelf: 'flex-start'
+              alignSelf: 'flex-start',
+              marginTop: '-250px'
             }}>
               <Statistics />
               <MentorAvailableSessions

@@ -40,7 +40,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
           fontWeight={themeFontWeight.fontWeightSemibold}
           fontSize={themeFontSize.fontSizeTitle5}
           color={colors.colorText}
-          mt={32}
+          mt={10}
           mb={16}
         >
           {t('mentors.reviews')}
@@ -67,7 +67,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        style={{ marginTop: 32, marginBottom: 16 }}
+        style={{ marginTop: 16, marginBottom: 16 }}
       >
         {t('mentors.reviews')}
       </CustomText>
