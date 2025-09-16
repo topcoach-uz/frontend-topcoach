@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
-import { api } from 'src/app/api';
 import { useTypedSelector } from 'src/app/store';
-import CardSkeletons from 'src/components/common/cardSkeletons';
 import MainTitleDescription from 'src/components/mainTitleDesc';
-import useApi from 'src/hooks/useApi';
 import { getLatestCreatedImg } from 'src/utils';
 import MentorCard from './_components/mentorCard';
 import styles from './mentors.module.scss';
@@ -11,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 import CustomSelect from 'src/components/common/select';
 import { MentorExperienceLevel, MentorsResponseDto } from 'src/app/api/Api';
 import { useGetGiveawaySessionsQuery } from 'src/app/services/sessions';
+import { useGetMentorsQuery } from 'src/app/services/mentors';
 
 export default function MentorsPage() {
-  const { response, isLoading, isError } = useApi(() => api.users.getMentors());
+  const { data: mentorsData, isLoading, isError } = useGetMentorsQuery();
   const [selectedLevel, setSelectedLevel] = useState('all');
   const { isAuthenticated, profile: meData } = useTypedSelector(
     (state) => state.auth
@@ -62,9 +60,9 @@ export default function MentorsPage() {
   }
 
   const filteredMentors = useMemo(() => {
-    if (!response?.data) return [];
+    if (!mentorsData) return [];
     
-    let mentors = response.data;
+    let mentors = mentorsData;
     
     if (selectedLevel !== 'all') {
       mentors = mentors.filter(
@@ -73,7 +71,7 @@ export default function MentorsPage() {
     }
     
     return mentors;
-  }, [response?.data, selectedLevel]);
+  }, [mentorsData, selectedLevel]);
 
   const sortedMentors = useMemo(() => {
     return [...filteredMentors].sort((a, b) => {
@@ -116,39 +114,35 @@ export default function MentorsPage() {
             />
           </div>
           <div className={styles.cards}>
-            {!isLoading ? (
-              sortedMentors.map((mentor, index) => {
-                const profileImage = getLatestCreatedImg(mentor.profile.media);
-                
-                // Calculate giveaway sessions count for this mentor
-                const giveawaySessionsCount = giveawaySessions?.filter(
-                  session => (session.mentor as any)?.id === mentor.id && !session.giveawayBookedBy
-                ).length || 0;
+            {sortedMentors.map((mentor, index) => {
+              const profileImage = getLatestCreatedImg(mentor.profile.media);
+              
+              // Calculate giveaway sessions count for this mentor
+              const giveawaySessionsCount = giveawaySessions?.filter(
+                session => (session.mentor as any)?.id === mentor.id && !session.giveawayBookedBy
+              ).length || 0;
 
-                return (
-                  <MentorCard
-                    key={mentor.id}
-                    id={mentor.id}
-                    name={mentor.profile.name}
-                    imgSrc={profileImage}
-                    rating={mentor.profile.overallRating}
-                    sessionNumber={mentor?.numberOfSessions}
-                    major={mentor?.mentorProfile?.major}
-                    university={
-                      // @ts-ignore
-                      mentor?.selectedUniversities?.[0].name ??
-                      mentor?.mentorProfile?.university
-                    }
-                    level={mentor.mentorProfile?.level}
-                    availableSessions={mentor.sessionStats?.availableSessions || 0}
-                    isGiveaway={giveawayMentorIds.includes(mentor.id)}
-                    giveawaySessionsCount={giveawaySessionsCount}
-                  />
-                );
-              })
-            ) : (
-              <CardSkeletons />
-            )}
+              return (
+                <MentorCard
+                  key={mentor.id}
+                  id={mentor.id}
+                  name={mentor.profile.name}
+                  imgSrc={profileImage}
+                  rating={mentor.profile.overallRating}
+                  sessionNumber={mentor?.numberOfSessions}
+                  major={mentor?.mentorProfile?.major}
+                  university={
+                    // @ts-ignore
+                    mentor?.selectedUniversities?.[0].name ??
+                    mentor?.mentorProfile?.university
+                  }
+                  level={mentor.mentorProfile?.level}
+                  availableSessions={mentor.sessionStats?.availableSessions || 0}
+                  isGiveaway={giveawayMentorIds.includes(mentor.id)}
+                  giveawaySessionsCount={giveawaySessionsCount}
+                />
+              );
+            })}
           </div>
           {/* <Pagination
             total={response?.data?.length}

@@ -1,9 +1,17 @@
-import { PaymentPlansSchema, UserDetailsResponseDto } from 'src/app/api/Api';
+import { PaymentPlansSchema, UserDetailsResponseDto, MentorsResponseDto } from 'src/app/api/Api';
 import { RtkApi } from '../api';
 import { IBalance } from 'src/app/slices/mentorSlice';
 
 export const mentorApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
+    getMentors: build.query<MentorsResponseDto[], void>({
+      query: () => ({
+        url: `/users/mentors`,
+      }),
+      providesTags: ['GetMentors'],
+      // Keep data in cache for 5 minutes for faster subsequent loads
+      keepUnusedDataFor: 300,
+    }),
     getMentorDetail: build.query<UserDetailsResponseDto, { mentorId: string }>({
       query: ({ mentorId }) => ({
         url: `/users/user/${mentorId}`,
@@ -36,6 +44,7 @@ export const mentorApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetMentorsQuery,
   useGetMentorDetailQuery,
   useGetMentorBalanceQuery,
   useGetPlansQuery,

@@ -58,54 +58,49 @@ export default function MentorCard({
     >
       <div className={styles.imgContainer}>
         <div className={styles.img}>
-          {imgSrc ? <img src={imgSrc} alt="img error" loading="lazy" /> : <Skeleton.Image />}
+          {imgSrc ? <img src={imgSrc} alt="img error" loading="eager" /> : <Skeleton.Image />}
         </div>
         
         {/* Coach level badge */}
         <CustomCard
           bgColor={
             level === 'expert'
-              ? themeColors.light.red2
+              ? '#FF8C42' // Vibrant orange for expert
               : level === 'senior'
-                ? themeColors.light.blue2
-                : level == 'junior'
-                  ? themeColors.light.green2
-                  : themeColors.light.gold2
+                ? '#4A90E2' // Professional blue for senior
+                : level === 'junior'
+                  ? '#7ED321' // Fresh green for junior
+                  : '#F4D03F' // Yellowish for probono
           }
-          padding={8}
           className={styles.coach}
         >
           <CustomText
-            fontSize={14}
+            fontSize={12}
             fontWeight={500}
-            color={
-              level === 'expert'
-                ? themeColors.light.red8
-                : level === 'senior'
-                  ? themeColors.light.blue8
-                  : level === 'junior'
-                    ? themeColors.light.green8
-                    : themeColors.light.gold8
-            }
+            color={level === 'probono' ? "#333333" : "#ffffff"}
+            style={{ 
+              letterSpacing: '0.2px'
+            }}
           >
-            {level} coach
+            {level} Coach
           </CustomText>
         </CustomCard>
 
         {/* Giveaway badge */}
         {isGiveaway && (
           <CustomCard
-            bgColor="#FF6B35"
-            padding={8}
+            bgColor="#FF8C42"
             className={styles.giveaway}
           >
             <CustomText
-              fontSize={14}
-              fontWeight={600}
+              fontSize={10}
+              fontWeight={500}
               color="#ffffff"
-              style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{ 
+                letterSpacing: '0.2px'
+              }}
             >
-              🎁 Giveaway
+              Giveaway
             </CustomText>
           </CustomCard>
         )}

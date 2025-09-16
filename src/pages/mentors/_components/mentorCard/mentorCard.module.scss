@@ -8,7 +8,7 @@
   border-radius: 16px !important;
   overflow: hidden;
   transition: all 0.2s ease-in-out;
-  min-height: 420px;
+  min-height: 480px;
   display: flex;
   flex-direction: column;
 
@@ -29,7 +29,7 @@
   height: 320px;
   overflow: hidden;
   flex-shrink: 0;
-  padding: 12px;
+  padding: 6px;
 }
 
 .img {
@@ -56,14 +56,18 @@
     object-fit: cover;
     transition: 0.3s ease-in-out all;
     filter: brightness(0.9);
+    // Ensure immediate loading
+    image-rendering: optimizeSpeed;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 
 .nameOverlay {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
   padding: 20px;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   display: flex;
@@ -73,35 +77,91 @@
 }
 
 .coach {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 12;
-  text-transform: capitalize;
-  border-radius: 8px;
-  font-weight: 600;
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  z-index: 12 !important;
+  text-transform: capitalize !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  min-width: 70px !important;
+  text-align: center !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  // Gradient overlay for extra depth
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+    pointer-events: none;
+  }
 }
 
 .giveaway {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 12;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-  animation: pulse 2s infinite;
+  position: absolute !important;
+  top: 16px !important;
+  left: 16px !important;
+  z-index: 12 !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 1px 4px rgba(255, 71, 87, 0.2), 0 1px 2px rgba(255, 71, 87, 0.1) !important;
+  backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  min-width: 70px !important;
+  text-align: center !important;
+  animation: pulse 2s infinite !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5), 0 4px 12px rgba(255, 71, 87, 0.3);
+  }
+  
+  // Gradient overlay for extra depth
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+    pointer-events: none;
+  }
 }
 
 @keyframes pulse {
   0% {
     transform: scale(1);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3), 0 1px 4px rgba(231, 76, 60, 0.2);
   }
   50% {
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4), 0 2px 6px rgba(231, 76, 60, 0.3);
   }
   100% {
     transform: scale(1);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3), 0 1px 4px rgba(231, 76, 60, 0.2);
   }
 }
 
@@ -109,7 +169,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 16px;
   background-color: #fafafa;
 }
 
@@ -127,7 +187,7 @@
 
 .rates {
   display: flex;
-  padding: 0 20px 20px 20px;
+  padding: 0 16px 16px 16px;
   margin-top: auto;
 }
 
