@@ -9,6 +9,7 @@ export const apiTagTypes = [
   'GetMentorBalance',
   'GetMentorDetail',
   'CourseEnrollment',
+  'GetMentors',
   'ProgramPricing',
   'CourseLearning',
   'CourseProgress',
