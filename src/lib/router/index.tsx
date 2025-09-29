@@ -95,6 +95,7 @@ const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"))
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
+const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -149,6 +150,12 @@ function RouterProvider() {
                 path="/learning/:lessonId" 
                 element={
                   isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
+              <Route 
+                path="/student-hub/*" 
+                element={
+                  isAuthenticated ? <StudentHubRoutesLazy /> : <Navigate to="/auth/signin" replace />
                 } 
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
@@ -207,6 +214,10 @@ function RouterProvider() {
               />
               <Route
                 path="/auth/google"
+                element={<GoogleAuthenticationPageLazy />}
+              />
+              <Route
+                path="/auth/google/callback"
                 element={<GoogleAuthenticationPageLazy />}
               />
               <Route

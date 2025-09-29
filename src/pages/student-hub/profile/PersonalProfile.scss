@@ -1,0 +1,685 @@
+// 🎓 Personal Profile Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.personal-profile {
+  .personal-form {
+    .section-card {
+      border-radius: $radius-xl;
+      box-shadow: $shadow-sm;
+      border: 1px solid $border-light;
+      margin-bottom: $space-6;
+
+      .ant-card-head {
+        border-bottom: 1px solid $border-light;
+        background: $bg-secondary;
+
+        .ant-card-head-title {
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+          color: $text-secondary;
+        }
+      }
+
+      .ant-card-body {
+        padding: $space-6;
+      }
+
+      // NUCLEAR: Consistent styling for all form inputs and selects
+      .form-input,
+      .form-select {
+        width: 100%;
+        height: 40px;
+        border-radius: $radius-md;
+        border: 1px solid $border-medium !important;
+        text-align: center;
+
+        &:focus,
+        &:focus-visible,
+        &.ant-input-focused {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+
+        &:hover {
+          border-color: $border-medium !important;
+        }
+        
+        // NUCLEAR: Remove ALL inner borders
+        *,
+        *::before,
+        *::after,
+        *::placeholder,
+        div,
+        span,
+        input,
+        i,
+        svg {
+          border: none !important;
+          border-width: 0 !important;
+          border-style: none !important;
+          border-color: transparent !important;
+          background: none !important;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          outline-width: 0 !important;
+          outline-style: none !important;
+          outline-color: transparent !important;
+        }
+      }
+
+      // Clean Select styling - single border only
+      .form-select {
+        .ant-select {
+          width: 100%;
+          
+          .ant-select-selector {
+            height: 40px !important;
+            border: 1px solid $border-medium !important;
+            border-radius: $radius-md !important;
+            background: white !important;
+            box-shadow: none !important;
+            outline: none !important;
+            padding: 0 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            
+            // Remove ALL inner borders and focus states
+            *,
+            *::before,
+            *::after,
+            div,
+            span,
+            input,
+            .ant-select-selection-item,
+            .ant-select-selection-placeholder,
+            .ant-select-selection-search,
+            .ant-select-selection-search-input,
+            .ant-select-selection-overflow,
+            .ant-select-selection-overflow-item {
+              border: none !important;
+              border-width: 0 !important;
+              border-style: none !important;
+              border-color: transparent !important;
+              background: none !important;
+              background-color: transparent !important;
+              box-shadow: none !important;
+              outline: none !important;
+              outline-width: 0 !important;
+              outline-style: none !important;
+              outline-color: transparent !important;
+            }
+            
+            .ant-select-selection-item {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              line-height: 38px !important;
+            }
+            
+            .ant-select-selection-placeholder {
+              text-align: center !important;
+              line-height: 38px !important;
+              color: rgba(0, 0, 0, 0.25) !important;
+            }
+            
+            // Prevent red border on focus/click
+            &:focus,
+            &:focus-within,
+            &.ant-select-focused {
+              border-color: $border-medium !important;
+              box-shadow: none !important;
+              outline: none !important;
+            }
+            
+            .ant-select-selection-search {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              
+              .ant-select-selection-search-input {
+                text-align: center !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                line-height: 38px !important;
+              }
+            }
+          }
+          
+          // Focus and hover states - NO RED BORDERS EVER
+          &:hover .ant-select-selector {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+          }
+          
+          &.ant-select-focused .ant-select-selector,
+          &:focus .ant-select-selector,
+          &:focus-visible .ant-select-selector {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+            outline: none !important;
+          }
+          
+          // Remove any red borders that might appear
+          &.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+            outline: none !important;
+          }
+          
+          // Arrow styling
+          .ant-select-arrow {
+            color: rgba(0, 0, 0, 0.25) !important;
+            right: 12px !important;
+          }
+        }
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        font-size: $text-base;
+        font-weight: $font-semibold;
+        color: $text-secondary;
+        margin-bottom: $space-4;
+        padding-bottom: $space-2;
+        border-bottom: 1px solid $border-light;
+
+        .anticon {
+          color: $text-secondary;
+        }
+      }
+
+      .form-row {
+        display: flex;
+        gap: $space-4;
+        margin-bottom: $space-4;
+
+        .ant-col {
+          flex: 1;
+        }
+      }
+
+      .form-group {
+        margin-bottom: $space-4;
+
+        .ant-form-item-label {
+          padding-bottom: $space-1;
+
+          label {
+            font-weight: $font-medium;
+            color: $text-primary;
+          }
+        }
+
+        // Fix label heights for Date of Birth, Gender, and Nationality
+        .ant-form-item {
+          &[name="dateOfBirth"] {
+            .ant-form-item-label {
+              height: 24px;
+              display: flex;
+              align-items: center;
+              
+              label {
+                font-size: $text-sm;
+                line-height: 1.2;
+              }
+            }
+          }
+
+          &[name="gender"],
+          &[name="nationality"] {
+            .ant-form-item-label {
+              height: 24px;
+              display: flex;
+              align-items: center;
+              
+              label {
+                font-size: $text-sm;
+                line-height: 1.2;
+              }
+            }
+          }
+        }
+
+        .ant-input,
+        .ant-select-selector,
+        .ant-input-number {
+          height: 40px;
+          border-radius: $radius-md;
+          border: 1px solid $border-medium !important;
+
+          &:focus,
+          &:focus-visible,
+          &.ant-input-focused {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+            outline: none !important;
+          }
+
+          &:hover {
+            border-color: $border-medium !important;
+          }
+        }
+
+        .ant-select-selector {
+          .ant-select-selection-item {
+            line-height: 38px;
+          }
+        }
+
+        .ant-input-number {
+          width: 100%;
+
+          .ant-input-number-input {
+            height: 38px;
+            border: none;
+            box-shadow: none;
+
+            &:focus {
+              box-shadow: none;
+            }
+          }
+        }
+
+        .ant-radio-group {
+          .ant-radio-wrapper {
+            margin-right: $space-4;
+            font-weight: $font-normal;
+            color: $text-secondary;
+
+            .ant-radio {
+              .ant-radio-inner {
+                border-color: $border-medium;
+
+                &:hover {
+                  border-color: $primary-500;
+                }
+              }
+
+              &.ant-radio-checked {
+                .ant-radio-inner {
+                  border-color: $primary-500;
+                  background-color: $primary-500;
+                }
+              }
+            }
+          }
+        }
+
+        .ant-checkbox-group {
+          .ant-checkbox-wrapper {
+            margin-right: $space-4;
+            margin-bottom: $space-2;
+            font-weight: $font-normal;
+            color: $text-secondary;
+
+            .ant-checkbox {
+              .ant-checkbox-inner {
+                border-color: $border-medium;
+
+                &:hover {
+                  border-color: $primary-500;
+                }
+              }
+
+              &.ant-checkbox-checked {
+                .ant-checkbox-inner {
+                  border-color: $primary-500;
+                  background-color: $primary-500;
+                }
+              }
+            }
+          }
+        }
+
+        .ant-textarea {
+          min-height: 100px;
+          border-radius: $radius-md;
+          border: 1px solid $border-medium;
+          resize: vertical;
+
+          &:focus,
+          &:hover {
+            border-color: $primary-500;
+            box-shadow: 0 0 0 2px $primary-100;
+          }
+        }
+      }
+
+      .location-section {
+        .location-row {
+          display: flex;
+          gap: $space-4;
+          margin-bottom: $space-4;
+
+          .ant-col {
+            flex: 1;
+          }
+        }
+      }
+
+      .demographics-section {
+        .demographics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: $space-4;
+          margin-bottom: $space-4;
+        }
+      }
+
+      .family-section {
+        .family-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: $space-4;
+          margin-bottom: $space-4;
+        }
+      }
+
+      .interests-section {
+        .interests-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: $space-4;
+          margin-bottom: $space-4;
+        }
+
+        .interest-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $space-2;
+          margin-top: $space-2;
+
+          .ant-tag {
+            border-radius: $radius-full;
+            padding: $space-1 $space-3;
+            font-size: $text-sm;
+            border: 1px solid $primary-200;
+            background: $primary-50;
+            color: $primary-700;
+
+            &.ant-tag-checkable {
+              &:hover {
+                background: $primary-100;
+                border-color: $primary-300;
+              }
+
+              &.ant-tag-checkable-checked {
+                background: $primary-500;
+                border-color: $primary-500;
+                color: white;
+              }
+            }
+          }
+        }
+      }
+
+      .majors-section {
+        .majors-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: $space-4;
+          margin-bottom: $space-4;
+        }
+
+        .major-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: $space-2;
+          margin-top: $space-2;
+
+          .ant-tag {
+            border-radius: $radius-full;
+            padding: $space-1 $space-3;
+            font-size: $text-sm;
+            border: 1px solid $secondary-200;
+            background: $secondary-50;
+            color: $secondary-700;
+
+            &.ant-tag-checkable {
+              &:hover {
+                background: $secondary-100;
+                border-color: $secondary-300;
+              }
+
+              &.ant-tag-checkable-checked {
+                background: $secondary-500;
+                border-color: $secondary-500;
+                color: white;
+              }
+            }
+          }
+        }
+      }
+
+      .goals-section {
+        .goals-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: $space-4;
+          margin-bottom: $space-4;
+        }
+      }
+    }
+
+    .form-actions-card {
+      border-radius: $radius-xl;
+      box-shadow: $shadow-sm;
+      border: 1px solid $border-light;
+      background: $bg-secondary;
+
+      .ant-card-body {
+        padding: $space-6;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: $space-3;
+
+        .ant-btn {
+          height: 44px;
+          padding: 0 $space-6;
+          border-radius: $radius-md;
+          font-weight: $font-medium;
+          font-size: $text-base;
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          transition: all 0.2s ease;
+
+          &.ant-btn-primary {
+            background: $primary-500;
+            border-color: $primary-500;
+            color: white;
+
+            &:hover {
+              background: $primary-600;
+              border-color: $primary-600;
+              transform: translateY(-1px);
+              box-shadow: $shadow-md;
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          &.ant-btn-default {
+            background: white;
+            border-color: $border-medium;
+            color: $text-secondary;
+
+            &:hover {
+              border-color: $primary-500;
+              color: $primary-500;
+              transform: translateY(-1px);
+              box-shadow: $shadow-sm;
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          .anticon {
+            font-size: $text-base;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .personal-profile {
+    .personal-form {
+      .section-card {
+        margin-bottom: $space-4;
+
+        .ant-card-body {
+          padding: $space-4;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: $space-3;
+        }
+
+        .location-row {
+          flex-direction: column;
+          gap: $space-3;
+        }
+
+        .demographics-grid,
+        .family-grid,
+        .interests-grid,
+        .majors-grid,
+        .goals-grid {
+          grid-template-columns: 1fr;
+          gap: $space-3;
+        }
+
+        .interest-tags,
+        .major-tags {
+          justify-content: center;
+        }
+      }
+
+      .form-actions-card {
+        .ant-card-body {
+          padding: $space-4;
+        }
+
+        .form-actions {
+          flex-direction: column;
+          gap: $space-2;
+
+          .ant-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .personal-profile {
+    .personal-form {
+      .section-card {
+        background: $gray-800;
+        border-color: $gray-700;
+
+        .ant-card-head {
+          background: $gray-700;
+          border-color: $gray-600;
+
+          .ant-card-head-title {
+            color: $text-inverse;
+          }
+        }
+
+        .section-title {
+          color: $text-inverse;
+          border-color: $gray-600;
+
+          .anticon {
+            color: $primary-400;
+          }
+        }
+
+        .form-group {
+          .ant-form-item-label {
+            label {
+              color: $text-inverse;
+            }
+          }
+
+          .ant-input,
+          .ant-select-selector,
+          .ant-input-number {
+            background: $gray-800;
+            border-color: $gray-600;
+            color: $text-inverse;
+
+            &:focus,
+            &:hover {
+              border-color: $primary-400;
+              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            }
+          }
+
+          .ant-radio-group {
+            .ant-radio-wrapper {
+              color: $gray-300;
+            }
+          }
+
+          .ant-checkbox-group {
+            .ant-checkbox-wrapper {
+              color: $gray-300;
+            }
+          }
+
+          .ant-textarea {
+            background: $gray-800;
+            border-color: $gray-600;
+            color: $text-inverse;
+
+            &:focus,
+            &:hover {
+              border-color: $primary-400;
+              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            }
+          }
+        }
+      }
+
+      .form-actions-card {
+        background: $gray-800;
+        border-color: $gray-700;
+
+        .form-actions {
+          .ant-btn-default {
+            background: $gray-700;
+            border-color: $gray-600;
+            color: $gray-300;
+
+            &:hover {
+              border-color: $primary-400;
+              color: $primary-400;
+            }
+          }
+        }
+      }
+    }
+  }
+}

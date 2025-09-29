@@ -83,7 +83,7 @@ export default function BookingsSection() {
     scope: scopes,
     // prompt: 'consent',
     flow: 'auth-code',
-    redirect_uri: 'https://topcoach.uz/api/auth/google/callback',
+    redirect_uri: 'http://localhost:3000/api/auth/google/callback',
     onSuccess: (tokenResponse) => {
       tokenResponse.code;
       const code = tokenResponse.code;

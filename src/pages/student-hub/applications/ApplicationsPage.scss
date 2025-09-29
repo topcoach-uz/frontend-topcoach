@@ -1,0 +1,1108 @@
+// 🎓 Applications Page Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+// ========================================
+// 🔄 LOADING & ERROR STATES
+// ========================================
+
+.applications-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  
+  .loading-spinner {
+    text-align: center;
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid $border-light;
+      border-top: 4px solid $primary-500;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto $space-4;
+    }
+    
+    p {
+      color: $text-secondary;
+      font-size: $text-lg;
+      margin: 0;
+    }
+  }
+}
+
+.applications-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  
+  .error-content {
+    text-align: center;
+    padding: $space-6;
+    background: $bg-primary;
+    border-radius: $radius-xl;
+    border: 1px solid $border-light;
+    box-shadow: $shadow-sm;
+    
+    h3 {
+      color: $text-primary;
+      font-size: $text-xl;
+      font-weight: $font-semibold;
+      margin: 0 0 $space-3 0;
+    }
+    
+    p {
+      color: $text-secondary;
+      font-size: $text-base;
+      margin: 0 0 $space-4 0;
+    }
+    
+    button {
+      background: $primary-500;
+      color: white;
+      border: none;
+      padding: $space-3 $space-6;
+      border-radius: $radius-md;
+      font-size: $text-base;
+      font-weight: $font-medium;
+      cursor: pointer;
+      transition: all $transition-base;
+      
+      &:hover {
+        background: $primary-600;
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.applications-page {
+  .page-header {
+    margin-bottom: $space-6;
+    text-align: left;
+
+    .page-title {
+      font-size: $text-3xl;
+      font-weight: $font-bold;
+      color: $text-primary;
+      margin: 0 0 $space-2 0;
+    }
+
+    .page-subtitle {
+      font-size: $text-lg;
+      color: $text-secondary;
+      margin: 0;
+    }
+  }
+
+  .applications-main-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+
+    .applications-tabs {
+      // Global override for any tab underlines
+      .ant-tabs-ink-bar,
+      .ant-tabs-tab-ink-bar,
+      .ant-tabs-nav-operations .ant-tabs-nav-more,
+      .ant-tabs-nav .ant-tabs-ink-bar {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
+      .ant-tabs-nav {
+        margin-bottom: $space-6;
+        
+        // Remove horizontal line below tabs
+        &::before {
+          display: none !important;
+        }
+        
+        // Remove any default tab ink bar/underline
+        .ant-tabs-ink-bar {
+          display: none !important;
+        }
+        
+        // Remove any tab line indicators
+        .ant-tabs-tab-ink-bar {
+          display: none !important;
+        }
+
+        .ant-tabs-nav-wrap {
+          .ant-tabs-nav-list {
+            // Remove any default tab underlines
+            &::after {
+              display: none !important;
+            }
+            
+            .ant-tabs-tab {
+              padding: $space-3 $space-4;
+              border-radius: $radius-lg;
+              margin-right: $space-2;
+              border: 1px solid $border-light;
+              background: $bg-secondary;
+              transition: all $transition-base;
+
+              &:hover {
+                background: $primary-50;
+                border-color: $primary-300;
+                color: $primary-600;
+              }
+
+              &.ant-tabs-tab-active {
+                background: $primary-100;
+                border: 1px solid $primary-500 !important;
+                border-bottom: 1px solid $primary-500 !important;
+                color: $primary-700;
+                position: relative;
+
+                // Remove any default Ant Design underline
+                &::after {
+                  display: none !important;
+                }
+
+                .ant-tabs-tab-btn {
+                  color: $primary-700;
+                  font-weight: $font-semibold;
+                }
+              }
+
+              .tab-label {
+                display: flex;
+                align-items: center;
+                gap: $space-2;
+
+                .anticon {
+                  font-size: $text-base;
+                }
+
+                span {
+                  font-size: $text-sm;
+                  font-weight: $font-medium;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .ant-tabs-content-holder {
+        .ant-tabs-tabpane {
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  .overview-content {
+    .stats-row {
+      margin-bottom: $space-6;
+
+      .stat-card {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-sm;
+        border: 1px solid $border-light;
+        transition: all $transition-base;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: $shadow-md;
+        }
+
+        .ant-statistic {
+          .ant-statistic-title {
+            color: $text-secondary;
+            font-size: $text-sm;
+            font-weight: $font-medium;
+            margin-bottom: $space-2;
+          }
+
+          .ant-statistic-content {
+            color: $text-primary;
+            font-size: $text-2xl;
+            font-weight: $font-bold;
+
+            .ant-statistic-content-prefix {
+              color: $primary-500;
+              margin-right: $space-2;
+            }
+          }
+        }
+      }
+    }
+
+    .applications-card,
+    .deadlines-card {
+      border-radius: $radius-lg;
+      box-shadow: $shadow-sm;
+      border: 1px solid $border-light;
+
+      .ant-card-head {
+        border-bottom: 1px solid $border-light;
+
+        .ant-card-head-title {
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+          color: $text-primary;
+        }
+      }
+
+      .application-item,
+      .deadline-item {
+        padding: $space-4 0;
+        border-bottom: none;
+
+        .ant-list-item-meta {
+          .ant-list-item-meta-title {
+            font-weight: $font-medium;
+            color: $text-primary;
+            margin-bottom: $space-1;
+          }
+
+          .ant-list-item-meta-description {
+            color: $text-tertiary;
+            font-size: $text-sm;
+          }
+        }
+
+        .application-actions {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+        }
+
+        .deadline-content {
+          .deadline-title {
+            font-weight: $font-medium;
+            color: $text-primary;
+            margin-bottom: $space-1;
+          }
+
+          .deadline-date {
+            color: $text-tertiary;
+            font-size: $text-sm;
+          }
+        }
+      }
+    }
+  }
+
+  .applications-content,
+  .tasks-content,
+  .scholarships-content {
+    .applications-header,
+    .tasks-header,
+    .scholarships-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $space-6;
+      padding-bottom: $space-4;
+      border-bottom: 1px solid $border-light;
+
+      h3 {
+        font-size: $text-xl;
+        font-weight: $font-semibold;
+        color: $text-primary;
+        margin: 0;
+      }
+
+      .ant-btn {
+        height: 40px;
+        padding: 0 $space-4;
+        font-size: $text-sm;
+        font-weight: $font-medium;
+        border-radius: $radius-lg;
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+
+        &.ant-btn-primary {
+          background: $primary-500;
+          border-color: $primary-500;
+          box-shadow: $shadow-sm;
+
+          &:hover {
+            background: $primary-600;
+            border-color: $primary-600;
+            transform: translateY(-1px);
+            box-shadow: $shadow-md;
+          }
+        }
+      }
+    }
+
+    .application-detail-item,
+    .task-item,
+    .scholarship-item {
+      margin-bottom: $space-4;
+
+      .application-card,
+      .task-card,
+      .scholarship-card {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-sm;
+        border: 1px solid $border-light;
+        transition: all $transition-base;
+
+        &:hover {
+          border-color: $primary-300;
+          box-shadow: $shadow-md;
+          transform: translateY(-1px);
+        }
+
+        .university-name,
+        .task-title,
+        .scholarship-name {
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+          color: $text-primary;
+          margin: 0 0 $space-1 0;
+        }
+
+        .major-name,
+        .task-description,
+        .scholarship-university {
+          font-size: $text-sm;
+          color: $text-secondary;
+          margin: 0 0 $space-2 0;
+        }
+
+        .application-meta,
+        .task-meta {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          margin-top: $space-2;
+
+          .deadline,
+          .due-date {
+            font-size: $text-xs;
+            color: $text-tertiary;
+          }
+        }
+
+        .scholarship-amount {
+          font-size: $text-lg;
+          font-weight: $font-bold;
+          color: $secondary-500;
+          margin: $space-2 0;
+        }
+
+        .scholarship-requirements {
+          margin-top: $space-2;
+        }
+
+        .application-status,
+        .task-status,
+        .scholarship-status {
+          text-align: right;
+
+          .submitted-date,
+          .scholarship-deadline {
+            font-size: $text-xs;
+            color: $text-tertiary;
+            margin-top: $space-1;
+          }
+
+          .task-actions {
+            margin-top: $space-2;
+
+            .ant-btn {
+              height: 32px;
+              padding: 0 $space-3;
+              font-size: $text-xs;
+              border-radius: $radius-md;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-lg) {
+  .applications-page {
+    .overview-content {
+      .stats-row {
+        .ant-col {
+          margin-bottom: $space-4;
+        }
+      }
+    }
+
+    .applications-content,
+    .tasks-content,
+    .scholarships-content {
+      .applications-header,
+      .tasks-header,
+      .scholarships-header {
+        flex-direction: column;
+        gap: $space-4;
+        text-align: center;
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .applications-page {
+    .page-header {
+      .page-title {
+        font-size: $text-2xl;
+      }
+
+      .page-subtitle {
+        font-size: $text-base;
+      }
+    }
+
+    .overview-content {
+      .applications-card,
+      .deadlines-card {
+        .application-item,
+        .deadline-item {
+          .ant-list-item-meta {
+            margin-bottom: $space-2;
+          }
+
+          .application-actions {
+            justify-content: flex-start;
+          }
+        }
+      }
+    }
+
+    .applications-content,
+    .tasks-content,
+    .scholarships-content {
+      .application-detail-item,
+      .task-item,
+      .scholarship-item {
+        .application-card,
+        .task-card,
+        .scholarship-card {
+          .ant-row {
+            .ant-col {
+              margin-bottom: $space-3;
+            }
+          }
+
+          .application-status,
+          .task-status,
+          .scholarship-status {
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .applications-page {
+    .applications-main-card {
+      background: $gray-800;
+      border-color: $gray-700;
+
+      .applications-tabs {
+        .ant-tabs-nav {
+          .ant-tabs-tab {
+            background: $gray-700;
+            border-color: $gray-600;
+
+            &:hover {
+              background: $primary-900;
+              border-color: $primary-400;
+            }
+
+            &.ant-tabs-tab-active {
+              background: $primary-800;
+              border-color: $primary-500;
+            }
+          }
+        }
+      }
+    }
+
+    .overview-content,
+    .applications-content,
+    .tasks-content,
+    .scholarships-content {
+      .stat-card,
+      .applications-card,
+      .deadlines-card,
+      .application-card,
+      .task-card,
+      .scholarship-card {
+        background: $gray-700;
+        border-color: $gray-600;
+
+        .ant-card-head-title,
+        .university-name,
+        .task-title,
+        .scholarship-name {
+          color: $text-inverse;
+        }
+      }
+    }
+  }
+}
+
+// ========================================
+// 🎨 ENHANCED APPLICATION CARDS
+// ========================================
+
+.application-summary-card {
+  margin-bottom: $space-2;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  .application-info {
+    .university-name {
+      font-size: $text-lg;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: $space-2;
+    }
+
+    .application-details {
+      .deadline-info,
+      .notes-preview {
+        margin-top: $space-2;
+        font-size: $text-sm;
+        color: $text-secondary;
+        display: flex;
+        align-items: center;
+      }
+
+      .notes-preview {
+        font-style: italic;
+        background: $bg-secondary;
+        padding: $space-2;
+        border-radius: $radius-sm;
+        border-left: 3px solid $primary-500;
+      }
+    }
+  }
+
+  .application-status-section {
+    text-align: right;
+
+    .submitted-info {
+      margin-top: $space-1;
+      color: $text-secondary;
+    }
+
+    .application-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: $space-5;
+      padding-top: $space-2;
+      gap: $space-4;
+    }
+
+    .application-actions {
+      display: flex;
+      justify-content: flex-start;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.application-card {
+  margin-bottom: $space-3;
+  border-radius: $radius-xl;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+
+  &:hover {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: #cbd5e1;
+  }
+
+  .application-card-content {
+    padding: $space-2;
+
+    .application-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: $space-3;
+      padding-bottom: $space-2;
+      border-bottom: 2px solid #f1f5f9;
+
+      .university-name {
+        font-size: $text-2xl;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+        display: flex;
+        align-items: center;
+
+      }
+
+      .application-status {
+        flex-shrink: 0;
+        padding: $space-2 $space-4;
+        background: linear-gradient(135deg, #8b0000 0%, #dc2626 100%);
+        color: white;
+        border-radius: $radius-full;
+        font-weight: 700;
+        font-size: $text-sm;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+      }
+    }
+
+    .application-details {
+      margin-bottom: $space-3;
+
+      .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: $space-4;
+
+        li {
+          padding: $space-4;
+          background: white;
+          border-radius: $radius-lg;
+          border: 1px solid #f1f5f9;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: $space-3;
+
+          &:hover {
+            border-color: #8b0000;
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.1);
+            transform: translateY(-1px);
+          }
+
+          .detail-icon {
+            color: #8b0000;
+            font-size: 18px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+            border-radius: $radius-full;
+            flex-shrink: 0;
+          }
+
+          strong {
+            color: #475569;
+            font-weight: 700;
+            min-width: 140px;
+            font-size: $text-sm;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          span {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: $text-base;
+          }
+        }
+      }
+    }
+
+    .application-notes {
+      margin-bottom: $space-2;
+      padding: $space-3;
+      background: #ffffff;
+      border-radius: $radius-xl;
+      border: 1px solid #e2e8f0;
+      position: relative;
+
+      .notes-label {
+        font-size: $text-sm;
+        color: #495057;
+        font-weight: 800;
+        margin-bottom: $space-3;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .notes-content {
+        color: #451a03;
+        font-size: $text-base;
+        line-height: 1.7;
+        margin: 0;
+        font-weight: 500;
+        font-style: italic;
+      }
+    }
+
+    .application-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: $space-8;
+      margin-top: -$space-1;
+      border-top: 2px solid #f1f5f9;
+
+      .ant-btn {
+        border-radius: $radius-lg;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: $text-sm;
+        height: 44px;
+        padding: 0 $space-6;
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(139, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+}
+
+.application-summary-card {
+  margin-bottom: $space-1;
+  border-radius: $radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+  min-width: 800px;
+  background: #ffffff;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .application-summary-content {
+    padding: 0 $space-1 0 $space-1;
+
+    .application-header {
+      margin-bottom: 0;
+      padding-bottom: 0;
+
+      .university-name {
+        font-size: $text-xl;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .application-status {
+        flex-shrink: 0;
+      }
+    }
+
+    .application-details {
+      .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          padding: $space-1 0;
+          font-size: $text-base;
+          color: #374151;
+          line-height: 1.5;
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          border-bottom: 1px solid #f9fafb;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .detail-icon {
+            color: #8b0000; // True crimson red
+            font-size: 16px;
+            width: 18px;
+            flex-shrink: 0;
+            text-align: center;
+          }
+
+          strong {
+            color: #6b7280;
+            font-weight: 600;
+            min-width: 100px;
+          }
+        }
+      }
+
+      .notes-preview {
+        margin-top: $space-3;
+        padding: $space-2;
+        background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+        border-radius: $radius-sm;
+        border-left: 3px solid #b91c1c;
+
+        .notes-label {
+          font-size: $text-xs;
+          color: #b91c1c;
+          font-weight: 700;
+          margin-bottom: $space-1;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .notes-text {
+          font-size: $text-xs;
+          color: #374151;
+          line-height: 1.4;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+// ========================================
+// 📱 RESPONSIVE DESIGN
+// ========================================
+
+@media (max-width: 768px) {
+  .application-card {
+    .application-card-content {
+      .application-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $space-2;
+      }
+
+      .application-details {
+        .detail-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: $space-2;
+        }
+      }
+    }
+  }
+
+  .application-summary-card {
+    .application-summary-content {
+      .application-details {
+        .detail-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: $space-2;
+        }
+      }
+    }
+  }
+}
+
+// ========================================
+// 🎓 SCHOLARSHIP CARDS STYLES
+// ========================================
+
+.scholarship-card {
+  margin-bottom: $space-2;
+  border-radius: $radius-xl;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+
+  &:hover {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: #cbd5e1;
+  }
+
+  .scholarship-card-content {
+    padding: $space-1;
+
+    .scholarship-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: $space-2;
+      padding-bottom: $space-1;
+      border-bottom: 2px solid #f1f5f9;
+
+      .scholarship-name {
+        font-size: $text-2xl;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+        display: flex;
+        align-items: center;
+
+        .scholarship-amount-inline {
+          font-size: $text-lg;
+          font-weight: 700;
+          color: #15803d;
+          margin-left: $space-4;
+          padding: $space-1 $space-3;
+          background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+          border-radius: $radius-md;
+          border: 1px solid #bbf7d0;
+        }
+      }
+
+      .scholarship-status {
+        flex-shrink: 0;
+        padding: $space-2 $space-4;
+        background: linear-gradient(135deg, #8b0000 0%, #dc2626 100%);
+        color: white;
+        border-radius: $radius-full;
+        font-weight: 700;
+        font-size: $text-sm;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+      }
+    }
+
+    .scholarship-details {
+      margin-bottom: $space-2;
+
+      .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: $space-4;
+
+        li {
+          padding: $space-4;
+          background: white;
+          border-radius: $radius-lg;
+          border: 1px solid #f1f5f9;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: $space-3;
+
+          &:hover {
+            border-color: #8b0000;
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.1);
+            transform: translateY(-1px);
+          }
+
+          .detail-icon {
+            color: #8b0000;
+            font-size: 18px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+            border-radius: $radius-full;
+            flex-shrink: 0;
+          }
+
+          strong {
+            color: #475569;
+            font-weight: 700;
+            min-width: 140px;
+            font-size: $text-sm;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          span {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: $text-base;
+          }
+        }
+      }
+    }
+
+
+    .scholarship-notes {
+      margin-bottom: $space-10;
+      padding: $space-2;
+      background: #ffffff;
+      border-radius: $radius-xl;
+      border: 1px solid #e2e8f0;
+      position: relative;
+
+      .notes-label {
+        font-size: $text-sm;
+        color: #495057;
+        font-weight: 800;
+        margin-bottom: $space-3;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .notes-content {
+        color: #451a03;
+        font-size: $text-base;
+        line-height: 1.7;
+        margin: 0;
+        font-weight: 500;
+        font-style: italic;
+      }
+    }
+
+    .scholarship-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 0;
+      margin-top: -$space-2;
+      border-top: 2px solid #f1f5f9;
+
+      .ant-btn {
+        border-radius: $radius-lg;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: $text-sm;
+        height: 44px;
+        padding: 0 $space-6;
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(139, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+}

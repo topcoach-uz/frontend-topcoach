@@ -16,6 +16,30 @@
   position: relative;
   width: 40px;
   height: 40px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  
+  // Remove any borders from the select component
+  :global(.ant-select) {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+    
+    // Remove default Ant Design styling
+    &.ant-select-focused {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    
+    &:hover {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  }
 }
 
 .languageSelect {
@@ -34,6 +58,13 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    outline: none !important;
+    
+    // Remove any default borders and styling
+    &::before,
+    &::after {
+      display: none !important;
+    }
   }
   
   :global(.ant-select-selection-item) {
@@ -42,6 +73,17 @@
   
   :global(.ant-select-arrow) {
     display: none !important;
+  }
+  
+  // Remove any focus borders
+  &:focus,
+  &:focus-within,
+  &:hover {
+    :global(.ant-select-selector) {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
   }
 }
 
@@ -56,10 +98,15 @@
   justify-content: center;
   pointer-events: none;
   z-index: 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   
   svg {
     width: 22px;
     height: 22px;
+    border: none !important;
+    outline: none !important;
   }
 }
 

@@ -22,6 +22,12 @@
   list-style: none;
 
   margin-top: 20px;
+  min-height: 400px; // Prevent layout shift during loading
+  
+  // No animation - cards stay in place like mentor cards
+  li {
+    // Removed fadeInUp animation
+  }
 }
 
 .search {

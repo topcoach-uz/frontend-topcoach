@@ -28,8 +28,10 @@ const ProfilePopupModal: React.FC = () => {
       centered
       closable={false}
       width={440}
-      bodyStyle={{ textAlign: 'center', padding: '18px 18px 24px 18px', borderRadius: 16 }}
-      maskStyle={{ background: 'rgba(0,0,0,0.15)' }}
+      styles={{
+        body: { textAlign: 'center', padding: '18px 18px 24px 18px', borderRadius: 16 },
+        mask: { background: 'rgba(0,0,0,0.15)' }
+      }}
     >
       <Text strong style={{ fontSize: 16, lineHeight: 1.5 }}>
         You must complete your profile<br />

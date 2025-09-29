@@ -37,7 +37,7 @@ export const WelcomeScreen = ({ onStart, canUseAiMajorMatch, aiMajorMatchUsage }
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.logo}>
-            <span className={styles.logoIcon}>🎓</span>
+            {/* <span className={styles.logoIcon}>🎓</span> */}
             <CustomText
               fontSize={48}
               fontWeight={700}

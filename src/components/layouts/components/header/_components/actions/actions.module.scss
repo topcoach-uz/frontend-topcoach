@@ -54,6 +54,15 @@
 
   .aiIcon {
     color: white;
+    
+    svg {
+      fill: white !important;
+      color: white !important;
+    }
+    
+    path {
+      fill: white !important;
+    }
   }
 
   // Mobile version - more compact

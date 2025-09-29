@@ -1,0 +1,260 @@
+// 🔔 Notifications Page Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.notifications-page {
+  .page-header {
+    margin-bottom: $space-8;
+    
+    .page-title {
+      font-size: $text-3xl;
+      font-weight: $font-bold;
+      color: $text-primary;
+      margin: 0 0 $space-2 0;
+    }
+    
+    .page-subtitle {
+      font-size: $text-lg;
+      color: $text-secondary;
+      margin: 0;
+    }
+  }
+
+  .notifications-main-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: $space-4;
+      margin-bottom: $space-8;
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: $space-4;
+        padding: $space-4;
+        background: $bg-secondary;
+        border-radius: $radius-lg;
+        transition: all $transition-base;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: $shadow-sm;
+        }
+
+        .stat-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: $radius-md;
+          background: $primary-50;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: $text-lg;
+          color: $primary-500;
+
+          &.unread {
+            background: rgba($error, 0.1);
+            color: $error;
+          }
+
+          &.today {
+            background: rgba($warning, 0.1);
+            color: $warning;
+          }
+
+          &.week {
+            background: $secondary-50;
+            color: $secondary-500;
+          }
+        }
+
+        .stat-info {
+          .stat-number {
+            font-size: $text-xl;
+            font-weight: $font-bold;
+            color: $text-primary;
+            line-height: 1;
+          }
+
+          .stat-label {
+            font-size: $text-sm;
+            color: $text-secondary;
+            margin-top: $space-1;
+          }
+        }
+      }
+    }
+
+    .actions-section {
+      margin-bottom: $space-6;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .notifications-list {
+      .notification-item {
+        margin-bottom: $space-3;
+
+        &.unread {
+          .notification-card {
+            border-left: 4px solid $primary-500;
+            background: rgba($primary-500, 0.05);
+          }
+        }
+
+        .notification-card {
+          border-radius: $radius-lg;
+          border: 1px solid $border-light;
+          transition: all $transition-base;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: $shadow-md;
+          }
+
+          .notification-content {
+            display: flex;
+            gap: $space-4;
+
+            .notification-icon {
+              width: 40px;
+              height: 40px;
+              border-radius: $radius-md;
+              background: $primary-50;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: $text-lg;
+              color: $primary-500;
+              flex-shrink: 0;
+            }
+
+            .notification-body {
+              flex: 1;
+
+              .notification-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: $space-2;
+
+                .notification-title {
+                  font-size: $text-base;
+                  font-weight: $font-semibold;
+                  color: $text-primary;
+                  margin: 0;
+                  line-height: 1.4;
+                }
+
+                .notification-meta {
+                  display: flex;
+                  align-items: center;
+                  gap: $space-2;
+                  flex-shrink: 0;
+
+                  .notification-time {
+                    font-size: $text-xs;
+                    color: $text-tertiary;
+                    white-space: nowrap;
+                  }
+                }
+              }
+
+              .notification-message {
+                font-size: $text-sm;
+                color: $text-secondary;
+                margin: 0 0 $space-3 0;
+                line-height: 1.5;
+              }
+
+              .notification-actions {
+                display: flex;
+                justify-content: flex-end;
+              }
+            }
+          }
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: $space-12 $space-6;
+
+        .ant-empty {
+          .ant-empty-image {
+            font-size: $text-4xl;
+            color: $text-tertiary;
+            margin-bottom: $space-4;
+          }
+
+          .ant-empty-description {
+            h4 {
+              font-size: $text-lg;
+              font-weight: $font-medium;
+              color: $text-primary;
+              margin: 0 0 $space-2 0;
+            }
+
+            p {
+              color: $text-secondary;
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .notifications-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+
+    .loading-spinner {
+      font-size: $text-3xl;
+      color: $primary-500;
+      margin-bottom: $space-4;
+    }
+
+    p {
+      font-size: $text-lg;
+      color: $text-secondary;
+      margin: 0;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .notifications-page {
+    .notifications-main-card {
+      .stats-section {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .notification-item {
+        .notification-card {
+          .notification-content {
+            .notification-body {
+              .notification-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: $space-2;
+
+                .notification-meta {
+                  align-self: flex-end;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

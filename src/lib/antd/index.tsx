@@ -1,4 +1,4 @@
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App } from 'antd';
 import { PropsWithChildren } from 'react';
 import { useTypedSelector } from 'src/app/store';
 import useAntdProvider from './useAntdProvider';
@@ -71,7 +71,9 @@ function AntdProvider({ children }: PropsWithChildren) {
         },
       }}
     >
-      {children}
+      <App>
+        {children}
+      </App>
     </ConfigProvider>
   );
 }

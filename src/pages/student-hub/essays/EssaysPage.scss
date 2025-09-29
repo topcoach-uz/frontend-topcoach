@@ -1,0 +1,645 @@
+// 🎓 Essays Page Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.essays-page {
+  .page-header {
+    margin-bottom: $space-6;
+    text-align: left;
+
+    .page-title {
+      font-size: $text-3xl;
+      font-weight: $font-bold;
+      color: $text-primary;
+      margin: 0 0 $space-2 0;
+    }
+
+    .page-subtitle {
+      font-size: $text-lg;
+      color: $text-secondary;
+      margin: 0;
+    }
+  }
+
+  .essays-main-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+
+
+    .essays-tabs {
+      // Global override for any tab underlines
+      .ant-tabs-ink-bar,
+      .ant-tabs-tab-ink-bar,
+      .ant-tabs-nav-operations .ant-tabs-nav-more,
+      .ant-tabs-nav .ant-tabs-ink-bar {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
+      .ant-tabs-nav {
+        margin-bottom: $space-6;
+        
+        // Remove horizontal line below tabs
+        &::before {
+          display: none !important;
+        }
+        
+        // Remove any default tab ink bar/underline
+        .ant-tabs-ink-bar {
+          display: none !important;
+        }
+        
+        // Remove any tab line indicators
+        .ant-tabs-tab-ink-bar {
+          display: none !important;
+        }
+
+        .ant-tabs-nav-wrap {
+          .ant-tabs-nav-list {
+            // Remove any default tab underlines
+            &::after {
+              display: none !important;
+            }
+            
+            .ant-tabs-tab {
+              padding: $space-3 $space-4;
+              border-radius: $radius-lg;
+              margin-right: $space-2;
+              border: 1px solid $border-light;
+              background: $bg-secondary;
+              transition: all $transition-base;
+
+              &:hover {
+                background: $primary-50;
+                border-color: $primary-300;
+                color: $primary-600;
+              }
+
+              &.ant-tabs-tab-active {
+                background: $primary-100;
+                border: 1px solid $primary-500 !important;
+                border-bottom: 1px solid $primary-500 !important;
+                color: $primary-700;
+                position: relative;
+
+                // Remove any default Ant Design underline
+                &::after {
+                  display: none !important;
+                }
+
+                .ant-tabs-tab-btn {
+                  color: $primary-700;
+                  font-weight: $font-semibold;
+                }
+              }
+
+              .tab-label {
+                display: flex;
+                align-items: center;
+                gap: $space-2;
+
+                .anticon {
+                  font-size: $text-base;
+                }
+
+                span {
+                  font-size: $text-sm;
+                  font-weight: $font-medium;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .ant-tabs-content-holder {
+        .ant-tabs-tabpane {
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  .essays-content {
+    .essays-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: $space-6;
+      padding-bottom: $space-4;
+      border-bottom: 1px solid $border-light;
+
+      .essays-title {
+        h3 {
+          font-size: $text-xl;
+          font-weight: $font-semibold;
+          color: $text-primary;
+          margin: 0 0 $space-1 0;
+        }
+
+        p {
+          font-size: $text-sm;
+          color: $text-secondary;
+          margin: 0;
+        }
+      }
+
+      .essays-actions {
+        display: flex;
+        align-items: center;
+        gap: $space-4;
+
+        .ant-input {
+          border: none !important;
+          box-shadow: none !important;
+
+          &:focus {
+            border: none !important;
+            box-shadow: none !important;
+          }
+        }
+
+
+        .ant-btn {
+          height: 40px;
+          padding: 0 $space-4;
+          font-size: $text-sm;
+          font-weight: $font-medium;
+          border-radius: $radius-lg;
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+
+          &.ant-btn-primary {
+            background: $primary-500;
+            border-color: $primary-500;
+            box-shadow: $shadow-sm;
+
+            &:hover {
+              background: $primary-600;
+              border-color: $primary-600;
+              transform: translateY(-1px);
+              box-shadow: $shadow-md;
+            }
+          }
+        }
+      }
+    }
+
+    .essays-stats {
+      margin-bottom: $space-6;
+
+      .stat-card {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-sm;
+        border: 1px solid $border-light;
+        transition: all $transition-base;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: $shadow-md;
+        }
+
+        .stat-content {
+          display: flex;
+          align-items: center;
+          gap: $space-3;
+
+          .anticon {
+            color: $primary-500;
+            font-size: $text-2xl;
+          }
+
+          .stat-info {
+            .stat-value {
+              font-size: $text-2xl;
+              font-weight: $font-bold;
+              color: $text-primary;
+              line-height: 1;
+            }
+
+            .stat-label {
+              font-size: $text-sm;
+              color: $text-secondary;
+              margin-top: $space-1;
+            }
+          }
+        }
+      }
+    }
+
+    .essay-item {
+      margin-bottom: $space-4;
+
+      .essay-card {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-sm;
+        border: 1px solid $border-light;
+        transition: all $transition-base;
+
+        &:hover {
+          border-color: $primary-300;
+          box-shadow: $shadow-md;
+          transform: translateY(-1px);
+        }
+
+        .essay-card-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: $space-3;
+
+          .essay-info {
+            flex: 1;
+            min-width: 0; // Allow text to wrap
+
+            .essay-header {
+              display: flex;
+              align-items: center;
+              gap: $space-3;
+              margin-bottom: $space-3;
+
+              .essay-title {
+                font-size: $text-lg;
+                font-weight: $font-semibold;
+                color: $text-primary;
+                margin: 0;
+              }
+            }
+
+            .essay-meta {
+              display: flex;
+              flex-direction: column;
+              gap: $space-2;
+
+              .file-info,
+              .upload-date,
+              .purpose {
+                font-size: $text-sm;
+                color: $text-secondary;
+                display: flex;
+                align-items: flex-start;
+                gap: $space-2;
+                line-height: 1.5;
+              }
+
+              .purpose {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+                max-width: 100%;
+                flex: 1;
+              }
+            }
+          }
+
+          .essay-actions {
+            flex-shrink: 0;
+            margin-left: $space-4;
+
+            .action-buttons {
+              display: flex;
+              flex-direction: column;
+              gap: $space-2;
+            }
+
+            .ant-btn {
+              border-radius: $radius-lg;
+              font-weight: $font-semibold;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              transition: all 0.2s ease;
+
+              &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .templates-content,
+  .ai-content {
+    .templates-header,
+    .ai-header {
+      margin-bottom: $space-6;
+      text-align: center;
+
+      h3 {
+        font-size: $text-xl;
+        font-weight: $font-semibold;
+        color: $text-primary;
+        margin: 0 0 $space-2 0;
+      }
+
+      p {
+        font-size: $text-sm;
+        color: $text-secondary;
+        margin: 0;
+      }
+    }
+
+    .template-item,
+    .ai-session-item {
+      margin-bottom: $space-4;
+
+      .template-card,
+      .ai-session-card {
+        border-radius: $radius-lg;
+        box-shadow: $shadow-sm;
+        border: 1px solid $border-light;
+        transition: all $transition-base;
+
+        &:hover {
+          border-color: $primary-300;
+          box-shadow: $shadow-md;
+          transform: translateY(-1px);
+        }
+
+        .template-info,
+        .session-info {
+          .template-title,
+          .session-title {
+            font-size: $text-lg;
+            font-weight: $font-semibold;
+            color: $text-primary;
+            margin: 0 0 $space-1 0;
+          }
+
+          .template-description,
+          .session-type {
+            font-size: $text-sm;
+            color: $text-secondary;
+            margin: 0 0 $space-2 0;
+          }
+
+          .template-meta,
+          .session-meta {
+            display: flex;
+            align-items: center;
+            gap: $space-2;
+            margin-bottom: $space-2;
+
+            .word-count,
+            .session-date {
+              font-size: $text-xs;
+              color: $text-tertiary;
+            }
+
+            .suggestions {
+              font-size: $text-xs;
+              color: $primary-500;
+              font-weight: $font-medium;
+            }
+          }
+
+          .template-stats {
+            display: flex;
+            align-items: center;
+            gap: $space-4;
+
+            .downloads,
+            .rating {
+              font-size: $text-xs;
+              color: $text-tertiary;
+              display: flex;
+              align-items: center;
+              gap: $space-1;
+
+              .anticon {
+                color: $primary-500;
+              }
+            }
+          }
+        }
+
+        .template-actions,
+        .session-actions {
+          text-align: right;
+
+          .session-status {
+            margin-bottom: $space-2;
+          }
+
+          .session-rating {
+            display: flex;
+            align-items: center;
+            gap: $space-1;
+            font-size: $text-sm;
+            color: $text-primary;
+            margin-bottom: $space-2;
+
+            .anticon {
+              color: $accent-amber;
+            }
+          }
+
+          .ant-btn {
+            height: 40px;
+            padding: 0 $space-4;
+            font-size: $text-sm;
+            font-weight: $font-medium;
+            border-radius: $radius-lg;
+
+            &.ant-btn-primary {
+              background: $primary-500;
+              border-color: $primary-500;
+              box-shadow: $shadow-sm;
+
+              &:hover {
+                background: $primary-600;
+                border-color: $primary-600;
+                transform: translateY(-1px);
+                box-shadow: $shadow-md;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-lg) {
+  .essays-page {
+    .essays-content {
+      .essays-header {
+        flex-direction: column;
+        gap: $space-4;
+        text-align: center;
+
+        .essays-actions {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      .essays-stats {
+        .ant-col {
+          margin-bottom: $space-4;
+        }
+      }
+    }
+
+    .templates-content,
+    .ai-content {
+      .template-item,
+      .ai-session-item {
+        .template-card,
+        .ai-session-card {
+          .ant-row {
+            .ant-col {
+              margin-bottom: $space-3;
+            }
+          }
+
+          .template-actions,
+          .session-actions {
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .essays-page {
+    .page-header {
+      .page-title {
+        font-size: $text-2xl;
+      }
+
+      .page-subtitle {
+        font-size: $text-base;
+      }
+    }
+
+    .essays-content {
+      .essays-header {
+        .essays-actions {
+          flex-direction: column;
+          gap: $space-3;
+
+          .search-container {
+            width: 100%;
+            min-width: unset;
+          }
+
+          .search-input {
+            width: 100%;
+          }
+        }
+      }
+
+      .essay-item {
+        .essay-card {
+          .ant-row {
+            .ant-col {
+              margin-bottom: $space-3;
+            }
+          }
+
+          .essay-actions {
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .essays-page {
+    .essays-main-card {
+      background: $gray-800;
+      border-color: $gray-700;
+
+      .essays-tabs {
+        .ant-tabs-nav {
+          .ant-tabs-tab {
+            background: $gray-700;
+            border-color: $gray-600;
+
+            &:hover {
+              background: $primary-900;
+              border-color: $primary-400;
+            }
+
+            &.ant-tabs-tab-active {
+              background: $primary-800;
+              border-color: $primary-500;
+            }
+          }
+        }
+      }
+    }
+
+    .essays-content,
+    .templates-content,
+    .ai-content {
+      .stat-card,
+      .essay-card,
+      .template-card,
+      .ai-session-card {
+        background: $gray-700;
+        border-color: $gray-600;
+
+        .essay-title,
+        .template-title,
+        .session-title {
+          color: $text-inverse;
+        }
+      }
+    }
+  }
+
+  .ai-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    padding: $space-8;
+
+    .placeholder-content {
+      text-align: center;
+      max-width: 400px;
+
+      .anticon {
+        color: $primary-300;
+        margin-bottom: $space-4;
+      }
+
+      h4 {
+        font-size: $text-xl;
+        font-weight: $font-semibold;
+        color: $text-primary;
+        margin: $space-4 0 $space-2 0;
+      }
+
+      p {
+        font-size: $text-base;
+        color: $text-secondary;
+        margin: 0 0 $space-6 0;
+        line-height: 1.6;
+      }
+
+      .ant-btn {
+        border-radius: $radius-lg;
+        font-weight: $font-semibold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+      }
+    }
+  }
+}

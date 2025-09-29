@@ -1,0 +1,177 @@
+// 🎓 Student Hub Error Boundary Styles
+@import '../../styles/student-hub-design-system.scss';
+
+.student-hub-error-boundary {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: $space-6;
+
+  .error-card {
+    max-width: 500px;
+    width: 100%;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-lg;
+    border: 1px solid $border-light;
+
+    .error-content {
+      text-align: center;
+      padding: $space-6;
+
+      .error-icon {
+        color: $error;
+        margin-bottom: $space-4;
+      }
+
+      .error-title {
+        font-size: $text-2xl;
+        font-weight: $font-bold;
+        color: $text-primary;
+        margin: 0 0 $space-3 0;
+      }
+
+      .error-description {
+        font-size: $text-base;
+        color: $text-secondary;
+        margin: 0 0 $space-6 0;
+        line-height: $leading-relaxed;
+      }
+
+      .error-actions {
+        display: flex;
+        gap: $space-3;
+        justify-content: center;
+        margin-bottom: $space-6;
+
+        .ant-btn {
+          height: 40px;
+          padding: 0 $space-4;
+          font-size: $text-sm;
+          font-weight: $font-medium;
+          border-radius: $radius-lg;
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+
+          &.ant-btn-primary {
+            background: $primary-500;
+            border-color: $primary-500;
+            box-shadow: $shadow-sm;
+
+            &:hover {
+              background: $primary-600;
+              border-color: $primary-600;
+              transform: translateY(-1px);
+              box-shadow: $shadow-md;
+            }
+          }
+
+          &.ant-btn-default {
+            background: $bg-primary;
+            border-color: $border-medium;
+            color: $text-primary;
+
+            &:hover {
+              border-color: $primary-400;
+              color: $primary-600;
+              background: $primary-50;
+            }
+          }
+        }
+      }
+
+      .error-details {
+        text-align: left;
+        background: $gray-50;
+        border-radius: $radius-lg;
+        padding: $space-4;
+        margin-top: $space-4;
+
+        summary {
+          font-weight: $font-semibold;
+          color: $text-primary;
+          cursor: pointer;
+          margin-bottom: $space-2;
+        }
+
+        .error-stack,
+        .error-info {
+          font-family: $font-mono;
+          font-size: $text-xs;
+          color: $text-secondary;
+          background: $bg-primary;
+          padding: $space-3;
+          border-radius: $radius-md;
+          overflow-x: auto;
+          white-space: pre-wrap;
+          margin: $space-2 0;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-md) {
+  .student-hub-error-boundary {
+    padding: $space-4;
+
+    .error-card {
+      .error-content {
+        padding: $space-4;
+
+        .error-title {
+          font-size: $text-xl;
+        }
+
+        .error-description {
+          font-size: $text-sm;
+        }
+
+        .error-actions {
+          flex-direction: column;
+          gap: $space-2;
+
+          .ant-btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .student-hub-error-boundary {
+    .error-card {
+      background: $gray-800;
+      border-color: $gray-700;
+
+      .error-content {
+        .error-title {
+          color: $text-inverse;
+        }
+
+        .error-description {
+          color: $gray-300;
+        }
+
+        .error-details {
+          background: $gray-700;
+
+          summary {
+            color: $text-inverse;
+          }
+
+          .error-stack,
+          .error-info {
+            background: $gray-600;
+            color: $gray-200;
+          }
+        }
+      }
+    }
+  }
+}

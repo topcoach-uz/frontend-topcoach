@@ -1,0 +1,712 @@
+// 🎓 Academic Profile Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.academic-profile {
+  .academic-form {
+    .section-card {
+      border-radius: $radius-xl;
+      box-shadow: $shadow-sm;
+      border: 1px solid $border-light;
+      margin-bottom: $space-6;
+
+      .ant-card-head {
+        border-bottom: 1px solid $border-light;
+        background: $bg-secondary;
+
+        .ant-card-head-title {
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+          color: $text-secondary;
+        }
+      }
+
+      .ant-card-body {
+        padding: $space-6;
+      }
+
+      .test-section {
+        .test-title {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          font-size: $text-base;
+          font-weight: $font-semibold;
+          color: $text-secondary;
+          margin-bottom: $space-4;
+          padding-bottom: $space-2;
+          border-bottom: 1px solid $border-light;
+
+          .anticon {
+            color: $text-secondary;
+          }
+        }
+
+        .score-input {
+          width: 100%;
+          height: 40px;
+          border-radius: $radius-md;
+          border: 1px solid $border-medium !important;
+          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &::placeholder {
+            text-align: center;
+            line-height: 1;
+          }
+
+          &:focus,
+          &:focus-visible,
+          &.ant-input-focused {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+            outline: none !important;
+          }
+
+          &:hover {
+            border-color: $border-medium !important;
+          }
+          
+          // NUCLEAR: Remove ALL inner borders
+          *,
+          *::before,
+          *::after,
+          *::placeholder,
+          div,
+          span,
+          input,
+          i,
+          svg {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            background: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+          }
+        }
+        
+        // Clean Select styling - single border only (matching PersonalProfile)
+        .ant-select {
+          width: 100%;
+          
+          .ant-select-selector {
+            height: 40px !important;
+            border: 1px solid $border-medium !important;
+            border-radius: $radius-md !important;
+            background: white !important;
+            box-shadow: none !important;
+            outline: none !important;
+            padding: 0 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            
+            // Remove ALL inner borders and focus states
+            *,
+            *::before,
+            *::after,
+            div,
+            span,
+            input,
+            .ant-select-selection-item,
+            .ant-select-selection-placeholder,
+            .ant-select-selection-search,
+            .ant-select-selection-search-input,
+            .ant-select-selection-overflow,
+            .ant-select-selection-overflow-item {
+              border: none !important;
+              border-width: 0 !important;
+              border-style: none !important;
+              border-color: transparent !important;
+              background: none !important;
+              background-color: transparent !important;
+              box-shadow: none !important;
+              outline: none !important;
+              outline-width: 0 !important;
+              outline-style: none !important;
+              outline-color: transparent !important;
+            }
+            
+            .ant-select-selection-item {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              line-height: 38px !important;
+            }
+            
+            .ant-select-selection-placeholder {
+              text-align: center !important;
+              line-height: 38px !important;
+              color: rgba(0, 0, 0, 0.25) !important;
+            }
+            
+            // Prevent red border on focus/click
+            &:focus,
+            &:focus-within,
+            &.ant-select-focused {
+              border-color: $border-medium !important;
+              box-shadow: none !important;
+              outline: none !important;
+            }
+            
+            .ant-select-selection-search {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              
+              .ant-select-selection-search-input {
+                text-align: center !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                line-height: 38px !important;
+              }
+            }
+          }
+        }
+      }
+
+      .gpa-input,
+      .gpa-select,
+      .curriculum-select,
+      .graduation-select,
+      .gap-year-select,
+      .first-gen-select,
+      .financial-aid-select {
+        width: 100%;
+        height: 40px;
+        border: 1px solid $border-medium !important;
+        border-radius: $radius-md !important;
+        
+        // Move ALL declarations before nested rules to fix Sass warnings
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:focus,
+        &:focus-visible,
+        &.ant-input-focused {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        
+        &:hover {
+          border-color: $border-medium !important;
+        }
+        
+        // NUCLEAR: Remove ALL inner borders
+        *,
+        *::before,
+        *::after,
+        *::placeholder,
+        div,
+        span,
+        input,
+        i,
+        svg {
+          border: none !important;
+          border-width: 0 !important;
+          border-style: none !important;
+          border-color: transparent !important;
+          background: none !important;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          outline: none !important;
+          outline-width: 0 !important;
+          outline-style: none !important;
+          outline-color: transparent !important;
+        }
+
+        &::placeholder {
+          text-align: center;
+          line-height: 1;
+        }
+      }
+      
+      // NUCLEAR: Force ALL select dropdowns to be thin like Personal Profile
+      .ant-select {
+        .ant-select-selector {
+          height: 40px !important;
+          border: 1px solid $border-medium !important;
+          border-radius: $radius-md !important;
+          background: white !important;
+          box-shadow: none !important;
+          outline: none !important;
+          padding: 0 12px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          
+          &:focus,
+          &:focus-within,
+          &.ant-select-focused,
+          &:hover {
+            border-color: $border-medium !important;
+            box-shadow: none !important;
+            outline: none !important;
+          }
+          
+          // NUCLEAR: Remove ALL inner elements
+          *,
+          *::before,
+          *::after,
+          *::placeholder,
+          div,
+          span,
+          input,
+          i,
+          svg,
+          button,
+          .ant-select-selection-item,
+          .ant-select-selection-placeholder,
+          .ant-select-selection-search,
+          .ant-select-selection-search-input,
+          .ant-select-selection-overflow,
+          .ant-select-selection-overflow-item,
+          .ant-select-selection-clear,
+          .ant-select-arrow {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            background: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+          }
+          
+          .ant-select-selection-item {
+            text-align: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            line-height: 38px !important;
+          }
+          
+          .ant-select-selection-placeholder {
+            text-align: center !important;
+            line-height: 38px !important;
+            color: rgba(0, 0, 0, 0.25) !important;
+          }
+          
+          .ant-select-selection-search {
+            text-align: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            
+            .ant-select-selection-search-input {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              line-height: 38px !important;
+            }
+          }
+        }
+      }
+
+      // Center placeholders for all input types
+      .ant-input,
+      .ant-input-number,
+      .ant-input-number-input {
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid $border-medium !important;
+
+        &::placeholder {
+          text-align: center;
+          line-height: 1;
+        }
+
+        &:focus,
+        &:focus-visible,
+        &.ant-input-focused {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+
+        &:hover {
+          border-color: $border-medium !important;
+        }
+      }
+
+      // Specific styling for InputNumber components
+      .ant-input-number {
+        .ant-input-number-input {
+          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+
+          &::placeholder {
+            text-align: center;
+            line-height: 1;
+          }
+        }
+      }
+
+      // NUCLEAR OPTION: Completely destroy all Ant Design Select styling
+      .ant-select {
+        width: 100%;
+        
+        .ant-select-selector {
+          height: 40px !important;
+          border: 1px solid $border-medium !important;
+          border-radius: $radius-md !important;
+          background: white !important;
+          box-shadow: none !important;
+          outline: none !important;
+          padding: 0 12px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          
+          // NUCLEAR: Remove ALL borders from EVERYTHING inside
+          *,
+          *::before,
+          *::after,
+          div,
+          span,
+          input,
+          .ant-select-selection-item,
+          .ant-select-selection-placeholder,
+          .ant-select-selection-search,
+          .ant-select-selection-search-input,
+          .ant-select-selection-overflow,
+          .ant-select-selection-overflow-item {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            background: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+          }
+          
+          .ant-select-selection-item {
+            text-align: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            line-height: 38px !important;
+          }
+          
+          .ant-select-selection-placeholder {
+            text-align: center !important;
+            line-height: 38px !important;
+            color: rgba(0, 0, 0, 0.25) !important;
+          }
+          
+          .ant-select-selection-search {
+            text-align: center !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            
+            .ant-select-selection-search-input {
+              text-align: center !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              line-height: 38px !important;
+            }
+          }
+        }
+        
+        // Focus and hover states - NO RED BORDERS EVER
+        &:hover .ant-select-selector {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+        }
+        
+        &.ant-select-focused .ant-select-selector,
+        &:focus .ant-select-selector,
+        &:focus-visible .ant-select-selector {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        
+        // Remove any red borders that might appear
+        &.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+          border-color: $border-medium !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        
+        // Arrow styling
+        .ant-select-arrow {
+          color: rgba(0, 0, 0, 0.25) !important;
+          right: 12px !important;
+        }
+      }
+
+      .ant-form-item {
+        margin-bottom: $space-4;
+
+        .ant-form-item-label {
+          padding-bottom: $space-1;
+
+          label {
+            font-size: $text-sm;
+            font-weight: $font-medium;
+            color: $text-primary;
+
+            &.ant-form-item-required {
+              &::before {
+                color: $error;
+              }
+            }
+          }
+        }
+
+        .ant-form-item-control {
+          .ant-form-item-explain {
+            font-size: $text-xs;
+            color: $text-tertiary;
+            margin-top: $space-1;
+          }
+
+          .ant-form-item-explain-error {
+            color: $error;
+          }
+        }
+      }
+    }
+
+    .form-actions-card {
+      border-radius: $radius-xl;
+      box-shadow: $shadow-sm;
+      border: 1px solid $border-light;
+      background: $gray-50;
+
+      .form-actions {
+        display: flex;
+        justify-content: center;
+        padding: $space-4 0;
+
+        .ant-btn {
+          height: 48px;
+          padding: 0 $space-6;
+          font-size: $text-base;
+          font-weight: $font-medium;
+          border-radius: $radius-lg;
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+
+          &.ant-btn-primary {
+            background: $primary-500;
+            border-color: $primary-500;
+            box-shadow: $shadow-sm;
+
+            &:hover {
+              background: $primary-600;
+              border-color: $primary-600;
+              transform: translateY(-2px);
+              box-shadow: $shadow-md;
+            }
+
+            &:active {
+              background: $primary-700;
+              border-color: $primary-700;
+            }
+          }
+
+          &.ant-btn-default {
+            background: $bg-primary;
+            border-color: $border-medium;
+            color: $text-primary;
+
+            &:hover {
+              border-color: $primary-400;
+              color: $primary-600;
+              background: $primary-50;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// ========================================
+// 🚀 NUCLEAR OVERRIDE: Force thin dropdowns
+// ========================================
+
+.academic-profile {
+  // ULTRA SPECIFIC: Force ALL select dropdowns to be thin
+  .ant-select {
+    .ant-select-selector {
+      height: 40px !important;
+      border: 1px solid $border-medium !important;
+      border-radius: $radius-md !important;
+      background: white !important;
+      box-shadow: none !important;
+      outline: none !important;
+      padding: 0 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      
+      &:focus,
+      &:focus-within,
+      &.ant-select-focused,
+      &:hover {
+        border-color: $border-medium !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+      
+      // NUCLEAR: Remove ALL inner elements
+      *,
+      *::before,
+      *::after,
+      *::placeholder,
+      div,
+      span,
+      input,
+      i,
+      svg,
+      button,
+      .ant-select-selection-item,
+      .ant-select-selection-placeholder,
+      .ant-select-selection-search,
+      .ant-select-selection-search-input,
+      .ant-select-selection-overflow,
+      .ant-select-selection-overflow-item,
+      .ant-select-selection-clear,
+      .ant-select-arrow {
+        border: none !important;
+        border-width: 0 !important;
+        border-style: none !important;
+        border-color: transparent !important;
+        background: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+        outline-width: 0 !important;
+        outline-style: none !important;
+        outline-color: transparent !important;
+      }
+      
+      .ant-select-selection-item {
+        text-align: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        line-height: 38px !important;
+      }
+      
+      .ant-select-selection-placeholder {
+        text-align: center !important;
+        line-height: 38px !important;
+        color: rgba(0, 0, 0, 0.25) !important;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-lg) {
+  .academic-profile {
+    .academic-form {
+      .section-card {
+        .ant-card-body {
+          padding: $space-4;
+        }
+
+        .test-section {
+          .test-title {
+            font-size: $text-sm;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .academic-profile {
+    .academic-form {
+      .section-card {
+        .ant-card-body {
+          padding: $space-3;
+        }
+
+        .test-section {
+          .score-input {
+            height: 36px;
+          }
+        }
+
+        .gpa-input,
+        .gpa-select,
+        .curriculum-select,
+        .graduation-select,
+        .gap-year-select,
+        .first-gen-select,
+        .financial-aid-select {
+          height: 36px;
+        }
+      }
+
+      .form-actions-card {
+        .form-actions {
+          flex-direction: column;
+          gap: $space-3;
+
+          .ant-btn {
+            width: 100%;
+            height: 44px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .academic-profile {
+    .academic-form {
+      .section-card {
+        background: $gray-800;
+        border-color: $gray-700;
+
+        .ant-card-head {
+          background: $gray-700;
+
+          .ant-card-head-title {
+            color: $text-inverse;
+          }
+        }
+
+        .test-section {
+          .test-title {
+            color: $text-inverse;
+            border-color: $gray-600;
+          }
+        }
+      }
+
+      .form-actions-card {
+        background: $gray-700;
+        border-color: $gray-600;
+      }
+    }
+  }
+}

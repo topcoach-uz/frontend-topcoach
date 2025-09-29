@@ -1,0 +1,617 @@
+import React, { useState, useEffect } from 'react';
+import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
+import { APPLICATION_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import { useStudentHub } from '../../../hooks/useStudentHub';
+import { 
+  useGetCollegeApplicationsQuery,
+  useGetApplicationTasksQuery,
+  useGetScholarshipApplicationsQuery,
+  useDeleteCollegeApplicationMutation,
+  useDeleteScholarshipApplicationMutation
+} from '../../../app/services/student-hub/applicationTrackingApi';
+import NewApplicationPage from './NewApplicationPage';
+import NewTaskPage from './NewTaskPage';
+import NewScholarshipPage from './NewScholarshipPage';
+import './ApplicationsPage.scss';
+
+const { TabPane } = Tabs;
+
+const ApplicationsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState<any>(null);
+  const { dashboard, isLoading, hasError } = useStudentHub();
+  
+  // Fetch applications, tasks, and scholarships data - MUST be called before any early returns
+  const { data: applicationsResponse, isLoading: applicationsLoading, refetch: refetchApplications } = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
+  const { data: tasksResponse, isLoading: tasksLoading, refetch: refetchTasks } = useGetApplicationTasksQuery({ page: 1, limit: 100 });
+  const { data: scholarshipsResponse, isLoading: scholarshipsLoading, refetch: refetchScholarships } = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 });
+  const [deleteCollegeApplication, { isLoading: deleteLoading }] = useDeleteCollegeApplicationMutation();
+  const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
+
+  // Handle URL parameters for tab navigation - MUST be called before any early returns
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['overview', 'applications', 'scholarships'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  // Refetch all data when returning from creation pages - MUST be called before any early returns
+  useEffect(() => {
+    if (location.pathname === '/student-hub/applications') {
+      refetchApplications();
+      refetchTasks();
+      refetchScholarships();
+    }
+  }, [location.pathname, refetchApplications, refetchTasks, refetchScholarships]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="applications-loading">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading applications...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (hasError) {
+    return (
+      <div className="applications-error">
+        <div className="error-content">
+          <h3>Error Loading Applications</h3>
+          <p>There was an error loading your applications data. Please try again.</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle different routes
+  if (location.pathname === '/student-hub/applications/new') {
+    return <NewApplicationPage />;
+  }
+  
+  if (location.pathname === '/student-hub/applications/tasks/new') {
+    return <NewTaskPage />;
+  }
+  
+  if (location.pathname === '/student-hub/applications/scholarships/new') {
+    return <NewScholarshipPage />;
+  }
+
+
+  // Handle tab changes
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    setSearchParams({ tab: key });
+  };
+
+  // Use real data from API with defensive programming
+  const applicationsData = {
+    overview: {
+      totalApplications: dashboard?.stats?.totalApplications || 0,
+      submitted: dashboard?.stats?.submittedApplications || 0,
+      inProgress: dashboard?.stats?.inProgressApplications || 0,
+      accepted: dashboard?.stats?.acceptedApplications || 0,
+      rejected: 0, // Not available in current API
+      waitlisted: 0, // Not available in current API
+    },
+    applications: applicationsResponse?.data || [],
+    tasks: tasksResponse?.data || [],
+    scholarships: scholarshipsResponse?.data || [],
+  };
+
+  console.log('ApplicationsPage - Dashboard data:', dashboard);
+  console.log('ApplicationsPage - Stats:', dashboard?.stats);
+  console.log('ApplicationsPage - Applications data:', applicationsData);
+
+  // Button click handlers
+  const handleNewApplication = () => {
+    navigate('/student-hub/applications/new');
+  };
+
+
+  const handleDeleteApplication = (application: any) => {
+    setApplicationToDelete(application);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteApplication = async () => {
+    if (!applicationToDelete) return;
+    
+    try {
+      if (applicationToDelete.type === 'scholarship') {
+        console.log('🎯 Frontend: Deleting scholarship with ID:', applicationToDelete.id);
+        console.log('🎯 Frontend: About to call deleteScholarshipApplication API');
+        const result = await deleteScholarshipApplication(applicationToDelete.id).unwrap();
+        console.log('🎯 Frontend: Delete API call successful:', result);
+        message.success('Scholarship deleted successfully!');
+        refetchScholarships();
+      } else {
+        console.log('Deleting application with ID:', applicationToDelete.id);
+        await deleteCollegeApplication(applicationToDelete.id).unwrap();
+        message.success('Application deleted successfully!');
+        refetchApplications();
+      }
+      setDeleteModalVisible(false);
+      setApplicationToDelete(null);
+    } catch (error) {
+      console.error('🎯 Frontend: Error deleting:', error);
+      console.error('🎯 Frontend: Error details:', JSON.stringify(error, null, 2));
+      message.error('Failed to delete. Please try again.');
+    }
+  };
+
+  const cancelDeleteApplication = () => {
+    setDeleteModalVisible(false);
+    setApplicationToDelete(null);
+  };
+
+  const handleDeleteScholarship = (scholarshipId: string) => {
+    console.log('Deleting scholarship with ID:', scholarshipId);
+    setApplicationToDelete({ id: scholarshipId, type: 'scholarship' });
+    setDeleteModalVisible(true);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'submitted':
+        return 'processing';
+      case 'accepted':
+        return 'success';
+      case 'rejected':
+        return 'error';
+      case 'waitlisted':
+        return 'warning';
+      case 'in_progress':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
+  const getPriorityColor = (priority: number | string) => {
+    const priorityNum = typeof priority === 'string' ? parseInt(priority) : priority;
+    if (priorityNum >= 8) return 'red';
+    if (priorityNum >= 5) return 'orange';
+    return 'green';
+  };
+
+  const getPriorityText = (priority: number | string) => {
+    const priorityNum = typeof priority === 'string' ? parseInt(priority) : priority;
+    if (priorityNum >= 8) return 'HIGH';
+    if (priorityNum >= 5) return 'MEDIUM';
+    return 'LOW';
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'TBD';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'reach':
+        return 'red';
+      case 'target':
+        return 'blue';
+      case 'safety':
+        return 'green';
+      default:
+        return 'default';
+    }
+  };
+
+  const tabItems = [
+    {
+      key: 'overview',
+      label: (
+        <div className="tab-label">
+          <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
+          <span>Overview</span>
+        </div>
+      ),
+      children: (
+        <div className="overview-content">
+          <Row gutter={[24, 24]} className="stats-row">
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="Total Applications"
+                  value={applicationsData.overview.totalApplications}
+                  prefix={<FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="Submitted"
+                  value={applicationsData.overview.submitted}
+                  valueStyle={{ color: '#3b82f6' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="In Progress"
+                  value={applicationsData.overview.inProgress}
+                  valueStyle={{ color: '#f59e0b' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={12} sm={6}>
+              <Card className="stat-card">
+                <Statistic
+                  title="Accepted"
+                  value={applicationsData.overview.accepted}
+                  valueStyle={{ color: '#22c55e' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={16}>
+              <Card title="Recent Activities" className="applications-card">
+                <List
+                  dataSource={[
+                    ...applicationsData.applications.map((app: any) => ({ ...app, type: 'application' })),
+                    ...applicationsData.scholarships.map((scholarship: any) => ({ ...scholarship, type: 'scholarship' }))
+                  ].sort((a: any, b: any) => new Date(b.createdAt || b.updatedAt).getTime() - new Date(a.createdAt || a.updatedAt).getTime()).slice(0, 5)}
+                  renderItem={(item: any) => (
+                    <List.Item className="application-item">
+                      <Card className="application-summary-card">
+                        <div className="application-summary-content">
+                          <div className="application-details">
+                            <ul className="detail-list">
+                              <li>
+                                <FontAwesomeIcon icon={item.type === 'scholarship' ? 'graduation-cap' : 'university'} className="detail-icon" />
+                                <strong>{item.type === 'scholarship' ? 'Scholarship:' : 'University:'}</strong> {item.type === 'scholarship' ? (item?.scholarshipName || 'Unknown Scholarship') : (item?.universityName || 'Unknown University')}
+                              </li>
+                              <li>
+                                <FontAwesomeIcon icon="calendar" className="detail-icon" />
+                                <strong>Deadline:</strong> {formatDate(item.type === 'scholarship' ? item?.applicationDeadline : item?.deadline)}
+                              </li>
+                              <li>
+                                <FontAwesomeIcon icon="star" className="detail-icon" />
+                                <strong>Priority Level:</strong> {item.type === 'scholarship' ? 'N/A' : `${getPriorityText(item?.priority)} (${item?.priority}/10)`}
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </Card>
+                    </List.Item>
+                  )}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card title="Upcoming Deadlines" className="deadlines-card">
+                <List
+                  dataSource={[
+                    ...applicationsData.applications
+                      .filter((app: any) => app?.status === 'under_review' || app?.status === 'applying')
+                      .map((app: any) => ({ ...app, type: 'application' })),
+                    ...applicationsData.scholarships
+                      .filter((scholarship: any) => scholarship?.status === 'researching' || scholarship?.status === 'applying' || scholarship?.status === 'eligible')
+                      .map((scholarship: any) => ({ ...scholarship, type: 'scholarship' }))
+                  ].sort((a: any, b: any) => {
+                    const dateA = new Date(a.type === 'scholarship' ? a.applicationDeadline : a.deadline);
+                    const dateB = new Date(b.type === 'scholarship' ? b.applicationDeadline : b.deadline);
+                    return dateA.getTime() - dateB.getTime();
+                  }).slice(0, 5)}
+                  renderItem={(item: any) => (
+                    <List.Item className="deadline-item">
+                      <div className="deadline-content">
+                        <div className="deadline-title">
+                          {item.type === 'scholarship' 
+                            ? (item?.scholarshipName || 'Unknown Scholarship')
+                            : (item?.universityName || 'Unknown University')
+                          }
+                        </div>
+                        <div className="deadline-date">
+                          {item.type === 'scholarship' 
+                            ? (item?.applicationDeadline ? new Date(item.applicationDeadline).toLocaleDateString() : 'TBD')
+                            : (item?.deadline ? new Date(item.deadline).toLocaleDateString() : 'TBD')
+                          }
+                        </div>
+                      </div>
+                      <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item?.category)}>
+                        {item.type === 'scholarship' ? 'SCHOLARSHIP' : 'UNIVERSITY'}
+                      </Tag>
+                    </List.Item>
+                  )}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      ),
+    },
+    {
+      key: 'applications',
+      label: (
+        <div className="tab-label">
+          <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
+          <span>Applications</span>
+        </div>
+      ),
+      children: (
+        <div className="applications-content">
+          <div className="applications-header">
+            <h3>College Applications</h3>
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
+              size="large"
+              onClick={handleNewApplication}
+            >
+              Add Application
+            </Button>
+          </div>
+          <List
+            dataSource={applicationsData.applications}
+            renderItem={(application: any) => (
+              <List.Item className="application-detail-item">
+                <Card className="application-card">
+                  <div className="application-card-content">
+
+                    <div className="application-header">
+                      <div className="university-name">{application.universityName || 'Unknown University'}</div>
+                      <div className="application-status">{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</div>
+                    </div>
+
+                    <div className="application-details">
+                      <ul className="detail-list">
+                        <li>
+                          <FontAwesomeIcon icon="university" className="detail-icon" />
+                          <strong>University:</strong>
+                          <span>{application.universityName || 'Unknown University'}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="graduation-cap" className="detail-icon" />
+                          <strong>Major:</strong>
+                          <span>{application.major || 'Not specified'}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
+                          <strong>Application Type:</strong>
+                          <span>{application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
+                          <strong>Deadline:</strong>
+                          <span>{formatDate(application.deadline)}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="star" className="detail-icon" />
+                          <strong>Priority Level:</strong>
+                          <span>{getPriorityText(application.priority)} ({application.priority}/10)</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="info-circle" className="detail-icon" />
+                          <strong>Status:</strong>
+                          <span>{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="application-footer">
+                      {application.notes && (
+                        <div className="application-notes">
+                          <div className="notes-label">Notes</div>
+                          <div className="notes-content">{application.notes}</div>
+                        </div>
+                      )}
+                      <div className="application-actions">
+                        <Button 
+                          size="small"
+                          onClick={() => handleDeleteApplication(application)}
+                          style={{ 
+                            backgroundColor: '#8b0000', 
+                            borderColor: '#8b0000', 
+                            color: 'white' 
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#660000';
+                            e.currentTarget.style.borderColor = '#660000';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#8b0000';
+                            e.currentTarget.style.borderColor = '#8b0000';
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </List.Item>
+            )}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'scholarships',
+      label: (
+        <div className="tab-label">
+          <FontAwesomeIcon icon={APPLICATION_ICONS.SCHOLARSHIPS} />
+          <span>Scholarships</span>
+        </div>
+      ),
+      children: (
+        <div className="scholarships-content">
+          <div className="scholarships-header">
+            <h3>Scholarship Applications</h3>
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
+              size="large"
+              onClick={() => navigate('/student-hub/applications/scholarships/new')}
+            >
+              Add Scholarship
+            </Button>
+          </div>
+          <List
+            dataSource={applicationsData.scholarships}
+            renderItem={(scholarship: any) => {
+              console.log('Rendering scholarship:', scholarship);
+              return (
+              <List.Item className="scholarship-item">
+                <Card className="scholarship-card">
+                  <div className="scholarship-card-content">
+                    <div className="scholarship-header">
+                      <div className="scholarship-name">
+                        {scholarship?.scholarshipName || 'Unknown Scholarship'}
+                        <span className="scholarship-amount-inline">${scholarship?.amount?.toLocaleString() || '0'}</span>
+                      </div>
+                      <div className="scholarship-status">{scholarship?.status?.toUpperCase() || 'UNKNOWN'}</div>
+                    </div>
+
+                    <div className="scholarship-details">
+                      <ul className="detail-list">
+                        <li>
+                          <FontAwesomeIcon icon="building" className="detail-icon" />
+                          <strong>Organization:</strong>
+                          <span>{scholarship?.organization || 'Unknown Organization'}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
+                          <strong>Deadline:</strong>
+                          <span>{formatDate(scholarship?.applicationDeadline)}</span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
+                          <strong>Requirements:</strong>
+                          <span>
+                            {scholarship?.requirements ? 
+                              Object.entries(scholarship.requirements)
+                                .filter(([_, req]: [string, any]) => req?.required)
+                                .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+                                .join(', ') || 'None specified'
+                              : 'None specified'
+                            }
+                          </span>
+                        </li>
+                        <li>
+                          <FontAwesomeIcon icon="info-circle" className="detail-icon" />
+                          <strong>Status:</strong>
+                          <span>{scholarship?.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    
+                    {scholarship?.notes && (
+                      <div className="scholarship-notes">
+                        <div className="notes-label">NOTES</div>
+                        <div className="notes-content">{scholarship.notes}</div>
+                      </div>
+                    )}
+                    
+                    <div className="scholarship-actions">
+                      <Button
+                        size="small"
+                        onClick={() => handleDeleteScholarship(scholarship.id)}
+                        style={{ 
+                          backgroundColor: '#8b0000', 
+                          borderColor: '#8b0000', 
+                          color: 'white' 
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#660000';
+                          e.currentTarget.style.borderColor = '#660000';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#8b0000';
+                          e.currentTarget.style.borderColor = '#8b0000';
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </List.Item>
+              );
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="applications-page">
+      <div className="page-header">
+        <h1 className="page-title">College Applications</h1>
+        <p className="page-subtitle">Track and manage your college applications</p>
+      </div>
+
+      <Card className="applications-main-card">
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          items={tabItems}
+          className="applications-tabs"
+        />
+      </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        title="Delete Application"
+        open={deleteModalVisible}
+        onOk={confirmDeleteApplication}
+        onCancel={cancelDeleteApplication}
+        confirmLoading={deleteLoading}
+        okText="Delete"
+        cancelText="Cancel"
+        okButtonProps={{ 
+          style: { 
+            backgroundColor: '#8b0000', 
+            borderColor: '#8b0000',
+            color: 'white'
+          }
+        }}
+      >
+        <p>Are you sure you want to delete this application?</p>
+        {applicationToDelete && (
+          <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 6 }}>
+            <strong>{applicationToDelete.universityName}</strong>
+            <br />
+            <small>Category: {applicationToDelete.category?.toUpperCase()}</small>
+            <br />
+            <small>Status: {applicationToDelete.status?.replace('_', ' ').toUpperCase()}</small>
+          </div>
+        )}
+        <p style={{ marginTop: 16, color: '#8b0000' }}>
+          <FontAwesomeIcon icon="exclamation-triangle" style={{ marginRight: 8, color: '#8b0000' }} />
+          This action cannot be undone.
+        </p>
+      </Modal>
+    </div>
+  );
+};
+
+export default ApplicationsPage;

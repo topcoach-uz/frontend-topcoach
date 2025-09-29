@@ -119,3 +119,367 @@ export const subscriptionPlansApi = RtkApi.injectEndpoints({
 });
 
 export const { useGetSubscriptionPlansQuery, useGetSubscriptionUsageQuery, useGetCurrentSubscriptionQuery, useCancelSubscriptionMutation, useDowngradeSubscriptionMutation } = subscriptionPlansApi;
+
+// ========================================
+// 🎓 STUDENT HUB API SERVICES
+// ========================================
+// Import types from student-hub
+import {
+  DashboardStats,
+  Notification,
+  CreateNotificationRequest,
+  UpdateNotificationRequest,
+  ProgressTracking,
+  CreateProgressTrackingRequest,
+  UpdateProgressTrackingRequest,
+  UserPreferences,
+  UpdateUserPreferencesRequest,
+  StudentProfile,
+  CreateStudentProfileRequest,
+  UpdateStudentProfileRequest,
+  CollegeApplication,
+  CreateCollegeApplicationRequest,
+  UpdateCollegeApplicationRequest,
+  ApplicationTask,
+  CreateApplicationTaskRequest,
+  UpdateApplicationTaskRequest,
+  ScholarshipApplication,
+  CreateScholarshipApplicationRequest,
+  UpdateScholarshipApplicationRequest,
+  StudentEssay,
+  CreateStudentEssayRequest,
+  UpdateStudentEssayRequest,
+  PaginatedResponse,
+  ApiResponse,
+} from '../student-hub/types';
+
+// Re-export types for external use
+export type {
+  DashboardStats,
+  Notification,
+  CreateNotificationRequest,
+  UpdateNotificationRequest,
+  ProgressTracking,
+  CreateProgressTrackingRequest,
+  UpdateProgressTrackingRequest,
+  UserPreferences,
+  UpdateUserPreferencesRequest,
+  StudentProfile,
+  CreateStudentProfileRequest,
+  UpdateStudentProfileRequest,
+  CollegeApplication,
+  CreateCollegeApplicationRequest,
+  UpdateCollegeApplicationRequest,
+  ApplicationTask,
+  CreateApplicationTaskRequest,
+  UpdateApplicationTaskRequest,
+  ScholarshipApplication,
+  CreateScholarshipApplicationRequest,
+  UpdateScholarshipApplicationRequest,
+  StudentEssay,
+  CreateStudentEssayRequest,
+  UpdateStudentEssayRequest,
+  PaginatedResponse,
+  ApiResponse,
+};
+
+// Student Hub Dashboard API
+export const studentHubDashboardApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Get dashboard stats
+    getDashboardStats: builder.query<DashboardStats, void>({
+      query: () => ({
+        url: '/student-hub/dashboard',
+        method: 'GET',
+      }),
+      providesTags: [
+        'StudentProfile',
+        'CollegeApplications',
+        'ApplicationTasks',
+        'ScholarshipApplications',
+        'StudentEssays',
+        'Notifications',
+        'ProgressTracking',
+        'UserPreferences',
+      ],
+    }),
+
+    // Get notifications
+    getNotifications: builder.query<PaginatedResponse<Notification>, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: '/notifications',
+        method: 'GET',
+        params: { page, limit },
+      }),
+      providesTags: ['Notifications'],
+    }),
+
+    // Get unread notification count
+    getUnreadNotificationCount: builder.query<{ count: number }, void>({
+      query: () => ({
+        url: '/notifications/unread-count',
+        method: 'GET',
+      }),
+      providesTags: ['Notifications'],
+    }),
+
+    // Mark notification as read
+    markNotificationAsRead: builder.mutation<void, string>({
+      query: (notificationId) => ({
+        url: `/notifications/${notificationId}/read`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
+    // Get progress tracking
+    getProgressTracking: builder.query<ProgressTracking[], void>({
+      query: () => ({
+        url: '/progress-tracking',
+        method: 'GET',
+      }),
+      providesTags: ['ProgressTracking'],
+    }),
+
+    // Create progress tracking
+    createProgressTracking: builder.mutation<ProgressTracking, CreateProgressTrackingRequest>({
+      query: (data) => ({
+        url: '/progress-tracking',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ProgressTracking'],
+    }),
+
+    // Update progress tracking
+    updateProgressTracking: builder.mutation<ProgressTracking, { id: string; data: UpdateProgressTrackingRequest }>({
+      query: ({ id, data }) => ({
+        url: `/progress-tracking/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['ProgressTracking'],
+    }),
+
+    // Get user preferences
+    getUserPreferences: builder.query<UserPreferences, void>({
+      query: () => ({
+        url: '/user-preferences',
+        method: 'GET',
+      }),
+      providesTags: ['UserPreferences'],
+    }),
+
+    // Update user preferences
+    updateUserPreferences: builder.mutation<UserPreferences, UpdateUserPreferencesRequest>({
+      query: (data) => ({
+        url: '/user-preferences',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['UserPreferences'],
+    }),
+  }),
+});
+
+// Student Profile API - REMOVED (using student-hub API instead)
+
+// Application Tracking API
+export const applicationTrackingApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Get college applications
+    getCollegeApplications: builder.query<PaginatedResponse<CollegeApplication>, void>({
+      query: () => ({
+        url: '/application-tracking/college-applications',
+        method: 'GET',
+      }),
+      providesTags: ['CollegeApplications'],
+    }),
+
+    // Create college application
+    createCollegeApplication: builder.mutation<CollegeApplication, CreateCollegeApplicationRequest>({
+      query: (data) => ({
+        url: '/application-tracking/college-applications',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['CollegeApplications'],
+    }),
+
+    // Update college application
+    updateCollegeApplication: builder.mutation<CollegeApplication, { id: string; data: UpdateCollegeApplicationRequest }>({
+      query: ({ id, data }) => ({
+        url: `/application-tracking/college-applications/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['CollegeApplications'],
+    }),
+
+    // Delete college application
+    deleteCollegeApplication: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/application-tracking/college-applications/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['CollegeApplications'],
+    }),
+
+    // Get application tasks
+    getApplicationTasks: builder.query<PaginatedResponse<ApplicationTask>, void>({
+      query: () => ({
+        url: '/application-tracking/tasks',
+        method: 'GET',
+      }),
+      providesTags: ['ApplicationTasks'],
+    }),
+
+    // Create application task
+    createApplicationTask: builder.mutation<ApplicationTask, CreateApplicationTaskRequest>({
+      query: (data) => ({
+        url: '/application-tracking/tasks',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ApplicationTasks'],
+    }),
+
+    // Update application task
+    updateApplicationTask: builder.mutation<ApplicationTask, { id: string; data: UpdateApplicationTaskRequest }>({
+      query: ({ id, data }) => ({
+        url: `/application-tracking/tasks/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['ApplicationTasks'],
+    }),
+
+    // Delete application task
+    deleteApplicationTask: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/application-tracking/tasks/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ApplicationTasks'],
+    }),
+
+    // Get scholarship applications
+    getScholarshipApplications: builder.query<PaginatedResponse<ScholarshipApplication>, void>({
+      query: () => ({
+        url: '/application-tracking/scholarship-applications',
+        method: 'GET',
+      }),
+      providesTags: ['ScholarshipApplications'],
+    }),
+
+    // Create scholarship application
+    createScholarshipApplication: builder.mutation<ScholarshipApplication, CreateScholarshipApplicationRequest>({
+      query: (data) => ({
+        url: '/application-tracking/scholarship-applications',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['ScholarshipApplications'],
+    }),
+
+    // Update scholarship application
+    updateScholarshipApplication: builder.mutation<ScholarshipApplication, { id: string; data: UpdateScholarshipApplicationRequest }>({
+      query: ({ id, data }) => ({
+        url: `/application-tracking/scholarship-applications/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['ScholarshipApplications'],
+    }),
+
+    // Delete scholarship application
+    deleteScholarshipApplication: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/application-tracking/scholarship-applications/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ScholarshipApplications'],
+    }),
+  }),
+});
+
+// Essay Management API
+export const essayManagementApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Get student essays
+    getStudentEssays: builder.query<PaginatedResponse<StudentEssay>, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: '/essay-management/essays',
+        method: 'GET',
+        params: { page, limit },
+      }),
+      providesTags: ['StudentEssays'],
+    }),
+
+    // Create student essay
+    createStudentEssay: builder.mutation<StudentEssay, CreateStudentEssayRequest>({
+      query: (data) => ({
+        url: '/essay-management/essays',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['StudentEssays'],
+    }),
+
+    // Update student essay
+    updateStudentEssay: builder.mutation<StudentEssay, { id: string; data: UpdateStudentEssayRequest }>({
+      query: ({ id, data }) => ({
+        url: `/essay-management/essays/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['StudentEssays'],
+    }),
+
+    // Delete student essay
+    deleteStudentEssay: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/essay-management/essays/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['StudentEssays'],
+    }),
+  }),
+});
+
+// Export all student hub hooks
+export const {
+  useGetDashboardStatsQuery,
+  useGetNotificationsQuery,
+  useGetUnreadNotificationCountQuery,
+  useMarkNotificationAsReadMutation,
+  useGetProgressTrackingQuery,
+  useCreateProgressTrackingMutation,
+  useUpdateProgressTrackingMutation,
+  useGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
+} = studentHubDashboardApi;
+
+// Student Profile API exports removed - using student-hub API instead
+
+export const {
+  useGetCollegeApplicationsQuery,
+  useCreateCollegeApplicationMutation,
+  useUpdateCollegeApplicationMutation,
+  useDeleteCollegeApplicationMutation,
+  useGetApplicationTasksQuery,
+  useCreateApplicationTaskMutation,
+  useUpdateApplicationTaskMutation,
+  useDeleteApplicationTaskMutation,
+  useGetScholarshipApplicationsQuery,
+  useCreateScholarshipApplicationMutation,
+  useUpdateScholarshipApplicationMutation,
+  useDeleteScholarshipApplicationMutation,
+} = applicationTrackingApi;
+
+export const {
+  useGetStudentEssaysQuery,
+  useCreateStudentEssayMutation,
+  useUpdateStudentEssayMutation,
+  useDeleteStudentEssayMutation,
+} = essayManagementApi;

@@ -4,6 +4,9 @@ import { useScreenSize } from 'src/hooks/useScreenSize.ts';
 import AuthButtonGroup from './_components/AuthButtonGroup/index.tsx';
 import EditProfileModal from './_components/EditProfileModal/index.tsx';
 import ProfileDropdown from './_components/ProfileDropdown/index.tsx';
+import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
+import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
+import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from './actions.module.scss';
 import ActionsMobileVersion from './mobile/index.tsx';
 import useActions from './useActions.tsx';
@@ -66,31 +69,17 @@ export default function Actions() {
         setIsModalVisible={setIsModalVisible}
       />
       
-      {/* AI Major Match Button */}
+      {/* AI Major Match Button - Commented out
       <Link to="/ai-major-match" className={styles.aiMajorMatchButton}>
         <div className={styles.aiIconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className={styles.aiIcon}>
-            <defs>
-              <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ffffff" />
-                <stop offset="100%" stopColor="#f0f0f0" />
-              </linearGradient>
-            </defs>
-            {/* Diamond shape */}
-            <path 
-              d="M12 2L22 12L12 22L2 12L12 2Z" 
-              fill="url(#aiGradient)" 
-              stroke="#ffffff" 
-              strokeWidth="1"
-            />
-            {/* AI text */}
-            <text x="12" y="15" textAnchor="middle" fill="#333333" fontSize="10" fontWeight="bold">
-              AI
-            </text>
-          </svg>
+          <AiSearchStarsSvg 
+            className={styles.aiIcon}
+            style={{ width: '20px', height: '20px', fill: 'white' }}
+          />
         </div>
         Major Match
       </Link>
+      */}
 
       {/* Dark mode toggle disabled
       <button className={styles.mode_switch} onClick={handleDarkMode}>

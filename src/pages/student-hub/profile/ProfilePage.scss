@@ -1,0 +1,309 @@
+// 🎓 Student Profile Page Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.student-profile-page {
+  .profile-header-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    margin-bottom: $space-6;
+
+    .profile-header-content {
+      .profile-title {
+        font-size: $text-3xl;
+        font-weight: $font-bold;
+        color: $text-primary;
+        margin: 0 0 $space-2 0;
+      }
+
+      .profile-subtitle {
+        font-size: $text-lg;
+        color: $text-secondary;
+        margin: 0 0 $space-4 0;
+      }
+
+      .profile-status {
+        display: flex;
+        align-items: center;
+        gap: $space-4;
+
+        .last-updated {
+          font-size: $text-sm;
+          color: $text-tertiary;
+        }
+      }
+    }
+
+    .profile-stats {
+      text-align: center;
+
+      .profile-completion-header {
+        margin-bottom: $space-3;
+
+        .completion-title {
+          color: $text-secondary;
+          font-size: $text-sm;
+          font-weight: $font-medium;
+        }
+      }
+
+      .ant-statistic {
+        .ant-statistic-title {
+          color: $text-secondary;
+          font-size: $text-sm;
+          font-weight: $font-medium;
+          margin-bottom: $space-2;
+        }
+
+        .ant-statistic-content {
+          color: $primary-500;
+          font-size: $text-3xl;
+          font-weight: $font-bold;
+        }
+      }
+
+      .completion-progress {
+        margin-top: $space-3;
+      }
+    }
+  }
+
+  .sections-overview-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    margin-bottom: $space-6;
+
+    .sections-title {
+      font-size: $text-xl;
+      font-weight: $font-semibold;
+      color: $text-primary;
+      margin: 0 0 $space-4 0;
+    }
+
+    .section-card {
+      display: flex;
+      align-items: center;
+      gap: $space-3;
+      padding: $space-4;
+      border: 1px solid $border-light;
+      border-radius: $radius-lg;
+      background: $bg-primary;
+      transition: all $transition-base;
+
+      &:hover {
+        border-color: $primary-300;
+        box-shadow: $shadow-sm;
+        transform: translateY(-2px);
+      }
+
+      .section-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: $primary-50;
+        border-radius: $radius-lg;
+        color: $primary-500;
+      }
+
+      .section-info {
+        flex: 1;
+
+        .section-name {
+          font-size: $text-sm;
+          font-weight: $font-medium;
+          color: $text-primary;
+          margin-bottom: $space-2;
+        }
+
+        .section-progress {
+          margin-bottom: $space-2;
+        }
+
+        .section-status {
+          font-size: $text-xs;
+        }
+      }
+    }
+  }
+
+  .profile-tabs-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+
+    .profile-tabs {
+      // Global override for any tab underlines
+      .ant-tabs-ink-bar,
+      .ant-tabs-tab-ink-bar,
+      .ant-tabs-nav-operations .ant-tabs-nav-more,
+      .ant-tabs-nav .ant-tabs-ink-bar {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
+      .ant-tabs-nav {
+        margin-bottom: $space-6;
+        
+        // Remove horizontal line below tabs
+        &::before {
+          display: none !important;
+        }
+        
+        // Remove any default tab ink bar/underline
+        .ant-tabs-ink-bar {
+          display: none !important;
+        }
+        
+        // Remove any tab line indicators
+        .ant-tabs-tab-ink-bar {
+          display: none !important;
+        }
+
+        .ant-tabs-nav-wrap {
+          .ant-tabs-nav-list {
+            // Remove any default tab underlines
+            &::after {
+              display: none !important;
+            }
+            
+            .ant-tabs-tab {
+              padding: $space-3 $space-4;
+              border-radius: $radius-lg;
+              margin-right: $space-2;
+              border: 1px solid $border-light;
+              background: $bg-secondary;
+              transition: all $transition-base;
+
+              &:hover {
+                background: $primary-50;
+                border-color: $primary-300;
+                color: $primary-600;
+              }
+
+              &.ant-tabs-tab-active {
+                background: $primary-100;
+                border: 1px solid $primary-500 !important;
+                border-bottom: 1px solid $primary-500 !important;
+                color: $primary-700;
+                position: relative;
+
+                // Remove any default Ant Design underline
+                &::after {
+                  display: none !important;
+                }
+
+                .ant-tabs-tab-btn {
+                  color: $primary-700;
+                  font-weight: $font-semibold;
+                }
+              }
+
+              .tab-label {
+                display: flex;
+                align-items: center;
+                gap: $space-2;
+
+                .anticon {
+                  font-size: $text-base;
+                }
+
+                span {
+                  font-size: $text-sm;
+                  font-weight: $font-medium;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .ant-tabs-content-holder {
+        .ant-tabs-tabpane {
+          padding: 0;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-lg) {
+  .student-profile-page {
+    .profile-header-card {
+      .ant-row {
+        text-align: center;
+      }
+
+      .profile-stats {
+        margin-top: $space-4;
+      }
+    }
+
+    .sections-overview-card {
+      .section-card {
+        flex-direction: column;
+        text-align: center;
+
+        .section-icon {
+          margin-bottom: $space-2;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .student-profile-page {
+    .profile-header-card {
+      .profile-header-content {
+        .profile-title {
+          font-size: $text-2xl;
+        }
+
+        .profile-subtitle {
+          font-size: $text-base;
+        }
+      }
+    }
+
+    .sections-overview-card {
+      .ant-col {
+        margin-bottom: $space-3;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .student-profile-page {
+    .profile-header-card,
+    .sections-overview-card,
+    .profile-tabs-card {
+      background: $gray-800;
+      border-color: $gray-700;
+
+      .profile-title,
+      .sections-title {
+        color: $text-inverse;
+      }
+
+      .profile-subtitle {
+        color: $gray-300;
+      }
+    }
+
+    .section-card {
+      background: $gray-700;
+      border-color: $gray-600;
+
+      &:hover {
+        border-color: $primary-400;
+      }
+    }
+  }
+}

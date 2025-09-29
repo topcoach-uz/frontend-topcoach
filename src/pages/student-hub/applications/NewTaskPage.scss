@@ -1,0 +1,136 @@
+// 📋 New Task Page Styles
+@import '../../../styles/student-hub-design-system.scss';
+
+.new-task-page {
+  .page-header {
+    margin-bottom: $space-8;
+    
+    .page-title {
+      font-size: $text-3xl;
+      font-weight: $font-bold;
+      color: $text-primary;
+      margin: 0 0 $space-2 0;
+    }
+    
+    .page-subtitle {
+      font-size: $text-lg;
+      color: $text-secondary;
+      margin: 0;
+    }
+  }
+
+  .task-form-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+
+    .task-form {
+      .ant-form-item {
+        margin-bottom: $space-6;
+
+        .ant-form-item-label {
+          padding-bottom: $space-2;
+
+          label {
+            font-weight: $font-medium;
+            color: $text-primary;
+          }
+        }
+
+        .ant-input,
+        .ant-select-selector,
+        .ant-picker {
+          border-radius: $radius-md;
+          border: 1px solid $border-light;
+          transition: all $transition-base;
+
+          &:hover {
+            border-color: $primary-300;
+          }
+
+          &:focus,
+          &.ant-input-focused,
+          &.ant-select-focused .ant-select-selector,
+          &.ant-picker-focused {
+            border-color: $primary-500;
+            box-shadow: 0 0 0 2px rgba($primary-500, 0.1);
+          }
+        }
+
+        .ant-input {
+          padding: $space-3 $space-4;
+          font-size: $text-base;
+        }
+
+        .ant-select-selector {
+          padding: $space-2 $space-4;
+          height: auto;
+          min-height: 40px;
+        }
+
+        .ant-picker {
+          padding: $space-2 $space-4;
+          height: 40px;
+        }
+      }
+
+      .form-actions {
+        margin-top: $space-8;
+        padding-top: $space-6;
+        border-top: 1px solid $border-light;
+        display: flex;
+        justify-content: flex-end;
+
+        .ant-btn {
+          height: 48px;
+          padding: 0 $space-6;
+          font-size: $text-base;
+          font-weight: $font-medium;
+          border-radius: $radius-lg;
+          transition: all $transition-base;
+
+          &.ant-btn-default {
+            border-color: $border-medium;
+            color: $text-secondary;
+
+            &:hover {
+              border-color: $primary-300;
+              color: $primary-500;
+            }
+          }
+
+          &.ant-btn-primary {
+            background: $primary-500;
+            border-color: $primary-500;
+            color: white;
+
+            &:hover {
+              background: $primary-600;
+              border-color: $primary-600;
+              transform: translateY(-1px);
+              box-shadow: $shadow-md;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .new-task-page {
+    .task-form-card {
+      .task-form {
+        .form-actions {
+          flex-direction: column;
+          gap: $space-4;
+
+          .ant-btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
