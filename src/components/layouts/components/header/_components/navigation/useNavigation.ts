@@ -18,10 +18,10 @@ export default function useNavigation() {
       path: '/',
       text: t('header.home'),
     },
-    ...(isAuthenticated ? [{
+    {
       path: '/student-hub',
       text: t('header.studentHub', 'My Journey'),
-    }] : []),
+    },
     {
       path: '/mentors',
       text: t('header.mentors'),

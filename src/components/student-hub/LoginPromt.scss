@@ -1,0 +1,174 @@
+@import '../../styles/student-hub-design-system.scss';
+
+.login-prompt {
+  min-height: 100vh;
+  padding: $space-6;
+
+  .login-prompt-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .welcome-card {
+    margin-bottom: $space-8;
+    border-radius: $radius-xl;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: none;
+
+    .welcome-header {
+      text-align: center;
+      padding: $space-6 0;
+
+      .welcome-icon {
+        margin-bottom: $space-4;
+      }
+
+      .welcome-title {
+        color: #2c3e50;
+        margin-bottom: $space-4;
+        font-weight: 700;
+      }
+
+      .welcome-description {
+        font-size: $text-lg;
+        color: #6c757d;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+    }
+
+    .login-actions {
+      padding: $space-4 0;
+
+      .action-buttons {
+        display: flex;
+        gap: $space-4;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .signin-button {
+          background-color: #8b0000;
+          border-color: #8b0000;
+          min-width: 140px;
+          height: 48px;
+          font-size: $text-lg;
+          font-weight: 600;
+
+          &:hover {
+            background-color: #a00000;
+            border-color: #a00000;
+          }
+        }
+
+        .signup-button {
+          border-color: #8b0000;
+          color: #8b0000;
+          min-width: 140px;
+          height: 48px;
+          font-size: $text-lg;
+          font-weight: 600;
+
+          &:hover {
+            background-color: #8b0000;
+            border-color: #8b0000;
+            color: white;
+          }
+        }
+      }
+
+      .login-note {
+        text-align: center;
+        font-size: $text-sm;
+        margin-top: $space-2;
+      }
+    }
+  }
+
+  .features-section {
+    margin-bottom: $space-8;
+
+    .features-title {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: $space-6;
+      font-weight: 700;
+    }
+
+    .feature-card {
+      height: 100%;
+      border-radius: $radius-lg;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: none;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      .feature-content {
+        text-align: center;
+        padding: $space-2;
+
+        .feature-icon {
+          margin-bottom: $space-3;
+        }
+
+        .feature-title {
+          color: #2c3e50;
+          margin-bottom: $space-3;
+          font-weight: 600;
+        }
+
+        .feature-description {
+          color: #6c757d;
+          line-height: 1.5;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .login-prompt {
+    padding: $space-4;
+
+    .welcome-card {
+      .welcome-header {
+        padding: $space-4 0;
+
+        .welcome-title {
+          font-size: $text-2xl;
+        }
+
+        .welcome-description {
+          font-size: $text-base;
+        }
+      }
+
+      .login-actions {
+        .action-buttons {
+          flex-direction: column;
+          align-items: center;
+
+          .signin-button,
+          .signup-button {
+            width: 100%;
+            max-width: 280px;
+          }
+        }
+      }
+    }
+
+    .features-section {
+      .features-title {
+        font-size: $text-xl;
+      }
+    }
+
+  }
+}

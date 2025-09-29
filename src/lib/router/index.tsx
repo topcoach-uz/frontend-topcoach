@@ -154,9 +154,7 @@ function RouterProvider() {
               />
               <Route 
                 path="/student-hub/*" 
-                element={
-                  isAuthenticated ? <StudentHubRoutesLazy /> : <Navigate to="/auth/signin" replace />
-                } 
+                element={<StudentHubRoutesLazy />}
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />

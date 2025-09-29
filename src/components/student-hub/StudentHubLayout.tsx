@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Drawer } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTypedSelector } from 'src/app/store';
 import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
+import LoginPrompt from './LoginPrompt';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -18,6 +20,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
 
   // Track window width changes
   useEffect(() => {
@@ -89,6 +92,106 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
     return [path];
   };
 
+  // If user is not authenticated, show login prompt with sidebar
+  if (!isAuthenticated) {
+    return (
+      <Layout className="student-hub-layout">
+        {/* Mobile Header - Only show on very large screens */}
+        {shouldShowMobileHeader && (
+          <Header className="mobile-header">
+            <div className="mobile-header-content">
+              <Button
+                type="text"
+                icon={<MenuIcon />}
+                onClick={() => setMobileDrawerVisible(true)}
+                className="mobile-menu-trigger"
+              />
+              <h1 className="mobile-title">Student Hub</h1>
+              <Button
+                type="text"
+                icon={<BellIcon />}
+                className="mobile-notifications"
+              />
+            </div>
+          </Header>
+        )}
+
+        {/* Desktop Sidebar */}
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          className="desktop-sidebar"
+          width={300}
+          collapsedWidth={80}
+          trigger={null}
+        >
+          <div className="sidebar-header">
+            {!collapsed && (
+              <div className="logo">
+                <span className="logo-text">Student Hub</span>
+              </div>
+            )}
+            <Button
+              type="text"
+              icon={<MenuIcon />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="sidebar-toggle"
+            />
+          </div>
+
+          {collapsed ? (
+            <div className="collapsed-menu">
+              {menuItems.map((item) => (
+                <div
+                  key={item.key}
+                  className={`collapsed-menu-item ${getSelectedKeys().includes(item.key) ? 'selected' : ''}`}
+                  onClick={() => handleMenuClick({ key: item.key })}
+                  title={item.label}
+                >
+                  {item.icon}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Menu
+              mode="inline"
+              selectedKeys={getSelectedKeys()}
+              items={menuItems}
+              onClick={handleMenuClick}
+              className="sidebar-menu"
+            />
+          )}
+        </Sider>
+
+        {/* Mobile Drawer */}
+        <Drawer
+          title="Student Hub"
+          placement="left"
+          onClose={() => setMobileDrawerVisible(false)}
+          open={mobileDrawerVisible}
+          className="mobile-drawer"
+          width={300}
+        >
+          <Menu
+            mode="inline"
+            selectedKeys={getSelectedKeys()}
+            items={menuItems}
+            onClick={handleMenuClick}
+            className="mobile-menu"
+          />
+        </Drawer>
+
+        <Layout className="main-layout">
+          <Content className="main-content">
+            <LoginPrompt />
+          </Content>
+        </Layout>
+      </Layout>
+    );
+  }
+
+  // If user is authenticated, show normal student hub content
   return (
     <Layout className="student-hub-layout">
       {/* Mobile Header - Only show on very large screens */}
