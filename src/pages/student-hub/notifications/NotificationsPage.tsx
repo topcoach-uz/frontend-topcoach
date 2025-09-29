@@ -15,12 +15,12 @@ const NotificationsPage: React.FC = () => {
   // Use real data from API
   const notificationsData = {
     overview: {
-      totalNotifications: notifications?.data?.total || 0,
-      unread: notifications?.data?.unread || 0,
+      totalNotifications: notifications?.totalNotifications || 0,
+      unread: notifications?.unreadCount || 0,
       today: 0, // Not available in current schema
       thisWeek: 0, // Not available in current schema
     },
-    notifications: notifications?.data?.recentActivity || [],
+    notifications: notifications?.notifications || [],
   };
 
   // Button click handlers
