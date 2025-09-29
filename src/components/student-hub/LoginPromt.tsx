@@ -69,7 +69,7 @@ const LoginPrompt: React.FC = () => {
                   type="primary"
                   size="large"
                   onClick={handleSignIn}
-                  icon={<FontAwesomeIcon icon={ACTION_ICONS.LOGIN} />}
+                  icon={<FontAwesomeIcon icon="sign-in-alt" />}
                   className="signin-button"
                 >
                   Sign In
@@ -77,7 +77,7 @@ const LoginPrompt: React.FC = () => {
                 <Button
                   size="large"
                   onClick={handleSignUp}
-                  icon={<FontAwesomeIcon icon={ACTION_ICONS.REGISTER} />}
+                  icon={<FontAwesomeIcon icon="user-plus" />}
                   className="signup-button"
                 >
                   Create Account
