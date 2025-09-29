@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Spin, Alert, Tabs, message, Dropdown, Menu } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +34,18 @@ const Dashboard: React.FC = () => {
   
   // Get user name from user data
   const userName = userData?.profile?.name || 'Student';
+  
+  // State for current time
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
   
   // Fetch the same data as Applications page
   const { data: applicationsResponse, isLoading: applicationsLoading } = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
@@ -457,7 +469,22 @@ const Dashboard: React.FC = () => {
               />
               ) : (
                 <div className="empty-state">
-                  <div className="empty-icon">📅</div>
+                  <div className="empty-icon">
+                    <div className="dynamic-date-icon">
+                      <div className="date-time">{currentTime.toLocaleTimeString('en-US', { 
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                      })}</div>
+                      <div className="date-date">{currentTime.toLocaleDateString('en-US', { 
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}</div>
+                    </div>
+                  </div>
                   <p>No upcoming deadlines</p>
                 </div>
               );
