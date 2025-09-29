@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
-import LoginPrompt from './LoginPrompt';
+import LoginPrompt from 'src/components/student-hub/LoginPrompt';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
