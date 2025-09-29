@@ -1,8 +1,8 @@
 import { RtkApi } from '../api';
 import {
   StudentDocument,
-  CreateDocumentRequest,
-  UpdateDocumentRequest,
+  CreateStudentDocumentRequest,
+  UpdateStudentDocumentRequest,
   PaginatedResponse,
   ApiResponse,
 } from './types';
@@ -116,7 +116,7 @@ export const documentManagementApi = RtkApi.injectEndpoints({
     // Update document
     updateDocument: builder.mutation<
       ApiResponse<StudentDocument>,
-      { id: string; data: UpdateDocumentRequest }
+      { id: string; data: UpdateStudentDocumentRequest }
     >({
       query: ({ id, data }) => ({
         url: `/document-management/${id}`,

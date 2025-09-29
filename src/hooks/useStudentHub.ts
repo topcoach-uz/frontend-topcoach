@@ -7,12 +7,14 @@ import {
   useGetMyStudentProfileQuery,
   useUpdateMyStudentProfileMutation,
   useCalculateCompletionMutation,
-  StudentProfile,
 } from '../app/services/student-hub/studentProfileApi';
 import {
   useGetDashboardStatsQuery,
-  DashboardStats,
 } from '../app/services/student-hub/dashboardApi';
+import {
+  StudentProfile,
+  DashboardStats,
+} from '../app/services/student-hub/types';
 import {
   useGetNotificationsQuery,
   useGetUnreadNotificationCountQuery,

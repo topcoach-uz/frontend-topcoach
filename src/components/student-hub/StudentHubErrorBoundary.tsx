@@ -57,14 +57,14 @@ class StudentHubErrorBoundary extends Component<Props, State> {
               <div className="error-actions">
                 <Button
                   type="primary"
-                  icon={<FontAwesomeIcon icon="fas fa-redo" />}
+                  icon={<FontAwesomeIcon icon="fas fa-redo" as any />}
                   onClick={this.handleRetry}
                 >
                   Try Again
                 </Button>
                 <Button
                   type="default"
-                  icon={<FontAwesomeIcon icon="fas fa-refresh" />}
+                  icon={<FontAwesomeIcon icon="fas fa-refresh" as any />}
                   onClick={this.handleReload}
                 >
                   Reload Page

@@ -151,23 +151,7 @@ const ViewApplicationPage: React.FC = () => {
               <Descriptions.Item label="Deadline">
                 {application.deadline ? new Date(application.deadline).toLocaleDateString() : 'TBD'}
               </Descriptions.Item>
-              {application.submittedAt && (
-                <Descriptions.Item label="Submitted Date">
-                  {new Date(application.submittedAt).toLocaleDateString()}
-                </Descriptions.Item>
-              )}
-              {application.decisionDate && (
-                <Descriptions.Item label="Decision Date">
-                  {new Date(application.decisionDate).toLocaleDateString()}
-                </Descriptions.Item>
-              )}
-              {application.decision && (
-                <Descriptions.Item label="Decision">
-                  <Tag color={application.decision === 'accepted' ? 'green' : application.decision === 'rejected' ? 'red' : 'orange'}>
-                    {application.decision.toUpperCase()}
-                  </Tag>
-                </Descriptions.Item>
-              )}
+              {/* Submitted and decision dates not available in current schema */}
             </Descriptions>
 
             {application.notes && (
@@ -273,25 +257,7 @@ const ViewApplicationPage: React.FC = () => {
                 />
               </div>
               
-              {application.submittedAt && (
-                <div className="submitted-info">
-                  <FontAwesomeIcon icon="check-circle" style={{ color: 'green', marginRight: 8 }} />
-                  <span>Submitted on {new Date(application.submittedAt).toLocaleDateString()}</span>
-                </div>
-              )}
-
-              {application.decision && (
-                <div className="decision-info">
-                  <FontAwesomeIcon 
-                    icon={application.decision === 'accepted' ? 'check-circle' : 'times-circle'} 
-                    style={{ 
-                      color: application.decision === 'accepted' ? 'green' : 'red', 
-                      marginRight: 8 
-                    }} 
-                  />
-                  <span>Decision: {application.decision.toUpperCase()}</span>
-                </div>
-              )}
+              {/* Submitted and decision info not available in current schema */}
 
               <div className="progress-info">
                 <h4>Application Progress</h4>
@@ -299,18 +265,7 @@ const ViewApplicationPage: React.FC = () => {
                   <span>Application Started</span>
                   <FontAwesomeIcon icon="check-circle" style={{ color: 'green' }} />
                 </div>
-                {application.submittedAt && (
-                  <div className="progress-item">
-                    <span>Application Submitted</span>
-                    <FontAwesomeIcon icon="check-circle" style={{ color: 'green' }} />
-                  </div>
-                )}
-                {application.decision && (
-                  <div className="progress-item">
-                    <span>Decision Received</span>
-                    <FontAwesomeIcon icon="check-circle" style={{ color: 'green' }} />
-                  </div>
-                )}
+                {/* Application submitted and decision progress not available in current schema */}
               </div>
             </div>
           </Card>

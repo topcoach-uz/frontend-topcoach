@@ -33,12 +33,12 @@ const Dashboard: React.FC = () => {
   const { data: userData } = useGetMeQuery();
   
   // Get user name from user data
-  const userName = userData?.profileName || userData?.profile?.name || 'Student';
+  const userName = userData?.profile?.name || 'Student';
   
   // Fetch the same data as Applications page
   const { data: applicationsResponse, isLoading: applicationsLoading } = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const { data: scholarshipsResponse, isLoading: scholarshipsLoading } = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 });
-  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery();
+  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery({ page: 1, limit: 100 });
   const { data: documentsResponse, isLoading: documentsLoading } = useGetDocumentsQuery({ page: 1, limit: 100 });
 
   // Helper function to format dates like Applications page

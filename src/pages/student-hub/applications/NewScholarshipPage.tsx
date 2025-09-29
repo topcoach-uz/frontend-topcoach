@@ -19,6 +19,7 @@ const NewScholarshipPage: React.FC = () => {
     try {
       // Map form values to the expected API format
       const scholarshipData = {
+        scholarshipId: `scholarship_${Date.now()}`, // Generate a unique scholarship ID
         scholarshipName: values.scholarshipName,
         organization: values.provider,
         amount: values.amount,

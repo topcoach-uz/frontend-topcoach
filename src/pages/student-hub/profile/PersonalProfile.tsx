@@ -49,7 +49,7 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
         ethnicity: personalData.demographics?.ethnicity?.[0] || '',
         citizenship: personalData.demographics?.citizenship || '',
         visaStatus: personalData.demographics?.visaStatus || '',
-        languages: personalData.demographics?.languages || [],
+        languages: [], // Languages not available in demographics
       };
       
       console.log('Setting form values:', formData);
