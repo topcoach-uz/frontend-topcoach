@@ -10,17 +10,17 @@ import './NotificationsPage.scss';
 const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { dashboard, isLoading } = useStudentHub();
+  const { dashboard, notifications, isLoading } = useStudentHub();
 
   // Use real data from API
   const notificationsData = {
     overview: {
-      totalNotifications: dashboard?.notifications?.total || 0,
-      unread: dashboard?.notifications?.unread || 0,
+      totalNotifications: notifications?.data?.total || 0,
+      unread: notifications?.data?.unread || 0,
       today: 0, // Not available in current schema
       thisWeek: 0, // Not available in current schema
     },
-    notifications: dashboard?.notifications?.recentActivity || [],
+    notifications: notifications?.data?.recentActivity || [],
   };
 
   // Button click handlers
