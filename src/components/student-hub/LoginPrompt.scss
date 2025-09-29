@@ -12,7 +12,7 @@
   .welcome-card {
     margin-bottom: $space-8;
     border-radius: $radius-xl;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
     border: none;
 
     .welcome-header {
@@ -98,13 +98,13 @@
     .feature-card {
       height: 100%;
       border-radius: $radius-lg;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       border: none;
       transition: all 0.3s ease;
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       }
 
       .feature-content {
