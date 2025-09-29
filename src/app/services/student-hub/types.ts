@@ -174,6 +174,7 @@ export interface PersonalProfile {
     militaryService?: boolean;
     citizenship?: string;
     visaStatus?: string;
+    languages?: string[];
   };
   familyBackground?: {
     parentEducation?: {
