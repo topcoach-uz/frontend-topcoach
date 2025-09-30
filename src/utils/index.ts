@@ -2,7 +2,7 @@ import { GetProp } from 'antd';
 import type { RcFile, UploadFile } from 'antd/es/upload/interface';
 import { UploadProps } from 'antd/lib';
 import dayjs from 'dayjs';
-import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
+import { MEDIA_TAGS, MediaSchema, MediaEnum } from 'src/app/api/Api';
 
 export const clearMask = (val: string) => {
   return val
@@ -150,14 +150,43 @@ export const getLatestCreatedImg = (
   media: MediaSchema[],
   mediaTag: MEDIA_TAGS = MEDIA_TAGS.ProfilePicture
 ) => {
-  const profileImages = media
-    .filter((media) => media?.tags?.includes(mediaTag) || media?.tags === null)
+  if (!Array.isArray(media) || media.length === 0) return null;
+
+  // First try to get images with the specific tag
+  let profileImages = media
+    .filter((media) => 
+      media?.tags?.includes(mediaTag) &&
+      media.type === MediaEnum.Image
+    )
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  return profileImages?.[0]?.url;
+  // If no images with specific tag, try images with no tags (fallback)
+  if (profileImages.length === 0) {
+    profileImages = media
+      .filter((media) => 
+        (media?.tags === null || media?.tags?.length === 0) &&
+        media.type === MediaEnum.Image
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }
+
+  // If still no images, try any image (last resort)
+  if (profileImages.length === 0) {
+    profileImages = media
+      .filter((media) => media.type === MediaEnum.Image)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }
+
+  return profileImages?.[0]?.url || null;
 };
 
 export const getLatestVideo = (media: MediaSchema[], mediaTag: MEDIA_TAGS) => {

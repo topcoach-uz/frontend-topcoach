@@ -21,7 +21,6 @@ export const mentorApi = RtkApi.injectEndpoints({
         return response.map(mentor => ({
           ...mentor,
           // Pre-calculate commonly used values
-          profileImage: mentor.profile?.media?.[0]?.url || null,
           displayUniversity: mentor?.mentorProfile?.university,
         }));
       },
