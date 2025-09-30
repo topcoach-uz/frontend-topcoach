@@ -93,7 +93,7 @@ export interface AcademicProfile {
   testScores: {
     sat?: {
       math?: number;
-      reading?: number;
+      readingWriting?: number;
       total?: number;
     };
     act?: {
