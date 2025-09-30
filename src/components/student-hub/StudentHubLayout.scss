@@ -942,7 +942,7 @@ $crimson-900: #7f1d1d;
   }
 }
 
-// Completely hide Student Hub area on smaller screens
+// Mobile/Tablet layout - show mobile header, hide sidebar
 @media (max-width: 1199px) {
   .student-hub-layout {
     flex-direction: column !important;
@@ -961,23 +961,25 @@ $crimson-900: #7f1d1d;
       z-index: -1 !important;
     }
     
-    // Force hide mobile header completely
+    // Show mobile header on smaller screens
     .mobile-header {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      line-height: 0 !important;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: 64px !important;
+      line-height: 64px !important;
       padding: 0 !important;
       margin: 0 !important;
-      border-bottom: none !important;
-      position: absolute !important;
-      left: -9999px !important;
-      top: -9999px !important;
-      z-index: -1 !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+      position: relative !important;
+      left: auto !important;
+      top: auto !important;
+      z-index: 1000 !important;
+      background: white !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
     
-    // Ensure main content takes full width
+    // Ensure main content takes full width with mobile header
     .main-layout {
       margin-left: 0 !important;
       margin-right: 0 !important;
@@ -1101,57 +1103,35 @@ $crimson-900: #7f1d1d;
 // 🚫 ULTIMATE STUDENT HUB HIDING
 // ========================================
 
-// Force hide mobile header in all states on reduced width
+// Mobile header content styling for smaller screens
 @media (max-width: 1199px) {
   .student-hub-layout {
     .mobile-header {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      line-height: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: none !important;
-      border-bottom: none !important;
-      position: absolute !important;
-      left: -9999px !important;
-      top: -9999px !important;
-      z-index: -1 !important;
-      overflow: hidden !important;
-      clip: rect(0, 0, 0, 0) !important;
-      white-space: nowrap !important;
-    }
-    
-    .mobile-header-content {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
+      .mobile-header-content {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        padding: 0 16px !important;
+      }
     }
   }
 }
 
-// Additional nuclear option for any remaining visibility
+// Mobile header styling for smaller screens
 .student-hub-layout {
   .mobile-header {
-    // Hide by default on reduced width
+    // Show on smaller screens
     @media (max-width: 1199px) {
-      &,
-      & *,
-      &::before,
-      &::after {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0 !important;
-        width: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        background: none !important;
-        color: transparent !important;
-        content: none !important;
-      }
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: 64px !important;
+      background: white !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
   }
 }
@@ -1160,7 +1140,7 @@ $crimson-900: #7f1d1d;
 // 🔧 FORCE SIDEBAR HIDDEN ON REDUCED WIDTH
 // ========================================
 
-// NUCLEAR OPTION - Force hide everything on reduced width
+// Ensure sidebar stays hidden on smaller screens
 @media (max-width: 1199px) {
   .student-hub-layout {
     // Force hide sidebar completely
@@ -1171,22 +1151,6 @@ $crimson-900: #7f1d1d;
       width: 0 !important;
       min-width: 0 !important;
       max-width: 0 !important;
-      position: absolute !important;
-      left: -9999px !important;
-      top: -9999px !important;
-      z-index: -1 !important;
-    }
-    
-    // Force hide mobile header completely
-    .mobile-header {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      line-height: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border-bottom: none !important;
       position: absolute !important;
       left: -9999px !important;
       top: -9999px !important;

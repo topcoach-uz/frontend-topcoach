@@ -32,8 +32,8 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Only show mobile header on large screens (1200px+)
-  const shouldShowMobileHeader = windowWidth >= 1200;
+  // Show mobile header on smaller screens (mobile/tablet) where sidebar is hidden
+  const shouldShowMobileHeader = windowWidth < 1200;
 
   // FontAwesome icon components - color controlled by CSS
   const DashboardIcon = () => <FontAwesomeIcon icon="tachometer-alt" className="menu-icon" />;

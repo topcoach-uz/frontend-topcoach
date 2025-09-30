@@ -30,7 +30,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
       form.setFieldsValue({
         // Test Scores
         satMath: academicData.testScores?.sat?.math,
-        satReading: academicData.testScores?.sat?.reading,
+        satReading: academicData.testScores?.sat?.readingWriting,
         satTotal: academicData.testScores?.sat?.total,
         actComposite: academicData.testScores?.act?.composite,
         actMath: academicData.testScores?.act?.math,
