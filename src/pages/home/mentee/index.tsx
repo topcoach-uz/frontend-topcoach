@@ -20,12 +20,13 @@ function MenteeHomePage() {
   const profile = useTypedSelector((state) => state.auth.profile);
   const nameMissing = !profile?.profile?.name;
   const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const { data: telegramStatus, refetch: refetchTelegramStatus } = useGetTelegramStatusQuery();
+  const { data: telegramStatus, refetch: refetchTelegramStatus, isLoading: telegramLoading } = useGetTelegramStatusQuery();
   
   // Debug logging
   console.log('Telegram Status:', telegramStatus);
   
-  const telegramMissing = telegramStatus?.status !== 'connected';
+  // Only show as missing if we have data and it's not connected
+  const telegramMissing = !telegramLoading && telegramStatus?.status !== 'connected';
 
   const checklist = [
     {
@@ -48,7 +49,8 @@ function MenteeHomePage() {
 
   return (
     <div>
-      {nameMissing || telegramMissing ? (
+      {/* Only show checklist if we have loaded data and there are missing items */}
+      {!telegramLoading && (nameMissing || telegramMissing) ? (
         <div className={'container ' + styles.container} style={{ marginBottom: 8 }}>
           <div>
             <CustomText

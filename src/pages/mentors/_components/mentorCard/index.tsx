@@ -58,7 +58,23 @@ export default function MentorCard({
     >
       <div className={styles.imgContainer}>
         <div className={styles.img}>
-          {imgSrc ? <img src={imgSrc} alt="img error" loading="eager" /> : <Skeleton.Image />}
+          {imgSrc ? (
+            <img 
+              src={imgSrc} 
+              alt="mentor profile" 
+              loading="lazy"
+              onLoad={(e) => {
+                // Fade in effect when image loads
+                e.currentTarget.style.opacity = '1';
+              }}
+              style={{ 
+                opacity: 0, 
+                transition: 'opacity 0.3s ease-in-out' 
+              }}
+            />
+          ) : (
+            <Skeleton.Image active />
+          )}
         </div>
         
         {/* Coach level badge */}

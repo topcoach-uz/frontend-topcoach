@@ -2,6 +2,8 @@ import styles from './navigation.module.scss';
 import useNavigation from './useNavigation';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useGetMentorsQuery } from 'src/app/services/mentors';
+import { useLazyGetUniversityDetailQuery } from 'src/app/services/universities';
 
 interface Props {
   direction?: 'vertical' | 'horizontal';
@@ -11,6 +13,14 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
   const { navLinks, isActive } = useNavigation();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+
+  // Prefetch mentor data on hover over mentors link
+  const { refetch: prefetchMentors } = useGetMentorsQuery(undefined, {
+    skip: true, // Don't fetch automatically, only on demand
+  });
+
+  // Prefetch university data on hover
+  const [prefetchUniversity] = useLazyGetUniversityDetailQuery();
 
   const handleDropdownToggle = (text: string) => {
     setOpenDropdown(openDropdown === text ? null : text);
@@ -29,6 +39,17 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
   const handleMouseEnter = (text: string) => {
     setIsHovering(true);
     setOpenDropdown(text);
+    
+    // Prefetch mentor data when hovering over mentors link
+    if (text === 'Mentors' || text === 'Менторы') {
+      prefetchMentors();
+    }
+    
+    // Prefetch university data when hovering over universities link
+    if (text === 'Universities' || text === 'Университеты') {
+      // Prefetch popular universities
+      prefetchUniversity('a01c8766-d7e0-45e1-b806-26a0a6794fde'); // MIT
+    }
   };
 
   const handleMouseLeave = () => {
@@ -80,6 +101,16 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
               <Link
                 className={`${styles.link} ${link.path && isActive(link.path) ? styles.link_active : ''}`}
                 to={link.path || '/'}
+                onMouseEnter={() => {
+                  // Prefetch mentor data when hovering over mentors link
+                  if (link.path === '/mentors') {
+                    prefetchMentors();
+                  }
+                  // Prefetch university data when hovering over universities link
+                  if (link.path === '/universities') {
+                    prefetchUniversity('a01c8766-d7e0-45e1-b806-26a0a6794fde'); // MIT
+                  }
+                }}
               >
                 {link.text}
               </Link>

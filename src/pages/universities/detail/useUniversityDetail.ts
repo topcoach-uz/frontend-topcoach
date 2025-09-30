@@ -5,6 +5,7 @@ import { api } from 'src/app/api';
 import { useTypedSelector } from 'src/app/store';
 import useApi from 'src/hooks/useApi';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
+import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 
 // getting Id from the URL
 export default function useUniDetail() {
@@ -12,13 +13,16 @@ export default function useUniDetail() {
   const splittedPathname = pathname.split('/');
   const uniId = splittedPathname[splittedPathname.length - 1];
 
-  // Fetching data from the API
-  const { response: universityDetailData, isLoading } = useApi(() =>
-    api.university.universityDetail(uniId)
-  );
+  // Fetching data from the API using RTK Query for better caching
+  const { data: universityDetailData, isLoading, error } = useGetUniversityDetailQuery(uniId, {
+    // Skip if no university ID
+    skip: !uniId,
+    // Refetch on mount to ensure fresh data
+    refetchOnMountOrArgChange: true,
+  });
   const meData = useTypedSelector((state) => state.auth.profile);
   // @ts-expect-error
-  const blockData = universityDetailData?.data.content?.blocks; // Using 'any' to bypass type checking for 'blocks'.
+  const blockData = universityDetailData?.content?.blocks; // Using 'any' to bypass type checking for 'blocks'.
   const isLikedInitial =
     meData?.likedUniversities?.some((uni) => uni.id === uniId) ?? false;
 
@@ -67,7 +71,7 @@ export default function useUniDetail() {
   };
 
   return {
-    universityDetailData,
+    universityDetailData: { data: universityDetailData }, // Wrap in data property for compatibility
     blockData,
     isLoading,
     handleClose,

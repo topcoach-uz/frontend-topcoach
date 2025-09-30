@@ -80,21 +80,22 @@ const UniversityDetailSection = React.memo(({
     [rankings]
   );
 
-  if (isLoading) {
-    return (
-      <div className={styles.detail}>
-        <Flex vertical gap={10}>
-          <Skeleton active />
-          <Skeleton active />
-          <Skeleton.Image
-            rootClassName={styles.imageSkeleton}
-            active
-            style={{ width: '100%', height: 538 }}
-          />
-        </Flex>
-      </div>
-    );
-  }
+  // Remove skeleton loading for instant display
+  // if (isLoading) {
+  //   return (
+  //     <div className={styles.detail}>
+  //       <Flex vertical gap={10}>
+  //         <Skeleton active />
+  //         <Skeleton active />
+  //         <Skeleton.Image
+  //           rootClassName={styles.imageSkeleton}
+  //           active
+  //           style={{ width: '100%', height: 538 }}
+  //         />
+  //       </Flex>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className={styles.detail}>
@@ -130,20 +131,21 @@ const UniversityDetailSection = React.memo(({
           <img 
             src={img} 
             alt="University image" 
-            loading="lazy"
+            loading="eager"
             decoding="async"
+            onLoad={(e) => {
+              // Fade in effect when image loads
+              e.currentTarget.style.opacity = '1';
+            }}
             style={{ 
               width: '100%', 
               height: 'auto',
-              objectFit: 'cover'
+              objectFit: 'cover',
+              opacity: 0,
+              transition: 'opacity 0.3s ease-in-out'
             }}
           />
-        ) : (
-          <Skeleton.Image 
-            active 
-            style={{ width: '100%', height: '400px' }}
-          />
-        )}
+        ) : null}
       </div>
       {selectedBy?.length ? (
         <>

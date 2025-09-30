@@ -248,7 +248,7 @@ function RouterProvider() {
 
 const AddFallbackLayout = () => {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<Loader height="100vh" />}>
       <ErrorBoundary fallbackRender={ErrorFallback}>
         <Outlet />
       </ErrorBoundary>
