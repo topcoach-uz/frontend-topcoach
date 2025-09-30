@@ -70,7 +70,7 @@ export default function useEditProfile({
     uid: 'fromBackend',
     name: 'profile.png',
     status: 'done' as UploadFileStatus,
-    url: profileImage,
+    url: profileImage || undefined,
   };
 
   useEffect(() => {

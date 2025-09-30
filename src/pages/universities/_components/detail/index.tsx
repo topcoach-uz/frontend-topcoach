@@ -160,7 +160,7 @@ const UniversityDetailSection = React.memo(({
           <div className={styles.mentor}>
             {!isLoading ? (
               selectedBy?.map((mentor: any, index) => {
-                const profileImage = getLatestCreatedImg(mentor.profile.media);
+                const profileImage = getLatestCreatedImg(mentor.profile.media) || '';
                 
                 // Debug: Log the mentor data to see what we're working with
                 console.log('Mentor data:', mentor);

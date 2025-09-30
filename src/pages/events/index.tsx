@@ -81,7 +81,7 @@ export default function EventsPage() {
                   key={index}
                   id={event.id}
                   name={event.title}
-                  img={getLatestCreatedImg(event.media, MEDIA_TAGS.General)}
+                  img={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || ''}
                   date={formatDateRange(event.startDate, event.endDate)}
                   isUpcoming={isUpcoming}
                 />
@@ -112,7 +112,7 @@ export default function EventsPage() {
                 deadline={workshop.deadline}
                 maxParticipants={workshop.maxParticipants}
                 currentParticipants={workshop.currentParticipants}
-                img={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General)}
+                img={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || ''}
                 locations={workshop.locations}
               />
             ))

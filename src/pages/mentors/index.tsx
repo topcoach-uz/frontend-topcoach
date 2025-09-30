@@ -133,11 +133,11 @@ export default function MentorsPage() {
                   key={mentor.id}
                   id={mentor.id}
                   name={mentor.profile.name}
-                  imgSrc={profileImage}
+                  imgSrc={profileImage || ''}
                   rating={mentor.profile.overallRating}
                   sessionNumber={mentor?.numberOfSessions}
                   major={mentor?.mentorProfile?.major}
-                  university={(mentor as any).displayUniversity || mentor?.mentorProfile?.university}
+                  university={(mentor as any).displayUniversity || mentor?.mentorProfile?.university || ''}
                   level={mentor.mentorProfile?.level}
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
                   isGiveaway={giveawayMentorIds.includes(mentor.id)}
