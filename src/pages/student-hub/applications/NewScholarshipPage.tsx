@@ -19,7 +19,6 @@ const NewScholarshipPage: React.FC = () => {
     try {
       // Map form values to the expected API format
       const scholarshipData = {
-        scholarshipId: `scholarship_${Date.now()}`, // Generate a unique scholarship ID
         scholarshipName: values.scholarshipName,
         organization: values.provider,
         amount: values.amount,
@@ -28,8 +27,6 @@ const NewScholarshipPage: React.FC = () => {
         essayRequired: values.requirements && values.requirements.toLowerCase().includes('essay'),
         essayPrompt: values.requirements,
         notes: values.notes,
-        // These fields are required by the backend but not in the form
-        externalScholarshipId: `ext_${Date.now()}`, // Generate a unique external ID
         currency: 'USD', // Default currency
       };
 

@@ -107,11 +107,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 className="mobile-menu-trigger"
               />
               <h1 className="mobile-title">Student Hub</h1>
-              <Button
-                type="text"
-                icon={<BellIcon />}
-                className="mobile-notifications"
-              />
             </div>
           </Header>
         )}
@@ -166,13 +161,23 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
         {/* Mobile Drawer */}
         <Drawer
-          title="Student Hub"
+          title={null}
           placement="left"
           onClose={() => setMobileDrawerVisible(false)}
           open={mobileDrawerVisible}
           className="mobile-drawer"
           width={300}
+          closable={false}
         >
+          <div className="mobile-drawer-header">
+            <span className="mobile-drawer-title">Student Hub</span>
+            <Button
+              type="text"
+              icon={<FontAwesomeIcon icon="times" />}
+              onClick={() => setMobileDrawerVisible(false)}
+              className="mobile-drawer-close"
+            />
+          </div>
           <Menu
             mode="inline"
             selectedKeys={getSelectedKeys()}
@@ -205,11 +210,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               className="mobile-menu-trigger"
             />
             <h1 className="mobile-title">Student Hub</h1>
-            <Button
-              type="text"
-              icon={<BellIcon />}
-              className="mobile-notifications"
-            />
           </div>
         </Header>
       )}
@@ -264,13 +264,23 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       {/* Mobile Drawer */}
       <Drawer
-        title="Student Hub"
+        title={null}
         placement="left"
         onClose={() => setMobileDrawerVisible(false)}
         open={mobileDrawerVisible}
         className="mobile-drawer"
         width={300}
+        closable={false}
       >
+        <div className="mobile-drawer-header">
+          <span className="mobile-drawer-title">Student Hub</span>
+          <Button
+            type="text"
+            icon={<FontAwesomeIcon icon="times" />}
+            onClick={() => setMobileDrawerVisible(false)}
+            className="mobile-drawer-close"
+          />
+        </div>
         <Menu
           mode="inline"
           selectedKeys={getSelectedKeys()}

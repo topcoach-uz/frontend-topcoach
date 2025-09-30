@@ -1120,6 +1120,127 @@ $crimson-900: #7f1d1d;
   }
 }
 
+// Mobile drawer styling - make it exactly like desktop sidebar
+.mobile-drawer {
+  .ant-drawer-body {
+    padding: 0 !important;
+  }
+  
+  .mobile-drawer-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 16px !important; // Reduced padding to remove blank lines
+    border-bottom: 1px solid #f0f0f0 !important;
+    background: white !important;
+    
+    .mobile-drawer-title {
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      color: #8b0000 !important; // Crimson red color
+      order: 2 !important; // Move to right
+    }
+    
+    .mobile-drawer-close {
+      color: #8b0000 !important;
+      font-size: 18px !important;
+      order: 1 !important; // Move to left
+      margin-right: 8px !important; // Bring closer to title
+      
+      &:hover {
+        background-color: #fef2f2 !important;
+        color: #8b0000 !important;
+      }
+    }
+  }
+  
+  .mobile-menu {
+    border: none !important;
+    background: white !important;
+    padding: 16px 0 !important;
+    
+    .ant-menu-item {
+      margin: 4px 16px !important;
+      border-radius: 12px !important;
+      height: 56px !important;
+      line-height: 56px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      font-size: 18px !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      border: none !important;
+      width: calc(100% - 32px) !important;
+      max-width: calc(300px - 32px) !important;
+      color: #374151 !important;
+      
+      .ant-menu-item-icon {
+        margin: 0 !important;
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        display: flex !important;
+        color: #8b0000 !important;
+        fill: #8b0000 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        .menu-icon {
+          color: #8b0000 !important;
+        }
+      }
+      
+      .ant-menu-title-content {
+        font-size: 18px !important;
+        font-weight: 500 !important;
+      }
+      
+      &:hover {
+        background-color: #fef2f2 !important;
+        color: #8b0000 !important;
+        
+        .ant-menu-item-icon {
+          color: #8b0000 !important;
+          
+          .menu-icon {
+            color: #8b0000 !important;
+          }
+        }
+      }
+      
+      &.ant-menu-item-selected {
+        background-color: #8b0000 !important;
+        color: white !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.15) !important;
+        
+        &::after {
+          display: none !important;
+        }
+        
+        .ant-menu-item-icon {
+          color: white !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          
+          .menu-icon {
+            color: white !important;
+            display: flex !important;
+          }
+          
+          svg {
+            color: white !important;
+            fill: white !important;
+            stroke: white !important;
+          }
+        }
+      }
+    }
+  }
+}
+
 // Mobile header styling for smaller screens
 .student-hub-layout {
   .mobile-header {
