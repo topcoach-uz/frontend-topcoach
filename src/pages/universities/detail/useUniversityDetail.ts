@@ -46,7 +46,7 @@ export default function useUniDetail() {
         .removeFromFavorite({ id: uniId })
         .then(() => {
           message.success(
-            `${getTranslation(universityDetailData?.data.name)} removed from favorites`
+            `${getTranslation(universityDetailData?.name)} removed from favorites`
           );
         })
         .catch((err) => {
@@ -58,7 +58,7 @@ export default function useUniDetail() {
         .addToFavorite({ id: uniId })
         .then(() => {
           message.success(
-            `${universityDetailData?.data.name} added to favorites`
+            `${universityDetailData?.name} added to favorites`
           );
         })
         .catch((err) => message.error(err.response.data.message));

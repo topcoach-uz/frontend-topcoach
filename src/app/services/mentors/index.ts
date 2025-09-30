@@ -22,11 +22,9 @@ export const mentorApi = RtkApi.injectEndpoints({
           ...mentor,
           // Pre-calculate commonly used values
           profileImage: mentor.profile?.media?.[0]?.url || null,
-          displayUniversity: mentor?.selectedUniversities?.[0]?.name ?? mentor?.mentorProfile?.university,
+          displayUniversity: mentor?.mentorProfile?.university,
         }));
       },
-      // Enable background refetching for fresh data
-      pollingInterval: 0, // Disable polling, we'll use manual refetch
     }),
     getMentorDetail: build.query<UserDetailsResponseDto, { mentorId: string }>({
       query: ({ mentorId }) => ({

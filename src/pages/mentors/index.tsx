@@ -116,7 +116,7 @@ export default function MentorsPage() {
           <div className={styles.cards}>
             {sortedMentors.map((mentor, index) => {
               // Use pre-processed data from API transform
-              const profileImage = mentor.profileImage || getLatestCreatedImg(mentor.profile.media);
+              const profileImage = (mentor as any).profileImage || getLatestCreatedImg(mentor.profile.media);
               
               // Calculate giveaway sessions count for this mentor
               const giveawaySessionsCount = giveawaySessions?.filter(
@@ -132,7 +132,7 @@ export default function MentorsPage() {
                   rating={mentor.profile.overallRating}
                   sessionNumber={mentor?.numberOfSessions}
                   major={mentor?.mentorProfile?.major}
-                  university={mentor.displayUniversity}
+                  university={(mentor as any).displayUniversity}
                   level={mentor.mentorProfile?.level}
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
                   isGiveaway={giveawayMentorIds.includes(mentor.id)}
