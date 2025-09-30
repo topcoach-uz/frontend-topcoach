@@ -19,7 +19,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Leeds': '🇬🇧',
   'University of London': '🇬🇧',
   'University of Birmingham': '🇬🇧',
-  
+
   // German Universities
   'Berlin School of Economics and Law': '🇩🇪',
   'Technical University of Munich': '🇩🇪',
@@ -60,7 +60,8 @@ export const universityCountryFlags: Record<string, string> = {
   'Pennsylvania State University': '🇺🇸',
   'Harvard': '🇺🇸',
   'Boston University': '🇺🇸',
-  
+  'Babson College': '🇺🇸',
+
   // Chinese Universities
   'Peking University': '🇨🇳',
   'Tsinghua University': '🇨🇳',
