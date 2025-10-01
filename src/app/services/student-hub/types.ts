@@ -403,14 +403,15 @@ export interface ScholarshipApplication {
 }
 
 export interface CreateScholarshipApplicationRequest {
-  scholarshipId: string;
-  status?: ScholarshipApplication['status'];
-  externalScholarship?: boolean;
+  scholarshipId?: string;
+  scholarshipName?: string;
+  organization?: string;
   amount?: number;
-  eligibilityScore?: number;
-  matchReasons?: string[];
-  essayRequirements?: string[];
-  deadlines?: ScholarshipApplication['deadlines'];
+  currency?: string;
+  status?: ScholarshipApplication['status'];
+  applicationDeadline?: string;
+  essayRequired?: boolean;
+  essayPrompt?: string;
   notes?: string;
 }
 
