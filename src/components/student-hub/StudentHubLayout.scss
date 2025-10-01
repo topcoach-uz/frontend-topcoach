@@ -1129,24 +1129,22 @@ $crimson-900: #7f1d1d;
   .mobile-drawer-header {
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    padding: 8px 16px !important; // Reduced padding to remove blank lines
+    justify-content: space-between !important;
+    padding: 16px 16px 16px 24px !important; // Match desktop sidebar padding
     border-bottom: 1px solid #f0f0f0 !important;
     background: white !important;
-    gap: 8px !important; // Decreased spacing between elements
     
     .mobile-drawer-title {
       font-size: 20px !important;
       font-weight: 600 !important;
       color: #8b0000 !important; // Crimson red color
-      order: 2 !important; // Move to right
+      margin-left: 0 !important; // Align with menu items below
     }
     
     .mobile-drawer-close {
       color: #8b0000 !important;
       font-size: 18px !important;
-      order: 1 !important; // Move to left
-      margin-right: 0 !important; // Remove margin since we're using gap
+      margin-left: auto !important; // Push to the right
       
       &:hover {
         background-color: #fef2f2 !important;

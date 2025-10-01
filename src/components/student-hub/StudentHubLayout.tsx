@@ -107,11 +107,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 className="mobile-menu-trigger"
               />
               <h1 className="mobile-title">Student Hub</h1>
-              <Button
-                type="text"
-                icon={<BellIcon />}
-                className="mobile-notifications"
-              />
             </div>
           </Header>
         )}
@@ -175,13 +170,13 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           closable={false}
         >
           <div className="mobile-drawer-header">
+            <span className="mobile-drawer-title">Student Hub</span>
             <Button
               type="text"
               icon={<FontAwesomeIcon icon="times" />}
               onClick={() => setMobileDrawerVisible(false)}
               className="mobile-drawer-close"
             />
-            <span className="mobile-drawer-title">Student Hub</span>
           </div>
           <Menu
             mode="inline"
@@ -215,11 +210,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               className="mobile-menu-trigger"
             />
             <h1 className="mobile-title">Student Hub</h1>
-            <Button
-              type="text"
-              icon={<BellIcon />}
-              className="mobile-notifications"
-            />
           </div>
         </Header>
       )}
@@ -283,13 +273,13 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         closable={false}
       >
         <div className="mobile-drawer-header">
+          <span className="mobile-drawer-title">Student Hub</span>
           <Button
             type="text"
             icon={<FontAwesomeIcon icon="times" />}
             onClick={() => setMobileDrawerVisible(false)}
             className="mobile-drawer-close"
           />
-          <span className="mobile-drawer-title">Student Hub</span>
         </div>
         <Menu
           mode="inline"
