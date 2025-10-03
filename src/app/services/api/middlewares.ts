@@ -49,22 +49,29 @@ export const rtkQueryErrorLogger: Middleware =
           'There is a problem with the server. Please, contact the technical support.'
         );
       } else if (status === 401) {
-        message.warning('Your session has expired. Please log in again.');
-        if (
-          !originalRequestEndpoint.startsWith('/sessions') &&
-          !originalRequestEndpoint.startsWith('/camps')
-        ) {
-          setTimeout(() => {
-            store.dispatch(logout());
-          }, 2000);
+        // Only show session expired messages for authenticated requests, not login attempts
+        const isLoginAttempt = originalRequestEndpoint.includes('/auth/login') || 
+                              originalRequestEndpoint.includes('/auth/exchange') ||
+                              originalRequestEndpoint.includes('/auth/reset/password');
+        
+        if (!isLoginAttempt) {
+          message.warning('Your session has expired. Please log in again.');
+          if (
+            !originalRequestEndpoint.startsWith('/sessions') &&
+            !originalRequestEndpoint.startsWith('/camps')
+          ) {
+            setTimeout(() => {
+              store.dispatch(logout());
+            }, 2000);
+          }
+          await refreshToken()
+            .then(() => {
+              message.success('Refresh successful!');
+            })
+            .catch(() => {
+              message.error('Refresh failed. Please log in again.');
+            });
         }
-        await refreshToken()
-          .then(() => {
-            message.success('Refresh successful!');
-          })
-          .catch(() => {
-            message.error('Refresh failed. Please log in again.');
-          });
       }
     }
 

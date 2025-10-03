@@ -30,7 +30,7 @@ export default function SigninForm() {
       inputType: 'text',
       htmlType: 'email',
       label: t('signIn.email'),
-      placeholder: 'example@gmail.com',
+      placeholder: t('signIn.emailPlaceholder'),
       message: t('signIn.emailError'),
       col: 24,
       formItemProps: {

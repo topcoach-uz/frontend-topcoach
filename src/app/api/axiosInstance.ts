@@ -91,7 +91,14 @@ axiosInstance.interceptors.response.use(
         ) {
           // do nothing
         } else if (access_token) {
-          message.error('Your session has expired. Please log in again.');
+          // Only show session expired message if it's not a login attempt
+          const isLoginAttempt = originalRequest.url.includes('/auth/login') || 
+                                originalRequest.url.includes('/auth/exchange') ||
+                                originalRequest.url.includes('/auth/reset/password');
+          
+          if (!isLoginAttempt) {
+            message.error('Your session has expired. Please log in again.');
+          }
         } else {
           message.error(
             'Something went wrong. Please try again later, if the issue persists contact support.',

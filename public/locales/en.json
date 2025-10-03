@@ -329,6 +329,7 @@
   "signIn.description2": "Start your journey as a mentor by sharing your basic information.",
   "signIn.email": "Email",
   "signIn.emailError": "You must enter your email address",
+  "signIn.emailFormatError": "Please enter a valid email address",
   "signIn.emailOffer": "or continue with email",
   "signIn.emailPlaceholder": "Enter your email address",
   "signIn.forgotPassword": "Forgot password?",

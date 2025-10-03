@@ -268,6 +268,7 @@
   "signIn.description2": "Asosiy ma‘lumotlaringizni baham ko‘rish orqali mentor sifatida sayohatingizni boshlang.",
   "signIn.email": "Email",
   "signIn.emailError": "Iltimos, haqiqiy email manzilini kiriting",
+  "signIn.emailFormatError": "Iltimos, to'g'ri email manzilini kiriting",
   "signIn.emailOffer": "yoki elektron pochta orqali davom eting",
   "signIn.emailPlaceholder": "Email manzilingizni kiriting",
   "signIn.forgotPassword": "Parolni unutdingizmi?",
