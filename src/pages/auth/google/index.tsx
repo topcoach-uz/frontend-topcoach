@@ -85,8 +85,10 @@ export default function GoogleAuthenticationPage() {
   const handleSubmit = async () => {
     if (selected === UserRole.Mentor) {
       setSubmitting(true);
+      const profileUpdatePayload = { profile: { role: UserRole.Mentor } };
+      console.log('Dispatching updateProfile with payload:', profileUpdatePayload);
       // @ts-ignore
-      dispatch(updateProfile({ profile: { role: UserRole.Mentor } }))
+      dispatch(updateProfile(profileUpdatePayload))
         .unwrap()
         .then(() => {
           // For mentor signup, we don't redirect to the stored URL yet
