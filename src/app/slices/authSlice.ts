@@ -7,7 +7,7 @@ import {
   refresh_token,
 } from 'src/constants/storage';
 import { api } from '../api';
-import { GetMeResDto, MEDIA_TAGS, MediaEnum } from '../api/Api';
+import { GetMeResDto, MEDIA_TAGS, MediaEnum, UpdateUserDto } from '../api/Api';
 import { authApi } from '../services/users';
 
 export interface IAuthState {
@@ -20,9 +20,12 @@ export interface IAuthState {
 // Create an async thunk for updating the profile
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
-  async (data: Partial<GetMeResDto>, { rejectWithValue }) => {
+  async (data: UpdateUserDto, { rejectWithValue }) => {
     try {
+      console.log('updateProfile Redux action received data:', data);
+      console.log('Calling api.users.updateProfile with data:', data);
       const response = await api.users.updateProfile(data);
+      console.log('updateProfile API response:', response);
       return response.data;
     } catch (err: any) {
       console.error('Profile update error:', err);
