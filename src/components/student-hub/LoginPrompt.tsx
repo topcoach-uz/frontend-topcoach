@@ -55,7 +55,7 @@ const LoginPrompt: React.FC = () => {
               Welcome to My Journey
             </Title>
             <Paragraph className="welcome-description">
-              Your comprehensive college application management platform. Track applications, manage essays, 
+              Your comprehensive college application management system. Track applications, manage essays, 
               store documents, and get personalized guidance from experienced mentors.
             </Paragraph>
           </div>
