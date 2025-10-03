@@ -278,7 +278,7 @@
   "signIn.or": "или",
   "signIn.password": "Пароль",
   "signIn.passwordError": "Пароль требуется",
-  "signIn.paswordPlaceholder": "Введите пароль",
+  "signIn.passwordPlaceholder": "Введите пароль",
   "signIn.title": "Войдите в ваш аккаунт",
   "signUp.academicBackground": "Введите ваши академические данные",
   "signUp.academicBackgroundText": "Ваше образование может быть важным при подаче заявки на вашем учебном заведении. Скажите, где вы учили.",

@@ -340,7 +340,7 @@
   "signIn.or": "or",
   "signIn.password": "Password",
   "signIn.passwordError": "Password is required",
-  "signIn.paswordPlaceholder": "Enter password",
+  "signIn.passwordPlaceholder": "Enter password",
   "signIn.title": "Log in to your account",
   "signUp.academicBackground": "Share your academic background!",
   "signUp.academicBackgroundText": "Your education can guide students in their application process. Tell us where you studied.",

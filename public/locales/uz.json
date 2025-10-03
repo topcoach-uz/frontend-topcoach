@@ -279,7 +279,7 @@
   "signIn.or": "yoki",
   "signIn.password": "Parol",
   "signIn.passwordError": "Parolni kiritish shart",
-  "signIn.paswordPlaceholder": "Parolni kiriting",
+  "signIn.passwordPlaceholder": "Parolni kiriting",
   "signIn.title": "Akkauntingizga kiring",
   "signUp.academicBackground": "Akademik ma‘lumotlaringizni kiriting",
   "signUp.academicBackgroundText": "Sizning ta‘limingiz talabalarga ariza berish jarayonida rahbarlik qilishi mumkin. Qayerda o‘qiganingizni ayting.",
