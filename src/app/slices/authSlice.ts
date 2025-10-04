@@ -22,10 +22,7 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (data: UpdateUserDto, { rejectWithValue }) => {
     try {
-      console.log('updateProfile Redux action received data:', data);
-      console.log('Calling api.users.updateProfile with data:', data);
       const response = await api.users.updateProfile(data);
-      console.log('updateProfile API response:', response);
       return response.data;
     } catch (err: any) {
       console.error('Profile update error:', err);

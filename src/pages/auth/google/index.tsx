@@ -86,7 +86,6 @@ export default function GoogleAuthenticationPage() {
     if (selected === UserRole.Mentor) {
       setSubmitting(true);
       const profileUpdatePayload = { profile: { role: UserRole.Mentor } };
-      console.log('Dispatching updateProfile with payload:', profileUpdatePayload);
       // @ts-ignore
       dispatch(updateProfile(profileUpdatePayload))
         .unwrap()
