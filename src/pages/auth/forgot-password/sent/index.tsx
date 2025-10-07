@@ -17,7 +17,7 @@ export default function EmailSentPage() {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, profile } = useTypedSelector((state) => state.auth);
 
-  const { isSuccess } = useGetMeQuery(undefined, { skip: !!profile?.email });
+  const { isSuccess } = useGetMeQuery(undefined, { skip: !isAuthenticated || !!profile?.email });
 
   // ! if already authenticated, turn on reset the password mode, not forgot password mode
   const [success, setSuccess] = useState(!isAuthenticated);
