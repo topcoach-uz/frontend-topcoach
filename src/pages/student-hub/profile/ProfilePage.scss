@@ -278,32 +278,32 @@
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .student-profile-page {
-    .profile-header-card,
-    .sections-overview-card,
-    .profile-tabs-card {
-      background: $gray-800;
-      border-color: $gray-700;
-
-      .profile-title,
-      .sections-title {
-        color: $text-inverse;
-      }
-
-      .profile-subtitle {
-        color: $gray-300;
-      }
-    }
-
-    .section-card {
-      background: $gray-700;
-      border-color: $gray-600;
-
-      &:hover {
-        border-color: $primary-400;
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .student-profile-page {
+//     .profile-header-card,
+//     .sections-overview-card,
+//     .profile-tabs-card {
+//       background: $gray-800;
+//       border-color: $gray-700;
+//
+//       .profile-title,
+//       .sections-title {
+//         color: $text-inverse;
+//       }
+//
+//       .profile-subtitle {
+//         color: $gray-300;
+//       }
+//     }
+//
+//     .section-card {
+//       background: $gray-700;
+//       border-color: $gray-600;
+//
+//       &:hover {
+//         border-color: $primary-400;
+//       }
+//     }
+//   }
+// }

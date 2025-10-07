@@ -230,33 +230,33 @@
   }
 }
 
-// Dark mode support (if needed)
-@media (prefers-color-scheme: dark) {
-  .new-essay-page {
-    .upload-form-card {
-      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-      border-color: #374151;
-    }
-
-    .upload-form {
-      .ant-input,
-      .ant-select-selector,
-      .ant-input-affix-wrapper {
-        background: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-
-        &:hover {
-          border-color: $primary-400;
-        }
-
-        &:focus,
-        &.ant-input-focused,
-        &.ant-select-focused .ant-select-selector {
-          border-color: $primary-500;
-          background: #374151;
-        }
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .new-essay-page {
+//     .upload-form-card {
+//       background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+//       border-color: #374151;
+//     }
+//
+//     .upload-form {
+//       .ant-input,
+//       .ant-select-selector,
+//       .ant-input-affix-wrapper {
+//         background: #374151;
+//         border-color: #4b5563;
+//         color: #f9fafb;
+//
+//         &:hover {
+//           border-color: $primary-400;
+//         }
+//
+//         &:focus,
+//         &.ant-input-focused,
+//         &.ant-select-focused .ant-select-selector {
+//           border-color: $primary-500;
+//           background: #374151;
+//         }
+//       }
+//     }
+//   }
+// }

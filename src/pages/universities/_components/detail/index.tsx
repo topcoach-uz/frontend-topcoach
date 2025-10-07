@@ -111,12 +111,19 @@ const UniversityDetailSection = React.memo(({
       </Modal>
       {screenSize > 768 && (
         <>
-          <Flex justify="space-between">
-            <Breadcrumb items={breadcrumbItems} />
-            <div className={styles.like} onClick={handleLike}>
-              <LikeIcon stroke={'#F5222D'} fill={isLiked ? '#F5222D' : ''} />
-            </div>
-          </Flex>
+          {isLoading ? (
+            <Flex justify="space-between" style={{ marginBottom: 16 }}>
+              <Skeleton.Input active size="small" style={{ width: 200 }} />
+              <Skeleton.Button active size="small" style={{ width: 32, height: 32 }} />
+            </Flex>
+          ) : (
+            <Flex justify="space-between">
+              <Breadcrumb items={breadcrumbItems} />
+              <div className={styles.like} onClick={handleLike}>
+                <LikeIcon stroke={'#F5222D'} fill={isLiked ? '#F5222D' : ''} />
+              </div>
+            </Flex>
+          )}
           <RichTextRenderer
             id={id || ''}
             blocks={Array.isArray(firstTwoBlocks) ? firstTwoBlocks : []}
@@ -127,7 +134,12 @@ const UniversityDetailSection = React.memo(({
       )}
 
       <div className={styles.img}>
-        {img ? (
+        {isLoading ? (
+          <Skeleton.Image
+            active
+            style={{ width: '100%', height: 200 }}
+          />
+        ) : img ? (
           <img 
             src={img} 
             alt="University image" 
@@ -222,10 +234,16 @@ const UniversityDetailSection = React.memo(({
       />
 
       <div className={styles.majorTab}>
-        <div className={styles.majorTitle}>
-          <h2>Majors</h2>
-        </div>
-        <UniversityMajorSection majors={majors} />
+        {isLoading ? (
+          <div className={styles.majorTitle}>
+            <Skeleton.Input active size="large" style={{ width: 100, height: 32 }} />
+          </div>
+        ) : (
+          <div className={styles.majorTitle}>
+            <h2>Majors</h2>
+          </div>
+        )}
+        <UniversityMajorSection majors={majors} isLoading={isLoading} />
         {/* <div className={styles.allMajors}>
           {majors?.map((major, index) => (
             <div key={index} className={styles.major}>

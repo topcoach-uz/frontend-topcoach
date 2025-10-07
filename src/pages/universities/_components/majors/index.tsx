@@ -1,12 +1,55 @@
 import { MajorsSchema } from 'src/app/api/Api';
 import styles from './majors.module.scss';
 import { CustomText } from 'src/components/common';
+import { Skeleton } from 'antd';
 
 interface Props {
   majors: MajorsSchema[] | undefined;
+  isLoading?: boolean;
 }
 
-export default function UniversityMajorSection({ majors }: Props) {
+export default function UniversityMajorSection({ majors, isLoading = false }: Props) {
+  // Show skeleton loading state when data is loading
+  if (isLoading) {
+    return (
+      <div className={styles.majors}>
+        <div className={styles.under}>
+          <div className={styles.title}>
+            <Skeleton.Input active size="small" style={{ width: 120, height: 24 }} />
+          </div>
+          <div className={styles.scrool}>
+            <div style={{ padding: '16px', paddingBottom: 0 }}>
+              <Skeleton active paragraph={{ rows: 1 }} />
+            </div>
+            <div className={styles.content}>
+              {Array.from(Array(5)).map((_, index) => (
+                <div key={index} className={styles.major}>
+                  <Skeleton.Input active size="small" style={{ width: '80%', height: 16 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className={styles.under}>
+          <div className={styles.title}>
+            <Skeleton.Input active size="small" style={{ width: 100, height: 24 }} />
+          </div>
+          <div className={styles.scrool}>
+            <div style={{ padding: '16px', paddingBottom: 0 }}>
+              <Skeleton active paragraph={{ rows: 1 }} />
+            </div>
+            <div className={styles.content}>
+              {Array.from(Array(3)).map((_, index) => (
+                <div key={index} className={styles.major}>
+                  <Skeleton.Input active size="small" style={{ width: '70%', height: 16 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const underGraduateMajors = majors?.filter(
     (major) => major.type === 'undergraduate'
   );

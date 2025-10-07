@@ -508,56 +508,56 @@
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .applications-page {
-    .applications-main-card {
-      background: $gray-800;
-      border-color: $gray-700;
-
-      .applications-tabs {
-        .ant-tabs-nav {
-          .ant-tabs-tab {
-            background: $gray-700;
-            border-color: $gray-600;
-
-            &:hover {
-              background: $primary-900;
-              border-color: $primary-400;
-            }
-
-            &.ant-tabs-tab-active {
-              background: $primary-800;
-              border-color: $primary-500;
-            }
-          }
-        }
-      }
-    }
-
-    .overview-content,
-    .applications-content,
-    .tasks-content,
-    .scholarships-content {
-      .stat-card,
-      .applications-card,
-      .deadlines-card,
-      .application-card,
-      .task-card,
-      .scholarship-card {
-        background: $gray-700;
-        border-color: $gray-600;
-
-        .ant-card-head-title,
-        .university-name,
-        .task-title,
-        .scholarship-name {
-          color: $text-inverse;
-        }
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .applications-page {
+//     .applications-main-card {
+//       background: $gray-800;
+//       border-color: $gray-700;
+//
+//       .applications-tabs {
+//         .ant-tabs-nav {
+//           .ant-tabs-tab {
+//             background: $gray-700;
+//             border-color: $gray-600;
+//
+//             &:hover {
+//               background: $primary-900;
+//               border-color: $primary-400;
+//             }
+//
+//             &.ant-tabs-tab-active {
+//               background: $primary-800;
+//               border-color: $primary-500;
+//             }
+//           }
+//         }
+//       }
+//     }
+//
+//     .overview-content,
+//     .applications-content,
+//     .tasks-content,
+//     .scholarships-content {
+//       .stat-card,
+//       .applications-card,
+//       .deadlines-card,
+//       .application-card,
+//       .task-card,
+//       .scholarship-card {
+//         background: $gray-700;
+//         border-color: $gray-600;
+//
+//         .ant-card-head-title,
+//         .university-name,
+//         .task-title,
+//         .scholarship-name {
+//           color: $text-inverse;
+//         }
+//       }
+//     }
+//   }
+// }
 
 // ========================================
 // 🎨 ENHANCED APPLICATION CARDS

@@ -400,26 +400,26 @@ $crimson-900: #7f1d1d;
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .student-hub-dashboard {
-    .dashboard-header {
-      background: linear-gradient(135deg, $gray-800 0%, $gray-900 100%);
-    }
-
-    .stat-card,
-    .activity-card,
-    .actions-card,
-    .deadlines-card {
-      background: $gray-800;
-      border-color: $gray-700;
-
-      .ant-card-head-title {
-        color: $text-inverse;
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .student-hub-dashboard {
+//     .dashboard-header {
+//       background: linear-gradient(135deg, $gray-800 0%, $gray-900 100%);
+//     }
+//
+//     .stat-card,
+//     .activity-card,
+//     .actions-card,
+//     .deadlines-card {
+//       background: $gray-800;
+//       border-color: $gray-700;
+//
+//       .ant-card-head-title {
+//         color: $text-inverse;
+//       }
+//     }
+//   }
+// }
 
 // ========================================
 // 🎯 GLOBAL LOADING SPINNER CENTERING

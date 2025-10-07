@@ -553,93 +553,93 @@
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .essays-page {
-    .essays-main-card {
-      background: $gray-800;
-      border-color: $gray-700;
-
-      .essays-tabs {
-        .ant-tabs-nav {
-          .ant-tabs-tab {
-            background: $gray-700;
-            border-color: $gray-600;
-
-            &:hover {
-              background: $primary-900;
-              border-color: $primary-400;
-            }
-
-            &.ant-tabs-tab-active {
-              background: $primary-800;
-              border-color: $primary-500;
-            }
-          }
-        }
-      }
-    }
-
-    .essays-content,
-    .templates-content,
-    .ai-content {
-      .stat-card,
-      .essay-card,
-      .template-card,
-      .ai-session-card {
-        background: $gray-700;
-        border-color: $gray-600;
-
-        .essay-title,
-        .template-title,
-        .session-title {
-          color: $text-inverse;
-        }
-      }
-    }
-  }
-
-  .ai-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 300px;
-    padding: $space-8;
-
-    .placeholder-content {
-      text-align: center;
-      max-width: 400px;
-
-      .anticon {
-        color: $primary-300;
-        margin-bottom: $space-4;
-      }
-
-      h4 {
-        font-size: $text-xl;
-        font-weight: $font-semibold;
-        color: $text-primary;
-        margin: $space-4 0 $space-2 0;
-      }
-
-      p {
-        font-size: $text-base;
-        color: $text-secondary;
-        margin: 0 0 $space-6 0;
-        line-height: 1.6;
-      }
-
-      .ant-btn {
-        border-radius: $radius-lg;
-        font-weight: $font-semibold;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .essays-page {
+//     .essays-main-card {
+//       background: $gray-800;
+//       border-color: $gray-700;
+//
+//       .essays-tabs {
+//         .ant-tabs-nav {
+//           .ant-tabs-tab {
+//             background: $gray-700;
+//             border-color: $gray-600;
+//
+//             &:hover {
+//               background: $primary-900;
+//               border-color: $primary-400;
+//             }
+//
+//             &.ant-tabs-tab-active {
+//               background: $primary-800;
+//               border-color: $primary-500;
+//             }
+//           }
+//         }
+//       }
+//     }
+//
+//     .essays-content,
+//     .templates-content,
+//     .ai-content {
+//       .stat-card,
+//       .essay-card,
+//       .template-card,
+//       .ai-session-card {
+//         background: $gray-700;
+//         border-color: $gray-600;
+//
+//         .essay-title,
+//         .template-title,
+//         .session-title {
+//           color: $text-inverse;
+//         }
+//       }
+//     }
+//
+//     .ai-placeholder {
+//       display: flex;
+//       justify-content: center;
+//       align-items: center;
+//       min-height: 300px;
+//       padding: $space-8;
+//
+//       .placeholder-content {
+//         text-align: center;
+//         max-width: 400px;
+//
+//         .anticon {
+//           color: $primary-300;
+//           margin-bottom: $space-4;
+//         }
+//
+//         h4 {
+//           font-size: $text-xl;
+//           font-weight: $font-semibold;
+//           color: $text-primary;
+//           margin: $space-4 0 $space-2 0;
+//         }
+//
+//         p {
+//           font-size: $text-base;
+//           color: $text-secondary;
+//           margin: 0 0 $space-6 0;
+//           line-height: 1.6;
+//         }
+//
+//         .ant-btn {
+//           border-radius: $radius-lg;
+//           font-weight: $font-semibold;
+//           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//           transition: all 0.2s ease;
+//
+//           &:hover {
+//             transform: translateY(-1px);
+//             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+//           }
+//         }
+//       }
+//     }
+//   }
+// }

@@ -590,96 +590,96 @@
   }
 }
 
-// Dark Mode Support
-@media (prefers-color-scheme: dark) {
-  .personal-profile {
-    .personal-form {
-      .section-card {
-        background: $gray-800;
-        border-color: $gray-700;
-
-        .ant-card-head {
-          background: $gray-700;
-          border-color: $gray-600;
-
-          .ant-card-head-title {
-            color: $text-inverse;
-          }
-        }
-
-        .section-title {
-          color: $text-inverse;
-          border-color: $gray-600;
-
-          .anticon {
-            color: $primary-400;
-          }
-        }
-
-        .form-group {
-          .ant-form-item-label {
-            label {
-              color: $text-inverse;
-            }
-          }
-
-          .ant-input,
-          .ant-select-selector,
-          .ant-input-number {
-            background: $gray-800;
-            border-color: $gray-600;
-            color: $text-inverse;
-
-            &:focus,
-            &:hover {
-              border-color: $primary-400;
-              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-            }
-          }
-
-          .ant-radio-group {
-            .ant-radio-wrapper {
-              color: $gray-300;
-            }
-          }
-
-          .ant-checkbox-group {
-            .ant-checkbox-wrapper {
-              color: $gray-300;
-            }
-          }
-
-          .ant-textarea {
-            background: $gray-800;
-            border-color: $gray-600;
-            color: $text-inverse;
-
-            &:focus,
-            &:hover {
-              border-color: $primary-400;
-              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-            }
-          }
-        }
-      }
-
-      .form-actions-card {
-        background: $gray-800;
-        border-color: $gray-700;
-
-        .form-actions {
-          .ant-btn-default {
-            background: $gray-700;
-            border-color: $gray-600;
-            color: $gray-300;
-
-            &:hover {
-              border-color: $primary-400;
-              color: $primary-400;
-            }
-          }
-        }
-      }
-    }
-  }
-}
+// Dark Mode Support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .personal-profile {
+//     .personal-form {
+//       .section-card {
+//         background: $gray-800;
+//         border-color: $gray-700;
+//
+//         .ant-card-head {
+//           background: $gray-700;
+//           border-color: $gray-600;
+//
+//           .ant-card-head-title {
+//             color: $text-inverse;
+//           }
+//         }
+//
+//         .section-title {
+//           color: $text-inverse;
+//           border-color: $gray-600;
+//
+//           .anticon {
+//             color: $primary-400;
+//           }
+//         }
+//
+//         .form-group {
+//           .ant-form-item-label {
+//             label {
+//               color: $text-inverse;
+//             }
+//           }
+//
+//           .ant-input,
+//           .ant-select-selector,
+//           .ant-input-number {
+//             background: $gray-800;
+//             border-color: $gray-600;
+//             color: $text-inverse;
+//
+//             &:focus,
+//             &:hover {
+//               border-color: $primary-400;
+//               box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+//             }
+//           }
+//
+//           .ant-radio-group {
+//             .ant-radio-wrapper {
+//               color: $gray-300;
+//             }
+//           }
+//
+//           .ant-checkbox-group {
+//             .ant-checkbox-wrapper {
+//               color: $gray-300;
+//             }
+//           }
+//
+//           .ant-textarea {
+//             background: $gray-800;
+//             border-color: $gray-600;
+//             color: $text-inverse;
+//
+//             &:focus,
+//             &:hover {
+//               border-color: $primary-400;
+//               box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+//             }
+//           }
+//         }
+//       }
+//
+//       .form-actions-card {
+//         background: $gray-800;
+//         border-color: $gray-700;
+//
+//         .form-actions {
+//           .ant-btn-default {
+//             background: $gray-700;
+//             border-color: $gray-600;
+//             color: $gray-300;
+//
+//             &:hover {
+//               border-color: $primary-400;
+//               color: $primary-400;
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// }

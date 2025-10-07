@@ -1,4 +1,4 @@
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Skeleton } from 'antd';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import UniversityDetailSection from '../_components/detail';
 import UnivercityDetailOverview from '../_components/overview';
@@ -36,10 +36,14 @@ function UniversityDetailPage() {
   return (
     <div className={styles.detail}>
       {screenSize < 768 && (
-        <Breadcrumb
-          items={breadcrumbItems}
-          style={{ marginTop: 20, marginBottom: 20 }}
-        />
+        isLoading ? (
+          <Skeleton active style={{ marginTop: 20, marginBottom: 20 }} />
+        ) : (
+          <Breadcrumb
+            items={breadcrumbItems}
+            style={{ marginTop: 20, marginBottom: 20 }}
+          />
+        )
       )}
       <UnivercityDetailOverview
         isLoading={isLoading}

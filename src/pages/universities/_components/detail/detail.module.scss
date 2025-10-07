@@ -3,13 +3,14 @@
 .detail {
   width: 100%;
   max-width: 1400px;
-  margin: 40px auto;
-  padding: 40px 20px;
+  margin: 20px auto;
+  padding: 20px;
   background-color: $colorBgContainer;
 
   @media (max-width: 768px) {
     max-width: 100%;
-    padding: 20px;
+    padding: 16px;
+    margin: 16px auto;
   }
 }
 
@@ -34,7 +35,7 @@
 }
 
 .img {
-  padding: 20px 0;
+  padding: 12px 0;
 
   img {
     width: 100%;

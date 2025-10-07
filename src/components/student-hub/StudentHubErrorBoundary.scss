@@ -142,36 +142,36 @@
   }
 }
 
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .student-hub-error-boundary {
-    .error-card {
-      background: $gray-800;
-      border-color: $gray-700;
-
-      .error-content {
-        .error-title {
-          color: $text-inverse;
-        }
-
-        .error-description {
-          color: $gray-300;
-        }
-
-        .error-details {
-          background: $gray-700;
-
-          summary {
-            color: $text-inverse;
-          }
-
-          .error-stack,
-          .error-info {
-            background: $gray-600;
-            color: $gray-200;
-          }
-        }
-      }
-    }
-  }
-}
+// Dark mode support - DISABLED to maintain consistent light theme
+// @media (prefers-color-scheme: dark) {
+//   .student-hub-error-boundary {
+//     .error-card {
+//       background: $gray-800;
+//       border-color: $gray-700;
+//
+//       .error-content {
+//         .error-title {
+//           color: $text-inverse;
+//         }
+//
+//         .error-description {
+//           color: $gray-300;
+//         }
+//
+//         .error-details {
+//           background: $gray-700;
+//
+//           summary {
+//             color: $text-inverse;
+//           }
+//
+//           .error-stack,
+//           .error-info {
+//             background: $gray-600;
+//             color: $gray-200;
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
