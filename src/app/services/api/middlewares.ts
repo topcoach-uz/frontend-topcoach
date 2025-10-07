@@ -52,7 +52,8 @@ export const rtkQueryErrorLogger: Middleware =
         // Only show session expired messages for authenticated requests, not login attempts
         const isLoginAttempt = originalRequestEndpoint.includes('/auth/login') || 
                               originalRequestEndpoint.includes('/auth/exchange') ||
-                              originalRequestEndpoint.includes('/auth/reset/password');
+                              originalRequestEndpoint.includes('/auth/reset/password') ||
+                              originalRequestEndpoint.includes('/auth/reset/password/confirm');
         
         if (!isLoginAttempt) {
           message.warning('Your session has expired. Please log in again.');

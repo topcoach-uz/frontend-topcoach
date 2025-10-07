@@ -61,7 +61,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const urlList = ['/auth/login', '/auth/exchange', '/auth/reset/password'];
+const urlList = ['/auth/login', '/auth/exchange', '/auth/reset/password', '/auth/reset/password/confirm'];
 
 // Response Interceptor: Handle 401 Unauthorized
 axiosInstance.interceptors.response.use(
@@ -94,7 +94,8 @@ axiosInstance.interceptors.response.use(
           // Only show session expired message if it's not a login attempt
           const isLoginAttempt = originalRequest.url.includes('/auth/login') || 
                                 originalRequest.url.includes('/auth/exchange') ||
-                                originalRequest.url.includes('/auth/reset/password');
+                                originalRequest.url.includes('/auth/reset/password') ||
+                                originalRequest.url.includes('/auth/reset/password/confirm');
           
           if (!isLoginAttempt) {
             message.error('Your session has expired. Please log in again.');
