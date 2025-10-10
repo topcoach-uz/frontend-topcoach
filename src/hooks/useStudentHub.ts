@@ -3,6 +3,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { message } from 'antd';
+import { useTypedSelector } from '../app/store';
 import {
   useGetMyStudentProfileQuery,
   useUpdateMyStudentProfileMutation,
@@ -30,12 +31,24 @@ import {
 // ========================================
 
 export const useStudentProfile = () => {
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
   const {
     data: profileData,
     isLoading: profileLoading,
     error: profileError,
     refetch: refetchProfile,
-  } = useGetMyStudentProfileQuery();
+  } = useGetMyStudentProfileQuery(undefined, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
+
+  // Safe refetch function that checks authentication
+  const safeRefetchProfile = useCallback(() => {
+    if (isAuthenticated) {
+      return refetchProfile();
+    }
+    return Promise.resolve();
+  }, [isAuthenticated, refetchProfile]);
 
   const [updateProfile, { isLoading: updateLoading }] = useUpdateMyStudentProfileMutation();
   const [calculateCompletion, { isLoading: calculateLoading }] = useCalculateCompletionMutation();
@@ -51,13 +64,13 @@ export const useStudentProfile = () => {
 
       try {
         const result = await updateProfile(data).unwrap();
-        refetchProfile();
+        safeRefetchProfile();
         return result;
       } catch (error: any) {
         throw error;
       }
     },
-    [profile?.id, updateProfile, refetchProfile]
+    [profile?.id, updateProfile, safeRefetchProfile]
   );
 
   const recalculateCompletion = useCallback(async () => {
@@ -66,12 +79,12 @@ export const useStudentProfile = () => {
     try {
       await calculateCompletion(profile.id).unwrap();
       message.success('Completion percentage recalculated!');
-      refetchProfile();
+      safeRefetchProfile();
     } catch (error: any) {
       message.error(error?.data?.message || 'Failed to recalculate completion');
       throw error;
     }
-  }, [profile?.id, calculateCompletion, refetchProfile]);
+  }, [profile?.id, calculateCompletion, safeRefetchProfile]);
 
   return {
     profile,
@@ -83,7 +96,7 @@ export const useStudentProfile = () => {
     recalculateCompletion,
     updateLoading,
     calculateLoading,
-    refetchProfile,
+    refetchProfile: safeRefetchProfile,
   };
 };
 
@@ -92,12 +105,24 @@ export const useStudentProfile = () => {
 // ========================================
 
 export const useDashboard = () => {
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
   const {
     data: dashboardData,
     isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
-  } = useGetDashboardStatsQuery();
+  } = useGetDashboardStatsQuery(undefined, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
+
+  // Safe refetch function that checks authentication
+  const safeRefetchDashboard = useCallback(() => {
+    if (isAuthenticated) {
+      return refetchDashboard();
+    }
+    return Promise.resolve();
+  }, [isAuthenticated, refetchDashboard]);
 
   const dashboard = dashboardData;
 
@@ -144,7 +169,7 @@ export const useDashboard = () => {
     progressOverview,
     isLoading: dashboardLoading,
     error: dashboardError,
-    refetchDashboard,
+    refetchDashboard: safeRefetchDashboard,
   };
 };
 
@@ -153,18 +178,39 @@ export const useDashboard = () => {
 // ========================================
 
 export const useNotifications = (page = 1, limit = 10) => {
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
   const {
     data: notificationsData,
     isLoading: notificationsLoading,
     error: notificationsError,
     refetch: refetchNotifications,
-  } = useGetNotificationsQuery({ page, limit });
+  } = useGetNotificationsQuery({ page, limit }, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
 
   const {
     data: unreadCountData,
     isLoading: unreadCountLoading,
     refetch: refetchUnreadCount,
-  } = useGetUnreadNotificationCountQuery();
+  } = useGetUnreadNotificationCountQuery(undefined, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
+
+  // Safe refetch functions that check authentication
+  const safeRefetchNotifications = useCallback(() => {
+    if (isAuthenticated) {
+      return refetchNotifications();
+    }
+    return Promise.resolve();
+  }, [isAuthenticated, refetchNotifications]);
+
+  const safeRefetchUnreadCount = useCallback(() => {
+    if (isAuthenticated) {
+      return refetchUnreadCount();
+    }
+    return Promise.resolve();
+  }, [isAuthenticated, refetchUnreadCount]);
 
   const [markAsRead, { isLoading: markAsReadLoading }] = useMarkNotificationAsReadMutation();
 
@@ -176,14 +222,14 @@ export const useNotifications = (page = 1, limit = 10) => {
     async (notificationId: string) => {
       try {
         await markAsRead(notificationId).unwrap();
-        refetchNotifications();
-        refetchUnreadCount();
+        safeRefetchNotifications();
+        safeRefetchUnreadCount();
       } catch (error: any) {
         message.error(error?.data?.message || 'Failed to mark notification as read');
         throw error;
       }
     },
-    [markAsRead, refetchNotifications, refetchUnreadCount]
+    [markAsRead, safeRefetchNotifications, safeRefetchUnreadCount]
   );
 
   const markAllAsRead = useCallback(async () => {
@@ -192,14 +238,14 @@ export const useNotifications = (page = 1, limit = 10) => {
       // For now, we'll mark each notification individually
       const unreadNotifications = notifications.filter(n => n.status === 'unread');
       await Promise.all(unreadNotifications.map(n => markAsRead(n.id).unwrap()));
-      refetchNotifications();
-      refetchUnreadCount();
+      safeRefetchNotifications();
+      safeRefetchUnreadCount();
       message.success('All notifications marked as read');
     } catch (error: any) {
       message.error('Failed to mark all notifications as read');
       throw error;
     }
-  }, [notifications, markAsRead, refetchNotifications, refetchUnreadCount]);
+  }, [notifications, markAsRead, safeRefetchNotifications, safeRefetchUnreadCount]);
 
   return {
     notifications,
@@ -211,8 +257,8 @@ export const useNotifications = (page = 1, limit = 10) => {
     markNotificationAsRead,
     markAllAsRead,
     markAsReadLoading,
-    refetchNotifications,
-    refetchUnreadCount,
+    refetchNotifications: safeRefetchNotifications,
+    refetchUnreadCount: safeRefetchUnreadCount,
   };
 };
 
@@ -221,12 +267,24 @@ export const useNotifications = (page = 1, limit = 10) => {
 // ========================================
 
 export const useUserPreferences = () => {
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
   const {
     data: preferencesData,
     isLoading: preferencesLoading,
     error: preferencesError,
     refetch: refetchPreferences,
-  } = useGetUserPreferencesQuery();
+  } = useGetUserPreferencesQuery(undefined, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
+
+  // Safe refetch function that checks authentication
+  const safeRefetchPreferences = useCallback(() => {
+    if (isAuthenticated) {
+      return refetchPreferences();
+    }
+    return Promise.resolve();
+  }, [isAuthenticated, refetchPreferences]);
 
   const [updatePreferences, { isLoading: updateLoading }] = useUpdateUserPreferencesMutation();
 
@@ -237,13 +295,13 @@ export const useUserPreferences = () => {
       try {
         await updatePreferences(data).unwrap();
         message.success('Preferences updated successfully!');
-        refetchPreferences();
+        safeRefetchPreferences();
       } catch (error: any) {
         message.error(error?.data?.message || 'Failed to update preferences');
         throw error;
       }
     },
-    [updatePreferences, refetchPreferences]
+    [updatePreferences, safeRefetchPreferences]
   );
 
   const updateNotificationSettings = useCallback(
@@ -255,13 +313,13 @@ export const useUserPreferences = () => {
           notificationSettings: { ...preferences.notificationSettings, ...settings },
         }).unwrap();
         message.success('Notification settings updated!');
-        refetchPreferences();
+        safeRefetchPreferences();
       } catch (error: any) {
         message.error('Failed to update notification settings');
         throw error;
       }
     },
-    [preferences, updatePreferences, refetchPreferences]
+    [preferences, updatePreferences, safeRefetchPreferences]
   );
 
   const updateDisplaySettings = useCallback(
@@ -273,13 +331,13 @@ export const useUserPreferences = () => {
           displaySettings: { ...preferences.displaySettings, ...settings },
         }).unwrap();
         message.success('Display settings updated!');
-        refetchPreferences();
+        safeRefetchPreferences();
       } catch (error: any) {
         message.error('Failed to update display settings');
         throw error;
       }
     },
-    [preferences, updatePreferences, refetchPreferences]
+    [preferences, updatePreferences, safeRefetchPreferences]
   );
 
   const updateAISettings = useCallback(
@@ -291,13 +349,13 @@ export const useUserPreferences = () => {
           aiSettings: { ...preferences.aiSettings, ...settings },
         }).unwrap();
         message.success('AI settings updated!');
-        refetchPreferences();
+        safeRefetchPreferences();
       } catch (error: any) {
         message.error('Failed to update AI settings');
         throw error;
       }
     },
-    [preferences, updatePreferences, refetchPreferences]
+    [preferences, updatePreferences, safeRefetchPreferences]
   );
 
   return {
@@ -309,7 +367,7 @@ export const useUserPreferences = () => {
     updateDisplaySettings,
     updateAISettings,
     updateLoading,
-    refetchPreferences,
+    refetchPreferences: safeRefetchPreferences,
   };
 };
 

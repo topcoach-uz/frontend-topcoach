@@ -52,7 +52,7 @@ const LoginPrompt: React.FC = () => {
               <FontAwesomeIcon icon="graduation-cap" style={{ color: '#8b0000', fontSize: '48px' }} />
             </div>
             <Title level={1} className="welcome-title">
-              Welcome to My Journey
+              Welcome to Launchpad
             </Title>
             <Paragraph className="welcome-description">
               Your comprehensive college application management system. Track applications, manage essays, 

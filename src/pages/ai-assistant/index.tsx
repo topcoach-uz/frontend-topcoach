@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { ChatKit, useChatKit } from '@openai/chatkit-react';
 import { useGetMeQuery } from 'src/app/services/users';
+import { useTypedSelector } from 'src/app/store';
+import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
 import styles from './ai-assistant.module.scss';
 
 const AiAssistantPage: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [characterCount, setCharacterCount] = useState(0);
   const { data: userData } = useGetMeQuery();
+  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  const navigate = useNavigate();
   
   // Get user's name or fallback to "Student" - same pattern as Dashboard
   const userName = userData?.profile?.name || 'Student';
@@ -17,6 +22,10 @@ const AiAssistantPage: React.FC = () => {
     // For production (topcoach.uz): domain_pk_68e8ce9d37f88190b434865ed70fc50e0ff9ae4f9c445521
     api: {
       async getClientSecret(existing) {
+        if (!isAuthenticated) {
+          throw new Error('User must be authenticated to use ChatKit');
+        }
+        
         if (existing) {
           // implement session refresh
           const res = await fetch('/api/chatkit/session', {
@@ -65,6 +74,19 @@ const AiAssistantPage: React.FC = () => {
 
   const handleSend = () => {
     if (inputValue.trim()) {
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        message.info({
+          content: 'Please sign in to start chatting with CoachAI',
+          duration: 2,
+          onClose: () => {
+            // Navigate to sign in page after showing the message
+            navigate('/auth/signin');
+          }
+        });
+        return;
+      }
+      
       // Here you would typically send the message to ChatKit
       // For now, we'll just clear the input
       setInputValue('');
@@ -192,7 +214,7 @@ const AiAssistantPage: React.FC = () => {
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
-              placeholder="Ask whatever you want..."
+              placeholder={isAuthenticated ? "Ask whatever you want..." : "Sign in to start chatting with CoachAI..."}
               className={`${styles.inputField} inputField`}
               maxLength={5000}
               rows={1}
