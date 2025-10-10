@@ -63,7 +63,7 @@
 .card {
   background: #ffffff;
   border-radius: 8px; // Slightly increased border-radius
-  padding: 0.6rem; // Slightly increased padding
+  padding: 0.5rem; // Reduced padding for more compact cards
   text-align: center;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
   transition: all 0.3s ease;
@@ -73,7 +73,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100px; // Slightly increased min-height
+  min-height: 70px; // Reduced height for more compact cards
 
   &:hover {
     transform: translateY(-1px);
@@ -146,26 +146,31 @@
   margin: 0; // Remove default margin
   vertical-align: middle; // Center text vertically
   
-  // ChatGPT-like scrollbar - subtle and only when needed
-  overflow-y: auto; // Show scrollbar only when content overflows
+  // ChatGPT-like scrollbar - overlay on send button
+  overflow-y: auto !important; // Force scrollbar to show when content overflows
   scrollbar-width: thin; // Firefox - thin scrollbar
-  scrollbar-color: #c1c1c1 transparent; // Firefox - subtle gray, transparent track
+  scrollbar-color: #c1c1c1 transparent; // Firefox - gray thumb, transparent track
   
   &::-webkit-scrollbar {
-    width: 6px; // Chrome, Safari, Opera - thin like ChatGPT
+    width: 6px !important; // Chrome, Safari, Opera - thin like ChatGPT
   }
   
   &::-webkit-scrollbar-track {
-    background: transparent; // Transparent track like ChatGPT
+    background: transparent !important; // Transparent track like ChatGPT
   }
   
   &::-webkit-scrollbar-thumb {
-    background: #c1c1c1; // Subtle gray like ChatGPT
+    background: #c1c1c1 !important; // Gray thumb
     border-radius: 3px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8; // Slightly darker on hover
+    background: #a8a8a8 !important; // Darker on hover
+  }
+  
+  // Position scrollbar to overlay the send button area
+  &::-webkit-scrollbar-corner {
+    background: transparent;
   }
   
   &::placeholder {
@@ -173,7 +178,11 @@
     line-height: 1.5; // Match the text line-height
   }
   
-  // Placeholder already centered with base padding
+  // Center placeholder text by adding padding when empty
+  &:placeholder-shown {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }
 
 .sendButton {

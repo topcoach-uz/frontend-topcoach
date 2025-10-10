@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider } from 'antd';
+import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
@@ -53,12 +53,12 @@ const ApplicationsPage: React.FC = () => {
     }
   }, [location.pathname, refetchApplications, refetchTasks, refetchScholarships]);
 
-  // Show loading state
+  // Show loading state only in main content area
   if (isLoading) {
     return (
-      <div className="applications-loading">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
+      <div className="applications-loading-content">
+        <div className="loading-spinner-container">
+          <Spin size="large" />
           <p>Loading applications...</p>
         </div>
       </div>

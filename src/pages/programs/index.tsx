@@ -229,9 +229,13 @@ const ProgramsPage: React.FC = () => {
   // Only show loading for pricing data, not enrollment status
   if (pricingLoading) {
     return (
-      <div className="programs-loading">
-        <Spin size="large" />
-        <p>Loading program information...</p>
+      <div className="programs-page">
+        <div className="programs-loading-content">
+          <div className="loading-spinner-container">
+            <Spin size="large" />
+            <p>Loading program information...</p>
+          </div>
+        </div>
       </div>
     );
   }

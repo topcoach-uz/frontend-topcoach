@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Drawer } from 'antd';
+import { Layout, Menu, Button, Drawer, Spin } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
 import LoginPrompt from 'src/components/student-hub/LoginPrompt';
+import { useStudentHub } from 'src/hooks/useStudentHub';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -21,6 +22,9 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
+  // Get loading state from useStudentHub hook
+  const { isLoading } = useStudentHub();
 
   // Track window width changes
   useEffect(() => {
@@ -292,7 +296,16 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       <Layout className="main-layout">
         <Content className="main-content">
-          {children}
+          {isLoading ? (
+            <div className="student-hub-loading-content">
+              <div className="loading-spinner-container">
+                <Spin size="large" />
+                <p>Loading your dashboard...</p>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </Content>
       </Layout>
     </Layout>

@@ -34,12 +34,14 @@ const ProfilePage: React.FC = () => {
     setSearchParams({ tab: key });
   };
 
-  // Show loading state
+  // Show loading state only in main content area
   if (isLoading) {
     return (
-      <div className="profile-loading">
-        <Spin size="large" />
-        <p>Loading your profile...</p>
+      <div className="profile-loading-content">
+        <div className="loading-spinner-container">
+          <Spin size="large" />
+          <p>Loading your profile...</p>
+        </div>
       </div>
     );
   }

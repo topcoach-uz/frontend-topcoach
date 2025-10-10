@@ -70,11 +70,16 @@ const AiAssistantPage: React.FC = () => {
       setInputValue('');
       setCharacterCount(0);
       
-      // Reset alignment to center when clearing
+      // Reset alignment and height when clearing
       const inputWrapper = document.querySelector('.inputWrapper') as HTMLElement;
       const textarea = document.querySelector('.inputField') as HTMLTextAreaElement;
       if (inputWrapper) {
         inputWrapper.style.alignItems = 'center';
+      }
+      if (textarea) {
+        // Reset textarea height to default
+        textarea.style.height = 'auto';
+        textarea.style.height = '40px'; // Reset to minimum height
       }
     }
   };
@@ -189,7 +194,7 @@ const AiAssistantPage: React.FC = () => {
               onKeyDown={handleKeyPress}
               placeholder="Ask whatever you want..."
               className={`${styles.inputField} inputField`}
-              maxLength={1000}
+              maxLength={5000}
               rows={1}
               style={{ resize: 'none', overflow: 'hidden' }}
             />
@@ -204,7 +209,7 @@ const AiAssistantPage: React.FC = () => {
             </button>
           </div>
           <div className={styles.characterCounter}>
-            {characterCount}/1000
+            {characterCount}/5000
           </div>
         </div>
 

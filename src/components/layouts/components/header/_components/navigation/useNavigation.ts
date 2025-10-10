@@ -20,11 +20,11 @@ export default function useNavigation() {
     },
     {
       path: '/student-hub',
-      text: t('header.studentHub', 'My Journey'),
+      text: t('header.studentHub', 'Launchpad'),
     },
     {
       path: '/ai-assistant',
-      text: t('header.aiAssistant', 'AI Assistant'),
+      text: t('header.aiAssistant', 'CoachAI'),
     },
     {
       path: '/mentors',
@@ -35,8 +35,8 @@ export default function useNavigation() {
       text: t('header.programs', 'Programs'),
     },
     {
-      path: '/events',
-      text: t('header.events'),
+      path: '/contact',
+      text: t('header.contact'),
     },
     {
       text: t('navigation.learnMore'),
@@ -50,12 +50,12 @@ export default function useNavigation() {
           text: t('header.blog'),
         },
         {
-          path: '/faq',
-          text: t('header.faq'),
+          path: '/events',
+          text: t('header.events'),
         },
         {
-          path: '/contact',
-          text: t('header.contact'),
+          path: '/faq',
+          text: t('header.faq'),
         },
       ],
     },

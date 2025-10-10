@@ -5,29 +5,45 @@
 // 🔄 LOADING & ERROR STATES
 // ========================================
 
-.applications-loading {
+// Ensure loading overlay positions correctly
+.applications-page {
+  position: relative;
+}
+
+// Loading state - perfectly centered in main content area
+.applications-loading-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 400px;
+  justify-content: center;
+  background: transparent;
+  z-index: 10;
   
-  .loading-spinner {
+  .loading-spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid $border-light;
-      border-top: 4px solid $primary-500;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto $space-4;
+    .ant-spin {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     p {
-      color: $text-secondary;
-      font-size: $text-lg;
+      font-size: 18px;
+      color: #6b7280;
       margin: 0;
+      text-align: center;
     }
   }
 }

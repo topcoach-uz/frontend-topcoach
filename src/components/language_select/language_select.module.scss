@@ -19,6 +19,7 @@
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  background: transparent !important;
   
   // Remove any borders from the select component
   :global(.ant-select) {
@@ -107,6 +108,13 @@
     height: 22px;
     border: none !important;
     outline: none !important;
+    box-shadow: none !important;
+    
+    // Remove any white borders or backgrounds
+    rect, path, circle, polygon {
+      stroke: none !important;
+      stroke-width: 0 !important;
+    }
   }
 }
 

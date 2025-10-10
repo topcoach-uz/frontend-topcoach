@@ -47,9 +47,13 @@ const ProgramsSuccessPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="programs-success-loading">
-        <Spin size="large" />
-        <p>Verifying your enrollment...</p>
+      <div className="programs-success-page">
+        <div className="programs-success-loading-content">
+          <div className="loading-spinner-container">
+            <Spin size="large" />
+            <p>Verifying your enrollment...</p>
+          </div>
+        </div>
       </div>
     );
   }

@@ -64,15 +64,7 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="dashboard-loading">
-        <Spin size="large" />
-        <p>Loading your dashboard...</p>
-      </div>
-    );
-  }
+  // Loading is handled by useStudentHub hook - no need for duplicate loading state
 
   // Show error state
   if (hasError) {
