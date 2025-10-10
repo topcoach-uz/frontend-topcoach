@@ -17,7 +17,7 @@ export default function BannerSection() {
           padding={40}
           borderRadius={24}
           className={styles.banner}
-          bgColor={colors.colorSecondary}
+          bgColor="#8b0000"
         >
           <div>
             <CustomText
