@@ -45,10 +45,10 @@ export default function useNavigation() {
           path: '/universities',
           text: t('header.universities'),
         },
-        {
-          path: '/success-stories',
-          text: t('header.blog'),
-        },
+        // {
+        //   path: '/success-stories',
+        //   text: t('header.blog'),
+        // },
         {
           path: '/events',
           text: t('header.events'),
