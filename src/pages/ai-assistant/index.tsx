@@ -4,6 +4,7 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+import { useChatKitScript } from 'src/hooks/useChatKitScript';
 import styles from './ai-assistant.module.scss';
 
 const AiAssistantPage: React.FC = () => {
@@ -15,10 +16,13 @@ const AiAssistantPage: React.FC = () => {
   });
   const navigate = useNavigate();
   
+  // Only load ChatKit script when user is authenticated
+  const { isLoaded: chatKitScriptLoaded } = useChatKitScript(isAuthenticated);
+  
   // Get user's name or fallback to "Student" - same pattern as Dashboard
   const userName = userData?.profile?.name || 'Student';
 
-  // Only initialize ChatKit when user is authenticated
+  // Only initialize ChatKit when user is authenticated and script is loaded
   const chatKitResult = useChatKit({
     // Use your domain public key for ChatKit
     // For local development (ngrok): domain_pk_68e8d4f58e048190ba649b151d27d0910150bcb1add83f5f
@@ -54,8 +58,8 @@ const AiAssistantPage: React.FC = () => {
     },
   });
 
-  // Only use control when authenticated
-  const control = isAuthenticated ? chatKitResult.control : null;
+  // Only use control when authenticated and script is loaded
+  const control = (isAuthenticated && chatKitScriptLoaded) ? chatKitResult.control : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -241,8 +245,8 @@ const AiAssistantPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hidden ChatKit for actual functionality - only render when authenticated */}
-        {isAuthenticated && control && (
+        {/* Hidden ChatKit for actual functionality - only render when authenticated and script loaded */}
+        {isAuthenticated && chatKitScriptLoaded && control && (
           <div style={{ display: 'none' }}>
             <ChatKit 
               control={control} 

@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useGetMentorsQuery } from 'src/app/services/mentors';
+import { useLazyGetMentorsQuery } from 'src/app/services/mentors';
 
 /**
  * Component that prefetches mentor data when user is likely to visit mentors page
  */
 export default function MentorPrefetch() {
   const location = useLocation();
-  const { refetch: prefetchMentors } = useGetMentorsQuery(undefined, {
-    skip: true, // Don't fetch automatically, only on demand
-  });
+  const [prefetchMentors] = useLazyGetMentorsQuery();
 
   useEffect(() => {
     // Prefetch mentor data when user is on pages that commonly lead to mentors page
