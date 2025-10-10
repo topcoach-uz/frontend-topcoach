@@ -58,7 +58,9 @@ export const mentorApi = RtkApi.injectEndpoints({
 
 export const {
   useGetMentorsQuery,
+  useLazyGetMentorsQuery,
   useGetMentorDetailQuery,
+  useLazyGetMentorDetailQuery,
   useGetMentorBalanceQuery,
   useGetPlansQuery,
   useGetPlansWithParamsQuery,
