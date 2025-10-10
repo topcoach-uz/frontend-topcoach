@@ -376,7 +376,9 @@ $icon-info: 'fas fa-info-circle';
 // ========================================
 
 // NUCLEAR: Fix ALL dropdown double borders and focus states
-.ant-select {
+// Scope to student hub layout only to avoid affecting header components
+.student-hub-layout .ant-select,
+.student-hub-page .ant-select {
   .ant-select-selector {
     border: 1px solid $border-medium !important;
     border-radius: $radius-md !important;

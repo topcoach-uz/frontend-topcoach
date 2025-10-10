@@ -110,7 +110,7 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
   // return <MySelect />;
 
   return (
-    <div className={styles.languageSelectContainer}>
+    <div className={`language-select-wrapper ${styles.languageSelectContainer}`}>
       <CustomSelect
         value={language}
         style={{ width: 40, minWidth: 40 }}

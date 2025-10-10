@@ -1,5 +1,54 @@
 @import 'src/styles/variables.scss';
 
+// NUCLEAR OPTION: Override ALL global ant-select styles for language flag
+// This must be at the top to ensure maximum specificity
+:global(.language-select-wrapper) {
+  .ant-select {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+    
+    .ant-select-selector {
+      border: none !important;
+      border-width: 0 !important;
+      border-style: none !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+      outline-width: 0 !important;
+      outline-style: none !important;
+      outline-color: transparent !important;
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+    
+    &.ant-select-focused {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      
+      .ant-select-selector {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+    }
+    
+    &:hover {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      
+      .ant-select-selector {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+    }
+  }
+}
+
 .language_option_wrapper {
   display: flex;
   align-items: center;
@@ -21,24 +70,48 @@
   box-shadow: none !important;
   background: transparent !important;
   
-  // Remove any borders from the select component
+  // Override ALL global ant-select styles with maximum specificity
   :global(.ant-select) {
     border: none !important;
     box-shadow: none !important;
     outline: none !important;
     background: transparent !important;
     
+    // Override global student-hub styles
+    .ant-select-selector {
+      border: none !important;
+      border-width: 0 !important;
+      border-style: none !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+    
     // Remove default Ant Design styling
     &.ant-select-focused {
       border: none !important;
       box-shadow: none !important;
       outline: none !important;
+      
+      .ant-select-selector {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
     }
     
     &:hover {
       border: none !important;
       box-shadow: none !important;
       outline: none !important;
+      
+      .ant-select-selector {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
     }
   }
 }
@@ -57,9 +130,16 @@
     align-items: center;
     justify-content: center;
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
+    border-width: 0 !important;
+    border-style: none !important;
+    border-color: transparent !important;
     box-shadow: none !important;
     outline: none !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
+    outline-color: transparent !important;
     
     // Remove any default borders and styling
     &::before,
@@ -76,14 +156,20 @@
     display: none !important;
   }
   
-  // Remove any focus borders
+  // Remove any focus borders with maximum specificity
   &:focus,
   &:focus-within,
   &:hover {
     :global(.ant-select-selector) {
       border: none !important;
+      border-width: 0 !important;
+      border-style: none !important;
+      border-color: transparent !important;
       box-shadow: none !important;
       outline: none !important;
+      outline-width: 0 !important;
+      outline-style: none !important;
+      outline-color: transparent !important;
     }
   }
 }
