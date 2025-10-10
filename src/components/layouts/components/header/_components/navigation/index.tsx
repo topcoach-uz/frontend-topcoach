@@ -1,6 +1,6 @@
 import styles from './navigation.module.scss';
 import useNavigation from './useNavigation';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 import { useLazyGetUniversityDetailQuery } from 'src/app/services/universities';
@@ -18,6 +18,16 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
   const { refetch: prefetchMentors } = useGetMentorsQuery(undefined, {
     skip: true, // Don't fetch automatically, only on demand
   });
+
+  // Safe prefetch function that checks if query was started
+  const safePrefetchMentors = useCallback(() => {
+    try {
+      prefetchMentors();
+    } catch (error) {
+      // Silently ignore refetch errors for skipped queries
+      console.debug('Prefetch mentors skipped');
+    }
+  }, [prefetchMentors]);
 
   // Prefetch university data on hover
   const [prefetchUniversity] = useLazyGetUniversityDetailQuery();
@@ -42,7 +52,7 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
     
     // Prefetch mentor data when hovering over mentors link
     if (text === 'Mentors' || text === 'Менторы') {
-      prefetchMentors();
+      safePrefetchMentors();
     }
     
     // Prefetch university data when hovering over universities link
@@ -104,7 +114,7 @@ export default function Navigation({ direction = 'horizontal' }: Props) {
                 onMouseEnter={() => {
                   // Prefetch mentor data when hovering over mentors link
                   if (link.path === '/mentors') {
-                    prefetchMentors();
+                    safePrefetchMentors();
                   }
                   // Prefetch university data when hovering over universities link
                   if (link.path === '/universities') {

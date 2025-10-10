@@ -18,7 +18,8 @@ const AiAssistantPage: React.FC = () => {
   // Get user's name or fallback to "Student" - same pattern as Dashboard
   const userName = userData?.profile?.name || 'Student';
 
-  const { control } = useChatKit({
+  // Only initialize ChatKit when user is authenticated
+  const chatKitResult = useChatKit({
     // Use your domain public key for ChatKit
     // For local development (ngrok): domain_pk_68e8d4f58e048190ba649b151d27d0910150bcb1add83f5f
     // For production (topcoach.uz): domain_pk_68e8ce9d37f88190b434865ed70fc50e0ff9ae4f9c445521
@@ -52,6 +53,9 @@ const AiAssistantPage: React.FC = () => {
       },
     },
   });
+
+  // Only use control when authenticated
+  const control = isAuthenticated ? chatKitResult.control : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -238,7 +242,7 @@ const AiAssistantPage: React.FC = () => {
         </div>
 
         {/* Hidden ChatKit for actual functionality - only render when authenticated */}
-        {isAuthenticated && (
+        {isAuthenticated && control && (
           <div style={{ display: 'none' }}>
             <ChatKit 
               control={control} 
