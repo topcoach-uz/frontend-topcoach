@@ -9,8 +9,10 @@ import styles from './ai-assistant.module.scss';
 const AiAssistantPage: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [characterCount, setCharacterCount] = useState(0);
-  const { data: userData } = useGetMeQuery();
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  const { data: userData } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  });
   const navigate = useNavigate();
   
   // Get user's name or fallback to "Student" - same pattern as Dashboard
@@ -235,13 +237,15 @@ const AiAssistantPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hidden ChatKit for actual functionality */}
-        <div style={{ display: 'none' }}>
-          <ChatKit 
-            control={control} 
-            className={styles.chatWidget}
-          />
-        </div>
+        {/* Hidden ChatKit for actual functionality - only render when authenticated */}
+        {isAuthenticated && (
+          <div style={{ display: 'none' }}>
+            <ChatKit 
+              control={control} 
+              className={styles.chatWidget}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
