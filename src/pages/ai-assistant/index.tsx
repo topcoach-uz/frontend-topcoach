@@ -1,0 +1,223 @@
+import React, { useState } from 'react';
+import { ChatKit, useChatKit } from '@openai/chatkit-react';
+import { useGetMeQuery } from 'src/app/services/users';
+import styles from './ai-assistant.module.scss';
+
+const AiAssistantPage: React.FC = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [characterCount, setCharacterCount] = useState(0);
+  const { data: userData } = useGetMeQuery();
+  
+  // Get user's name or fallback to "Student" - same pattern as Dashboard
+  const userName = userData?.profile?.name || 'Student';
+
+  const { control } = useChatKit({
+    // Use your domain public key for ChatKit
+    // For local development (ngrok): domain_pk_68e8d4f58e048190ba649b151d27d0910150bcb1add83f5f
+    // For production (topcoach.uz): domain_pk_68e8ce9d37f88190b434865ed70fc50e0ff9ae4f9c445521
+    api: {
+      async getClientSecret(existing) {
+        if (existing) {
+          // implement session refresh
+          const res = await fetch('/api/chatkit/session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refresh: true }),
+          });
+          const { client_secret } = await res.json();
+          return client_secret;
+        }
+
+        const res = await fetch('/api/chatkit/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const { client_secret } = await res.json();
+        return client_secret;
+      },
+    },
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setCharacterCount(value.length);
+    
+    // Auto-resize textarea
+    const textarea = e.target;
+    const inputWrapper = document.querySelector('.inputWrapper') as HTMLElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'; // Max height of 200px
+    
+    // Handle alignment based on content
+    if (inputWrapper) {
+      if (value.trim()) {
+        inputWrapper.style.alignItems = 'flex-end';
+      } else {
+        inputWrapper.style.alignItems = 'center';
+      }
+    }
+  };
+
+  const handleSend = () => {
+    if (inputValue.trim()) {
+      // Here you would typically send the message to ChatKit
+      // For now, we'll just clear the input
+      setInputValue('');
+      setCharacterCount(0);
+      
+      // Reset alignment to center when clearing
+      const inputWrapper = document.querySelector('.inputWrapper') as HTMLElement;
+      const textarea = document.querySelector('.inputField') as HTMLTextAreaElement;
+      if (inputWrapper) {
+        inputWrapper.style.alignItems = 'center';
+      }
+    }
+  };
+
+  const handleCardClick = (prompt: string) => {
+    setInputValue(prompt);
+    setCharacterCount(prompt.length);
+    
+    // Defer DOM manipulation to ensure React has updated the textarea's value
+    setTimeout(() => {
+      const inputElement = document.querySelector('.inputField') as HTMLTextAreaElement;
+      const inputWrapper = document.querySelector('.inputWrapper') as HTMLElement;
+      if (inputElement && inputWrapper) {
+        inputElement.focus();
+        // Trigger auto-resize - reset height first to get accurate scrollHeight
+        inputElement.style.height = 'auto';
+        inputElement.style.height = Math.min(inputElement.scrollHeight, 200) + 'px';
+        
+        // Set alignment to bottom when text is pasted
+        inputWrapper.style.alignItems = 'flex-end';
+      }
+    }, 0); // Defer to the next event loop cycle
+  };
+
+  const handleChatAreaClick = () => {
+    // Focus the input field when clicking anywhere in the chat area
+    const inputElement = document.querySelector('.inputField') as HTMLTextAreaElement;
+    if (inputElement) {
+      inputElement.focus();
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Shift+Enter: Allow new line (do nothing, let default behavior happen)
+        return;
+      } else {
+        // Enter alone: Only send if there's text, otherwise do nothing
+        if (inputValue.trim()) {
+          e.preventDefault(); // Prevent default behavior (new line)
+          handleSend();
+        } else {
+          // If input is empty, do nothing (prevent height increase)
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
+  return (
+    <div className={styles.aiAssistantPage}>
+      <div className={styles.container}>
+        {/* Header Section */}
+        <div className={styles.header}>
+          <h1 className={styles.greeting}>Hi there, {userName}!</h1>
+          <h2 className={styles.subtitle}>What would you like to know?</h2>
+          <p className={styles.instruction}>
+            Use one of the prompts below or ask your own question to begin.
+          </p>
+        </div>
+
+            {/* Prompt Cards Grid */}
+            <div className={styles.promptCards}>
+              <div 
+                className={styles.card}
+                onClick={() => handleCardClick("Help me write a compelling personal statement for my university application. I'm applying for Computer Science and want to highlight my passion for technology and problem-solving.")}
+              >
+                <h3 className={styles.cardTitle}>Essay Coach</h3>
+                <p className={styles.cardDescription}>
+                  Get help with your personal statement, SOP, or motivation letter
+                </p>
+              </div>
+
+              <div 
+                className={styles.card}
+                onClick={() => handleCardClick("I'm looking for universities that offer strong Computer Science programs with good research opportunities. My GPA is 3.8 and I have experience in software development. What universities would be a good match for me?")}
+              >
+                <h3 className={styles.cardTitle}>University Match</h3>
+                <p className={styles.cardDescription}>
+                  Find the perfect university and program for your goals
+                </p>
+              </div>
+
+              <div 
+                className={styles.card}
+                onClick={() => handleCardClick("I'm an international student from Uzbekistan studying Computer Science. What scholarships are available for me to study in the US, UK, or Canada?")}
+              >
+                <h3 className={styles.cardTitle}>Scholarship Finder</h3>
+                <p className={styles.cardDescription}>
+                  Discover scholarships and funding opportunities worldwide
+                </p>
+              </div>
+
+              <div 
+                className={styles.card}
+                onClick={() => handleCardClick("Create a personalized application checklist for me. I'm applying to 5 universities for Computer Science programs starting in Fall 2025.")}
+              >
+                <h3 className={styles.cardTitle}>Application Checklist</h3>
+                <p className={styles.cardDescription}>
+                  Get a personalized checklist for your application process
+                </p>
+              </div>
+            </div>
+
+        {/* Input Field at Bottom */}
+        <div className={styles.inputContainer} onClick={handleChatAreaClick}>
+          <div className={styles.inputWrapper}>
+            <textarea
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              placeholder="Ask whatever you want..."
+              className={`${styles.inputField} inputField`}
+              maxLength={1000}
+              rows={1}
+              style={{ resize: 'none', overflow: 'hidden' }}
+            />
+            <button
+              onClick={handleSend}
+              className={styles.sendButton}
+              disabled={!inputValue.trim()}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M15 8L1 1L5 8L1 15L15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div className={styles.characterCounter}>
+            {characterCount}/1000
+          </div>
+        </div>
+
+        {/* Hidden ChatKit for actual functionality */}
+        <div style={{ display: 'none' }}>
+          <ChatKit 
+            control={control} 
+            className={styles.chatWidget}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AiAssistantPage;

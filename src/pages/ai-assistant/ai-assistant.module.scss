@@ -1,0 +1,295 @@
+.aiAssistantPage {
+  min-height: 100vh;
+  background: #F5F5F5;
+  padding: 2rem 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 4rem);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.greeting {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #000000 0%, #DC143C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #000000 0%, #DC143C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.instruction {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+  font-weight: 400;
+  margin-bottom: -40px;
+}
+
+.promptCards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem; // Slightly increased gap
+  margin-bottom: 3rem;
+  max-width: 450px; // Slightly increased max-width for the grid
+  margin-left: auto;
+  margin-right: auto;
+  flex: 1;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 8px; // Slightly increased border-radius
+  padding: 0.6rem; // Slightly increased padding
+  text-align: center;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px; // Slightly increased min-height
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    background: #fff;
+  }
+}
+
+
+.cardTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.1rem;
+  text-align: center;
+}
+
+.cardDescription {
+  font-size: 0.65rem;
+  color: #666;
+  line-height: 1.2;
+  margin: 0;
+  text-align: center;
+}
+
+.inputContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  cursor: pointer;
+  
+  &:hover {
+    .inputField {
+      border-color: #DC143C;
+    }
+  }
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center; // Center by default for placeholder
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 60px; // Increased base height
+  
+  // When textarea has content, align to bottom
+  &:has(textarea:not(:placeholder-shown)) {
+    align-items: flex-end;
+  }
+}
+
+.inputField {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: #333;
+  background: transparent;
+  min-height: 40px; // Increased to match available space for centering
+  max-height: 200px; // Maximum height before scrolling
+  line-height: 1.4;
+  font-family: inherit;
+  resize: none;
+  overflow-y: auto; // Enable scrolling when content exceeds max-height
+  padding: 10px 0; // Always center text with padding
+  margin: 0; // Remove default margin
+  vertical-align: middle; // Center text vertically
+  
+  // ChatGPT-like scrollbar - subtle and only when needed
+  overflow-y: auto; // Show scrollbar only when content overflows
+  scrollbar-width: thin; // Firefox - thin scrollbar
+  scrollbar-color: #c1c1c1 transparent; // Firefox - subtle gray, transparent track
+  
+  &::-webkit-scrollbar {
+    width: 6px; // Chrome, Safari, Opera - thin like ChatGPT
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent; // Transparent track like ChatGPT
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1; // Subtle gray like ChatGPT
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8; // Slightly darker on hover
+  }
+  
+  &::placeholder {
+    color: #999;
+    line-height: 1.5; // Match the text line-height
+  }
+  
+  // Placeholder already centered with base padding
+}
+
+.sendButton {
+  background: #DC143C;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: white;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  margin-left: 0.5rem; // Add some spacing from textarea
+  flex-shrink: 0; // Prevent button from shrinking
+  align-self: center; // Center by default
+  
+  // When textarea has content, align to bottom
+  .inputWrapper:has(textarea:not(:placeholder-shown)) & {
+    align-self: flex-end;
+  }
+  
+  &:hover:not(:disabled) {
+    background: #B01111;
+    transform: scale(1.05);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #ccc;
+  }
+}
+
+.characterCounter {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.chatContainer {
+  display: none;
+}
+
+.chatWidget {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: 16px;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .greeting {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 2.2rem;
+  }
+
+  .promptCards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    padding: 0.3rem;
+    min-height: 50px;
+  }
+
+  .inputContainer {
+    margin: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .greeting {
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    font-size: 1.9rem;
+  }
+
+  .instruction {
+    font-size: 1rem;
+  }
+
+  .card {
+    padding: 0.25rem;
+    min-height: 45px;
+  }
+
+  .cardTitle {
+    font-size: 0.7rem;
+  }
+
+  .cardDescription {
+    font-size: 0.6rem;
+  }
+
+  .inputWrapper {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .inputField {
+    font-size: 0.9rem;
+  }
+}

@@ -23,6 +23,10 @@ export default function useNavigation() {
       text: t('header.studentHub', 'My Journey'),
     },
     {
+      path: '/ai-assistant',
+      text: t('header.aiAssistant', 'AI Assistant'),
+    },
+    {
       path: '/mentors',
       text: t('header.mentors'),
     },
