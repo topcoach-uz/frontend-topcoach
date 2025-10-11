@@ -22,10 +22,6 @@ export default function useNavigation() {
       path: '/student-hub',
       text: t('header.studentHub', 'Launchpad'),
     },
-    // {
-    //   path: '/ai-assistant',
-    //   text: t('header.aiAssistant', 'CoachAI'),
-    // },
     {
       path: '/mentors',
       text: t('header.mentors'),

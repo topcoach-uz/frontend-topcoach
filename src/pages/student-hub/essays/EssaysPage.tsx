@@ -27,7 +27,7 @@ const EssaysPage: React.FC = () => {
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['my-essays', 'templates', 'ai-assistant'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['my-essays', 'templates'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [searchParams]);
