@@ -249,12 +249,28 @@ const AiAssistantPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ChatKit Widget - only render when authenticated */}
-        {control && (
+        {/* ChatKit Widget - temporarily disabled due to API issues */}
+        {false && control && (
           <ChatKit 
             control={control} 
             className={styles.chatWidget}
           />
+        )}
+        
+        {/* Temporary message while we fix ChatKit */}
+        {isAuthenticated && (
+          <div style={{ 
+            position: 'fixed', 
+            bottom: '20px', 
+            right: '20px', 
+            background: '#f0f0f0', 
+            padding: '10px', 
+            borderRadius: '5px',
+            border: '1px solid #ccc'
+          }}>
+            ChatKit is temporarily disabled while we fix the API integration. 
+            The backend is working (check logs), but the ChatKit widget needs the real OpenAI session.
+          </div>
         )}
       </div>
     </div>
