@@ -22,7 +22,14 @@ export const useChatKitScript = (shouldLoad: boolean) => {
 
     const script = document.createElement('script');
     script.src = 'https://cdn.platform.openai.com/deployments/chatkit/chatkit.js';
-    script.setAttribute('data-public-key', 'domain_pk_68ea0f7e6f788190af7076dcc4e6207e04324a1680fbdb81');
+    
+    // Use the correct domain key based on current domain
+    const currentDomain = window.location.hostname;
+    const domainKey = currentDomain === 'www.topcoach.uz' 
+      ? 'domain_pk_68ea1ac1125c819083163c52db3a0c6d0dd72be5369028be'
+      : 'domain_pk_68ea0f7e6f788190af7076dcc4e6207e04324a1680fbdb81';
+    
+    script.setAttribute('data-public-key', domainKey);
     script.async = true;
     
     script.onload = () => {
