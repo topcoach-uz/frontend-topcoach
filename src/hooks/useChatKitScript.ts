@@ -22,7 +22,7 @@ export const useChatKitScript = (shouldLoad: boolean) => {
 
     const script = document.createElement('script');
     script.src = 'https://cdn.platform.openai.com/deployments/chatkit/chatkit.js';
-    script.setAttribute('data-public-key', 'domain_pk_68e8ce9d37f88190b434865ed70fc50e0ff9ae4f9c445521');
+    script.setAttribute('data-public-key', 'domain_pk_68ea0f7e6f788190af7076dcc4e6207e04324a1680fbdb81');
     script.async = true;
     
     script.onload = () => {

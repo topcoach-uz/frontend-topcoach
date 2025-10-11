@@ -24,11 +24,9 @@ const AiAssistantPage: React.FC = () => {
 
   // Only initialize ChatKit when user is authenticated and script is loaded
   const chatKitResult = useChatKit({
-    // Use your domain public key for ChatKit
-    // For local development (ngrok): domain_pk_68e8d4f58e048190ba649b151d27d0910150bcb1add83f5f
-    // For production (topcoach.uz): domain_pk_68e8ce9d37f88190b434865ed70fc50e0ff9ae4f9c445521
+    // Production domain key for topcoach.uz
     api: {
-      async getClientSecret(existing) {
+      async getClientSecret(existing?: string) {
         if (!isAuthenticated) {
           throw new Error('User must be authenticated to use ChatKit');
         }
