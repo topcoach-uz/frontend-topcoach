@@ -4,6 +4,7 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+import { ACCESS_TOKEN } from 'src/constants/storage';
 import styles from './ai-assistant.module.scss';
 
 const AiAssistantPage: React.FC = () => {
@@ -28,12 +29,19 @@ const AiAssistantPage: React.FC = () => {
           throw new Error('User must be authenticated');
         }
         
+        // Get the access token from localStorage
+        const token = localStorage.getItem(ACCESS_TOKEN);
+        if (!token) {
+          throw new Error('No access token found');
+        }
+
         if (existing) {
           // implement session refresh
           const res = await fetch('/api/chatkit/session', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ refresh: true }),
           });
@@ -45,6 +53,7 @@ const AiAssistantPage: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
         });
         const { client_secret } = await res.json();
