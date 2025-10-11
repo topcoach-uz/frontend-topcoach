@@ -4,7 +4,6 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import { useChatKitScript } from 'src/hooks/useChatKitScript';
 import styles from './ai-assistant.module.scss';
 
 const AiAssistantPage: React.FC = () => {
@@ -16,20 +15,17 @@ const AiAssistantPage: React.FC = () => {
   });
   const navigate = useNavigate();
   
-  // Only load ChatKit script when user is authenticated
-  const { isLoaded: chatKitScriptLoaded } = useChatKitScript(isAuthenticated);
   
   // Get user's name or fallback to "Student" - same pattern as Dashboard
   const userName = userData?.profile?.name || 'Student';
 
-  // Always call useChatKit hook (required by React Rules of Hooks)
+  // ChatKit integration - only initialize when authenticated
   const chatKitResult = useChatKit({
-    // Production domain key for topcoach.uz
     api: {
       async getClientSecret(existing: string | null) {
-        // Only proceed if user is authenticated and script is loaded
-        if (!isAuthenticated || !chatKitScriptLoaded) {
-          throw new Error('User must be authenticated and ChatKit script loaded');
+        // Only proceed if user is authenticated
+        if (!isAuthenticated) {
+          throw new Error('User must be authenticated');
         }
         
         if (existing) {
@@ -57,8 +53,8 @@ const AiAssistantPage: React.FC = () => {
     },
   });
 
-  // Only use control when authenticated and script is loaded
-  const control = (isAuthenticated && chatKitScriptLoaded) ? chatKitResult.control : null;
+  // Only use control when authenticated
+  const control = isAuthenticated ? chatKitResult.control : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -244,14 +240,12 @@ const AiAssistantPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hidden ChatKit for actual functionality - only render when authenticated and script loaded */}
+        {/* ChatKit Widget - only render when authenticated */}
         {control && (
-          <div style={{ display: 'none' }}>
-            <ChatKit 
-              control={control} 
-              className={styles.chatWidget}
-            />
-          </div>
+          <ChatKit 
+            control={control} 
+            className={styles.chatWidget}
+          />
         )}
       </div>
     </div>
