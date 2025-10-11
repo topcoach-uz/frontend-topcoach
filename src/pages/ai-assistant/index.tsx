@@ -22,11 +22,16 @@ const AiAssistantPage: React.FC = () => {
   // Get user's name or fallback to "Student" - same pattern as Dashboard
   const userName = userData?.profile?.name || 'Student';
 
-  // Only initialize ChatKit when user is authenticated and script is loaded
-  const chatKitResult = isAuthenticated && chatKitScriptLoaded ? useChatKit({
+  // Always call useChatKit hook (required by React Rules of Hooks)
+  const chatKitResult = useChatKit({
     // Production domain key for topcoach.uz
     api: {
       async getClientSecret(existing: string | null) {
+        // Only proceed if user is authenticated and script is loaded
+        if (!isAuthenticated || !chatKitScriptLoaded) {
+          throw new Error('User must be authenticated and ChatKit script loaded');
+        }
+        
         if (existing) {
           // implement session refresh
           const res = await fetch('/api/chatkit/session', {
@@ -50,10 +55,10 @@ const AiAssistantPage: React.FC = () => {
         return client_secret;
       },
     },
-  }) : { control: null };
+  });
 
   // Only use control when authenticated and script is loaded
-  const control = chatKitResult.control;
+  const control = (isAuthenticated && chatKitScriptLoaded) ? chatKitResult.control : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
