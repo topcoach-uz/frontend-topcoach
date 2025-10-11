@@ -26,7 +26,7 @@ const AiAssistantPage: React.FC = () => {
   const chatKitResult = useChatKit({
     // Production domain key for topcoach.uz
     api: {
-      async getClientSecret(existing?: string) {
+      async getClientSecret(existing: string | null) {
         if (!isAuthenticated) {
           throw new Error('User must be authenticated to use ChatKit');
         }
