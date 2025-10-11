@@ -252,7 +252,7 @@ const AiAssistantPage: React.FC = () => {
         {/* ChatKit Widget - temporarily disabled due to API issues */}
         {false && control && (
           <ChatKit 
-            control={control} 
+            control={control!} 
             className={styles.chatWidget}
           />
         )}
