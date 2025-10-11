@@ -20,7 +20,7 @@ export default function useNavigation() {
     },
     {
       path: '/student-hub',
-      text: t('header.studentHub', 'Launchpad'),
+      text: t('header.studentHub', 'My Journey'),
     },
     {
       path: '/mentors',

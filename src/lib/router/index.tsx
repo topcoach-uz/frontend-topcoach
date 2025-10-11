@@ -191,7 +191,7 @@ function RouterProvider() {
               />
               <Route
                 path="/ai-major-match"
-                element={<AiMajorMatchPageLazy />}
+                element={<Custom404PageLazy />}
               />
               <Route path="*" element={<Custom404PageLazy />} />
             </Route>
