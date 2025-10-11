@@ -23,14 +23,10 @@ const AiAssistantPage: React.FC = () => {
   const userName = userData?.profile?.name || 'Student';
 
   // Only initialize ChatKit when user is authenticated and script is loaded
-  const chatKitResult = useChatKit({
+  const chatKitResult = isAuthenticated && chatKitScriptLoaded ? useChatKit({
     // Production domain key for topcoach.uz
     api: {
       async getClientSecret(existing: string | null) {
-        if (!isAuthenticated) {
-          throw new Error('User must be authenticated to use ChatKit');
-        }
-        
         if (existing) {
           // implement session refresh
           const res = await fetch('/api/chatkit/session', {
@@ -54,10 +50,10 @@ const AiAssistantPage: React.FC = () => {
         return client_secret;
       },
     },
-  });
+  }) : { control: null };
 
   // Only use control when authenticated and script is loaded
-  const control = (isAuthenticated && chatKitScriptLoaded) ? chatKitResult.control : null;
+  const control = chatKitResult.control;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -244,7 +240,7 @@ const AiAssistantPage: React.FC = () => {
         </div>
 
         {/* Hidden ChatKit for actual functionality - only render when authenticated and script loaded */}
-        {isAuthenticated && chatKitScriptLoaded && control && (
+        {control && (
           <div style={{ display: 'none' }}>
             <ChatKit 
               control={control} 
