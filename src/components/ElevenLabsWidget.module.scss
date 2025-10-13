@@ -1,0 +1,239 @@
+// Custom styles for ElevenLabs widget integration with TopCoach branding
+:global {
+  // Ensure the widget appears above other elements
+  elevenlabs-convai {
+    z-index: 9999 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    
+    // Hide the top logo/avatar
+    .avatar,
+    .logo,
+    .header-logo,
+    .widget-logo,
+    .convai-avatar,
+    .convai-logo,
+    [class*="avatar"],
+    [class*="logo"],
+    [class*="header"],
+    .widget-header img,
+    .widget-header svg,
+    .chat-header img,
+    .chat-header svg {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    // Hide the header section that contains the logo
+    .widget-header,
+    .chat-header,
+    .header-section,
+    [class*="header"] {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    // Additional specific selectors for ElevenLabs widget elements
+    .convai-widget-header,
+    .convai-avatar-container,
+    .convai-logo-container,
+    .elevenlabs-avatar,
+    .elevenlabs-logo,
+    .agent-avatar,
+    .agent-logo,
+    .top-logo,
+    .widget-top-section,
+    .convai-top-bar {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    // Target any circular or round elements that might be the logo
+    .circular,
+    .round,
+    .circle,
+    [class*="circular"],
+    [class*="round"],
+    [class*="circle"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+    
+    // Hide the 'Powered by ElevenLabs Agents' watermark
+    .powered-by-elevenlabs,
+    .elevenlabs-branding,
+    .convai-branding,
+    .elevenlabs-powered-by,
+    .convai-powered-by,
+    .widget-branding,
+    .branding-text,
+    .powered-by-text,
+    [class*="powered-by"],
+    [class*="branding"],
+    [class*="watermark"],
+    [class*="footer"],
+    [class*="credit"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
+    }
+    
+    // Additional targeting for watermark elements
+    .widget-footer,
+    .convai-footer,
+    .elevenlabs-footer,
+    .branding-footer,
+    .credit-footer,
+    .attribution,
+    .attribution-text,
+    .widget-attribution,
+    .convai-attribution {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
+    }
+    
+    // Target any small text that might be the watermark
+    small,
+    .small-text,
+    .tiny-text,
+    .micro-text,
+    [class*="small"],
+    [class*="tiny"],
+    [class*="micro"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+  }
+  
+  // Custom styling for the widget container
+  .elevenlabs-widget-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+  }
+  
+  // Ensure the widget doesn't interfere with mobile navigation
+  @media (max-width: 768px) {
+    elevenlabs-convai {
+      bottom: 80px !important; // Above mobile navigation
+      right: 15px !important; // Slightly adjust for mobile
+    }
+  }
+  
+  // Tablet adjustments
+  @media (max-width: 1024px) and (min-width: 769px) {
+    elevenlabs-convai {
+      bottom: 25px !important;
+      right: 20px !important;
+    }
+  }
+  
+  // Dark theme compatibility
+  [data-theme="dark"] {
+    elevenlabs-convai {
+      // Widget will automatically adapt to dark theme
+      // TopCoach red (#8b0000) works well in both themes
+      filter: brightness(0.95);
+    }
+  }
+  
+  // Ensure widget doesn't interfere with modals or overlays
+  .ant-modal-mask,
+  .ant-drawer-mask {
+    z-index: 1000 !important;
+  }
+  
+  // TopCoach specific styling overrides
+  elevenlabs-convai {
+    // Match TopCoach's design system
+    --elevenlabs-primary-color: #8b0000;
+    --elevenlabs-secondary-color: #f5f5f5;
+    --elevenlabs-text-color: #333333;
+    --elevenlabs-background-color: #ffffff;
+  }
+  
+  // Improve text formatting in the chat
+  elevenlabs-convai .chat-message,
+  elevenlabs-convai .message-content,
+  elevenlabs-convai .agent-response,
+  elevenlabs-convai [class*="message"],
+  elevenlabs-convai [class*="response"],
+  elevenlabs-convai [class*="content"],
+  elevenlabs-convai .conversation-message,
+  elevenlabs-convai .ai-message {
+    // Ensure proper line breaks and formatting
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    line-height: 1.6 !important;
+    
+    // Style lists and bullet points
+    ul, ol {
+      margin: 8px 0 !important;
+      padding-left: 20px !important;
+    }
+    
+    li {
+      margin: 4px 0 !important;
+      line-height: 1.5 !important;
+    }
+    
+    // Style numbered lists
+    ol li {
+      list-style-type: decimal !important;
+    }
+    
+    // Style bullet points
+    ul li {
+      list-style-type: disc !important;
+    }
+    
+    // Style nested lists
+    ul ul, ol ol, ul ol, ol ul {
+      margin: 2px 0 !important;
+      padding-left: 15px !important;
+    }
+    
+    // Ensure proper spacing between paragraphs
+    p {
+      margin: 8px 0 !important;
+    }
+    
+    // Style bold and italic text
+    strong, b {
+      font-weight: 600 !important;
+    }
+    
+    em, i {
+      font-style: italic !important;
+    }
+  }
+}
