@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { changeTheme, THEME_COLOR } from 'src/app/slices/layoutSlice';
 import { useAppDispatch } from 'src/app/store';
 import { scrollToTop } from 'src/utils';
-import ElevenLabsWidget from 'src/components/ElevenLabsWidget';
+import CustomChatAgent from 'src/components/CustomChatAgent';
 
 export default function RootLayout() {
   const dispatch = useAppDispatch();
@@ -18,7 +18,7 @@ export default function RootLayout() {
   return (
     <>
       <Outlet />
-      <ElevenLabsWidget />
+      <CustomChatAgent />
     </>
   );
 }
