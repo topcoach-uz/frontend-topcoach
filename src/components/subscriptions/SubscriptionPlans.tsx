@@ -57,13 +57,11 @@ const SubscriptionPlans: React.FC = () => {
         t('pricing.browseMentorProfiles'),
         t('pricing.accessPublicWorkshops'),
         t('pricing.eventRegistrationAccess'),
-        t('pricing.aiPoweredMajorMatch'),
       ],
       'Standard': [
         t('pricing.everythingInFree'),
         t('pricing.juniorCoachSession'),
         t('pricing.proBonoSession'),
-        t('pricing.standardAiSearches'),
         t('pricing.priorityWorkshops'),
         t('pricing.sessionReminders'),
       ],
@@ -72,7 +70,6 @@ const SubscriptionPlans: React.FC = () => {
         t('pricing.seniorCoachSession'),
         t('pricing.juniorCoachSession'),
         t('pricing.proBonoSession'),
-        t('pricing.premiumAiSearches'),
       ],
     };
 

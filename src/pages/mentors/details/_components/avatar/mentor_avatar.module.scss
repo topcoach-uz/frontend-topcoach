@@ -1,3 +1,8 @@
+.mentor_profile_container {
+  position: relative;
+  width: 100%;
+}
+
 .mentor_avatar {
   width: 90%;
 }
@@ -12,14 +17,49 @@
   }
 }
 
+.action_buttons_right {
+  position: absolute;
+  top: 0;
+  left: 61%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+  
+  @media (max-width: 1024px) {
+    position: static;
+    justify-content: center;
+    margin-top: 16px;
+    transform: none;
+  }
+}
+
+.copy_url_button {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.social_buttons_wrapper {
+  display: flex;
+  align-items: center;
+}
+
 .image_wrapper {
   width: 200px;
   height: 200px;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 50%; /* Back to rounded */
   flex-shrink: 0;
+  background: #f5f5f5; /* Light grey background */
+  border: 2px solid #e8e8e8; /* Subtle border */
 
   img {
     object-fit: cover;
+    border-radius: 50%; /* Rounded image */
   }
 }

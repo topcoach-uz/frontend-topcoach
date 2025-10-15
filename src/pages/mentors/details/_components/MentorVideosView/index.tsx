@@ -16,7 +16,7 @@ export default function MentorVideosView({
   const { t } = useTranslation();
 
   return (
-    <Flex gap={10} vertical={screenSize < 700}>
+    <Flex gap={20} vertical={screenSize < 700} style={{ width: '100%' }}>
       {introductionVideo && (
         <VideoView title={t('mentors.intro')} videoSrc={introductionVideo} />
       )}

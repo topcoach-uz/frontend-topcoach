@@ -1,4 +1,4 @@
-import { Flex, Image } from 'antd';
+import { Flex, Image, Button, message } from 'antd';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
@@ -8,6 +8,8 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 import { useTypedSelector } from 'src/app/store';
 import { getLatestCreatedImg } from 'src/utils';
 import { useTranslation } from 'react-i18next';
+import { LinkOutlined } from '@ant-design/icons';
+import MentorDetailsSocials from '../socials';
 
 interface Props {}
 
@@ -32,44 +34,88 @@ export default function MentorDetailsAvatar({}: Props) {
 
   const img = getLatestCreatedImg(media ?? []);
 
+  // Copy mentor profile URL functionality
+  const handleCopyUrl = async () => {
+    try {
+      const currentUrl = window.location.href;
+      await navigator.clipboard.writeText(currentUrl);
+      message.success('Mentor profile URL copied to clipboard!');
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      message.success('Mentor profile URL copied to clipboard!');
+    }
+  };
+
   return (
-    <Flex
-      className={styles.mentor_avatar}
-      vertical={screenSize < 1024}
-      align="center"
-      gap={16}
-    >
-      {!img ? (
-        <UserIcon width={200} height={200} />
-      ) : (
-        <Image
-          src={img}
-          rootClassName={styles.image_wrapper}
-          width={200}
-          height={200}
-          style={{ flexShrink: '0' }}
+    <div className={styles.mentor_profile_container}>
+      <Flex
+        className={styles.mentor_avatar}
+        vertical={screenSize < 1024}
+        align="center"
+        gap={16}
+      >
+        {!img ? (
+          <UserIcon width={200} height={200} />
+        ) : (
+          <Image
+            src={img}
+            rootClassName={styles.image_wrapper}
+            width={200}
+            height={200}
+            style={{ flexShrink: '0' }}
+          />
+        )}
+        <div className={styles.title_wrapper}>
+          <CustomText
+            color={colors.colorTextBase}
+            fontSize={32}
+            fontWeight={themeFontWeight.fontWeightSemibold}
+            lineHeight={'38px'}
+            mb={4}
+          >
+            {name}
+          </CustomText>
+          <CustomText
+            color={colors.colorTextSecondary}
+            fontSize={themeFontSize.fontSizeTitle5}
+            fontWeight={themeFontWeight.fontWeightSemibold}
+          >
+            {university}
+          </CustomText>
+        </div>
+      </Flex>
+      
+      {/* Action Buttons - Positioned to the right of profile image */}
+      <div className={styles.action_buttons_right}>
+        <Button
+          type="text"
+          icon={<LinkOutlined />}
+          onClick={handleCopyUrl}
+          className={styles.copy_url_button}
+          style={{
+            color: colors.colorPrimary,
+            border: `1px solid ${colors.colorPrimary}`,
+            borderRadius: '8px',
+            height: '40px',
+            width: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px'
+          }}
+          title="Copy mentor profile URL"
         />
-      )}
-      <div className={styles.title_wrapper}>
-        <CustomText
-          color={colors.colorTextBase}
-          fontSize={32}
-          fontWeight={themeFontWeight.fontWeightSemibold}
-          lineHeight={'38px'}
-          mb={4}
-        >
-          {name}
-        </CustomText>
-        <CustomText
-          color={colors.colorTextSecondary}
-          fontSize={themeFontSize.fontSizeTitle5}
-          fontWeight={themeFontWeight.fontWeightSemibold}
-        >
-          {['en', 'ru'].includes(language)
-            ? t('mentors.univer') + university
-            : university + t('mentors.univer')}
-        </CustomText>
+        
+        <div className={styles.social_buttons_wrapper}>
+          <MentorDetailsSocials />
+        </div>
       </div>
-    </Flex>
+    </div>
   );
 }

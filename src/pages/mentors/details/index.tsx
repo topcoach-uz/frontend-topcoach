@@ -15,6 +15,7 @@ import GiveawaySessions from './_components/GiveawaySessions';
 import PackageBalance from './_components/PackageBalance';
 import Socials from './_components/socials';
 import Statistics from './_components/statistics';
+import ActionButtons from './_components/actionButtons';
 import BookModal from './bookModal';
 import MentorBookingPaymentModal from './bookModal/_components/payment';
 import styles from './mentor_details.module.scss';
@@ -223,7 +224,6 @@ export default function MentorDetailsPage() {
             maxWidth: 'calc(100% - 400px)'
           }}>
             <Overview />
-            <Socials />
             <MentorVideosView
               demoLesson={demoLesson}
               introductionVideo={introVideo}
@@ -449,7 +449,6 @@ const Fallback = () => {
             <Skeleton active />
           </Flex>
           <Skeleton active />
-          <Skeleton.Avatar active className={styles.linkedinImgFallback} />
           <Flex gap={30}>
             <Skeleton.Node active className={styles.videoFallback} />
             <Skeleton.Node active className={styles.videoFallback} />

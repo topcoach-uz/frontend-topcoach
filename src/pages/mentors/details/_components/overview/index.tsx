@@ -19,17 +19,27 @@ export default function MentorDetailsOverview({
 
   return (
     summary && (
-      <div>
+      <div style={{ margin: '24px 0' }}>
         <CustomText
           fontWeight={themeFontWeight.fontWeightSemibold}
           fontSize={themeFontSize.fontSizeTitle5}
           color={colors.colorText}
-          mb={8}
+          mb={16}
         >
           {t('mentors.overview')}
         </CustomText>
-        <CustomText color={colors.colorTextSecondary} lineHeight={'22px'}>
-          {summary}
+        <CustomText 
+          color={colors.colorTextSecondary} 
+          lineHeight={'25px'}
+          style={{ 
+            marginBottom: '16px',
+            textAlign: 'left',
+            maxWidth: '800px'
+          }}
+        >
+          {summary && summary.length > 900 
+            ? `${summary.substring(0, 900)}...` 
+            : summary}
         </CustomText>
       </div>
     )

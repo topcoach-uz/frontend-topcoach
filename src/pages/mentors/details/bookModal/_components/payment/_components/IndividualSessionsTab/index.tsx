@@ -59,114 +59,11 @@ export default function IndividualSessionsTab({
       return;
     }
 
-    // if the last mentor level is probono, jump to booking without some steps
-    if (
-      lastMentorData?.mentorProfile?.level === MentorExperienceLevel.Probono
-    ) {
-      handleBook({
-        name: `${selectedPlan.minutes}-minute session`,
-        planId: selectedPlan.id,
-        planType: selectedPlan.type,
-      });
-      return;
-    }
-
-    handleMakeParams('planId', selectedPlan?.id);
-    // when user has a package and wants to book a session
-    if (totalMinutes && totalMinutes >= selectedPlan?.minutes) {
-      Modal.confirm({
-        title: `You have ${totalMinutes} minutes left.`,
-        content: `Are you sure you want to proceed with scheduling a ${selectedPlan?.minutes}-minute session?`,
-        okText: "I'm sure",
-        onOk: () => {
-          handleBook({
-            name: `${selectedPlan.minutes}-minute session`,
-            planId: selectedPlan.id,
-            planType: selectedPlan.type,
-          });
-        },
-        footer: (_, { CancelBtn, OkBtn }) => {
-          return (
-            <ConfigProvider
-              theme={{
-                token: themeColors.dark,
-                components: {
-                  Button: {
-                    colorPrimary: colors.colorPrimary,
-                    colorPrimaryHover: colors.colorPrimary,
-                    colorPrimaryActive: colors.colorPrimary,
-                  },
-                },
-              }}
-            >
-              <CancelBtn />
-              <OkBtn />
-            </ConfigProvider>
-          );
-        },
-      });
-      return;
-    }
-    // when user doesn't have a package and wants to buy a session
-    Modal.confirm({
-      title: totalMinutes
-        ? `You have ${totalMinutes} minutes left.`
-        : `You don't have any packages`,
-      // @ts-ignore
-      content: `Are you sure that you want to proceed with buying a one-time ${selectedPlan?.minutes}-minute session for ${price?.toLocaleString()} ${selectedPlan?.currency?.name}?`,
-      okText: "I'm sure",
-      footer: (_, { CancelBtn, OkBtn }) => {
-        return (
-          <Flex vertical gap={10}>
-            <Flex justify="space-between">
-              <ConfigProvider
-                theme={{
-                  token: themeColors.dark,
-                  components: {
-                    Button: {
-                      colorPrimary: colors.colorPrimary,
-                      colorPrimaryHover: colors.colorPrimary,
-                      colorPrimaryActive: colors.colorPrimary,
-                    },
-                  },
-                }}
-              >
-                <CancelBtn />
-                <OkBtn />
-              </ConfigProvider>
-            </Flex>
-            <ConfigProvider
-              theme={{
-                token: themeColors.dark,
-                components: {
-                  Button: {
-                    colorPrimary: colors.colorPrimary, // Set the primary color for all primary buttons in this context
-                    colorPrimaryHover: colors.colorPrimaryHover,
-                    colorPrimaryActive: colors.colorPrimaryActive,
-                  },
-                },
-              }}
-            >
-              <Button
-                type="primary"
-                onClick={() => {
-                  Modal.destroyAll();
-                  handleChangeTab(PaymentTypeEnum.Package);
-                }}
-              >
-                I want to buy a package
-              </Button>
-            </ConfigProvider>
-          </Flex>
-        );
-      },
-      onOk: () => {
-        handleBook({
-          name: `${selectedPlan.minutes}-minute session`,
-          planId: selectedPlan.id,
-          planType: selectedPlan.type,
-        });
-      },
+    // Go directly to session booking without any confirmation popups
+    handleBook({
+      name: `${selectedPlan.minutes}-minute session`,
+      planId: selectedPlan.id,
+      planType: selectedPlan.type,
     });
   };
 
@@ -215,13 +112,6 @@ export default function IndividualSessionsTab({
                   {plan?.minutes} minutes{' '}
                 </CustomText>
               </Flex>
-              {/* if the mentor level is probono, ai major search perks are not given */}
-              {/* {!isProbono && (
-                <CustomText color={colors.colorText}>
-                  You can use AI major search{' '}
-                  {plan?.minutes === 30 ? '5 times' : '10 times'}{' '}
-                </CustomText>
-              )} */}
               {!isProbono && (!totalMinutes || totalMinutes == 0) && (
                 <CustomText color={colors.colorText}>
                   {/* @ts-ignore */}

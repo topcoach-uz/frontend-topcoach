@@ -597,6 +597,20 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
             <h3>{t('pricing.resultsDriven')}</h3>
             <p>{t('pricing.focusOnActionable')}</p>
           </div>
+          <div className="different-item">
+            <div className="icon">
+              <UserOutlined />
+            </div>
+            <h3>Expert Mentorship</h3>
+            <p>Learn from successful graduates who have been through the same journey</p>
+          </div>
+          <div className="different-item">
+            <div className="icon">
+              <TrophyOutlined />
+            </div>
+            <h3>Proven Success</h3>
+            <p>Track record of helping students get into top universities worldwide</p>
+          </div>
         </div>
       </section>
       )}
