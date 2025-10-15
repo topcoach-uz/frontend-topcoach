@@ -37,8 +37,8 @@ export default function MentorDetailsOverview({
             maxWidth: '800px'
           }}
         >
-          {summary && summary.length > 900 
-            ? `${summary.substring(0, 900)}...` 
+          {summary && summary.length > 1900 
+            ? `${summary.substring(0, 1900)}...` 
             : summary}
         </CustomText>
       </div>
