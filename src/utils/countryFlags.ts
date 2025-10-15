@@ -19,6 +19,9 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Leeds': '🇬🇧',
   'University of London': '🇬🇧',
   'University of Birmingham': '🇬🇧',
+  'University of Glasgow': '🇬🇧',
+  'University of Southampton': '🇬🇧',
+  'University of Nottingham': '🇬🇧',
 
   // German Universities
   'Berlin School of Economics and Law': '🇩🇪',
@@ -30,6 +33,10 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Hamburg': '🇩🇪',
   'University of Cologne': '🇩🇪',
   'University of Regensburg': '🇩🇪',
+  'RWTH Aachen University': '🇩🇪',
+  'University of Freiburg': '🇩🇪',
+  'Bonn University': '🇩🇪',
+  'Eberhard Karls University of Tübingen': '🇩🇪',
   
   // US Universities
   'University of Arizona': '🇺🇸',
