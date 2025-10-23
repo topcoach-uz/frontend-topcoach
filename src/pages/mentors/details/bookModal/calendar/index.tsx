@@ -11,6 +11,7 @@ dayjs.extend(utc);
 
 const onPanelChange = (value: Dayjs, mode: CalendarProps<Dayjs>['mode']) => {
   console.log(value.format('YYYY-MM-DD'), mode);
+  // This allows month/year navigation
 };
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
   setSelectedTimezone: React.Dispatch<React.SetStateAction<number>>;
   selectedTimezone: number;
   disabledDate?: (current: any) => boolean;
+  onPanelChange?: (value: Dayjs, mode: CalendarProps<Dayjs>['mode']) => void;
 }
 
 const BookingCalendar: React.FC<Props> = ({
@@ -29,6 +31,7 @@ const BookingCalendar: React.FC<Props> = ({
   setSelectedTimezone,
   timezoneOptions,
   disabledDate,
+  onPanelChange: customOnPanelChange,
 }) => {
   const { token } = theme.useToken();
   const { screenSize } = useScreenSize();
@@ -58,9 +61,105 @@ const BookingCalendar: React.FC<Props> = ({
         // @ts-ignore
         value={date}
         fullscreen={false}
-        onPanelChange={onPanelChange}
+        onPanelChange={customOnPanelChange || onPanelChange}
         onChange={handleChange}
         disabledDate={disabledDate}
+        mode="month"
+        headerRender={({ value, type, onChange, onTypeChange }) => {
+          // Handle null value case
+          if (!value) {
+            return (
+              <div style={{ padding: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                  <select
+                    value={dayjs().year()}
+                    onChange={(e) => {
+                      const newValue = dayjs().year(Number(e.target.value));
+                      onChange(newValue);
+                    }}
+                    style={{ border: '1px solid #d9d9d9', borderRadius: '6px', padding: '4px 8px' }}
+                  >
+                    {Array.from({ length: 20 }, (_, i) => {
+                      const year = dayjs().year() - 10 + i;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <select
+                    value={dayjs().month()}
+                    onChange={(e) => {
+                      const newValue = dayjs().month(Number(e.target.value));
+                      onChange(newValue);
+                    }}
+                    style={{ border: '1px solid #d9d9d9', borderRadius: '6px', padding: '4px 8px' }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const monthName = dayjs().month(i).format('MMM');
+                      return (
+                        <option key={i} value={i}>
+                          {monthName}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+            );
+          }
+
+          const current = value.clone();
+          const localeData = value.localeData();
+          const months = [];
+          for (let i = 0; i < 12; i++) {
+            current.month(i);
+            months.push(localeData.monthsShort(current));
+          }
+
+          const month = value.month();
+          const year = value.year();
+          const options = [];
+          for (let i = year - 10; i < year + 10; i += 1) {
+            options.push(
+              <option key={i} value={i}>
+                {i}
+              </option>
+            );
+          }
+
+          return (
+            <div style={{ padding: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                <select
+                  value={year}
+                  onChange={(e) => {
+                    const newValue = value.clone().year(Number(e.target.value));
+                    onChange(newValue);
+                  }}
+                  style={{ border: '1px solid #d9d9d9', borderRadius: '6px', padding: '4px 8px' }}
+                >
+                  {options}
+                </select>
+                <select
+                  value={month}
+                  onChange={(e) => {
+                    const newValue = value.clone().month(Number(e.target.value));
+                    onChange(newValue);
+                  }}
+                  style={{ border: '1px solid #d9d9d9', borderRadius: '6px', padding: '4px 8px' }}
+                >
+                  {months.map((month, index) => (
+                    <option key={index} value={index}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          );
+        }}
       />
     </div>
   );

@@ -45,6 +45,7 @@ function BookModal({
     //datepicker date
     disabledDate,
     handleDateChange,
+    handlePanelChange,
     // availableIntervals,
     sessionData,
 
@@ -91,8 +92,8 @@ function BookModal({
         </Flex>
       )}
     >
-      {/* Quota display - Hidden */}
-      {/* {!usageLoading && usageData && usageData.usage && (
+      {/* Quota display */}
+      {!usageLoading && usageData && usageData.usage && (
         <div style={{ marginBottom: 16 }}>
           <b>Your included session quota this month:</b>
           <ul style={{ margin: '8px 0 0 0', padding: 0, listStyle: 'none' }}>
@@ -110,7 +111,7 @@ function BookModal({
             })}
           </ul>
         </div>
-      )} */}
+      )}
       <CustomCard bordered shadowed={false}>
         <Steps
           progressDot={CustomProgressDot}
@@ -136,6 +137,7 @@ function BookModal({
               setSelectedTimezone={setSelectedTimezone}
               timezoneOptions={timezones}
               disabledDate={disabledDate}
+              onPanelChange={handlePanelChange}
             />
           </>
         ) : step === 1 ? (

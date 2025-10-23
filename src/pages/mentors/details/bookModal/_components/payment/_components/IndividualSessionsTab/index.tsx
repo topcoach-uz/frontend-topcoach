@@ -51,7 +51,7 @@ export default function IndividualSessionsTab({
   );
 
   // @ts-ignore
-  const totalMinutes = (balance?.totalMinutes || 0) - (balance?.usedMinutes || 0);
+  const totalMinutes = balance?.totalMinutes - balance?.usedMinutes;
 
   const handleIndividualSubmit = () => {
     if (!selectedPlan?.id) {
@@ -106,38 +106,41 @@ export default function IndividualSessionsTab({
               }
               key={index + (plan?.type ?? '')}
             >
-              <div className={styles.sessionHeader}>
-                <div>
-                  <div className={styles.sessionDuration}>
+              <div style={{ textAlign: 'left', width: '100%' }}>
+                <Flex gap={8} align="center" style={{ marginBottom: '8px' }}>
+                  <Clock size="24" color={colors.colorPrimary} />
+                  <CustomText 
+                    color={colors.colorPrimary}
+                    fontSize={20}
+                    fontWeight={600}
+                  >
                     {plan?.minutes} minutes
-                  </div>
-                  <div className={styles.sessionDescription}>
-                    One-on-one session
-                  </div>
-                </div>
+                  </CustomText>
+                </Flex>
+                
+                <CustomText 
+                  color={colors.colorTextSecondary}
+                  fontSize={14}
+                  style={{ marginBottom: '12px' }}
+                >
+                  One-on-one session
+                </CustomText>
+                
+                {!isProbono && (!totalMinutes || totalMinutes == 0) && (
+                  <CustomText 
+                    color={colors.colorTextBase}
+                    fontSize={20}
+                    fontWeight={600}
+                    style={{ lineHeight: '1.4' }}
+                  >
+                    {/* @ts-ignore */}
+                    {mentorLevel && mentorLevel !== MentorExperienceLevel.Probono
+                      ? // @ts-ignore
+                        `${plan.prices[mentorLevel]?.toLocaleString()} ${plan.currency?.symbol} (${individualDataInDollars[index]?.prices[mentorLevel]} USD)`
+                      : 'N/A'}
+                  </CustomText>
+                )}
               </div>
-              
-              {!isProbono && (!totalMinutes || totalMinutes == 0) && (
-                <div className={styles.sessionPrice}>
-                  {/* @ts-ignore */}
-                  {mentorLevel && mentorLevel !== MentorExperienceLevel.Probono && plan.prices && plan.prices[mentorLevel] && !isNaN(plan.prices[mentorLevel])
-                    ? // @ts-ignore
-                      `${plan.prices[mentorLevel]?.toLocaleString()} ${plan.currency?.symbol} (${Math.max(1, Math.ceil(plan.prices[mentorLevel] / 13000))} USD)`
-                    : 'N/A'}
-                </div>
-              )}
-              
-              {isProbono && (
-                <div className={styles.sessionPrice}>
-                  Free Session
-                </div>
-              )}
-              
-              {totalMinutes && totalMinutes > 0 && (
-                <div className={styles.sessionPrice}>
-                  Included in your plan
-                </div>
-              )}
             </div>
           ))}
       </div>
@@ -150,7 +153,7 @@ export default function IndividualSessionsTab({
         }}
       >
         <CustomButton type="primary" onClick={handleIndividualSubmit}>
-          Next
+          Submit
         </CustomButton>
       </div>
     </>

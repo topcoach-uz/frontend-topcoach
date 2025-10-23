@@ -71,8 +71,14 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
   );
 
   const disabledDate = (current: any) => {
-    return !filteredSessions?.some((date) =>
-      dayjs(date?.date).isSame(current, 'day')
+    // Disable past dates
+    if (current.isBefore(dayjs(), 'day')) {
+      return true;
+    }
+    
+    // Disable dates that don't have available sessions
+    return !filteredSessions?.some((session) =>
+      dayjs(session?.date).isSame(current, 'day')
     );
   };
 
@@ -167,16 +173,29 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     }
   };
 
+  // Handle panel change (month/year navigation)
+  const handlePanelChange = (value: Dayjs, mode: any) => {
+    console.log('Panel changed to:', value.format('YYYY-MM-DD'), mode);
+    // Allow navigation to any month/year
+  };
+
   // Handle date change
   const handleDateChange = (date: Dayjs | null) => {
     if (!date) return;
     // If date is null, don't update the state
     const isToday = date.isSame(dayjs(), 'day');
+    const isPast = date.isBefore(dayjs(), 'day');
+    
     let selectedDaySessions = filteredSessions?.filter((session: any) =>
       dayjs(session.date).isSame(dayjs(date), 'day')
     );
 
-    if (isToday) {
+    // Filter out past sessions - both for past dates and past times on today
+    if (isPast) {
+      // For past dates, no sessions should be available
+      selectedDaySessions = [];
+    } else if (isToday) {
+      // For today, only show sessions that are in the future
       selectedDaySessions = selectedDaySessions?.filter((session: any) =>
         dayjs(session.date).isAfter(dayjs())
       );
@@ -314,6 +333,7 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     disabledDate,
     sessionData,
     handleDateChange,
+    handlePanelChange,
 
     // Session dates
     filteredSessions,

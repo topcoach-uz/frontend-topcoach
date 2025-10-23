@@ -77,20 +77,12 @@ export default function MentorBookingPayment({
   return (
     <CustomModal
       open={modalOpen}
-      title="Choose Your Session"
+      title="Book a Session"
       onCancel={handleClosePayment}
-      width={900}
+      width={840}
     >
       <div className={styles.content}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <CustomText 
-            color={colors.colorTextSecondary}
-            fontSize={16}
-            style={{ lineHeight: '1.5' }}
-          >
-            Select the session duration that works best for you
-          </CustomText>
-        </div>
+        {/* Only Individual sessions available */}
         <IndividualSessionsTab
           handleBook={handleBook}
           handleChangeTab={handleTabChange}
