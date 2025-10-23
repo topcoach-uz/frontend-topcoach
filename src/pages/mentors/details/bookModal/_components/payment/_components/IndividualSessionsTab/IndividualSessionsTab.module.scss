@@ -2,35 +2,74 @@
 
 .individual {
   display: flex;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 16px;
+  margin-top: 32px;
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 12px;
   }
 }
 
 .individualDetail {
-  width: calc((100% - 10px) / 2);
-
-  @include flex-center;
-  flex-direction: column;
-  padding: 16px 0;
-
-  border: 2px solid $colorTextTertiary;
-  border-radius: 8px;
-
+  flex: 1;
+  min-height: 140px;
+  padding: 32px 24px;
+  
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: $colorPrimary;
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
 
   @media (max-width: 768px) {
-    width: 100%;
+    min-height: 120px;
+    padding: 24px 20px;
   }
 }
 
 .individualDetailActive {
   @extend .individualDetail;
 
-  background-color: $colorPaymentActive;
-  border: 2px solid $colorPrimary;
+  border-color: $colorPrimary;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(220, 38, 38, 0.1), 0 10px 10px -5px rgba(220, 38, 38, 0.04);
+
+}
+
+.sessionHeader {
+  margin-bottom: 16px;
+}
+
+.sessionDuration {
+  font-size: 24px;
+  font-weight: 700;
   color: $colorPrimary;
+  line-height: 1.2;
+}
+
+.sessionPrice {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 8px;
+  line-height: 1.3;
+}
+
+.sessionDescription {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 12px;
+  line-height: 1.4;
 }

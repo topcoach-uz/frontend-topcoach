@@ -51,7 +51,7 @@ export default function IndividualSessionsTab({
   );
 
   // @ts-ignore
-  const totalMinutes = balance?.totalMinutes - balance?.usedMinutes;
+  const totalMinutes = (balance?.totalMinutes || 0) - (balance?.usedMinutes || 0);
 
   const handleIndividualSubmit = () => {
     if (!selectedPlan?.id) {
@@ -106,20 +106,37 @@ export default function IndividualSessionsTab({
               }
               key={index + (plan?.type ?? '')}
             >
-              <Flex gap={5} align="center">
-                <Clock size="20" color={colors.colorPrimary} />
-                <CustomText color={colors.colorText}>
-                  {plan?.minutes} minutes{' '}
-                </CustomText>
-              </Flex>
+              <div className={styles.sessionHeader}>
+                <div>
+                  <div className={styles.sessionDuration}>
+                    {plan?.minutes} minutes
+                  </div>
+                  <div className={styles.sessionDescription}>
+                    One-on-one session
+                  </div>
+                </div>
+              </div>
+              
               {!isProbono && (!totalMinutes || totalMinutes == 0) && (
-                <CustomText color={colors.colorText}>
+                <div className={styles.sessionPrice}>
                   {/* @ts-ignore */}
-                  {mentorLevel && mentorLevel !== MentorExperienceLevel.Probono
+                  {mentorLevel && mentorLevel !== MentorExperienceLevel.Probono && plan.prices && plan.prices[mentorLevel] && !isNaN(plan.prices[mentorLevel])
                     ? // @ts-ignore
-                      `${plan.prices[mentorLevel]?.toLocaleString()} ${plan.currency?.symbol} (${individualDataInDollars[index]?.prices[mentorLevel]} USD)`
+                      `${plan.prices[mentorLevel]?.toLocaleString()} ${plan.currency?.symbol} (${Math.max(1, Math.ceil(plan.prices[mentorLevel] / 13000))} USD)`
                     : 'N/A'}
-                </CustomText>
+                </div>
+              )}
+              
+              {isProbono && (
+                <div className={styles.sessionPrice}>
+                  Free Session
+                </div>
+              )}
+              
+              {totalMinutes && totalMinutes > 0 && (
+                <div className={styles.sessionPrice}>
+                  Included in your plan
+                </div>
               )}
             </div>
           ))}
@@ -133,7 +150,7 @@ export default function IndividualSessionsTab({
         }}
       >
         <CustomButton type="primary" onClick={handleIndividualSubmit}>
-          Submit
+          Next
         </CustomButton>
       </div>
     </>

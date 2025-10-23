@@ -77,145 +77,25 @@ export default function MentorBookingPayment({
   return (
     <CustomModal
       open={modalOpen}
-      title="Book a Session"
+      title="Choose Your Session"
       onCancel={handleClosePayment}
-      width={840}
+      width={900}
     >
       <div className={styles.content}>
-        <div className={styles.titles}>
-          <CustomText
-            onClick={() => handleTabChange(PaymentTypeEnum.Individual)}
-            className={
-              activeTitle === PaymentTypeEnum.Individual
-                ? styles.active
-                : styles.title
-            }
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <CustomText 
+            color={colors.colorTextSecondary}
+            fontSize={16}
+            style={{ lineHeight: '1.5' }}
           >
-            Individual sessions
+            Select the session duration that works best for you
           </CustomText>
-          {mentorLevel !== MentorExperienceLevel.Probono && (
-            <CustomText
-              onClick={() => handleTabChange(PaymentTypeEnum.Package)}
-              className={
-                activeTitle === PaymentTypeEnum.Package
-                  ? styles.active
-                  : styles.title
-              }
-            >
-              Packages
-            </CustomText>
-          )}
         </div>
-        {activeTitle === PaymentTypeEnum.Individual ? (
-          <IndividualSessionsTab
-            handleBook={handleBook}
-            handleChangeTab={handleTabChange}
-          />
-        ) : (
-          <div className={styles.package}>
-            {packageData &&
-              packageData.map((plan, index) => (
-                <div
-                  className={styles.packCard}
-                  key={index + (plan?.type ?? '')}
-                >
-                  <div className={styles.info}>
-                    <CustomText
-                      fontSize={20}
-                      fontWeight={600}
-                      color={colors.colorPrimary}
-                    >
-                      {plan &&
-                        plan.type === PaymentPlanTypeEnum.FullGuidence &&
-                        'Full Guidance Package'}
-                      {plan &&
-                        plan.type === PaymentPlanTypeEnum.Intensive &&
-                        'Intensive Course'}
-                    </CustomText>
-                    <CustomText
-                      fontSize={16}
-                      mt={12}
-                      mb={12}
-                      color={colors.colorTextTertiary}
-                    >
-                      {packageDummyData[index].desc}
-                    </CustomText>
-                    <CustomText
-                      fontSize={20}
-                      fontWeight={700}
-                      mb={10}
-                      color={colors.colorTextBase}
-                    >
-                      {isValidMentorLevel
-                        ? // @ts-ignore
-                          `${plan?.prices[mentorLevel]?.toLocaleString()} ${plan?.currency?.symbol} (${packageDataInDollars?.[index]?.prices[mentorLevel]} USD) `
-                        : 'N/A'}
-                    </CustomText>
-                    <div>
-                      {packageDummyData[index].perks.map((perk, index) => (
-                        <CustomText
-                          key={index + perk}
-                          mb={6}
-                          fontSize={16}
-                          color={colors.colorTextSecondary}
-                        >
-                          <TickIcon /> &nbsp; {perk}
-                        </CustomText>
-                      ))}
-                    </div>
-                    <CustomText
-                      fontSize={14}
-                      mt={12}
-                      color={colors.colorTextTertiary}
-                    >
-                      Total estimated hours: {(plan?.minutes ?? NaN) / 60}
-                    </CustomText>
-                  </div>
-                  <CustomButton
-                    type="primary"
-                    mt={24}
-                    onClick={() =>
-                      handleBuyPackage(
-                        plan?.id ?? '',
-                        isValidMentorLevel ? plan?.prices[mentorLevel] : 0,
-                        // @ts-ignore
-                        plan.currency.name
-                      )
-                    }
-                  >
-                    Select Package
-                  </CustomButton>
-                </div>
-              ))}
-          </div>
-        )}
+        <IndividualSessionsTab
+          handleBook={handleBook}
+          handleChangeTab={handleTabChange}
+        />
       </div>
     </CustomModal>
   );
 }
-
-const packageDummyData = [
-  {
-    title: 'Full Guidance Package',
-    desc: 'Comprehensive support for your university application journey',
-    price: 0,
-    perks: [
-      '4 individual sessions (60 minutes each)',
-      'Comprehensive application review',
-      'Essay editing and feedback',
-    ],
-    time: ' 4',
-  },
-  {
-    title: 'Intensive Course',
-    desc: 'Complete end-to-end application support and strategy',
-    price: 0,
-    perks: [
-      '8 individual sessions (60 minutes each)',
-      'Full application strategy',
-      'Mock interviews',
-      'Complete essay development',
-    ],
-    time: ' 8',
-  },
-];
