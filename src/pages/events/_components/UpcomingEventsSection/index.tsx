@@ -178,15 +178,6 @@ export default function UpcomingEventsSection({
                   </Text>
                 </div>
               )}
-              {/* Debug: Show workshop summary data */}
-              {(() => { 
-                console.log('Workshop summary debug:', {
-                  summary: workshop.summary,
-                  translated: getTranslation(workshop.summary),
-                  type: typeof workshop.summary
-                }); 
-                return null; 
-              })()}
               
               <Space direction="vertical" size="small" className={styles.event_info}>
                 <div className={styles.info_item}>
