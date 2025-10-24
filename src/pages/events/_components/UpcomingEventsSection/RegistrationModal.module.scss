@@ -1,0 +1,163 @@
+.registration_modal {
+  .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .ant-modal-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
+    padding: 24px 24px 16px;
+  }
+
+  .ant-modal-body {
+    padding: 0;
+  }
+}
+
+.modal_header {
+  text-align: center;
+}
+
+.modal_title {
+  color: #2c3e50 !important;
+  margin-bottom: 8px !important;
+  font-weight: 600 !important;
+}
+
+.modal_subtitle {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.modal_content {
+  padding: 24px;
+}
+
+.registration_form {
+  .ant-form-item {
+    margin-bottom: 20px;
+  }
+
+  .ant-form-item-label {
+    padding-bottom: 6px;
+    
+    label {
+      color: #2c3e50;
+      font-weight: 500;
+      font-size: 14px;
+    }
+  }
+}
+
+.form_input {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #dc3545;
+  }
+
+  &:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+  }
+
+  .ant-input {
+    border: none;
+    box-shadow: none;
+    
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.input_icon {
+  color: #dc3545;
+  font-size: 14px;
+}
+
+.registration_info {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.info_text {
+  color: #6c757d;
+  font-size: 13px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info_icon {
+  color: #dc3545;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.form_actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancel_button {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  color: #6c757d;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #bfbfbf;
+    color: #2c3e50;
+  }
+}
+
+.submit_button {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 576px) {
+  .registration_modal {
+    .ant-modal-content {
+      margin: 16px;
+      width: calc(100% - 32px);
+    }
+  }
+
+  .modal_content {
+    padding: 20px;
+  }
+
+  .form_actions {
+    flex-direction: column;
+    
+    .cancel_button,
+    .submit_button {
+      width: 100%;
+    }
+  }
+}

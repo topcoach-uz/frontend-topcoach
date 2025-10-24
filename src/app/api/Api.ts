@@ -2938,6 +2938,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         secure: true,
         ...params,
       }),
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name RegisterForEvent
+     * @request POST:/camps/events/{id}/register
+     * @secure
+     * @response `200` `{ success: boolean; message: string }` Registration result
+     */
+    registerForEvent: (id: string, params: RequestParams = {}) =>
+      this.request<{ success: boolean; message: string }, any>({
+        path: `/camps/events/${id}/register`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
   };
   sessions = {
     /**

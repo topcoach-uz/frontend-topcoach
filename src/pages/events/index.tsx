@@ -9,6 +9,7 @@ import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import { Flex, Tabs } from 'antd';
 import { useState } from 'react';
 import WorkshopCard from './_components/WorkshopCard';
+import UpcomingEventsSection from './_components/UpcomingEventsSection';
 
 interface Event {
   id: string;
@@ -38,21 +39,36 @@ export default function EventsPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('events');
 
-  // Categorize events based on dates (exclude workshops)
+  // Categorize events based on dates
   const now = new Date();
-  const regularEvents = eventsData?.data.data.filter((event: any) => 
-    event.type !== 'workshop' && event.type !== 'Workshop'
-  ) || [];
+  const allEventsData = eventsData?.data.data || [];
+  const allWorkshopsData = workshopsData?.data || [];
 
+  // Separate events and workshops
+  const regularEvents = allEventsData.filter((event: any) => 
+    event.type !== 'workshop' && event.type !== 'Workshop'
+  );
+
+  const workshops = allEventsData.filter((event: any) => 
+    event.type === 'workshop' || event.type === 'Workshop'
+  );
+
+  // Get upcoming events and workshops (for the upcoming section)
+  const upcomingEvents = regularEvents.filter((event: Event) => {
+    const startDate = new Date(event.startDate);
+    return startDate > now;
+  });
+
+  const upcomingWorkshops = workshops.filter((workshop: any) => {
+    const startDate = new Date(workshop.startDate);
+    return startDate > now;
+  });
+
+  // Get past events and workshops (for the tabs)
   const currentEvents = regularEvents.filter((event: Event) => {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
     return startDate <= now && endDate >= now;
-  });
-
-  const upcomingEvents = regularEvents.filter((event: Event) => {
-    const startDate = new Date(event.startDate);
-    return startDate > now;
   });
 
   const previousEvents = regularEvents.filter((event: Event) => {
@@ -60,10 +76,14 @@ export default function EventsPage() {
     return endDate < now;
   });
 
-  const activeWorkshops = workshopsData?.data || [];
+  const pastWorkshops = workshops.filter((workshop: any) => {
+    const endDate = new Date(workshop.endDate);
+    return endDate < now;
+  });
 
-  // Combine all events into one array
-  const allEvents = [...currentEvents, ...upcomingEvents, ...previousEvents];
+  // Combine past events for the events tab
+  const allPastEvents = [...currentEvents, ...previousEvents];
+  const allPastWorkshops = [...pastWorkshops];
 
   const tabItems = [
     {
@@ -71,8 +91,8 @@ export default function EventsPage() {
       label: t('events.events'),
       children: (
         <div className={styles.cards_wrapper}>
-          {allEvents.length > 0 ? (
-            allEvents.map((event: Event, index: number) => {
+          {allPastEvents.length > 0 ? (
+            allPastEvents.map((event: Event, index: number) => {
               const eventStartDate = new Date(event.startDate);
               const isUpcoming = eventStartDate > now;
               
@@ -100,8 +120,8 @@ export default function EventsPage() {
       label: t('events.workshops'),
       children: (
         <div className={styles.cards_wrapper}>
-          {activeWorkshops.length > 0 ? (
-            activeWorkshops.map((workshop: any, index: number) => (
+          {allPastWorkshops.length > 0 ? (
+            allPastWorkshops.map((workshop: any, index: number) => (
               <WorkshopCard
                 key={index}
                 id={workshop.id}
@@ -133,6 +153,12 @@ export default function EventsPage() {
           title={t('events.allEvents')}
           description={t('events.description')}
           mb={24}
+        />
+        
+        {/* Upcoming Events and Workshops Section */}
+        <UpcomingEventsSection 
+          upcomingEvents={upcomingEvents}
+          upcomingWorkshops={upcomingWorkshops}
         />
         
         <Tabs
