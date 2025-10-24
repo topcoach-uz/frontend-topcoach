@@ -2,6 +2,7 @@ import { Card, Button, Progress, Tag, Space } from 'antd';
 import { CalendarOutlined, UserOutlined, ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDateRange } from 'src/utils';
+import { getTranslation } from 'src/lib/i18n/translationUtils';
 import styles from './WorkshopCard.module.scss';
 
 interface WorkshopCardProps {
@@ -68,7 +69,7 @@ export default function WorkshopCard({
         <h3 className={styles.workshop_title}>{title}</h3>
         
         {summary && (
-          <p className={styles.workshop_summary}>{summary}</p>
+          <p className={styles.workshop_summary}>{getTranslation(summary)}</p>
         )}
 
         <Space direction="vertical" size="small" className={styles.workshop_info}>

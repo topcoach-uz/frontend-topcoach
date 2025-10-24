@@ -5,6 +5,7 @@ import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import { useState } from 'react';
 import RegistrationModal from './RegistrationModal';
+import { getTranslation } from 'src/lib/i18n/translationUtils';
 import styles from './UpcomingEventsSection.module.scss';
 
 const { Title, Text } = Typography;
@@ -40,6 +41,7 @@ export default function UpcomingEventsSection({
   upcomingEvents, 
   upcomingWorkshops 
 }: UpcomingEventsSectionProps) {
+  
   const { t } = useTranslation();
   const [registrationModal, setRegistrationModal] = useState<{
     visible: boolean;
@@ -117,7 +119,7 @@ export default function UpcomingEventsSection({
               {event.summary && (
                 <div className={styles.summary_section}>
                   <Text className={styles.event_summary}>
-                    {event.summary}
+                    {getTranslation(event.summary)}
                   </Text>
                 </div>
               )}
@@ -172,7 +174,7 @@ export default function UpcomingEventsSection({
               {workshop.summary && (
                 <div className={styles.summary_section}>
                   <Text className={styles.workshop_summary}>
-                    {workshop.summary}
+                    {getTranslation(workshop.summary)}
                   </Text>
                 </div>
               )}
@@ -183,12 +185,6 @@ export default function UpcomingEventsSection({
                   <span>{formatDateRange(workshop.startDate, workshop.endDate)}</span>
                 </div>
 
-                <div className={styles.info_item}>
-                  <ClockCircleOutlined className={styles.info_icon} />
-                  <span>
-                    {t('events.registrationDeadline')}: {workshop.deadline ? new Date(workshop.deadline).toLocaleDateString() : 'TBA'}
-                  </span>
-                </div>
 
                 {workshop.locations && workshop.locations.length > 0 && (
                   <div className={styles.info_item}>
