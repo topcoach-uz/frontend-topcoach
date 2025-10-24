@@ -171,13 +171,22 @@ export default function UpcomingEventsSection({
                 {workshop.title}
               </Title>
               
-              {workshop.summary && (
+              {(workshop.summary && getTranslation(workshop.summary)) && (
                 <div className={styles.summary_section}>
                   <Text className={styles.workshop_summary}>
                     {getTranslation(workshop.summary)}
                   </Text>
                 </div>
               )}
+              {/* Debug: Show workshop summary data */}
+              {(() => { 
+                console.log('Workshop summary debug:', {
+                  summary: workshop.summary,
+                  translated: getTranslation(workshop.summary),
+                  type: typeof workshop.summary
+                }); 
+                return null; 
+              })()}
               
               <Space direction="vertical" size="small" className={styles.event_info}>
                 <div className={styles.info_item}>

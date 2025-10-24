@@ -64,6 +64,10 @@ export default function EventsPage() {
     return startDate > now;
   });
 
+  // Debug: Log the workshop data to see what's being passed
+  console.log('EventsPage - workshops data:', workshops);
+  console.log('EventsPage - upcomingWorkshops:', upcomingWorkshops);
+
   // Get past events and workshops (for the tabs)
   const currentEvents = regularEvents.filter((event: Event) => {
     const startDate = new Date(event.startDate);
