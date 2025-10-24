@@ -80,7 +80,7 @@ export default function WorkshopCard({
           <div className={styles.info_item}>
             <ClockCircleOutlined className={styles.info_icon} />
             <span>
-              {t('events.registrationDeadline')}: {new Date(deadline).toLocaleDateString()}
+              {t('events.registrationDeadline')}: {deadline ? new Date(deadline).toLocaleDateString() : 'TBA'}
             </span>
           </div>
 
@@ -91,20 +91,6 @@ export default function WorkshopCard({
             </div>
           )}
 
-          <div className={styles.participants_info}>
-            <div className={styles.info_item}>
-              <UserOutlined className={styles.info_icon} />
-              <span>
-                {currentParticipants || 0}/{maxParticipants || 0} {t('events.participants')}
-              </span>
-            </div>
-            <Progress
-              percent={participationPercentage}
-              size="small"
-              status={participationPercentage >= 90 ? 'exception' : 'active'}
-              className={styles.progress_bar}
-            />
-          </div>
         </Space>
 
         <div className={styles.workshop_tags}>

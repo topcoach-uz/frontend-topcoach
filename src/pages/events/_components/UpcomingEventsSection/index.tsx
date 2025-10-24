@@ -12,6 +12,7 @@ const { Title, Text } = Typography;
 interface Event {
   id: string;
   title: string;
+  summary?: string;
   startDate: string;
   endDate: string;
   media: MediaSchema[];
@@ -78,15 +79,6 @@ export default function UpcomingEventsSection({
 
   return (
     <div className={styles.upcoming_section}>
-      <div className={styles.section_header}>
-        <Title level={2} className={styles.section_title}>
-          {t('events.upcomingEventsWorkshops')}
-        </Title>
-        <Text className={styles.section_description}>
-          {t('events.upcomingDescription')}
-        </Text>
-      </div>
-
       <div className={styles.upcoming_cards}>
         {upcomingEvents.map((event) => (
           <Card
@@ -121,6 +113,14 @@ export default function UpcomingEventsSection({
               <Title level={4} className={styles.event_title}>
                 {event.title}
               </Title>
+              
+              {event.summary && (
+                <div className={styles.summary_section}>
+                  <Text className={styles.event_summary}>
+                    {event.summary}
+                  </Text>
+                </div>
+              )}
               
               <Space direction="vertical" size="small" className={styles.event_info}>
                 <div className={styles.info_item}>
@@ -170,9 +170,11 @@ export default function UpcomingEventsSection({
               </Title>
               
               {workshop.summary && (
-                <Text className={styles.workshop_summary}>
-                  {workshop.summary}
-                </Text>
+                <div className={styles.summary_section}>
+                  <Text className={styles.workshop_summary}>
+                    {workshop.summary}
+                  </Text>
+                </div>
               )}
               
               <Space direction="vertical" size="small" className={styles.event_info}>
@@ -184,7 +186,7 @@ export default function UpcomingEventsSection({
                 <div className={styles.info_item}>
                   <ClockCircleOutlined className={styles.info_icon} />
                   <span>
-                    {t('events.registrationDeadline')}: {new Date(workshop.deadline).toLocaleDateString()}
+                    {t('events.registrationDeadline')}: {workshop.deadline ? new Date(workshop.deadline).toLocaleDateString() : 'TBA'}
                   </span>
                 </div>
 
@@ -195,12 +197,6 @@ export default function UpcomingEventsSection({
                   </div>
                 )}
 
-                <div className={styles.info_item}>
-                  <UserOutlined className={styles.info_icon} />
-                  <span>
-                    {workshop.currentParticipants || 0}/{workshop.maxParticipants || 0} {t('events.participants')}
-                  </span>
-                </div>
               </Space>
             </div>
           </Card>
