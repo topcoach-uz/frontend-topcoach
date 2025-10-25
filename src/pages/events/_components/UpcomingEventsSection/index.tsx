@@ -6,6 +6,7 @@ import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import { useState } from 'react';
 import RegistrationModal from './RegistrationModal';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
+import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
 import styles from './UpcomingEventsSection.module.scss';
 
 const { Title, Text } = Typography;
@@ -14,6 +15,9 @@ interface Event {
   id: string;
   title: string;
   summary?: string;
+  content?: {
+    blocks: any[];
+  };
   startDate: string;
   endDate: string;
   media: MediaSchema[];
@@ -23,6 +27,9 @@ interface Workshop {
   id: string;
   title: string;
   summary: string;
+  content?: {
+    blocks: any[];
+  };
   startDate: string;
   endDate: string;
   deadline: string;
@@ -123,6 +130,12 @@ export default function UpcomingEventsSection({
                   </Text>
                 </div>
               )}
+
+              {event.content?.blocks && event.content.blocks.length > 0 && (
+                <div className={styles.content_section}>
+                  <RichTextRenderer blocks={event.content.blocks} id={event.id} />
+                </div>
+              )}
               
               <Space direction="vertical" size="small" className={styles.event_info}>
                 <div className={styles.info_item}>
@@ -176,6 +189,12 @@ export default function UpcomingEventsSection({
                   <Text className={styles.workshop_summary}>
                     {getTranslation(workshop.summary)}
                   </Text>
+                </div>
+              )}
+
+              {workshop.content?.blocks && workshop.content.blocks.length > 0 && (
+                <div className={styles.content_section}>
+                  <RichTextRenderer blocks={workshop.content.blocks} id={workshop.id} />
                 </div>
               )}
               
