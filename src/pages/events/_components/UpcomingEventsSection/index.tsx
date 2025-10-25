@@ -61,6 +61,8 @@ export default function UpcomingEventsSection({
     eventTitle: '',
     eventType: 'event'
   });
+  
+  const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
 
   const handleRegister = (eventId: string, eventTitle: string, eventType: 'event' | 'workshop') => {
     setRegistrationModal({
@@ -71,7 +73,10 @@ export default function UpcomingEventsSection({
     });
   };
 
-  const handleRegistrationClose = () => {
+  const handleRegistrationClose = (success: boolean = false) => {
+    if (success && registrationModal.eventId) {
+      setRegisteredEvents(prev => new Set([...prev, registrationModal.eventId]));
+    }
     setRegistrationModal({
       visible: false,
       eventId: '',
@@ -107,15 +112,27 @@ export default function UpcomingEventsSection({
               </div>
             }
             actions={[
-              <Button
-                key="register"
-                type="primary"
-                size="large"
-                onClick={() => handleRegister(event.id, event.title, 'event')}
-                className={styles.register_button}
-              >
-                {t('events.registerNow')}
-              </Button>
+              registeredEvents.has(event.id) ? (
+                <Button
+                  key="registered"
+                  type="default"
+                  size="large"
+                  disabled
+                  className={styles.registered_button}
+                >
+                  {t('events.registered')}
+                </Button>
+              ) : (
+                <Button
+                  key="register"
+                  type="primary"
+                  size="large"
+                  onClick={() => handleRegister(event.id, event.title, 'event')}
+                  className={styles.register_button}
+                >
+                  {t('events.registerNow')}
+                </Button>
+              )
             ]}
           >
             <div className={styles.card_content}>
@@ -168,15 +185,27 @@ export default function UpcomingEventsSection({
               </div>
             }
             actions={[
-              <Button
-                key="register"
-                type="primary"
-                size="large"
-                onClick={() => handleRegister(workshop.id, workshop.title, 'workshop')}
-                className={styles.register_button}
-              >
-                {t('events.registerNow')}
-              </Button>
+              registeredEvents.has(workshop.id) ? (
+                <Button
+                  key="registered"
+                  type="default"
+                  size="large"
+                  disabled
+                  className={styles.registered_button}
+                >
+                  {t('events.registered')}
+                </Button>
+              ) : (
+                <Button
+                  key="register"
+                  type="primary"
+                  size="large"
+                  onClick={() => handleRegister(workshop.id, workshop.title, 'workshop')}
+                  className={styles.register_button}
+                >
+                  {t('events.registerNow')}
+                </Button>
+              )
             ]}
           >
             <div className={styles.card_content}>

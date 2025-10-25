@@ -755,5 +755,11 @@
   "programs.enrollment.totalLessons": "Total Lessons",
   "programs.enrollment.overallProgress": "Overall Progress",
   "programs.enrollment.timeWatched": "Time Watched",
-  "programs.enrollment.continueLearning": "Continue Learning"
+  "programs.enrollment.continueLearning": "Continue Learning",
+  "events.upcoming": "Upcoming",
+  "events.workshop": "Workshop",
+  "events.registerNow": "Register Now",
+  "events.registered": "Registered",
+  "events.registrationSuccess": "Registration successful! Check your email for confirmation.",
+  "events.registrationError": "Registration failed. Please try again."
 }

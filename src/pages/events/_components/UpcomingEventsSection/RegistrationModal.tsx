@@ -12,7 +12,7 @@ interface RegistrationModalProps {
   eventId: string;
   eventTitle: string;
   eventType: 'event' | 'workshop';
-  onClose: () => void;
+  onClose: (success?: boolean) => void;
 }
 
 export default function RegistrationModal({
@@ -39,7 +39,7 @@ export default function RegistrationModal({
 
       message.success(t('events.registrationSuccess'));
       form.resetFields();
-      onClose();
+      onClose(true);
     } catch (error: any) {
       console.error('Registration error:', error);
       message.error(error.response?.data?.message || t('events.registrationError'));
