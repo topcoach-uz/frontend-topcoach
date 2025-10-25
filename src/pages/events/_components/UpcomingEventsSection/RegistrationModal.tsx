@@ -31,10 +31,17 @@ export default function RegistrationModal({
     try {
       // Call the registration API
       if (eventType === 'workshop') {
-        await api.camps.registerForWorkshop(eventId);
+        await api.request({
+          path: `/camps/workshops/${eventId}/register`,
+          method: 'POST',
+          secure: true,
+        });
       } else {
-        // For events, we'll need to create a similar API endpoint
-        await api.camps.registerForEvent(eventId);
+        await api.request({
+          path: `/camps/events/${eventId}/register`,
+          method: 'POST',
+          secure: true,
+        });
       }
 
       message.success(t('events.registrationSuccess'));
