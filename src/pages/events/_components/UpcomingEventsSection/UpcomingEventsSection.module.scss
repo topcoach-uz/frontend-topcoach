@@ -37,6 +37,10 @@
     &::before {
       display: none !important;
     }
+    
+    &::after {
+      display: none !important;
+    }
   }
 
   .ant-card-actions > li {
@@ -205,7 +209,7 @@
   font-weight: 600;
   border-radius: 8px;
   background: #990000 !important;
-  border: 2px solid white !important;
+  border: none !important;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(153, 0, 0, 0.3) !important;
   margin: 0 20px;
