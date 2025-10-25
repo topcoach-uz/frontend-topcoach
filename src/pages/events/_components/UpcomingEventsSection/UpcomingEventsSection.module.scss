@@ -16,19 +16,19 @@
 
 .upcoming_card {
   border-radius: 12px !important;
-  box-shadow: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.3s ease !important;
   overflow: hidden !important;
   border: none !important;
-  background: transparent !important;
+  background: white !important;
 
   &:hover {
-    transform: none;
-    box-shadow: none !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
   }
 
   .ant-card-actions {
-    background: transparent !important;
+    background: white !important;
     border-top: none !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -39,13 +39,13 @@
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
-    background: transparent !important;
+    background: white !important;
   }
 
   .ant-card-actions > li > span {
     display: block !important;
     width: 100% !important;
-    background: transparent !important;
+    background: white !important;
     border: none !important;
   }
 }
@@ -93,9 +93,8 @@
 }
 
 .card_content {
-  padding: 20px 0;
-  background: white;
-  border-radius: 0 0 12px 12px;
+  padding: 20px 24px;
+  background: transparent;
 }
 
 .event_title {
