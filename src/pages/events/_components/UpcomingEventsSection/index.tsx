@@ -3,10 +3,11 @@ import { Card, Button, Space, Tag, Typography } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import RegistrationModal from './RegistrationModal';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
 import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
+import { api } from 'src/app/api';
 import styles from './UpcomingEventsSection.module.scss';
 
 const { Title, Text } = Typography;
@@ -63,6 +64,50 @@ export default function UpcomingEventsSection({
   });
   
   const [registeredEvents, setRegisteredEvents] = useState<Set<string>>(new Set());
+
+  // Fetch user's existing registrations on component mount
+  useEffect(() => {
+    const fetchUserRegistrations = async () => {
+      try {
+        // Get all event IDs from upcoming events and workshops
+        const allEventIds = [
+          ...upcomingEvents.map(event => event.id),
+          ...upcomingWorkshops.map(workshop => workshop.id)
+        ];
+
+        if (allEventIds.length === 0) return;
+
+        // Check registrations for each event/workshop
+        const registrationChecks = await Promise.allSettled(
+          allEventIds.map(async (eventId) => {
+            try {
+              const response = await api.request({
+                path: `/camps/events/${eventId}/registration-status`,
+                method: 'GET',
+                secure: true,
+              });
+              return response.data?.registered ? eventId : null;
+            } catch (error) {
+              return null; // If failed, user is not registered
+            }
+          })
+        );
+
+        // Extract successfully registered event IDs
+        const registeredIds = registrationChecks
+          .filter((result): result is PromiseFulfilledResult<string> => 
+            result.status === 'fulfilled' && result.value !== null
+          )
+          .map(result => result.value);
+
+        setRegisteredEvents(new Set(registeredIds));
+      } catch (error) {
+        console.error('Error fetching user registrations:', error);
+      }
+    };
+
+    fetchUserRegistrations();
+  }, [upcomingEvents, upcomingWorkshops]);
 
   const handleRegister = (eventId: string, eventTitle: string, eventType: 'event' | 'workshop') => {
     setRegistrationModal({
