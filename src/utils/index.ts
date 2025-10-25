@@ -234,21 +234,21 @@ export const formatDateRange = (startDate: string, endDate: string) => {
   const start = dayjs(startDate);
   const end = dayjs(endDate);
 
-  // If same day, show just one date
+  // If same day, show date and time range
   if (start.isSame(end, 'day')) {
-    return start.format('MMMM Do, YYYY');
+    return `${start.format('MMMM Do, YYYY')} at ${start.format('h:mm A')} - ${end.format('h:mm A')}`;
   }
 
-  // If same month, show: "October 17 - 19, 2024"
+  // If same month, show: "October 17 at 2:00 PM - October 19 at 4:00 PM, 2024"
   if (start.isSame(end, 'month')) {
-    return `${start.format('MMMM Do')} - ${end.format('Do, YYYY')}`;
+    return `${start.format('MMMM Do')} at ${start.format('h:mm A')} - ${end.format('Do')} at ${end.format('h:mm A')}, ${end.format('YYYY')}`;
   }
 
-  // If different months, show: "October 17 - November 19, 2024"
+  // If different months, show: "October 17 at 2:00 PM - November 19 at 4:00 PM, 2024"
   if (start.isSame(end, 'year')) {
-    return `${start.format('MMMM Do')} - ${end.format('MMMM Do, YYYY')}`;
+    return `${start.format('MMMM Do')} at ${start.format('h:mm A')} - ${end.format('MMMM Do')} at ${end.format('h:mm A')}, ${end.format('YYYY')}`;
   }
 
-  // If different years, show full dates
-  return `${start.format('MMMM Do, YYYY')} - ${end.format('MMMM Do, YYYY')}`;
+  // If different years, show full dates with times
+  return `${start.format('MMMM Do, YYYY')} at ${start.format('h:mm A')} - ${end.format('MMMM Do, YYYY')} at ${end.format('h:mm A')}`;
 };

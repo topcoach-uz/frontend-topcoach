@@ -3,6 +3,7 @@ import { CalendarOutlined, UserOutlined, ClockCircleOutlined, EnvironmentOutline
 import { useTranslation } from 'react-i18next';
 import { formatDateRange } from 'src/utils';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
+import dayjs from 'dayjs';
 import styles from './WorkshopCard.module.scss';
 
 interface WorkshopCardProps {
@@ -81,7 +82,7 @@ export default function WorkshopCard({
           <div className={styles.info_item}>
             <ClockCircleOutlined className={styles.info_icon} />
             <span>
-              {t('events.registrationDeadline')}: {deadline ? new Date(deadline).toLocaleDateString() : 'TBA'}
+              {t('events.registrationDeadline')}: {deadline ? dayjs(deadline).format('MMMM Do, YYYY [at] h:mm A') : 'TBA'}
             </span>
           </div>
 
