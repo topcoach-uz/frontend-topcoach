@@ -91,6 +91,7 @@ const AiMajorMatchPageLazy = lazy(
   () => import("src/pages/ai-major-match/AiMajorMatch")
 );
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
+const ProgramsAdmissionsPageLazy = lazy(() => import("src/pages/programs/admissions"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
@@ -138,6 +139,7 @@ function RouterProvider() {
                 element={<EventDetailsPageLazy />}
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
+              <Route path="/programs/admissions" element={<ProgramsAdmissionsPageLazy />} />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route path="/contact-form" element={<ContactFormPageLazy />} />
               <Route 

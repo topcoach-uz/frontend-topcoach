@@ -2,9 +2,388 @@
 .programs-page {
   position: relative; // Ensure loading overlay positions correctly
   min-height: 100vh;
-  background: #ffffff;
+  background: #fafafa;
   
-  // Hero Section
+  // Page Header
+  .page-header {
+    background: transparent;
+    padding: 40px 0 20px;
+    text-align: center;
+    
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px;
+      
+      .page-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #8b0000;
+        margin-bottom: 24px;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        
+        @media (max-width: 768px) {
+          font-size: 2.5rem;
+        }
+      }
+      
+      .page-subtitle {
+        font-size: 1.25rem;
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
+        font-weight: 400;
+        
+        @media (max-width: 768px) {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+
+  // Programs Grid Section
+  .programs-grid-section {
+    padding: 20px 0 80px;
+    background: #fafafa;
+    
+    .programs-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+      
+      @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+        gap: 60px;
+        padding: 0 20px;
+      }
+      
+      @media (max-width: 768px) {
+        gap: 40px;
+        padding: 0 16px;
+      }
+    }
+    
+    .program-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      
+      &:hover {
+        text-decoration: none;
+        color: inherit;
+      }
+    }
+    
+    .program-card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid #f0f0f0;
+      
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      }
+      
+      @media (max-width: 768px) {
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+      }
+      
+      .card-header {
+        padding: 32px 32px 24px;
+        text-align: center;
+        
+        @media (max-width: 768px) {
+          padding: 24px 20px 20px;
+        }
+        
+        .program-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(135deg, #8b0000, #660000);
+          color: white;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin-bottom: 20px;
+          
+          .anticon {
+            font-size: 14px;
+          }
+          
+          &.sat-badge {
+            background: linear-gradient(135deg, #8b0000, #660000);
+          }
+        }
+        
+        .program-title {
+          font-size: 2rem;
+          font-weight: 800;
+          color: #1f2937;
+          margin-bottom: 16px;
+          line-height: 1.2;
+          
+          @media (max-width: 768px) {
+            font-size: 1.75rem;
+          }
+        }
+        
+        .program-description {
+          font-size: 1rem;
+          color: #6b7280;
+          line-height: 1.6;
+          margin: 0;
+        }
+      }
+      
+      .program-stats {
+        padding: 0 32px 24px;
+        display: flex;
+        justify-content: space-around;
+        gap: 20px;
+        
+        @media (max-width: 768px) {
+          padding: 0 20px 20px;
+          gap: 16px;
+        }
+        
+        .stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          flex: 1;
+          
+          .anticon {
+            font-size: 24px;
+            color: #8b0000;
+            margin-bottom: 8px;
+          }
+          
+          .stat-content {
+            .stat-value {
+              display: block;
+              font-size: 1.5rem;
+              font-weight: 800;
+              color: #1f2937;
+              line-height: 1;
+              margin-bottom: 4px;
+            }
+            
+            .stat-label {
+              font-size: 0.8rem;
+              color: #6b7280;
+              font-weight: 500;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+            }
+          }
+        }
+      }
+      
+      .program-visual {
+        padding: 0 32px 24px;
+        
+        @media (max-width: 768px) {
+          padding: 0 20px 20px;
+        }
+        
+        .admissions-preview, .sat-preview {
+          background: #f8fafc;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          
+          .preview-image {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              object-position: center 30%; // Move image up to show all three people
+            }
+            
+            .play-overlay {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 60px;
+              height: 60px;
+              background: rgba(139, 0, 0, 0.9);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              
+              .anticon {
+                color: white;
+                font-size: 24px;
+                margin-left: 2px; // Reduced margin for better centering
+                margin-top: 0; // Ensure no vertical offset
+              }
+              
+              &:hover {
+                background: rgba(139, 0, 0, 1);
+                transform: translate(-50%, -50%) scale(1.1);
+              }
+            }
+          }
+          
+          .preview-info {
+            padding: 20px;
+            text-align: center;
+            
+            h4 {
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: #1f2937;
+              margin-bottom: 8px;
+            }
+            
+            p {
+              font-size: 0.9rem;
+              color: #6b7280;
+              margin: 0;
+            }
+          }
+        }
+      }
+      
+      .program-actions {
+        padding: 0 32px 32px;
+        display: flex;
+        gap: 16px;
+        
+        @media (max-width: 768px) {
+          flex-direction: column;
+          gap: 12px;
+          padding: 0 20px 24px;
+        }
+        
+        .apply-now-btn, .sat-apply-btn {
+          flex: 1;
+          background: #8b0000 !important;
+          border-color: #8b0000 !important;
+          height: 48px !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          border-radius: 12px !important;
+          
+          &:hover {
+            background: #6b0000 !important;
+            border-color: #6b0000 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+          }
+        }
+        
+        .sat-apply-btn {
+          background: #8b0000 !important;
+          border-color: #8b0000 !important;
+          color: white !important;
+          
+          &:hover {
+            background: #6b0000 !important;
+            border-color: #6b0000 !important;
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+          }
+          
+          &:disabled {
+            background: #8b0000 !important;
+            border-color: #8b0000 !important;
+            color: white !important;
+            opacity: 0.8;
+            
+            .anticon {
+              color: white !important;
+            }
+          }
+        }
+        
+        .contact-us-btn, .sat-info-btn {
+          flex: 1;
+          background: white !important;
+          border: 2px solid #8b0000 !important;
+          color: #8b0000 !important;
+          height: 48px !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          border-radius: 12px !important;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: #8b0000 !important;
+            color: white !important;
+            border-color: #8b0000 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+          }
+        }
+        
+        .sat-info-btn {
+          border-color: #2563eb !important;
+          color: #2563eb !important;
+          
+          &:hover {
+            background: #2563eb !important;
+            color: white !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          }
+        }
+      }
+      
+      // Coming Soon Card Styling
+      &.coming-soon {
+        opacity: 0.8;
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 24px;
+          z-index: 1;
+          pointer-events: none;
+        }
+        
+        .program-visual {
+          opacity: 0.7;
+        }
+        
+        .program-stats {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+  
+  // Hero Section (keeping for reference but not used in new layout)
   .hero-section {
     background: white;
     color: #8b0000;
