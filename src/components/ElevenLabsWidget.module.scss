@@ -5,73 +5,8 @@
     z-index: 9999 !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 
-    // Hide the top logo/avatar
-    .avatar,
-    .logo,
-    .header-logo,
-    .widget-logo,
-    .convai-avatar,
-    .convai-logo,
-    [class*="avatar"],
-    [class*="logo"],
-    [class*="header"],
-    .widget-header img,
-    .widget-header svg,
-    .chat-header img,
-    .chat-header svg {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      width: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    // Hide the header section that contains the logo
-    .widget-header,
-    .chat-header,
-    .header-section,
-    [class*="header"] {
-      display: none !important;
-      visibility: hidden !important;
-      height: 0 !important;
-      min-height: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    // Additional specific selectors for ElevenLabs widget elements
-    .convai-widget-header,
-    .convai-avatar-container,
-    .convai-logo-container,
-    .elevenlabs-avatar,
-    .elevenlabs-logo,
-    .agent-avatar,
-    .agent-logo,
-    .top-logo,
-    .widget-top-section,
-    .convai-top-bar {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      width: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    // Target any circular or round elements that might be the logo
-    .circular,
-    .round,
-    .circle,
-    [class*="circular"],
-    [class*="round"],
-    [class*="circle"] {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
+    // Allow custom logo to show (removed avatar/logo hiding styles)
+    // Your custom logo will now be visible in the widget
 
     // Hide the 'Powered by ElevenLabs Agents' watermark
     .powered-by-elevenlabs,

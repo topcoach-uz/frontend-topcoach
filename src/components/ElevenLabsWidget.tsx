@@ -106,18 +106,14 @@ const ElevenLabsWidget = () => {
     const convaiElement = document.createElement('elevenlabs-convai');
     convaiElement.setAttribute('agent-id', 'agent_4101k7bhh5rmevhscwt844tnwd1a');
 
-    // Add TopCoach branding colors to match the site theme
-    convaiElement.setAttribute('avatar-orb-color-1', '#8b0000'); // TopCoach red
-    convaiElement.setAttribute('avatar-orb-color-2', '#f5f5f5'); // Light gray
-
     // Set widget behavior
     convaiElement.setAttribute('data-placement', 'bottom-right');
     convaiElement.setAttribute('data-variant', 'compact');
     convaiElement.setAttribute('data-expanded-behavior', 'starts-collapsed');
 
-    // Hide the top logo/avatar
-    convaiElement.setAttribute('data-hide-avatar', 'true');
-    convaiElement.setAttribute('data-hide-logo', 'true');
+    // Show your custom logo (removed avatar hiding and orb color overrides)
+    convaiElement.setAttribute('data-hide-avatar', 'false');
+    convaiElement.setAttribute('data-hide-logo', 'false');
 
     // Create and load the script with updated URL
     const script = document.createElement('script');
