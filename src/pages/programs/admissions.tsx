@@ -102,7 +102,7 @@ const AdmissionsPage: React.FC = () => {
       name: 'Zafar Akhtamov',
       university: 'Babson College',
       scholarship: 'Full Ride $345,000',
-      image: 'img/zafar_programs.jpeg',
+      image: '/img/zafar_programs.jpeg',
       module: t('programs.mentor.foundations'),
       achievements: [
         t('programs.mentor.flexAlumni'),
