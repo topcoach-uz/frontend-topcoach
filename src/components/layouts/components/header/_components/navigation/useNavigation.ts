@@ -31,8 +31,8 @@ export default function useNavigation() {
       text: t('header.programs', 'Programs'),
     },
     {
-      path: '/contact',
-      text: t('header.contact'),
+      path: '/events',
+      text: t('header.events'),
     },
     {
       text: t('navigation.learnMore'),
@@ -46,8 +46,8 @@ export default function useNavigation() {
         //   text: t('header.blog'),
         // },
         {
-          path: '/events',
-          text: t('header.events'),
+          path: '/contact',
+          text: t('header.contact'),
         },
         {
           path: '/faq',
