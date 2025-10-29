@@ -5,11 +5,23 @@
 
 .mentor_avatar {
   width: 90%;
+  
+  @media (max-width: 1024px) {
+    width: 100%;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }
 
 .title_wrapper {
   // max-width: 580px;
   @media (max-width: 1024px) {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center !important;
+    
     & > div {
       justify-content: center;
       text-align: center !important;

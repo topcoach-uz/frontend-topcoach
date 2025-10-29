@@ -263,6 +263,7 @@ export default function MentorDetailsPage() {
         {/* Mobile sections - moved after the main flex container */}
         {screenSize < 1024 && (
           <div className={styles.mobile_layout}>
+            <Overview />
             <Statistics />
             <MentorAvailableSessions
               noSessions={noSessions}
