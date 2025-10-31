@@ -32,7 +32,7 @@ export default function ContactDetails() {
     },
     {
       icon: <SocialsLinkedin color={colors.colorPrimary} />,
-      link: 'https://www.linkedin.com/company/top100uni-project/',
+      link: 'https://www.linkedin.com/company/topcoachuz/posts/?feedView=all',
     },
     {
       icon: (
