@@ -50,8 +50,8 @@ export default function useFooter() {
       links: [
         'https://t.me/Top100_Uni',
         'https://youtube.com/@top100uni?si=VcJXZa3zWttqsZUo',
-        'https://www.instagram.com/top100.uni?igsh=MXdkMm9tMjRvZW1jNw==',
-        'https://www.linkedin.com/company/top100uni-project/',
+        'https://www.instagram.com/topcoach__/',
+        'https://www.linkedin.com/company/topcoachuz/posts/?feedView=all',
       ],
       icons: [
         <TelegramSvg />,
@@ -63,9 +63,19 @@ export default function useFooter() {
     },
     {
       title: t('footer.contact'),
-      descriptions: ['+998 71 209 01 04', 'topcoachwork@gmail.com'],
-      icons: [<PhoneSvg />, <MailSvg />, <TelegramSvg />],
-      links: ['tel:+998712090104', 'mailto:topcoachwork@gmail.com'],
+      descriptions: [
+        // '+998 71 209 01 04',
+        'support@topcoach.uz',
+      ],
+      icons: [
+        // <PhoneSvg />,
+        <MailSvg />,
+        <TelegramSvg />,
+      ],
+      links: [
+        // 'tel:+998712090104',
+        'mailto:support@topcoach.uz',
+      ],
     },
   ];
 

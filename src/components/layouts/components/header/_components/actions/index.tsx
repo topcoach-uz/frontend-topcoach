@@ -13,6 +13,7 @@ import useActions from './useActions.tsx';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { MailOutlined } from '@ant-design/icons';
 
 export default function Actions() {
   const {
@@ -86,6 +87,9 @@ export default function Actions() {
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
       */}
+      <Link to="/contact" className={styles.contactIcon}>
+        <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
+      </Link>
       <LanguageSelect />
       <div className={styles.authContainer}>
         {!isAuthLoading && (

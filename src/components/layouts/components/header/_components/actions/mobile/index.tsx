@@ -10,6 +10,7 @@ import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
 import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from '../actions.module.scss';
 import { Link } from 'react-router-dom';
+import { MailOutlined } from '@ant-design/icons';
 
 interface Props {
   handleDarkMode: () => void;
@@ -49,7 +50,14 @@ export default function ActionsMobileVersion({
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
       */}
-      {screenSize > 560 && <LanguageSelect />}
+      {screenSize > 560 && (
+        <>
+          <Link to="/contact" className={styles.contactIcon}>
+            <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
+          </Link>
+          <LanguageSelect />
+        </>
+      )}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
       ) : (

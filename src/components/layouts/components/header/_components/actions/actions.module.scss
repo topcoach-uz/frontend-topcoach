@@ -89,3 +89,34 @@
   align-items: center;
   justify-content: flex-end;
 }
+
+.contactIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    transition: all 0.2s ease-in-out;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+}

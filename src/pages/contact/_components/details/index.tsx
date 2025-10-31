@@ -43,7 +43,7 @@ export default function ContactDetails() {
           height={24}
         />
       ),
-      link: 'https://www.instagram.com/top100.uni?igsh=MXdkMm9tMjRvZW1jNw==',
+      link: 'https://www.instagram.com/topcoach__/',
     },
   ];
 
@@ -66,7 +66,7 @@ export default function ContactDetails() {
         {t('contact.description')}
       </CustomText>
       <Flex style={{ padding: 24 }} vertical align="start" gap={24}>
-        <CustomButton
+        {/* <CustomButton
           type="link"
           // href="tel:+998998427979"
           className={styles.phone}
@@ -74,7 +74,7 @@ export default function ContactDetails() {
           p={0}
         >
           +998 71 209 01 04
-        </CustomButton>
+        </CustomButton> */}
         <CustomButton
           type="link"
           href="mailto:support@topcoach.uz"

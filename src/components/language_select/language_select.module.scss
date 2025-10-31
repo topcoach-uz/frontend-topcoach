@@ -174,7 +174,7 @@
   }
 }
 
-.flagIconDisplay {
+.languageIconDisplay {
   position: absolute;
   top: 0;
   left: 0;
@@ -195,12 +195,6 @@
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    
-    // Remove any white borders or backgrounds
-    rect, path, circle, polygon {
-      stroke: none !important;
-      stroke-width: 0 !important;
-    }
   }
 }
 

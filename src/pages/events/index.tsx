@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { api } from 'src/app/api';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import useApi from 'src/hooks/useApi';
@@ -6,9 +7,6 @@ import styles from './events.module.scss';
 import { useTranslation } from 'react-i18next';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
-import { Flex, Tabs } from 'antd';
-import { useState } from 'react';
-import WorkshopCard from './_components/WorkshopCard';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
 
 interface Event {
@@ -16,28 +14,19 @@ interface Event {
   title: string;
   startDate: string;
   endDate: string;
+  deadline?: string;
   media: MediaSchema[];
-}
-
-interface Workshop {
-  id: string;
-  title: string;
-  summary: string;
-  startDate: string;
-  endDate: string;
-  registrationDeadline: string;
-  maxParticipants: number;
-  currentParticipants: number;
-  isActive: boolean;
-  media: MediaSchema[];
-  locations: any[];
 }
 
 export default function EventsPage() {
   const { response: eventsData } = useApi(() => api.camps.campsList());
   const { response: workshopsData } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('events');
+
+  // Set page title in browser header
+  useEffect(() => {
+    document.title = 'Workshops - Top Coach';
+  }, []);
 
   // Categorize events based on dates
   const now = new Date();
@@ -64,96 +53,40 @@ export default function EventsPage() {
     return startDate > now;
   });
 
-
-  // Get past events and workshops (for the tabs)
-  const currentEvents = regularEvents.filter((event: Event) => {
-    const startDate = new Date(event.startDate);
-    const endDate = new Date(event.endDate);
-    return startDate <= now && endDate >= now;
-  });
-
-  const previousEvents = regularEvents.filter((event: Event) => {
-    const endDate = new Date(event.endDate);
-    return endDate < now;
-  });
-
-  const pastWorkshops = workshops.filter((workshop: any) => {
-    const endDate = new Date(workshop.endDate);
-    return endDate < now;
-  });
-
-  // Combine past events for the events tab
-  const allPastEvents = [...currentEvents, ...previousEvents];
-  const allPastWorkshops = [...pastWorkshops];
-
-  const tabItems = [
-    {
-      key: 'events',
-      label: t('events.events'),
-      children: (
-        <div className={styles.cards_wrapper}>
-          {allPastEvents.length > 0 ? (
-            allPastEvents.map((event: Event, index: number) => {
-              const eventStartDate = new Date(event.startDate);
-              const isUpcoming = eventStartDate > now;
-              
-              return (
-                <EventCard
-                  key={index}
-                  id={event.id}
-                  name={event.title}
-                  img={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || ''}
-                  date={formatDateRange(event.startDate, event.endDate)}
-                  isUpcoming={isUpcoming}
-                />
-              );
-            })
-          ) : (
-            <div className={styles.no_events}>
-              <p>{t('events.noEvents')}</p>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'workshops',
-      label: t('events.workshops'),
-      children: (
-        <div className={styles.cards_wrapper}>
-          {allPastWorkshops.length > 0 ? (
-            allPastWorkshops.map((workshop: any, index: number) => (
-              <WorkshopCard
-                key={index}
-                id={workshop.id}
-                title={workshop.title}
-                summary={workshop.summary}
-                startDate={workshop.startDate}
-                endDate={workshop.endDate}
-                deadline={workshop.deadline}
-                maxParticipants={workshop.maxParticipants}
-                currentParticipants={workshop.currentParticipants}
-                img={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || ''}
-                locations={workshop.locations}
-              />
-            ))
-          ) : (
-            <div className={styles.no_events}>
-              <p>{t('events.noWorkshops')}</p>
-            </div>
-          )}
-        </div>
-      ),
-    },
+  // Get all events and workshops that have passed deadline
+  // For workshops: check if deadline has passed
+  // For events: check if endDate has passed
+  const pastItems = [
+    ...regularEvents.filter((event: Event) => {
+      const endDate = new Date(event.endDate);
+      return endDate < now;
+    }),
+    ...workshops.filter((workshop: any) => {
+      // Check if deadline has passed, or if no deadline, check endDate
+      if (workshop.deadline) {
+        const deadline = new Date(workshop.deadline);
+        return deadline < now;
+      } else {
+        const endDate = new Date(workshop.endDate);
+        return endDate < now;
+      }
+    }),
   ];
+
+  // Sort by endDate or deadline (most recent first)
+  pastItems.sort((a: any, b: any) => {
+    const dateA = a.deadline ? new Date(a.deadline) : new Date(a.endDate);
+    const dateB = b.deadline ? new Date(b.deadline) : new Date(b.endDate);
+    return dateB.getTime() - dateA.getTime();
+  });
 
   return (
     <main>
       <div className={'container ' + styles.container}>
         <MainTitleDescription
-          title={t('events.allEvents')}
+          title={t('events.workshops')}
           description={t('events.description')}
-          mb={24}
+          mb={48}
         />
         
         {/* Upcoming Events and Workshops Section */}
@@ -162,12 +95,30 @@ export default function EventsPage() {
           upcomingWorkshops={upcomingWorkshops}
         />
         
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabItems}
-          className={styles.events_tabs}
-        />
+        {/* Unified past events and workshops */}
+        <div className={styles.cards_wrapper}>
+          {pastItems.length > 0 ? (
+            pastItems.map((item: any, index: number) => {
+              const itemStartDate = new Date(item.startDate);
+              const isUpcoming = itemStartDate > now;
+              
+              return (
+                <EventCard
+                  key={`${item.id}-${index}`}
+                  id={item.id}
+                  name={item.title}
+                  img={getLatestCreatedImg(item.media, MEDIA_TAGS.General) || ''}
+                  date={formatDateRange(item.startDate, item.endDate)}
+                  isUpcoming={isUpcoming}
+                />
+              );
+            })
+          ) : (
+            <div className={styles.no_events}>
+              <p>{t('events.noWorkshops')}</p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
