@@ -19,8 +19,33 @@ export const rtkQueryErrorLogger: Middleware =
         payload?.data?.msg ??
         payload?.data?.err?.message ??
         '';
-      const originalRequestEndpoint =
-        action.meta.baseQueryMeta.request.url.split('topcoach.uz')[1];
+      
+      // Safely extract the endpoint URL
+      let originalRequestEndpoint = '';
+      try {
+        const requestUrl = action.meta?.baseQueryMeta?.request?.url || '';
+        if (requestUrl.includes('topcoach.uz')) {
+          originalRequestEndpoint = requestUrl.split('topcoach.uz')[1] || '';
+        } else if (requestUrl.includes('localhost') || requestUrl.includes('127.0.0.1')) {
+          // Handle localhost URLs
+          const urlParts = requestUrl.split('/api/');
+          originalRequestEndpoint = urlParts.length > 1 ? '/' + urlParts[1] : '';
+        } else {
+          // Fallback: try to extract path from URL
+          try {
+            const url = new URL(requestUrl);
+            originalRequestEndpoint = url.pathname;
+          } catch {
+            // If URL parsing fails, try to extract from the string directly
+            const match = requestUrl.match(/\/(api|student-hub|auth|sessions|camps)[\/\w-]*/);
+            originalRequestEndpoint = match ? match[0] : '';
+          }
+        }
+      } catch (error) {
+        // If extraction fails, set empty string
+        originalRequestEndpoint = '';
+      }
+      
       error_message && error_message !== 'A validation error occurred.';
 
       const errors = payload?.data?.errors ?? '';
@@ -50,12 +75,14 @@ export const rtkQueryErrorLogger: Middleware =
         );
       } else if (status === 401) {
         // Only show session expired messages for authenticated requests, not login attempts
-        const isLoginAttempt = originalRequestEndpoint.includes('/auth/login') || 
-                              originalRequestEndpoint.includes('/auth/exchange') ||
-                              originalRequestEndpoint.includes('/auth/reset/password') ||
-                              originalRequestEndpoint.includes('/auth/reset/password/confirm');
+        const isLoginAttempt = originalRequestEndpoint && (
+          originalRequestEndpoint.includes('/auth/login') || 
+          originalRequestEndpoint.includes('/auth/exchange') ||
+          originalRequestEndpoint.includes('/auth/reset/password') ||
+          originalRequestEndpoint.includes('/auth/reset/password/confirm')
+        );
         
-        if (!isLoginAttempt) {
+        if (!isLoginAttempt && originalRequestEndpoint) {
           message.warning('Your session has expired. Please log in again.');
           if (
             !originalRequestEndpoint.startsWith('/sessions') &&

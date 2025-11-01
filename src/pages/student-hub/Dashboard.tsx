@@ -70,13 +70,13 @@ const Dashboard: React.FC = () => {
   if (hasError) {
     return (
       <Alert
-        message="Error Loading Dashboard"
-        description="There was an error loading your dashboard data. Please try again."
+        message={t('studentHub.dashboard.error')}
+        description={t('studentHub.dashboard.errorDescription')}
         type="error"
         showIcon
         action={
           <Button size="small" onClick={() => window.location.reload()}>
-            Retry
+            {t('studentHub.dashboard.retry')}
           </Button>
         }
       />
@@ -102,25 +102,25 @@ const Dashboard: React.FC = () => {
   const quickAddMenuItems = [
     {
       key: 'profile',
-      label: 'Complete Profile',
+      label: t('studentHub.dashboard.completeProfile'),
       icon: <FontAwesomeIcon icon="user" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/profile'),
     },
     {
       key: 'application',
-      label: 'Add Application',
+      label: t('studentHub.dashboard.addApplication'),
       icon: <FontAwesomeIcon icon="building" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/applications'),
     },
     {
       key: 'essay',
-      label: 'Start Essay',
+      label: t('studentHub.dashboard.startEssay'),
       icon: <FontAwesomeIcon icon="edit" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/essays'),
     },
     {
       key: 'document',
-      label: 'Upload Document',
+      label: t('studentHub.dashboard.uploadDocument'),
       icon: <FontAwesomeIcon icon="file" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/documents'),
     },
@@ -178,10 +178,10 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-header">
         <div className="welcome-section">
           <h1 className="welcome-title">
-            Welcome back, {userName}!
+            {t('studentHub.dashboard.welcomeBack')}, {userName}!
           </h1>
           <p className="welcome-subtitle">
-            You're making great progress on your college applications. Keep it up!
+            {t('studentHub.dashboard.welcomeMessage')}
           </p>
         </div>
         <div className="header-actions">
@@ -191,7 +191,7 @@ const Dashboard: React.FC = () => {
               size="large" 
               icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
             >
-              Quick Add
+              {t('studentHub.dashboard.quickAdd')}
             </Button>
           </Dropdown>
         </div>
@@ -203,11 +203,11 @@ const Dashboard: React.FC = () => {
           <Card className="stat-card">
             <div className="stat-header">
               <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} style={{ color: '#8b0000' }} />
-              <span className="stat-title">Applications</span>
+              <span className="stat-title">{t('studentHub.dashboard.applications')}</span>
             </div>
             <div className="stat-value">{dashboardData.applicationsCount}</div>
             <div className="stat-detail">
-              <span className="stat-label">{dashboardData.quickStats.applicationsSubmitted} submitted</span>
+              <span className="stat-label">{dashboardData.quickStats.applicationsSubmitted} {t('studentHub.dashboard.submitted')}</span>
             </div>
           </Card>
         </Col>
@@ -215,11 +215,11 @@ const Dashboard: React.FC = () => {
           <Card className="stat-card">
             <div className="stat-header">
               <FontAwesomeIcon icon={ESSAY_ICONS.ESSAYS} style={{ color: '#8b0000' }} />
-              <span className="stat-title">Essays</span>
+              <span className="stat-title">{t('studentHub.dashboard.essays')}</span>
             </div>
             <div className="stat-value">{dashboardData.essaysCount}</div>
             <div className="stat-detail">
-              <span className="stat-label">{dashboardData.quickStats.essaysInProgress} in progress</span>
+              <span className="stat-label">{dashboardData.quickStats.essaysInProgress} {t('studentHub.dashboard.inProgress')}</span>
             </div>
           </Card>
         </Col>
@@ -227,7 +227,7 @@ const Dashboard: React.FC = () => {
           <Card className="stat-card">
             <div className="stat-header">
               <FontAwesomeIcon icon="file" style={{ color: '#8b0000' }} />
-              <span className="stat-title">Documents</span>
+              <span className="stat-title">{t('studentHub.dashboard.documents')}</span>
             </div>
             <div className="stat-value">{documentsResponse?.data?.length || 0}</div>
           </Card>
@@ -254,7 +254,7 @@ const Dashboard: React.FC = () => {
         {/* Left Column */}
         <Col xs={24} lg={16}>
           {/* Recent Activity */}
-          <Card title="Recent Activity" className="activity-card">
+          <Card title={t('studentHub.dashboard.recentActivity')} className="activity-card">
             {(() => {
               // Get data from the same sources as Applications page
               const applicationsData = applicationsResponse?.data || [];
@@ -268,9 +268,9 @@ const Dashboard: React.FC = () => {
                 ...applicationsData.map((app: any) => ({ 
                   ...app, 
                   type: 'application',
-                  activityType: 'College Application',
-                  title: app?.universityName || 'Unknown University',
-                  subtitle: `Major: ${app?.major || 'Not specified'}`,
+                  activityType: t('studentHub.dashboard.collegeApplication'),
+                  title: app?.universityName || t('studentHub.dashboard.unknownUniversity'),
+                  subtitle: `${t('studentHub.dashboard.major')}: ${app?.major || t('studentHub.applications.notSpecified')}`,
                   timestamp: app?.createdAt || app?.updatedAt,
                   status: app?.status || 'unknown'
                 })),
@@ -278,9 +278,9 @@ const Dashboard: React.FC = () => {
                 ...scholarshipsData.map((scholarship: any) => ({ 
                   ...scholarship, 
                   type: 'scholarship',
-                  activityType: 'Scholarship',
-                  title: scholarship?.scholarshipName || 'Unknown Scholarship',
-                  subtitle: `Organization: ${scholarship?.organization || 'Unknown'}`,
+                  activityType: t('studentHub.dashboard.scholarship'),
+                  title: scholarship?.scholarshipName || t('studentHub.dashboard.unknownScholarship'),
+                  subtitle: `${t('studentHub.dashboard.organization')}: ${scholarship?.organization || t('studentHub.applications.unknownOrganization')}`,
                   timestamp: scholarship?.createdAt || scholarship?.updatedAt,
                   status: scholarship?.status || 'unknown'
                 })),
@@ -288,9 +288,9 @@ const Dashboard: React.FC = () => {
                 ...essaysData.map((essay: any) => ({ 
                   ...essay, 
                   type: 'essay',
-                  activityType: 'Essay',
-                  title: essay?.title || 'Untitled Essay',
-                  subtitle: `Type: ${essay?.essayType || 'Unknown'}`,
+                  activityType: t('studentHub.dashboard.essay'),
+                  title: essay?.title || t('studentHub.dashboard.untitledEssay'),
+                  subtitle: `${t('studentHub.dashboard.type')}: ${essay?.essayType || t('studentHub.profile.status.unknown')}`,
                   timestamp: essay?.createdAt || essay?.updatedAt,
                   status: essay?.status || 'unknown'
                 })),
@@ -298,9 +298,9 @@ const Dashboard: React.FC = () => {
                 ...documentsData.map((document: any) => ({ 
                   ...document, 
                   type: 'document',
-                  activityType: 'Document',
-                  title: document?.fileName || 'Untitled Document',
-                  subtitle: `Type: ${document?.documentType || 'Unknown'}`,
+                  activityType: t('studentHub.dashboard.document'),
+                  title: document?.fileName || t('studentHub.dashboard.untitledDocument'),
+                  subtitle: `${t('studentHub.dashboard.type')}: ${document?.documentType || t('studentHub.profile.status.unknown')}`,
                   timestamp: document?.createdAt || document?.updatedAt,
                   status: document?.isVerified ? 'verified' : 'pending'
                 }))
@@ -353,14 +353,14 @@ const Dashboard: React.FC = () => {
               ) : (
                 <div className="empty-state">
                   <div className="empty-icon">📁</div>
-                  <p>No recent activity</p>
+                  <p>{t('studentHub.dashboard.noActivity')}</p>
                 </div>
               );
             })()}
           </Card>
 
           {/* Quick Actions */}
-          <Card title="Quick Actions" className="actions-card">
+          <Card title={t('studentHub.dashboard.quickActions')} className="actions-card">
             <Row gutter={[16, 16]}>
               <Col xs={12} sm={8} md={6}>
                 <Button
@@ -370,7 +370,7 @@ const Dashboard: React.FC = () => {
                   className="quick-action-btn"
                   onClick={handleAcademicProfile}
                 >
-                  Academic Profile
+                  {t('studentHub.dashboard.academicProfile')}
                 </Button>
               </Col>
               <Col xs={12} sm={8} md={6}>
@@ -381,7 +381,7 @@ const Dashboard: React.FC = () => {
                   className="quick-action-btn"
                   onClick={handleNewApplication}
                 >
-                  New Application
+                  {t('studentHub.dashboard.newApplication')}
                 </Button>
               </Col>
               <Col xs={12} sm={8} md={6}>
@@ -392,7 +392,7 @@ const Dashboard: React.FC = () => {
                   className="quick-action-btn"
                   onClick={handleStartEssay}
                 >
-                  Start Essay
+                  {t('studentHub.dashboard.newEssay')}
                 </Button>
               </Col>
               <Col xs={12} sm={8} md={6}>
@@ -403,7 +403,7 @@ const Dashboard: React.FC = () => {
                   className="quick-action-btn"
                   onClick={handleUploadDocument}
                 >
-                  Upload Document
+                  {t('studentHub.dashboard.newDocument')}
                 </Button>
               </Col>
             </Row>
@@ -413,7 +413,7 @@ const Dashboard: React.FC = () => {
         {/* Right Column */}
         <Col xs={24} lg={8}>
           {/* Upcoming Deadlines */}
-          <Card title="Upcoming Deadlines" className="deadlines-card">
+          <Card title={t('studentHub.dashboard.upcomingDeadlines')} className="deadlines-card">
             {(() => {
               // Get data from the same sources as Applications page
               const applicationsData = applicationsResponse?.data || [];
@@ -441,8 +441,8 @@ const Dashboard: React.FC = () => {
                     <div className="deadline-content">
                       <div className="deadline-title">
                         {item.type === 'scholarship' 
-                          ? (item?.scholarshipName || 'Unknown Scholarship')
-                          : (item?.universityName || 'Unknown University')
+                          ? (item?.scholarshipName || t('studentHub.dashboard.unknownScholarship'))
+                          : (item?.universityName || t('studentHub.dashboard.unknownUniversity'))
                         }
                       </div>
                       <div className="deadline-date">
@@ -454,7 +454,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <Badge
                       color={item.type === 'scholarship' ? 'blue' : 'green'}
-                      text={item.type === 'scholarship' ? 'SCHOLARSHIP' : 'UNIVERSITY'}
+                      text={item.type === 'scholarship' ? t('studentHub.applications.scholarship').toUpperCase() : t('studentHub.applications.university').toUpperCase()}
                     />
                   </List.Item>
                 )}
@@ -477,7 +477,7 @@ const Dashboard: React.FC = () => {
                       })}</div>
                     </div>
                   </div>
-                  <p>No upcoming deadlines</p>
+                  <p>{t('studentHub.dashboard.noUpcomingDeadlines')}</p>
                 </div>
               );
             })()}

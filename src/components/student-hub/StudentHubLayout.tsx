@@ -45,6 +45,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const BuildingIcon = () => <FontAwesomeIcon icon="building" className="menu-icon" />;
   const EditIcon = () => <FontAwesomeIcon icon="pen" className="menu-icon" />;
   const FileIcon = () => <FontAwesomeIcon icon="file" className="menu-icon" />;
+  const CalculatorIcon = () => <FontAwesomeIcon icon="calculator" className="menu-icon" />;
   const BellIcon = () => <FontAwesomeIcon icon="bell" className="menu-icon" />;
   const MenuIcon = () => <FontAwesomeIcon icon="bars" className="menu-icon" />;
   const BookIcon = () => <FontAwesomeIcon icon="book" className="menu-icon" />;
@@ -75,6 +76,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       key: '/student-hub/documents',
       icon: <FileIcon />,
       label: t('Documents'),
+    },
+    {
+      key: '/student-hub/gpa-calculator',
+      icon: <CalculatorIcon />,
+      label: t('GPA Calculator'),
     },
     // TODO: Implement notifications page later
     // {
@@ -296,7 +302,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       <Layout className="main-layout">
         <Content className="main-content">
-          {isLoading ? (
+          {isLoading && location.pathname === '/student-hub' ? (
             <div className="student-hub-loading-content">
               <div className="loading-spinner-container">
                 <Spin size="large" />

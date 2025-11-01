@@ -260,6 +260,32 @@
       border-radius: $radius-lg;
       box-shadow: $shadow-sm;
       border: 1px solid $border-light;
+      width: 100%;
+      overflow-x: hidden;
+      
+      .ant-card-body {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+        
+        > * {
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+        }
+      }
+      
+      .ant-list {
+        width: 100%;
+        max-width: 100%;
+        
+        .ant-list-item {
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+        }
+      }
 
       .ant-card-head {
         border-bottom: 1px solid $border-light;
@@ -275,6 +301,9 @@
       .deadline-item {
         padding: $space-4 0;
         border-bottom: none;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
 
         .ant-list-item-meta {
           .ant-list-item-meta-title {
@@ -815,7 +844,10 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   border: 1px solid #e5e7eb;
-  min-width: 800px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex-shrink: 1;
   background: #ffffff;
 
   &:hover {
@@ -825,6 +857,10 @@
 
   .application-summary-content {
     padding: 0 $space-1 0 $space-1;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
 
     .application-header {
       margin-bottom: 0;
@@ -836,6 +872,8 @@
         color: #1f2937;
         margin: 0;
         line-height: 1.4;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
 
       .application-status {
@@ -844,10 +882,16 @@
     }
 
     .application-details {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      
       .detail-list {
         list-style: none;
         padding: 0;
         margin: 0;
+        width: 100%;
+        max-width: 100%;
 
         li {
           padding: $space-1 0;
@@ -855,9 +899,13 @@
           color: #374151;
           line-height: 1.5;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: $space-2;
           border-bottom: 1px solid #f9fafb;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          overflow: hidden;
 
           &:last-child {
             border-bottom: none;
@@ -869,12 +917,23 @@
             width: 18px;
             flex-shrink: 0;
             text-align: center;
+            margin-top: 2px;
           }
 
           strong {
             color: #6b7280;
             font-weight: 600;
-            min-width: 100px;
+            flex-shrink: 0;
+            margin-right: $space-2;
+            white-space: nowrap;
+          }
+          
+          .detail-value {
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow: hidden;
           }
         }
       }
@@ -910,6 +969,33 @@
 // 📱 RESPONSIVE DESIGN
 // ========================================
 
+// Medium screens - ensure cards shrink properly
+@media (max-width: 1200px) {
+  .application-summary-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    
+    .application-summary-content {
+      padding: $space-2;
+      
+      .application-details {
+        .detail-list {
+          li {
+            flex-wrap: wrap;
+            
+            strong {
+              min-width: auto;
+              width: 100%;
+              margin-bottom: $space-1;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .application-card {
     .application-card-content {
@@ -930,12 +1016,26 @@
   }
 
   .application-summary-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    
     .application-summary-content {
+      padding: $space-2;
+      
       .application-details {
-        .detail-row {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: $space-2;
+        .detail-list {
+          li {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-1;
+            
+            strong {
+              min-width: auto;
+              width: 100%;
+              margin-bottom: $space-1;
+            }
+          }
         }
       }
     }

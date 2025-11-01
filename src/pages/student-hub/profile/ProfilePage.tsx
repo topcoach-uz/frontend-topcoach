@@ -40,7 +40,7 @@ const ProfilePage: React.FC = () => {
       <div className="profile-loading-content">
         <div className="loading-spinner-container">
           <Spin size="large" />
-          <p>Loading your profile...</p>
+          <p>{t('studentHub.profile.loading')}</p>
         </div>
       </div>
     );
@@ -50,13 +50,13 @@ const ProfilePage: React.FC = () => {
   if (error) {
     return (
       <Alert
-        message="Error Loading Profile"
-        description="There was an error loading your profile data. Please try again."
+        message={t('studentHub.profile.error')}
+        description={t('studentHub.profile.errorDescription')}
         type="error"
         showIcon
         action={
           <Button size="small" onClick={() => window.location.reload()}>
-            Retry
+            {t('studentHub.profile.retry')}
           </Button>
         }
       />
@@ -102,13 +102,13 @@ const ProfilePage: React.FC = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'complete':
-        return 'Complete';
+        return t('studentHub.profile.status.complete');
       case 'in_progress':
-        return 'In Progress';
+        return t('studentHub.profile.status.inProgress');
       case 'incomplete':
-        return 'Incomplete';
+        return t('studentHub.profile.status.incomplete');
       default:
-        return 'Unknown';
+        return t('studentHub.profile.status.unknown');
     }
   };
 
@@ -118,7 +118,7 @@ const ProfilePage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={PROFILE_ICONS.PERSONAL} />
-          <span>Personal Profile</span>
+          <span>{t('studentHub.profile.personalProfile')}</span>
         </div>
       ),
       children: <PersonalProfile data={profileData.sections.personal} />,
@@ -128,7 +128,7 @@ const ProfilePage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={PROFILE_ICONS.ACADEMIC} />
-          <span>Academic Profile</span>
+          <span>{t('studentHub.profile.academicProfile')}</span>
         </div>
       ),
       children: <AcademicProfile data={profileData.sections.academic} />,
@@ -138,7 +138,7 @@ const ProfilePage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={PROFILE_ICONS.ACTIVITIES} />
-          <span>Activities & Achievements</span>
+          <span>{t('studentHub.profile.activitiesAchievements')}</span>
         </div>
       ),
       children: <ActivitiesProfile data={profileData.sections.activities} />,
@@ -152,9 +152,9 @@ const ProfilePage: React.FC = () => {
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24}>
             <div className="profile-header-content">
-              <h1 className="profile-title">My Student Profile</h1>
+              <h1 className="profile-title">{t('studentHub.profile.myStudentProfile')}</h1>
               <p className="profile-subtitle">
-                Complete your profile to maximize your college application success
+                {t('studentHub.profile.completeProfileMessage')}
               </p>
               <div className="profile-status">
                 <Badge

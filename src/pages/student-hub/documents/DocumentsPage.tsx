@@ -23,6 +23,35 @@ const { Option } = Select;
 
 const DocumentsPage: React.FC = () => {
   const { t } = useTranslation();
+  
+  // Helper function to get translated category labels
+  const getTranslatedCategoryLabel = (type: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'transcript': t('studentHub.documents.categories.officialTranscripts'),
+      'test_score': t('studentHub.documents.categories.testScores'),
+      'recommendation': t('studentHub.documents.categories.lettersOfRecommendation'),
+      'certificate': t('studentHub.documents.categories.awardsCertificates'),
+      'resume': t('studentHub.documents.categories.resumeCv'),
+      'portfolio': t('studentHub.documents.categories.portfolio'),
+      'other': t('studentHub.documents.categories.otherDocuments'),
+    };
+    return categoryMap[type] || (DOCUMENT_CATEGORIES[type as DocumentType]?.label) || type;
+  };
+  
+  // Helper function to get translated category descriptions
+  const getTranslatedCategoryDescription = (type: string): string => {
+    const descMap: { [key: string]: string } = {
+      'transcript': t('studentHub.documents.categories.officialTranscriptsDesc'),
+      'test_score': t('studentHub.documents.categories.testScoresDesc'),
+      'recommendation': t('studentHub.documents.categories.lettersOfRecommendationDesc'),
+      'certificate': t('studentHub.documents.categories.awardsCertificatesDesc'),
+      'resume': t('studentHub.documents.categories.resumeCvDesc'),
+      'portfolio': t('studentHub.documents.categories.portfolioDesc'),
+      'other': t('studentHub.documents.categories.otherDocumentsDesc'),
+    };
+    const category = DOCUMENT_CATEGORIES[type as DocumentType];
+    return descMap[type] || (category?.description) || '';
+  };
   const navigate = useNavigate();
   const { profile } = useStudentHub();
   
@@ -151,10 +180,10 @@ const DocumentsPage: React.FC = () => {
         document.body.removeChild(a);
       }, 100);
       
-      message.success('Document downloaded successfully');
+      message.success(t('studentHub.documents.downloadSuccess'));
     } catch (error) {
       console.error('🎯 Frontend: Download error:', error);
-      message.error('Failed to download document');
+      message.error(t('studentHub.documents.downloadError'));
     }
   };
 
@@ -163,7 +192,7 @@ const DocumentsPage: React.FC = () => {
   };
 
   const getStatusText = (isVerified: boolean) => {
-    return isVerified ? 'Verified' : 'Pending Review';
+    return isVerified ? t('studentHub.documents.verified') : t('studentHub.documents.pendingReview');
   };
 
   const formatFileSize = (bytes?: number | string) => {
@@ -205,7 +234,7 @@ const DocumentsPage: React.FC = () => {
     return (
       <div className="documents-loading">
         <Spin size="large" />
-        <p>Loading your documents...</p>
+        <p>{t('studentHub.documents.loading')}</p>
       </div>
     );
   }
@@ -214,11 +243,11 @@ const DocumentsPage: React.FC = () => {
     <div className="documents-page">
       {/* Page Header */}
       <div className="page-header">
-        <h1 className="page-title">Document Management</h1>
-        <p className="page-subtitle">Upload and manage your college application documents</p>
+        <h1 className="page-title">{t('studentHub.documents.title')}</h1>
+        <p className="page-subtitle">{t('studentHub.documents.subtitle')}</p>
         <div className="page-actions">
           <Input
-            placeholder="Search documents by title..."
+            placeholder={t('studentHub.documents.searchDocuments')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ width: 300 }}
@@ -231,7 +260,7 @@ const DocumentsPage: React.FC = () => {
             onClick={handleUploadDocument}
             size="large"
           >
-            Upload Document
+            {t('studentHub.documents.uploadDocument')}
           </Button>
         </div>
       </div>
@@ -241,7 +270,7 @@ const DocumentsPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="stat-card">
             <Statistic
-              title="Total Documents"
+              title={t('studentHub.documents.totalDocuments')}
               value={stats?.total || 0}
               prefix={<FontAwesomeIcon icon="file" />}
               valueStyle={{ color: '#1890ff' }}
@@ -251,7 +280,7 @@ const DocumentsPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="stat-card">
             <Statistic
-              title="Storage Used"
+              title={t('studentHub.documents.storageUsed')}
               value={formatFileSize(stats?.totalSize || 0)}
               prefix={<FontAwesomeIcon icon="hdd" />}
               valueStyle={{ color: '#722ed1' }}
@@ -268,7 +297,7 @@ const DocumentsPage: React.FC = () => {
           items={[
             {
               key: 'overview',
-              label: 'Overview',
+              label: t('studentHub.documents.overview'),
               children: (
                 <div className="documents-overview">
                   <Row gutter={[24, 24]}>
@@ -292,14 +321,14 @@ const DocumentsPage: React.FC = () => {
                               </div>
                               <div className="category-info">
                                 <h4 className="category-title">
-                                  {category.label}
+                                  {getTranslatedCategoryLabel(type)}
                                 </h4>
-                                <p className="category-description">{category.description}</p>
+                                <p className="category-description">{getTranslatedCategoryDescription(type)}</p>
                               </div>
                             </div>
                             <div className="category-stats">
                               <div className="stat-item">
-                                <span className="stat-label">Documents:</span>
+                                <span className="stat-label">{t('studentHub.documents.documents')}:</span>
                                 <span className="stat-value">{categoryDocs.length}</span>
                               </div>
                             </div>
@@ -313,7 +342,7 @@ const DocumentsPage: React.FC = () => {
                                   setUploadModalVisible(true);
                                 }}
                               >
-                                <FontAwesomeIcon icon="plus" /> Add Document
+                                <FontAwesomeIcon icon="plus" /> {t('studentHub.documents.addDocument')}
                               </Button>
                             </div>
                           </Card>
@@ -326,7 +355,7 @@ const DocumentsPage: React.FC = () => {
             },
             {
               key: 'documents',
-              label: 'All Documents',
+              label: t('studentHub.documents.allDocuments'),
               children: (
                 <div className="documents-list">
                   <div className="list-header">
@@ -335,12 +364,12 @@ const DocumentsPage: React.FC = () => {
                         value={selectedCategory}
                         onChange={setSelectedCategory}
                         style={{ width: 200 }}
-                        placeholder="Filter by category"
+                        placeholder={t('studentHub.documents.filterByCategory')}
                       >
-                        <Option value="all">All Categories</Option>
+                        <Option value="all">{t('studentHub.documents.allCategories')}</Option>
                         {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => (
                           <Option key={type} value={type}>
-                            {category.label}
+                            {getTranslatedCategoryLabel(type)}
                           </Option>
                         ))}
                       </Select>
@@ -397,7 +426,7 @@ const DocumentsPage: React.FC = () => {
                                           e.currentTarget.style.borderColor = '#8b0000';
                                         }}
                                       >
-                                        Download
+                                        {t('studentHub.documents.download')}
                                       </Button>
                                       <Button 
                                         onClick={() => handleDeleteDocument(document.id)}
@@ -420,7 +449,7 @@ const DocumentsPage: React.FC = () => {
                                           e.currentTarget.style.borderColor = '#8b0000';
                                         }}
                                       >
-                                        Delete
+                                        {t('studentHub.documents.delete')}
                                       </Button>
                                     </Space>
                                   </div>
@@ -464,7 +493,7 @@ const DocumentsPage: React.FC = () => {
       >
         <div className="upload-modal-content">
           <div className="upload-form-item">
-            <label style={{ marginBottom: '6px', display: 'block' }}>Document Type</label>
+            <label style={{ marginBottom: '6px', display: 'block' }}>{t('studentHub.documents.documentType')}</label>
             <Select
               value={selectedDocumentType}
               onChange={setSelectedDocumentType}
@@ -472,18 +501,18 @@ const DocumentsPage: React.FC = () => {
                 width: '100%',
                 marginBottom: '16px'
               }}
-              placeholder="Select document type"
+              placeholder={t('studentHub.documents.selectDocumentType')}
             >
               {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => (
                 <Option key={type} value={type}>
-                  {category.label}
+                  {getTranslatedCategoryLabel(type)}
                 </Option>
               ))}
             </Select>
           </div>
           
           <div className="upload-form-item">
-            <label>Select File</label>
+            <label>{t('studentHub.documents.selectFile')}</label>
             <Dragger
               name="file"
               multiple={false}
@@ -496,9 +525,9 @@ const DocumentsPage: React.FC = () => {
               <p className="ant-upload-drag-icon">
                 <FontAwesomeIcon icon="cloud-upload-alt" />
               </p>
-              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+              <p className="ant-upload-text">{t('studentHub.documents.uploadInstructions')}</p>
               <p className="ant-upload-hint">
-                Support for single file upload. Accepted formats: PDF, DOC, DOCX, JPG, PNG
+                {t('studentHub.documents.uploadHint')}
               </p>
             </Dragger>
           </div>

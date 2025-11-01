@@ -126,11 +126,6 @@ export const useDashboard = () => {
 
   const dashboard = dashboardData;
 
-  // Debug logging
-  console.log('useDashboard - Dashboard data:', dashboardData);
-  console.log('useDashboard - Loading:', dashboardLoading);
-  console.log('useDashboard - Error:', dashboardError);
-
   const stats = useMemo(() => {
     if (!dashboard) return null;
 
@@ -383,14 +378,6 @@ export const useStudentHub = () => {
 
   const isLoading = profile.isLoading || dashboard.isLoading || preferences.isLoading;
   const hasError = profile.error || dashboard.error || preferences.error;
-
-  // Debug logging
-  console.log('useStudentHub - Profile:', profile);
-  console.log('useStudentHub - Dashboard:', dashboard);
-  console.log('useStudentHub - Notifications:', notifications);
-  console.log('useStudentHub - Preferences:', preferences);
-  console.log('useStudentHub - IsLoading:', isLoading);
-  console.log('useStudentHub - HasError:', hasError);
 
   const refreshAll = useCallback(() => {
     profile.refetchProfile();

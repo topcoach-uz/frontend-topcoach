@@ -151,19 +151,19 @@ const EssaysPage: React.FC = () => {
 
   const handleDeleteEssay = (essay: any) => {
     Modal.confirm({
-      title: 'Delete Essay',
-      content: `Are you sure you want to delete "${essay.title}"? This action cannot be undone.`,
+      title: t('studentHub.essays.deleteEssay'),
+      content: t('studentHub.essays.deleteConfirm', { title: essay.title }),
       icon: <FontAwesomeIcon icon="exclamation-triangle" style={{ color: '#ff4d4f' }} />,
-      okText: 'Delete',
+      okText: t('studentHub.applications.delete'),
       okType: 'danger',
-      cancelText: 'Cancel',
+      cancelText: t('common.cancel'),
       onOk: async () => {
         try {
           await deleteStudentEssay(essay.id).unwrap();
-          message.success('Essay deleted successfully');
+          message.success(t('studentHub.essays.deleteSuccess'));
         } catch (error) {
           console.error('Error deleting essay:', error);
-          message.error('Failed to delete essay');
+          message.error(t('studentHub.essays.deleteError'));
         }
       },
     });
@@ -225,19 +225,19 @@ const EssaysPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={ESSAY_ICONS.ESSAYS} />
-          <span>My Essays</span>
+          <span>{t('studentHub.essays.myEssays')}</span>
         </div>
       ),
       children: (
         <div className="essays-content">
           <div className="essays-header">
             <div className="essays-title">
-              <h3>My Essays ({essaysData.essays.length})</h3>
-              <p>Manage and track your essay writing progress</p>
+              <h3>{t('studentHub.essays.myEssays')} ({essaysData.essays.length})</h3>
+              <p>{t('studentHub.essays.manageTrack')}</p>
             </div>
             <div className="essays-actions">
               <Input
-                placeholder="Search essays by title..."
+                placeholder={t('studentHub.essays.searchEssays')}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 style={{ width: 300 }}
@@ -250,7 +250,7 @@ const EssaysPage: React.FC = () => {
                 size="large"
                 onClick={handleNewEssay}
               >
-                New Essay
+                {t('studentHub.essays.newEssay')}
               </Button>
             </div>
           </div>
@@ -279,7 +279,7 @@ const EssaysPage: React.FC = () => {
                         {essay.uploadedAt && (
                           <span className="upload-date">
                             <FontAwesomeIcon icon="calendar-alt" style={{ color: '#8b0000' }} />
-                            Uploaded: {new Date(essay.uploadedAt).toLocaleDateString()}
+                            {t('studentHub.essays.uploaded')}: {new Date(essay.uploadedAt).toLocaleDateString()}
                           </span>
                         )}
                         {essay.metadata?.purpose && (
@@ -334,17 +334,17 @@ const EssaysPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={ESSAY_ICONS.TEMPLATES} />
-          <span>Templates</span>
+          <span>{t('studentHub.essays.templates')}</span>
         </div>
       ),
       children: (
         <div className="templates-content">
           <div className="templates-header">
-            <h3>Essay Templates</h3>
-            <p>Use these templates to structure your essays</p>
+            <h3>{t('studentHub.essays.essayTemplates')}</h3>
+            <p>{t('studentHub.essays.templatesDescription')}</p>
           </div>
           <div className="placeholder-content">
-            <p>Essay templates will be available soon.</p>
+            <p>{t('studentHub.essays.templatesComingSoon')}</p>
           </div>
           {/* 
           <List
@@ -385,7 +385,7 @@ const EssaysPage: React.FC = () => {
                           icon={<FontAwesomeIcon icon={ACTION_ICONS.DOWNLOAD} />}
                           size="large"
                         >
-                          Use Template
+                          {t('studentHub.essays.useTemplate')}
                         </Button>
                       </div>
                     </Col>
@@ -403,18 +403,18 @@ const EssaysPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={ESSAY_ICONS.AI} />
-          <span>AI Assistant</span>
+          <span>{t('studentHub.essays.aiAssistant')}</span>
         </div>
       ),
       children: (
         <div className="ai-content">
           <div className="ai-header">
-            <h3>AI Writing Assistant</h3>
-            <p>Get AI-powered feedback and suggestions for your essays</p>
+            <h3>{t('studentHub.essays.aiWritingAssistant')}</h3>
+            <p>{t('studentHub.essays.aiDescription')}</p>
           </div>
           <div className="ai-placeholder">
             <div className="placeholder-content">
-              <p>AI-powered essay feedback and suggestions will be available soon.</p>
+              <p>{t('studentHub.essays.aiComingSoon')}</p>
             </div>
           </div>
         </div>
@@ -425,8 +425,8 @@ const EssaysPage: React.FC = () => {
   return (
     <div className="essays-page">
       <div className="page-header">
-        <h1 className="page-title">Essay Management</h1>
-        <p className="page-subtitle">Write, edit, and perfect your college essays</p>
+        <h1 className="page-title">{t('studentHub.essays.title')}</h1>
+        <p className="page-subtitle">{t('studentHub.essays.subtitle')}</p>
       </div>
 
       <Card className="essays-main-card">

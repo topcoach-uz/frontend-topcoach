@@ -137,12 +137,12 @@ const ApplicationsPage: React.FC = () => {
         console.log('🎯 Frontend: About to call deleteScholarshipApplication API');
         const result = await deleteScholarshipApplication(applicationToDelete.id).unwrap();
         console.log('🎯 Frontend: Delete API call successful:', result);
-        message.success('Scholarship deleted successfully!');
+        message.success(t('studentHub.applications.deleteScholarshipSuccess'));
         refetchScholarships();
       } else {
         console.log('Deleting application with ID:', applicationToDelete.id);
         await deleteCollegeApplication(applicationToDelete.id).unwrap();
-        message.success('Application deleted successfully!');
+        message.success(t('studentHub.applications.deleteSuccess'));
         refetchApplications();
       }
       setDeleteModalVisible(false);
@@ -150,7 +150,7 @@ const ApplicationsPage: React.FC = () => {
     } catch (error) {
       console.error('🎯 Frontend: Error deleting:', error);
       console.error('🎯 Frontend: Error details:', JSON.stringify(error, null, 2));
-      message.error('Failed to delete. Please try again.');
+      message.error(t('studentHub.applications.deleteError'));
     }
   };
 
@@ -191,13 +191,13 @@ const ApplicationsPage: React.FC = () => {
 
   const getPriorityText = (priority: number | string) => {
     const priorityNum = typeof priority === 'string' ? parseInt(priority) : priority;
-    if (priorityNum >= 8) return 'HIGH';
-    if (priorityNum >= 5) return 'MEDIUM';
-    return 'LOW';
+    if (priorityNum >= 8) return t('studentHub.applications.priority.high');
+    if (priorityNum >= 5) return t('studentHub.applications.priority.medium');
+    return t('studentHub.applications.priority.low');
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'TBD';
+    if (!dateString) return t('studentHub.applications.tbd');
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
@@ -225,7 +225,7 @@ const ApplicationsPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
-          <span>Overview</span>
+          <span>{t('studentHub.applications.overview')}</span>
         </div>
       ),
       children: (
@@ -234,7 +234,7 @@ const ApplicationsPage: React.FC = () => {
             <Col xs={12} sm={6}>
               <Card className="stat-card">
                 <Statistic
-                  title="Total Applications"
+                  title={t('studentHub.applications.totalApplications')}
                   value={applicationsData.overview.totalApplications}
                   prefix={<FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />}
                 />
@@ -243,7 +243,7 @@ const ApplicationsPage: React.FC = () => {
             <Col xs={12} sm={6}>
               <Card className="stat-card">
                 <Statistic
-                  title="Submitted"
+                  title={t('studentHub.applications.submitted')}
                   value={applicationsData.overview.submitted}
                   valueStyle={{ color: '#3b82f6' }}
                 />
@@ -252,7 +252,7 @@ const ApplicationsPage: React.FC = () => {
             <Col xs={12} sm={6}>
               <Card className="stat-card">
                 <Statistic
-                  title="In Progress"
+                  title={t('studentHub.applications.inProgress')}
                   value={applicationsData.overview.inProgress}
                   valueStyle={{ color: '#f59e0b' }}
                 />
@@ -261,7 +261,7 @@ const ApplicationsPage: React.FC = () => {
             <Col xs={12} sm={6}>
               <Card className="stat-card">
                 <Statistic
-                  title="Accepted"
+                  title={t('studentHub.applications.accepted')}
                   value={applicationsData.overview.accepted}
                   valueStyle={{ color: '#22c55e' }}
                 />
@@ -271,7 +271,7 @@ const ApplicationsPage: React.FC = () => {
 
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={16}>
-              <Card title="Recent Activities" className="applications-card">
+              <Card title={t('studentHub.applications.recentActivities')} className="applications-card">
                 <List
                   dataSource={[
                     ...applicationsData.applications.map((app: any) => ({ ...app, type: 'application' })),
@@ -285,15 +285,18 @@ const ApplicationsPage: React.FC = () => {
                             <ul className="detail-list">
                               <li>
                                 <FontAwesomeIcon icon={item.type === 'scholarship' ? 'graduation-cap' : 'university'} className="detail-icon" />
-                                <strong>{item.type === 'scholarship' ? 'Scholarship:' : 'University:'}</strong> {item.type === 'scholarship' ? (item?.scholarshipName || 'Unknown Scholarship') : (item?.universityName || 'Unknown University')}
+                                <strong>{item.type === 'scholarship' ? `${t('studentHub.applications.scholarship')}:` : `${t('studentHub.applications.university')}:`}</strong>
+                                <span className="detail-value">{item.type === 'scholarship' ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship')) : (item?.universityName || t('studentHub.applications.unknownUniversity'))}</span>
                               </li>
                               <li>
                                 <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                                <strong>Deadline:</strong> {formatDate(item.type === 'scholarship' ? item?.applicationDeadline : item?.deadline)}
+                                <strong>{t('studentHub.applications.deadline')}:</strong>
+                                <span className="detail-value">{formatDate(item.type === 'scholarship' ? item?.applicationDeadline : item?.deadline)}</span>
                               </li>
                               <li>
                                 <FontAwesomeIcon icon="star" className="detail-icon" />
-                                <strong>Priority Level:</strong> {item.type === 'scholarship' ? 'N/A' : `${getPriorityText(item?.priority)} (${item?.priority}/10)`}
+                                <strong>{t('studentHub.applications.priorityLevel')}:</strong>
+                                <span className="detail-value">{item.type === 'scholarship' ? t('studentHub.applications.priority.na') : `${getPriorityText(item?.priority)} (${item?.priority}/10)`}</span>
                               </li>
                             </ul>
                           </div>
@@ -305,7 +308,7 @@ const ApplicationsPage: React.FC = () => {
               </Card>
             </Col>
             <Col xs={24} lg={8}>
-              <Card title="Upcoming Deadlines" className="deadlines-card">
+              <Card title={t('studentHub.applications.upcomingDeadlines')} className="deadlines-card">
                 <List
                   dataSource={[
                     ...applicationsData.applications
@@ -324,19 +327,19 @@ const ApplicationsPage: React.FC = () => {
                       <div className="deadline-content">
                         <div className="deadline-title">
                           {item.type === 'scholarship' 
-                            ? (item?.scholarshipName || 'Unknown Scholarship')
-                            : (item?.universityName || 'Unknown University')
+                            ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship'))
+                            : (item?.universityName || t('studentHub.applications.unknownUniversity'))
                           }
                         </div>
                         <div className="deadline-date">
                           {item.type === 'scholarship' 
-                            ? (item?.applicationDeadline ? new Date(item.applicationDeadline).toLocaleDateString() : 'TBD')
-                            : (item?.deadline ? new Date(item.deadline).toLocaleDateString() : 'TBD')
+                            ? (item?.applicationDeadline ? new Date(item.applicationDeadline).toLocaleDateString() : t('studentHub.applications.tbd'))
+                            : (item?.deadline ? new Date(item.deadline).toLocaleDateString() : t('studentHub.applications.tbd'))
                           }
                         </div>
                       </div>
                       <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item?.category)}>
-                        {item.type === 'scholarship' ? 'SCHOLARSHIP' : 'UNIVERSITY'}
+                        {item.type === 'scholarship' ? t('studentHub.applications.scholarship').toUpperCase() : t('studentHub.applications.university').toUpperCase()}
                       </Tag>
                     </List.Item>
                   )}
@@ -352,20 +355,20 @@ const ApplicationsPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
-          <span>Applications</span>
+          <span>{t('studentHub.applications.addApplications')}</span>
         </div>
       ),
       children: (
         <div className="applications-content">
           <div className="applications-header">
-            <h3>College Applications</h3>
+            <h3>{t('studentHub.applications.collegeApplications')}</h3>
             <Button
               type="primary"
               icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
               size="large"
               onClick={handleNewApplication}
             >
-              Add Application
+              {t('studentHub.applications.addApplication')}
             </Button>
           </div>
           <List
@@ -376,7 +379,7 @@ const ApplicationsPage: React.FC = () => {
                   <div className="application-card-content">
 
                     <div className="application-header">
-                      <div className="university-name">{application.universityName || 'Unknown University'}</div>
+                      <div className="university-name">{application.universityName || t('studentHub.applications.unknownUniversity')}</div>
                       <div className="application-status">{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</div>
                     </div>
 
@@ -384,32 +387,32 @@ const ApplicationsPage: React.FC = () => {
                       <ul className="detail-list">
                         <li>
                           <FontAwesomeIcon icon="university" className="detail-icon" />
-                          <strong>University:</strong>
-                          <span>{application.universityName || 'Unknown University'}</span>
+                          <strong>{t('studentHub.applications.university')}:</strong>
+                          <span>{application.universityName || t('studentHub.applications.unknownUniversity')}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="graduation-cap" className="detail-icon" />
-                          <strong>Major:</strong>
-                          <span>{application.major || 'Not specified'}</span>
+                          <strong>{t('studentHub.applications.major')}:</strong>
+                          <span>{application.major || t('studentHub.applications.notSpecified')}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="file-alt" className="detail-icon" />
-                          <strong>Application Type:</strong>
+                          <strong>{t('studentHub.applications.applicationType')}:</strong>
                           <span>{application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                          <strong>Deadline:</strong>
+                          <strong>{t('studentHub.applications.deadline')}:</strong>
                           <span>{formatDate(application.deadline)}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="star" className="detail-icon" />
-                          <strong>Priority Level:</strong>
+                          <strong>{t('studentHub.applications.priorityLevel')}:</strong>
                           <span>{getPriorityText(application.priority)} ({application.priority}/10)</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="info-circle" className="detail-icon" />
-                          <strong>Status:</strong>
+                          <strong>{t('studentHub.applications.status')}:</strong>
                           <span>{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
                         </li>
                       </ul>
@@ -418,7 +421,7 @@ const ApplicationsPage: React.FC = () => {
                     <div className="application-footer">
                       {application.notes && (
                         <div className="application-notes">
-                          <div className="notes-label">Notes</div>
+                          <div className="notes-label">{t('studentHub.applications.notes')}</div>
                           <div className="notes-content">{application.notes}</div>
                         </div>
                       )}
@@ -440,7 +443,7 @@ const ApplicationsPage: React.FC = () => {
                             e.currentTarget.style.borderColor = '#8b0000';
                           }}
                         >
-                          Delete
+                          {t('studentHub.applications.delete')}
                         </Button>
                       </div>
                     </div>
@@ -457,20 +460,20 @@ const ApplicationsPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <FontAwesomeIcon icon={APPLICATION_ICONS.SCHOLARSHIPS} />
-          <span>Scholarships</span>
+          <span>{t('studentHub.applications.addScholarships')}</span>
         </div>
       ),
       children: (
         <div className="scholarships-content">
           <div className="scholarships-header">
-            <h3>Scholarship Applications</h3>
+            <h3>{t('studentHub.applications.scholarshipApplications')}</h3>
             <Button
               type="primary"
               icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
               size="large"
               onClick={() => navigate('/student-hub/applications/scholarships/new')}
             >
-              Add Scholarship
+              {t('studentHub.applications.addScholarship')}
             </Button>
           </div>
           <List
@@ -483,7 +486,7 @@ const ApplicationsPage: React.FC = () => {
                   <div className="scholarship-card-content">
                     <div className="scholarship-header">
                       <div className="scholarship-name">
-                        {scholarship?.scholarshipName || 'Unknown Scholarship'}
+                        {scholarship?.scholarshipName || t('studentHub.applications.unknownScholarship')}
                         <span className="scholarship-amount-inline">${scholarship?.amount?.toLocaleString() || '0'}</span>
                       </div>
                       <div className="scholarship-status">{scholarship?.status?.toUpperCase() || 'UNKNOWN'}</div>
@@ -493,30 +496,30 @@ const ApplicationsPage: React.FC = () => {
                       <ul className="detail-list">
                         <li>
                           <FontAwesomeIcon icon="building" className="detail-icon" />
-                          <strong>Organization:</strong>
-                          <span>{scholarship?.organization || 'Unknown Organization'}</span>
+                          <strong>{t('studentHub.applications.organization')}:</strong>
+                          <span>{scholarship?.organization || t('studentHub.applications.unknownOrganization')}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                          <strong>Deadline:</strong>
+                          <strong>{t('studentHub.applications.deadline')}:</strong>
                           <span>{formatDate(scholarship?.applicationDeadline)}</span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="file-alt" className="detail-icon" />
-                          <strong>Requirements:</strong>
+                          <strong>{t('studentHub.applications.requirements')}:</strong>
                           <span>
                             {scholarship?.requirements ? 
                               Object.entries(scholarship.requirements)
                                 .filter(([_, req]: [string, any]) => req?.required)
                                 .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-                                .join(', ') || 'None specified'
-                              : 'None specified'
+                                .join(', ') || t('studentHub.applications.noneSpecified')
+                              : t('studentHub.applications.noneSpecified')
                             }
                           </span>
                         </li>
                         <li>
                           <FontAwesomeIcon icon="info-circle" className="detail-icon" />
-                          <strong>Status:</strong>
+                          <strong>{t('studentHub.applications.status')}:</strong>
                           <span>{scholarship?.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
                         </li>
                       </ul>
@@ -547,9 +550,9 @@ const ApplicationsPage: React.FC = () => {
                           e.currentTarget.style.backgroundColor = '#8b0000';
                           e.currentTarget.style.borderColor = '#8b0000';
                         }}
-                      >
-                        Delete
-                      </Button>
+                        >
+                          {t('studentHub.applications.delete')}
+                        </Button>
                     </div>
                   </div>
                 </Card>
@@ -565,8 +568,8 @@ const ApplicationsPage: React.FC = () => {
   return (
     <div className="applications-page">
       <div className="page-header">
-        <h1 className="page-title">College Applications</h1>
-        <p className="page-subtitle">Track and manage your college applications</p>
+        <h1 className="page-title">{t('studentHub.applications.title')}</h1>
+        <p className="page-subtitle">{t('studentHub.applications.subtitle')}</p>
       </div>
 
       <Card className="applications-main-card">
@@ -580,13 +583,13 @@ const ApplicationsPage: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       <Modal
-        title="Delete Application"
+        title={t('studentHub.applications.deleteApplication')}
         open={deleteModalVisible}
         onOk={confirmDeleteApplication}
         onCancel={cancelDeleteApplication}
         confirmLoading={deleteLoading}
-        okText="Delete"
-        cancelText="Cancel"
+        okText={t('studentHub.applications.delete')}
+        cancelText={t('common.cancel')}
         okButtonProps={{ 
           style: { 
             backgroundColor: '#8b0000', 
@@ -595,19 +598,19 @@ const ApplicationsPage: React.FC = () => {
           }
         }}
       >
-        <p>Are you sure you want to delete this application?</p>
+        <p>{applicationToDelete?.type === 'scholarship' ? t('studentHub.applications.deleteConfirmScholarship') : t('studentHub.applications.deleteConfirm')}</p>
         {applicationToDelete && (
           <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 6 }}>
-            <strong>{applicationToDelete.universityName}</strong>
+            <strong>{applicationToDelete.universityName || applicationToDelete.scholarshipName}</strong>
             <br />
-            <small>Category: {applicationToDelete.category?.toUpperCase()}</small>
+            <small>{t('studentHub.applications.category')}: {applicationToDelete.category?.toUpperCase()}</small>
             <br />
-            <small>Status: {applicationToDelete.status?.replace('_', ' ').toUpperCase()}</small>
+            <small>{t('studentHub.applications.status')}: {applicationToDelete.status?.replace('_', ' ').toUpperCase()}</small>
           </div>
         )}
         <p style={{ marginTop: 16, color: '#8b0000' }}>
           <FontAwesomeIcon icon="exclamation-triangle" style={{ marginRight: 8, color: '#8b0000' }} />
-          This action cannot be undone.
+          {t('studentHub.applications.deleteWarning')}
         </p>
       </Modal>
     </div>
