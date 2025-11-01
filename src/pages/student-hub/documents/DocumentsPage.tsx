@@ -35,7 +35,15 @@ const DocumentsPage: React.FC = () => {
       'portfolio': t('studentHub.documents.categories.portfolio'),
       'other': t('studentHub.documents.categories.otherDocuments'),
     };
-    return categoryMap[type] || (DOCUMENT_CATEGORIES[type as DocumentType]?.label) || type;
+    if (categoryMap[type]) {
+      return categoryMap[type];
+    }
+    // Safely access DOCUMENT_CATEGORIES - only for types that exist
+    const categoryKey = type as keyof typeof DOCUMENT_CATEGORIES;
+    if (categoryKey in DOCUMENT_CATEGORIES) {
+      return DOCUMENT_CATEGORIES[categoryKey]?.label || type;
+    }
+    return type;
   };
   
   // Helper function to get translated category descriptions
@@ -49,8 +57,15 @@ const DocumentsPage: React.FC = () => {
       'portfolio': t('studentHub.documents.categories.portfolioDesc'),
       'other': t('studentHub.documents.categories.otherDocumentsDesc'),
     };
-    const category = DOCUMENT_CATEGORIES[type as DocumentType];
-    return descMap[type] || (category?.description) || '';
+    if (descMap[type]) {
+      return descMap[type];
+    }
+    // Safely access DOCUMENT_CATEGORIES - only for types that exist
+    const categoryKey = type as keyof typeof DOCUMENT_CATEGORIES;
+    if (categoryKey in DOCUMENT_CATEGORIES) {
+      return DOCUMENT_CATEGORIES[categoryKey]?.description || '';
+    }
+    return '';
   };
   const navigate = useNavigate();
   const { profile } = useStudentHub();
