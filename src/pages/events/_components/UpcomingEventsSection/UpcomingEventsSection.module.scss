@@ -60,7 +60,7 @@
 
 .card_image {
   position: relative;
-  height: 400px;
+  height: 500px; // Increased from 400px to accommodate landscape banners
   overflow: hidden;
   border-radius: 12px 12px 0 0;
 
@@ -264,7 +264,7 @@
   }
 
   .card_image {
-    height: 160px;
+    height: 200px; // Increased from 160px for better mobile display
   }
 
   .card_content {
@@ -286,7 +286,7 @@
   }
 
   .card_image {
-    height: 140px;
+    height: 180px; // Increased from 140px for better small mobile display
   }
 
   .card_content {
