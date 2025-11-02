@@ -7,7 +7,7 @@ interface UseScrollTriggerOptions {
 }
 
 export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
-  const { threshold = 0.15, checkAuth = true, isAuthenticated = false } = options;
+  const { threshold = 0.03, checkAuth = true, isAuthenticated = false } = options;
   const [shouldShow, setShouldShow] = useState(false);
   const hasTriggered = useRef(false);
   const isDev = import.meta.env.DEV;
@@ -51,10 +51,16 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
       if (scrollHeight > 0) {
         scrollPercentage = scrolled / scrollHeight;
       } else {
-        // If page is shorter than viewport, trigger after minimal scroll (100px)
-        if (scrolled >= 100) {
+        // If page is shorter than viewport, trigger after very minimal scroll (50px)
+        if (scrolled >= 50) {
           scrollPercentage = 1;
         }
+      }
+
+      // Also trigger immediately if user has scrolled at least 150px regardless of page height
+      // This ensures popup shows early even on long pages
+      if (scrolled >= 150 && scrollPercentage < threshold) {
+        scrollPercentage = threshold;
       }
 
       if (isDev && scrolled % 200 < 50) { // Log occasionally to avoid spam

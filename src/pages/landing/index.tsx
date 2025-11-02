@@ -19,7 +19,7 @@ export default function LandingPage() {
   const [popupVisible, setPopupVisible] = useState(false);
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const { shouldShow } = useScrollTrigger({
-    threshold: 0.15, // Show after 15% scroll (user just scrolled a little)
+    threshold: 0.03, // Show after 5% scroll (very early - user just started scrolling)
     checkAuth: true,
     isAuthenticated,
   });
