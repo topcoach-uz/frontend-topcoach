@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Row, Col, Select, Input, Button, Table, Tooltip, Alert, Divider, Space, Typography, Collapse } from 'antd';
 import { InfoCircleOutlined, CalculatorOutlined, CheckCircleOutlined, ClearOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -269,7 +269,17 @@ const GpaCalculatorPage: React.FC = () => {
     { subject: '', grade: '', credits: 1 },
   ]);
   const [calculatedGpa, setCalculatedGpa] = useState<number | null>(null);
+  const [sourceGpa, setSourceGpa] = useState<number | null>(null);
   const [convertedGrade, setConvertedGrade] = useState<string>('');
+
+  // Clear calculations and grades when source or target system changes
+  useEffect(() => {
+    setCalculatedGpa(null);
+    setSourceGpa(null);
+    setConvertedGrade('');
+    // Reset to single empty grade row
+    setGrades([{ subject: '', grade: '', credits: 1 }]);
+  }, [sourceSystem, targetSystem]);
 
   // Convert percentage to GPA (USA scale)
   const percentageToGpa = (percentage: number): number => {
@@ -312,19 +322,22 @@ const GpaCalculatorPage: React.FC = () => {
     const sourceSys = gradeSystems[sourceSystem];
     if (!sourceSys) return;
 
-    let totalPoints = 0;
+    let totalPoints = 0; // For 4.0 scale (converted)
     let totalCredits = 0;
+    let totalSourcePoints = 0; // For source system scale
     const validGrades: GradeInput[] = [];
 
     grades.forEach((gradeInput) => {
       if (gradeInput.subject && gradeInput.grade) {
-        let gradeValue: number | null = null;
+        let gradeValue: number | null = null; // For 4.0 scale (converted)
+        let sourceGradeValue: number | null = null; // For source system scale
 
         // Handle percentage-based systems
         if (['percentage', 'india', 'china'].includes(sourceSystem)) {
           const percentage = parseFloat(gradeInput.grade);
           if (!isNaN(percentage) && percentage >= 0 && percentage <= 100) {
             gradeValue = percentageToGpa(percentage);
+            sourceGradeValue = percentage; // Source value is the percentage itself
           }
         } else if (sourceSystem === 'france') {
           // French system: 0-20 scale
@@ -332,15 +345,38 @@ const GpaCalculatorPage: React.FC = () => {
           if (!isNaN(frenchGrade) && frenchGrade >= 0 && frenchGrade <= 20) {
             // Convert French 0-20 to 4.0 scale: 20 = 4.0, 10 = 2.0 (passing), 0 = 0.0
             gradeValue = (frenchGrade / 20) * 4.0;
+            sourceGradeValue = frenchGrade; // Source value is the French grade (0-20)
           }
         } else if (sourceSys?.gradeMap && Object.keys(sourceSys.gradeMap).length > 0) {
           // Systems with gradeMap (letter grades or numeric mapped grades)
           gradeValue = sourceSys.gradeMap[gradeInput.grade] ?? null;
+          // For source GPA, use the actual grade value in source system scale
+          // For numeric grades like "5", "4", "3", "2" in 5-point systems
+          if (['uzbekistan', 'kazakhstan', 'tajikistan', 'kyrgyzstan', 'turkmenistan', 'russia'].includes(sourceSystem)) {
+            const numericGrade = parseFloat(gradeInput.grade);
+            if (!isNaN(numericGrade) && numericGrade >= 2 && numericGrade <= 5) {
+              sourceGradeValue = numericGrade;
+            }
+          } else if (sourceSystem === 'germany') {
+            // German system: grades are already in 1.0-6.0 format
+            const germanGrade = parseFloat(gradeInput.grade);
+            if (!isNaN(germanGrade) && germanGrade >= 1.0 && germanGrade <= 6.0) {
+              sourceGradeValue = germanGrade;
+            }
+          } else if (sourceSystem === 'usa') {
+            // USA system: map letter grades back to 4.0 scale
+            sourceGradeValue = gradeValue; // USA grades are already on 4.0 scale
+          } else {
+            // For other systems, try to parse the grade or use converted value
+            const parsed = parseFloat(gradeInput.grade);
+            sourceGradeValue = !isNaN(parsed) ? parsed : (gradeValue !== null ? (gradeValue / 4.0) * sourceSys.scale : null);
+          }
         }
 
-        if (gradeValue !== null) {
+        if (gradeValue !== null && sourceGradeValue !== null) {
           const credits = gradeInput.credits || 1;
           totalPoints += gradeValue * credits;
+          totalSourcePoints += sourceGradeValue * credits;
           totalCredits += credits;
           validGrades.push({ ...gradeInput, grade: gradeInput.grade });
         }
@@ -348,8 +384,10 @@ const GpaCalculatorPage: React.FC = () => {
     });
 
     if (totalCredits > 0) {
-      const gpa = totalPoints / totalCredits;
+      const gpa = totalPoints / totalCredits; // 4.0 scale for conversion
+      const sourceGpaValue = totalSourcePoints / totalCredits; // Source system scale
       setCalculatedGpa(gpa);
+      setSourceGpa(sourceGpaValue);
 
       // Convert to target system
       let converted = '';
@@ -415,6 +453,7 @@ const GpaCalculatorPage: React.FC = () => {
       setConvertedGrade(converted);
     } else {
       setCalculatedGpa(null);
+      setSourceGpa(null);
       setConvertedGrade('');
     }
   };
@@ -436,6 +475,7 @@ const GpaCalculatorPage: React.FC = () => {
   const handleClear = () => {
     setGrades([{ subject: '', grade: '', credits: 1 }]);
     setCalculatedGpa(null);
+    setSourceGpa(null);
     setConvertedGrade('');
   };
 
@@ -726,7 +766,11 @@ const GpaCalculatorPage: React.FC = () => {
                   {t('studentHub.gpaCalculator.yourCalculatedGPA')}
                 </Text>
                 <Title level={2} style={{ color: '#8b0000', margin: '8px 0' }}>
-                  {calculatedGpa.toFixed(2)} / {gradeSystems[sourceSystem]?.scale || 4.0}
+                  {sourceGpa !== null 
+                    ? `${sourceGpa.toFixed(2)} / ${gradeSystems[sourceSystem]?.scale || 4.0}`
+                    : calculatedGpa !== null
+                    ? `${calculatedGpa.toFixed(2)} / ${gradeSystems[sourceSystem]?.scale || 4.0}`
+                    : '0.00 / 4.0'}
                 </Title>
               </div>
             </Col>

@@ -137,6 +137,18 @@ export interface AcademicProfile {
   financialAid: boolean;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
+  academicStrengthsAndInterests?: {
+    strengths?: string[];
+    weaknesses?: string[];
+    favoriteSubjects?: string[];
+    leastFavoriteSubjects?: string[];
+  };
+  learningPreferences?: {
+    style?: ('visual' | 'auditory' | 'reading-writing' | 'kinesthetic' | 'mixed')[];
+    preferredClassSize?: 'small' | 'medium' | 'large' | 'no-preference';
+    preferredTeachingMethod?: 'lecture' | 'discussion' | 'hands-on' | 'project-based' | 'mixed';
+    studyEnvironment?: 'quiet' | 'moderate' | 'noisy' | 'no-preference';
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -152,6 +164,18 @@ export interface CreateAcademicProfileRequest {
   financialAid?: boolean;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
+  academicStrengthsAndInterests?: {
+    strengths?: string[];
+    weaknesses?: string[];
+    favoriteSubjects?: string[];
+    leastFavoriteSubjects?: string[];
+  };
+  learningPreferences?: {
+    style?: ('visual' | 'auditory' | 'reading-writing' | 'kinesthetic' | 'mixed')[];
+    preferredClassSize?: 'small' | 'medium' | 'large' | 'no-preference';
+    preferredTeachingMethod?: 'lecture' | 'discussion' | 'hands-on' | 'project-based' | 'mixed';
+    studyEnvironment?: 'quiet' | 'moderate' | 'noisy' | 'no-preference';
+  };
 }
 
 export interface UpdateAcademicProfileRequest extends Partial<CreateAcademicProfileRequest> {}
@@ -174,7 +198,10 @@ export interface PersonalProfile {
     militaryService?: boolean;
     citizenship?: string;
     visaStatus?: string;
-    languages?: string[];
+    languages?: Array<{
+      language: string;
+      proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
+    }>;
   };
   familyBackground?: {
     parentEducation?: {
@@ -186,13 +213,22 @@ export interface PersonalProfile {
     firstGeneration?: boolean;
     singleParent?: boolean;
   };
-  personalInterests?: string[];
-  careerGoals?: string[];
+  personalInterests: string[]; // Required for AI recommendations
+  careerGoals: string[]; // Required for AI recommendations
   studyAbroadInterest?: boolean;
-  intendedMajors?: Array<{
+  studyAbroadGoals?: {
+    interest: boolean;
+    targetCountries?: string[];
+    targetRegions?: string[];
+    durationPreference?: 'semester' | 'year' | 'full-degree' | 'summer' | 'flexible';
+    priorityLevel?: 'high' | 'medium' | 'low';
+  };
+  intendedMajors: Array<{ // Required for AI recommendations
     major: string;
     rank: number;
     confidence: number;
+    whyInterested?: string;
+    alternativePaths?: string[];
     notes?: string;
   }>;
   backupMajors?: Array<{
@@ -201,6 +237,10 @@ export interface PersonalProfile {
     confidence: number;
     notes?: string;
   }>;
+  valuesAndMotivations?: string[];
+  universityPreferences?: string[];
+  workStylePreferences?: string[];
+  problemSolvingApproach?: string[];
   personalStatement?: string;
   additionalInfo?: string;
   createdAt: string;
@@ -213,12 +253,21 @@ export interface CreatePersonalProfileRequest {
   city?: string;
   timezone?: string;
   demographics?: PersonalProfile['demographics'];
+  languages: Array<{
+    language: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
+  }>; // Required for AI recommendations
   familyBackground?: PersonalProfile['familyBackground'];
-  personalInterests?: string[];
-  careerGoals?: string[];
+  personalInterests: string[]; // Required for AI recommendations
+  careerGoals: string[]; // Required for AI recommendations
   studyAbroadInterest?: boolean;
-  intendedMajors?: PersonalProfile['intendedMajors'];
+  studyAbroadGoals?: PersonalProfile['studyAbroadGoals'];
+  intendedMajors: PersonalProfile['intendedMajors']; // Required for AI recommendations
   backupMajors?: PersonalProfile['backupMajors'];
+  valuesAndMotivations?: string[];
+  universityPreferences?: string[];
+  workStylePreferences?: string[];
+  problemSolvingApproach?: string[];
   personalStatement?: string;
   additionalInfo?: string;
 }

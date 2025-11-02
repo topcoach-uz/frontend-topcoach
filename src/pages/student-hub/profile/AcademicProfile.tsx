@@ -27,6 +27,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
   useEffect(() => {
     if (profile?.academicProfile) {
       const academicData = profile.academicProfile;
+      console.log('=== ACADEMIC PROFILE LOAD DEBUG ===');
+      console.log('Full academic profile:', academicData);
+      
       form.setFieldsValue({
         // Test Scores
         satMath: academicData.testScores?.sat?.math,
@@ -63,7 +66,12 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
         gapYear: academicData.gapYear,
         firstGeneration: academicData.firstGeneration,
         financialAid: academicData.financialAid,
+        
+        
       });
+      console.log('=== ACADEMIC PROFILE LOAD COMPLETED ===');
+    } else {
+      console.log('No academic profile data found');
     }
   }, [profile?.academicProfile, form]);
 
@@ -135,7 +143,6 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
       
       // Refetch the profile data to update the UI
       await refetchProfile();
-      console.log('Academic profile refetched after save');
       console.log('=== ACADEMIC PROFILE SAVE COMPLETED ===');
     } catch (error: any) {
       console.error('=== ACADEMIC PROFILE SAVE ERROR ===');
@@ -514,7 +521,8 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
             <Col xs={24} lg={12}>
               <Form.Item
                 name="curriculum"
-                label="School Curriculum"
+                label="School Curriculum *"
+                rules={[{ required: true, message: 'Please select your school curriculum' }]}
               >
                 <Select placeholder="Select curriculum" className="curriculum-select">
                   {curriculumOptions.map(option => (
@@ -528,7 +536,8 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
             <Col xs={24} lg={12}>
               <Form.Item
                 name="graduationYear"
-                label="Graduation Year"
+                label="Graduation Year *"
+                rules={[{ required: true, message: 'Please select your graduation year' }]}
               >
                 <Select placeholder="Select graduation year" className="graduation-select">
                   {graduationYearOptions.map(option => (
@@ -577,6 +586,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
             </Col>
           </Row>
         </Card>
+
 
         {/* Form Actions */}
         <Card className="form-actions-card">

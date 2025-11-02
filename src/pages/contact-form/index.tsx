@@ -61,11 +61,7 @@ export default function ContactFormPage() {
       setSubmitted(true);
       message.success(t('contactForm.successMessage'));
     } catch (error: any) {
-      if (error.status === 409) {
-        message.warning(t('contactForm.alreadySubmitted'));
-      } else {
-        message.error(t('contactForm.errorMessage'));
-      }
+      message.error(t('contactForm.errorMessage'));
     }
   };
 

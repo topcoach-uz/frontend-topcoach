@@ -10,7 +10,7 @@ import {
   STATUS_ICONS,
   ACTION_ICONS 
 } from '../../constants/icons';
-import { useStudentHub } from '../../hooks/useStudentHub';
+import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
   useGetScholarshipApplicationsQuery
@@ -30,7 +30,14 @@ const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { dashboard, stats, profile, notifications, isLoading, hasError } = useStudentHub();
+  const { profile: studentProfile, recalculateCompletion } = useStudentProfile();
   const { data: userData } = useGetMeQuery();
+  
+  const handleRecalculate = async () => {
+    if (studentProfile?.id) {
+      await recalculateCompletion();
+    }
+  };
   
   // Get user name from user data
   const userName = userData?.profile?.name || 'Student';
@@ -196,6 +203,115 @@ const Dashboard: React.FC = () => {
           </Dropdown>
         </div>
       </div>
+
+      {/* Profile Completion Card - Compact Version */}
+      {studentProfile && (
+        <Card 
+          className="profile-completion-card"
+          size="small"
+          style={{ 
+            marginBottom: 16,
+            background: studentProfile.completionPercentage === 100 
+              ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+              : 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+            border: studentProfile.completionPercentage === 100 ? '2px solid #10b981' : '2px solid #f59e0b'
+          }}
+        >
+          <Row gutter={[16, 12]} align="middle">
+            <Col xs={24} md={14}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%' }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, marginBottom: studentProfile.completionPercentage < 100 ? 8 : 0, lineHeight: '1.5' }}>
+                  {studentProfile.completionPercentage === 100 
+                    ? '🎉 Profile Complete!' 
+                    : 'Complete Your Profile for AI Recommendations'}
+                </h3>
+                {studentProfile.completionPercentage < 100 && (
+                  <div style={{ fontSize: 13, color: '#666' }}>
+                    <span style={{ fontWeight: 500 }}>Missing: </span>
+                    {(() => {
+                      const missingFields: string[] = [];
+                      
+                      // Check required Personal Profile fields (matches backend calculation)
+                      if (!studentProfile.personalProfile?.country) {
+                        missingFields.push('Country');
+                      }
+                      if (!studentProfile.personalProfile?.city) {
+                        missingFields.push('City');
+                      }
+                      if (!studentProfile.personalProfile?.intendedMajors?.length) {
+                        missingFields.push('Intended Major');
+                      }
+                      if (!studentProfile.personalProfile?.personalInterests?.length) {
+                        missingFields.push('Personal Interests');
+                      }
+                      if (!studentProfile.personalProfile?.careerGoals?.length) {
+                        missingFields.push('Career Goals');
+                      }
+                      if (!studentProfile.personalProfile?.demographics?.languages?.length) {
+                        missingFields.push('Languages Spoken');
+                      }
+                      
+                      // Check Academic Profile required fields (matches backend - ALL 5 fields required)
+                      if (studentProfile.academicProfile) {
+                        const academic = studentProfile.academicProfile;
+                        const missingAcademic: string[] = [];
+                        if (!academic.graduationYear) missingAcademic.push('Graduation Year');
+                        if (!academic.curriculum) missingAcademic.push('Curriculum');
+                        if (!(academic.gpa && Object.keys(academic.gpa).length > 0)) missingAcademic.push('GPA');
+                        if (!(academic.testScores && Object.keys(academic.testScores).length > 0)) missingAcademic.push('Test Scores');
+                        if (!(academic.englishProficiency && Object.keys(academic.englishProficiency).length > 0)) missingAcademic.push('English Proficiency');
+                        
+                        if (missingAcademic.length > 0) {
+                          missingFields.push(`Academic: ${missingAcademic.join(', ')}`);
+                        }
+                      } else {
+                        missingFields.push('Academic Profile');
+                      }
+                      
+                      // Check Activities Profile
+                      if (!studentProfile.activitiesProfile || 
+                          (!studentProfile.activitiesProfile.extracurricularActivities?.length)) {
+                        missingFields.push('Activities & Achievements');
+                      }
+                      
+                      return missingFields.length > 0 ? missingFields.join(', ') : 'All required fields completed';
+                    })()}
+                  </div>
+                )}
+              </div>
+            </Col>
+            <Col xs={24} md={10}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 32, justifyContent: 'flex-end' }}>
+                <Progress 
+                  percent={studentProfile.completionPercentage} 
+                  strokeColor={studentProfile.completionPercentage === 100 ? '#10b981' : '#f59e0b'}
+                  status={studentProfile.completionPercentage === 100 ? 'success' : 'active'}
+                  format={(percent) => `${percent}%`}
+                  style={{ flex: 1, maxWidth: 280, minWidth: 250 }}
+                  size="small"
+                />
+                <Button
+                  type={studentProfile.completionPercentage === 100 ? 'default' : 'primary'}
+                  size="middle"
+                  onClick={() => navigate('/student-hub/profile?tab=personal')}
+                  icon={<FontAwesomeIcon icon="user" />}
+                >
+                  {studentProfile.completionPercentage === 100 ? 'View Profile' : 'Complete Profile'}
+                </Button>
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={handleRecalculate}
+                  style={{ fontSize: 12, padding: '4px 8px' }}
+                  title="Recalculate completion percentage"
+                >
+                  ↻ Refresh
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+      )}
 
       {/* Quick Stats */}
       <Row gutter={[24, 24]} className="stats-row">
