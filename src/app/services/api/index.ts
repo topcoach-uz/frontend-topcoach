@@ -545,7 +545,7 @@ export interface MajorMatchSession {
 export const majorMatchApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // Create new major match analysis
-    createMajorMatch: builder.mutation<MajorMatchSession, void>({
+    createMajorMatch: builder.mutation<MajorMatchSession, undefined>({
       query: () => ({
         url: '/major-match',
         method: 'POST',

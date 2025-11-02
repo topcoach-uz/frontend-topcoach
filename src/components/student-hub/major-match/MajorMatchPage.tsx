@@ -29,7 +29,7 @@ const MajorMatchPage: React.FC = () => {
 
   const handleCreateAnalysis = async () => {
     try {
-      const result = await createMajorMatch({}).unwrap();
+      const result = await createMajorMatch(undefined).unwrap();
       setSelectedSessionId(result.id);
       refetchSessions();
       message.success('Major match analysis completed successfully!');
