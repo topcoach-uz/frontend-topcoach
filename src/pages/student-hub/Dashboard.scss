@@ -19,6 +19,95 @@ $crimson-900: #7f1d1d;
 .student-hub-dashboard {
   position: relative; // Ensure loading overlay positions correctly
   
+  // Profile Completion Card Responsive Styles
+  .profile-completion-card {
+    .profile-completion-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        justify-content: flex-end;
+      }
+
+      .progress-container {
+        width: 100%;
+        min-width: 0;
+        flex-shrink: 0;
+        display: block;
+
+        @media (min-width: 768px) {
+          width: auto;
+          flex: 1;
+          max-width: 280px;
+          min-width: 200px;
+          display: block;
+        }
+
+        .ant-progress {
+          width: 100% !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+
+          @media (min-width: 768px) {
+            width: 100% !important;
+            min-width: 200px;
+          }
+
+          .ant-progress-bg {
+            height: 8px !important;
+          }
+
+          .ant-progress-text {
+            display: inline-block !important;
+            visibility: visible !important;
+          }
+        }
+      }
+
+      .button-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+
+        @media (min-width: 768px) {
+          flex-wrap: nowrap;
+          width: auto;
+          gap: 8px;
+        }
+
+        .ant-btn {
+          flex: 1 1 auto;
+          min-width: 0;
+
+          @media (min-width: 768px) {
+            flex: 0 0 auto;
+          }
+
+          @media (max-width: 767px) {
+            &:last-child {
+              flex-basis: auto;
+            }
+          }
+        }
+
+        .refresh-button {
+          flex: 0 0 auto;
+          font-size: 12px;
+          padding: 4px 8px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
   // Loading state - perfectly centered in main content area
   .dashboard-loading-content {
     position: absolute;

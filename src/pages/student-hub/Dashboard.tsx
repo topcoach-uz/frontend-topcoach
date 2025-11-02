@@ -281,32 +281,46 @@ const Dashboard: React.FC = () => {
               </div>
             </Col>
             <Col xs={24} md={10}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 32, justifyContent: 'flex-end' }}>
-                <Progress 
-                  percent={studentProfile.completionPercentage} 
-                  strokeColor={studentProfile.completionPercentage === 100 ? '#10b981' : '#f59e0b'}
-                  status={studentProfile.completionPercentage === 100 ? 'success' : 'active'}
-                  format={(percent) => `${percent}%`}
-                  style={{ flex: 1, maxWidth: 280, minWidth: 250 }}
-                  size="small"
-                />
-                <Button
-                  type={studentProfile.completionPercentage === 100 ? 'default' : 'primary'}
-                  size="middle"
-                  onClick={() => navigate('/student-hub/profile?tab=personal')}
-                  icon={<FontAwesomeIcon icon="user" />}
-                >
-                  {studentProfile.completionPercentage === 100 ? 'View Profile' : 'Complete Profile'}
-                </Button>
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={handleRecalculate}
-                  style={{ fontSize: 12, padding: '4px 8px' }}
-                  title="Recalculate completion percentage"
-                >
-                  ↻ Refresh
-                </Button>
+              <div className="profile-completion-actions">
+                <div className="progress-container">
+                  <Progress 
+                    percent={studentProfile.completionPercentage} 
+                    strokeColor={studentProfile.completionPercentage === 100 ? '#10b981' : '#f59e0b'}
+                    status={studentProfile.completionPercentage === 100 ? 'success' : 'active'}
+                    format={(percent) => `${percent}%`}
+                    strokeWidth={8}
+                    showInfo={true}
+                  />
+                </div>
+                <div className="button-group">
+                  <Button
+                    type={studentProfile.completionPercentage === 100 ? 'default' : 'primary'}
+                    size="middle"
+                    onClick={() => navigate('/student-hub/profile?tab=personal')}
+                    icon={<FontAwesomeIcon icon="user" />}
+                  >
+                    {studentProfile.completionPercentage === 100 ? 'View Profile' : 'Complete Profile'}
+                  </Button>
+                  {studentProfile.completionPercentage === 100 && (
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={() => navigate('/student-hub/major-match')}
+                      icon={<FontAwesomeIcon icon="book" />}
+                    >
+                      Try Major Match
+                    </Button>
+                  )}
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={handleRecalculate}
+                    className="refresh-button"
+                    title="Recalculate completion percentage"
+                  >
+                    ↻ Refresh
+                  </Button>
+                </div>
               </div>
             </Col>
           </Row>
