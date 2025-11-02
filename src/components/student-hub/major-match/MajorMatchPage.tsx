@@ -196,7 +196,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
             <List.Item>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Title level={4}>#{index + 1} {major.major}</Title>
+                  <Title level={4}>{index + 1}. {major.major}</Title>
                   <Space>
                     <Tag color="green">Confidence: {(major.confidence * 100).toFixed(0)}%</Tag>
                     <Tag color="blue">Alignment: {major.alignmentScore}/100</Tag>
@@ -328,7 +328,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
             {analysisResult.overallAnalysis.profileStrengths && (
               <div>
                 <Title level={5}>Profile Strengths</Title>
-                <ul>
+                <ul className="profile-strengths-list">
                   {analysisResult.overallAnalysis.profileStrengths.map((strength: string, i: number) => (
                     <li key={i}><Text>{strength}</Text></li>
                   ))}
