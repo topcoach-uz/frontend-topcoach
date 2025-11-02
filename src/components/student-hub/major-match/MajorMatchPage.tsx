@@ -328,7 +328,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
             {analysisResult.overallAnalysis.profileStrengths && (
               <div>
                 <Title level={5}>Profile Strengths</Title>
-                <ul style={{ margin: '4px 0', paddingLeft: 20 }}>
+                <ul style={{ margin: '4px 0', paddingLeft: 20, listStyle: 'none' }}>
                   {analysisResult.overallAnalysis.profileStrengths.map((strength: string, i: number) => (
                     <li key={i}><Text>{strength}</Text></li>
                   ))}
