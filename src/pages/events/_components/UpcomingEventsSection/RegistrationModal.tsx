@@ -49,6 +49,14 @@ export default function RegistrationModal({
       onClose(true);
     } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Handle 401 Unauthorized with a clearer message
+      if (error.response?.status === 401) {
+        message.error(t('events.signInRequired') || 'You need to sign in first to register for workshops.');
+        onClose(false);
+        return;
+      }
+      
       message.error(error.response?.data?.message || t('events.registrationError'));
     } finally {
       setLoading(false);

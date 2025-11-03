@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Space, Tag, Typography } from 'antd';
+import { Card, Button, Space, Tag, Typography, message } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
@@ -8,6 +8,8 @@ import RegistrationModal from './RegistrationModal';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
 import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
 import { api } from 'src/app/api';
+import { useTypedSelector } from 'src/app/store';
+import { useNavigate } from 'react-router-dom';
 import styles from './UpcomingEventsSection.module.scss';
 
 const { Title, Text } = Typography;
@@ -51,6 +53,8 @@ export default function UpcomingEventsSection({
 }: UpcomingEventsSectionProps) {
   
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const [registrationModal, setRegistrationModal] = useState<{
     visible: boolean;
     eventId: string;
@@ -110,6 +114,13 @@ export default function UpcomingEventsSection({
   }, [upcomingEvents, upcomingWorkshops]);
 
   const handleRegister = (eventId: string, eventTitle: string, eventType: 'event' | 'workshop') => {
+    // Check if user is authenticated before opening registration modal
+    if (!isAuthenticated) {
+      message.warning(t('events.signInRequired') || 'You need to sign in first to register for workshops.');
+      navigate('/auth/signin');
+      return;
+    }
+    
     setRegistrationModal({
       visible: true,
       eventId,

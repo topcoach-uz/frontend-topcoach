@@ -25,6 +25,22 @@ interface GradeInput {
   credits?: number;
 }
 
+// Countries that don't use credits in high school
+const countriesWithoutCredits = [
+  'uzbekistan',
+  'kazakhstan',
+  'tajikistan',
+  'kyrgyzstan',
+  'turkmenistan',
+  'russia',
+  'uk',
+  'india',
+  'china',
+  'germany',
+  'france',
+  'percentage',
+];
+
 // Define grade systems
 const gradeSystems: { [key: string]: GradeSystem } = {
   uzbekistan: {
@@ -322,6 +338,9 @@ const GpaCalculatorPage: React.FC = () => {
     const sourceSys = gradeSystems[sourceSystem];
     if (!sourceSys) return;
 
+    // Check if current source system uses credits
+    const usesCredits = !countriesWithoutCredits.includes(sourceSystem);
+
     let totalPoints = 0; // For 4.0 scale (converted)
     let totalCredits = 0;
     let totalSourcePoints = 0; // For source system scale
@@ -374,7 +393,8 @@ const GpaCalculatorPage: React.FC = () => {
         }
 
         if (gradeValue !== null && sourceGradeValue !== null) {
-          const credits = gradeInput.credits || 1;
+          // For countries without credits, use 1 as default (equal weight)
+          const credits = usesCredits ? (gradeInput.credits || 1) : 1;
           totalPoints += gradeValue * credits;
           totalSourcePoints += sourceGradeValue * credits;
           totalCredits += credits;
@@ -479,6 +499,9 @@ const GpaCalculatorPage: React.FC = () => {
     setConvertedGrade('');
   };
 
+  // Check if current source system uses credits
+  const usesCredits = !countriesWithoutCredits.includes(sourceSystem);
+
   const gradeColumns = [
     {
       title: t('studentHub.gpaCalculator.subjectCourse'),
@@ -558,7 +581,8 @@ const GpaCalculatorPage: React.FC = () => {
         }
       },
     },
-    {
+    // Conditionally show credits column only for countries that use credits
+    ...(usesCredits ? [{
       title: (
         <span>
           {t('studentHub.gpaCalculator.credits')}
@@ -579,7 +603,7 @@ const GpaCalculatorPage: React.FC = () => {
           style={{ width: 100 }}
         />
       ),
-    },
+    }] : []),
     {
       title: t('studentHub.gpaCalculator.action'),
       key: 'action',
