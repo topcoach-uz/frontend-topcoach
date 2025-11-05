@@ -128,7 +128,8 @@ const itemsEn: CollapseProps['items'] = [
           <li>
             <strong>Individual Sessions:</strong> One-on-one mentorship sessions available in 30-minute or 60-minute formats. Ideal for quick guidance, essay reviews, or mock interviews.
           </li>
-          <li>
+          {/* Temporarily hidden - rethinking subscription plans */}
+          {/* <li>
           <strong>Full Guidance Package:</strong> A 4-hour package designed to provide in-depth, personalized support on your application — including university selection, personal statements, and application strategy.
           </li>
           <li>
@@ -136,7 +137,7 @@ const itemsEn: CollapseProps['items'] = [
           </li>
           <li>
           <strong>Subscription Plans (New!):</strong> Looking for ongoing support? You can now choose from our monthly subscription options, which allow you to book regular sessions with your mentor at a discounted rate. Perfect for students who prefer consistent check-ins, structured progress, and long-term accountability.
-          </li>
+          </li> */}
         </ul>
       </div>
     ),
@@ -194,8 +195,9 @@ const itemsEn: CollapseProps['items'] = [
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor Level</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 min Session</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 min Session</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Full Guidance (4 hrs)</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensive Course (8 hrs)</th>
+              {/* Temporarily hidden - rethinking subscription plans */}
+              {/* <th style={{ border: '1px solid #ddd', padding: '8px' }}>Full Guidance (4 hrs)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensive Course (8 hrs)</th> */}
             </tr>
           </thead>
           <tbody>
@@ -203,22 +205,22 @@ const itemsEn: CollapseProps['items'] = [
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Junior Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Senior Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Expert Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td> */}
             </tr>
           </tbody>
         </table>
@@ -348,7 +350,8 @@ const itemsUz: CollapseProps['items'] = [
         <p>Biz quyidagi seans turlarini taklif qilamiz:</p>
         <ul>
           <li><strong>Individual Seanslar:</strong> Yakkama-yakka mentorlik sessiyalari 30 daqiqa yoki 60 daqiqalik formatlarda mavjud. Tezkor ko‘rsatmalar, insho sharhlari yoki soxta intervyular uchun juda mos keladi.</li>
-          <li>
+          {/* Temporarily hidden - rethinking subscription plans */}
+          {/* <li>
           <strong>To‘liq Yo‘nalish Paketi:</strong> Arizangiz bo‘yicha chuqur, moslashtirilgan yordam ko‘rsatish uchun mo‘ljallangan 4 soatlik paket - jumladan, universitetni tanlash, shaxsiy bayonotlar va ariza berish strategiyasi.
           </li>
           <li>
@@ -356,7 +359,7 @@ const itemsUz: CollapseProps['items'] = [
           </li>
           <li>
           <strong>Obuna tariflari (Yangi!):</strong> Davomiy yordam kerakmi? Endi siz bizning oylik obuna variantlarimizdan tanlashingiz mumkin, bu sizga ustozingiz bilan chegirmali narxda muntazam uchrashuvlarni band qilish imkonini beradi. Doimiy ro‘yxatdan o‘tish, tizimli rivojlanish va uzoq muddatli javobgarlikni afzal ko‘radigan talabalar uchun ayni muddao.
-          </li>
+          </li> */}
         </ul>
       </div>
     ),
@@ -414,8 +417,9 @@ const itemsUz: CollapseProps['items'] = [
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor darajasi</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 daqiqa</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 daqiqa</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>To‘liq rahbarlik (4 soat)</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 soat)</th>
+              {/* Temporarily hidden - rethinking subscription plans */}
+              {/* <th style={{ border: '1px solid #ddd', padding: '8px' }}>To‘liq rahbarlik (4 soat)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 soat)</th> */}
             </tr>
           </thead>
           <tbody>
@@ -423,22 +427,22 @@ const itemsUz: CollapseProps['items'] = [
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Kichik murabbiy</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Katta murabbiy</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Mutaxassis murabbiy</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td> */}
             </tr>
           </tbody>
         </table>
@@ -597,14 +601,15 @@ const itemsRu: CollapseProps['items'] = [
             Индивидуальные сеансы: Наставничество один на один (30 или 60
             минут).
           </li>
-          <li>
+          {/* Temporarily hidden - rethinking subscription plans */}
+          {/* <li>
             Полный пакет сопровождения: 4-часовой пакет для всесторонней
             поддержки при подаче документов.
           </li>
           <li>
             Интенсивный курс: 8-часовая программа для тех, кому необходимо
             полное сопровождение в процессе поступления.
-          </li>
+          </li> */}
         </ul>
       </div>
     ),
@@ -664,8 +669,9 @@ const itemsRu: CollapseProps['items'] = [
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>Уровень наставника</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 мин</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 мин</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Полное руководство (4 часа)</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Интенсивный курс (8 часов)</th>
+              {/* Temporarily hidden - rethinking subscription plans */}
+              {/* <th style={{ border: '1px solid #ddd', padding: '8px' }}>Полное руководство (4 часа)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Интенсивный курс (8 часов)</th> */}
             </tr>
           </thead>
           <tbody>
@@ -673,22 +679,22 @@ const itemsRu: CollapseProps['items'] = [
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Junior Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Senior Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Expert Coach</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td> */}
             </tr>
           </tbody>
         </table>
@@ -832,13 +838,14 @@ const itemsKk: CollapseProps['items'] = [
           <li>
             Individual Seanslar: Birge-bir mentorlıq (30 yamasa 60 minut).
           </li>
-          <li>
+          {/* Temporarily hidden - rethinking subscription plans */}
+          {/* <li>
             Tolıq Jónelis Paketi: 4 saatlıq shuqir arza qollap-quwwatlaw paketi.
           </li>
           <li>
             Intensiv Kurs: Arza beriw járáyanında tolıq mentorlıq ushín 8
             saatlıq dástur.
-          </li>
+          </li> */}
         </ul>
       </div>
     ),
@@ -895,8 +902,9 @@ const itemsKk: CollapseProps['items'] = [
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>Mentor dárejesi</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>30 min Sessiya</th>
               <th style={{ border: '1px solid #ddd', padding: '8px' }}>60 min Sessiya</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Tolıq basshilıq (4 saat)</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 saat)</th>
+              {/* Temporarily hidden - rethinking subscription plans */}
+              {/* <th style={{ border: '1px solid #ddd', padding: '8px' }}>Tolıq basshilıq (4 saat)</th>
+              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Intensiv kurs (8 saat)</th> */}
             </tr>
           </thead>
           <tbody>
@@ -904,22 +912,22 @@ const itemsKk: CollapseProps['items'] = [
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Jas trener</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$12.50</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$188.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Starshiy trener</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$25.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$200.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td> */}
             </tr>
             <tr>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>Qánige trener</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$50.00</td>
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>$100.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td>
+              {/* <td style={{ border: '1px solid #ddd', padding: '8px' }}>$375.00</td>
+              <td style={{ border: '1px solid #ddd', padding: '8px' }}>$625.00</td> */}
             </tr>
           </tbody>
         </table>

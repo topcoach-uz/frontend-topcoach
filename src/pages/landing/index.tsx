@@ -132,7 +132,8 @@ export default function LandingPage() {
       <LandingEventsSection />
       <ReviewsSection />
       <MentorsSectionLanding />
-      <SubscriptionPlans />
+      {/* Temporarily hidden - rethinking subscription plans */}
+      {/* <SubscriptionPlans /> */}
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}

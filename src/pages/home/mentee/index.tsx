@@ -73,7 +73,8 @@ function MenteeHomePage() {
       <BookingsSection />
       {/* <FavoriteUniversitiesSection /> */}
       <EventsSection />
-      <SubscriptionPlans />
+      {/* Temporarily hidden - rethinking subscription plans */}
+      {/* <SubscriptionPlans /> */}
       <TelegramConnectionModal
         visible={showTelegramModal}
         onClose={() => {

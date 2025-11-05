@@ -11,7 +11,8 @@ export default function MentorHome() {
       <BookingsSection />
       {/* <FavoriteUniversitiesSection /> */}
       <EventsSection />
-      <SubscriptionPlans />
+      {/* Temporarily hidden - rethinking subscription plans */}
+      {/* <SubscriptionPlans /> */}
     </main>
   );
 }
