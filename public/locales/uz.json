@@ -246,6 +246,8 @@
   "mentors.totalTime": "Umumiy murabbiylik vaqti",
   "mentors.univer": " da o‘qiydi.",
   "mentors.videoMessage": "Brauzeringiz video tegini qo‘llab-quvvatlamaydi.",
+  "mentors.signInRequired": "Mentor profilini ko'rish uchun avval tizimga kirishingiz kerak.",
+  "mentors.signInMessage": "Mentor profilini ko'rish uchun avval tizimga kirishingiz kerak. Kirish sahifasiga yo'naltirilmoqda...",
   "shared.fullNameLabel": "Ism va familiya",
   "shared.fullNamePlaceholder": "Ismingiz va familiyangizni kiriting",
   "shared.imgUpload": "Ishonch va haqiqiylikni ta‘minlash uchun yuzingiz osongina ko‘rinadigan joyga o‘zingizning aniq suratingizni yuklang.",

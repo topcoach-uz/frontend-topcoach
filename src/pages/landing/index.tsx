@@ -68,10 +68,17 @@ export default function LandingPage() {
   }, []);
 
   // Show popup when scroll threshold is reached
+  // This works on both topcoach.uz and topcoachuni.com for unauthenticated users
   useLayoutEffect(() => {
     const isDev = import.meta.env.DEV;
 
-    // Only check if form was submitted - if yes, never show
+    // Don't show popup if user is authenticated (on any domain)
+    if (isAuthenticated) {
+      if (isDev) console.log('[LandingPage] Not showing popup: user is authenticated');
+      return;
+    }
+
+    // Only check if form was submitted - if yes, never show (domain-specific localStorage)
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
       if (isDev) console.log('[LandingPage] Not showing popup: form was submitted');
@@ -87,6 +94,7 @@ export default function LandingPage() {
     }
 
     // If scroll threshold reached and not closed/submitted, show popup
+    // This works on both domains: topcoach.uz and topcoachuni.com
     if (shouldShow && !popupVisible) {
       if (isDev) console.log('[LandingPage] ✅ Showing popup now!');
       // Small delay for better UX
@@ -97,9 +105,9 @@ export default function LandingPage() {
     } else if (isDev && shouldShow && popupVisible) {
       console.log('[LandingPage] Popup already visible');
     } else if (isDev) {
-      console.log('[LandingPage] Waiting for scroll threshold...', { shouldShow, popupVisible });
+      console.log('[LandingPage] Waiting for scroll threshold...', { shouldShow, popupVisible, isAuthenticated });
     }
-  }, [shouldShow, popupVisible]);
+  }, [shouldShow, popupVisible, isAuthenticated]);
 
   return (
     <main className={styles.main}>

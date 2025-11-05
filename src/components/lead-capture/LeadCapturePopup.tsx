@@ -391,7 +391,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
       width={520}
       className={styles.lead_capture_modal}
       centered
-      closeIcon={<span className={styles.close_icon}>×</span>}
+      closeIcon={null}
     >
       <div className={styles.modal_content}>
         {/* Header */}

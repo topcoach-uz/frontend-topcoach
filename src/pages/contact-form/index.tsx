@@ -61,7 +61,7 @@ export default function ContactFormPage() {
       setSubmitted(true);
       message.success(t('contactForm.successMessage'));
     } catch (error: any) {
-      message.error(t('contactForm.errorMessage'));
+        message.error(t('contactForm.errorMessage'));
     }
   };
 

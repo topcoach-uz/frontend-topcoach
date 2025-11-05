@@ -1,6 +1,6 @@
 import { Breadcrumb, Flex, message, Skeleton, Modal } from 'antd';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useGetMentorDetailQuery } from 'src/app/services/mentors';
 import { useTypedSelector } from 'src/app/store';
@@ -35,6 +35,7 @@ export default function MentorDetailsPage() {
   const [selectedGiveawaySession, setSelectedGiveawaySession] = useState<any>(null);
   const [giveawaySuccessModalOpen, setGiveawaySuccessModalOpen] = useState<boolean>(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { screenSize } = useScreenSize();
   const splittedPathname = pathname.split('/');
   const mentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
@@ -70,6 +71,23 @@ export default function MentorDetailsPage() {
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  // Handle redirect for unauthenticated users
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading) {
+      // Show clear warning message immediately with proper translation
+      message.warning(t('mentors.signInMessage') || 'You need to sign in first to view mentor profiles. Redirecting to sign in page...', 2.5);
+
+      // Redirect after 2.5 seconds
+      const redirectTimer = setTimeout(() => {
+        navigate('/auth/signin');
+      }, 2500);
+
+      return () => {
+        clearTimeout(redirectTimer);
+      };
+    }
+  }, [isAuthenticated, isLoading, navigate, t]);
 
   const handleBook = (bookingArgs: IHandleBookArgs) => {
     setPaymentModalOpen(false);
@@ -203,7 +221,16 @@ export default function MentorDetailsPage() {
   console.log('mentorData', mentorData);
 
   return (
-    <main className={styles.main}>
+    <main 
+      className={styles.main}
+      style={{
+        filter: !isAuthenticated && !isLoading ? 'blur(5px)' : 'none',
+        pointerEvents: !isAuthenticated && !isLoading ? 'none' : 'auto',
+        userSelect: !isAuthenticated && !isLoading ? 'none' : 'auto',
+        position: 'relative',
+        transition: 'filter 0.3s ease',
+      }}
+    >
       <div className={'container ' + styles.container}>
         <Breadcrumb rootClassName={styles.breadcrumb} items={breadcrumbItems} />
         <Avatar />

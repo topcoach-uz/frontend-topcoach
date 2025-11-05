@@ -324,6 +324,8 @@
   "mentors.totalTime": "Total mentoring time",
   "mentors.univer": "Studies at ",
   "mentors.videoMessage": "Your browser does not support the video tag.",
+  "mentors.signInRequired": "You need to sign in first to view mentor profiles.",
+  "mentors.signInMessage": "You need to sign in first to view mentor profiles. Redirecting to sign in page...",
   "shared.fullNameLabel": "Full Name",
   "shared.fullNamePlaceholder": "Enter your full name",
   "shared.imgUpload": "To ensure trust and authenticity, please upload a clear photo of yourself where your face is easily visible.",

@@ -13,13 +13,14 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
   const isDev = import.meta.env.DEV;
 
   useEffect(() => {
-    // Don't show popup if user is authenticated
+    // Don't show popup if user is authenticated (works on both topcoach.uz and topcoachuni.com)
     if (checkAuth && isAuthenticated) {
       if (isDev) console.log('[LeadCapture] Not showing: user is authenticated');
       return;
     }
 
     // Only check if form was submitted - if submitted, never show again
+    // Note: localStorage is domain-specific, so submission on one domain doesn't affect the other
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
       if (isDev) console.log('[LeadCapture] Not showing: form was already submitted');
