@@ -53,6 +53,7 @@ function BookModal({
     form,
 
     bookSessionLoading,
+    // Temporarily disabled - rethinking subscription plans
     usageData,
     usageLoading,
     QuotaExceededModal,
@@ -163,7 +164,8 @@ function BookModal({
           ''
         )}
       </CustomCard>
-      {QuotaExceededModal}
+      {/* Temporarily hidden - rethinking subscription plans */}
+      {/* {QuotaExceededModal} */}
     </Modal>
   );
 }

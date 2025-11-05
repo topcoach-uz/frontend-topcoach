@@ -97,6 +97,7 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
   const { data: usageData, isLoading: usageLoading, refetch: refetchUsage } = useGetSubscriptionUsageQuery(undefined, { skip: !isAuthenticated });
   const { data: plans } = useGetPlansQuery();
 
+  // Temporarily disabled - rethinking subscription plans
   const [quotaModalVisible, setQuotaModalVisible] = useState(false);
   const [quotaSessionId, setQuotaSessionId] = useState<string | null>(null);
 
@@ -123,48 +124,92 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
         return;
       }
 
+      // Temporarily disabled - bypassing quota checks, going directly to payment
+      // OLD CODE - quota checking logic (commented out for future use)
       // Refetch usage before booking for extra robustness
-      const usageResult = await refetchUsage();
-      const latestUsage = usageResult.data?.usage;
+      // const usageResult = await refetchUsage();
+      // const latestUsage = usageResult.data?.usage;
       // Optionally, check quota for the session type here
       // (Assume session type is available as bookingInfo.planType or similar)
-      let feature = '';
-      const mentorLevel = (bookingInfo as any)?.mentorLevel;
-      if (mentorLevel && mentorLevel.toLowerCase?.() === MentorExperienceLevel.Probono.toLowerCase?.()) feature = 'proBonoSessions';
-      else if (bookingInfo?.planType === 'individual30m') feature = 'juniorCoachSessions';
-      else if (bookingInfo?.planType === 'individual60m') feature = 'seniorCoachSessions';
-      if (feature && latestUsage) {
-        const u = latestUsage.find((x: any) => x.feature === feature);
-        if (u && u.used >= u.limit) {
-          setQuotaSessionId(sessionData.chosenIntervalId.value);
-          setQuotaModalVisible(true);
-        return;
-      }
-      }
+      // let feature = '';
+      // const mentorLevel = (bookingInfo as any)?.mentorLevel;
+      // if (mentorLevel && mentorLevel.toLowerCase?.() === MentorExperienceLevel.Probono.toLowerCase?.()) feature = 'proBonoSessions';
+      // else if (bookingInfo?.planType === 'individual30m') feature = 'juniorCoachSessions';
+      // else if (bookingInfo?.planType === 'individual60m') feature = 'seniorCoachSessions';
+      // if (feature && latestUsage) {
+      //   const u = latestUsage.find((x: any) => x.feature === feature);
+      //   if (u && u.used >= u.limit) {
+      //     setQuotaSessionId(sessionData.chosenIntervalId.value);
+      //     setQuotaModalVisible(true);
+      //   return;
+      //   }
+      // }
 
-      // Book session and handle quota/payment logic
-        bookSession({
-          id: sessionData.chosenIntervalId.value,
-          comment: form.getFieldValue('reason'),
-        })
-          .unwrap()
-        .then((res: any) => {
-          if (res && res.paymentRequired) {
-            setQuotaSessionId(sessionData.chosenIntervalId.value);
-            setQuotaModalVisible(true);
-            return;
-          }
-            message.success('Session booked successfully');
-            handleModalClose();
-          })
-          .catch((err) => {
-            if (err?.data?.error === 'PROFILE_REQUIREMENTS_NOT_MET') {
-              // Modal is now handled globally, just return
+      // Book session and handle payment logic
+      // If payment is required, redirect directly to payment page (bypassing quota modal)
+      bookSession({
+        id: sessionData.chosenIntervalId.value,
+        comment: form.getFieldValue('reason'),
+      })
+        .unwrap()
+      .then((res: any) => {
+        if (res && res.paymentRequired) {
+          // Directly redirect to payment, bypassing quota modal
+          if (sessionData.chosenIntervalId.value && bookingInfo?.planId && mentorData && plans) {
+            const plan = plans.find(p => p.id === bookingInfo.planId);
+            const mentorLevel = mentorData?.mentorProfile?.level;
+            
+            if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
+              const sessionAmount = (plan.prices as any)[mentorLevel];
+              
+              // Determine currency based on amount size and plan currency
+              let currency = (plan.currency as any)?.name;
+              if (!currency) {
+                currency = sessionAmount > 1000 ? 'UZS' : 'USD';
+              }
+              
+              // Build payment URL with all required params including amount
+              const params = new URLSearchParams();
+              params.set('mentorId', mentorId);
+              params.set('sessionId', sessionData.chosenIntervalId.value);
+              params.set('planId', bookingInfo.planId);
+              params.set('amount', sessionAmount.toString());
+              params.set('currencyName', currency);
+              params.set('buyType', bookingInfo?.planType || 'individual');
+              
+              navigate(`/payment?${params.toString()}`);
+              handleModalClose();
+              return;
+            } else {
+              // Fallback without amount (will be calculated on payment page)
+              const params = new URLSearchParams();
+              params.set('mentorId', mentorId);
+              params.set('sessionId', sessionData.chosenIntervalId.value);
+              params.set('planId', bookingInfo.planId);
+              params.set('buyType', bookingInfo?.planType || 'individual');
+              navigate(`/payment?${params.toString()}`);
+              handleModalClose();
               return;
             }
-          message.error(err.data?.message || 'Booking failed.');
-          });
-        return;
+          }
+        }
+        // OLD CODE - quota modal handling (commented out for future use)
+        // if (res && res.paymentRequired) {
+        //   setQuotaSessionId(sessionData.chosenIntervalId.value);
+        //   setQuotaModalVisible(true);
+        //   return;
+        // }
+        message.success('Session booked successfully');
+        handleModalClose();
+      })
+      .catch((err) => {
+        if (err?.data?.error === 'PROFILE_REQUIREMENTS_NOT_MET') {
+          // Modal is now handled globally, just return
+          return;
+        }
+        message.error(err.data?.message || 'Booking failed.');
+      });
+      return;
     }
 
     if (!sessionData) {
@@ -233,7 +278,8 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     });
   };
 
-  // Custom quota exceeded modal
+  // Temporarily hidden - rethinking subscription plans
+  // Custom quota exceeded modal - commented out for future use
   const QuotaExceededModal = (
     <Modal
       open={quotaModalVisible}
