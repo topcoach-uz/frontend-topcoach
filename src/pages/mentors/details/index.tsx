@@ -75,8 +75,14 @@ export default function MentorDetailsPage() {
   // Handle redirect for unauthenticated users
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
-      // Show clear warning message immediately with proper translation
-      message.warning(t('mentors.signInMessage') || 'You need to sign in first to view mentor profiles. Redirecting to sign in page...', 2.5);
+      // Get translated message - ensure it's a string, not the key
+      const signInMessage = t('mentors.signInMessage');
+      const displayMessage = signInMessage && signInMessage !== 'mentors.signInMessage' 
+        ? signInMessage 
+        : 'You need to sign in first to view mentor profiles. Redirecting to sign in page...';
+      
+      // Show clear warning message immediately
+      message.warning(displayMessage, 2.5);
 
       // Redirect after 2.5 seconds
       const redirectTimer = setTimeout(() => {

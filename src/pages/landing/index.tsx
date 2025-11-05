@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HeroSection from './_components/hero';
 import LandingAISearch from './_components/AISearch';
 import LandingEventsSection from './_components/events';
@@ -18,11 +18,24 @@ export default function LandingPage() {
   const { searchParams } = useParamsHook();
   const [popupVisible, setPopupVisible] = useState(false);
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  
+  // Use scroll trigger for popup - works on both topcoach.uz and topcoachuni.com
   const { shouldShow } = useScrollTrigger({
     threshold: 0.03, // Show after 5% scroll (very early - user just started scrolling)
     checkAuth: true,
     isAuthenticated,
   });
+  
+  // Debug: Log current domain and status
+  useEffect(() => {
+    const isDev = import.meta.env.DEV;
+    if (isDev || window.location.hostname.includes('topcoach')) {
+      console.log('[LandingPage] Domain:', window.location.hostname);
+      console.log('[LandingPage] Is authenticated:', isAuthenticated);
+      console.log('[LandingPage] Should show popup:', shouldShow);
+      console.log('[LandingPage] Popup visible:', popupVisible);
+    }
+  }, [isAuthenticated, shouldShow, popupVisible]);
 
   // Dev helper: expose popup control to window for testing
   useLayoutEffect(() => {
@@ -69,8 +82,10 @@ export default function LandingPage() {
 
   // Show popup when scroll threshold is reached
   // This works on both topcoach.uz and topcoachuni.com for unauthenticated users
+  // Since topcoachuni.com is now the main domain, this ensures it works there too
   useLayoutEffect(() => {
     const isDev = import.meta.env.DEV;
+    const hostname = window.location.hostname;
 
     // Don't show popup if user is authenticated (on any domain)
     if (isAuthenticated) {
@@ -79,9 +94,10 @@ export default function LandingPage() {
     }
 
     // Only check if form was submitted - if yes, never show (domain-specific localStorage)
+    // localStorage is domain-specific, so submission on topcoach.uz doesn't affect topcoachuni.com
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
-      if (isDev) console.log('[LandingPage] Not showing popup: form was submitted');
+      if (isDev) console.log('[LandingPage] Not showing popup: form was submitted on', hostname);
       return;
     }
 
@@ -89,23 +105,23 @@ export default function LandingPage() {
     // After page reload or browser restart, sessionStorage clears, so popup can show again
     const wasClosedInSession = sessionStorage.getItem('lead-capture-popup-closed');
     if (wasClosedInSession === 'true') {
-      if (isDev) console.log('[LandingPage] Not showing popup: closed in session');
+      if (isDev) console.log('[LandingPage] Not showing popup: closed in session on', hostname);
       return;
     }
 
     // If scroll threshold reached and not closed/submitted, show popup
     // This works on both domains: topcoach.uz and topcoachuni.com
     if (shouldShow && !popupVisible) {
-      if (isDev) console.log('[LandingPage] ✅ Showing popup now!');
+      if (isDev) console.log('[LandingPage] ✅ Showing popup now on', hostname);
       // Small delay for better UX
       const timer = setTimeout(() => {
         setPopupVisible(true);
       }, 500);
       return () => clearTimeout(timer);
     } else if (isDev && shouldShow && popupVisible) {
-      console.log('[LandingPage] Popup already visible');
+      console.log('[LandingPage] Popup already visible on', hostname);
     } else if (isDev) {
-      console.log('[LandingPage] Waiting for scroll threshold...', { shouldShow, popupVisible, isAuthenticated });
+      console.log('[LandingPage] Waiting for scroll threshold on', hostname, { shouldShow, popupVisible, isAuthenticated });
     }
   }, [shouldShow, popupVisible, isAuthenticated]);
 
