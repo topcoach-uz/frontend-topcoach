@@ -26,14 +26,20 @@ export default function LandingPage() {
     isAuthenticated,
   });
   
-  // Debug: Log current domain and status
+  // Debug: Log current domain and status (works on both domains)
   useEffect(() => {
-    const isDev = import.meta.env.DEV;
-    if (isDev || window.location.hostname.includes('topcoach')) {
-      console.log('[LandingPage] Domain:', window.location.hostname);
+    const hostname = window.location.hostname;
+    const shouldLog = import.meta.env.DEV || hostname.includes('topcoach');
+    
+    if (shouldLog) {
+      console.log('[LandingPage] ===== Lead Capture Status =====');
+      console.log('[LandingPage] Domain:', hostname);
       console.log('[LandingPage] Is authenticated:', isAuthenticated);
-      console.log('[LandingPage] Should show popup:', shouldShow);
-      console.log('[LandingPage] Popup visible:', popupVisible);
+      console.log('[LandingPage] Should show popup (from hook):', shouldShow);
+      console.log('[LandingPage] Popup visible (state):', popupVisible);
+      console.log('[LandingPage] localStorage.submitted:', localStorage.getItem('lead-capture-popup-submitted'));
+      console.log('[LandingPage] sessionStorage.closed:', sessionStorage.getItem('lead-capture-popup-closed'));
+      console.log('[LandingPage] =================================');
     }
   }, [isAuthenticated, shouldShow, popupVisible]);
 
@@ -84,12 +90,12 @@ export default function LandingPage() {
   // This works on both topcoach.uz and topcoachuni.com for unauthenticated users
   // Since topcoachuni.com is now the main domain, this ensures it works there too
   useLayoutEffect(() => {
-    const isDev = import.meta.env.DEV;
     const hostname = window.location.hostname;
+    const shouldLog = import.meta.env.DEV || hostname.includes('topcoach');
 
     // Don't show popup if user is authenticated (on any domain)
     if (isAuthenticated) {
-      if (isDev) console.log('[LandingPage] Not showing popup: user is authenticated');
+      if (shouldLog) console.log('[LandingPage] Not showing popup: user is authenticated on', hostname);
       return;
     }
 
@@ -97,7 +103,7 @@ export default function LandingPage() {
     // localStorage is domain-specific, so submission on topcoach.uz doesn't affect topcoachuni.com
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
-      if (isDev) console.log('[LandingPage] Not showing popup: form was submitted on', hostname);
+      if (shouldLog) console.log('[LandingPage] Not showing popup: form was submitted on', hostname);
       return;
     }
 
@@ -105,22 +111,23 @@ export default function LandingPage() {
     // After page reload or browser restart, sessionStorage clears, so popup can show again
     const wasClosedInSession = sessionStorage.getItem('lead-capture-popup-closed');
     if (wasClosedInSession === 'true') {
-      if (isDev) console.log('[LandingPage] Not showing popup: closed in session on', hostname);
+      if (shouldLog) console.log('[LandingPage] Not showing popup: closed in session on', hostname);
       return;
     }
 
     // If scroll threshold reached and not closed/submitted, show popup
     // This works on both domains: topcoach.uz and topcoachuni.com
     if (shouldShow && !popupVisible) {
-      if (isDev) console.log('[LandingPage] ✅ Showing popup now on', hostname);
+      if (shouldLog) console.log('[LandingPage] ✅ Showing popup now on', hostname);
       // Small delay for better UX
       const timer = setTimeout(() => {
         setPopupVisible(true);
+        if (shouldLog) console.log('[LandingPage] Popup visibility set to true on', hostname);
       }, 500);
       return () => clearTimeout(timer);
-    } else if (isDev && shouldShow && popupVisible) {
+    } else if (shouldLog && shouldShow && popupVisible) {
       console.log('[LandingPage] Popup already visible on', hostname);
-    } else if (isDev) {
+    } else if (shouldLog) {
       console.log('[LandingPage] Waiting for scroll threshold on', hostname, { shouldShow, popupVisible, isAuthenticated });
     }
   }, [shouldShow, popupVisible, isAuthenticated]);

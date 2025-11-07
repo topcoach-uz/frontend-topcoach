@@ -11,11 +11,23 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
   const [shouldShow, setShouldShow] = useState(false);
   const hasTriggered = useRef(false);
   const isDev = import.meta.env.DEV;
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
 
   useEffect(() => {
+    // Log domain for debugging (works in both dev and production for topcoach domains)
+    const shouldLog = isDev || hostname.includes('topcoach');
+    
+    if (shouldLog) {
+      console.log('[LeadCapture] Initializing on domain:', hostname, {
+        isAuthenticated,
+        checkAuth,
+        threshold,
+      });
+    }
+
     // Don't show popup if user is authenticated (works on both topcoach.uz and topcoachuni.com)
     if (checkAuth && isAuthenticated) {
-      if (isDev) console.log('[LeadCapture] Not showing: user is authenticated');
+      if (shouldLog) console.log('[LeadCapture] Not showing: user is authenticated');
       return;
     }
 
@@ -23,7 +35,7 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
     // Note: localStorage is domain-specific, so submission on one domain doesn't affect the other
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
-      if (isDev) console.log('[LeadCapture] Not showing: form was already submitted');
+      if (shouldLog) console.log('[LeadCapture] Not showing: form was already submitted on', hostname);
       return;
     }
 
@@ -31,11 +43,12 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
     // But after page reload or browser restart, sessionStorage clears, so popup can show again
     const wasClosedInSession = sessionStorage.getItem('lead-capture-popup-closed');
     if (wasClosedInSession === 'true') {
-      if (isDev) console.log('[LeadCapture] Not showing: closed in current session');
+      if (shouldLog) console.log('[LeadCapture] Not showing: closed in current session on', hostname);
       return;
     }
 
     if (hasTriggered.current) {
+      if (shouldLog) console.log('[LeadCapture] Already triggered, skipping');
       return;
     }
 
@@ -64,8 +77,10 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
         scrollPercentage = threshold;
       }
 
-      if (isDev && scrolled % 200 < 50) { // Log occasionally to avoid spam
-        console.log('[LeadCapture] Scroll:', {
+      const shouldLog = isDev || hostname.includes('topcoach');
+      
+      if (shouldLog && scrolled % 200 < 50) { // Log occasionally to avoid spam
+        console.log('[LeadCapture] Scroll on', hostname, ':', {
           scrolled,
           scrollHeight,
           scrollPercentage: (scrollPercentage * 100).toFixed(1) + '%',
@@ -76,7 +91,7 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
       if (scrollPercentage >= threshold) {
         hasTriggered.current = true;
         setShouldShow(true);
-        if (isDev) console.log('[LeadCapture] ✅ Triggered! Setting shouldShow to true');
+        if (shouldLog) console.log('[LeadCapture] ✅ Triggered on', hostname, '! Setting shouldShow to true');
       }
     };
 
