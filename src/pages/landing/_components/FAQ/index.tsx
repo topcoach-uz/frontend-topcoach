@@ -8,6 +8,7 @@ import CustomExpandIcon from './_components/expand';
 import styles from './faq.module.scss';
 import useFaq from './useFaq';
 import { useNavigate } from 'react-router-dom';
+import PartnersLogos from './_components/PartnersLogos';
 
 export default function FaqSection() {
   const { colors } = useTypedSelector((state) => state.layout);
@@ -82,6 +83,7 @@ export default function FaqSection() {
           </CustomButton>
         </div>
       </div>
+      <PartnersLogos />
     </section>
   );
 }

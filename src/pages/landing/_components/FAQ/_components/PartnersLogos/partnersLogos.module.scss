@@ -1,0 +1,93 @@
+.partnersSection {
+  margin-top: -42px;
+  margin-bottom: 12px;
+  padding: 60px 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  background-color: white;
+}
+
+.carousel {
+  overflow: hidden;
+  width: 100%;
+}
+
+.carouselTrack {
+  animation: scroll 30s linear infinite;
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  height: 150px;
+  width: max-content;
+  align-items: center;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+
+  li {
+    flex: 0 0 12.5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 150px;
+
+    img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    height: 130px;
+    
+    li {
+      min-width: 130px;
+      
+      img {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    height: 100px;
+    
+    li {
+      flex: 0 0 15%;
+      min-width: 100px;
+      
+      img {
+        width: 90px;
+        height: 90px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: 80px;
+    
+    li {
+      flex: 0 0 20%;
+      min-width: 80px;
+      
+      img {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
