@@ -43,35 +43,49 @@ export default function LandingPage() {
     }
   }, [isAuthenticated, shouldShow, popupVisible]);
 
-  // Dev helper: expose popup control to window for testing
+  // Debug helper: expose popup control to window for testing (works in both dev and production)
   useLayoutEffect(() => {
-    if (import.meta.env.DEV && typeof window !== 'undefined') {
-      (window as any).__leadCaptureDebug = {
-        show: () => {
-          localStorage.removeItem('lead-capture-popup-submitted');
-          sessionStorage.removeItem('lead-capture-popup-closed');
-          setPopupVisible(true);
-          console.log('✅ Popup forced to show via debug helper');
-        },
-        hide: () => {
-          setPopupVisible(false);
-          console.log('✅ Popup hidden via debug helper');
-        },
-        clear: () => {
-          localStorage.removeItem('lead-capture-popup-submitted');
-          sessionStorage.removeItem('lead-capture-popup-closed');
-          console.log('✅ Cleared all lead capture storage. Reload page to test.');
-        },
-        status: () => {
-          console.log('=== Lead Capture Debug Status ===');
-          console.log('localStorage.submitted:', localStorage.getItem('lead-capture-popup-submitted'));
-          console.log('sessionStorage.closed:', sessionStorage.getItem('lead-capture-popup-closed'));
-          console.log('shouldShow:', shouldShow);
-          console.log('popupVisible:', popupVisible);
-          console.log('isAuthenticated:', isAuthenticated);
-        },
-      };
-      console.log('🔧 Lead Capture Debug Helper available! Use window.__leadCaptureDebug.show() to force show popup');
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const shouldExpose = import.meta.env.DEV || hostname.includes('topcoach');
+      
+      if (shouldExpose) {
+        (window as any).__leadCaptureDebug = {
+          show: () => {
+            localStorage.removeItem('lead-capture-popup-submitted');
+            sessionStorage.removeItem('lead-capture-popup-closed');
+            setPopupVisible(true);
+            console.log('✅ Popup forced to show via debug helper');
+          },
+          hide: () => {
+            setPopupVisible(false);
+            console.log('✅ Popup hidden via debug helper');
+          },
+          clear: () => {
+            localStorage.removeItem('lead-capture-popup-submitted');
+            sessionStorage.removeItem('lead-capture-popup-closed');
+            console.log('✅ Cleared all lead capture storage. Reload page to test.');
+          },
+          reset: () => {
+            localStorage.removeItem('lead-capture-popup-submitted');
+            sessionStorage.removeItem('lead-capture-popup-closed');
+            window.location.reload();
+          },
+          status: () => {
+            console.log('=== Lead Capture Debug Status ===');
+            console.log('Domain:', hostname);
+            console.log('localStorage.submitted:', localStorage.getItem('lead-capture-popup-submitted'));
+            console.log('sessionStorage.closed:', sessionStorage.getItem('lead-capture-popup-closed'));
+            console.log('shouldShow:', shouldShow);
+            console.log('popupVisible:', popupVisible);
+            console.log('isAuthenticated:', isAuthenticated);
+          },
+        };
+        console.log('🔧 Lead Capture Debug Helper available!');
+        console.log('   Use window.__leadCaptureDebug.show() to force show popup');
+        console.log('   Use window.__leadCaptureDebug.reset() to clear and reload');
+        console.log('   Or add ?reset-popup=true to the URL');
+      }
     }
   }, [shouldShow, popupVisible, isAuthenticated]);
 
@@ -99,11 +113,25 @@ export default function LandingPage() {
       return;
     }
 
+    // Check for reset parameter in URL (for testing/debugging)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetPopup = urlParams.get('reset-popup');
+    if (resetPopup === 'true') {
+      localStorage.removeItem('lead-capture-popup-submitted');
+      sessionStorage.removeItem('lead-capture-popup-closed');
+      if (shouldLog) console.log('[LandingPage] Reset popup flags via URL parameter on', hostname);
+      // Remove the parameter from URL without reload
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]reset-popup=true/, '').replace(/^\?/, '?').replace(/^&/, '?');
+      window.history.replaceState({}, '', newUrl || window.location.pathname);
+    }
+
     // Only check if form was submitted - if yes, never show (domain-specific localStorage)
     // localStorage is domain-specific, so submission on topcoach.uz doesn't affect topcoachuni.com
+    // However, we allow reset via URL parameter for testing
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
       if (shouldLog) console.log('[LandingPage] Not showing popup: form was submitted on', hostname);
+      if (shouldLog) console.log('[LandingPage] To reset, add ?reset-popup=true to the URL');
       return;
     }
 

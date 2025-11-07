@@ -31,11 +31,25 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
       return;
     }
 
+    // Check for reset parameter in URL (for testing/debugging)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetPopup = urlParams.get('reset-popup');
+    if (resetPopup === 'true') {
+      localStorage.removeItem('lead-capture-popup-submitted');
+      sessionStorage.removeItem('lead-capture-popup-closed');
+      if (shouldLog) console.log('[LeadCapture] Reset popup flags via URL parameter on', hostname);
+      // Remove the parameter from URL without reload
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]reset-popup=true/, '').replace(/^\?/, '?').replace(/^&/, '?');
+      window.history.replaceState({}, '', newUrl || window.location.pathname);
+    }
+
     // Only check if form was submitted - if submitted, never show again
     // Note: localStorage is domain-specific, so submission on one domain doesn't affect the other
+    // However, we allow reset via URL parameter for testing
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
       if (shouldLog) console.log('[LeadCapture] Not showing: form was already submitted on', hostname);
+      if (shouldLog) console.log('[LeadCapture] To reset, add ?reset-popup=true to the URL');
       return;
     }
 
