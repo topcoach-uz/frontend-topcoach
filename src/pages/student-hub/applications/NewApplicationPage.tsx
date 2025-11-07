@@ -44,6 +44,7 @@ const NewApplicationPage: React.FC = () => {
           {
             _start: 0,
             _end: 1000, // Request a large number to get all
+            majorType: 'undergraduate' as any, // Required field, use undergraduate as default
           }
         );
         
@@ -67,6 +68,7 @@ const NewApplicationPage: React.FC = () => {
               {
                 _start: allUniversities.length,
                 _end: allUniversities.length + batchSize,
+                majorType: 'undergraduate' as any, // Required field, use undergraduate as default
               }
             );
             
@@ -335,20 +337,32 @@ const NewApplicationPage: React.FC = () => {
                   label="University"
                   rules={[{ required: true, message: 'Please search and select a university' }]}
                 >
-                <AutoComplete
-                  options={universityOptions}
-                  onSearch={handleUniversitySearch}
-                  onSelect={handleUniversitySelect}
-                  onFocus={handleUniversityFocus}
-                  placeholder="Search for a university (e.g., Harvard, MIT, Stanford)"
-                  size="large"
-                  loading={searchLoading}
-                  filterOption={false}
-                  defaultActiveFirstOption={false}
-                  open={undefined}
-                  notFoundContent={searchLoading ? 'Searching...' : 'No universities found'}
-                  style={{ width: '100%' }}
-                />
+                    <div style={{ position: 'relative' }}>
+                      <AutoComplete
+                        options={universityOptions}
+                        onSearch={handleUniversitySearch}
+                        onSelect={handleUniversitySelect}
+                        onFocus={handleUniversityFocus}
+                        placeholder="Search for a university (e.g., Harvard, MIT, Stanford)"
+                        size="large"
+                        filterOption={false}
+                        defaultActiveFirstOption={false}
+                        notFoundContent={searchLoading ? 'Searching...' : 'No universities found'}
+                        style={{ width: '100%' }}
+                      />
+                      {searchLoading && (
+                        <span style={{ 
+                          position: 'absolute', 
+                          right: 12, 
+                          top: '50%', 
+                          transform: 'translateY(-50%)',
+                          color: '#999',
+                          fontSize: '12px'
+                        }}>
+                          Loading...
+                        </span>
+                      )}
+                    </div>
                 </Form.Item>
               ) : (
                 <Form.Item
@@ -398,9 +412,10 @@ const NewApplicationPage: React.FC = () => {
                     size="large"
                     disabled={!selectedUniversityId || majorOptions.length === 0}
                     showSearch
-                    filterOption={(input, option) =>
-                      (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                    }
+                    filterOption={(input, option) => {
+                      const label = typeof option?.label === 'string' ? option.label : String(option?.label ?? '');
+                      return label.toLowerCase().includes(input.toLowerCase());
+                    }}
                   >
                     {majorOptions.map((major) => (
                       <Option key={major.value} value={major.value}>
