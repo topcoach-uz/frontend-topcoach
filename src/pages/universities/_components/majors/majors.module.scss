@@ -9,14 +9,14 @@
 
 .under {
   width: calc((100% - 32px) / 2);
-  border: 1px solid $colorTextSecondary;
+  border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 16px;
 }
 
 .title {
   padding: 16px 24px;
 
-  border-bottom: 1px solid $colorTextSecondary;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .scrool {
@@ -28,14 +28,14 @@
 }
 .content {
   margin: 16px 4px;
-  border: 1px solid $colorTextSecondary;
+  border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 12px;
 }
 
 .major {
   padding: 8px 16px;
   font-size: 14px;
-  border-bottom: 1px solid $colorTextSecondary;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   color: $colorTextSecondary;
 
   &:last-child {

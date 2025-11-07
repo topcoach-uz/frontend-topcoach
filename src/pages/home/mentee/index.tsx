@@ -71,8 +71,8 @@ function MenteeHomePage() {
       <BannerSection />
       {/* <HomeAiSearchSection /> */}
       <BookingsSection />
-      {/* <FavoriteUniversitiesSection /> */}
       <EventsSection />
+      <FavoriteUniversitiesSection showOnlyFavorites={true} />
       {/* Temporarily hidden - rethinking subscription plans */}
       {/* <SubscriptionPlans /> */}
       <TelegramConnectionModal

@@ -26,6 +26,7 @@ interface Props {
   checked?: boolean;
   aiLimit?: number;
   handleSwitch?: (checked: boolean) => void;
+  showOnlyFavorites?: boolean;
 }
 
 export default function UniversitySection({
@@ -33,6 +34,7 @@ export default function UniversitySection({
   checked,
   aiLimit,
   handleSwitch,
+  showOnlyFavorites = false,
 }: Props) {
   const {
     formattedLocationData,
@@ -57,38 +59,60 @@ export default function UniversitySection({
   const { handleMakeParams } = useParamsHook();
   const [universityName, setUniversityName] = useState('');
 
+  // Filter to show only favorite universities when showOnlyFavorites is true
+  const favoriteUniversities = showOnlyFavorites && likedUnis
+    ? formattedLocationData.filter((university) =>
+        likedUnis.some((likedUni) => likedUni.id === university.id)
+      )
+    : formattedLocationData;
+
   const handleSearchUniversity = () => {
     handleMakeParams('name', universityName);
   };
 
   return (
-    <div className={styles.university}>
+    <div className={showOnlyFavorites ? 'container ' + styles.university : styles.university}>
       <CustomText
         color={colors.colorTextBase}
-        fontSize={themeFontSize.fontSizeTitle5}
-        fontWeight={themeFontWeight.fontWeightSemibold}
-        mb={8}
+        fontSize={showOnlyFavorites ? 32 : themeFontSize.fontSizeTitle5}
+        fontWeight={showOnlyFavorites ? 600 : themeFontWeight.fontWeightSemibold}
+        mb={showOnlyFavorites ? 0 : 8}
       >
         <Flex gap={8} align="center">
-          <AiSearchStarsSvg />
-          {checked
+          {!showOnlyFavorites && <AiSearchStarsSvg />}
+          {showOnlyFavorites
+            ? t('home.favorite')
+            : checked
             ? t('universities.aiSearchTitle')
             : t('universities.findYourSpecialty')}
         </Flex>
       </CustomText>
 
-      <CustomText
-        color={colors.colorText}
-        lineHeight={1.57}
-        fontSize={themeFontSize.fontSizeTitle8}
-        mb={4}
-      >
-        {checked
-          ? t('universities.aiSearchText')
-          : t('universities.filterText')}
-      </CustomText>
+      {!showOnlyFavorites && (
+        <CustomText
+          color={colors.colorText}
+          lineHeight={1.57}
+          fontSize={themeFontSize.fontSizeTitle8}
+          mb={4}
+        >
+          {checked
+            ? t('universities.aiSearchText')
+            : t('universities.filterText')}
+        </CustomText>
+      )}
 
-      {checked ? (
+      {showOnlyFavorites && (
+        <CustomText
+          color={colors.colorTextSecondary}
+          fontSize={16}
+          mt={4}
+          mb={24}
+        >
+          {t('home.favouriteDesc')}
+        </CustomText>
+      )}
+
+      {!showOnlyFavorites && checked ? (
         <div>
           <ul className={styles.list}>
             <li>
@@ -139,7 +163,7 @@ export default function UniversitySection({
             </CustomCard>
           )}
         </div>
-      ) : (
+      ) : !showOnlyFavorites ? (
         <div>
           <AiSearchTextArea
             isInUniversityPage={true}
@@ -151,49 +175,93 @@ export default function UniversitySection({
             setSearchText={setSearchText}
           />
         </div>
+      ) : null}
+
+      {!showOnlyFavorites && (
+        <div className={styles.switch}>
+          {checked ? (
+            <>
+              <CustomButton type="primary" onClick={() => handleAiSearch()}>
+                {t('landing.submit')}{' '}
+              </CustomButton>
+              <CustomButton onClick={() => handleAiSeachClear()}>
+                Clear
+              </CustomButton>
+            </>
+          ) : (
+            <CustomButton type="primary" onClick={handleSearchUniversity}>
+              {t('landing.submit')}
+            </CustomButton>
+          )}
+        </div>
       )}
 
-      <div className={styles.switch}>
-        {checked ? (
-          <>
-            <CustomButton type="primary" onClick={() => handleAiSearch()}>
-              {t('landing.submit')}{' '}
-            </CustomButton>
-            <CustomButton onClick={() => handleAiSeachClear()}>
-              Clear
-            </CustomButton>
-          </>
-        ) : (
-          <CustomButton type="primary" onClick={handleSearchUniversity}>
-            {t('landing.submit')}
-          </CustomButton>
-        )}
-      </div>
+      {!showOnlyFavorites && (
+        <Drawer
+          destroyOnClose
+          title="Filters"
+          open={drawer}
+          onClose={() => setDrawer(false)}
+        >
+          <UniversityFilter />
+        </Drawer>
+      )}
 
-      <Drawer
-        destroyOnClose
-        title="Filters"
-        open={drawer}
-        onClose={() => setDrawer(false)}
-      >
-        <UniversityFilter />
-      </Drawer>
+      {!showOnlyFavorites && (
+        <CustomText
+          mt={4}
+          color={colors.colorTextDescription}
+          fontSize={themeFontSize.fontSizeTitle8}
+          lineHeight={1.57}
+        >
+          {checked === false
+            ? ''
+            : `You can use AI major finder ${aiLimit} times`}
+        </CustomText>
+      )}
 
-      <CustomText
-        mt={4}
-        color={colors.colorTextDescription}
-        fontSize={themeFontSize.fontSizeTitle8}
-        lineHeight={1.57}
-      >
-        {checked === false
-          ? ''
-          : `You can use AI major finder ${aiLimit} times`}
-      </CustomText>
-
-      {aiSearchLoading && <Loader height={80} />}
+      {!showOnlyFavorites && aiSearchLoading && <Loader height={80} />}
       {/* ai search results */}
 
-      {aiUni.length === 0 ? (
+      {showOnlyFavorites ? (
+        <CustomCard
+          bgColor={colors.colorBgContainer}
+          mb={40}
+          shadowed
+          borderRadius={24}
+          padding={24}
+        >
+          <ul className={styles.card_list}>
+            {isLoading ? (
+              <UniversityCardSkeletons />
+            ) : favoriteUniversities.length > 0 ? (
+              favoriteUniversities.map((university, index) => (
+                // @ts-ignore
+                <UniversityCard
+                  key={index}
+                  {...university}
+                  location={university.location}
+                  name={university.name}
+                  image={university.media[0]?.url}
+                  // @ts-ignore
+                  tuition={`${university.tuitionFees[0].currency?.symbol}${(university.tuitionFees[0].fee * 1000).toLocaleString()}`}
+                  isLiked={true}
+                  aiSummary={university.aiSummary}
+                />
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', color: colors.colorTextDescription }}>
+                <CustomText fontSize={16} fontWeight={500} mb={8}>
+                  {t('home.noFavorite')}
+                </CustomText>
+                <CustomText fontSize={14} color={colors.colorTextDescription}>
+                  {t('home.noFavoriteDesc')}
+                </CustomText>
+              </div>
+            )}
+          </ul>
+        </CustomCard>
+      ) : aiUni.length === 0 ? (
         <ul className={styles.card_list}>
             {isLoading ? (
               <UniversityCardSkeletons />
@@ -235,7 +303,7 @@ export default function UniversitySection({
         </div>
       )}
 
-      {aiUni.length === 0 && !isLoading && formattedLocationData.length > 0 ? (
+      {!showOnlyFavorites && aiUni.length === 0 && !isLoading && formattedLocationData.length > 0 ? (
         <Pagination
           style={{ marginTop: 16 }}
           current={page}
