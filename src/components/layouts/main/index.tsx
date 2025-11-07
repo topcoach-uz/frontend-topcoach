@@ -12,9 +12,9 @@ import 'src/lib/dayjs';
 
 function Main() {
   // Scroll to top when route changes
-  const state = useTypedSelector((state) => state);
+  const { profile, isAuthenticated } = useTypedSelector((state) => state.auth);
   useGetMeQuery(undefined, {
-    skip: !!state.auth.profile?.id || !state.auth.isAuthenticated,
+    skip: !!profile?.id || !isAuthenticated,
   });
 
   // Prefetch mentor data for instant loading on mentors page
@@ -24,8 +24,6 @@ function Main() {
     refetchOnFocus: false,
     refetchOnReconnect: false,
   });
-
-  console.log(state);
 
   return (
     <div className={styles.main}>

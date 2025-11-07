@@ -13,35 +13,81 @@ export default function UniversityMajorSection({ majors, isLoading = false }: Pr
   if (isLoading) {
     return (
       <div className={styles.majors}>
-        <div className={styles.under}>
+        <div className={`${styles.under} ${styles.skeletonMode}`}>
           <div className={styles.title}>
-            <Skeleton.Input active size="small" style={{ width: 120, height: 24 }} />
+            <Skeleton.Input 
+              active 
+              size="small" 
+              style={{ 
+                width: 120, 
+                height: 24,
+                border: 'none',
+                borderRadius: '4px'
+              }} 
+            />
           </div>
           <div className={styles.scrool}>
             <div style={{ padding: '16px', paddingBottom: 0 }}>
-              <Skeleton active paragraph={{ rows: 1 }} />
+              <Skeleton 
+                active 
+                paragraph={{ rows: 1 }} 
+                title={false}
+                className={styles.skeletonNoBorder}
+              />
             </div>
             <div className={styles.content}>
               {Array.from(Array(5)).map((_, index) => (
                 <div key={index} className={styles.major}>
-                  <Skeleton.Input active size="small" style={{ width: '80%', height: 16 }} />
+                  <Skeleton.Input 
+                    active 
+                    size="small" 
+                    style={{ 
+                      width: '80%', 
+                      height: 16,
+                      border: 'none',
+                      borderRadius: '4px'
+                    }} 
+                  />
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div className={styles.under}>
+        <div className={`${styles.under} ${styles.skeletonMode}`}>
           <div className={styles.title}>
-            <Skeleton.Input active size="small" style={{ width: 100, height: 24 }} />
+            <Skeleton.Input 
+              active 
+              size="small" 
+              style={{ 
+                width: 100, 
+                height: 24,
+                border: 'none',
+                borderRadius: '4px'
+              }} 
+            />
           </div>
           <div className={styles.scrool}>
             <div style={{ padding: '16px', paddingBottom: 0 }}>
-              <Skeleton active paragraph={{ rows: 1 }} />
+              <Skeleton 
+                active 
+                paragraph={{ rows: 1 }} 
+                title={false}
+                className={styles.skeletonNoBorder}
+              />
             </div>
             <div className={styles.content}>
               {Array.from(Array(3)).map((_, index) => (
                 <div key={index} className={styles.major}>
-                  <Skeleton.Input active size="small" style={{ width: '70%', height: 16 }} />
+                  <Skeleton.Input 
+                    active 
+                    size="small" 
+                    style={{ 
+                      width: '70%', 
+                      height: 16,
+                      border: 'none',
+                      borderRadius: '4px'
+                    }} 
+                  />
                 </div>
               ))}
             </div>

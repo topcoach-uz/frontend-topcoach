@@ -4,7 +4,7 @@
   background-color: $colorBgContainer;
   width: 430px;
   padding: 40px;
-  border-right: 1px solid $colorBorder;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
 
   @media (max-width: 1024px) {
@@ -18,6 +18,46 @@
     max-width: 100%;
     padding: 20px;
     border-right: none;
+  }
+  
+  // Improve skeleton appearance - remove bold borders
+  :global(.ant-skeleton-input) {
+    border: none !important;
+    box-shadow: none !important;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%) !important;
+    background-size: 200% 100% !important;
+    border-radius: 4px !important;
+  }
+  
+  :global(.ant-skeleton-button) {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.skeletonNoBorder {
+  :global(.ant-skeleton-content) {
+    .ant-skeleton-paragraph {
+      margin: 0 !important;
+      
+      > li {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%) !important;
+        background-size: 200% 100% !important;
+        border-radius: 4px !important;
+        border: none !important;
+        box-shadow: none !important;
+        list-style: none !important;
+        height: 16px !important;
+        margin-bottom: 8px !important;
+        
+        &::before,
+        &::after,
+        &::marker {
+          display: none !important;
+          content: none !important;
+        }
+      }
+    }
   }
 }
 

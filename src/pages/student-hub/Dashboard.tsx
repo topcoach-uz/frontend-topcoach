@@ -22,9 +22,31 @@ import {
   useGetDocumentsQuery 
 } from '../../app/services/student-hub/documentManagementApi';
 import { useGetMeQuery } from '../../app/services/users';
+import { useGetUniversityDetailQuery } from '../../app/services/universities';
+import { getTranslation } from '../../lib/i18n/translationUtils';
 import './Dashboard.scss';
 
 const { TabPane } = Tabs;
+
+// Component to display university name - fetches from universityId if available
+const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: string }> = ({ universityId, universityName }) => {
+  const { t } = useTranslation();
+  
+  if (universityId) {
+    const { data: university, isLoading } = useGetUniversityDetailQuery(universityId, { skip: !universityId });
+    
+    if (isLoading) {
+      return <span>Loading...</span>;
+    }
+    
+    if (university) {
+      const displayName = getTranslation(university.name);
+      return <>{displayName || universityName || t('studentHub.dashboard.unknownUniversity')}</>;
+    }
+  }
+  
+  return <>{universityName || t('studentHub.dashboard.unknownUniversity')}</>;
+};
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -399,7 +421,7 @@ const Dashboard: React.FC = () => {
                   ...app, 
                   type: 'application',
                   activityType: t('studentHub.dashboard.collegeApplication'),
-                  title: app?.universityName || t('studentHub.dashboard.unknownUniversity'),
+                  title: null, // Will be rendered with UniversityNameDisplay component
                   subtitle: `${t('studentHub.dashboard.major')}: ${app?.major || t('studentHub.applications.notSpecified')}`,
                   timestamp: app?.createdAt || app?.updatedAt,
                   status: app?.status || 'unknown'
@@ -456,7 +478,12 @@ const Dashboard: React.FC = () => {
                               />
                             </div>
                             <div className="activity-info">
-                              <div className="activity-title">{item.title}</div>
+                              <div className="activity-title">
+                                {item.type === 'application' 
+                                  ? <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
+                                  : item.title
+                                }
+                              </div>
                               <div className="activity-subtitle">{item.subtitle}</div>
                               <div className="activity-date">
                                 {new Date(item.timestamp).toLocaleDateString('en-US', {
@@ -568,11 +595,11 @@ const Dashboard: React.FC = () => {
                   dataSource={upcomingDeadlines}
                 renderItem={(item: any) => (
                   <List.Item className="deadline-item">
-                    <div className="deadline-content">
+                      <div className="deadline-content">
                       <div className="deadline-title">
                         {item.type === 'scholarship' 
                           ? (item?.scholarshipName || t('studentHub.dashboard.unknownScholarship'))
-                          : (item?.universityName || t('studentHub.dashboard.unknownUniversity'))
+                          : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
                         }
                       </div>
                       <div className="deadline-date">

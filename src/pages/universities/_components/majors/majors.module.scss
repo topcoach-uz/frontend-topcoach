@@ -43,6 +43,49 @@
   }
 }
 
+// Skeleton mode - remove or lighten borders
+.skeletonMode {
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  
+  .title {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .content {
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .major {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  }
+}
+
+.skeletonNoBorder {
+  :global(.ant-skeleton-content) {
+    .ant-skeleton-paragraph {
+      margin: 0 !important;
+      
+      > li {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%) !important;
+        background-size: 200% 100% !important;
+        border-radius: 4px !important;
+        border: none !important;
+        box-shadow: none !important;
+        list-style: none !important;
+        height: 16px !important;
+        margin-bottom: 8px !important;
+        
+        &::before,
+        &::after,
+        &::marker {
+          display: none !important;
+          content: none !important;
+        }
+      }
+    }
+  }
+}
+
 // Media queries
 @media screen and (max-width: 1150px) {
   .under {

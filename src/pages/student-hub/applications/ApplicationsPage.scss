@@ -689,150 +689,176 @@
     border-color: #cbd5e1;
   }
 
-  .application-card-content {
-    padding: $space-2;
+  // University section styling
+  .university-section {
+    margin-bottom: $space-4;
+    padding: $space-3;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-radius: $radius-lg;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border-color: #8b0000;
+      transform: translateX(4px);
+    }
+  }
+
+    .application-card-content {
+    padding: $space-5;
 
     .application-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: $space-3;
-      padding-bottom: $space-2;
-      border-bottom: 2px solid #f1f5f9;
+      margin-bottom: $space-4;
+      padding-bottom: $space-3;
+      border-bottom: 1px solid #e2e8f0;
 
-      .university-name {
-        font-size: $text-2xl;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0;
-        line-height: 1.2;
-        letter-spacing: -0.025em;
-        display: flex;
-        align-items: center;
+      .application-header-left {
+        flex: 1;
+        min-width: 0;
 
-      }
-
-      .application-status {
-        flex-shrink: 0;
-        padding: $space-2 $space-4;
-        background: linear-gradient(135deg, #8b0000 0%, #dc2626 100%);
-        color: white;
-        border-radius: $radius-full;
-        font-weight: 700;
-        font-size: $text-sm;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-      }
-    }
-
-    .application-details {
-      margin-bottom: $space-3;
-
-      .detail-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: $space-4;
-
-        li {
-          padding: $space-4;
-          background: white;
-          border-radius: $radius-lg;
-          border: 1px solid #f1f5f9;
+        .university-name {
+          font-size: $text-xl;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 $space-2 0;
+          line-height: 1.3;
           transition: all 0.2s ease;
-          display: flex;
-          align-items: center;
-          gap: $space-3;
 
           &:hover {
-            border-color: #8b0000;
-            box-shadow: 0 4px 12px rgba(139, 0, 0, 0.1);
-            transform: translateY(-1px);
+            color: #8b0000;
           }
+        }
+
+        .application-major {
+          display: flex;
+          align-items: center;
+          gap: $space-2;
+          color: #64748b;
+          font-size: $text-sm;
+          font-weight: 500;
 
           .detail-icon {
             color: #8b0000;
-            font-size: 18px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
-            border-radius: $radius-full;
-            flex-shrink: 0;
+            font-size: 14px;
           }
+        }
+      }
 
-          strong {
-            color: #475569;
-            font-weight: 700;
-            min-width: 140px;
-            font-size: $text-sm;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
+      .application-header-right {
+        flex-shrink: 0;
+        margin-left: $space-4;
 
-          span {
-            color: #1e293b;
-            font-weight: 600;
-            font-size: $text-base;
-          }
+        .status-tag {
+          margin: 0;
+          font-weight: 600;
+          font-size: $text-xs;
+          padding: 4px 12px;
         }
       }
     }
 
-    .application-notes {
-      margin-bottom: $space-2;
-      padding: $space-3;
-      background: #ffffff;
-      border-radius: $radius-xl;
-      border: 1px solid #e2e8f0;
-      position: relative;
+    .application-details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: $space-2;
+      margin-bottom: $space-4;
 
-      .notes-label {
-        font-size: $text-sm;
-        color: #495057;
-        font-weight: 800;
-        margin-bottom: $space-3;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-
-      .notes-content {
-        color: #451a03;
-        font-size: $text-base;
-        line-height: 1.7;
-        margin: 0;
-        font-weight: 500;
-        font-style: italic;
-      }
-    }
-
-    .application-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding-top: $space-8;
-      margin-top: -$space-1;
-      border-top: 2px solid #f1f5f9;
-
-      .ant-btn {
-        border-radius: $radius-lg;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: $text-sm;
-        height: 44px;
-        padding: 0 $space-6;
-        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
-        transition: all 0.3s ease;
+      .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+        padding: $space-2 $space-3;
+        background: #f8fafc;
+        border-radius: $radius-md;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(139, 0, 0, 0.3);
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
         }
+
+        .detail-icon {
+          color: #8b0000;
+          font-size: 14px;
+          margin-bottom: $space-1;
+        }
+
+        .detail-label {
+          color: #64748b;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 2px;
+        }
+
+        .detail-value {
+          color: #1e293b;
+          font-size: $text-sm;
+          font-weight: 600;
+          line-height: 1.4;
+
+          .ant-tag {
+            margin: 0;
+            font-size: $text-xs;
+            padding: 2px 8px;
+            border-radius: $radius-sm;
+          }
+        }
+      }
+
+      @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .application-notes-compact {
+      display: flex;
+      align-items: flex-start;
+      gap: $space-2;
+      padding: $space-3;
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      border-radius: $radius-md;
+      margin-bottom: $space-4;
+
+      .notes-icon {
+        color: #f59e0b;
+        font-size: 16px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .notes-content-compact {
+        color: #78350f;
+        font-size: $text-sm;
+        line-height: 1.5;
+        flex: 1;
+      }
+    }
+
+    .application-actions-compact {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: $space-3;
+      border-top: 1px solid #e2e8f0;
+
+      .ant-btn {
+        border-radius: $radius-md;
+        font-weight: 600;
+        font-size: $text-sm;
+        height: 36px;
+        padding: 0 $space-4;
       }
     }
   }
@@ -1219,6 +1245,44 @@
           box-shadow: 0 8px 20px rgba(139, 0, 0, 0.3);
         }
       }
+    }
+  }
+}
+
+// University info card styling
+.university-info-card {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  width: 100%;
+
+  .university-info-content {
+    flex: 1;
+    min-width: 0;
+
+    .university-info-name {
+      font-size: $text-lg;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: $space-1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .university-info-ranking {
+      font-size: $text-sm;
+      font-weight: 600;
+      color: #8b0000;
+      margin-bottom: $space-1;
+    }
+
+    .university-info-location {
+      font-size: $text-sm;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }

@@ -68,10 +68,130 @@ const UnivercityDetailOverview = React.memo(function UnivercityDetailOverview({
   if (isLoading) {
     return (
       <div className={styles.overview}>
-        <Flex gap={10} vertical>
-          {Array.from(Array(10)).map((_, i) => (
-            <Skeleton active key={i} style={{ width: 250 }} />
-          ))}
+        <Skeleton.Button 
+          active 
+          size="default" 
+          style={{ 
+            width: 80, 
+            height: 32, 
+            marginBottom: 24,
+            border: 'none',
+            borderRadius: '8px'
+          }} 
+        />
+        <Flex gap={16} vertical>
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 2, width: ['100%', '80%'] }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
+          
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginTop: 16, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 1, width: '60%' }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
+          
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginTop: 16, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 1, width: '40%' }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
+          
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginTop: 16, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 1, width: '30%' }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
+          
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginTop: 16, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 3, width: ['100%', '90%', '70%'] }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
+          
+          <Skeleton.Input 
+            active 
+            size="default" 
+            style={{ 
+              width: 200, 
+              height: 24, 
+              marginTop: 16, 
+              marginBottom: 8,
+              border: 'none',
+              borderRadius: '4px'
+            }} 
+          />
+          <Skeleton 
+            active 
+            paragraph={{ rows: 2, width: ['100%', '80%'] }} 
+            title={false}
+            className={styles.skeletonNoBorder}
+          />
         </Flex>
       </div>
     );
@@ -256,8 +376,8 @@ const UnivercityDetailOverview = React.memo(function UnivercityDetailOverview({
           {t('universities.links')}:
         </CustomText>
         {links &&
-          links.map((link) => (
-            <Flex vertical>
+          links.map((link, index) => (
+            <Flex key={index} vertical>
               <CustomText fontSize={16} style={{ whiteSpace: 'nowrap' }}>
                 {link?.name}:
               </CustomText>

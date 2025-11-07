@@ -19,6 +19,7 @@ import { getLatestCreatedImg } from 'src/utils';
 import { getUniversityFlag } from 'src/utils/countryFlags';
 import { getLocalizedText } from 'src/utils/translationUtils';
 import UniversityMajorSection from '../majors';
+import { useGetMentorsQuery } from 'src/app/services/mentors';
 
 interface IUniversityDetail extends Partial<UniversitiesSchema> {
   isLoading: boolean;
@@ -46,6 +47,19 @@ const UniversityDetailSection = React.memo(({
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const colors = useColors();
+  
+  // Fetch full mentors data to get university and major (same as mentors page)
+  const { data: allMentorsData } = useGetMentorsQuery();
+  
+  // Create a map of mentor IDs to full mentor data for quick lookup
+  const mentorsMap = useMemo(() => {
+    if (!allMentorsData) return new Map();
+    const map = new Map();
+    allMentorsData.forEach(mentor => {
+      map.set(mentor.id, mentor);
+    });
+    return map;
+  }, [allMentorsData]);
 
   // Memoize expensive computations
   const blockData = useMemo(() => (content as any)?.blocks, [content]);
@@ -135,10 +149,9 @@ const UniversityDetailSection = React.memo(({
 
       <div className={styles.img}>
         {isLoading ? (
-          <Skeleton.Image
-            active
-            style={{ width: '100%', height: 200 }}
-          />
+          <div className={styles.imageSkeletonWrapper}>
+            {/* Empty div to maintain the grey background area without image icon */}
+          </div>
         ) : img ? (
           <img 
             src={img} 
@@ -171,49 +184,39 @@ const UniversityDetailSection = React.memo(({
           </CustomText>
           <div className={styles.mentor}>
             {!isLoading ? (
-              selectedBy?.map((mentor: any, index) => {
-                const profileImage = getLatestCreatedImg(mentor.profile.media) || '';
+              selectedBy?.map((mentor: any) => {
+                // Get full mentor data from mentors list (same data source as mentors page)
+                const fullMentorData = mentorsMap.get(mentor.id) || mentor;
                 
-                // Debug: Log the mentor data to see what we're working with
-                console.log('Mentor data:', mentor);
-                console.log('selectedUniversities:', mentor?.selectedUniversities);
-                console.log('mentorProfile:', mentor?.mentorProfile);
+                // EXACT COPY from mentors page - apply same transformation as mentors API
+                const transformedMentor = {
+                  ...fullMentorData,
+                  // Pre-calculate displayUniversity exactly like mentors API transformResponse does
+                  displayUniversity: fullMentorData?.mentorProfile?.university,
+                };
                 
-                // Get university name - try multiple sources and ensure it's a string
-                let universityName = '';
-                if (mentor?.selectedUniversities?.[0]?.name) {
-                  universityName = typeof mentor.selectedUniversities[0].name === 'string' 
-                    ? mentor.selectedUniversities[0].name 
-                    : getLocalizedText(mentor.selectedUniversities[0].name, i18n.language);
-                } else if (mentor?.mentorProfile?.university) {
-                  universityName = typeof mentor.mentorProfile.university === 'string'
-                    ? mentor.mentorProfile.university
-                    : getLocalizedText(mentor.mentorProfile.university, i18n.language);
+                // EXACT COPY from mentors page - line by line
+                // Use the same approach as mentor detail page - get latest image from full media array
+                const profileImage = getLatestCreatedImg(transformedMentor.profile?.media || []);
+                
+                // Debug logging for missing images
+                if (!profileImage && transformedMentor.profile?.media?.length > 0) {
+                  console.log(`Mentor ${transformedMentor.profile.name} has media but no image:`, transformedMentor.profile.media);
                 }
                 
-                // Get major - ensure it's a string
-                let major = '';
-                if (mentor?.mentorProfile?.major) {
-                  major = typeof mentor.mentorProfile.major === 'string'
-                    ? mentor.mentorProfile.major
-                    : getLocalizedText(mentor.mentorProfile.major, i18n.language);
-                }
-                
-                console.log('Final university name:', universityName);
-                console.log('Final major:', major);
-                
+                // EXACT COPY from mentors page - same logic
                 return (
                   <MentorCard
-                    key={mentor.id}
-                    id={mentor.id}
-                    name={mentor.profile.name}
-                    imgSrc={profileImage}
-                    rating={mentor.profile.overallRating}
-                    sessionNumber={mentor?.numberOfSessions}
-                    major={major}
-                    university={universityName}
-                    level={mentor.mentorProfile?.level}
-                    availableSessions={mentor.sessionStats?.availableSessions || 0}
+                    key={transformedMentor.id}
+                    id={transformedMentor.id}
+                    name={transformedMentor.profile.name}
+                    imgSrc={profileImage || ''}
+                    rating={transformedMentor.profile.overallRating}
+                    sessionNumber={transformedMentor?.numberOfSessions}
+                    major={transformedMentor?.mentorProfile?.major}
+                    university={(transformedMentor as any).displayUniversity || transformedMentor?.mentorProfile?.university || ''}
+                    level={transformedMentor.mentorProfile?.level}
+                    availableSessions={transformedMentor.sessionStats?.availableSessions || 0}
                   />
                 );
               })

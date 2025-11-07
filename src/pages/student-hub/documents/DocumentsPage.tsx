@@ -337,14 +337,9 @@ const DocumentsPage: React.FC = () => {
                               <div className="category-info">
                                 <h4 className="category-title">
                                   {getTranslatedCategoryLabel(type)}
+                                  <span className="document-count">({categoryDocs.length})</span>
                                 </h4>
                                 <p className="category-description">{getTranslatedCategoryDescription(type)}</p>
-                              </div>
-                            </div>
-                            <div className="category-stats">
-                              <div className="stat-item">
-                                <span className="stat-label">{t('studentHub.documents.documents')}:</span>
-                                <span className="stat-value">{categoryDocs.length}</span>
                               </div>
                             </div>
                             <div className="category-actions">

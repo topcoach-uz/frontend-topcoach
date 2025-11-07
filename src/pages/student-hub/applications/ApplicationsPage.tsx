@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider, Spin } from 'antd';
+import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider, Spin, Avatar } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
@@ -12,12 +12,68 @@ import {
   useDeleteCollegeApplicationMutation,
   useDeleteScholarshipApplicationMutation
 } from '../../../app/services/student-hub/applicationTrackingApi';
+import { useGetUniversityDetailQuery } from 'src/app/services/universities';
+import { getTranslation } from 'src/lib/i18n/translationUtils';
 import NewApplicationPage from './NewApplicationPage';
 import NewTaskPage from './NewTaskPage';
 import NewScholarshipPage from './NewScholarshipPage';
 import './ApplicationsPage.scss';
 
 const { TabPane } = Tabs;
+
+// Component to display university info card
+const UniversityInfoCard: React.FC<{ universityId: string }> = ({ universityId }) => {
+  const { data: university, isLoading } = useGetUniversityDetailQuery(universityId);
+
+  if (isLoading) {
+    return <Spin size="small" />;
+  }
+
+  if (!university) {
+    return null;
+  }
+
+  const universityImage = university.media?.[0]?.url || '/img/some-university.png';
+  const universityName = getTranslation(university.name) || 'Unknown University';
+  const ranking = university.rankings?.[0]?.rank ? `#${university.rankings[0].rank}` : null;
+  const location = getTranslation(university.location?.address) || '';
+
+  return (
+    <div className="university-info-card">
+      <Avatar
+        src={universityImage}
+        size={64}
+        shape="square"
+        style={{ borderRadius: '8px' }}
+      />
+      <div className="university-info-content">
+        <div className="university-info-name">{universityName}</div>
+        {ranking && <div className="university-info-ranking">{ranking}</div>}
+        {location && <div className="university-info-location">{location}</div>}
+      </div>
+    </div>
+  );
+};
+
+// Component to display university name - fetches from universityId if available
+const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: string }> = ({ universityId, universityName }) => {
+  const { t } = useTranslation();
+  
+  if (universityId) {
+    const { data: university, isLoading } = useGetUniversityDetailQuery(universityId, { skip: !universityId });
+    
+    if (isLoading) {
+      return <span>Loading...</span>;
+    }
+    
+    if (university) {
+      const displayName = getTranslation(university.name);
+      return <>{displayName || universityName || t('studentHub.applications.unknownUniversity')}</>;
+    }
+  }
+  
+  return <>{universityName || t('studentHub.applications.unknownUniversity')}</>;
+};
 
 const ApplicationsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -286,7 +342,12 @@ const ApplicationsPage: React.FC = () => {
                               <li>
                                 <FontAwesomeIcon icon={item.type === 'scholarship' ? 'graduation-cap' : 'university'} className="detail-icon" />
                                 <strong>{item.type === 'scholarship' ? `${t('studentHub.applications.scholarship')}:` : `${t('studentHub.applications.university')}:`}</strong>
-                                <span className="detail-value">{item.type === 'scholarship' ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship')) : (item?.universityName || t('studentHub.applications.unknownUniversity'))}</span>
+                                <span className="detail-value">
+                                  {item.type === 'scholarship' 
+                                    ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship'))
+                                    : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
+                                  }
+                                </span>
                               </li>
                               <li>
                                 <FontAwesomeIcon icon="calendar" className="detail-icon" />
@@ -328,7 +389,7 @@ const ApplicationsPage: React.FC = () => {
                         <div className="deadline-title">
                           {item.type === 'scholarship' 
                             ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship'))
-                            : (item?.universityName || t('studentHub.applications.unknownUniversity'))
+                            : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
                           }
                         </div>
                         <div className="deadline-date">
@@ -373,84 +434,97 @@ const ApplicationsPage: React.FC = () => {
           </div>
           <List
             dataSource={applicationsData.applications}
-            renderItem={(application: any) => (
-              <List.Item className="application-detail-item">
-                <Card className="application-card">
-                  <div className="application-card-content">
+            renderItem={(application: any) => {
+              // Fetch university details if universityId is available
+              const UniversityCard = application.universityId ? (
+                <UniversityInfoCard universityId={application.universityId} />
+              ) : null;
 
-                    <div className="application-header">
-                      <div className="university-name">{application.universityName || t('studentHub.applications.unknownUniversity')}</div>
-                      <div className="application-status">{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</div>
-                    </div>
-
-                    <div className="application-details">
-                      <ul className="detail-list">
-                        <li>
-                          <FontAwesomeIcon icon="university" className="detail-icon" />
-                          <strong>{t('studentHub.applications.university')}:</strong>
-                          <span>{application.universityName || t('studentHub.applications.unknownUniversity')}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="graduation-cap" className="detail-icon" />
-                          <strong>{t('studentHub.applications.major')}:</strong>
-                          <span>{application.major || t('studentHub.applications.notSpecified')}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
-                          <strong>{t('studentHub.applications.applicationType')}:</strong>
-                          <span>{application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                          <strong>{t('studentHub.applications.deadline')}:</strong>
-                          <span>{formatDate(application.deadline)}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="star" className="detail-icon" />
-                          <strong>{t('studentHub.applications.priorityLevel')}:</strong>
-                          <span>{getPriorityText(application.priority)} ({application.priority}/10)</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="info-circle" className="detail-icon" />
-                          <strong>{t('studentHub.applications.status')}:</strong>
-                          <span>{application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="application-footer">
-                      {application.notes && (
-                        <div className="application-notes">
-                          <div className="notes-label">{t('studentHub.applications.notes')}</div>
-                          <div className="notes-content">{application.notes}</div>
+              return (
+                <List.Item className="application-detail-item">
+                  <Card className="application-card">
+                    <div className="application-card-content">
+                      {/* University Section - Clickable */}
+                      {application.universityId && (
+                        <div 
+                          className="university-section"
+                          onClick={() => navigate(`/universities/${application.universityId}`)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {UniversityCard}
                         </div>
                       )}
-                      <div className="application-actions">
+
+                      <div className="application-header">
+                        <div className="application-header-left">
+                          <div 
+                            className="university-name"
+                            onClick={application.universityId ? () => navigate(`/universities/${application.universityId}`) : undefined}
+                            style={application.universityId ? { cursor: 'pointer', color: '#8b0000', textDecoration: 'underline' } : {}}
+                          >
+                            <UniversityNameDisplay universityId={application.universityId} universityName={application.universityName} />
+                          </div>
+                          {application.major && (
+                            <div className="application-major">
+                              <FontAwesomeIcon icon="graduation-cap" className="detail-icon" />
+                              <span>{application.major}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="application-header-right">
+                          <Tag 
+                            color={application.status === 'accepted' ? 'green' : application.status === 'rejected' ? 'red' : application.status === 'applying' ? 'blue' : 'orange'}
+                            className="status-tag"
+                          >
+                            {application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
+                          </Tag>
+                        </div>
+                      </div>
+
+                      <div className="application-details-grid">
+                        <div className="detail-item">
+                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
+                          <span className="detail-label">{t('studentHub.applications.applicationType')}</span>
+                          <span className="detail-value">{application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
+                          <span className="detail-label">{t('studentHub.applications.deadline')}</span>
+                          <span className="detail-value">{formatDate(application.deadline)}</span>
+                        </div>
+                        <div className="detail-item">
+                          <FontAwesomeIcon icon="star" className="detail-icon" />
+                          <span className="detail-label">{t('studentHub.applications.priorityLevel')}</span>
+                          <span className="detail-value">
+                            <Tag color={application.priority >= 7 ? 'red' : application.priority >= 4 ? 'orange' : 'default'}>
+                              {getPriorityText(application.priority)} ({application.priority}/10)
+                            </Tag>
+                          </span>
+                        </div>
+                      </div>
+
+                      {application.notes && (
+                        <div className="application-notes-compact">
+                          <FontAwesomeIcon icon="sticky-note" className="notes-icon" />
+                          <div className="notes-content-compact">{application.notes}</div>
+                        </div>
+                      )}
+
+                      <div className="application-actions-compact">
                         <Button 
                           size="small"
+                          danger
+                          icon={<FontAwesomeIcon icon="trash" />}
                           onClick={() => handleDeleteApplication(application)}
-                          style={{ 
-                            backgroundColor: '#8b0000', 
-                            borderColor: '#8b0000', 
-                            color: 'white' 
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#660000';
-                            e.currentTarget.style.borderColor = '#660000';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#8b0000';
-                            e.currentTarget.style.borderColor = '#8b0000';
-                          }}
                         >
                           {t('studentHub.applications.delete')}
                         </Button>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </List.Item>
-            )}
+                  </Card>
+                </List.Item>
+              );
+            }}
           />
         </div>
       ),
