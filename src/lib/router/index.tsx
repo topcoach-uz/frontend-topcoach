@@ -140,20 +140,20 @@ function RouterProvider() {
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route path="/programs/admissions" element={<ProgramsAdmissionsPageLazy />} />
+              <Route 
+                path="/programs/admissions/learning" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
+              <Route 
+                path="/programs/admissions/learning/:lessonId" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route path="/contact-form" element={<ContactFormPageLazy />} />
-              <Route 
-                path="/learning" 
-                element={
-                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
-                } 
-              />
-              <Route 
-                path="/learning/:lessonId" 
-                element={
-                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
-                } 
-              />
               <Route 
                 path="/student-hub/*"
                 element={<StudentHubRoutesLazy />}

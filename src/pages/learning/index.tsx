@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Spin, Button, message } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
@@ -12,6 +13,7 @@ import './index.scss';
 import { useDispatch } from 'react-redux';
 import { coursesApi } from 'src/app/services/courses';
 import { useTypedSelector } from 'src/app/store';
+import { baseUrl } from 'src/app/services/api/const';
 
 const { Sider, Content } = Layout;
 
@@ -19,15 +21,22 @@ interface LearningPageProps {}
 
 const LearningPage: React.FC<LearningPageProps> = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Check authentication
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+
+  // ALL STATE HOOKS - MUST BE DECLARED BEFORE ANY CONDITIONAL LOGIC
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [vdocipherOTP, setVdocipherOTP] = useState<string | null>(null);
   const [vdocipherPlaybackInfo, setVdocipherPlaybackInfo] = useState<string | null>(null);
   const [isLoadingOTP, setIsLoadingOTP] = useState(false);
-  const dispatch = useDispatch();
-  
-  // Check authentication
-  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
+  const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
+  const [hasShownEnrollmentMessage, setHasShownEnrollmentMessage] = useState(false);
 
   // API hooks - ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL LOGIC
   const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery();
@@ -41,109 +50,31 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   });
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
-  // Additional state hooks - ALL HOOKS MUST BE AT THE TOP
-  const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
-  const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      message.warning('Please log in to access the learning content');
-      window.location.href = '/auth/signin';
-      return;
+  // Helper function to find the next incomplete lesson - MUST BE DEFINED BEFORE HOOKS THAT USE IT
+  const findNextIncompleteLesson = React.useCallback((courseStructure: any[], userProgress: any) => {
+    if (!userProgress?.progress) return null;
+    
+    const completedLessonIds = new Set(
+      userProgress.progress
+        .filter((p: any) => p.isCompleted)
+        .map((p: any) => p.lessonId)
+    );
+    
+    for (const module of courseStructure) {
+      if (module.lessons) {
+        for (const lesson of module.lessons) {
+          if (!completedLessonIds.has(lesson.id)) {
+            return lesson;
+          }
+        }
+      }
     }
-  }, [isAuthenticated]);
-
-  // Don't render anything if not authenticated (will redirect)
-  if (!isAuthenticated) {
+    
     return null;
-  }
+  }, []);
 
-  // Show loading while enrollment status is being fetched
-  if (enrollmentLoading) {
-    return (
-      <div className="learning-loading">
-        <Spin size="large" />
-        <p>Checking your enrollment status...</p>
-      </div>
-    );
-  }
-
-  // Debug: Log enrollment status
-  console.log('Learning page - Enrollment status:', enrollmentStatus);
-
-  // Check enrollment status and show appropriate message
-  if (!enrollmentStatus) {
-    return (
-      <div className="learning-error">
-        <h2>Unable to Load Enrollment Status</h2>
-        <p>We're having trouble loading your enrollment information. Please try refreshing the page or contact support.</p>
-        <Button 
-          type="primary" 
-          onClick={() => window.location.reload()}
-          style={{ marginTop: '16px' }}
-        >
-          Refresh Page
-        </Button>
-      </div>
-    );
-  }
-
-  if (!enrollmentStatus.isEnrolled) {
-    return (
-      <div className="learning-error">
-        <h2>Not Enrolled</h2>
-        <p>You need to enroll in a course to access the learning content.</p>
-        <Button 
-          type="primary" 
-          onClick={() => window.location.href = '/programs'}
-          style={{ marginTop: '16px' }}
-        >
-          View Programs
-        </Button>
-      </div>
-    );
-  }
-
-  // Check if enrollment is pending approval
-  if (enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
-    return (
-      <div className="learning-pending-approval">
-        <div className="pending-content">
-          <div className="pending-icon">
-            <ClockCircleOutlined />
-          </div>
-          <h2>Enrollment Pending Approval</h2>
-          <p className="pending-message">
-            Thank you for enrolling in our course! Your application has been submitted and is currently under review.
-          </p>
-          <p className="pending-details">
-            Our administrator will review your enrollment and contact you within 12 hours. You'll receive access to all learning materials once your enrollment is approved.
-          </p>
-          <div className="pending-actions">
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={() => window.location.href = '/programs'}
-              icon={<RocketOutlined />}
-            >
-              Back to Programs
-            </Button>
-            <Button 
-              size="large"
-              onClick={() => window.location.href = '/'}
-            >
-              Go to Dashboard
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Generate VdoCipher OTP
-  const generateVdoCipherOTP = async (videoId: string) => {
+  // Generate VdoCipher OTP function - must be defined before hooks that use it
+  const generateVdoCipherOTP = React.useCallback(async (videoId: string) => {
     try {
       setIsLoadingOTP(true);
       const token = localStorage.getItem(ACCESS_TOKEN);
@@ -152,7 +83,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('/api/vdocipher/generate-otp', {
+      const response = await fetch(`${baseUrl}/vdocipher/generate-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +110,29 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     } finally {
       setIsLoadingOTP(false);
     }
-  };
+  }, []);
+
+  // ALL useEffect HOOKS - MUST BE DECLARED BEFORE ANY CONDITIONAL RETURNS
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      message.warning('Please log in to access the learning content');
+      navigate('/auth/signin', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Handle enrollment status - show message and redirect if not enrolled
+  useEffect(() => {
+    if (!enrollmentLoading && enrollmentStatus) {
+      if (!enrollmentStatus.isEnrolled && !hasShownEnrollmentMessage) {
+        setHasShownEnrollmentMessage(true);
+        message.warning('Please enroll in the course first to access learning content', 5);
+        setTimeout(() => {
+          navigate('/programs/admissions', { replace: true });
+        }, 2000);
+      }
+    }
+  }, [enrollmentStatus, enrollmentLoading, hasShownEnrollmentMessage, navigate]);
 
   // Clear VdoCipher data when lesson changes
   useEffect(() => {
@@ -190,29 +143,20 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   // Force refetch user progress after any completion
   useEffect(() => {
     if (lastCompletionTime > 0) {
-      // Refetch user progress after a short delay to ensure server state is updated
       const timer = setTimeout(() => {
         refetchUserProgress();
         setLastCompletionTime(0);
       }, 500);
-      
       return () => clearTimeout(timer);
     }
   }, [lastCompletionTime, refetchUserProgress]);
 
-  // Find the selected lesson with safe fallback
-  const selectedLesson = courseStructure?.flatMap(module => 
-    module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
-  )[0] || null;
-
   // Restore last selected lesson from localStorage on page load
   useEffect(() => {
     if (courseStructure && courseStructure.length > 0 && userProgress) {
-      // Try to restore the last selected lesson
       const lastSelectedLessonId = localStorage.getItem('topcoach-selected-lesson');
       
       if (lastSelectedLessonId) {
-        // Verify the lesson still exists in the course structure
         const lessonExists = courseStructure.some(module => 
           module.lessons?.some(lesson => lesson.id === lastSelectedLessonId)
         );
@@ -221,18 +165,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
           setSelectedLessonId(lastSelectedLessonId);
           return;
         } else {
-          // Clear invalid lesson ID from localStorage
           localStorage.removeItem('topcoach-selected-lesson');
         }
       }
       
-      // If no valid last lesson, find the next incomplete lesson (like Udemy/Coursera)
       if (!selectedLessonId) {
         const nextIncompleteLesson = findNextIncompleteLesson(courseStructure, userProgress);
         if (nextIncompleteLesson) {
           setSelectedLessonId(nextIncompleteLesson.id);
         } else {
-          // If all lessons are completed, select the first lesson
           const firstLesson = courseStructure[0]?.lessons?.[0];
           if (firstLesson?.id) {
             setSelectedLessonId(firstLesson.id);
@@ -240,31 +181,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         }
       }
     }
-  }, [courseStructure, userProgress, selectedLessonId]);
-
-  // Helper function to find the next incomplete lesson
-  const findNextIncompleteLesson = (courseStructure: any[], userProgress: any) => {
-    if (!userProgress?.progress) return null;
-    
-    const completedLessonIds = new Set(
-      userProgress.progress
-        .filter((p: any) => p.isCompleted)
-        .map((p: any) => p.lessonId)
-    );
-    
-    // Find the first incomplete lesson
-    for (const module of courseStructure) {
-      if (module.lessons) {
-        for (const lesson of module.lessons) {
-          if (!completedLessonIds.has(lesson.id)) {
-            return lesson;
-          }
-        }
-      }
-    }
-    
-    return null;
-  };
+  }, [courseStructure, userProgress, selectedLessonId, findNextIncompleteLesson]);
 
   // Save selected lesson to localStorage whenever it changes
   useEffect(() => {
@@ -281,33 +198,66 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       );
       const completedLessons = userProgress.completedLessons || 0;
       
-      // If all lessons are completed, clear the stored lesson
       if (totalLessons > 0 && completedLessons >= totalLessons) {
         localStorage.removeItem('topcoach-selected-lesson');
       }
     }
   }, [userProgress, courseStructure]);
 
-  // Debug: Log selected lesson to catch undefined issues
-  console.log('Selected lesson debug:', {
-    selectedLessonId,
-    selectedLesson: selectedLesson ? {
-      id: selectedLesson.id,
-      title: selectedLesson.title,
-      lessonType: selectedLesson.lessonType,
-      useVdoCipher: selectedLesson.useVdoCipher,
-      vdocipherVideoId: selectedLesson.vdocipherVideoId,
-      contentUrl: selectedLesson.contentUrl
-    } : null,
-    courseStructure: courseStructure?.length || 0,
-    lastSelectedFromStorage: localStorage.getItem('topcoach-selected-lesson')
-  });
+  // Initialize completed lessons from server data
+  useEffect(() => {
+    if (userProgress?.progress) {
+      const currentLessonCompleted = userProgress.progress.find((p: any) => p.lessonId === selectedLessonId)?.isCompleted || false;
+      setIsCurrentLessonCompleted(currentLessonCompleted);
+    }
+  }, [userProgress?.progress, selectedLessonId]);
 
-  // Debug: Log when lesson is selected
-  if (selectedLesson && selectedLesson.id) {
-    console.log('Rendering lesson:', selectedLesson.title, 'Type:', selectedLesson.lessonType);
-  }
+  // Auto-select first lesson if no lesson is selected
+  useEffect(() => {
+    if (selectedLessonId) {
+      setSelectedLessonId(selectedLessonId);
+    } else if (courseStructure && courseStructure.length > 0) {
+      const firstLesson = courseStructure[0]?.lessons?.[0];
+      if (firstLesson) {
+        setSelectedLessonId(firstLesson.id);
+      }
+    }
+  }, [selectedLessonId, courseStructure]);
 
+  // Handle errors
+  useEffect(() => {
+    if (structureError) {
+      console.error('Course structure error:', structureError);
+      message.error('Failed to load course structure. Please try refreshing the page.');
+    }
+    if (progressError) {
+      console.error('User progress error:', progressError);
+      message.error('Failed to load progress. Please try refreshing the page.');
+    }
+  }, [structureError, progressError]);
+
+  // Debug: Log enrollment status
+  useEffect(() => {
+    console.log('Learning page - Enrollment status:', enrollmentStatus);
+  }, [enrollmentStatus]);
+
+  // Find the selected lesson with safe fallback (computed value, not a hook)
+  const selectedLesson = courseStructure?.flatMap(module => 
+    module.lessons?.filter(lesson => lesson.id === selectedLessonId) || []
+  )[0] || null;
+
+  // Find the selected module (computed value, not a hook)
+  const selectedModule = courseStructure?.find(module => 
+    module.lessons?.some(lesson => lesson.id === selectedLessonId)
+  );
+
+  // Generate OTP when VdoCipher lesson is selected
+  useEffect(() => {
+    if (selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP) {
+      console.log('Generating VdoCipher OTP for video:', selectedLesson.vdocipherVideoId);
+      generateVdoCipherOTP(selectedLesson.vdocipherVideoId);
+    }
+  }, [selectedLesson, vdocipherOTP, generateVdoCipherOTP]);
 
   // Debug: Log selected lesson data
   useEffect(() => {
@@ -326,62 +276,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     }
   }, [selectedLesson, vdocipherOTP, vdocipherPlaybackInfo, isLoadingOTP]);
 
-  // Find the selected module
-  const selectedModule = courseStructure?.find(module => 
-    module.lessons?.some(lesson => lesson.id === selectedLessonId)
-  );
-
-  // Debug: Log selected module
-  console.log('Selected module debug:', {
-    selectedModule: selectedModule ? {
-      id: selectedModule.id,
-      title: selectedModule.title,
-      mentorName: selectedModule.mentorName,
-      mentor: selectedModule.mentor
-    } : null
-  });
-
-  // Generate OTP when VdoCipher lesson is selected
-  useEffect(() => {
-    console.log('VdoCipher lesson check:', {
-      useVdoCipher: selectedLesson?.useVdoCipher,
-      vdocipherVideoId: selectedLesson?.vdocipherVideoId,
-      hasOTP: !!vdocipherOTP,
-      shouldGenerate: selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP
-    });
-    
-    if (selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP) {
-      console.log('Generating VdoCipher OTP for video:', selectedLesson.vdocipherVideoId);
-      generateVdoCipherOTP(selectedLesson.vdocipherVideoId);
-    }
-  }, [selectedLesson, vdocipherOTP]);
-
-  // Throttle progress updates to every 5 seconds
-  const handleProgressUpdate = (progress: number, lessonId: string, duration: number) => {
-    if (progress > 0) { // 5 seconds throttle
-      updateLessonProgress({
-        lessonId,
-        data: {
-          progressPercentage: Math.round(progress),
-          timeWatched: Math.round((progress / 100) * (duration * 60)),
-        }
-      }).catch(() => {
-        // Silently handle errors
-      });
-    }
-  };
-
-
-
-  // Initialize completed lessons from server data
-  useEffect(() => {
-    if (userProgress?.progress) {
-      const currentLessonCompleted = userProgress.progress.find((p: any) => p.lessonId === selectedLessonId)?.isCompleted || false;
-      setIsCurrentLessonCompleted(currentLessonCompleted);
-    }
-  }, [userProgress?.progress, selectedLessonId]);
-
-  // Check if selected lesson is completed (combine server + local state)
+  // Check if selected lesson is completed (computed value, not a hook)
   const serverCompleted = userProgress?.progress?.find((l: any) => l.lessonId === selectedLessonId)?.isCompleted || false;
   const isSelectedLessonCompleted = serverCompleted || isCurrentLessonCompleted;
 
@@ -395,33 +290,113 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       forceUpdate,
       userProgress: userProgress?.progress?.find((l: any) => l.lessonId === selectedLessonId)
     });
-  }, [selectedLessonId, isSelectedLessonCompleted, userProgress?.progress, isCurrentLessonCompleted, forceUpdate]);
+  }, [selectedLessonId, isSelectedLessonCompleted, userProgress?.progress, isCurrentLessonCompleted, forceUpdate, serverCompleted]);
 
-  // Ensure we have progress data
+  // Ensure we have progress data (computed value, not a hook)
   const hasProgressData = userProgress && userProgress.progress && userProgress.progress.length > 0;
 
-  useEffect(() => {
-    if (selectedLessonId) {
-      setSelectedLessonId(selectedLessonId);
-    } else if (courseStructure && courseStructure.length > 0) {
-      // Auto-select first lesson if no lesson is selected
-      const firstLesson = courseStructure[0]?.lessons?.[0];
-      if (firstLesson) {
-        setSelectedLessonId(firstLesson.id);
-      }
+  // Throttle progress updates function
+  const handleProgressUpdate = React.useCallback((progress: number, lessonId: string, duration: number) => {
+    if (progress > 0) {
+      updateLessonProgress({
+        lessonId,
+        data: {
+          progressPercentage: Math.round(progress),
+          timeWatched: Math.round((progress / 100) * (duration * 60)),
+        }
+      }).catch(() => {
+        // Silently handle errors
+      });
     }
-  }, [selectedLessonId, courseStructure]);
+  }, [updateLessonProgress]);
 
-  useEffect(() => {
-    if (structureError) {
-      console.error('Course structure error:', structureError);
-      message.error('Failed to load course structure. Please try refreshing the page.');
-    }
-    if (progressError) {
-      console.error('User progress error:', progressError);
-      message.error('Failed to load progress. Please try refreshing the page.');
-    }
-  }, [structureError, progressError]);
+  // CONDITIONAL RENDERING - ALL HOOKS HAVE BEEN CALLED ABOVE
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show loading while enrollment status is being fetched
+  if (enrollmentLoading) {
+    return (
+      <div className="learning-loading">
+        <Spin size="large" />
+        <p>Checking your enrollment status...</p>
+      </div>
+    );
+  }
+
+  // Check enrollment status and show appropriate message
+  if (!enrollmentStatus) {
+    return (
+      <div className="learning-error">
+        <h2>Unable to Load Enrollment Status</h2>
+        <p>We're having trouble loading your enrollment information. Please try refreshing the page or contact support.</p>
+        <Button 
+          type="primary" 
+          onClick={() => window.location.reload()}
+          style={{ marginTop: '16px' }}
+        >
+          Refresh Page
+        </Button>
+      </div>
+    );
+  }
+
+  if (!enrollmentStatus.isEnrolled) {
+    return (
+      <div className="learning-error">
+        <h2>Not Enrolled</h2>
+        <p>You need to enroll in the course first to access the learning content.</p>
+        <p style={{ marginTop: '8px', color: '#666' }}>Redirecting you to the enrollment page...</p>
+        <Button 
+          type="primary" 
+          onClick={() => navigate('/programs/admissions', { replace: true })}
+          style={{ marginTop: '16px' }}
+        >
+          Go to Enrollment Page
+        </Button>
+      </div>
+    );
+  }
+
+  // Check if enrollment is pending approval
+  if (enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
+    return (
+      <div className="learning-pending-approval">
+        <div className="pending-content">
+          <div className="pending-icon">
+            <ClockCircleOutlined />
+          </div>
+          <h2>Enrollment Pending Approval</h2>
+          <p className="pending-message">
+            Thank you for enrolling in our course! Your application has been submitted and is currently under review.
+          </p>
+          <p className="pending-details">
+            Our administrator will review your enrollment and contact you within 12 hours. You'll receive access to all learning materials once your enrollment is approved.
+          </p>
+          <div className="pending-actions">
+            <Button 
+              type="primary" 
+              size="large"
+              onClick={() => navigate('/programs/admissions', { replace: true })}
+              icon={<RocketOutlined />}
+            >
+              Back to Programs
+            </Button>
+            <Button 
+              size="large"
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
 
   if (structureLoading || progressLoading) {
     return (

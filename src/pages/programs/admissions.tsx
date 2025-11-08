@@ -285,7 +285,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
   };
 
   const handleContinueLearning = () => {
-    navigate('/learning');
+    navigate('/programs/admissions/learning');
   };
 
   const getStatusColor = (status: CoursePaymentStatusEnum) => {

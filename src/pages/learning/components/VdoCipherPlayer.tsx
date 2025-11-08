@@ -80,6 +80,16 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         // Add load event listener to iframe
         iframe.onload = () => {
           console.log('VdoCipher iframe loaded successfully');
+          // Set a timeout to detect domain errors
+          setTimeout(() => {
+            if (isLoading && !isReady) {
+              // If still loading after 5 seconds, likely a domain restriction issue
+              const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+              if (isLocalhost) {
+                console.warn('VdoCipher may be blocking localhost - check domain whitelist in dashboard');
+              }
+            }
+          }, 5000);
         };
 
         iframe.onerror = (error) => {
@@ -129,7 +139,17 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             }
           } else if (data.type === 'error') {
             console.error('VdoCipher iframe error:', data.error);
-            setError('Video playback error. Please try again.');
+            // Check for domain restriction errors
+            if (data.error && (data.error.includes('Domain not allowed') || data.error.includes('2014'))) {
+              const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+              if (isLocalhost) {
+                setError('Domain not allowed: VdoCipher requires domain whitelisting. Please add localhost to your VdoCipher dashboard or use a development domain.');
+              } else {
+                setError('Domain not allowed: Please add this domain to your VdoCipher dashboard whitelist.');
+              }
+            } else {
+              setError('Video playback error. Please try again.');
+            }
             setIsLoading(false);
           } else if (data.type === 'loadedmetadata') {
             console.log('Video metadata loaded');
@@ -225,6 +245,27 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             <div className="error-icon">⚠️</div>
             <h3>Video Error</h3>
             <p>{error}</p>
+            {error.includes('Domain not allowed') && (
+              <div className="domain-error-help" style={{ 
+                marginTop: '16px', 
+                padding: '12px', 
+                backgroundColor: '#f0f0f0', 
+                borderRadius: '4px',
+                fontSize: '12px',
+                textAlign: 'left'
+              }}>
+                <strong>How to fix:</strong>
+                <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                  <li>Log in to your VdoCipher dashboard</li>
+                  <li>Go to Settings → Domain Restrictions</li>
+                  <li>Add <code>{window.location.hostname}</code> to the allowed domains list</li>
+                  <li>For localhost development, add: <code>localhost</code> and <code>127.0.0.1</code></li>
+                </ol>
+                <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#666' }}>
+                  Alternatively, use a tunneling service like ngrok for development.
+                </p>
+              </div>
+            )}
             <button 
               className="retry-button"
               onClick={() => window.location.reload()}
