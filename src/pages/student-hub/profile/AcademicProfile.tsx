@@ -163,8 +163,11 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
     { value: 'Other', label: 'Other' },
   ];
 
-  const graduationYearOptions = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() + i;
+  const currentYear = new Date().getFullYear();
+  const startYear = 2018;
+  const endYear = currentYear + 5; // Allow up to 10 years in the future
+  const graduationYearOptions = Array.from({ length: endYear - startYear + 1 }, (_, i) => {
+    const year = startYear + i;
     return { value: year, label: year.toString() };
   });
 

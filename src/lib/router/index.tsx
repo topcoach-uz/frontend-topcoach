@@ -97,6 +97,7 @@ const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
+const B2BPageLazy = lazy(() => import("src/pages/b2b"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -157,6 +158,10 @@ function RouterProvider() {
               <Route 
                 path="/student-hub/*"
                 element={<StudentHubRoutesLazy />}
+              />
+              <Route 
+                path="/b2b/*"
+                element={<B2BPageLazy />}
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />

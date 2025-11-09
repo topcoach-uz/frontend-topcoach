@@ -208,7 +208,7 @@ $crimson-900: #7f1d1d;
           font-size: $text-lg;
           font-weight: $font-semibold;
           color: #8b0000;
-          margin-left: $space-6; // Align with menu icons below
+          margin-left: 0; // Move to the left
         }
       }
 
@@ -250,6 +250,7 @@ $crimson-900: #7f1d1d;
         .logo-text {
           transition: opacity $transition-base;
           font-size: $text-lg;
+          margin-left: 1px; // Move to the left
         }
       }
     }

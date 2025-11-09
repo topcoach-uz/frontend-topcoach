@@ -1,0 +1,149 @@
+.student-detail {
+  .detail-header {
+    margin-bottom: 24px;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 24px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      .header-info {
+        flex: 1;
+
+        h1 {
+          font-size: 28px;
+          font-weight: 700;
+          color: #1f2937;
+          margin: 0 0 8px 0;
+        }
+      }
+    }
+  }
+
+  .info-card,
+  .stats-card,
+  .courses-card,
+  .timeline-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .ant-card-head {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ant-card-head-title {
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  .stats-card {
+    .stat-item {
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #8b0000;
+      }
+    }
+  }
+
+  .courses-card {
+    .courses-list {
+      .course-item {
+        padding: 20px;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #8b0000;
+          box-shadow: 0 2px 8px rgba(139, 0, 0, 0.1);
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .course-header {
+          margin-bottom: 16px;
+
+          h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+          }
+        }
+
+        .course-progress {
+          .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #6b7280;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+  }
+
+  .timeline-card {
+    .timeline-content {
+      .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+
+        strong {
+          color: #1f2937;
+        }
+
+        .timeline-time {
+          font-size: 12px;
+          color: #6b7280;
+        }
+      }
+
+      .timeline-message {
+        color: #6b7280;
+        font-size: 14px;
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+    }
+  }
+}
+

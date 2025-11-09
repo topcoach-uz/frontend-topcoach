@@ -3,6 +3,7 @@ import styles from './partnersLogos.module.scss';
 export default function PartnersLogos() {
   return (
     <div className={styles.partnersSection}>
+      <div className={styles.title}>Supported by</div>
       <div className={styles.carousel}>
         <ul className={styles.carouselTrack}>
           {partnersLogos.map((partner, index) => (
