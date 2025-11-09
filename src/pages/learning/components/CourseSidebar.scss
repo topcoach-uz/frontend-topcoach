@@ -52,6 +52,14 @@
         &:hover .anticon {
           transform: scale(1.1);
         }
+
+        .mobile-only-icon {
+          display: none;
+        }
+
+        .desktop-only-icon {
+          display: inline-block;
+        }
       }
     }
 
@@ -349,14 +357,122 @@
   }
 }
 
-// Responsive design
+// Mobile floating button
+.mobile-sidebar-toggle {
+  display: none;
+}
+
+// Mobile overlay
+.mobile-sidebar-overlay {
+  display: none;
+}
+
+// Desktop only elements
+.desktop-only {
+  display: flex;
+}
+
+// Mobile only elements
+.mobile-only {
+  display: none;
+}
+
+// Responsive design - Mobile
 @media (max-width: 768px) {
+  // Hide desktop collapsed sidebar on mobile
+  .course-sidebar-collapsed.desktop-only {
+    display: none !important;
+  }
+  .learning-sidebar{
+    z-index: 10000 !important;
+  }
+ .course-sidebar.hidden{
+    .ant-layout-sider.learning-sidebar.ant-layout-sider-collapsed {
+    display: none !important;
+  }
+  }
+  // Show mobile floating button when collapsed
+  .mobile-sidebar-toggle {
+    display: flex;
+    position: fixed;
+    bottom: 32px ;
+    left: 32px;
+ z-index: 100000 !important;
+    border-radius: 50px;
+    height: 60px;
+    min-width: 120px;
+    padding: 0 8px;
+    background: linear-gradient(135deg, #8b0000 0%, #660000 100%);
+    border: none;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(139, 0, 0, 0.4);
+      background: linear-gradient(135deg, #660000 0%, #4a0000 100%);
+    }
+
+    .anticon {
+      font-size: 18px;
+    }
+  }
+
+  // Mobile sidebar overlay
+  .mobile-sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  // Mobile sidebar - slide in from left
   .course-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 320px;
+    height: 100%;
+ z-index: 100000 !important;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    animation: slideInLeft 0.3s ease;
+
     .sidebar-header {
       padding: 16px;
 
-      h2 {
-        font-size: 16px;
+      .header-content {
+        h2 {
+          font-size: 18px;
+        }
+
+        .collapse-btn {
+          .mobile-only-icon {
+            display: inline-block;
+            font-size: 16px;
+          }
+
+          .desktop-only-icon {
+            display: none;
+          }
+        }
       }
     }
 
@@ -371,6 +487,17 @@
                 h3 {
                   font-size: 14px;
                 }
+
+                .module-meta {
+                  font-size: 11px;
+                }
+              }
+
+              .module-mentor {
+                .mentor-name {
+                  max-width: 60px;
+                  font-size: 11px;
+                }
               }
             }
           }
@@ -381,10 +508,25 @@
         .lesson-item {
           padding: 10px 16px;
 
+          .lesson-icon {
+            width: 28px;
+            height: 28px;
+            margin-right: 10px;
+
+            .anticon {
+              font-size: 14px;
+            }
+          }
+
           .lesson-content {
             .lesson-title {
               .title {
                 font-size: 13px;
+              }
+
+              .premium-tag {
+                font-size: 9px;
+                padding: 1px 4px;
               }
             }
 
@@ -392,8 +534,43 @@
               font-size: 10px;
             }
           }
+
+          .lesson-progress {
+            width: 30px;
+          }
         }
       }
     }
   }
-} 
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+}
+
+// Tablet adjustments
+@media (min-width: 769px) and (max-width: 1024px) {
+  .course-sidebar {
+   
+    .sidebar-header {
+      padding: 20px 16px;
+
+      h2 {
+        font-size: 18px;
+      }
+    }
+
+    .course-structure {
+      .lessons-list {
+        .lesson-item {
+          padding: 12px 16px;
+        }
+      }
+    }
+  }
+}

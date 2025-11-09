@@ -62,11 +62,12 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         
         console.log('Creating VdoCipher iframe with URL:', iframeSrc);
         
-                       iframe.src = iframeSrc;
+               iframe.src = iframeSrc;
                iframe.style.border = '0';
                iframe.style.width = '100%';
                iframe.style.height = '100%';
-               iframe.style.borderRadius = '8px';
+               iframe.style.transform = 'scale(1.1)';
+               iframe.style.transformOrigin = 'center center';
                iframe.style.background = '#000';
                iframe.style.display = 'block';
                iframe.style.position = 'absolute';
@@ -280,9 +281,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
 
   return (
     <div className="vdocipher-player-container">
-      <div className="video-title">
-        <h3>{title}</h3>
-      </div>
+  
 
       {isSafari && (
         <div className="safari-warning">
@@ -302,11 +301,18 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         </div>
       )}
       
-      <div 
-        ref={playerRef} 
-        className="vdocipher-player"
-        style={{ width: '100%', height: '500px', position: 'relative' }}
-      />
+<div 
+  ref={playerRef} 
+  className="vdocipher-player"
+  style={{ 
+    width: '100%', 
+    position: 'relative',
+    paddingTop: '56.25%', // 16:9 aspect ratio
+    backgroundColor: '#000',
+ 
+    overflow: 'hidden'
+  }}
+/>
 
       {isLoading && (
         <div className="loading-overlay">
