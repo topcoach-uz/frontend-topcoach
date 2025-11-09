@@ -545,8 +545,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         trigger={null}
         breakpoint="md"
         onBreakpoint={(broken) => {
-          if (broken && !collapsed) {
-            setCollapsedMobile(true);
+          if (broken) {
+            // Switching to mobile: collapse sidebar if not already collapsed
+            if (!collapsed) {
+              setCollapsedMobile(true);
+              setCollapsed(true);
+            }
+          } else {
+            // Switching to desktop: reset mobile state and open sidebar by default
+            setCollapsedMobile(false);
+            setCollapsed(false); // Open sidebar by default on desktop
           }
         }}
       >

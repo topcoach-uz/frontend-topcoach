@@ -286,17 +286,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
       {isSafari && (
         <div className="safari-warning">
           <div className="warning-content">
-            <div className="warning-icon">⚠️</div>
             <h4>Browser Compatibility Notice</h4>
             <p>Safari may have issues with this video player. For the best experience, please use Chrome, Firefox, or Edge.</p>
-            <div className="browser-suggestions">
-              <span>Recommended browsers:</span>
-              <div className="browser-icons">
-                <span>🌐 Chrome</span>
-                <span>🦊 Firefox</span>
-                <span>🔷 Edge</span>
-              </div>
-            </div>
           </div>
         </div>
       )}

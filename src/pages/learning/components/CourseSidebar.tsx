@@ -174,7 +174,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         </div>
 
         {/* Course Structure */}
-        <div className="course-structure " style={{backgroundColor: 'red'}}>
+        <div className="course-structure">
           <Collapse
             activeKey={expandedModules}
             onChange={handleModuleChange}
