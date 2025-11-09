@@ -261,6 +261,45 @@
   }
 }
 
+// Mobile menu button
+.mobile-menu-button {
+  display: none;
+  position: fixed;
+  top: 80px; // Position below main header (adjust based on header height)
+  left: 16px;
+  z-index: 10001;
+  background-color: #8b0000 !important;
+  border-color: #8b0000 !important;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+  
+  &:hover {
+    background-color: #660000 !important;
+    border-color: #660000 !important;
+  }
+}
+
+// Mobile sidebar overlay
+.mobile-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 // Responsive
 @media (max-width: 768px) {
   .b2b-layout {
@@ -273,12 +312,40 @@
     }
 
     .b2b-sider {
-      transform: translateX(-100%);
-      transition: transform 0.2s;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 10000;
+      transform: translateX(-100%); // Always hidden by default in mobile
+      transition: transform 0.3s ease;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+      width: 260px; // Always full width when visible in mobile
 
+      // In mobile, collapsed always means hidden
       &.ant-layout-sider-collapsed {
+        transform: translateX(-100%);
+      }
+
+      // When mobile sidebar is explicitly opened, slide in from left
+      &.mobile-open {
         transform: translateX(0);
       }
+      
+      // Ensure sidebar is always hidden when not explicitly opened in mobile
+      &:not(.mobile-open) {
+        transform: translateX(-100%) !important;
+      }
+    }
+
+    // Show mobile menu button
+    .mobile-menu-button {
+      display: block;
+    }
+
+    // Show mobile overlay when sidebar is open
+    .mobile-sidebar-overlay {
+      display: block;
     }
   }
 }

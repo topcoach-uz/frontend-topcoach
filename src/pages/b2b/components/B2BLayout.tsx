@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Layout, Menu } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Button } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -8,6 +8,7 @@ import {
   BarChartOutlined,
   SettingOutlined,
   MenuOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './B2BLayout.scss';
@@ -20,8 +21,37 @@ interface B2BLayoutProps {
 
 const B2BLayout: React.FC<B2BLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Handle window resize and mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        // In mobile mode, always keep sidebar closed
+        setCollapsed(true);
+        setMobileSidebarOpen(false);
+      } else {
+        // When switching to desktop, reset mobile states
+        setMobileSidebarOpen(false);
+      }
+    };
+
+    // Set initial mobile state
+    const initialMobile = window.innerWidth <= 768;
+    setIsMobile(initialMobile);
+    if (initialMobile) {
+      setCollapsed(true);
+      setMobileSidebarOpen(false);
+    }
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const menuItems: MenuProps['items'] = [
     {
@@ -53,28 +83,79 @@ const B2BLayout: React.FC<B2BLayoutProps> = ({ children }) => {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key);
+    // Close mobile sidebar after navigation
+    if (isMobile) {
+      setMobileSidebarOpen(false);
+      setCollapsed(true);
+    }
+  };
+
+  const handleToggle = () => {
+    if (isMobile) {
+      // In mobile, toggle the mobile sidebar state
+      setMobileSidebarOpen(!mobileSidebarOpen);
+      setCollapsed(!mobileSidebarOpen);
+    } else {
+      // In desktop, toggle normally
+      setCollapsed(!collapsed);
+    }
   };
 
   return (
     <Layout className="b2b-layout">
+      {/* Mobile menu button - only show when sidebar is closed */}
+      {isMobile && !mobileSidebarOpen && (
+        <Button
+          type="primary"
+          icon={<MenuOutlined />}
+          onClick={handleToggle}
+          className="mobile-menu-button"
+        />
+      )}
+
+      {/* Mobile overlay */}
+      {isMobile && mobileSidebarOpen && (
+        <div
+          className="mobile-sidebar-overlay"
+          onClick={() => {
+            setMobileSidebarOpen(false);
+            setCollapsed(true);
+          }}
+        />
+      )}
+
       <Sider 
         trigger={null} 
         collapsible 
         collapsed={collapsed}
-        className={`b2b-sider ${collapsed ? 'ant-layout-sider-collapsed' : ''}`}
+        className={`b2b-sider ${collapsed ? 'ant-layout-sider-collapsed' : ''} ${isMobile && mobileSidebarOpen ? 'mobile-open' : ''}`}
         width={260}
       >
         <div className="sidebar-header">
           {!collapsed && (
             <div className="sidebar-title">Tracking Portal</div>
           )}
-          <button
-            type="button"
-            className="sidebar-toggle"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <MenuOutlined />
-          </button>
+          {!isMobile && (
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={handleToggle}
+            >
+              <MenuOutlined />
+            </button>
+          )}
+          {isMobile && (
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={() => {
+                setMobileSidebarOpen(false);
+                setCollapsed(true);
+              }}
+            >
+              <CloseOutlined />
+            </button>
+          )}
         </div>
         <div className="sidebar-content">
           <Menu

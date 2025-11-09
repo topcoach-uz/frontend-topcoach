@@ -13,4 +13,7 @@ export default defineConfig({
       '127.0.0.1',
     ],
   },
+  optimizeDeps: {
+    force: false, // Set to true if you need to force re-optimization
+  },
 });
