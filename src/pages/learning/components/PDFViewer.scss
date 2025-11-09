@@ -89,9 +89,10 @@
 // Responsive design
 @media (max-width: 768px) {
   .pdf-viewer-card {
+    padding: 0px;
     .pdf-container {
       .pdf-preview {
-        padding: 24px 16px;
+        padding: 0px;
 
         .pdf-icon {
           font-size: 36px;
@@ -102,14 +103,27 @@
         }
       }
 
+      /* Mobile: place first two buttons in a single row and make the "complete" button full width below them */
       .pdf-actions {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
+        align-items: center;
+        justify-items: stretch;
+        margin-bottom: 16px;
 
         .ant-btn {
           width: 100%;
         }
+
+        /* Ensure the mark/completed button spans both columns and sits on its own row */
+        .complete-button,
+        .completed-button {
+          grid-column: 1 / -1;
+        }
       }
     }
   }
-} 
+}
+
+

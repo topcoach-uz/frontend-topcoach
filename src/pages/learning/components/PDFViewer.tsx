@@ -208,7 +208,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   };
 
   return (
-    <Card className="pdf-viewer-card" title={title}>
+    <Card className="pdf-viewer-card" >
       <div className="pdf-container">
         {/* PDF Actions - Keep the three buttons */}
         <div className="pdf-actions">
