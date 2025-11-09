@@ -99,7 +99,6 @@ const SettingsPage: React.FC = () => {
               <Form.Item label="Address" name="address">
                 <TextArea
                   rows={3}
-                  prefix={<EnvironmentOutlined />}
                   placeholder="Enter organization address"
                 />
               </Form.Item>

@@ -4,6 +4,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlin
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery } from 'src/app/services/courses';
+import type { CourseModuleDto, CourseLessonDto } from 'src/app/services/courses';
 import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
 import VdoCipherPlayer from './components/VdoCipherPlayer';
@@ -55,11 +56,11 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
   // Helper function to get all lessons in order
-  const getAllLessonsInOrder = React.useCallback((courseStructure: any[]) => {
-    const allLessons: any[] = [];
-    courseStructure.forEach(module => {
+  const getAllLessonsInOrder = React.useCallback((courseStructure: CourseModuleDto[]) => {
+    const allLessons: (CourseLessonDto & { moduleId: string; moduleTitle: string })[] = [];
+    courseStructure.forEach((module: CourseModuleDto) => {
       if (module.lessons && Array.isArray(module.lessons)) {
-        module.lessons.forEach(lesson => {
+        module.lessons.forEach((lesson: CourseLessonDto) => {
           allLessons.push({
             ...lesson,
             moduleId: module.id,
@@ -368,7 +369,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         id: selectedLesson.id,
         title: selectedLesson.title,
         lessonType: selectedLesson.lessonType,
-        useVdocipher: selectedLesson.useVdocipher,
+        useVdoCipher: selectedLesson.useVdoCipher,
         vdocipherVideoId: selectedLesson.vdocipherVideoId,
         contentUrl: selectedLesson.contentUrl,
         vdocipherOTP,
@@ -397,7 +398,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const handleProgressUpdate = React.useCallback((progress: number, lessonId: string | number, duration: number) => {
     if (progress > 0) {
       updateLessonProgress({
-        lessonId,
+        lessonId: String(lessonId),
         data: {
           progressPercentage: Math.round(progress),
           timeWatched: Math.round((progress / 100) * (duration * 60)),
