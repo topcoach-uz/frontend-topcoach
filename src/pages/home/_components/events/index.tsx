@@ -243,17 +243,6 @@ export default function EventsSection() {
         onComplete={handleConfettiComplete}
       />
       <div className={'container ' + styles.events}>
-        <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase}>
-          {t('home.eventTitle')}
-        </CustomText>
-        <CustomText
-          fontSize={16}
-          color={colors.colorTextSecondary}
-          mt={4}
-          mb={24}
-        >
-          {t('home.eventSubtitle')}
-        </CustomText>
         <CustomCard
           bgColor={colors.colorBgContainer}
           mb={40}
@@ -261,6 +250,16 @@ export default function EventsSection() {
           borderRadius={24}
           padding={24}
         >
+          <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} mb={4}>
+            {t('home.eventTitle')}
+          </CustomText>
+          <CustomText
+            fontSize={16}
+            color={colors.colorTextSecondary}
+            mb={24}
+          >
+            {t('home.eventSubtitle')}
+          </CustomText>
           <CustomTabs
             accessKey={activeTab}
             items={tabItems}

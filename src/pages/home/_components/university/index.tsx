@@ -72,44 +72,32 @@ export default function UniversitySection({
 
   return (
     <div className={showOnlyFavorites ? 'container ' + styles.university : styles.university}>
-      <CustomText
-        color={colors.colorTextBase}
-        fontSize={showOnlyFavorites ? 32 : themeFontSize.fontSizeTitle5}
-        fontWeight={showOnlyFavorites ? 600 : themeFontWeight.fontWeightSemibold}
-        mb={showOnlyFavorites ? 0 : 8}
-      >
-        <Flex gap={8} align="center">
-          {!showOnlyFavorites && <AiSearchStarsSvg />}
-          {showOnlyFavorites
-            ? t('home.favorite')
-            : checked
-            ? t('universities.aiSearchTitle')
-            : t('universities.findYourSpecialty')}
-        </Flex>
-      </CustomText>
-
       {!showOnlyFavorites && (
-        <CustomText
-          color={colors.colorText}
-          lineHeight={1.57}
-          fontSize={themeFontSize.fontSizeTitle8}
-          mb={4}
-        >
-          {checked
-            ? t('universities.aiSearchText')
-            : t('universities.filterText')}
-        </CustomText>
-      )}
-
-      {showOnlyFavorites && (
-        <CustomText
-          color={colors.colorTextSecondary}
-          fontSize={16}
-          mt={4}
-          mb={24}
-        >
-          {t('home.favouriteDesc')}
-        </CustomText>
+        <>
+          <CustomText
+            color={colors.colorTextBase}
+            fontSize={themeFontSize.fontSizeTitle5}
+            fontWeight={themeFontWeight.fontWeightSemibold}
+            mb={8}
+          >
+            <Flex gap={8} align="center">
+              <AiSearchStarsSvg />
+              {checked
+                ? t('universities.aiSearchTitle')
+                : t('universities.findYourSpecialty')}
+            </Flex>
+          </CustomText>
+          <CustomText
+            color={colors.colorText}
+            lineHeight={1.57}
+            fontSize={themeFontSize.fontSizeTitle8}
+            mb={4}
+          >
+            {checked
+              ? t('universities.aiSearchText')
+              : t('universities.filterText')}
+          </CustomText>
+        </>
       )}
 
       {!showOnlyFavorites && checked ? (
@@ -231,6 +219,21 @@ export default function UniversitySection({
           borderRadius={24}
           padding={24}
         >
+          <CustomText
+            color={colors.colorTextBase}
+            fontSize={32}
+            fontWeight={600}
+            mb={4}
+          >
+            {t('home.favorite')}
+          </CustomText>
+          <CustomText
+            color={colors.colorTextSecondary}
+            fontSize={16}
+            mb={24}
+          >
+            {t('home.favouriteDesc')}
+          </CustomText>
           <ul className={styles.card_list}>
             {isLoading ? (
               <UniversityCardSkeletons />

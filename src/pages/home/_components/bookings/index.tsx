@@ -123,7 +123,13 @@ export default function BookingsSection() {
   return (
     <section className={styles.bookings_section}>
       <div className={'container ' + styles.container}>
-        <CustomCard shadowed={false} bgColor={colors.colorBgContainer}>
+        <CustomCard
+          bgColor={colors.colorBgContainer}
+          mb={40}
+          shadowed
+          borderRadius={24}
+          padding={24}
+        >
           <CustomText
             fontSize={32}
             fontWeight={600}
@@ -140,13 +146,11 @@ export default function BookingsSection() {
           >
             {t('home.upcomingDesc')}
           </CustomText>
-          <CustomCard padding={24} borderRadius={24}>
-            <CustomTabs
-              activeKey={activeTab}
-              items={tabItems}
-              onChange={(key) => setActiveTab(key)}
-            />
-          </CustomCard>
+          <CustomTabs
+            activeKey={activeTab}
+            items={tabItems}
+            onChange={(key) => setActiveTab(key)}
+          />
         </CustomCard>
       </div>
     </section>
