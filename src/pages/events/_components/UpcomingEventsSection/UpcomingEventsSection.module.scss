@@ -67,14 +67,15 @@
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain; // Show full image without cropping
+    object-fit: cover; // Cover full width
     object-position: center;
+    transform: scale(0.95); // Zoom out slightly to show more of the image
     transition: transform 0.3s ease;
     border-radius: 12px 12px 0 0;
   }
 
   &:hover img {
-    transform: scale(1.05);
+    transform: scale(0.97); // Slight zoom on hover (reduced effect)
   }
 }
 
