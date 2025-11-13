@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Input, Button, Select, Space, message, Alert, Spin, Row, Col, Divider } from 'antd';
-import { BulbOutlined, EditOutlined, SaveOutlined, FileTextOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Card, Input, Button, Select, Space, message, Alert, Spin, Row, Col, Divider, Avatar } from 'antd';
+import { BulbOutlined, EditOutlined, SaveOutlined, FileTextOutlined, UserOutlined, RobotOutlined, ClearOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import QuillEditor from './QuillEditor';
 import { 
@@ -97,6 +97,53 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   const [brainstormingData, setBrainstormingData] = useState<any>(null);
   const [outlineData, setOutlineData] = useState<any>(null);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string; data?: any; timestamp: number }>>([]);
+  const currentRequestIdRef = useRef<number>(0);
+  const conversationEndRef = useRef<HTMLDivElement>(null);
+  
+  // Load conversation history from localStorage on mount
+  useEffect(() => {
+    const storageKey = `essay_brainstorming_history_${essayId || 'new'}`;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setConversationHistory(parsed);
+        // Load the last brainstorming data if available
+        const lastAssistant = parsed.filter((msg: any) => msg.role === 'assistant').pop();
+        if (lastAssistant?.data) {
+          setBrainstormingData(lastAssistant.data);
+        }
+      } catch (e) {
+        console.error('Failed to load conversation history:', e);
+      }
+    }
+  }, [essayId]);
+
+  // Save conversation history to localStorage
+  useEffect(() => {
+    if (conversationHistory.length > 0) {
+      const storageKey = `essay_brainstorming_history_${essayId || 'new'}`;
+      localStorage.setItem(storageKey, JSON.stringify(conversationHistory));
+    }
+  }, [conversationHistory, essayId]);
+
+  // Auto-scroll to bottom of conversation when new messages are added
+  useEffect(() => {
+    if (conversationEndRef.current) {
+      conversationEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversationHistory]);
+
+  // Clear history when essayId changes (new essay)
+  useEffect(() => {
+    if (!essayId) {
+      // Clear history for new essays
+      setConversationHistory([]);
+      setBrainstormingData(null);
+      localStorage.removeItem('essay_brainstorming_history_new');
+    }
+  }, [essayId]);
 
   const essayTypes = [
     { value: 'personal_statement', label: 'Personal Statement' },
@@ -138,14 +185,35 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       return;
     }
 
-    console.log('🎯 handleBrainstorm called with:', { topic: topic.trim(), essayType });
+    // Increment request ID to track the current request
+    currentRequestIdRef.current += 1;
+    const requestId = currentRequestIdRef.current;
+
+    const userMessage = topic.trim();
+    console.log('🎯 handleBrainstorm called with:', { topic: userMessage, essayType, requestId });
+
+    // Add user message to conversation
+    const userMsg = {
+      role: 'user' as const,
+      content: userMessage,
+      timestamp: Date.now(),
+    };
+    setConversationHistory(prev => [...prev, userMsg]);
 
     try {
       const result = await generateBrainstorming({
-        topic: topic.trim(),
+        topic: userMessage,
         essayType,
         prompt: undefined, // No longer required
       }).unwrap();
+
+      // Check if this result is from the current request (not a stale request)
+      if (requestId !== currentRequestIdRef.current) {
+        console.log('Ignoring stale request result:', { requestId, current: currentRequestIdRef.current });
+        // Remove the user message since this request was superseded
+        setConversationHistory(prev => prev.slice(0, -1));
+        return;
+      }
 
       console.log('🎯 Brainstorming result:', result);
 
@@ -154,12 +222,32 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       
       if (brainstorming) {
         setBrainstormingData(brainstorming);
+        
+        // Add assistant response to conversation
+        const assistantMsg = {
+          role: 'assistant' as const,
+          content: `Generated ${brainstorming.ideas?.length || 0} ideas and ${brainstorming.hooks?.length || 0} hook suggestions`,
+          data: brainstorming,
+          timestamp: Date.now(),
+        };
+        setConversationHistory(prev => [...prev, assistantMsg]);
+        
         message.success('Brainstorming ideas generated!');
+        // Clear topic input after successful generation
+        setTopic('');
       } else {
         console.error('No brainstorming data in response:', result);
         message.warning('No ideas generated. Please try again.');
       }
     } catch (error: any) {
+      // Check if this error is from the current request
+      if (requestId !== currentRequestIdRef.current) {
+        console.log('Ignoring error from stale request');
+        // Remove the user message since this request was superseded
+        setConversationHistory(prev => prev.slice(0, -1));
+        return;
+      }
+
       console.error('🎯 Brainstorming error:', error);
       console.error('Error details:', {
         status: error?.status,
@@ -167,6 +255,9 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
         message: error?.message,
         originalStatus: error?.originalStatus,
       });
+      
+      // Remove user message on error
+      setConversationHistory(prev => prev.slice(0, -1));
       
       if (error?.data?.message?.includes('profile must be 100% complete')) {
         setProfileIncomplete(true);
@@ -179,6 +270,14 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
         message.error('Failed to generate brainstorming ideas. Please try again.');
       }
     }
+  };
+
+  const handleClearConversation = () => {
+    setConversationHistory([]);
+    setBrainstormingData(null);
+    const storageKey = `essay_brainstorming_history_${essayId || 'new'}`;
+    localStorage.removeItem(storageKey);
+    message.success('Conversation cleared');
   };
 
   const handleGenerateOutline = async () => {
@@ -492,15 +591,101 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
               }
             >
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                {/* Conversation History */}
+                {conversationHistory.length > 0 && (
+                  <div style={{ 
+                    maxHeight: '400px', 
+                    overflowY: 'auto', 
+                    marginBottom: 16,
+                    padding: '12px',
+                    backgroundColor: '#f9f9f9',
+                    borderRadius: '8px',
+                    border: '1px solid #e8e8e8'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#666' }}>Conversation History</span>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<ClearOutlined />}
+                        onClick={handleClearConversation}
+                        style={{ color: '#8b0000' }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {conversationHistory.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'flex-start',
+                            flexDirection: msg.role === 'user' ? 'row' : 'row',
+                          }}
+                        >
+                          <Avatar
+                            icon={msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
+                            style={{
+                              backgroundColor: msg.role === 'user' ? '#8b0000' : '#1890ff',
+                              flexShrink: 0,
+                            }}
+                            size="small"
+                          />
+                          <div style={{ 
+                            flex: 1,
+                            backgroundColor: msg.role === 'user' ? '#fff' : '#e6f7ff',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: msg.role === 'user' ? '1px solid #e8e8e8' : '1px solid #91d5ff',
+                          }}>
+                            <div style={{ fontSize: '13px', color: '#333', whiteSpace: 'pre-wrap' }}>
+                              {msg.role === 'user' ? msg.content : (
+                                <div>
+                                  <div style={{ marginBottom: 8, fontWeight: 500 }}>{msg.content}</div>
+                                  {msg.data && (
+                                    <div style={{ fontSize: '12px', color: '#666' }}>
+                                      {msg.data.ideas?.length > 0 && (
+                                        <div style={{ marginBottom: 4 }}>
+                                          <strong>Ideas:</strong> {msg.data.ideas.length} generated
+                                        </div>
+                                      )}
+                                      {msg.data.hooks?.length > 0 && (
+                                        <div>
+                                          <strong>Hooks:</strong> {msg.data.hooks.length} suggestions
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={conversationEndRef} />
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ fontSize: '13px', color: '#666', marginBottom: 8, lineHeight: '1.5' }}>
                   💡 Enter your topic or question below. Ideas will be personalized based on your profile to make them more authentic and specific to you.
                 </div>
-                <Input
+                <Input.TextArea
                   placeholder="Enter topic or question for brainstorming"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   size="large"
-                  onPressEnter={handleBrainstorm}
+                  rows={3}
+                  autoSize={{ minRows: 3, maxRows: 6 }}
+                  onKeyDown={(e) => {
+                    // Allow Shift+Enter for new lines, but prevent Enter alone from submitting
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleBrainstorm();
+                    }
+                  }}
                 />
 
                 <Button
@@ -520,7 +705,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                 </Button>
               </Space>
 
-              {/* Brainstorming Results */}
+              {/* Brainstorming Results - Show latest */}
               {brainstormingData && (
                 <div className="brainstorming-results" style={{ marginTop: 16 }}>
                   <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
@@ -567,12 +752,24 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 
                   {brainstormingData.hooks && brainstormingData.hooks.length > 0 && (
                     <div style={{ marginTop: 16 }}>
-                      <h4 style={{ fontSize: 13, marginBottom: 8 }}>Hook Ideas</h4>
-                      <ul style={{ fontSize: 12, paddingLeft: 20 }}>
-                        {brainstormingData.hooks.slice(0, 3).map((hook: string, index: number) => (
-                          <li key={index} style={{ marginBottom: 4 }}>{hook}</li>
+                      <h4 style={{ fontSize: 14, marginBottom: 12, fontWeight: 600 }}>Hook Ideas</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {brainstormingData.hooks.map((hook: string, index: number) => (
+                          <Card
+                            key={index}
+                            size="small"
+                            style={{
+                              backgroundColor: '#fafafa',
+                              border: '1px solid #e8e8e8',
+                              borderRadius: '6px',
+                            }}
+                          >
+                            <div style={{ fontSize: 13, lineHeight: '1.6', color: '#333' }}>
+                              {hook}
+                            </div>
+                          </Card>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
 
