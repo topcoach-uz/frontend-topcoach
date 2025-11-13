@@ -847,4 +847,3 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 };
 
 export default WriteTab;
-
