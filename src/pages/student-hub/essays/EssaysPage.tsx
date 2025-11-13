@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Row, Col, List, Badge, Space, Tag, Progress, Input, Select, message, Modal, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { ESSAY_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
@@ -31,7 +31,7 @@ const EssaysPage: React.FC = () => {
   // Handle URL parameters for tab navigation and essay editing
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['write', 'my-essays', 'templates', 'ai-feedback'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['write', 'my-essays', 'ai-feedback'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [searchParams]);
@@ -254,9 +254,12 @@ const EssaysPage: React.FC = () => {
     Modal.confirm({
       title: t('studentHub.essays.deleteEssay'),
       content: t('studentHub.essays.deleteConfirm', { title: essay.title }),
-      icon: <FontAwesomeIcon icon="exclamation-triangle" style={{ color: '#ff4d4f' }} />,
+      icon: <ExclamationCircleOutlined style={{ color: '#8b0000' }} />,
       okText: t('studentHub.applications.delete'),
-      okType: 'danger',
+      okButtonProps: { 
+        danger: true,
+        style: { backgroundColor: '#8b0000', borderColor: '#8b0000' }
+      },
       cancelText: t('common.cancel'),
       onOk: async () => {
         try {
@@ -298,6 +301,23 @@ const EssaysPage: React.FC = () => {
     }
   };
 
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'personal_statement':
+        return t('studentHub.essays.type.personalStatement');
+      case 'supplemental':
+        return t('studentHub.essays.type.supplemental');
+      case 'scholarship':
+        return t('studentHub.essays.type.scholarship');
+      case 'why_school':
+        return t('studentHub.essays.type.whySchool');
+      case 'why_major':
+        return t('studentHub.essays.type.whyMajor');
+      default:
+        return type?.replace(/_/g, ' ').toUpperCase() || t('studentHub.essays.type.essay');
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'beginner':
@@ -329,7 +349,7 @@ const EssaysPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <EditOutlined />
-          <span>Write</span>
+          <span>{t('studentHub.essays.tab.write')}</span>
         </div>
       ),
       children: (
@@ -337,7 +357,7 @@ const EssaysPage: React.FC = () => {
           key={essayIdFromUrl || 'new'} // Force re-render when essayId changes
           essayId={essayIdFromUrl || undefined}
           onEssayCreated={(essayId) => {
-            message.success('Essay created! You can continue writing or view it in My Essays.');
+            message.success(t('studentHub.essays.essayCreatedSuccess'));
             setActiveTab('my-essays');
             setSearchParams({ tab: 'my-essays' });
           }} 
@@ -349,7 +369,7 @@ const EssaysPage: React.FC = () => {
       label: (
         <div className="tab-label">
           <BulbOutlined />
-          <span>AI Feedback</span>
+          <span>{t('studentHub.essays.tab.aiFeedback')}</span>
         </div>
       ),
       children: <AIFeedbackTab />,
@@ -370,7 +390,7 @@ const EssaysPage: React.FC = () => {
               <p>{t('studentHub.essays.manageTrack')}</p>
             </div>
             <div className="essays-actions">
-              <Space size="middle" wrap>
+              <Space size="middle" wrap align="center">
                 <Input
                   placeholder={t('studentHub.essays.searchEssays')}
                   value={searchText}
@@ -380,32 +400,34 @@ const EssaysPage: React.FC = () => {
                   allowClear
                 />
                 <Select
-                  placeholder="Filter by Status"
+                  placeholder={t('studentHub.essays.filterByStatus')}
                   value={statusFilter}
                   onChange={setStatusFilter}
-                  style={{ width: 150 }}
+                  style={{ width: 150, height: '40px' }}
+                  size="large"
                   allowClear
                 >
-                  <Select.Option value="all">All Status</Select.Option>
-                  <Select.Option value="draft">Draft</Select.Option>
-                  <Select.Option value="review">Review</Select.Option>
-                  <Select.Option value="revision">Revision</Select.Option>
-                  <Select.Option value="final">Final</Select.Option>
-                  <Select.Option value="submitted">Submitted</Select.Option>
+                  <Select.Option value="all">{t('studentHub.essays.allStatus')}</Select.Option>
+                  <Select.Option value="draft">{t('studentHub.essays.status.draft')}</Select.Option>
+                  <Select.Option value="review">{t('studentHub.essays.status.review')}</Select.Option>
+                  <Select.Option value="revision">{t('studentHub.essays.status.revision')}</Select.Option>
+                  <Select.Option value="final">{t('studentHub.essays.status.final')}</Select.Option>
+                  <Select.Option value="submitted">{t('studentHub.essays.status.submitted')}</Select.Option>
                 </Select>
                 <Select
-                  placeholder="Filter by Type"
+                  placeholder={t('studentHub.essays.filterByType')}
                   value={typeFilter}
                   onChange={setTypeFilter}
-                  style={{ width: 180 }}
+                  style={{ width: 180, height: '40px' }}
+                  size="large"
                   allowClear
                 >
-                  <Select.Option value="all">All Types</Select.Option>
-                  <Select.Option value="personal_statement">Personal Statement</Select.Option>
-                  <Select.Option value="supplemental">Supplemental</Select.Option>
-                  <Select.Option value="scholarship">Scholarship</Select.Option>
-                  <Select.Option value="why_school">Why School</Select.Option>
-                  <Select.Option value="why_major">Why Major</Select.Option>
+                  <Select.Option value="all">{t('studentHub.essays.allTypes')}</Select.Option>
+                  <Select.Option value="personal_statement">{t('studentHub.essays.type.personalStatement')}</Select.Option>
+                  <Select.Option value="supplemental">{t('studentHub.essays.type.supplemental')}</Select.Option>
+                  <Select.Option value="scholarship">{t('studentHub.essays.type.scholarship')}</Select.Option>
+                  <Select.Option value="why_school">{t('studentHub.essays.type.whySchool')}</Select.Option>
+                  <Select.Option value="why_major">{t('studentHub.essays.type.whyMajor')}</Select.Option>
                 </Select>
                 <Button
                   type="primary"
@@ -418,9 +440,9 @@ const EssaysPage: React.FC = () => {
                     newParams.set('tab', 'write');
                     setSearchParams(newParams); // This clears essayId
                   }}
-                  style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
+                  style={{ backgroundColor: '#8b0000', borderColor: '#8b0000', height: '40px' }}
                 >
-                  New Essay
+                  {t('studentHub.essays.newEssay')}
                 </Button>
               </Space>
             </div>
@@ -431,7 +453,7 @@ const EssaysPage: React.FC = () => {
             <Empty
               description={
                 <div>
-                  <p>No essays found.</p>
+                  <p>{t('studentHub.essays.noEssaysFound')}</p>
                   {searchText || statusFilter !== 'all' || typeFilter !== 'all' ? (
                     <Button 
                       type="link" 
@@ -441,7 +463,7 @@ const EssaysPage: React.FC = () => {
                         setTypeFilter('all');
                       }}
                     >
-                      Clear filters
+                      {t('studentHub.essays.clearFilters')}
                     </Button>
                   ) : (
                     <Button 
@@ -455,7 +477,7 @@ const EssaysPage: React.FC = () => {
                       }}
                       style={{ marginTop: 16, backgroundColor: '#8b0000', borderColor: '#8b0000' }}
                     >
-                      Create Your First Essay
+                      {t('studentHub.essays.createFirstEssay')}
                     </Button>
                   )}
                 </div>
@@ -478,7 +500,7 @@ const EssaysPage: React.FC = () => {
                         icon={<EditOutlined />}
                         onClick={() => handleEditEssay(essay.id)}
                       >
-                        Edit
+                        {t('studentHub.essays.edit')}
                       </Button>,
                       <Button
                         type="text"
@@ -486,96 +508,102 @@ const EssaysPage: React.FC = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           // Show dropdown for Word/PDF choice
-                          Modal.confirm({
-                            title: 'Download Essay',
+                          Modal.info({
+                            title: t('studentHub.essays.downloadEssay'),
                             content: (
-                              <div style={{ padding: '16px 0' }}>
-                                <p>Choose download format:</p>
-                                <Space direction="vertical" style={{ width: '100%' }}>
+                              <div style={{ padding: '8px 0' }}>
+                                <p style={{ marginBottom: 24, fontSize: '14px', color: '#666' }}>
+                                  {t('studentHub.essays.chooseDownloadFormat')}
+                                </p>
+                                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                                   <Button
                                     type="primary"
                                     block
+                                    size="large"
                                     onClick={() => {
                                       Modal.destroyAll();
                                       handleDownloadEssay(essay, 'word');
                                     }}
-                                    style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
+                                    style={{ backgroundColor: '#8b0000', borderColor: '#8b0000', height: '44px' }}
                                   >
-                                    Download as Word (.doc)
+                                    {t('studentHub.essays.downloadAsWord')}
                                   </Button>
                                   <Button
                                     block
+                                    size="large"
                                     onClick={() => {
                                       Modal.destroyAll();
                                       handleDownloadEssay(essay, 'pdf');
                                     }}
+                                    style={{ height: '44px' }}
                                   >
-                                    Download as PDF
+                                    {t('studentHub.essays.downloadAsPdf')}
                                   </Button>
                                 </Space>
+                                <div style={{ marginTop: 24, textAlign: 'right' }}>
+                                  <Button 
+                                    onClick={() => Modal.destroyAll()}
+                                  >
+                                    {t('common.cancel')}
+                                  </Button>
+                                </div>
                               </div>
                             ),
+                            footer: null,
+                            width: 450,
                             okButtonProps: { style: { display: 'none' } },
-                            cancelButtonProps: { style: { display: 'none' } },
-                            width: 400,
                           });
                         }}
                       >
-                        Download
+                        {t('studentHub.essays.download')}
                       </Button>,
                       <Button
                         type="text"
-                        danger
                         icon={<DeleteOutlined />}
                         onClick={() => handleDeleteEssay(essay)}
                         loading={isDeleting}
+                        style={{ color: '#8b0000' }}
                       >
-                        Delete
+                        {t('studentHub.essays.delete')}
                       </Button>,
                     ]}
                   >
                     <div className="essay-card-content">
                       <div className="essay-header">
-                        <h4 className="essay-title">{essay.title}</h4>
-                        <Space>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                          <h4 className="essay-title" style={{ margin: 0, flex: 1 }}>{essay.title}</h4>
+                          {essay.aiFeedback?.overallScore && (
+                            <Tag 
+                              color={essay.aiFeedback.overallScore >= 7 ? 'success' : essay.aiFeedback.overallScore >= 5 ? 'warning' : 'error'}
+                              style={{ marginLeft: 8, flexShrink: 0 }}
+                            >
+                              {t('studentHub.essays.aiScore')}: {essay.aiFeedback.overallScore.toFixed(1)}/10
+                            </Tag>
+                          )}
+                        </div>
+                        <Space size="small">
                           <Tag color={getTypeColor(essay.essayType)}>
-                            {essay.essayType?.replace(/_/g, ' ').toUpperCase() || 'ESSAY'}
-                          </Tag>
-                          <Tag color={getStatusColor(essay.status)}>
-                            {essay.status?.toUpperCase() || 'DRAFT'}
+                            {getTypeLabel(essay.essayType)}
                           </Tag>
                         </Space>
                       </div>
                       
                       <div className="essay-meta">
-                        <div className="meta-item">
-                          <FileTextOutlined style={{ color: '#8b0000', marginRight: 4 }} />
-                          <span>{essay.wordCount || 0} words</span>
-                        </div>
-                        {essay.uploadedAt && (
-                          <div className="meta-item">
-                            <span>{new Date(essay.uploadedAt).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                        {essay.lastEditedAt && (
-                          <div className="meta-item">
-                            <span>Edited: {new Date(essay.lastEditedAt).toLocaleDateString()}</span>
-                          </div>
-                        )}
+                        <Space size="small" split={<span style={{ color: '#d9d9d9' }}>•</span>}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <FileTextOutlined style={{ color: '#8b0000', fontSize: 12 }} />
+                            <span>{essay.wordCount || 0} {t('studentHub.essays.words')}</span>
+                          </span>
+                          {essay.lastEditedAt && (
+                            <span>{t('studentHub.essays.edited')}: {new Date(essay.lastEditedAt).toLocaleDateString()}</span>
+                          )}
+                        </Space>
                       </div>
 
                       {essay.prompt && (
                         <div className="essay-prompt">
                           <strong>Prompt:</strong>
                           <p>{essay.prompt.length > 150 ? `${essay.prompt.substring(0, 150)}...` : essay.prompt}</p>
-                        </div>
-                      )}
-
-                      {essay.aiFeedback?.overallScore && (
-                        <div className="essay-feedback-badge">
-                          <Tag color={essay.aiFeedback.overallScore >= 7 ? 'success' : essay.aiFeedback.overallScore >= 5 ? 'warning' : 'error'}>
-                            AI Score: {essay.aiFeedback.overallScore.toFixed(1)}/10
-                          </Tag>
                         </div>
                       )}
                     </div>
@@ -587,6 +615,8 @@ const EssaysPage: React.FC = () => {
         </div>
       ),
     },
+    // Templates tab - commented out for future development
+    /*
     {
       key: 'templates',
       label: (
@@ -604,58 +634,10 @@ const EssaysPage: React.FC = () => {
           <div className="placeholder-content">
             <p>{t('studentHub.essays.templatesComingSoon')}</p>
           </div>
-          {/* 
-          <List
-            dataSource={essaysData.templates}
-            renderItem={(template) => (
-              <List.Item className="template-item">
-                <Card className="template-card">
-                  <Row gutter={[16, 16]} align="middle">
-                    <Col xs={24} md={16}>
-                      <div className="template-info">
-                        <h4 className="template-title">{template.title}</h4>
-                        <p className="template-description">{template.description}</p>
-                        <div className="template-meta">
-                          <Tag color={getTypeColor(template.type)}>
-                            {template.type.replace('_', ' ').toUpperCase()}
-                          </Tag>
-                          <Tag color={getDifficultyColor(template.difficulty)}>
-                            {template.difficulty.toUpperCase()}
-                          </Tag>
-                          <span className="word-count">{template.wordCount} words</span>
-                        </div>
-                        <div className="template-stats">
-                          <span className="downloads">
-                            <FontAwesomeIcon icon="download" />
-                            {template.downloads.toLocaleString()} downloads
-                          </span>
-                          <span className="rating">
-                            <FontAwesomeIcon icon="star" />
-                            {template.rating}/5
-                          </span>
-                        </div>
-                      </div>
-                    </Col>
-                    <Col xs={24} md={8}>
-                      <div className="template-actions">
-                        <Button
-                          type="primary"
-                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DOWNLOAD} />}
-                          size="large"
-                        >
-                          {t('studentHub.essays.useTemplate')}
-                        </Button>
-                      </div>
-                    </Col>
-                  </Row>
-                </Card>
-              </List.Item>
-            )}
-          />
-          */}
         </div>
       ),
     },
+    */
   ];
 
   return (
@@ -677,4 +659,4 @@ const EssaysPage: React.FC = () => {
   );
 };
 
-export default EssaysPage;
+export default EssaysPage;w

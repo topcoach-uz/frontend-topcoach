@@ -492,6 +492,9 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
               }
             >
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div style={{ fontSize: '13px', color: '#666', marginBottom: 8, lineHeight: '1.5' }}>
+                  💡 Enter your topic or question below. Ideas will be personalized based on your profile to make them more authentic and specific to you.
+                </div>
                 <Input
                   placeholder="Enter topic or question for brainstorming"
                   value={topic}

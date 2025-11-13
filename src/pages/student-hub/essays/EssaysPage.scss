@@ -160,6 +160,15 @@
           }
         }
 
+        .ant-select {
+          height: 40px !important;
+
+          .ant-select-selector {
+            height: 40px !important;
+            display: flex;
+            align-items: center;
+          }
+        }
 
         .ant-btn {
           height: 40px;
@@ -560,76 +569,73 @@
     display: flex;
     flex-direction: column;
     transition: all 0.3s;
+    border: 1px solid rgba(0, 0, 0, 0.16) !important; // Increased border opacity
 
     &:hover {
       box-shadow: 0 4px 12px rgba(139, 0, 0, 0.15);
       transform: translateY(-2px);
+      border-color: rgba(0, 0, 0, 0.35) !important;
     }
 
     .essay-card-content {
       flex: 1;
       display: flex;
       flex-direction: column;
+      padding: 0;
 
       .essay-header {
         margin-bottom: 16px;
 
         .essay-title {
-          margin: 0 0 8px 0;
+          margin: 0;
           color: #262626;
           font-size: 16px;
           font-weight: 600;
+          line-height: 1.4;
         }
       }
 
       .essay-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         color: #8c8c8c;
-        font-size: 13px;
-
-        .meta-item {
-          display: flex;
-          align-items: center;
-        }
+        font-size: 12px;
+        line-height: 1.5;
       }
 
       .essay-prompt {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f0f0f0;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
         flex: 1;
 
         strong {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
           color: #595959;
+          font-size: 12px;
         }
 
         p {
           margin: 0;
           color: #8c8c8c;
-          font-size: 13px;
+          font-size: 12px;
           line-height: 1.5;
         }
-      }
-
-      .essay-feedback-badge {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f0f0f0;
       }
     }
 
     .ant-card-actions {
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
       margin-top: auto;
 
       li {
-        margin: 8px 0;
+        margin: 4px 0;
       }
+    }
+
+    .ant-card-body {
+      padding: 20px;
+      min-height: 140px;
     }
   }
 
