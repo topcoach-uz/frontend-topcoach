@@ -101,6 +101,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
     angles?: string[];
     keywords?: string[];
     generatedAt?: string;
+    responseType?: 'casual' | 'question' | 'brainstorming' | 'quick_ideas';
+    conversationalResponse?: string;
   };
   
   const [brainstormingData, setBrainstormingData] = useState<BrainstormingData | null>(null);
@@ -110,24 +112,27 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   const currentRequestIdRef = useRef<number>(0);
   const conversationEndRef = useRef<HTMLDivElement>(null);
   
-  // Load conversation history from localStorage on mount
+  // Load conversation history from localStorage on mount - use a stable key
   useEffect(() => {
+    // Use a stable key that doesn't depend on essayId changing
     const storageKey = `essay_brainstorming_history_${essayId || 'new'}`;
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setConversationHistory(parsed);
-        // Load the last brainstorming data if available
-        const lastAssistant = parsed.filter((msg: any) => msg.role === 'assistant').pop();
-        if (lastAssistant?.data) {
-          setBrainstormingData(lastAssistant.data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setConversationHistory(parsed);
+          // Load the last brainstorming data if available
+          const lastAssistant = parsed.filter((msg: any) => msg.role === 'assistant').pop();
+          if (lastAssistant?.data) {
+            setBrainstormingData(lastAssistant.data);
+          }
         }
       } catch (e) {
         console.error('Failed to load conversation history:', e);
       }
     }
-  }, [essayId]);
+  }, []); // Only run on mount, not when essayId changes
 
   // Save conversation history to localStorage
   useEffect(() => {
@@ -144,15 +149,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
     }
   }, [conversationHistory]);
 
-  // Clear history when essayId changes (new essay)
-  useEffect(() => {
-    if (!essayId) {
-      // Clear history for new essays
-      setConversationHistory([]);
-      setBrainstormingData(null);
-      localStorage.removeItem('essay_brainstorming_history_new');
-    }
-  }, [essayId]);
+  // Clear history only when explicitly starting a new essay (not on refresh)
+  // This is handled by the clear button or when user explicitly creates a new essay
 
   const essayTypes = [
     { value: 'personal_statement', label: 'Personal Statement' },
@@ -234,26 +232,40 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       // Type assertion to ensure TypeScript knows the shape
       const brainstormingData = rawData as BrainstormingData;
       
-      if (brainstormingData && typeof brainstormingData === 'object' && 'ideas' in brainstormingData) {
+      if (brainstormingData && typeof brainstormingData === 'object') {
         setBrainstormingData(brainstormingData);
         
-        // Add assistant response to conversation
-        const ideasCount = Array.isArray(brainstormingData.ideas) ? brainstormingData.ideas.length : 0;
-        const hooksCount = Array.isArray(brainstormingData.hooks) ? brainstormingData.hooks.length : 0;
+        // Handle different response types
+        let assistantContent = '';
+        if (brainstormingData.responseType === 'casual' || brainstormingData.responseType === 'question') {
+          assistantContent = brainstormingData.conversationalResponse || 'Hi! How can I help you with your essay?';
+        } else if (brainstormingData.responseType === 'quick_ideas') {
+          assistantContent = brainstormingData.conversationalResponse || 'Here are some quick ideas...';
+        } else if (brainstormingData.ideas && brainstormingData.ideas.length > 0) {
+          // Full brainstorming response
+          const ideasCount = brainstormingData.ideas.length;
+          const hooksCount = Array.isArray(brainstormingData.hooks) ? brainstormingData.hooks.length : 0;
+          assistantContent = `Here are ${ideasCount} essay angle${ideasCount > 1 ? 's' : ''} and ${hooksCount} hook suggestion${hooksCount !== 1 ? 's' : ''} to help you get started:`;
+        } else {
+          assistantContent = 'I\'ve analyzed your topic. Let me help you brainstorm some ideas.';
+        }
+        
         const assistantMsg = {
           role: 'assistant' as const,
-          content: `Generated ${ideasCount} ideas and ${hooksCount} hook suggestions`,
+          content: assistantContent,
           data: brainstormingData,
           timestamp: Date.now(),
         };
         setConversationHistory(prev => [...prev, assistantMsg]);
         
-        message.success('Brainstorming ideas generated!');
+        if (brainstormingData.responseType !== 'casual' && brainstormingData.responseType !== 'question') {
+          message.success('Response generated!');
+        }
         // Clear topic input after successful generation
         setTopic('');
       } else {
         console.error('No brainstorming data in response:', result);
-        message.warning('No ideas generated. Please try again.');
+        message.warning('No response generated. Please try again.');
       }
     } catch (error: any) {
       // Check if this error is from the current request
@@ -695,9 +707,10 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                   size="large"
                   rows={3}
                   autoSize={{ minRows: 3, maxRows: 6 }}
+                  disabled={isBrainstorming}
                   onKeyDown={(e) => {
                     // Allow Shift+Enter for new lines, but prevent Enter alone from submitting
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === 'Enter' && !e.shiftKey && !isBrainstorming) {
                       e.preventDefault();
                       handleBrainstorm();
                     }
@@ -722,11 +735,13 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
               </Space>
 
               {/* Brainstorming Results - Show latest */}
-              {brainstormingData && (
+              {brainstormingData && brainstormingData.responseType !== 'casual' && brainstormingData.responseType !== 'question' && (
                 <div className="brainstorming-results" style={{ marginTop: 16 }}>
-                  <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
-                  <div className="ideas-list">
-                    {brainstormingData?.ideas?.map((idea, index) => (
+                  {brainstormingData.ideas && brainstormingData.ideas.length > 0 && (
+                    <>
+                      <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
+                      <div className="ideas-list">
+                        {brainstormingData.ideas.map((idea, index) => (
                       <Card
                         key={index}
                         size="small"
@@ -826,4 +841,3 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 };
 
 export default WriteTab;
-
