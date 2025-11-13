@@ -475,19 +475,87 @@ export interface StudentEssay {
   studentProfileId: string;
   collegeApplicationId?: string;
   scholarshipApplicationId?: string;
-  essayType: 'personal_statement' | 'supplemental' | 'scholarship' | 'other';
+  essayType: 'personal_statement' | 'supplemental' | 'scholarship' | 'why_school' | 'why_major' | 'activity' | 'diversity' | 'leadership' | 'challenge' | 'other';
   title: string;
   prompt: string;
   content: string;
   wordCount: number;
   characterCount: number;
-  status: 'draft' | 'review' | 'revision' | 'final' | 'submitted';
+  status: 'draft' | 'review' | 'revision' | 'final' | 'submitted' | 'archived';
   isTemplate: boolean;
   templateId?: string;
   isShared: boolean;
   sharedWith?: string[];
-  aiFeedback?: string;
-  mentorFeedback?: string;
+  // Enhanced AI fields
+  aiBrainstorming?: {
+    topic?: string;
+    ideas?: Array<{
+      title: string;
+      description: string;
+      angle: string;
+      keyPoints: string[];
+    }>;
+    hooks?: string[];
+    angles?: string[];
+    keywords?: string[];
+    generatedAt?: string;
+  };
+  outline?: {
+    introduction?: {
+      hook?: string;
+      context?: string;
+      thesis?: string;
+    };
+    body?: Array<{
+      paragraph: number;
+      topic: string;
+      mainPoint: string;
+      supportingDetails?: string[];
+    }>;
+    conclusion?: {
+      summary?: string;
+      callToAction?: string;
+      finalThought?: string;
+    };
+    generatedAt?: string;
+    isAIGenerated?: boolean;
+  };
+  aiFeedback?: {
+    overallScore?: number;
+    strengths?: string[];
+    weaknesses?: string[];
+    suggestions?: Array<{
+      type: 'grammar' | 'clarity' | 'structure' | 'tone' | 'content' | 'style';
+      text: string;
+      position?: number;
+      severity: 'low' | 'medium' | 'high';
+      example?: string;
+    }>;
+    grammarScore?: number;
+    clarityScore?: number;
+    creativityScore?: number;
+    structureScore?: number;
+    coherenceScore?: number;
+    argumentStrength?: number;
+    lastAnalyzed?: string;
+    analysisVersion?: string;
+    detailedAnalysis?: {
+      introduction?: { score: number; feedback: string };
+      body?: Array<{ paragraph: number; score: number; feedback: string }>;
+      conclusion?: { score: number; feedback: string };
+    };
+  };
+  mentorFeedback?: string | {
+    overallScore?: number;
+    strengths?: string[];
+    areasForImprovement?: string[];
+    suggestions?: string[];
+    mentorId?: string;
+    mentorName?: string;
+    lastReviewed?: string;
+    isApproved?: boolean;
+    approvalNotes?: string;
+  };
   peerFeedback?: string;
   selfFeedback?: string;
   // File upload fields
@@ -496,6 +564,11 @@ export interface StudentEssay {
   fileSize?: number;
   mimeType?: string;
   uploadedAt?: string;
+  // Auto-save and editing
+  lastAutoSavedAt?: string;
+  autoSaveEnabled?: boolean;
+  readabilityScore?: number;
+  lastEditedAt?: string;
   metadata?: {
     purpose?: string;
     uploadSource?: string;

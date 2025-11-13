@@ -35,6 +35,13 @@ export const essayManagementApi = RtkApi.injectEndpoints({
         url: `/essay-management/essays/${id}`,
         method: 'GET',
       }),
+      transformResponse: (response: any): ApiResponse<StudentEssay> => {
+        // Handle both wrapped and direct response formats
+        if (response?.data !== undefined) {
+          return response;
+        }
+        return { data: response };
+      },
       providesTags: (result, error, id) => [{ type: 'StudentEssays', id }],
     }),
 
@@ -48,6 +55,13 @@ export const essayManagementApi = RtkApi.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any): ApiResponse<StudentEssay> => {
+        // Handle both wrapped and direct response formats
+        if (response?.data !== undefined) {
+          return response;
+        }
+        return { data: response };
+      },
       invalidatesTags: ['StudentEssays'],
     }),
 
@@ -112,6 +126,83 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       invalidatesTags: (result, error, { id }) => [
         { type: 'StudentEssays', id },
         'StudentEssays',
+      ],
+    }),
+
+    // ========== NEW AI-POWERED ENDPOINTS ==========
+
+    // Generate AI brainstorming
+    generateBrainstorming: builder.mutation<
+      ApiResponse<StudentEssay['aiBrainstorming']>,
+      { topic: string; essayType: string; prompt?: string }
+    >({
+      query: (data) => ({
+        url: '/essay-management/essays/brainstorm',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: any): ApiResponse<StudentEssay['aiBrainstorming']> => {
+        // Handle both wrapped and direct response formats
+        if (response?.data !== undefined) {
+          return response;
+        }
+        return { data: response };
+      },
+    }),
+
+    // Generate essay outline
+    generateOutline: builder.mutation<
+      ApiResponse<StudentEssay['outline']>,
+      { topic: string; essayType: string; selectedIdea?: any }
+    >({
+      query: (data) => ({
+        url: '/essay-management/essays/outline',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: any): ApiResponse<StudentEssay['outline']> => {
+        // Handle both wrapped and direct response formats
+        if (response?.data !== undefined) {
+          return response;
+        }
+        return { data: response };
+      },
+    }),
+
+    // Get enhanced AI feedback
+    getEnhancedFeedback: builder.query<
+      ApiResponse<StudentEssay['aiFeedback']>,
+      string
+    >({
+      query: (id) => ({
+        url: `/essay-management/essays/${id}/feedback`,
+        method: 'GET',
+      }),
+      transformResponse: (response: any): ApiResponse<StudentEssay['aiFeedback']> => {
+        // Handle both wrapped and direct response formats
+        if (response?.data !== undefined) {
+          return response;
+        }
+        return { data: response };
+      },
+      providesTags: (result, error, id) => [
+        { type: 'StudentEssays', id },
+        'StudentEssays',
+      ],
+    }),
+
+    // Auto-save essay
+    autoSaveEssay: builder.mutation<
+      ApiResponse<{ message: string }>,
+      { id: string; content: string }
+    >({
+      query: ({ id, content }) => ({
+        url: `/essay-management/essays/${id}/autosave`,
+        method: 'POST',
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'StudentEssays', id },
       ],
     }),
 
@@ -370,4 +461,10 @@ export const {
 
   // Essay Analytics
   useGetEssayAnalyticsQuery,
+
+  // NEW AI-POWERED FEATURES
+  useGenerateBrainstormingMutation,
+  useGenerateOutlineMutation,
+  useGetEnhancedFeedbackQuery,
+  useAutoSaveEssayMutation,
 } = essayManagementApi;

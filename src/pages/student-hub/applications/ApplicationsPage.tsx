@@ -3,7 +3,7 @@ import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, 
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { APPLICATION_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import { APPLICATION_ICONS, STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery,
@@ -280,7 +280,7 @@ const ApplicationsPage: React.FC = () => {
       key: 'overview',
       label: (
         <div className="tab-label">
-          <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
+          <FontAwesomeIcon icon={PROFILE_ICONS.OVERVIEW} />
           <span>{t('studentHub.applications.overview')}</span>
         </div>
       ),
