@@ -618,7 +618,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                 </Button>
               }
             >
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <>
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 {/* Conversation History */}
                 {conversationHistory.length > 0 && (
                   <div style={{ 
@@ -671,9 +672,11 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                             <div style={{ fontSize: '13px', color: '#333', whiteSpace: 'pre-wrap' }}>
                               {msg.role === 'user' ? msg.content : (
                                 <div>
-                                  <div style={{ marginBottom: 8, fontWeight: 500 }}>{msg.content}</div>
-                                  {msg.data && (
-                                    <div style={{ fontSize: '12px', color: '#666' }}>
+                                  <div style={{ marginBottom: (msg.data as any)?.responseType === 'casual' || (msg.data as any)?.responseType === 'question' || (msg.data as any)?.conversationalResponse ? 0 : 8, fontWeight: 500, lineHeight: '1.6' }}>
+                                    {msg.content}
+                                  </div>
+                                  {msg.data && (msg.data as any)?.responseType !== 'casual' && (msg.data as any)?.responseType !== 'question' && (
+                                    <div style={{ fontSize: '12px', color: '#666', marginTop: 8 }}>
                                       {(msg.data as any)?.ideas?.length > 0 && (
                                         <div style={{ marginBottom: 4 }}>
                                           <strong>Ideas:</strong> {(msg.data as any).ideas.length} generated
@@ -732,9 +735,9 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                 >
                   Generate Ideas
                 </Button>
-              </Space>
+                </Space>
 
-              {/* Brainstorming Results - Show latest */}
+                {/* Brainstorming Results - Show latest */}
               {brainstormingData && brainstormingData.responseType !== 'casual' && brainstormingData.responseType !== 'question' && (
                 <div className="brainstorming-results" style={{ marginTop: 16 }}>
                   {brainstormingData.ideas && brainstormingData.ideas.length > 0 && (
@@ -742,31 +745,33 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                       <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
                       <div className="ideas-list">
                         {brainstormingData.ideas.map((idea, index) => (
-                      <Card
-                        key={index}
-                        size="small"
-                        className={`idea-card ${selectedIdea === idea ? 'selected' : ''}`}
-                        onClick={() => setSelectedIdea(idea)}
-                        hoverable
-                        style={{ marginBottom: 8, cursor: 'pointer' }}
-                      >
-                        <div style={{ fontSize: 13 }}>
-                          <strong style={{ color: '#8b0000' }}>{idea.title}</strong>
-                          <p style={{ margin: '4px 0', fontSize: 12 }}>{idea.description}</p>
-                          {idea.keyPoints && idea.keyPoints.length > 0 && (
-                            <div style={{ fontSize: 11, color: '#666' }}>
-                              <strong>Key Points:</strong>
-                              <ul style={{ margin: '4px 0', paddingLeft: 16 }}>
-                                {idea.keyPoints.slice(0, 3).map((point: string, i: number) => (
-                                  <li key={i}>{point}</li>
-                                ))}
-                              </ul>
+                          <Card
+                            key={index}
+                            size="small"
+                            className={`idea-card ${selectedIdea === idea ? 'selected' : ''}`}
+                            onClick={() => setSelectedIdea(idea)}
+                            hoverable
+                            style={{ marginBottom: 8, cursor: 'pointer' }}
+                          >
+                            <div style={{ fontSize: 13 }}>
+                              <strong style={{ color: '#8b0000' }}>{idea.title}</strong>
+                              <p style={{ margin: '4px 0', fontSize: 12 }}>{idea.description}</p>
+                              {idea.keyPoints && idea.keyPoints.length > 0 && (
+                                <div style={{ fontSize: 11, color: '#666' }}>
+                                  <strong>Key Points:</strong>
+                                  <ul style={{ margin: '4px 0', paddingLeft: 16 }}>
+                                    {idea.keyPoints.slice(0, 3).map((point: string, i: number) => (
+                                      <li key={i}>{point}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </>
+                  )}
 
                   {selectedIdea && (
                     <Button
@@ -832,6 +837,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                   )}
                 </div>
               )}
+              </>
             </Card>
           </Col>
         )}
@@ -841,3 +847,4 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 };
 
 export default WriteTab;
+

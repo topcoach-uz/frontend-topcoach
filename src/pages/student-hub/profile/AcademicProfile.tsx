@@ -464,6 +464,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
               <Form.Item
                 name="gpaUnweighted"
                 label="Unweighted GPA"
+                rules={[{ required: true, message: 'Please enter your unweighted GPA' }]}
               >
                 <InputNumber
                   min={0}
