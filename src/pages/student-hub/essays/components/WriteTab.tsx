@@ -66,16 +66,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
     });
 
     if (essayData && essayId) {
-      // Handle both wrapped and direct response formats
-      // The transformResponse should wrap it, but handle both cases
-      let essay: any = null;
-      
-      if (essayData.data) {
-        essay = essayData.data;
-      } else if (essayData.id) {
-        // Direct essay object
-        essay = essayData;
-      }
+      // essayData is ApiResponse<StudentEssay>, so access essayData.data
+      const essay = essayData.data;
       
       if (essay && essay.id) {
         console.log('🎯 Loading essay for editing:', essay);
@@ -245,8 +237,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 
       console.log('🎯 Create essay result:', result);
 
-      // Handle both wrapped and direct response formats
-      const essay = result?.data || result;
+      // result is ApiResponse<StudentEssay>, so access result.data
+      const essay = result?.data;
       
       if (essay?.id) {
         setCurrentEssayId(essay.id);

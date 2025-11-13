@@ -37,10 +37,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
       transformResponse: (response: any): ApiResponse<StudentEssay> => {
         // Handle both wrapped and direct response formats
-        if (response?.data !== undefined) {
+        if (response?.data !== undefined && response?.success !== undefined) {
           return response;
         }
-        return { data: response };
+        return { data: response, success: true };
       },
       providesTags: (result, error, id) => [{ type: 'StudentEssays', id }],
     }),
@@ -57,10 +57,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
       transformResponse: (response: any): ApiResponse<StudentEssay> => {
         // Handle both wrapped and direct response formats
-        if (response?.data !== undefined) {
+        if (response?.data !== undefined && response?.success !== undefined) {
           return response;
         }
-        return { data: response };
+        return { data: response, success: true };
       },
       invalidatesTags: ['StudentEssays'],
     }),
@@ -143,10 +143,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
       transformResponse: (response: any): ApiResponse<StudentEssay['aiBrainstorming']> => {
         // Handle both wrapped and direct response formats
-        if (response?.data !== undefined) {
+        if (response?.data !== undefined && response?.success !== undefined) {
           return response;
         }
-        return { data: response };
+        return { data: response, success: true };
       },
     }),
 
@@ -162,10 +162,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
       transformResponse: (response: any): ApiResponse<StudentEssay['outline']> => {
         // Handle both wrapped and direct response formats
-        if (response?.data !== undefined) {
+        if (response?.data !== undefined && response?.success !== undefined) {
           return response;
         }
-        return { data: response };
+        return { data: response, success: true };
       },
     }),
 
@@ -180,10 +180,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
       transformResponse: (response: any): ApiResponse<StudentEssay['aiFeedback']> => {
         // Handle both wrapped and direct response formats
-        if (response?.data !== undefined) {
+        if (response?.data !== undefined && response?.success !== undefined) {
           return response;
         }
-        return { data: response };
+        return { data: response, success: true };
       },
       providesTags: (result, error, id) => [
         { type: 'StudentEssays', id },
