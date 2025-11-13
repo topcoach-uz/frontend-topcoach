@@ -94,7 +94,16 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   const [updateEssay, { isLoading: isUpdating }] = useUpdateStudentEssayMutation();
   const [autoSaveEssay, { isLoading: isAutoSaving }] = useAutoSaveEssayMutation();
 
-  const [brainstormingData, setBrainstormingData] = useState<any>(null);
+  type BrainstormingData = {
+    topic?: string;
+    ideas?: Array<{ title: string; description: string; angle: string; keyPoints: string[] }>;
+    hooks?: string[];
+    angles?: string[];
+    keywords?: string[];
+    generatedAt?: string;
+  };
+  
+  const [brainstormingData, setBrainstormingData] = useState<BrainstormingData | null>(null);
   const [outlineData, setOutlineData] = useState<any>(null);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string; data?: any; timestamp: number }>>([]);
@@ -218,16 +227,23 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       console.log('🎯 Brainstorming result:', result);
 
       // Handle both wrapped and direct response formats
-      const brainstorming = result?.data || result;
+      // result is ApiResponse<aiBrainstorming>, so result.data is the aiBrainstorming object
+      // But transformResponse might wrap it again, so we need to check
+      const rawData = (result as any)?.data?.data || (result as any)?.data || result;
       
-      if (brainstorming) {
-        setBrainstormingData(brainstorming);
+      // Type assertion to ensure TypeScript knows the shape
+      const brainstormingData = rawData as BrainstormingData;
+      
+      if (brainstormingData && typeof brainstormingData === 'object' && 'ideas' in brainstormingData) {
+        setBrainstormingData(brainstormingData);
         
         // Add assistant response to conversation
+        const ideasCount = Array.isArray(brainstormingData.ideas) ? brainstormingData.ideas.length : 0;
+        const hooksCount = Array.isArray(brainstormingData.hooks) ? brainstormingData.hooks.length : 0;
         const assistantMsg = {
           role: 'assistant' as const,
-          content: `Generated ${brainstorming.ideas?.length || 0} ideas and ${brainstorming.hooks?.length || 0} hook suggestions`,
-          data: brainstorming,
+          content: `Generated ${ideasCount} ideas and ${hooksCount} hook suggestions`,
+          data: brainstormingData,
           timestamp: Date.now(),
         };
         setConversationHistory(prev => [...prev, assistantMsg]);
@@ -646,14 +662,14 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                                   <div style={{ marginBottom: 8, fontWeight: 500 }}>{msg.content}</div>
                                   {msg.data && (
                                     <div style={{ fontSize: '12px', color: '#666' }}>
-                                      {msg.data.ideas?.length > 0 && (
+                                      {(msg.data as any)?.ideas?.length > 0 && (
                                         <div style={{ marginBottom: 4 }}>
-                                          <strong>Ideas:</strong> {msg.data.ideas.length} generated
+                                          <strong>Ideas:</strong> {(msg.data as any).ideas.length} generated
                                         </div>
                                       )}
-                                      {msg.data.hooks?.length > 0 && (
+                                      {(msg.data as any)?.hooks?.length > 0 && (
                                         <div>
-                                          <strong>Hooks:</strong> {msg.data.hooks.length} suggestions
+                                          <strong>Hooks:</strong> {(msg.data as any).hooks.length} suggestions
                                         </div>
                                       )}
                                     </div>
@@ -710,7 +726,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                 <div className="brainstorming-results" style={{ marginTop: 16 }}>
                   <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
                   <div className="ideas-list">
-                    {brainstormingData.ideas?.map((idea: any, index: number) => (
+                    {brainstormingData?.ideas?.map((idea, index) => (
                       <Card
                         key={index}
                         size="small"
@@ -750,11 +766,11 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                     </Button>
                   )}
 
-                  {brainstormingData.hooks && brainstormingData.hooks.length > 0 && (
+                  {brainstormingData?.hooks && brainstormingData.hooks.length > 0 && (
                     <div style={{ marginTop: 16 }}>
                       <h4 style={{ fontSize: 14, marginBottom: 12, fontWeight: 600 }}>Hook Ideas</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {brainstormingData.hooks.map((hook: string, index: number) => (
+                        {brainstormingData.hooks.map((hook, index) => (
                           <Card
                             key={index}
                             size="small"
