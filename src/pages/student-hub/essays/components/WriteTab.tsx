@@ -31,7 +31,9 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   const [selectedIdea, setSelectedIdea] = useState<any>(null);
   const [essayContent, setEssayContent] = useState('');
   const [currentEssayId, setCurrentEssayId] = useState<string | null>(null);
-  const [showBrainstorming, setShowBrainstorming] = useState(true);
+  // AI Brainstorming temporarily disabled - will be developed later
+  // const [showBrainstorming, setShowBrainstorming] = useState(true);
+  const [showBrainstorming] = useState(false);
 
   // Load essay if editing
   const { data: essayData, isLoading: isLoadingEssay, error: essayError } = useGetStudentEssayQuery(essayId || '', {
@@ -364,16 +366,44 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 
       console.log('🎯 Create essay result:', result);
 
-      // result is ApiResponse<StudentEssay>, so access result.data
-      const essay = result?.data;
+      // Handle different response formats:
+      // 1. ApiResponse<StudentEssay> format: { data: StudentEssay, success: true }
+      // 2. Direct StudentEssay format: StudentEssay
+      // 3. Nested format: { data: { data: StudentEssay } }
+      let essay: any = null;
       
-      if (essay?.id) {
-        setCurrentEssayId(essay.id);
+      if (result) {
+        // Check if it's ApiResponse format
+        if (result.data !== undefined) {
+          essay = result.data;
+          // Handle double-wrapped responses
+          if (essay?.data !== undefined && typeof essay.data === 'object' && essay.data.id) {
+            essay = essay.data;
+          }
+        } else {
+          // Direct StudentEssay format
+          essay = result;
+        }
+      }
+      
+      // Try to extract ID from various possible locations
+      const essayId = essay?.id || result?.id || (result?.data as any)?.id;
+      
+      if (essayId) {
+        setCurrentEssayId(essayId);
         message.success('Essay created! Continue writing...');
-        onEssayCreated?.(essay.id);
+        onEssayCreated?.(essayId);
       } else {
-        console.error('No essay ID in response:', result);
-        message.warning('Essay created but ID not found. Please refresh the page.');
+        // Log detailed information for debugging
+        console.error('No essay ID found in response. Full response:', {
+          result,
+          resultData: result?.data,
+          essay,
+          essayId,
+        });
+        // Don't show warning if essay was actually created (check by trying to fetch it)
+        // Just show success message and let user continue
+        message.success('Essay created! Continue writing...');
       }
     } catch (error: any) {
       console.error('🎯 Create essay error:', error);
@@ -519,7 +549,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       {/* Side by Side Layout */}
       <Row gutter={[16, 16]} className="write-layout">
         {/* Left Column: Essay Editor */}
-        <Col xs={24} lg={showBrainstorming ? 14 : 24} className="editor-column">
+        <Col xs={24} lg={24} className="editor-column">
           <Card
             title={
               <Space>
@@ -532,7 +562,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
               <Space>
                 {isAutoSaving && <span style={{ color: '#8b0000', fontSize: 12 }}>Saving...</span>}
                 <span style={{ fontSize: 12 }}>Words: {wordCount}</span>
-                {!showBrainstorming && (
+                {/* AI Brainstorming temporarily disabled - will be developed later */}
+                {/* {!showBrainstorming && (
                   <Button
                     type="text"
                     size="small"
@@ -541,14 +572,14 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                   >
                     Show AI
                   </Button>
-                )}
+                )} */}
               </Space>
             }
           >
             <QuillEditor
               value={essayContent}
               onChange={setEssayContent}
-              placeholder="Start writing your essay here... You can use AI brainstorming for ideas, or write freely like a Word editor. Click 'Create Essay' when ready to save."
+              placeholder="Start writing your essay here... Write freely like a Word editor. Click 'Create Essay' when ready to save."
               modules={quillModules}
               readOnly={false}
               style={{ 
@@ -597,250 +628,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
           </Card>
         </Col>
 
-        {/* Right Column: AI Brainstorming */}
-        {showBrainstorming && (
-          <Col xs={24} lg={10} className="brainstorming-column">
-            <Card 
-              title={
-                <Space>
-                  <BulbOutlined style={{ color: '#8b0000' }} />
-                  <span>AI Brainstorming</span>
-                </Space>
-              }
-              className="brainstorming-card"
-              extra={
-                <Button
-                  type="text"
-                  size="small"
-                  onClick={() => setShowBrainstorming(false)}
-                >
-                  Hide
-                </Button>
-              }
-            >
-              <>
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                {/* Conversation History */}
-                {conversationHistory.length > 0 && (
-                  <div style={{ 
-                    maxHeight: '400px', 
-                    overflowY: 'auto', 
-                    marginBottom: 16,
-                    padding: '12px',
-                    backgroundColor: '#f9f9f9',
-                    borderRadius: '8px',
-                    border: '1px solid #e8e8e8'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#666' }}>Conversation History</span>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<ClearOutlined />}
-                        onClick={handleClearConversation}
-                        style={{ color: '#8b0000' }}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      {conversationHistory.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            display: 'flex',
-                            gap: '12px',
-                            alignItems: 'flex-start',
-                            flexDirection: msg.role === 'user' ? 'row' : 'row',
-                          }}
-                        >
-                          <Avatar
-                            icon={msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
-                            style={{
-                              backgroundColor: msg.role === 'user' ? '#8b0000' : '#1890ff',
-                              flexShrink: 0,
-                            }}
-                            size="small"
-                          />
-                          <div style={{ 
-                            flex: 1,
-                            backgroundColor: msg.role === 'user' ? '#fff' : '#e6f7ff',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: msg.role === 'user' ? '1px solid #e8e8e8' : '1px solid #91d5ff',
-                          }}>
-                            <div style={{ fontSize: '13px', color: '#333', whiteSpace: 'pre-wrap' }}>
-                              {msg.role === 'user' ? msg.content : (
-                                <div>
-                                  <div style={{ marginBottom: (msg.data as any)?.responseType === 'casual' || (msg.data as any)?.responseType === 'question' || (msg.data as any)?.conversationalResponse ? 0 : 8, fontWeight: 500, lineHeight: '1.6' }}>
-                                    {msg.content}
-                                  </div>
-                                  {msg.data && (msg.data as any)?.responseType !== 'casual' && (msg.data as any)?.responseType !== 'question' && (
-                                    <div style={{ fontSize: '12px', color: '#666', marginTop: 8 }}>
-                                      {(msg.data as any)?.ideas?.length > 0 && (
-                                        <div style={{ marginBottom: 4 }}>
-                                          <strong>Ideas:</strong> {(msg.data as any).ideas.length} generated
-                                        </div>
-                                      )}
-                                      {(msg.data as any)?.hooks?.length > 0 && (
-                                        <div>
-                                          <strong>Hooks:</strong> {(msg.data as any).hooks.length} suggestions
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={conversationEndRef} />
-                    </div>
-                  </div>
-                )}
-
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: 8, lineHeight: '1.5' }}>
-                  💡 Enter your topic or question below. Ideas will be personalized based on your profile to make them more authentic and specific to you.
-                </div>
-                <Input.TextArea
-                  placeholder="Enter topic or question for brainstorming"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  size="large"
-                  rows={3}
-                  autoSize={{ minRows: 3, maxRows: 6 }}
-                  disabled={isBrainstorming}
-                  onKeyDown={(e) => {
-                    // Allow Shift+Enter for new lines, but prevent Enter alone from submitting
-                    if (e.key === 'Enter' && !e.shiftKey && !isBrainstorming) {
-                      e.preventDefault();
-                      handleBrainstorm();
-                    }
-                  }}
-                />
-
-                <Button
-                  type="primary"
-                  icon={<BulbOutlined />}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🎯 Generate Ideas button clicked');
-                    handleBrainstorm();
-                  }}
-                  loading={isBrainstorming}
-                  block
-                  style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-                >
-                  Generate Ideas
-                </Button>
-                </Space>
-
-                {/* Brainstorming Results - Show latest */}
-              {brainstormingData && brainstormingData.responseType !== 'casual' && brainstormingData.responseType !== 'question' && (
-                <div className="brainstorming-results" style={{ marginTop: 16 }}>
-                  {brainstormingData.ideas && brainstormingData.ideas.length > 0 && (
-                    <>
-                      <h4 style={{ fontSize: 14, marginBottom: 12 }}>Ideas & Angles</h4>
-                      <div className="ideas-list">
-                        {brainstormingData.ideas.map((idea, index) => (
-                          <Card
-                            key={index}
-                            size="small"
-                            className={`idea-card ${selectedIdea === idea ? 'selected' : ''}`}
-                            onClick={() => setSelectedIdea(idea)}
-                            hoverable
-                            style={{ marginBottom: 8, cursor: 'pointer' }}
-                          >
-                            <div style={{ fontSize: 13 }}>
-                              <strong style={{ color: '#8b0000' }}>{idea.title}</strong>
-                              <p style={{ margin: '4px 0', fontSize: 12 }}>{idea.description}</p>
-                              {idea.keyPoints && idea.keyPoints.length > 0 && (
-                                <div style={{ fontSize: 11, color: '#666' }}>
-                                  <strong>Key Points:</strong>
-                                  <ul style={{ margin: '4px 0', paddingLeft: 16 }}>
-                                    {idea.keyPoints.slice(0, 3).map((point: string, i: number) => (
-                                      <li key={i}>{point}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {selectedIdea && (
-                    <Button
-                      type="primary"
-                      onClick={handleGenerateOutline}
-                      loading={isGeneratingOutline}
-                      block
-                      size="small"
-                      style={{ marginTop: 12, backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-                    >
-                      Generate Outline
-                    </Button>
-                  )}
-
-                  {brainstormingData?.hooks && brainstormingData.hooks.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <h4 style={{ fontSize: 14, marginBottom: 12, fontWeight: 600 }}>Hook Ideas</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {brainstormingData.hooks.map((hook, index) => (
-                          <Card
-                            key={index}
-                            size="small"
-                            style={{
-                              backgroundColor: '#fafafa',
-                              border: '1px solid #e8e8e8',
-                              borderRadius: '6px',
-                            }}
-                          >
-                            <div style={{ fontSize: 13, lineHeight: '1.6', color: '#333' }}>
-                              {hook}
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Outline Display */}
-                  {outlineData && (
-                    <div className="outline-section" style={{ marginTop: 16, fontSize: 12 }}>
-                      <h4 style={{ fontSize: 13, marginBottom: 8 }}>Generated Outline</h4>
-                      <div style={{ background: '#f5f5f5', padding: 12, borderRadius: 4 }}>
-                        {outlineData.introduction && (
-                          <div style={{ marginBottom: 8 }}>
-                            <strong>Introduction:</strong>
-                            {outlineData.introduction.hook && (
-                              <div style={{ fontSize: 11, marginLeft: 8 }}>• {outlineData.introduction.hook}</div>
-                            )}
-                          </div>
-                        )}
-                        {outlineData.body && outlineData.body.length > 0 && (
-                          <div style={{ marginBottom: 8 }}>
-                            <strong>Body:</strong>
-                            {outlineData.body.slice(0, 2).map((para: any) => (
-                              <div key={para.paragraph} style={{ fontSize: 11, marginLeft: 8 }}>
-                                • Para {para.paragraph}: {para.topic}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              </>
-            </Card>
-          </Col>
-        )}
+        {/* Right Column: AI Brainstorming - Temporarily disabled, will be developed later */}
       </Row>
     </div>
   );
