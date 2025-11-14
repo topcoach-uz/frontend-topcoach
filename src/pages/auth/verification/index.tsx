@@ -54,9 +54,10 @@ export default function VerificationPage() {
       // Call the backend verification endpoint using the API
       api.auth
         .verifyEmail({ token })
-        .then(() => {
-          // Success - redirect to home with verified=true
-          window.location.href = '/?verified=true';
+        .then((response: any) => {
+          // Success - use redirectUrl from response if available, otherwise use default
+          const redirectUrl = response?.data?.redirectUrl || '/?verified=true';
+          window.location.href = redirectUrl;
         })
         .catch((error) => {
           console.error('Verification error:', error);
