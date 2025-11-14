@@ -387,7 +387,8 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
       }
       
       // Try to extract ID from various possible locations
-      const essayId = essay?.id || result?.id || (result?.data as any)?.id;
+      // result is ApiResponse<StudentEssay>, so we access result.data.id, not result.id
+      const essayId = essay?.id || (result?.data as any)?.id;
       
       if (essayId) {
         setCurrentEssayId(essayId);
@@ -635,3 +636,4 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
 };
 
 export default WriteTab;
+
