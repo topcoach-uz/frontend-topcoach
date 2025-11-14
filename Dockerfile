@@ -1,7 +1,12 @@
 FROM node:20-alpine as build
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install
+
+# Clear yarn cache and install with retries
+RUN yarn cache clean || true
+RUN yarn install --network-timeout 300000 --frozen-lockfile || \
+    (yarn cache clean && yarn install --network-timeout 300000 --frozen-lockfile)
+
 COPY . .
 RUN chmod +x ./node_modules/.bin/* || true
 RUN yarn build
