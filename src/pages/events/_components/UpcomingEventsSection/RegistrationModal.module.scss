@@ -38,7 +38,7 @@
 }
 
 .modal_content {
-  padding: 24px 24px 16px 24px;
+  padding: 24px 24px 8px 24px; // Reduced bottom padding to move buttons closer to bottom
 }
 
 .registration_form {
@@ -91,7 +91,7 @@
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px; // Reduced margin to move buttons closer
   border-top: none !important;
 }
 
@@ -115,7 +115,8 @@
   gap: 12px;
   justify-content: flex-end;
   background: transparent;
-  padding: 0 0 8px 0;
+  padding-top: 10px;
+  padding-bottom: -10px; // Removed bottom padding to move buttons closer to bottom
   margin: 0;
 }
 

@@ -223,23 +223,7 @@ export default function UpcomingEventsSection({
         {upcomingWorkshops.map((workshop) => (
           <Card
             key={`workshop-${workshop.id}`}
-            className={styles.upcoming_card}
-            cover={
-              <div className={styles.card_image}>
-                <img 
-                  src={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
-                  alt={workshop.title}
-                />
-                <div className={styles.card_overlay}>
-                  <Tag color="blue" className={styles.workshop_tag}>
-                    {t('events.workshop')}
-                  </Tag>
-                  <Tag color="green" className={styles.upcoming_tag}>
-                    {t('events.upcoming')}
-                  </Tag>
-                </div>
-              </div>
-            }
+            className={styles.workshop_card_horizontal}
             actions={[
               registeredEvents.has(workshop.id) ? (
                 <Button
@@ -264,40 +248,55 @@ export default function UpcomingEventsSection({
               )
             ]}
           >
-            <div className={styles.card_content}>
-              <Title level={4} className={styles.event_title}>
-                {workshop.title}
-              </Title>
-              
-              {(workshop.summary && getTranslation(workshop.summary)) && (
-                <div className={styles.summary_section}>
-                  <Text className={styles.workshop_summary}>
+            <div className={styles.workshop_horizontal_content}>
+              {/* Tags in top right corner */}
+              <div className={styles.workshop_tags_top_right}>
+                <Tag color="blue" className={styles.workshop_tag}>
+                  {t('events.workshop')}
+                </Tag>
+                <Tag color="green" className={styles.upcoming_tag}>
+                  {t('events.upcoming')}
+                </Tag>
+              </div>
+
+              {/* Image on the left */}
+              <div className={styles.workshop_image_container}>
+                <img 
+                  src={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
+                  alt={workshop.title}
+                  className={styles.workshop_image}
+                />
+              </div>
+
+              {/* Text content on the right */}
+              <div className={styles.workshop_text_content}>
+                <Title level={4} className={styles.workshop_title}>
+                  {workshop.title}
+                </Title>
+                
+                {(workshop.summary && getTranslation(workshop.summary)) && (
+                  <Text className={styles.workshop_summary_compact}>
                     {getTranslation(workshop.summary)}
                   </Text>
-                </div>
-              )}
-
-              {workshop.content?.blocks && workshop.content.blocks.length > 0 && (
-                <div className={styles.content_section}>
-                  <RichTextRenderer blocks={workshop.content.blocks} id={workshop.id} />
-                </div>
-              )}
-              
-              <Space direction="vertical" size="small" className={styles.event_info}>
-                <div className={styles.info_item}>
-                  <CalendarOutlined className={styles.info_icon} />
-                  <span>{formatDateRange(workshop.startDate, workshop.endDate)}</span>
-                </div>
-
-
-                {workshop.locations && workshop.locations.length > 0 && (
-                  <div className={styles.info_item}>
-                    <EnvironmentOutlined className={styles.info_icon} />
-                    <span>{workshop.locations[0]?.address || workshop.locations[0]?.region || 'TBA'}</span>
-                  </div>
                 )}
 
-              </Space>
+                {/* Location and date below text */}
+                <div className={styles.workshop_meta}>
+                  <Space direction="vertical" size="small" className={styles.workshop_info_compact}>
+                    <div className={styles.info_item}>
+                      <CalendarOutlined className={styles.info_icon} />
+                      <span>{formatDateRange(workshop.startDate, workshop.endDate)}</span>
+                    </div>
+
+                    {workshop.locations && workshop.locations.length > 0 && (
+                      <div className={styles.info_item}>
+                        <EnvironmentOutlined className={styles.info_icon} />
+                        <span>{workshop.locations[0]?.address || workshop.locations[0]?.region || 'TBA'}</span>
+                      </div>
+                    )}
+                  </Space>
+                </div>
+              </div>
             </div>
           </Card>
         ))}
