@@ -40,6 +40,13 @@
       font-weight: 600;
       color: #1f2937;
     }
+
+    .ant-pagination {
+      margin-top: 32px !important;
+      margin-bottom: 8px !important;
+      display: flex;
+      justify-content: flex-end;
+    }
   }
 }
 

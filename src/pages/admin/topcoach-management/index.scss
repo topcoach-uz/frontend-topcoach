@@ -1,0 +1,72 @@
+.program-dashboard {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: auto;
+  padding-bottom: 24px;
+
+  .dashboard-header {
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 14px;
+    }
+  }
+
+  .dashboard-filters {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-table {
+    .ant-table {
+      font-size: 14px;
+    }
+
+    .ant-table-thead > tr > th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+  }
+
+  // Ensure tabs content doesn't create extra space
+  .ant-tabs {
+    margin-bottom: 0;
+    
+    .ant-tabs-content-holder {
+      overflow: visible;
+    }
+
+    .ant-tabs-content {
+      min-height: 0;
+      padding-bottom: 0;
+    }
+
+    .ant-tabs-tabpane {
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .program-dashboard {
+    padding: 16px;
+
+    .dashboard-header {
+      h1 {
+        font-size: 24px;
+      }
+    }
+  }
+}
+

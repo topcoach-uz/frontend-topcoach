@@ -6,7 +6,9 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { Spin } from "antd";
 import { useTypedSelector } from "src/app/store";
+import { useGetMeQuery } from "src/app/services/users";
 
 // Layouts
 import MainLayout from "src/components/layouts/main";
@@ -96,6 +98,7 @@ const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"))
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
+const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const B2BPageLazy = lazy(() => import("src/pages/b2b"));
 
@@ -103,6 +106,18 @@ function RouterProvider() {
   const isAuthenticated = useTypedSelector(
     (state) => state.auth.isAuthenticated
   );
+  const userProfile = useTypedSelector(
+    (state) => state.auth.profile
+  );
+  
+  // Fetch user profile to ensure managementRole is loaded
+  const { data: userData, isLoading: profileLoading } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  
+  // Use userData if available, otherwise fall back to userProfile from store
+  const currentUser = userData || userProfile;
+  const isSuperAdminOrOwner = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
 
   return (
     <CustomRouter history={customHistory}>
@@ -165,6 +180,22 @@ function RouterProvider() {
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />
+              <Route 
+                path="/topcoach-management" 
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isSuperAdminOrOwner ? (
+                    <TopCoachManagementLazy />
+                  ) : (
+                    <Navigate to="/auth/signin" replace />
+                  )
+                } 
+              />
               <Route
                 path="/events/undergraduate"
                 element={<ApplyToEventUndergraduatePageLazy />}

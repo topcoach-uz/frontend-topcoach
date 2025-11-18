@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
@@ -14,19 +14,55 @@ import BookingsSection from '../_components/bookings';
 import EventsSection from '../_components/events';
 import FavoriteUniversitiesSection from '../_components/university';
 import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
+import LearningProgramSection from '../_components/learningProgram';
+import B2BDashboardSection from '../_components/b2bDashboard';
 import styles from '../mentor/_components/profile_status/profile_status.module.scss';
+import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
+import { api } from 'src/app/api';
 
 function MenteeHomePage() {
   const profile = useTypedSelector((state) => state.auth.profile);
   const nameMissing = !profile?.profile?.name;
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const { data: telegramStatus, refetch: refetchTelegramStatus, isLoading: telegramLoading } = useGetTelegramStatusQuery();
+  const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
+  const [isCounselor, setIsCounselor] = useState(false);
+  const [counselorLoading, setCounselorLoading] = useState(true);
   
   // Debug logging
   console.log('Telegram Status:', telegramStatus);
   
   // Only show as missing if we have data and it's not connected
   const telegramMissing = !telegramLoading && telegramStatus?.status !== 'connected';
+
+  // Check if user is a counselor
+  useEffect(() => {
+    const checkCounselorStatus = async () => {
+      try {
+        const response = await api.request({
+          path: '/organizations/my-organizations',
+          method: 'GET',
+          secure: true,
+        });
+        
+        if (response.data && response.data.length > 0) {
+          setIsCounselor(true);
+        } else {
+          setIsCounselor(false);
+        }
+      } catch (error: any) {
+        setIsCounselor(false);
+      } finally {
+        setCounselorLoading(false);
+      }
+    };
+
+    if (profile?.id) {
+      checkCounselorStatus();
+    } else {
+      setCounselorLoading(false);
+    }
+  }, [profile?.id]);
 
   const checklist = [
     {
@@ -68,7 +104,17 @@ function MenteeHomePage() {
           </div>
         </div>
       ) : null}
-      <BannerSection />
+      {/* Show Learning Program for enrolled students, B2B Dashboard for counselors, or Banner for others */}
+      {!counselorLoading && (
+        <>
+          {isCounselor && <B2BDashboardSection />}
+          {enrollmentStatus?.isEnrolled && enrollmentStatus?.canAccessLearning ? (
+            <LearningProgramSection />
+          ) : !isCounselor ? (
+            <BannerSection />
+          ) : null}
+        </>
+      )}
       {/* <HomeAiSearchSection /> */}
       <BookingsSection />
       <EventsSection />

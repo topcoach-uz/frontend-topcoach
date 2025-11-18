@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Progress, Descriptions, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Statistic, Table, Tag, Progress, Button, Spin, Alert, Empty } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOutlined,
@@ -8,45 +8,86 @@ import {
   EyeOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { mockCourses, mockStudents, type Course } from '../data/mockData';
+import { api } from 'src/app/api';
+import { useOrganization } from '../context/OrganizationContext';
 import type { ColumnsType } from 'antd/es/table';
 import './courses.scss';
 
+interface CourseData {
+  id: string;
+  name: string;
+  description: string;
+  category?: string;
+  duration?: string;
+  totalLessons?: number;
+  enrolledStudents: number;
+  completedStudents: number;
+  completionRate: number;
+  averageProgress: number;
+}
+
 const CoursesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const [data, setData] = useState<any[]>([]);
 
-  // Calculate course statistics
-  const getCourseStats = (courseId: string) => {
-    const enrolledStudents = mockStudents.filter((student) =>
-      student.enrolledCourses.some((c) => c.courseId === courseId)
-    );
-    const completedStudents = enrolledStudents.filter((student) =>
-      student.enrolledCourses.some((c) => c.courseId === courseId && c.status === 'completed')
-    );
-    const inProgressStudents = enrolledStudents.filter((student) =>
-      student.enrolledCourses.some((c) => c.courseId === courseId && c.status === 'in-progress')
-    );
-    
-    const totalProgress = enrolledStudents.reduce((sum, student) => {
-      const enrollment = student.enrolledCourses.find((c) => c.courseId === courseId);
-      return sum + (enrollment?.progress || 0);
-    }, 0);
-    const averageProgress = enrolledStudents.length > 0 ? Math.round(totalProgress / enrolledStudents.length) : 0;
+  useEffect(() => {
+    // For counselors, fetch immediately (they always have an organization)
+    // For SuperAdmins, only fetch if an organization is selected
+    if (isCounselor || (isSuperAdmin && selectedOrganizationId)) {
+      fetchData();
+      fetchCourses();
+    }
+  }, [selectedOrganizationId, isCounselor, isSuperAdmin]);
 
-    return {
-      enrolled: enrolledStudents.length,
-      completed: completedStudents.length,
-      inProgress: inProgressStudents.length,
-      averageProgress,
-    };
+  const fetchData = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (isSuperAdmin && selectedOrganizationId) {
+        params.append('organizationId', selectedOrganizationId);
+      }
+      
+      const response = await api.request({
+        path: `/b2b-dashboard?${params.toString()}`,
+        method: 'GET',
+        secure: true,
+      });
+      setData(response.data || []);
+    } catch (error: any) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (isSuperAdmin && selectedOrganizationId) {
+        params.append('organizationId', selectedOrganizationId);
+      }
+      
+      const response = await api.request({
+        path: `/b2b-dashboard/courses?${params.toString()}`,
+        method: 'GET',
+        secure: true,
+      });
+      
+      setCourses(response.data || []);
+    } catch (error: any) {
+      console.error('Error fetching courses:', error);
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleViewStudents = (courseId: string) => {
-    navigate(`/b2b/students?course=${courseId}`);
+    navigate(`/b2b/students`);
   };
 
-  const columns: ColumnsType<Course> = [
+  const columns: ColumnsType<CourseData> = [
     {
       title: 'Course',
       key: 'course',
@@ -65,13 +106,14 @@ const CoursesPage: React.FC = () => {
       dataIndex: 'category',
       key: 'category',
       width: 120,
-      render: (category: string) => <Tag color="blue">{category}</Tag>,
+      render: (category: string) => <Tag color="blue">{category || 'N/A'}</Tag>,
     },
     {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
       width: 120,
+      render: (duration: string) => duration || 'N/A',
     },
     {
       title: 'Lessons',
@@ -81,7 +123,7 @@ const CoursesPage: React.FC = () => {
       render: (lessons: number) => (
         <span>
           <BookOutlined style={{ marginRight: 4 }} />
-          {lessons}
+          {lessons || 0}
         </span>
       ),
     },
@@ -89,64 +131,51 @@ const CoursesPage: React.FC = () => {
       title: 'Enrolled Students',
       key: 'enrolled',
       width: 150,
-      render: (_, record) => {
-        const stats = getCourseStats(record.id);
-        return (
-          <div>
-            <Statistic
-              value={stats.enrolled}
-              prefix={<TeamOutlined />}
-              valueStyle={{ fontSize: 16, fontWeight: 600 }}
-            />
-          </div>
-        );
-      },
-      sorter: (a, b) => {
-        const statsA = getCourseStats(a.id);
-        const statsB = getCourseStats(b.id);
-        return statsA.enrolled - statsB.enrolled;
-      },
+      render: (_, record) => (
+        <div>
+          <Statistic
+            value={record.enrolledStudents}
+            prefix={<TeamOutlined />}
+            valueStyle={{ fontSize: 16, fontWeight: 600 }}
+          />
+        </div>
+      ),
+      sorter: (a, b) => a.enrolledStudents - b.enrolledStudents,
     },
     {
       title: 'Completion Rate',
       key: 'completion',
       width: 200,
-      render: (_, record) => {
-        const stats = getCourseStats(record.id);
-        return (
-          <div>
-            <Progress
-              percent={record.completionRate}
-              strokeColor={record.completionRate >= 70 ? '#52c41a' : record.completionRate >= 50 ? '#faad14' : '#ff4d4f'}
-              size="small"
-              showInfo={false}
-              style={{ marginBottom: 4 }}
-            />
-            <div style={{ fontSize: 12, color: '#6b7280' }}>
-              {record.completionRate}% ({stats.completed} completed)
-            </div>
+      render: (_, record) => (
+        <div>
+          <Progress
+            percent={record.completionRate}
+            strokeColor={record.completionRate >= 70 ? '#52c41a' : record.completionRate >= 50 ? '#faad14' : '#ff4d4f'}
+            size="small"
+            showInfo={false}
+            style={{ marginBottom: 4 }}
+          />
+          <div style={{ fontSize: 12, color: '#6b7280' }}>
+            {record.completionRate}% ({record.completedStudents} completed course)
           </div>
-        );
-      },
+        </div>
+      ),
       sorter: (a, b) => a.completionRate - b.completionRate,
     },
     {
       title: 'Average Progress',
       key: 'avgProgress',
       width: 150,
-      render: (_, record) => {
-        const stats = getCourseStats(record.id);
-        return (
-          <div>
-            <Progress
-              type="circle"
-              percent={stats.averageProgress}
-              size={60}
-              strokeColor={stats.averageProgress >= 80 ? '#52c41a' : stats.averageProgress >= 50 ? '#faad14' : '#ff4d4f'}
-            />
-          </div>
-        );
-      },
+      render: (_, record) => (
+        <div>
+          <Progress
+            type="circle"
+            percent={record.averageProgress}
+            size={60}
+            strokeColor={record.averageProgress >= 80 ? '#52c41a' : record.averageProgress >= 50 ? '#faad14' : '#ff4d4f'}
+          />
+        </div>
+      ),
     },
     {
       title: 'Actions',
@@ -157,10 +186,7 @@ const CoursesPage: React.FC = () => {
         <Button
           type="primary"
           icon={<EyeOutlined />}
-          onClick={() => {
-            setSelectedCourse(record);
-            handleViewStudents(record.id);
-          }}
+          onClick={() => handleViewStudents(record.id)}
           style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
         >
           View Students
@@ -169,19 +195,27 @@ const CoursesPage: React.FC = () => {
     },
   ];
 
-  // Overall statistics
-  const totalEnrollments = mockStudents.reduce(
-    (sum, student) => sum + student.enrolledCourses.length,
-    0
+  // Calculate overall statistics
+  const totalCourses = courses.length;
+  const totalEnrollments = data.length;
+  // Count students who have access (paymentStatus and status both completed)
+  const studentsWithAccess = data.filter(
+    s => s.paymentStatus === 'completed' && s.status === 'completed'
   );
-  const totalCompleted = mockStudents.reduce(
-    (sum, student) =>
-      sum + student.enrolledCourses.filter((c) => c.status === 'completed').length,
-    0
-  );
-  const overallCompletionRate = totalEnrollments > 0
-    ? Math.round((totalCompleted / totalEnrollments) * 100)
+  // Count students who actually completed the course (100% progress), not just enrollment status
+  const totalCompleted = studentsWithAccess.filter(s => (s.progressPercentage || 0) >= 100).length;
+  const overallCompletionRate = studentsWithAccess.length > 0
+    ? Math.round((totalCompleted / studentsWithAccess.length) * 100)
     : 0;
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px 0' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>Loading courses...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="b2b-courses">
@@ -204,7 +238,7 @@ const CoursesPage: React.FC = () => {
           <Card className="stat-card">
             <Statistic
               title="Total Courses"
-              value={mockCourses.length}
+              value={totalCourses}
               prefix={<BookOutlined />}
               valueStyle={{ color: '#8b0000' }}
             />
@@ -244,43 +278,26 @@ const CoursesPage: React.FC = () => {
 
       {/* Courses Table */}
       <Card className="courses-table-card">
-        <Table
-          columns={columns}
-          dataSource={mockCourses}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} courses`,
-          }}
-          scroll={{ x: 1400 }}
-        />
+        {courses.length === 0 ? (
+          <Empty
+            description="No courses available. Courses are managed by TopCoach."
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={courses}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} courses`,
+              position: ['bottomRight'],
+            }}
+            scroll={{ x: 1400 }}
+          />
+        )}
       </Card>
-
-      {/* Course Detail Modal (if needed) */}
-      {selectedCourse && (
-        <Card
-          title={`Course Details: ${selectedCourse.name}`}
-          className="course-detail-card"
-          style={{ marginTop: 24 }}
-          extra={
-            <Button onClick={() => setSelectedCourse(null)}>Close</Button>
-          }
-        >
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label="Course Name">{selectedCourse.name}</Descriptions.Item>
-            <Descriptions.Item label="Category">{selectedCourse.category}</Descriptions.Item>
-            <Descriptions.Item label="Duration">{selectedCourse.duration}</Descriptions.Item>
-            <Descriptions.Item label="Total Lessons">{selectedCourse.totalLessons}</Descriptions.Item>
-            <Descriptions.Item label="Enrolled Students" span={2}>
-              {getCourseStats(selectedCourse.id).enrolled} students
-            </Descriptions.Item>
-            <Descriptions.Item label="Description" span={2}>
-              {selectedCourse.description}
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
-      )}
     </div>
   );
 };

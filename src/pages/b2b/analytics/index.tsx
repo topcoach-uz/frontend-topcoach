@@ -1,133 +1,184 @@
-import React, { useState } from 'react';
-import { Card, Row, Col, Select, DatePicker, Statistic, Progress, Table, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Select, Statistic, Progress, Table, Tag, Spin, Alert } from 'antd';
 import {
   TeamOutlined,
   CheckCircleOutlined,
   TrophyOutlined,
   ArrowUpOutlined,
-  BarChartOutlined,
-  LineChartOutlined,
 } from '@ant-design/icons';
-import { mockStudents, mockCourses, type Student } from '../data/mockData';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { api } from 'src/app/api';
+import { useOrganization } from '../context/OrganizationContext';
 import type { ColumnsType } from 'antd/es/table';
 import './analytics.scss';
 
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const AnalyticsPage: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<string>('30days');
-  const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
+  const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [data, setData] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedOrganizationId || isCounselor) {
+      fetchAnalytics();
+      fetchData();
+    }
+  }, [selectedOrganizationId, isCounselor]);
+
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (isSuperAdmin && selectedOrganizationId) {
+        params.append('organizationId', selectedOrganizationId);
+      }
+      
+      const response = await api.request({
+        path: `/b2b-dashboard/analytics?${params.toString()}`,
+        method: 'GET',
+        secure: true,
+      });
+      setAnalytics(response.data);
+    } catch (error: any) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (isSuperAdmin && selectedOrganizationId) {
+        params.append('organizationId', selectedOrganizationId);
+      }
+      
+      const response = await api.request({
+        path: `/b2b-dashboard?${params.toString()}`,
+        method: 'GET',
+        secure: true,
+      });
+      setData(response.data || []);
+    } catch (error: any) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px 0' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>Loading analytics...</div>
+      </div>
+    );
+  }
+
+  if (!isSuperAdmin && !isCounselor) {
+    return (
+      <Alert
+        message="Access Denied"
+        description="You need to be a counselor or SuperAdmin to access this page."
+        type="error"
+        showIcon
+      />
+    );
+  }
+
+  if (!analytics) {
+    return <Alert message="No analytics data available" type="info" />;
+  }
 
   // Calculate overall statistics
-  const totalStudents = mockStudents.length;
-  const activeStudents = mockStudents.filter((s) => s.status === 'active').length;
-  const completedStudents = mockStudents.filter((s) => s.status === 'completed').length;
-  const averageProgress = Math.round(
-    mockStudents.reduce((sum, s) => sum + s.totalProgress, 0) / totalStudents
-  );
+  const totalStudents = analytics.totalStudents || 0;
+  const studentsWithAccess = analytics.studentsWithAccess || 0;
+  const averageProgress = analytics.averageProgress || 0;
+  const accessRate = totalStudents > 0 ? Math.round((studentsWithAccess / totalStudents) * 100) : 0;
 
-  // Course performance data
-  const coursePerformance = mockCourses.map((course) => {
-    const enrolledStudents = mockStudents.filter((student) =>
-      student.enrolledCourses.some((c) => c.courseId === course.id)
-    );
-    const completed = enrolledStudents.filter((student) =>
-      student.enrolledCourses.some((c) => c.courseId === course.id && c.status === 'completed')
-    ).length;
-    const totalProgress = enrolledStudents.reduce((sum, student) => {
-      const enrollment = student.enrolledCourses.find((c) => c.courseId === course.id);
-      return sum + (enrollment?.progress || 0);
-    }, 0);
-    const avgProgress = enrolledStudents.length > 0 ? Math.round(totalProgress / enrolledStudents.length) : 0;
-
-    return {
-      ...course,
-      enrolled: enrolledStudents.length,
-      completed,
-      avgProgress,
-      completionRate: enrolledStudents.length > 0 ? Math.round((completed / enrolledStudents.length) * 100) : 0,
-    };
-  });
-
-  // Student progress distribution
+  // Progress distribution based on data
   const progressDistribution = [
-    { range: '0-25%', count: mockStudents.filter((s) => s.totalProgress >= 0 && s.totalProgress <= 25).length },
-    { range: '26-50%', count: mockStudents.filter((s) => s.totalProgress > 25 && s.totalProgress <= 50).length },
-    { range: '51-75%', count: mockStudents.filter((s) => s.totalProgress > 50 && s.totalProgress <= 75).length },
-    { range: '76-100%', count: mockStudents.filter((s) => s.totalProgress > 75).length },
+    { 
+      range: '0-25%', 
+      count: data.filter((s) => s.progressPercentage !== null && s.progressPercentage >= 0 && s.progressPercentage <= 25).length 
+    },
+    { 
+      range: '26-50%', 
+      count: data.filter((s) => s.progressPercentage !== null && s.progressPercentage > 25 && s.progressPercentage <= 50).length 
+    },
+    { 
+      range: '51-75%', 
+      count: data.filter((s) => s.progressPercentage !== null && s.progressPercentage > 50 && s.progressPercentage <= 75).length 
+    },
+    { 
+      range: '76-100%', 
+      count: data.filter((s) => s.progressPercentage !== null && s.progressPercentage > 75).length 
+    },
   ];
 
-  // Enrollment trends (mock data)
-  const enrollmentTrends = [
-    { month: 'Jan', enrollments: 5 },
-    { month: 'Feb', enrollments: 8 },
-    { month: 'Mar', enrollments: 12 },
-    { month: 'Apr', enrollments: 10 },
-    { month: 'May', enrollments: 15 },
-    { month: 'Jun', enrollments: 18 },
-    { month: 'Jul', enrollments: 20 },
-    { month: 'Aug', enrollments: 22 },
-    { month: 'Sep', enrollments: 25 },
-    { month: 'Oct', enrollments: 28 },
-    { month: 'Nov', enrollments: 30 },
-  ];
+  // Course type breakdown
+  const courseTypeBreakdown = analytics.courseTypeBreakdown || [];
 
-  const coursePerformanceColumns: ColumnsType<any> = [
+  const courseTypeColumns: ColumnsType<any> = [
     {
-      title: 'Course',
-      dataIndex: 'name',
-      key: 'name',
-      width: 250,
-    },
-    {
-      title: 'Enrolled',
-      dataIndex: 'enrolled',
-      key: 'enrolled',
-      width: 100,
-      sorter: (a, b) => a.enrolled - b.enrolled,
-    },
-    {
-      title: 'Completed',
-      dataIndex: 'completed',
-      key: 'completed',
-      width: 100,
-      sorter: (a, b) => a.completed - b.completed,
-    },
-    {
-      title: 'Completion Rate',
-      key: 'completionRate',
+      title: 'Course Type',
+      dataIndex: 'courseType',
+      key: 'courseType',
       width: 200,
-      render: (_, record) => (
-        <div>
-          <Progress
-            percent={record.completionRate}
-            strokeColor={record.completionRate >= 70 ? '#52c41a' : record.completionRate >= 50 ? '#faad14' : '#8b0000'}
-            size="small"
-            showInfo={false}
-            style={{ marginBottom: 4 }}
-          />
-          <span style={{ fontSize: 12, color: '#6b7280' }}>{record.completionRate}%</span>
-        </div>
+      render: (type: string) => (
+        <Tag color={type === 'premium' ? 'gold' : 'blue'}>
+          {type?.toUpperCase() || 'N/A'}
+        </Tag>
       ),
-      sorter: (a, b) => a.completionRate - b.completionRate,
     },
     {
-      title: 'Avg Progress',
-      dataIndex: 'avgProgress',
-      key: 'avgProgress',
-      width: 150,
-      render: (progress: number) => (
-        <Progress
-          type="circle"
-          percent={progress}
-          size={50}
-          strokeColor={progress >= 80 ? '#52c41a' : progress >= 50 ? '#faad14' : '#ff4d4f'}
-        />
-      ),
-      sorter: (a, b) => a.avgProgress - b.avgProgress,
+      title: 'Students',
+      dataIndex: 'count',
+      key: 'count',
+      width: 100,
+      sorter: (a, b) => a.count - b.count,
+    },
+    {
+      title: 'Percentage',
+      key: 'percentage',
+      width: 200,
+      render: (_, record) => {
+        const percentage = totalStudents > 0 ? Math.round((record.count / totalStudents) * 100) : 0;
+        return (
+          <div>
+            <Progress
+              percent={percentage}
+              strokeColor={record.courseType === 'premium' ? '#faad14' : '#1890ff'}
+              size="small"
+              showInfo={false}
+              style={{ marginBottom: 4 }}
+            />
+            <span style={{ fontSize: 12, color: '#6b7280' }}>{percentage}%</span>
+          </div>
+        );
+      },
     },
   ];
+
+  // Top performers
+  const topPerformers = data
+    .filter((s) => s.progressPercentage !== null && s.progressPercentage >= 80)
+    .sort((a, b) => (b.progressPercentage || 0) - (a.progressPercentage || 0))
+    .slice(0, 5);
+
+  // Needs attention
+  const needsAttention = data
+    .filter((s) => s.progressPercentage !== null && s.progressPercentage < 50 && s.status === 'completed')
+    .sort((a, b) => (a.progressPercentage || 0) - (b.progressPercentage || 0))
+    .slice(0, 5);
 
   return (
     <div className="b2b-analytics">
@@ -135,19 +186,6 @@ const AnalyticsPage: React.FC = () => {
         <div>
           <h1>Analytics & Reports</h1>
           <p className="page-subtitle">Track performance metrics and student engagement</p>
-        </div>
-        <div className="filters">
-          <Select
-            value={timeRange}
-            onChange={setTimeRange}
-            style={{ width: 150, marginRight: 12 }}
-          >
-            <Option value="7days">Last 7 days</Option>
-            <Option value="30days">Last 30 days</Option>
-            <Option value="90days">Last 90 days</Option>
-            <Option value="1year">Last year</Option>
-          </Select>
-          <RangePicker />
         </div>
       </div>
 
@@ -161,36 +199,16 @@ const AnalyticsPage: React.FC = () => {
               prefix={<TeamOutlined />}
               valueStyle={{ color: '#8b0000' }}
             />
-            <div className="metric-change positive">
-              <ArrowUpOutlined /> +12% from last month
-            </div>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Active Students"
-              value={activeStudents}
-              prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-            <div className="metric-change positive">
-              <ArrowUpOutlined /> {Math.round((activeStudents / totalStudents) * 100)}% of total
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="metric-card">
-            <Statistic
-              title="Completion Rate"
-              value={Math.round((completedStudents / totalStudents) * 100)}
-              suffix="%"
+              title="Students with Access"
+              value={studentsWithAccess}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
             />
-            <div className="metric-change positive">
-              <ArrowUpOutlined /> {completedStudents} students completed
-            </div>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
@@ -201,10 +219,19 @@ const AnalyticsPage: React.FC = () => {
               suffix="%"
               prefix={<TrophyOutlined />}
               valueStyle={{ color: '#faad14' }}
+              precision={1}
             />
-            <div className="metric-change positive">
-              <ArrowUpOutlined /> +5% from last week
-            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="metric-card">
+            <Statistic
+              title="Access Rate"
+              value={accessRate}
+              suffix="%"
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#1890ff' }}
+            />
           </Card>
         </Col>
       </Row>
@@ -213,24 +240,38 @@ const AnalyticsPage: React.FC = () => {
         {/* Enrollment Trends */}
         <Col xs={24} lg={12}>
           <Card title="Enrollment Trends" className="chart-card">
-            <div className="simple-chart">
-              {enrollmentTrends.map((item, index) => (
-                <div key={index} className="chart-bar-item">
-                  <div className="bar-label">{item.month}</div>
-                  <div className="bar-container">
-                    <div
-                      className="bar"
-                      style={{
-                        height: `${(item.enrollments / 30) * 100}%`,
-                        backgroundColor: '#8b0000',
-                      }}
-                    >
-                      <span className="bar-value">{item.enrollments}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {analytics.enrollmentTrends && analytics.enrollmentTrends.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={analytics.enrollmentTrends}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#666"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#666"
+                    style={{ fontSize: '12px' }}
+                    allowDecimals={false}
+                    tickFormatter={(value) => Math.floor(value).toString()}
+                  />
+                  <Tooltip 
+                    formatter={(value: any) => [value, 'Enrollments']}
+                    labelStyle={{ color: '#333' }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#8b0000" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No enrollment data available</div>
+            )}
           </Card>
         </Col>
 
@@ -245,7 +286,7 @@ const AnalyticsPage: React.FC = () => {
                     <span className="dist-count">{item.count} students</span>
                   </div>
                   <Progress
-                    percent={Math.round((item.count / totalStudents) * 100)}
+                    percent={totalStudents > 0 ? Math.round((item.count / totalStudents) * 100) : 0}
                     strokeColor="#8b0000"
                     showInfo={false}
                   />
@@ -256,12 +297,12 @@ const AnalyticsPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Course Performance */}
-      <Card title="Course Performance Analysis" className="performance-card" style={{ marginBottom: 24 }}>
+      {/* Course Type Breakdown */}
+      <Card title="Course Type Breakdown" className="performance-card" style={{ marginBottom: 24 }}>
         <Table
-          columns={coursePerformanceColumns}
-          dataSource={coursePerformance}
-          rowKey="id"
+          columns={courseTypeColumns}
+          dataSource={courseTypeBreakdown}
+          rowKey="courseType"
           pagination={false}
         />
       </Card>
@@ -271,52 +312,52 @@ const AnalyticsPage: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card title="Top Performers" className="insight-card">
             <div className="top-performers">
-              {mockStudents
-                .filter((s) => s.totalProgress >= 80)
-                .sort((a, b) => b.totalProgress - a.totalProgress)
-                .slice(0, 5)
-                .map((student) => (
-                  <div key={student.id} className="performer-item">
+              {topPerformers.length > 0 ? (
+                topPerformers.map((student) => (
+                  <div key={student.userId} className="performer-item">
                     <div className="performer-info">
-                      <span className="performer-name">{student.name}</span>
-                      <span className="performer-email">{student.email}</span>
+                      <span className="performer-name">{student.userName}</span>
+                      <span className="performer-email">{student.userEmail}</span>
                     </div>
                     <div className="performer-progress">
                       <Progress
                         type="circle"
-                        percent={student.totalProgress}
+                        percent={Math.round(student.progressPercentage || 0)}
                         size={50}
                         strokeColor="#52c41a"
                       />
                     </div>
                   </div>
-                ))}
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No top performers yet</div>
+              )}
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title="Needs Attention" className="insight-card">
             <div className="needs-attention">
-              {mockStudents
-                .filter((s) => s.status === 'active' && s.totalProgress < 50)
-                .sort((a, b) => a.totalProgress - b.totalProgress)
-                .slice(0, 5)
-                .map((student) => (
-                  <div key={student.id} className="attention-item">
+              {needsAttention.length > 0 ? (
+                needsAttention.map((student) => (
+                  <div key={student.userId} className="attention-item">
                     <div className="attention-info">
-                      <span className="attention-name">{student.name}</span>
-                      <span className="attention-email">{student.email}</span>
+                      <span className="attention-name">{student.userName}</span>
+                      <span className="attention-email">{student.userEmail}</span>
                     </div>
                     <div className="attention-progress">
                       <Progress
                         type="circle"
-                        percent={student.totalProgress}
+                        percent={Math.round(student.progressPercentage || 0)}
                         size={50}
                         strokeColor="#ff4d4f"
                       />
                     </div>
                   </div>
-                ))}
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>All students are on track! 🎉</div>
+              )}
             </div>
           </Card>
         </Col>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu, Button, Dropdown } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -11,6 +11,7 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import { useOrganization } from '../context/OrganizationContext';
 import './B2BLayout.scss';
 
 const { Sider, Content } = Layout;
@@ -25,6 +26,15 @@ const B2BLayout: React.FC<B2BLayoutProps> = ({ children }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { 
+    selectedOrganizationId, 
+    setSelectedOrganizationId, 
+    organizations, 
+    loading: orgsLoading,
+    isSuperAdmin,
+    isCounselor,
+    counselorOrganizationId 
+  } = useOrganization();
 
   // Handle window resize and mobile detection
   useEffect(() => {
@@ -133,7 +143,19 @@ const B2BLayout: React.FC<B2BLayoutProps> = ({ children }) => {
       >
         <div className="sidebar-header">
           {!collapsed && (
-            <div className="sidebar-title">Tracking Portal</div>
+            <>
+              <div className="sidebar-title">Tracking Portal</div>
+              {isSuperAdmin && selectedOrganizationId && (
+                <div className="organization-name">
+                  {organizations.find((org) => org.id === selectedOrganizationId)?.name || ''}
+                </div>
+              )}
+              {/* {isCounselor && counselorOrganizationId && (
+                <div style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
+                  Viewing your organization
+                </div>
+              )} */}
+            </>
           )}
           {!isMobile && (
             <button

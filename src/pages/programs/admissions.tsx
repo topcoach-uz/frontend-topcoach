@@ -431,7 +431,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
                 
                 <div className="progress-bar-container">
                   <Progress 
-                    percent={userProgress.overallProgress || 0} 
+                    percent={Math.round(userProgress.overallProgress || 0)} 
                     strokeColor="#8b0000"
                     trailColor="#f0f0f0"
                   />

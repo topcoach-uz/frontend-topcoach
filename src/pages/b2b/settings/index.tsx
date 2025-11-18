@@ -1,39 +1,127 @@
-import React, { useState } from 'react';
-import { Card, Form, Input, Button, Descriptions, Tag, Avatar, Upload, Switch, Select, message, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Form, Input, Button, Descriptions, Tag, message, Row, Col, Spin, Alert } from 'antd';
 import {
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
-  EnvironmentOutlined,
   SaveOutlined,
-  UploadOutlined,
   CheckCircleOutlined,
 } from '@ant-design/icons';
-import { mockOrganization } from '../data/mockData';
+import { api } from 'src/app/api';
+import { useOrganization } from '../context/OrganizationContext';
 import './settings.scss';
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 const SettingsPage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [fetching, setFetching] = useState(true);
+  const [organization, setOrganization] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [counselors, setCounselors] = useState<any[]>([]);
+  const { selectedOrganizationId, isSuperAdmin, isCounselor, counselorOrganizationId } = useOrganization();
 
-  const handleSave = async (values: any) => {
-    setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    message.success('Settings saved successfully!');
-    setLoading(false);
-  };
+  const organizationId = isSuperAdmin ? selectedOrganizationId : counselorOrganizationId;
 
-  const handleLogoUpload = (info: any) => {
-    if (info.file.status === 'done') {
-      message.success('Logo uploaded successfully!');
+  useEffect(() => {
+    if (organizationId) {
+      fetchOrganization();
+    }
+  }, [organizationId]);
+
+  // Get analytics for subscription info
+  useEffect(() => {
+    if (organizationId) {
+      api.request({
+        path: `/b2b-dashboard/analytics${isSuperAdmin && organizationId ? `?organizationId=${organizationId}` : ''}`,
+        method: 'GET',
+        secure: true,
+      })
+        .then((response) => {
+          setAnalytics(response.data);
+        })
+        .catch(() => {
+          // Ignore errors for analytics
+        });
+    }
+  }, [organizationId, isSuperAdmin]);
+
+  const fetchOrganization = async () => {
+    if (!organizationId) return;
+    
+    setFetching(true);
+    try {
+      // Fetch organization with members
+      const response = await api.request({
+        path: `/organizations/${organizationId}?includeMembers=true`,
+        method: 'GET',
+        secure: true,
+      });
+      setOrganization(response.data);
+      form.setFieldsValue({
+        name: response.data.name,
+        email: response.data.contactEmail,
+        phone: response.data.contactPhone,
+        address: response.data.address,
+      });
+      
+      // Extract counselors from members
+      const counselorMembers = response.data.members?.filter((m: any) => m.role === 'counselor') || [];
+      setCounselors(counselorMembers);
+    } catch (error: any) {
+      console.error('Error fetching organization:', error);
+      message.error('Failed to load organization details');
+    } finally {
+      setFetching(false);
     }
   };
+
+  const handleSave = async (values: any) => {
+    if (!organizationId) return;
+    
+    setLoading(true);
+    try {
+      await api.request({
+        path: `/organizations/${organizationId}`,
+        method: 'PUT',
+        secure: true,
+        body: {
+          name: values.name,
+          contactEmail: values.email,
+          contactPhone: values.phone,
+          address: values.address,
+        },
+      });
+      message.success('Settings saved successfully!');
+      fetchOrganization(); // Refresh data
+    } catch (error: any) {
+      console.error('Error updating organization:', error);
+      message.error(error.response?.data?.message || 'Failed to save settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (fetching) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px 0' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>Loading organization settings...</div>
+      </div>
+    );
+  }
+
+  if (!organization) {
+    return (
+      <Alert
+        message="No Organization Found"
+        description="Please select an organization to view settings."
+        type="warning"
+        showIcon
+      />
+    );
+  }
 
   return (
     <div className="b2b-settings">
@@ -50,29 +138,7 @@ const SettingsPage: React.FC = () => {
               form={form}
               layout="vertical"
               onFinish={handleSave}
-              initialValues={{
-                name: mockOrganization.name,
-                email: mockOrganization.email,
-                phone: mockOrganization.phone,
-                address: mockOrganization.address,
-              }}
             >
-              <Form.Item label="Organization Logo">
-                <div className="logo-upload-section">
-                  <Avatar size={80} icon={<UserOutlined />} style={{ backgroundColor: '#8b0000' }} />
-                  <Upload
-                    name="logo"
-                    action="/api/upload"
-                    onChange={handleLogoUpload}
-                    showUploadList={false}
-                  >
-                    <Button icon={<UploadOutlined />} style={{ marginLeft: 16 }}>
-                      Upload Logo
-                    </Button>
-                  </Upload>
-                </div>
-              </Form.Item>
-
               <Form.Item
                 label="Organization Name"
                 name="name"
@@ -123,34 +189,22 @@ const SettingsPage: React.FC = () => {
         <Col xs={24} lg={8}>
           <Card title="Subscription" className="settings-card">
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Current Plan">
-                <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
-                  {mockOrganization.subscriptionPlan}
-                </Tag>
-              </Descriptions.Item>
               <Descriptions.Item label="Total Students">
-                {mockOrganization.totalStudents}
+                {analytics?.totalStudents || 0}
+              </Descriptions.Item>
+              <Descriptions.Item label="Students with Access">
+                {analytics?.studentsWithAccess || 0}
               </Descriptions.Item>
               <Descriptions.Item label="Active Students">
-                {mockOrganization.activeStudents}
-              </Descriptions.Item>
-              <Descriptions.Item label="Completed Students">
-                {mockOrganization.completedStudents}
+                {analytics?.totalStudents || 0}
               </Descriptions.Item>
             </Descriptions>
-            <Button
-              type="default"
-              block
-              style={{ marginTop: 16 }}
-            >
-              Upgrade Plan
-            </Button>
           </Card>
 
           <Card title="Account Information" className="settings-card" style={{ marginTop: 24 }}>
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Organization ID">
-                {mockOrganization.id}
+                {organization.id}
               </Descriptions.Item>
               <Descriptions.Item label="Account Status">
                 <Tag color="green" icon={<CheckCircleOutlined />}>
@@ -158,89 +212,49 @@ const SettingsPage: React.FC = () => {
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Created">
-                {new Date('2024-01-01').toLocaleDateString()}
+                {new Date(organization.createdAt).toLocaleDateString()}
               </Descriptions.Item>
             </Descriptions>
           </Card>
+
+          <Card title="Counselors" className="settings-card" style={{ marginTop: 24 }}>
+            {counselors.length > 0 ? (
+              <div>
+                {counselors.map((counselor, index) => (
+                  <div
+                    key={counselor.id || index}
+                    style={{
+                      padding: '12px',
+                      marginBottom: index < counselors.length - 1 ? '8px' : 0,
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '6px',
+                      border: '1px solid #e0e0e0',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                      {counselor.userName || 'Unknown User'}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                      {counselor.userEmail || 'No email'}
+                    </div>
+                    {counselor.telegramStatus && (
+                      <div style={{ marginTop: '4px' }}>
+                        <Tag color={counselor.telegramStatus === 'connected' ? 'green' : 'default'}>
+                          Telegram: {counselor.telegramStatus}
+                        </Tag>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                No counselors assigned
+              </div>
+            )}
+          </Card>
         </Col>
       </Row>
-
-      {/* Notification Preferences */}
-      <Card title="Notification Preferences" className="settings-card" style={{ marginTop: 24 }}>
-        <div className="notification-settings">
-          <div className="notification-item">
-            <div className="notification-info">
-              <h4>Email Notifications</h4>
-              <p>Receive email updates about student progress and activities</p>
-            </div>
-            <Switch
-              checked={emailNotifications}
-              onChange={setEmailNotifications}
-            />
-          </div>
-          <div className="notification-item">
-            <div className="notification-info">
-              <h4>In-App Notifications</h4>
-              <p>Get notified within the platform about important updates</p>
-            </div>
-            <Switch
-              checked={notificationsEnabled}
-              onChange={setNotificationsEnabled}
-            />
-          </div>
-          <div className="notification-item">
-            <div className="notification-info">
-              <h4>Weekly Reports</h4>
-              <p>Receive weekly summary reports via email</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="notification-item">
-            <div className="notification-info">
-              <h4>Student Activity Alerts</h4>
-              <p>Get notified when students complete courses or reach milestones</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-        </div>
-      </Card>
-
-      {/* Preferences */}
-      <Card title="Preferences" className="settings-card" style={{ marginTop: 24 }}>
-        <Form layout="vertical">
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item label="Language">
-                <Select defaultValue="en" size="large">
-                  <Option value="en">English</Option>
-                  <Option value="uz">Uzbek</Option>
-                  <Option value="ru">Russian</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item label="Time Zone">
-                <Select defaultValue="utc" size="large">
-                  <Option value="utc">UTC</Option>
-                  <Option value="est">Eastern Time (EST)</Option>
-                  <Option value="pst">Pacific Time (PST)</Option>
-                  <Option value="cet">Central European Time (CET)</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              size="large"
-              style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-            >
-              Save Preferences
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
     </div>
   );
 };
