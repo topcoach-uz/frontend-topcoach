@@ -123,21 +123,38 @@ const ProgramDashboard: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const queryParams = new URLSearchParams({
+        ...(searchText && { search: searchText }),
+        ...(sortBy && { sortBy }),
+        ...(sortOrder && { sortOrder }),
+      });
+      const url = `/program-dashboard?${queryParams.toString()}`;
+      console.log('[TopCoach Management] Fetching dashboard data from:', url);
+      
       const response = await api.request({
-        path: `/program-dashboard?${new URLSearchParams({
-          ...(searchText && { search: searchText }),
-          ...(sortBy && { sortBy }),
-          ...(sortOrder && { sortOrder }),
-        })}`,
+        path: url,
         method: 'GET',
         secure: true,
       });
+      
       const responseData = response.data || [];
+      console.log('[TopCoach Management] Dashboard data received:', responseData.length, 'items');
       setData(responseData);
       setTotal(responseData.length); // Set total for pagination
     } catch (error: any) {
-      console.error('Error fetching dashboard data:', error);
-      if (error.response?.status === 403) {
+      console.error('[TopCoach Management] Error fetching dashboard data:', error);
+      console.error('[TopCoach Management] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL,
+      });
+      
+      if (error.response?.status === 404) {
+        message.error('Dashboard endpoint not found. Please ensure the backend is deployed with the latest changes.');
+      } else if (error.response?.status === 403) {
         message.error('Access denied. SuperAdmin role required.');
       } else {
         message.error('Failed to load dashboard data');
@@ -210,15 +227,32 @@ const ProgramDashboard: React.FC = () => {
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
     try {
+      console.log('[TopCoach Management] Fetching analytics data from: /program-dashboard/analytics');
+      
       const response = await api.request({
         path: '/program-dashboard/analytics',
         method: 'GET',
         secure: true,
       });
+      
+      console.log('[TopCoach Management] Analytics data received');
       setAnalyticsData(response.data);
     } catch (error: any) {
-      console.error('Error fetching analytics:', error);
-      message.error('Failed to load analytics data');
+      console.error('[TopCoach Management] Error fetching analytics:', error);
+      console.error('[TopCoach Management] Analytics error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+      });
+      
+      if (error.response?.status === 404) {
+        message.error('Analytics endpoint not found. Please ensure the backend is deployed with the latest changes.');
+      } else if (error.response?.status === 403) {
+        message.error('Access denied. SuperAdmin role required.');
+      } else {
+        message.error('Failed to load analytics data');
+      }
     } finally {
       setAnalyticsLoading(false);
     }
@@ -235,16 +269,31 @@ const ProgramDashboard: React.FC = () => {
     try {
       // Add cache-busting parameter to force fresh fetch
       const cacheBuster = bypassCache ? `?_t=${Date.now()}` : '';
+      const url = `/organizations${cacheBuster}`;
+      console.log('[TopCoach Management] Fetching organizations from:', url);
+      
       const response = await api.request({
-        path: `/organizations${cacheBuster}`,
+        path: url,
         method: 'GET',
         secure: true,
       });
+      
+      console.log('[TopCoach Management] Organizations data received:', response.data?.length || 0, 'organizations');
       setOrganizations(response.data || []);
     } catch (error: any) {
-      console.error('Error fetching organizations:', error);
-      // If 403, 404, or 500, just set empty array (no organizations exist)
+      console.error('[TopCoach Management] Error fetching organizations:', error);
+      console.error('[TopCoach Management] Organizations error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+      });
+      
+      // If 403, 404, or 500, just set empty array (no organizations exist or endpoint not available)
       if (error.response?.status === 403 || error.response?.status === 404 || error.response?.status === 500) {
+        if (error.response?.status === 404) {
+          console.warn('[TopCoach Management] Organizations endpoint not found (404). Backend may need to be redeployed.');
+        }
         setOrganizations([]);
       } else {
         message.error('Failed to load organizations');

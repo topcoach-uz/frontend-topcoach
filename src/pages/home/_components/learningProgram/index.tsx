@@ -117,7 +117,7 @@ export default function LearningProgramSection() {
   const timeWatchedMinutes = Math.floor(timeWatched / 60);
 
   return (
-    <section className={styles.learning_section}>
+    <section className={`${styles.learning_section} ${styles.fade_in_slide}`}>
       <div className={'container ' + styles.container}>
         <CustomCard
           bgColor={colors.colorBgContainer}
