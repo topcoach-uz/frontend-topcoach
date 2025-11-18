@@ -257,7 +257,7 @@ const CoursesPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="stat-card">
             <Statistic
-              title="Completed"
+              title="Students Completed Course"
               value={totalCompleted}
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}

@@ -222,7 +222,7 @@ const DashboardPage: React.FC = () => {
 
       <Row gutter={[24, 24]} className="content-row">
         {/* Recent Enrollments */}
-        <Col xs={24} lg={16}>
+        <Col xs={24}>
           <Card
             title="Recent Enrollments"
             className="activity-card"
@@ -233,30 +233,6 @@ const DashboardPage: React.FC = () => {
               pagination={false}
               size="small"
             />
-          </Card>
-        </Col>
-
-        {/* Quick Stats */}
-        <Col xs={24} lg={8}>
-          <Card title="Quick Stats" className="stats-card">
-            <div className="stat-item">
-              <div className="stat-label">Total Enrollments</div>
-              <div className="stat-value">{data.length}</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-label">Students with Access</div>
-              <div className="stat-value">{studentsWithAccess}</div>
-            </div>
-            {analytics?.enrollmentStatusBreakdown && (
-              <>
-                {analytics.enrollmentStatusBreakdown.map((item: any) => (
-                  <div key={item.status} className="stat-item">
-                    <div className="stat-label">{item.status?.toUpperCase() || 'N/A'}</div>
-                    <div className="stat-value">{item.count}</div>
-                  </div>
-                ))}
-              </>
-            )}
           </Card>
         </Col>
       </Row>
