@@ -498,7 +498,7 @@ const ProgramDashboard: React.FC = () => {
                                   {
                                     title: 'Actions',
                                     key: 'actions',
-                                    render: (_, member) => (
+                                    render: (_, member: any) => (
                                       <Popconfirm
                                         title="Remove user from organization?"
                                         onConfirm={() => handleRemoveUser(record.id, member.userId)}
@@ -700,7 +700,7 @@ const ProgramDashboard: React.FC = () => {
                     <LineChart
                       data={chartData}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      onClick={(data) => {
+                      onClick={(data: any) => {
                         if (data && data.activePayload && data.activePayload[0]) {
                           const payload = data.activePayload[0].payload;
                           message.info(`${payload.month}: ${payload.users.toLocaleString()} users, ${payload.mentors.toLocaleString()} mentors`);
@@ -1225,3 +1225,4 @@ const ProgramDashboard: React.FC = () => {
 };
 
 export default ProgramDashboard;
+
