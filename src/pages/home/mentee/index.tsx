@@ -105,13 +105,13 @@ function MenteeHomePage() {
         </div>
       ) : null}
       {/* Show Learning Program for enrolled students, B2B Dashboard for counselors, or Banner for others */}
+      {/* Always render LearningProgramSection first - it handles its own loading state */}
+      <LearningProgramSection />
       {!counselorLoading && (
         <>
           {isCounselor && <B2BDashboardSection />}
-          {enrollmentStatus?.isEnrolled && enrollmentStatus?.canAccessLearning ? (
-            <LearningProgramSection />
-          ) : !isCounselor ? (
-            <BannerSection />
+          {!enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning ? (
+            !isCounselor ? <BannerSection /> : null
           ) : null}
         </>
       )}

@@ -1,4 +1,4 @@
-import { TabsProps } from 'antd';
+import { TabsProps, Spin } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApplicationStatusEnum } from 'src/app/api/Api';
@@ -65,7 +65,11 @@ export default function EventsSection() {
     useConfettiCelebration(allEvents);
 
   if (isLoading) {
-    return <div>Loading events...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   const pendingEvents = allEvents.filter(

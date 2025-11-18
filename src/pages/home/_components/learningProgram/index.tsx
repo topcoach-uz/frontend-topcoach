@@ -10,7 +10,7 @@ import {
 import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { PlayCircleOutlined, DashboardOutlined, BookOutlined, SettingOutlined } from '@ant-design/icons';
-import { Progress, Space } from 'antd';
+import { Progress, Space, Spin } from 'antd';
 import { useMemo, useState, useEffect } from 'react';
 import { api } from 'src/app/api';
 import styles from './learningProgram.module.scss';
@@ -80,14 +80,30 @@ export default function LearningProgramSection() {
     }
   }, [isAuthenticated, currentUser?.id]);
 
-  // Wait for counselor check to complete
-  if (counselorLoading) {
-    return null; // Show nothing while checking
+  // Show loading skeleton while checking counselor status or enrollment status
+  if (counselorLoading || !enrollmentStatus) {
+    return (
+      <section className={styles.learning_section}>
+        <div className={'container ' + styles.container}>
+          <CustomCard
+            bgColor={colors.colorBgContainer}
+            mb={40}
+            shadowed
+            borderRadius={24}
+            padding={24}
+          >
+            <div style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Spin size="large" />
+            </div>
+          </CustomCard>
+        </div>
+      </section>
+    );
   }
 
   // Don't show if not enrolled or can't access
   // Note: Counselors with course access will also see this section
-  if (!enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning) {
+  if (!enrollmentStatus.isEnrolled || !enrollmentStatus.canAccessLearning) {
     return null;
   }
 
