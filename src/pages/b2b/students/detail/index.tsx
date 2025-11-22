@@ -22,9 +22,11 @@ interface StudentData {
   telegramPhoneNumber: string | null;
   telegramStatus: string | null;
   courseType: string | null;
+  courseName: string | null;
   paymentStatus: string | null;
   status: string | null;
   enrolledAt: string | null;
+  updatedAt: string | null;
   progressPercentage: number | null;
   organizationId?: string | null;
 }
@@ -111,7 +113,7 @@ const StudentDetailPage: React.FC = () => {
 
       // Set course data from all enrollments
       const courseData: CourseProgress[] = studentEnrollments
-        .filter(e => e.courseName || e.courseType)
+        .filter((e: StudentData) => e.courseName || e.courseType)
         .map((enrollment: StudentData) => {
           const courseName = enrollment.courseName 
             ? (enrollment.courseName === 'admissions' ? 'Admissions Program' : enrollment.courseName === 'sat' ? 'SAT Prep Course' : enrollment.courseName.toUpperCase())
