@@ -1,6 +1,6 @@
 .video-player-container.youtube-embed {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: transparent;
+  border: none;
   border-radius: 8px;
   position: relative;
   /* remove height forcing that can cause awkward crops */
@@ -39,8 +39,8 @@
   justify-content: center;
   padding: 20px 20px 32px;
   margin: 0;
-  background: #fff;
-  border-top: 1px solid #e9ecef;
+  background: transparent;
+  border-top: none;
   z-index: 1;
 
   .complete-button {
@@ -74,14 +74,14 @@
 
 /* Google Drive Video Interface */
 .video-player-container.google-drive-video {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: transparent;
+  border: none;
   border-radius: 8px;
   position: relative;
   height: auto;
   min-height: 400px;
   overflow: visible;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Spin } from 'antd';
 import { api } from 'src/app/api';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import useApi from 'src/hooks/useApi';
@@ -19,9 +20,11 @@ interface Event {
 }
 
 export default function EventsPage() {
-  const { response: eventsData } = useApi(() => api.camps.campsList());
-  const { response: workshopsData } = useApi(() => api.camps.getActiveWorkshops());
+  const { response: eventsData, isLoading: eventsLoading } = useApi(() => api.camps.campsList());
+  const { response: workshopsData, isLoading: workshopsLoading } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
+  
+  const isLoading = eventsLoading || workshopsLoading;
 
   // Set page title in browser header
   useEffect(() => {
@@ -89,36 +92,45 @@ export default function EventsPage() {
           mb={48}
         />
         
-        {/* Upcoming Events and Workshops Section */}
-        <UpcomingEventsSection 
-          upcomingEvents={upcomingEvents}
-          upcomingWorkshops={upcomingWorkshops}
-        />
-        
-        {/* Unified past events and workshops */}
-        <div className={styles.cards_wrapper}>
-          {pastItems.length > 0 ? (
-            pastItems.map((item: any, index: number) => {
-              const itemStartDate = new Date(item.startDate);
-              const isUpcoming = itemStartDate > now;
-              
-              return (
-                <EventCard
-                  key={`${item.id}-${index}`}
-                  id={item.id}
-                  name={item.title}
-                  img={getLatestCreatedImg(item.media, MEDIA_TAGS.General) || ''}
-                  date={formatDateRange(item.startDate, item.endDate)}
-                  isUpcoming={isUpcoming}
-                />
-              );
-            })
-          ) : (
-            <div className={styles.no_events}>
-              <p>{t('events.noWorkshops')}</p>
+        {isLoading ? (
+          <div className={styles.loading_container}>
+            <Spin size="large" />
+            <p style={{ marginTop: 16, color: '#666' }}>Loading workshops...</p>
+          </div>
+        ) : (
+          <>
+            {/* Upcoming Events and Workshops Section */}
+            <UpcomingEventsSection 
+              upcomingEvents={upcomingEvents}
+              upcomingWorkshops={upcomingWorkshops}
+            />
+            
+            {/* Unified past events and workshops */}
+            <div className={styles.cards_wrapper}>
+              {pastItems.length > 0 ? (
+                pastItems.map((item: any, index: number) => {
+                  const itemStartDate = new Date(item.startDate);
+                  const isUpcoming = itemStartDate > now;
+                  
+                  return (
+                    <EventCard
+                      key={`${item.id}-${index}`}
+                      id={item.id}
+                      name={item.title}
+                      img={getLatestCreatedImg(item.media, MEDIA_TAGS.General) || ''}
+                      date={formatDateRange(item.startDate, item.endDate)}
+                      isUpcoming={isUpcoming}
+                    />
+                  );
+                })
+              ) : (
+                <div className={styles.no_events}>
+                  <p>{t('events.noWorkshops')}</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </main>
   );

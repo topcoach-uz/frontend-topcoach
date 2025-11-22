@@ -176,10 +176,10 @@ const AdmissionsPage: React.FC = () => {
 
   // API hooks
   const { data: pricing, isLoading: pricingLoading } = useGetActivePricingQuery();
-  const { data: enrollmentStatus, isLoading: statusLoading } = useGetEnrollmentStatusQuery(undefined, {
+  const { data: enrollmentStatus, isLoading: statusLoading } = useGetEnrollmentStatusQuery('admissions', {
     skip: !isAuthenticated
   });
-  const { data: userProgress } = useGetUserProgressQuery(undefined, {
+  const { data: userProgress } = useGetUserProgressQuery('admissions', {
     skip: !isAuthenticated || !enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning
   });
   const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
@@ -266,6 +266,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
       // Create enrollment with proper number conversion
       const enrollment = await createEnrollment({
         courseType: planType,
+        courseName: 'admissions',
         amount: Number(plan.price) // Convert to number to fix validation error
       }).unwrap();
 
@@ -285,7 +286,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
   };
 
   const handleContinueLearning = () => {
-    navigate('/programs/admissions/learning');
+    navigate('/learning?course=admissions');
   };
 
   const getStatusColor = (status: CoursePaymentStatusEnum) => {

@@ -11,60 +11,41 @@
     text-align: center;
     
     .header-content {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 40px;
       
-      .page-title {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #8b0000;
-        margin-bottom: 24px;
-        letter-spacing: -0.02em;
-        line-height: 1.1;
-        
-        @media (max-width: 768px) {
-          font-size: 2.5rem;
-        }
-      }
-      
-      .page-subtitle {
-        font-size: 1.25rem;
-        color: #666;
-        line-height: 1.6;
-        margin: 0;
-        font-weight: 400;
-        
-        @media (max-width: 768px) {
-          font-size: 1.1rem;
-        }
+      @media (max-width: 768px) {
+        padding: 0 20px;
       }
     }
   }
 
   // Programs Grid Section
   .programs-grid-section {
-    padding: 20px 0 80px;
+    padding: 0 0 80px;
     background: #fafafa;
     
     .programs-container {
-      max-width: 1400px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 0 40px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: start;
+      gap: 24px;
+      align-items: stretch;
       
       @media (max-width: 1024px) {
         grid-template-columns: 1fr;
-        gap: 60px;
+        gap: 24px;
         padding: 0 20px;
+        max-width: 600px;
       }
       
       @media (max-width: 768px) {
-        gap: 40px;
+        gap: 20px;
         padding: 0 16px;
+        max-width: 100%;
       }
     }
     
@@ -81,49 +62,55 @@
     
     .program-card {
       background: white;
-      border-radius: 24px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+      border-radius: 12
+      px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid #f0f0f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid #e5e7eb;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
       
       &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border-color: #d1d5db;
       }
       
       @media (max-width: 768px) {
-        border-radius: 16px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         
         &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
       }
       
       .card-header {
-        padding: 32px 32px 24px;
+        padding: 20px 20px 16px;
         text-align: center;
         
         @media (max-width: 768px) {
-          padding: 24px 20px 20px;
+          padding: 18px 16px 14px;
         }
         
         .program-badge {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           background: linear-gradient(135deg, #8b0000, #660000);
           color: white;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 0.85rem;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 0.75rem;
           font-weight: 600;
-          margin-bottom: 20px;
+          margin-bottom: 12px;
           
           .anticon {
-            font-size: 14px;
+            font-size: 12px;
           }
           
           &.sat-badge {
@@ -132,34 +119,34 @@
         }
         
         .program-title {
-          font-size: 2rem;
-          font-weight: 800;
+          font-size: 1.5rem;
+          font-weight: 700;
           color: #1f2937;
-          margin-bottom: 16px;
-          line-height: 1.2;
+          margin-bottom: 12px;
+          line-height: 1.3;
           
           @media (max-width: 768px) {
-            font-size: 1.75rem;
+            font-size: 1.375rem;
           }
         }
         
         .program-description {
-          font-size: 1rem;
+          font-size: 0.9rem;
           color: #6b7280;
-          line-height: 1.6;
+          line-height: 1.5;
           margin: 0;
         }
       }
       
       .program-stats {
-        padding: 0 32px 24px;
+        padding: 0 20px 16px;
         display: flex;
         justify-content: space-around;
-        gap: 20px;
+        gap: 12px;
         
         @media (max-width: 768px) {
-          padding: 0 20px 20px;
-          gap: 16px;
+          padding: 0 16px 14px;
+          gap: 10px;
         }
         
         .stat {
@@ -170,23 +157,23 @@
           flex: 1;
           
           .anticon {
-            font-size: 24px;
+            font-size: 20px;
             color: #8b0000;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
           }
           
           .stat-content {
             .stat-value {
               display: block;
-              font-size: 1.5rem;
-              font-weight: 800;
+              font-size: 1.25rem;
+              font-weight: 700;
               color: #1f2937;
               line-height: 1;
-              margin-bottom: 4px;
+              margin-bottom: 3px;
             }
             
             .stat-label {
-              font-size: 0.8rem;
+              font-size: 0.7rem;
               color: #6b7280;
               font-weight: 500;
               text-transform: uppercase;
@@ -197,103 +184,86 @@
       }
       
       .program-visual {
-        padding: 0 32px 24px;
+        padding: 16px 16px 0;
+        margin: 0;
         
         @media (max-width: 768px) {
-          padding: 0 20px 20px;
+          padding: 12px 12px 0;
         }
         
-        .admissions-preview, .sat-preview {
-          background: #f8fafc;
-          border-radius: 16px;
+        .preview-image {
+          position: relative;
+          height: 280px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          width: 100%;
+          border-radius: 8px;
           
-          .preview-image {
-            position: relative;
-            height: 280px;
-            overflow: hidden;
-            
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-              object-position: center 30%; // Move image up to show all three people
-            }
-            
-            .play-overlay {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              width: 60px;
-              height: 60px;
-              background: rgba(139, 0, 0, 0.9);
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              
-              .anticon {
-                color: white;
-                font-size: 24px;
-                margin-left: 2px; // Reduced margin for better centering
-                margin-top: 0; // Ensure no vertical offset
-              }
-              
-              &:hover {
-                background: rgba(139, 0, 0, 1);
-                transform: translate(-50%, -50%) scale(1.1);
-              }
-            }
+          @media (max-width: 768px) {
+            height: 240px;
           }
           
-          .preview-info {
-            padding: 20px;
-            text-align: center;
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%; // Move image up to show all three people
+          }
+          
+          .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(139, 0, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
             
-            h4 {
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: #1f2937;
-              margin-bottom: 8px;
+            .anticon {
+              color: white;
+              font-size: 20px;
+              margin-left: 2px; // Reduced margin for better centering
+              margin-top: 0; // Ensure no vertical offset
             }
             
-            p {
-              font-size: 0.9rem;
-              color: #6b7280;
-              margin: 0;
+            &:hover {
+              background: rgba(139, 0, 0, 1);
+              transform: translate(-50%, -50%) scale(1.1);
             }
           }
         }
       }
       
       .program-actions {
-        padding: 0 32px 32px;
+        padding: 0 20px 20px;
         display: flex;
-        gap: 16px;
+        gap: 12px;
+        margin-top: auto;
         
         @media (max-width: 768px) {
           flex-direction: column;
-          gap: 12px;
-          padding: 0 20px 24px;
+          gap: 10px;
+          padding: 0 16px 18px;
         }
         
         .apply-now-btn, .sat-apply-btn {
           flex: 1;
           background: #8b0000 !important;
           border-color: #8b0000 !important;
-          height: 48px !important;
-          font-size: 16px !important;
+          height: 44px !important;
+          font-size: 14px !important;
           font-weight: 600 !important;
-          border-radius: 12px !important;
+          border-radius: 8px !important;
           
           &:hover {
             background: #6b0000 !important;
             border-color: #6b0000 !important;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
           }
         }
@@ -307,17 +277,6 @@
             background: #6b0000 !important;
             border-color: #6b0000 !important;
             box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-          }
-          
-          &:disabled {
-            background: #8b0000 !important;
-            border-color: #8b0000 !important;
-            color: white !important;
-            opacity: 0.8;
-            
-            .anticon {
-              color: white !important;
-            }
           }
         }
         
@@ -354,32 +313,6 @@
         }
       }
       
-      // Coming Soon Card Styling
-      &.coming-soon {
-        opacity: 0.8;
-        position: relative;
-        
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 24px;
-          z-index: 1;
-          pointer-events: none;
-        }
-        
-        .program-visual {
-          opacity: 0.7;
-        }
-        
-        .program-stats {
-          opacity: 0.8;
-        }
-      }
     }
   }
   

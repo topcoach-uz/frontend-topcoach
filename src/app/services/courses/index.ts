@@ -5,6 +5,7 @@ export interface CourseEnrollmentDto {
   id: string;
   userId: string;
   courseType: 'standard' | 'premium';
+  courseName?: 'admissions' | 'sat';
   amount: number;
   paymentStatus: 'pending' | 'completed' | 'failed' | 'cancelled';
   paymentMethod?: 'click' | 'payme' | 'atmos' | 'card';
@@ -17,6 +18,7 @@ export interface CourseEnrollmentDto {
 
 export interface CreateCourseEnrollmentDto {
   courseType: 'standard' | 'premium';
+  courseName?: 'admissions' | 'sat';
   amount: number;
 }
 
@@ -43,6 +45,16 @@ export interface ProgramPricingDto {
 }
 
 // Types for course learning
+export interface CourseSubmoduleDto {
+  id: string;
+  title: string;
+  description?: string;
+  moduleId: string;
+  orderIndex: number;
+  isActive: boolean;
+  lessons: CourseLessonDto[];
+}
+
 export interface CourseModuleDto {
   id: string;
   title: string;
@@ -59,13 +71,15 @@ export interface CourseModuleDto {
     avatar?: string;
   };
   lessons: CourseLessonDto[];
+  submodules: CourseSubmoduleDto[];
 }
 
 export interface CourseLessonDto {
   id: string;
   title: string;
   description?: string;
-  moduleId: string;
+  moduleId?: string;
+  submoduleId?: string;
   orderIndex: number;
   lessonType: 'video' | 'pdf' | 'live_session';
   contentUrl?: string;
@@ -77,6 +91,7 @@ export interface CourseLessonDto {
   vdocipherVideoId?: string;
   vdocipherOtp?: string;
   resources: CourseResourceDto[];
+  tasks: CourseTaskDto[];
 }
 
 export interface CourseResourceDto {
@@ -120,17 +135,63 @@ export interface UpdateProgressDto {
   timeWatched?: number;
 }
 
+// Task types
+export interface CourseTaskDto {
+  id: string;
+  lessonId: string;
+  title: string;
+  question: string;
+  taskType: 'multiple_choice';
+  options: Array<{
+    text: string;
+    isCorrect: boolean;
+  }>;
+  correctAnswerIndex: number;
+  points: number;
+  orderIndex: number;
+  explanation?: string;
+  isActive: boolean;
+}
+
+export interface TaskSubmissionDto {
+  taskId: string;
+  selectedAnswerIndex: number;
+}
+
+export interface TaskResultDto {
+  submission: {
+    id: string;
+    taskId: string;
+    userId: string;
+    selectedAnswerIndex: number;
+    isCorrect: boolean;
+    score: number;
+    attemptNumber: number;
+    submittedAt: string;
+  };
+  isCorrect: boolean;
+  score: number;
+  correctAnswerIndex: number;
+  explanation?: string;
+}
+
 export const coursesApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get active program pricing
-    getActivePricing: builder.query<ProgramPricingDto, void>({
-      query: () => 'program-pricing/active',
+    getActivePricing: builder.query<ProgramPricingDto, string | void>({
+      query: (courseName) => {
+        const params = courseName ? `?courseName=${courseName}` : '';
+        return `program-pricing/active${params}`;
+      },
       providesTags: ['ProgramPricing'],
     }),
 
     // Get user enrollment status
-    getEnrollmentStatus: builder.query<CourseEnrollmentStatusDto, void>({
-      query: () => 'courses/enrollment-status',
+    getEnrollmentStatus: builder.query<CourseEnrollmentStatusDto, string | void>({
+      query: (courseName) => {
+        const params = courseName ? `?courseName=${courseName}` : '';
+        return `courses/enrollment-status${params}`;
+      },
       providesTags: ['CourseEnrollment'],
     }),
 
@@ -170,13 +231,19 @@ export const coursesApi = RtkApi.injectEndpoints({
     }),
 
     // Learning endpoints
-    getCourseStructure: builder.query<CourseModuleDto[], void>({
-      query: () => 'courses/learning/structure',
+    getCourseStructure: builder.query<CourseModuleDto[], string | void>({
+      query: (courseName) => {
+        const params = courseName ? `?courseName=${courseName}` : '';
+        return `courses/learning/structure${params}`;
+      },
       providesTags: ['CourseLearning'],
     }),
 
-    getUserProgress: builder.query<UserProgressDto, void>({
-      query: () => 'courses/learning/progress',
+    getUserProgress: builder.query<UserProgressDto, string | void>({
+      query: (courseName) => {
+        const params = courseName ? `?courseName=${courseName}` : '';
+        return `courses/learning/progress${params}`;
+      },
       providesTags: ['CourseProgress'],
     }),
 
@@ -307,6 +374,43 @@ export const coursesApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['CourseProgress'],
     }),
+
+    // Task endpoints
+    getTasksByLesson: builder.query<CourseTaskDto[], string>({
+      query: (lessonId) => `courses/learning/tasks/lesson/${lessonId}`,
+      providesTags: ['CourseTasks'],
+    }),
+
+    submitTask: builder.mutation<TaskResultDto, TaskSubmissionDto>({
+      query: ({ taskId, selectedAnswerIndex }) => {
+        const body = { selectedAnswerIndex };
+        console.log('Submitting task - URL:', `courses/learning/tasks/${taskId}/submit`, 'Body:', body);
+        return {
+          url: `courses/learning/tasks/${taskId}/submit`,
+          method: 'POST',
+          body: body,
+        };
+      },
+      invalidatesTags: ['CourseTasks', 'CourseProgress'],
+    }),
+
+    getTaskResults: builder.query<TaskResultDto | null, string>({
+      query: (taskId) => `courses/learning/tasks/${taskId}/results`,
+      providesTags: ['CourseTasks'],
+    }),
+
+    getLessonTaskSubmissions: builder.query<any[], string>({
+      query: (lessonId) => `courses/learning/tasks/lesson/${lessonId}/submissions`,
+      providesTags: ['CourseTasks'],
+    }),
+
+    retakeTask: builder.mutation<{ message: string }, string>({
+      query: (taskId) => ({
+        url: `courses/learning/tasks/${taskId}/retake`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['CourseTasks', 'CourseProgress'],
+    }),
   }),
 });
 
@@ -322,4 +426,9 @@ export const {
   useGetLessonProgressQuery,
   useUpdateLessonProgressMutation,
   useCompleteLessonMutation,
+  useGetTasksByLessonQuery,
+  useSubmitTaskMutation,
+  useGetTaskResultsQuery,
+  useGetLessonTaskSubmissionsQuery,
+  useRetakeTaskMutation,
 } = coursesApi; 

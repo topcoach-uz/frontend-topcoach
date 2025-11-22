@@ -53,6 +53,7 @@ interface DashboardData {
   telegramPhoneNumber: string | null;
   telegramStatus: string | null;
   courseType: string | null;
+  courseName?: 'admissions' | 'sat';
   amount: number | null;
   paymentStatus: string | null;
   status: string | null;
@@ -89,7 +90,9 @@ const ProgramDashboard: React.FC = () => {
   const [grantAccessModalVisible, setGrantAccessModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ id: string | null; userId: string; userName: string } | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
+  const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat'>('admissions');
   const [activeTab, setActiveTab] = useState('users');
+  const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat'>('all');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [organizations, setOrganizations] = useState<any[]>([]);
@@ -118,7 +121,7 @@ const ProgramDashboard: React.FC = () => {
     }
 
     fetchData();
-  }, [isAuthenticated, isSuperAdmin, searchText, sortBy, sortOrder]);
+  }, [isAuthenticated, isSuperAdmin, searchText, sortBy, sortOrder, courseFilter]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -127,6 +130,7 @@ const ProgramDashboard: React.FC = () => {
         ...(searchText && { search: searchText }),
         ...(sortBy && { sortBy }),
         ...(sortOrder && { sortOrder }),
+        ...(courseFilter !== 'all' && { courseName: courseFilter }),
       });
       const url = `/program-dashboard?${queryParams.toString()}`;
       console.log('[TopCoach Management] Fetching dashboard data from:', url);
@@ -164,9 +168,10 @@ const ProgramDashboard: React.FC = () => {
     }
   };
 
-  const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string) => {
+  const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string, courseName?: 'admissions' | 'sat') => {
     setSelectedUser({ id: enrollmentId, userId, userName: userName || 'this student' });
     setSelectedPlan('standard'); // Reset to default
+    setSelectedCourseName(courseName || 'admissions');
     setGrantAccessModalVisible(true);
   };
 
@@ -174,10 +179,20 @@ const ProgramDashboard: React.FC = () => {
     if (!selectedUser) return;
 
     try {
+      // Build query params
+      const params = new URLSearchParams();
+      params.append('courseName', selectedCourseName);
+      // For SAT, courseType is ignored (always standard), but we still send it for consistency
+      if (selectedCourseName === 'admissions') {
+        params.append('courseType', selectedPlan);
+      } else {
+        params.append('courseType', 'standard'); // SAT always uses standard
+      }
+      
       // If user has enrollment, use enrollment endpoint; otherwise use user endpoint
       const path = selectedUser.id 
-        ? `/program-dashboard/enrollments/${selectedUser.id}/grant-access?courseType=${selectedPlan}`
-        : `/program-dashboard/users/${selectedUser.userId}/grant-access?courseType=${selectedPlan}`;
+        ? `/program-dashboard/enrollments/${selectedUser.id}/grant-access?${params.toString()}`
+        : `/program-dashboard/users/${selectedUser.userId}/grant-access?${params.toString()}`;
       
       await api.request({
         path,
@@ -984,20 +999,41 @@ const ProgramDashboard: React.FC = () => {
       ),
     },
     {
+      title: 'Course',
+      dataIndex: 'courseName',
+      key: 'courseName',
+      sorter: true,
+      width: 120,
+      render: (courseName: 'admissions' | 'sat' | undefined, record: DashboardData) => {
+        if (!courseName) {
+          return <span style={{ color: '#999' }}>N/A</span>;
+        }
+        return (
+          <Tag color={courseName === 'sat' ? 'purple' : 'blue'}>
+            {courseName === 'sat' ? 'SAT Prep' : 'Admissions'}
+          </Tag>
+        );
+      },
+    },
+    {
       title: 'Course Type',
       dataIndex: 'courseType',
       key: 'courseType',
       sorter: true,
       width: 120,
-      render: (type: string | null) => (
-        type ? (
+      render: (type: string | null, record: DashboardData) => {
+        // For SAT, don't show courseType (it's always standard)
+        if (record.courseName === 'sat') {
+          return <span style={{ color: '#999' }}>N/A</span>;
+        }
+        return type ? (
           <Tag color={type === 'premium' ? 'gold' : 'blue'}>
             {type.toUpperCase()}
           </Tag>
         ) : (
           <span style={{ color: '#999' }}>N/A</span>
-        )
-      ),
+        );
+      },
     },
     {
       title: 'Amount',
@@ -1111,7 +1147,7 @@ const ProgramDashboard: React.FC = () => {
                 type="primary"
                 size="small"
                 icon={<CheckCircleOutlined />}
-                onClick={() => handleGrantAccess(record.id, record.userId, record.userName)}
+                onClick={() => handleGrantAccess(record.id, record.userId, record.userName, record.courseName)}
                 disabled={!isTelegramConnected}
                 title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
               >
@@ -1181,6 +1217,7 @@ const ProgramDashboard: React.FC = () => {
               <>
                 <Card className="dashboard-filters" style={{ marginTop: 16 }}>
                   <Space direction="vertical" style={{ width: '100%' }} size="large">
+                    <Space>
                     <Search
                       placeholder="Search by user name or email"
                       allowClear
@@ -1191,6 +1228,17 @@ const ProgramDashboard: React.FC = () => {
                       onSearch={fetchData}
                       style={{ maxWidth: 400 }}
                     />
+                      <Select
+                        value={courseFilter}
+                        onChange={setCourseFilter}
+                        style={{ width: 200 }}
+                        size="large"
+                      >
+                        <Select.Option value="all">All Courses</Select.Option>
+                        <Select.Option value="admissions">Admissions Program</Select.Option>
+                        <Select.Option value="sat">SAT Prep Course</Select.Option>
+                      </Select>
+                    </Space>
                   </Space>
                 </Card>
 
@@ -1251,8 +1299,35 @@ const ProgramDashboard: React.FC = () => {
               Are you sure you want to grant access to <strong>{selectedUser.userName}</strong>?
             </p>
             <p style={{ marginBottom: 16 }}>
-              This will {selectedUser.id ? 'update the enrollment and' : 'create an enrollment and'} grant access, and record the access granted date.
+              {selectedUser.id 
+                ? `This will update the existing ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
+                : `This will create a new ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
+              }
+              {selectedUser.id && (
+                <span style={{ display: 'block', marginTop: 8, color: '#666', fontSize: '13px' }}>
+                  Note: If the user already has access to {selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'}, this will update that enrollment. 
+                  If they have access to the other course, a separate enrollment will be created for this course.
+                </span>
+              )}
             </p>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+                Select Course:
+              </label>
+              <Radio.Group
+                value={selectedCourseName}
+                onChange={(e) => {
+                  setSelectedCourseName(e.target.value);
+                  // Reset plan to standard when switching courses
+                  setSelectedPlan('standard');
+                }}
+                style={{ width: '100%' }}
+              >
+                <Radio value="admissions">Admissions Program</Radio>
+                <Radio value="sat">SAT Prep Course</Radio>
+              </Radio.Group>
+            </div>
+            {selectedCourseName === 'admissions' && (
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                 Select Course Plan:
@@ -1266,6 +1341,14 @@ const ProgramDashboard: React.FC = () => {
                 <Radio value="premium">Premium</Radio>
               </Radio.Group>
             </div>
+            )}
+            {selectedCourseName === 'sat' && (
+              <div style={{ padding: '8px 12px', background: '#f0f9ff', borderRadius: 4, marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#666' }}>
+                  Note: SAT Prep Course has a single tier (no standard/premium distinction)
+                </span>
+              </div>
+            )}
           </div>
         )}
       </Modal>

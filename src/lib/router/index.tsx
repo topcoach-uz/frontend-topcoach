@@ -94,6 +94,7 @@ const AiMajorMatchPageLazy = lazy(
 );
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
 const ProgramsAdmissionsPageLazy = lazy(() => import("src/pages/programs/admissions"));
+const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
@@ -156,10 +157,23 @@ function RouterProvider() {
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
               <Route path="/programs/admissions" element={<ProgramsAdmissionsPageLazy />} />
+              <Route path="/programs/sat" element={<ProgramsSatPageLazy />} />
+              <Route 
+                path="/learning" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
+              <Route 
+                path="/learning/:lessonId" 
+                element={
+                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                } 
+              />
               <Route 
                 path="/programs/admissions/learning" 
                 element={
-                  isAuthenticated ? <LearningPageLazy /> : <Navigate to="/auth/signin" replace />
+                  isAuthenticated ? <Navigate to="/learning?course=admissions" replace /> : <Navigate to="/auth/signin" replace />
                 } 
               />
               <Route 

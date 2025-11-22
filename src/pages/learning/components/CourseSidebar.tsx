@@ -35,11 +35,16 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['0']);
+  const [expandedSubmodules, setExpandedSubmodules] = useState<Record<string, string[]>>({});
 
-  // Calculate overall progress
-  const totalLessons = courseStructure?.reduce((total, module) => 
-    total + (module.lessons?.length || 0), 0
+  // Calculate overall progress (including lessons from submodules)
+  const totalLessons = courseStructure?.reduce((total, module) => {
+    const moduleLessons = module.lessons?.length || 0;
+    const submoduleLessons = module.submodules?.reduce((subTotal: number, submodule: any) => 
+      subTotal + (submodule.lessons?.length || 0), 0
   ) || 0;
+    return total + moduleLessons + submoduleLessons;
+  }, 0) || 0;
   
   const serverCompletedLessons = userProgress?.completedLessons || 0;
   const localCompletedCount = 0;
@@ -101,6 +106,13 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 
   const handleModuleChange = (keys: string | string[]) => {
     setExpandedModules(Array.isArray(keys) ? keys : [keys]);
+  };
+
+  const handleSubmoduleChange = (moduleIndex: number, keys: string | string[]) => {
+    setExpandedSubmodules(prev => ({
+      ...prev,
+      [moduleIndex.toString()]: Array.isArray(keys) ? keys : [keys]
+    }));
   };
 
   const handleLessonClick = (lessonId: string) => {
@@ -191,7 +203,8 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                       <h3>Module {moduleIndex + 1}</h3>
                       <div className="module-meta">
                         <span className="lesson-count">
-                          {module.lessons?.length || 0} lessons
+                          {(module.lessons?.filter((l: any) => !l.submoduleId).length || 0) + 
+                           (module.submodules?.reduce((total: number, sub: any) => total + (sub.lessons?.length || 0), 0) || 0)} lessons
                         </span>
                         <span className="duration">
                           {formatDuration(module.estimatedDuration)}
@@ -207,7 +220,8 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 }
               >
                 <div className="lessons-list">
-                  {module.lessons?.map((lesson: any, lessonIndex: number) => {
+                  {/* Direct lessons under module */}
+                  {module.lessons?.filter((lesson: any) => !lesson.submoduleId).map((lesson: any, lessonIndex: number) => {
                     const isCompleted = isLessonCompleted(lesson.id);
                     const progress = getLessonProgress(lesson.id);
                     const isSelected = selectedLessonId === lesson.id;
@@ -260,6 +274,87 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                       </div>
                     );
                   })}
+
+                  {/* Submodules with their lessons */}
+                  {module.submodules && module.submodules.length > 0 && (
+                    <Collapse
+                      ghost
+                      expandIconPosition="end"
+                      activeKey={expandedSubmodules[moduleIndex.toString()] || []}
+                      onChange={(keys) => handleSubmoduleChange(moduleIndex, keys)}
+                      className="submodules-collapse"
+                    >
+                      {module.submodules.map((submodule: any, submoduleIndex: number) => (
+                        <Panel
+                          key={submoduleIndex.toString()}
+                          header={
+                            <div className="submodule-header">
+                              <h4 className="submodule-title">{submodule.title}</h4>
+                              <span className="submodule-lesson-count">
+                                {submodule.lessons?.length || 0} lessons
+                              </span>
+                            </div>
+                          }
+                        >
+                          <div className="submodule-lessons">
+                            {submodule.lessons?.map((lesson: any, lessonIndex: number) => {
+                              const isCompleted = isLessonCompleted(lesson.id);
+                              const progress = getLessonProgress(lesson.id);
+                              const isSelected = selectedLessonId === lesson.id;
+
+                              return (
+                                <div
+                                  key={lesson.id}
+                                  className={`lesson-item submodule-lesson ${isSelected ? 'selected' : ''} ${isCompleted ? 'completed' : ''}`}
+                                  onClick={() => handleLessonClick(lesson.id)}
+                                >
+                                  <div className="lesson-icon">
+                                    {isCompleted ? (
+                                      <CheckCircleOutlined className="completed-icon" />
+                                    ) : (
+                                      getLessonIcon(lesson.lessonType)
+                                    )}
+                                  </div>
+                                  
+                                  <div className="lesson-content">
+                                    <div className="lesson-title">
+                                      <span className="title">{lesson.title}</span>
+                                      {lesson.isPremium && (
+                                        <span className="premium-tag">Premium</span>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="lesson-meta">
+                                      <span className="lesson-duration">
+                                        <ClockCircleOutlined />
+                                        {formatDuration(lesson.duration)}
+                                      </span>
+                                      {!isCompleted && progress > 0 && lesson.lessonType !== 'pdf' && (
+                                        <span className="progress">
+                                          {progress}% watched
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {!isCompleted && progress > 0 && (
+                                    <div className="lesson-progress">
+                                      <Progress 
+                                        percent={progress} 
+                                        size="small"
+                                        showInfo={false}
+                                        strokeColor="#52c41a"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </Panel>
+                      ))}
+                    </Collapse>
+                  )}
                 </div>
               </Panel>
             ))}

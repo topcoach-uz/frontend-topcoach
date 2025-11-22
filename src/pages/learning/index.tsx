@@ -3,12 +3,13 @@ import { Layout, Spin, Button, message } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlined, VideoCameraOutlined, FileTextOutlined, LeftOutlined, RightOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery } from 'src/app/services/courses';
+import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery, useGetTasksByLessonQuery, useGetLessonTaskSubmissionsQuery } from 'src/app/services/courses';
 import type { CourseModuleDto, CourseLessonDto } from 'src/app/services/courses';
 import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
 import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
+import TaskSubmission from './components/TaskSubmission';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 import { useDispatch } from 'react-redux';
@@ -42,23 +43,34 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const [forceUpdate, setForceUpdate] = useState(0);
   const [hasShownEnrollmentMessage, setHasShownEnrollmentMessage] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isCompletingLesson, setIsCompletingLesson] = useState(false);
+
+  // Get courseName from URL query params, or from enrollment, or default to 'admissions'
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlCourseName = searchParams.get('course') as 'admissions' | 'sat' | null;
 
   // API hooks - ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL LOGIC
-  const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery();
-  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(undefined, {
+  // If courseName is in URL, use it; otherwise get from enrollment
+  const { data: enrollmentStatus, isLoading: enrollmentLoading } = useGetEnrollmentStatusQuery(
+    urlCourseName || undefined
+  );
+  const courseName = urlCourseName || enrollmentStatus?.enrollment?.courseName || 'admissions';
+  
+  const { data: courseStructure, isLoading: structureLoading, error: structureError, refetch: refetchCourseStructure } = useGetCourseStructureQuery(courseName, {
     refetchOnMountOrArgChange: true,
     skip: !enrollmentStatus?.canAccessLearning,
   });
-  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(undefined, {
+  const { data: userProgress, isLoading: progressLoading, error: progressError, refetch: refetchUserProgress } = useGetUserProgressQuery(courseName, {
     refetchOnMountOrArgChange: true,
     skip: !enrollmentStatus?.canAccessLearning,
   });
   const [updateLessonProgress] = useUpdateLessonProgressMutation();
 
-  // Helper function to get all lessons in order
+  // Helper function to get all lessons in order (including from submodules)
   const getAllLessonsInOrder = React.useCallback((courseStructure: CourseModuleDto[]) => {
-    const allLessons: (CourseLessonDto & { moduleId: string; moduleTitle: string })[] = [];
+    const allLessons: (CourseLessonDto & { moduleId: string; moduleTitle: string; submoduleId?: string; submoduleTitle?: string })[] = [];
     courseStructure.forEach((module: CourseModuleDto) => {
+      // Add lessons directly under module
       if (module.lessons && Array.isArray(module.lessons)) {
         module.lessons.forEach((lesson: CourseLessonDto) => {
           allLessons.push({
@@ -68,11 +80,27 @@ const LearningPage: React.FC<LearningPageProps> = () => {
           });
         });
       }
+      // Add lessons from submodules
+      if (module.submodules && Array.isArray(module.submodules)) {
+        module.submodules.forEach((submodule: any) => {
+          if (submodule.lessons && Array.isArray(submodule.lessons)) {
+            submodule.lessons.forEach((lesson: CourseLessonDto) => {
+              allLessons.push({
+                ...lesson,
+                moduleId: module.id,
+                moduleTitle: module.title,
+                submoduleId: submodule.id,
+                submoduleTitle: submodule.title
+              });
+            });
+          }
+        });
+      }
     });
     return allLessons;
   }, []);
 
-  // Helper function to find the next incomplete lesson
+  // Helper function to find the next incomplete lesson (including from submodules)
   const findNextIncompleteLesson = React.useCallback((courseStructure: any[], userProgress: any) => {
     if (!userProgress?.progress) return null;
     
@@ -83,10 +111,23 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     );
     
     for (const module of courseStructure) {
+      // Check direct lessons
       if (module.lessons) {
         for (const lesson of module.lessons) {
-          if (!completedLessonIds.has(String(lesson.id))) {
+          if (!lesson.submoduleId && !completedLessonIds.has(String(lesson.id))) {
             return lesson;
+          }
+        }
+      }
+      // Check lessons in submodules
+      if (module.submodules) {
+        for (const submodule of module.submodules) {
+          if (submodule.lessons) {
+            for (const lesson of submodule.lessons) {
+              if (!completedLessonIds.has(String(lesson.id))) {
+                return lesson;
+              }
+            }
           }
         }
       }
@@ -118,8 +159,10 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     if (previousLesson) {
       const lessonId = String(previousLesson.id);
       setSelectedLessonId(lessonId);
-      localStorage.setItem('topcoach-selected-lesson', lessonId);
-      localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: lessonId, ts: Date.now() }));
+      const courseSpecificKey = `${LAST_VIEWED_KEY}-${courseName}`;
+      const courseSpecificLegacyKey = `topcoach-selected-lesson-${courseName}`;
+      localStorage.setItem(courseSpecificLegacyKey, lessonId);
+      localStorage.setItem(courseSpecificKey, JSON.stringify({ id: lessonId, ts: Date.now() }));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -128,8 +171,10 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     if (nextLesson) {
       const lessonId = String(nextLesson.id);
       setSelectedLessonId(lessonId);
-      localStorage.setItem('topcoach-selected-lesson', lessonId);
-      localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: lessonId, ts: Date.now() }));
+      const courseSpecificKey = `${LAST_VIEWED_KEY}-${courseName}`;
+      const courseSpecificLegacyKey = `topcoach-selected-lesson-${courseName}`;
+      localStorage.setItem(courseSpecificLegacyKey, lessonId);
+      localStorage.setItem(courseSpecificKey, JSON.stringify({ id: lessonId, ts: Date.now() }));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -173,6 +218,46 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     }
   }, []);
 
+  // Check if lesson has tasks and if they're all completed
+  const { data: lessonTasks } = useGetTasksByLessonQuery(selectedLessonId || '', {
+    skip: !selectedLessonId,
+  });
+  const { data: taskSubmissions } = useGetLessonTaskSubmissionsQuery(selectedLessonId || '', {
+    skip: !selectedLessonId,
+  });
+
+  const [allTasksCorrectlyCompleted, setAllTasksCorrectlyCompleted] = useState(false);
+  const [tasksScore, setTasksScore] = useState<{ correct: number; total: number; percentage: number } | null>(null);
+
+  const areAllTasksCompleted = React.useMemo(() => {
+    if (!lessonTasks || lessonTasks.length === 0) {
+      return true; // No tasks means can complete
+    }
+    if (!taskSubmissions || taskSubmissions.length === 0) {
+      return false; // Has tasks but no submissions
+    }
+    
+    // Check if at least 80% are correct
+    if (tasksScore && tasksScore.percentage >= 80) {
+      return true;
+    }
+    // Check if all tasks are submitted AND correctly completed
+    const submittedTaskIds = new Set(taskSubmissions.map((sub: any) => sub.taskId));
+    const allSubmitted = lessonTasks.every((task: any) => submittedTaskIds.has(task.id));
+    
+    if (!allSubmitted) {
+      return false;
+    }
+    
+    // Check if all submitted tasks are correct
+    const allCorrect = lessonTasks.every((task: any) => {
+      const submission = taskSubmissions.find((sub: any) => sub.taskId === task.id);
+      return submission && submission.isCorrect;
+    });
+    
+    return allCorrect;
+  }, [lessonTasks, taskSubmissions]);
+
   // Handle manual mark as complete
   const handleMarkAsComplete = async () => {
     if (!selectedLesson || !enrollmentStatus?.isEnrolled) {
@@ -180,7 +265,22 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       return;
     }
 
+    // Check if tasks need to be completed correctly first (at least 80%)
+    if (lessonTasks && lessonTasks.length > 0 && !areAllTasksCompleted) {
+      if (tasksScore) {
+        message.warning(`You need at least 80% correct to complete this lesson. Your current score is ${Math.round(tasksScore.percentage)}%.`);
+      } else {
+        message.warning('Please complete all practice questions and achieve at least 80% correct before marking this lesson as complete.');
+      }
+      return;
+    }
+
+    if (isCompletingLesson) {
+      return; // Prevent double-click
+    }
+
     try {
+      setIsCompletingLesson(true);
       setIsCurrentLessonCompleted(true);
       setForceUpdate(prev => prev + 1);
 
@@ -197,9 +297,11 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       
       await refetchUserProgress();
       message.success('Lesson marked as completed!');
+      setIsCompletingLesson(false);
     } catch (error) {
       console.error('Error:', error);
       setIsCurrentLessonCompleted(false);
+      setIsCompletingLesson(false);
       message.error('Failed to mark lesson as completed');
     }
   };
@@ -248,16 +350,28 @@ const LearningPage: React.FC<LearningPageProps> = () => {
 
     console.log('Initializing lesson selection...');
 
-    // Helper function to check if lesson exists in course structure
+    // Helper function to check if lesson exists in course structure (including submodules)
     const lessonExists = (lessonId: string) => {
-      return courseStructure.some(module =>
-        module.lessons?.some(lesson => String(lesson.id) === String(lessonId))
-      );
+      return courseStructure.some(module => {
+        // Check lessons directly under module
+        if (module.lessons?.some(lesson => String(lesson.id) === String(lessonId))) {
+          return true;
+        }
+        // Check lessons in submodules
+        if (module.submodules) {
+          return module.submodules.some(submodule =>
+            submodule.lessons?.some(lesson => String(lesson.id) === String(lessonId))
+          );
+        }
+        return false;
+      });
     };
 
-    // Try to restore last viewed lesson
-    const lastViewedRaw = localStorage.getItem(LAST_VIEWED_KEY);
-    const legacySelected = localStorage.getItem('topcoach-selected-lesson');
+    // Try to restore last viewed lesson - use course-specific keys
+    const courseSpecificKey = `${LAST_VIEWED_KEY}-${courseName}`;
+    const courseSpecificLegacyKey = `topcoach-selected-lesson-${courseName}`;
+    const lastViewedRaw = localStorage.getItem(courseSpecificKey);
+    const legacySelected = localStorage.getItem(courseSpecificLegacyKey);
 
     let lastSelectedLessonId: string | null = null;
 
@@ -267,70 +381,77 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         const parsed = JSON.parse(lastViewedRaw);
         if (parsed && parsed.id) {
           lastSelectedLessonId = String(parsed.id);
-          console.log('Found last viewed lesson:', lastSelectedLessonId);
+          console.log('Found last viewed lesson:', lastSelectedLessonId, 'for course:', courseName);
         }
       } catch (e) {
         console.error('Failed to parse last viewed lesson:', e);
       }
     } else if (legacySelected) {
       lastSelectedLessonId = String(legacySelected);
-      console.log('Found legacy selected lesson:', lastSelectedLessonId);
+      console.log('Found legacy selected lesson:', lastSelectedLessonId, 'for course:', courseName);
     }
 
     // Validate and set the lesson
     if (lastSelectedLessonId && lessonExists(lastSelectedLessonId)) {
-      console.log('Restoring lesson:', lastSelectedLessonId);
+      console.log('Restoring lesson:', lastSelectedLessonId, 'for course:', courseName);
       setSelectedLessonId(lastSelectedLessonId);
-      // Sync both storage keys
-      localStorage.setItem('topcoach-selected-lesson', lastSelectedLessonId);
-      localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: lastSelectedLessonId, ts: Date.now() }));
+      // Sync both storage keys with course-specific keys
+      localStorage.setItem(courseSpecificLegacyKey, lastSelectedLessonId);
+      localStorage.setItem(courseSpecificKey, JSON.stringify({ id: lastSelectedLessonId, ts: Date.now() }));
     } else {
       // Invalid or no saved lesson - pick a default
       if (lastSelectedLessonId) {
         console.log('Saved lesson not found in course structure, clearing...');
-        localStorage.removeItem('topcoach-selected-lesson');
-        localStorage.removeItem(LAST_VIEWED_KEY);
+        localStorage.removeItem(courseSpecificLegacyKey);
+        localStorage.removeItem(courseSpecificKey);
       }
 
       // Try next incomplete lesson, or fall back to first lesson
       const nextIncompleteLesson = userProgress ? findNextIncompleteLesson(courseStructure, userProgress) : null;
       if (nextIncompleteLesson) {
         const nid = String(nextIncompleteLesson.id);
-        console.log('Setting next incomplete lesson:', nid);
+        console.log('Setting next incomplete lesson:', nid, 'for course:', courseName);
         setSelectedLessonId(nid);
-        localStorage.setItem('topcoach-selected-lesson', nid);
-        localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: nid, ts: Date.now() }));
+        localStorage.setItem(courseSpecificLegacyKey, nid);
+        localStorage.setItem(courseSpecificKey, JSON.stringify({ id: nid, ts: Date.now() }));
       } else {
-        const firstLesson = courseStructure[0]?.lessons?.[0];
+        // Try to find first lesson from modules or submodules
+        let firstLesson = courseStructure[0]?.lessons?.[0];
+        if (!firstLesson && courseStructure[0]?.submodules?.[0]?.lessons?.[0]) {
+          firstLesson = courseStructure[0].submodules[0].lessons[0];
+        }
         if (firstLesson?.id) {
           const fid = String(firstLesson.id);
-          console.log('Setting first lesson:', fid);
+          console.log('Setting first lesson:', fid, 'for course:', courseName);
           setSelectedLessonId(fid);
-          localStorage.setItem('topcoach-selected-lesson', fid);
-          localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: fid, ts: Date.now() }));
+          localStorage.setItem(courseSpecificLegacyKey, fid);
+          localStorage.setItem(courseSpecificKey, JSON.stringify({ id: fid, ts: Date.now() }));
         }
       }
     }
 
     // Mark as initialized so this doesn't run again
     setIsInitialized(true);
-  }, [courseStructure, userProgress, isInitialized, findNextIncompleteLesson]);
+  }, [courseStructure, userProgress, isInitialized, findNextIncompleteLesson, courseName]);
   
   // Update localStorage when lesson changes (but only after initialization)
+  // Store with courseName to avoid conflicts between courses
   useEffect(() => {
-    if (selectedLessonId && isInitialized) {
+    if (selectedLessonId && isInitialized && courseName) {
       const lessonIdStr = String(selectedLessonId);
-      localStorage.setItem('topcoach-selected-lesson', lessonIdStr);
-      localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: lessonIdStr, ts: Date.now() }));
-      console.log('Updated localStorage with lesson:', lessonIdStr);
+      localStorage.setItem(`topcoach-selected-lesson-${courseName}`, lessonIdStr);
+      localStorage.setItem(`${LAST_VIEWED_KEY}-${courseName}`, JSON.stringify({ id: lessonIdStr, ts: Date.now() }));
+      console.log('Updated localStorage with lesson:', lessonIdStr, 'for course:', courseName);
     }
-  }, [selectedLessonId, isInitialized]);
+  }, [selectedLessonId, isInitialized, courseName]);
 
   useEffect(() => {
     if (userProgress?.progress) {
       const currentLessonCompleted = userProgress.progress.find((p: any) => String(p.lessonId) === String(selectedLessonId))?.isCompleted || false;
       setIsCurrentLessonCompleted(currentLessonCompleted);
     }
+    // Reset allTasksCorrectlyCompleted when lesson changes
+    setAllTasksCorrectlyCompleted(false);
   }, [userProgress?.progress, selectedLessonId]);
 
   useEffect(() => {
@@ -348,13 +469,51 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     console.log('Learning page - Enrollment status:', enrollmentStatus);
   }, [enrollmentStatus]);
 
-  const selectedLesson = courseStructure?.flatMap(module => 
-    (module.lessons?.filter(lesson => String(lesson.id) === String(selectedLessonId)) || [])
-  )[0] || null;
+  // Find selected lesson - check both module lessons and submodule lessons
+  const selectedLesson = React.useMemo(() => {
+    if (!courseStructure || !selectedLessonId) return null;
+    
+    for (const module of courseStructure) {
+      // Check lessons directly under module
+      if (module.lessons) {
+        const lesson = module.lessons.find((lesson: CourseLessonDto) => String(lesson.id) === String(selectedLessonId));
+        if (lesson) return lesson;
+      }
+      
+      // Check lessons in submodules
+      if (module.submodules) {
+        for (const submodule of module.submodules) {
+          if (submodule.lessons) {
+            const lesson = submodule.lessons.find((lesson: CourseLessonDto) => String(lesson.id) === String(selectedLessonId));
+            if (lesson) return lesson;
+          }
+        }
+      }
+    }
+    
+    return null;
+  }, [courseStructure, selectedLessonId]);
 
-  const selectedModule = courseStructure?.find(module => 
-    module.lessons?.some(lesson => String(lesson.id) === String(selectedLessonId))
-  );
+  // Find selected module - check both module lessons and submodule lessons
+  const selectedModule = React.useMemo(() => {
+    if (!courseStructure || !selectedLessonId) return null;
+    
+    for (const module of courseStructure) {
+      // Check if lesson is directly under module
+      if (module.lessons?.some((lesson: CourseLessonDto) => String(lesson.id) === String(selectedLessonId))) {
+        return module;
+      }
+      
+      // Check if lesson is in any submodule
+      if (module.submodules?.some((submodule: any) => 
+        submodule.lessons?.some((lesson: CourseLessonDto) => String(lesson.id) === String(selectedLessonId))
+      )) {
+        return module;
+      }
+    }
+    
+    return null;
+  }, [courseStructure, selectedLessonId]);
 
   useEffect(() => {
     if (selectedLesson?.useVdoCipher && selectedLesson?.vdocipherVideoId && !vdocipherOTP) {
@@ -567,8 +726,10 @@ const LearningPage: React.FC<LearningPageProps> = () => {
             onLessonSelect={(lessonId) => {
               const lessonIdStr = String(lessonId);
               setSelectedLessonId(lessonIdStr);
-              localStorage.setItem('topcoach-selected-lesson', lessonIdStr);
-              localStorage.setItem(LAST_VIEWED_KEY, JSON.stringify({ id: lessonIdStr, ts: Date.now() }));
+              const courseSpecificKey = `${LAST_VIEWED_KEY}-${courseName}`;
+              const courseSpecificLegacyKey = `topcoach-selected-lesson-${courseName}`;
+              localStorage.setItem(courseSpecificLegacyKey, lessonIdStr);
+              localStorage.setItem(courseSpecificKey, JSON.stringify({ id: lessonIdStr, ts: Date.now() }));
             }}
             collapsed={collapsed}
       
@@ -634,11 +795,26 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         }}
                         onComplete={async () => {
                           try {
+                            if (isCompletingLesson) {
+                              return; // Prevent double-click
+                            }
+
                             if (!enrollmentStatus?.isEnrolled) {
                               message.error('You must be enrolled in the course to mark lessons as completed');
                               return;
                             }
 
+                            // Check if tasks need to be completed correctly first (at least 80%)
+                            if (lessonTasks && lessonTasks.length > 0 && !areAllTasksCompleted) {
+                              if (tasksScore) {
+                                message.warning(`You need at least 80% correct to complete this lesson. Your current score is ${Math.round(tasksScore.percentage)}%.`);
+                              } else {
+                                message.warning('Please complete all practice questions and achieve at least 80% correct before marking this lesson as complete.');
+                              }
+                              return;
+                            }
+
+                            setIsCompletingLesson(true);
                             setIsCurrentLessonCompleted(true);
                             setForceUpdate(prev => prev + 1);
 
@@ -648,20 +824,18 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                               timeWatched: (selectedLesson.duration || 0) * 60,
                             };
                             
-                            updateLessonProgress({
+                            await updateLessonProgress({
                               lessonId: selectedLesson.id,
                               data: updateData
-                            }).unwrap().then(() => {
-                              refetchUserProgress();
-                            }).catch((error) => {
-                              console.error('Server update failed:', error);
-                              setIsCurrentLessonCompleted(false);
-                              message.error('Failed to save completion status');
-                            });
+                            }).unwrap();
                             
+                            await refetchUserProgress();
                             message.success('Lesson completed!');
+                            setIsCompletingLesson(false);
                           } catch (error) {
                             console.error('Error:', error);
+                            setIsCurrentLessonCompleted(false);
+                            setIsCompletingLesson(false);
                             message.error('Failed to mark lesson as completed');
                           }
                         }}
@@ -683,6 +857,21 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                               return;
                             }
 
+                            // Check if tasks need to be completed correctly first (at least 80%)
+                            if (lessonTasks && lessonTasks.length > 0 && !areAllTasksCompleted) {
+                              if (tasksScore) {
+                                message.warning(`You need at least 80% correct to complete this lesson. Your current score is ${Math.round(tasksScore.percentage)}%.`);
+                              } else {
+                                message.warning('Please complete all practice questions and achieve at least 80% correct before marking this lesson as complete.');
+                              }
+                              return;
+                            }
+
+                            if (isCompletingLesson) {
+                              return; // Prevent double-click
+                            }
+
+                            setIsCompletingLesson(true);
                             setIsCurrentLessonCompleted(true);
                             setForceUpdate(prev => prev + 1);
 
@@ -692,18 +881,14 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                               timeWatched: (selectedLesson.duration || 0) * 60,
                             };
                             
-                            updateLessonProgress({
+                            await updateLessonProgress({
                               lessonId: selectedLesson.id,
                               data: updateData
-                            }).unwrap().then(() => {
-                              refetchUserProgress();
-                            }).catch((error) => {
-                              console.error('Server update failed:', error);
-                              setIsCurrentLessonCompleted(false);
-                              message.error('Failed to save completion status');
-                            });
+                            }).unwrap();
                             
+                            await refetchUserProgress();
                             message.success('PDF lesson completed!');
+                            setIsCompletingLesson(false);
                           } catch (error) {
                             console.error('Error:', error);
                             message.error('Failed to mark lesson as completed');
@@ -730,11 +915,34 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   </div>
                 )}
 
+                {/* About This Lesson - Show immediately after video/PDF */}
                 {selectedLesson.description && (
                   <div className="lesson-description">
                     <h3>About This Lesson</h3>
                     <p>{selectedLesson.description}</p>
                   </div>
+                )}
+
+                {/* Task Submission Component - Show after About This Lesson */}
+                {selectedLesson && selectedLesson.id && (
+                  <TaskSubmission
+                    lessonId={selectedLesson.id}
+                    onAllTasksCorrectlyCompleted={() => {
+                      setAllTasksCorrectlyCompleted(true);
+                    }}
+                    onTasksScoreUpdate={(correctCount, totalCount, percentage) => {
+                      setTasksScore({ correct: correctCount, total: totalCount, percentage });
+                      if (percentage >= 80) {
+                        setAllTasksCorrectlyCompleted(true);
+                      } else {
+                        setAllTasksCorrectlyCompleted(false);
+                      }
+                    }}
+                    onTaskComplete={async () => {
+                      // Refetch task submissions to update the score
+                      // The score update will be handled by onTasksScoreUpdate
+                    }}
+                  />
                 )}
 
              

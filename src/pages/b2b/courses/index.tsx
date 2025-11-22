@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Progress, Button, Spin, Alert, Empty } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Progress, Button, Spin, Alert, Empty, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOutlined,
@@ -26,21 +26,25 @@ interface CourseData {
   averageProgress: number;
 }
 
+const { TabPane } = Tabs;
+
 const CoursesPage: React.FC = () => {
   const navigate = useNavigate();
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [data, setData] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('all');
 
   useEffect(() => {
     // For counselors, fetch immediately (they always have an organization)
     // For SuperAdmins, only fetch if an organization is selected
     if (isCounselor || (isSuperAdmin && selectedOrganizationId)) {
       fetchData();
-      fetchCourses();
+      const courseName = activeTab === 'all' ? undefined : activeTab as 'admissions' | 'sat';
+      fetchCourses(courseName);
     }
-  }, [selectedOrganizationId, isCounselor, isSuperAdmin]);
+  }, [selectedOrganizationId, isCounselor, isSuperAdmin, activeTab]);
 
   const fetchData = async () => {
     try {
@@ -60,12 +64,15 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (courseName?: 'admissions' | 'sat') => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (isSuperAdmin && selectedOrganizationId) {
         params.append('organizationId', selectedOrganizationId);
+      }
+      if (courseName) {
+        params.append('courseName', courseName);
       }
       
       const response = await api.request({
@@ -278,6 +285,12 @@ const CoursesPage: React.FC = () => {
 
       {/* Courses Table */}
       <Card className="courses-table-card">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} style={{ marginBottom: 16 }}>
+          <TabPane tab="All Courses" key="all" />
+          <TabPane tab="Admissions Program" key="admissions" />
+          <TabPane tab="SAT Prep Course" key="sat" />
+        </Tabs>
+        
         {courses.length === 0 ? (
           <Empty
             description="No courses available. Courses are managed by TopCoach."

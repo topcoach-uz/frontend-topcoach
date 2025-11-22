@@ -24,14 +24,15 @@ import {
   List,
   Divider
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined, UploadOutlined, EyeOutlined, LinkOutlined } from '@ant-design/icons';
+import type { FormInstance } from 'antd/es/form';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined, UploadOutlined, EyeOutlined, LinkOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Segmented } from 'antd';
 import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 
 const { TextArea } = Input;
 const { Option } = Select;
-const { TabPane } = Tabs;
 
 // API client for course management
 const courseApi = {
@@ -54,7 +55,28 @@ const courseApi = {
       const errorText = await response.text();
       throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
-    return response.json();
+    
+    // Check if response has content
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response:', text);
+      throw new Error(`Expected JSON but got: ${contentType}`);
+    }
+    
+    try {
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        console.warn('Empty response body');
+        return { data: [], total: 0, message: 'Empty response' };
+      }
+      return JSON.parse(text);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      const text = await response.text();
+      console.error('Response text:', text);
+      throw new Error(`Failed to parse JSON: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+    }
   },
   post: async (url: string, data: any) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
@@ -159,15 +181,26 @@ interface Module {
   estimatedDuration: number;
   moduleType: 'standard' | 'premium';
   isActive: boolean;
+  courseName?: 'admissions' | 'sat';
   mentor: {
     id: string;
     email: string;
     avatar?: string;
   };
   lessons: Lesson[];
+  submodules?: Submodule[];
   _count?: {
     lessons: number;
   };
+}
+
+interface Submodule {
+  id: string;
+  title: string;
+  description?: string;
+  moduleId: string;
+  orderIndex: number;
+  lessons?: Lesson[];
 }
 
 interface Lesson {
@@ -175,6 +208,7 @@ interface Lesson {
   title: string;
   description?: string;
   moduleId: string;
+  submoduleId?: string;
   orderIndex: number;
   lessonType: 'video' | 'pdf' | 'live_session';
   contentUrl?: string;
@@ -218,9 +252,16 @@ const CourseManagementAdmin: React.FC = () => {
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [editingSubmodule, setEditingSubmodule] = useState<any | null>(null);
+  const [editingTask, setEditingTask] = useState<any | null>(null);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [selectedSubmodule, setSelectedSubmodule] = useState<any | null>(null);
+  const [submoduleModalVisible, setSubmoduleModalVisible] = useState(false);
+  const [taskModalVisible, setTaskModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('modules');
+  const [courseName, setCourseName] = useState<'admissions' | 'sat'>('admissions');
+  const [lessonForm] = Form.useForm();
   
   const user = useGetCourseStructureQuery();
 
@@ -238,7 +279,8 @@ const CourseManagementAdmin: React.FC = () => {
     
     const loadModules = async () => {
       try {
-        const response = await courseApi.get('/course-admin/courses/modules');
+        const url = `/course-admin/courses/modules?courseName=${courseName}`;
+        const response = await courseApi.get(url);
         const modulesData = response.data || [];
         setModules(Array.isArray(modulesData) ? modulesData : []);
         console.log('Initial modules load:', modulesData);
@@ -246,13 +288,13 @@ const CourseManagementAdmin: React.FC = () => {
         console.error('Error in initial modules load:', error);
         notification.error({
           message: 'Error',
-          description: 'Failed to fetch modules',
+          description: `Failed to fetch modules: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     };
     
     loadModules();
-  }, [user]);
+  }, [user, courseName]);
 
   // Fetch modules and mentors
   useEffect(() => {
@@ -261,15 +303,17 @@ const CourseManagementAdmin: React.FC = () => {
       await fetchMentors();
     };
     loadData();
-  }, []);
+  }, [courseName]);
 
   const fetchModules = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem(ACCESS_TOKEN);
-      console.log('Fetching modules... Token exists:', !!token);
+      console.log('Fetching modules... Token exists:', !!token, 'courseName:', courseName);
       
-      const response = await courseApi.get('/course-admin/courses/modules');
+      const url = `/course-admin/courses/modules?courseName=${courseName}`;
+      console.log('Fetching from URL:', url);
+      const response = await courseApi.get(url);
       
       console.log('Raw API response:', response);
       
@@ -312,11 +356,13 @@ const CourseManagementAdmin: React.FC = () => {
   const fetchMentors = async () => {
     try {
       const response = await courseApi.get('/users/mentors');
-      setMentors(response.data || response);
+      // Handle both { data: [...] } and direct array responses
+      const mentorsData = Array.isArray(response) ? response : (response.data || response);
+      setMentors(Array.isArray(mentorsData) ? mentorsData : []);
     } catch (error) {
       notification.error({
         message: 'Error',
-        description: 'Failed to fetch mentors',
+        description: `Failed to fetch mentors: ${error instanceof Error ? error.message : 'Unknown error'}`,
       });
       console.error('Error fetching mentors:', error);
     }
@@ -335,6 +381,7 @@ const CourseManagementAdmin: React.FC = () => {
         await courseApi.post('/course-admin/courses/modules', {
           ...values,
           mentorName: values.mentorName, // Send mentor name instead of mentorId
+          courseName: courseName, // Include courseName
         });
         notification.success({
           message: 'Success',
@@ -373,9 +420,13 @@ const CourseManagementAdmin: React.FC = () => {
   // Lesson Management
   const handleCreateLesson = async (values: any) => {
     try {
-      // Prepare lesson data with proper handling for different lesson types
-      const lessonData = {
+      // Ensure only one of moduleId or submoduleId is set (not both)
+      const lessonData: any = {
         ...values,
+        // Clear moduleId if submoduleId is provided
+        moduleId: values.submoduleId ? undefined : values.moduleId,
+        // Clear submoduleId if moduleId is provided
+        submoduleId: values.moduleId ? undefined : values.submoduleId,
         // Handle VdoCipher fields for video lessons
         useVdoCipher: values.lessonType === 'video' && values.videoType === 'vdocipher',
         vdocipherVideoId: values.lessonType === 'video' && values.videoType === 'vdocipher' ? values.vdocipherVideoId : undefined,
@@ -383,6 +434,13 @@ const CourseManagementAdmin: React.FC = () => {
         contentUrl: values.lessonType === 'pdf' ? values.contentUrl : 
                    (values.lessonType === 'video' && values.videoType === 'regular') ? values.contentUrl : undefined,
       };
+      
+      // Remove undefined values to avoid sending them
+      Object.keys(lessonData).forEach(key => {
+        if (lessonData[key] === undefined || lessonData[key] === null || lessonData[key] === '') {
+          delete lessonData[key];
+        }
+      });
 
       console.log('Saving lesson with data:', lessonData);
 
@@ -401,6 +459,7 @@ const CourseManagementAdmin: React.FC = () => {
           description: 'Lesson created successfully',
         });
       }
+      lessonForm.resetFields();
       setLessonModalVisible(false);
       setEditingLesson(null);
       setSelectedModule(null);
@@ -411,6 +470,129 @@ const CourseManagementAdmin: React.FC = () => {
         description: 'Failed to save lesson',
       });
       console.error('Error saving lesson:', error);
+    }
+  };
+
+  // Submodule Management
+  const handleCreateSubmodule = async (values: any) => {
+    try {
+      const submoduleData = {
+        ...values,
+        moduleId: selectedModule?.id || values.moduleId,
+      };
+
+      if (editingSubmodule) {
+        await courseApi.put(`/course-admin/courses/submodules/${editingSubmodule.id}`, submoduleData);
+        notification.success({
+          message: 'Success',
+          description: 'Submodule updated successfully',
+        });
+      } else {
+        await courseApi.post('/course-admin/courses/submodules', submoduleData);
+        notification.success({
+          message: 'Success',
+          description: 'Submodule created successfully',
+        });
+      }
+      setSubmoduleModalVisible(false);
+      setEditingSubmodule(null);
+      setSelectedModule(null);
+      fetchModules();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to save submodule',
+      });
+      console.error('Error saving submodule:', error);
+    }
+  };
+
+  const handleDeleteSubmodule = async (submoduleId: string) => {
+    try {
+      await courseApi.delete(`/course-admin/courses/submodules/${submoduleId}`);
+      notification.success({
+        message: 'Success',
+        description: 'Submodule deleted successfully',
+      });
+      fetchModules();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to delete submodule',
+      });
+      console.error('Error deleting submodule:', error);
+    }
+  };
+
+  // Task Management
+  const handleCreateTask = async (values: any) => {
+    try {
+      // Find the first correct answer index for backend compatibility
+      const options = values.options || [];
+      const correctIndices = options
+        .map((opt: any, idx: number) => opt.isCorrect ? idx : -1)
+        .filter((idx: number) => idx !== -1);
+      
+      if (correctIndices.length === 0) {
+        notification.error({
+          message: 'Error',
+          description: 'Please mark at least one option as correct',
+        });
+        return;
+      }
+
+      // Use the first correct answer index for backend
+      const correctAnswerIndex = correctIndices[0];
+
+      const taskData = {
+        ...values,
+        lessonId: selectedLesson?.id || values.lessonId,
+        taskType: 'multiple_choice',
+        options: options.map((opt: any) => ({ text: opt.text, isCorrect: opt.isCorrect })),
+        correctAnswerIndex: correctAnswerIndex,
+        points: values.points || 1,
+      };
+
+      if (editingTask) {
+        await courseApi.put(`/course-admin/tasks/${editingTask.id}`, taskData);
+        notification.success({
+          message: 'Success',
+          description: 'Task updated successfully',
+        });
+      } else {
+        await courseApi.post('/course-admin/tasks', taskData);
+        notification.success({
+          message: 'Success',
+          description: 'Task created successfully',
+        });
+      }
+      setTaskModalVisible(false);
+      setEditingTask(null);
+      setSelectedLesson(null);
+      fetchModules();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to save task',
+      });
+      console.error('Error saving task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await courseApi.delete(`/course-admin/tasks/${taskId}`);
+      notification.success({
+        message: 'Success',
+        description: 'Task deleted successfully',
+      });
+      fetchModules();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to delete task',
+      });
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -549,11 +731,19 @@ const CourseManagementAdmin: React.FC = () => {
     },
     {
       title: 'Lessons',
-      dataIndex: '_count',
       key: 'lessons',
-      render: (count: any) => (
-        <Tag color="green">{count?.lessons || 0} lessons</Tag>
-      ),
+      render: (_: any, record: Module) => {
+        // Count lessons directly under module
+        const moduleLessonsCount = (record.lessons || []).length;
+        // Count lessons from submodules
+        const submoduleLessonsCount = (record.submodules || []).reduce((total, submodule) => {
+          return total + (submodule.lessons || []).length;
+        }, 0);
+        const totalLessons = moduleLessonsCount + submoduleLessonsCount;
+        return (
+          <Tag color="green">{totalLessons} lessons</Tag>
+        );
+      },
     },
     {
       title: 'Status',
@@ -570,6 +760,18 @@ const CourseManagementAdmin: React.FC = () => {
       key: 'actions',
       render: (_: any, record: Module) => (
         <Space>
+          <Button
+            type="primary"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSelectedModule(record);
+              setEditingSubmodule(null);
+              setSubmoduleModalVisible(true);
+            }}
+          >
+            Add Submodule
+          </Button>
           <Button
             type="primary"
             size="small"
@@ -611,10 +813,22 @@ const CourseManagementAdmin: React.FC = () => {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
-      render: (text: string, record: Lesson) => (
+      render: (text: string, record: Lesson & { moduleTitle?: string; submoduleTitle?: string }) => (
         <div>
           <div className="lesson-title">{text}</div>
-          <div className="lesson-description">{record.description}</div>
+          <div className="lesson-description">
+            {record.description}
+            {(record as any).submoduleTitle && (
+              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                Module: {(record as any).moduleTitle} → Submodule: {(record as any).submoduleTitle}
+              </div>
+            )}
+            {!(record as any).submoduleTitle && (record as any).moduleTitle && (
+              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                Module: {(record as any).moduleTitle}
+              </div>
+            )}
+          </div>
         </div>
       ),
     },
@@ -669,10 +883,30 @@ const CourseManagementAdmin: React.FC = () => {
       ),
     },
     {
+      title: 'Tasks',
+      dataIndex: 'tasks',
+      key: 'tasks',
+      render: (tasks: any[]) => (
+        <Tag color="blue">{(tasks || []).length} tasks</Tag>
+      ),
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Lesson) => (
         <Space>
+          <Button
+            type="primary"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSelectedLesson(record);
+              setEditingTask(null);
+              setTaskModalVisible(true);
+            }}
+          >
+            Add Task
+          </Button>
           <Button
             type="primary"
             size="small"
@@ -719,8 +953,20 @@ const CourseManagementAdmin: React.FC = () => {
   return (
     <div className="course-modules-admin">
       <div className="admin-header">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
         <h1>Course Content Management</h1>
         <p>Manage modules, lessons, and resources for your courses</p>
+          </div>
+          <Segmented
+            options={[
+              { label: 'Admissions', value: 'admissions' },
+              { label: 'SAT', value: 'sat' },
+            ]}
+            value={courseName}
+            onChange={(value) => setCourseName(value as 'admissions' | 'sat')}
+          />
+        </div>
       </div>
 
       {/* Statistics */}
@@ -779,8 +1025,15 @@ const CourseManagementAdmin: React.FC = () => {
       {/* Main Content */}
       <Card className="main-content">
         <div className="content-header">
-          <Tabs activeKey={activeTab} onChange={setActiveTab}>
-            <TabPane tab="Modules" key="modules">
+          <Tabs 
+            activeKey={activeTab} 
+            onChange={setActiveTab}
+            items={[
+              {
+                key: 'modules',
+                label: 'Modules',
+                children: (
+                  <>
               <div className="tab-header">
                 <Space>
                   <Button
@@ -802,8 +1055,14 @@ const CourseManagementAdmin: React.FC = () => {
                 rowKey="id"
                 pagination={{ pageSize: 10 }}
               />
-            </TabPane>
-            <TabPane tab="All Lessons" key="lessons">
+                  </>
+                ),
+              },
+              {
+                key: 'lessons',
+                label: 'All Lessons',
+                children: (
+                  <>
               <div className="tab-header">
                 <Button
                   type="primary"
@@ -819,15 +1078,30 @@ const CourseManagementAdmin: React.FC = () => {
               </div>
               <Table
                 columns={lessonColumns}
-                dataSource={modules.flatMap(module => 
-                  module.lessons.map(lesson => ({ ...lesson, moduleTitle: module.title }))
-                )}
+                      dataSource={modules.flatMap(module => {
+                        const moduleLessons = (module.lessons || []).map(lesson => ({ 
+                          ...lesson, 
+                          moduleTitle: module.title,
+                          submoduleTitle: undefined
+                        }));
+                        const submoduleLessons = (module.submodules || []).flatMap(submodule => 
+                          (submodule.lessons || []).map(lesson => ({ 
+                            ...lesson, 
+                            moduleTitle: module.title,
+                            submoduleTitle: submodule.title
+                          }))
+                        );
+                        return [...moduleLessons, ...submoduleLessons];
+                      })}
                 loading={loading}
                 rowKey="id"
                 pagination={{ pageSize: 10 }}
               />
-            </TabPane>
-          </Tabs>
+                  </>
+                ),
+              },
+            ]}
+          />
         </div>
       </Card>
 
@@ -904,6 +1178,18 @@ const CourseManagementAdmin: React.FC = () => {
             </Col>
           </Row>
 
+          <Form.Item
+            name="courseName"
+            label="Course"
+            rules={[{ required: true, message: 'Please select course' }]}
+            initialValue={courseName}
+          >
+            <Select placeholder="Select course">
+              <Option value="admissions">Admissions</Option>
+              <Option value="sat">SAT</Option>
+            </Select>
+          </Form.Item>
+
           <Form.Item name="isActive" valuePropName="checked">
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <input type="checkbox" style={{ marginRight: 8 }} />
@@ -932,6 +1218,7 @@ const CourseManagementAdmin: React.FC = () => {
         title={editingLesson ? 'Edit Lesson' : 'Create Lesson'}
         open={lessonModalVisible}
         onCancel={() => {
+          lessonForm.resetFields();
           setLessonModalVisible(false);
           setEditingLesson(null);
           setSelectedModule(null);
@@ -940,6 +1227,7 @@ const CourseManagementAdmin: React.FC = () => {
         width={600}
       >
         <Form
+          form={lessonForm}
           layout="vertical"
           onFinish={handleCreateLesson}
           initialValues={
@@ -954,6 +1242,16 @@ const CourseManagementAdmin: React.FC = () => {
                   videoType: 'regular'
                 }
           }
+          onValuesChange={(changedValues, allValues) => {
+            // Clear submodule if module is selected
+            if (changedValues.moduleId && allValues.submoduleId) {
+              lessonForm.setFieldsValue({ submoduleId: undefined });
+            }
+            // Clear module if submodule is selected
+            if (changedValues.submoduleId && allValues.moduleId) {
+              lessonForm.setFieldsValue({ moduleId: undefined });
+            }
+          }}
         >
           <Form.Item
             name="title"
@@ -972,14 +1270,45 @@ const CourseManagementAdmin: React.FC = () => {
               <Form.Item
                 name="moduleId"
                 label="Module"
-                rules={[{ required: true, message: 'Please select a module' }]}
+                dependencies={['submoduleId']}
+                rules={[
+                  { 
+                    validator: (_, value) => {
+                      // Validation will be handled by onValuesChange
+                      return Promise.resolve();
+                    }
+                  }
+                ]}
               >
-                <Select placeholder="Select module">
+                <Select 
+                  placeholder="Select module (optional if submodule selected)"
+                  allowClear
+                >
                   {modules.map(module => (
                     <Option key={module.id} value={module.id}>
                       {module.title}
                     </Option>
                   ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="submoduleId"
+                label="Submodule"
+                dependencies={['moduleId']}
+              >
+                <Select 
+                  placeholder="Select submodule (optional if module selected)"
+                  allowClear
+                >
+                  {modules.flatMap(module => 
+                    (module.submodules || []).map((submodule: any) => (
+                      <Option key={submodule.id} value={submodule.id}>
+                        {module.title} - {submodule.title}
+                      </Option>
+                    ))
+                  )}
                 </Select>
               </Form.Item>
             </Col>
@@ -1292,6 +1621,397 @@ const CourseManagementAdmin: React.FC = () => {
               <Button onClick={() => {
                 setResourceModalVisible(false);
                 setEditingResource(null);
+                setSelectedLesson(null);
+              }}>
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Submodule Modal */}
+      <Modal
+        title={editingSubmodule ? 'Edit Submodule' : 'Create Submodule'}
+        open={submoduleModalVisible}
+        onCancel={() => {
+          setSubmoduleModalVisible(false);
+          setEditingSubmodule(null);
+          setSelectedModule(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          layout="vertical"
+          onFinish={handleCreateSubmodule}
+          initialValues={
+            editingSubmodule 
+              ? editingSubmodule
+              : { 
+                  moduleId: selectedModule?.id,
+                  isActive: true
+                }
+          }
+        >
+          <Form.Item
+            name="title"
+            label="Submodule Title"
+            rules={[{ required: true, message: 'Please enter submodule title' }]}
+          >
+            <Input placeholder="Enter submodule title" />
+          </Form.Item>
+
+          <Form.Item name="description" label="Description">
+            <TextArea rows={3} placeholder="Enter submodule description" />
+          </Form.Item>
+
+          <Form.Item
+            name="moduleId"
+            label="Module"
+            rules={[{ required: true, message: 'Please select a module' }]}
+          >
+            <Select placeholder="Select module">
+              {modules.map(module => (
+                <Option key={module.id} value={module.id}>
+                  {module.title}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="orderIndex"
+            label="Order Index"
+            rules={[{ required: true, message: 'Please enter order index' }]}
+          >
+            <InputNumber min={0} placeholder="Order" style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item name="isActive" valuePropName="checked" label="Active">
+            <Switch />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                {editingSubmodule ? 'Update' : 'Create'}
+              </Button>
+              <Button onClick={() => {
+                setSubmoduleModalVisible(false);
+                setEditingSubmodule(null);
+                setSelectedModule(null);
+              }}>
+                Cancel
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Task Modal */}
+      <Modal
+        title={editingTask ? 'Edit Task' : 'Create Task'}
+        open={taskModalVisible}
+        onCancel={() => {
+          setTaskModalVisible(false);
+          setEditingTask(null);
+          setSelectedLesson(null);
+        }}
+        footer={null}
+        width={800}
+      >
+        <Form
+          layout="vertical"
+          onFinish={handleCreateTask}
+          initialValues={
+            editingTask 
+              ? {
+                  ...editingTask,
+                  options: editingTask.options?.map((opt: any, idx: number) => {
+                    const text = typeof opt === 'string' ? opt : (opt.text || opt);
+                    const isCorrect = typeof opt === 'object' && opt.isCorrect !== undefined 
+                      ? opt.isCorrect 
+                      : (idx === (editingTask.correctAnswerIndex ?? 0));
+                    return { text, isCorrect };
+                  }) || []
+                }
+              : { 
+                  lessonId: selectedLesson?.id,
+                  taskType: 'multiple_choice',
+                  points: 1,
+                  isActive: true,
+                  orderIndex: 0,
+                  options: [
+                    { text: '', isCorrect: false },
+                    { text: '', isCorrect: false },
+                    { text: '', isCorrect: false },
+                    { text: '', isCorrect: false },
+                  ],
+                  correctAnswerIndex: 0,
+                }
+          }
+        >
+          <Form.Item
+            name="title"
+            label="Task Title"
+            rules={[{ required: true, message: 'Please enter task title' }]}
+          >
+            <Input placeholder="Enter task title" />
+          </Form.Item>
+
+          <Form.Item
+            name="question"
+            label="Question"
+            rules={[{ required: true, message: 'Please enter question' }]}
+          >
+            <TextArea rows={3} placeholder="Enter the question" />
+          </Form.Item>
+
+          <Form.Item
+            name="lessonId"
+            label="Lesson"
+            rules={[{ required: true, message: 'Please select a lesson' }]}
+          >
+            <Select 
+              placeholder="Select lesson"
+              disabled={!!selectedLesson?.id}
+            >
+              {modules.flatMap(module => [
+                ...(module.lessons || []).map((lesson: any) => (
+                  <Option key={lesson.id} value={lesson.id}>
+                    {module.title} - {lesson.title}
+                  </Option>
+                )),
+                ...(module.submodules || []).flatMap((submodule: any) =>
+                  (submodule.lessons || []).map((lesson: any) => (
+                    <Option key={lesson.id} value={lesson.id}>
+                      {module.title} / {submodule.title} - {lesson.title}
+                    </Option>
+                  ))
+                )
+              ])}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="options"
+            label="Answer Options"
+            rules={[
+              { required: true, message: 'Please add at least 2 options' },
+              {
+                validator: (_, value) => {
+                  if (!value || value.length < 2) {
+                    return Promise.reject(new Error('At least 2 options required'));
+                  }
+                  const correctCount = value.filter((opt: any) => opt.isCorrect).length;
+                  if (correctCount === 0) {
+                    return Promise.reject(new Error('At least one option must be marked as correct'));
+                  }
+                  if (correctCount > 2) {
+                    return Promise.reject(new Error('Maximum 2 options can be marked as correct'));
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <Form.List name="options">
+              {(fields, { add, remove }) => (
+                <>
+                  <div style={{ marginBottom: 12, color: '#666', fontSize: '13px' }}>
+                    Mark 1-2 options as correct by toggling the switch
+                  </div>
+                  {fields.map((field, index) => (
+                    <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => {
+                      return prevValues?.options?.[field.name]?.isCorrect !== currentValues?.options?.[field.name]?.isCorrect;
+                    }}>
+                      {({ getFieldValue }) => {
+                        const isCorrect = getFieldValue(['options', field.name, 'isCorrect']);
+                        return (
+                          <div
+                            key={field.key}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: 12,
+                              padding: '16px',
+                              border: isCorrect ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                              borderRadius: '8px',
+                              backgroundColor: isCorrect ? '#f6ffed' : '#fff',
+                              transition: 'all 0.2s',
+                              gap: '12px'
+                            }}
+                          >
+                            <span style={{ 
+                              fontWeight: 600, 
+                              color: isCorrect ? '#52c41a' : '#666',
+                              minWidth: '32px',
+                              textAlign: 'center',
+                              fontSize: '16px'
+                            }}>
+                              {String.fromCharCode(65 + index)}.
+                            </span>
+                            <Form.Item
+                              {...field}
+                              name={[field.name, 'text']}
+                              rules={[{ required: true, message: 'Option text required' }]}
+                              style={{ flex: 1, margin: 0 }}
+                            >
+                              <Input 
+                                placeholder={`Enter option ${String.fromCharCode(65 + index)}`}
+                                style={{ 
+                                  border: 'none', 
+                                  boxShadow: 'none',
+                                  fontSize: '14px'
+                                }}
+                              />
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => {
+                              return prevValues?.options?.[field.name]?.isCorrect !== currentValues?.options?.[field.name]?.isCorrect;
+                            }}>
+                              {({ getFieldValue, setFieldsValue }) => {
+                                const currentIsCorrect = getFieldValue(['options', field.name, 'isCorrect']);
+                                return (
+                                  <div style={{ margin: 0 }}>
+                                    <Button
+                                      type={currentIsCorrect ? 'primary' : 'default'}
+                                      icon={currentIsCorrect ? <CheckCircleOutlined /> : null}
+                                      onClick={() => {
+                                        const currentOptions = getFieldValue('options') || [];
+                                        const updatedOptions = [...currentOptions];
+                                        updatedOptions[field.name] = {
+                                          ...updatedOptions[field.name],
+                                          isCorrect: !currentIsCorrect
+                                        };
+                                        setFieldsValue({ options: updatedOptions });
+                                      }}
+                                      style={{
+                                        minWidth: '130px',
+                                        height: '38px',
+                                        borderRadius: '8px',
+                                        border: currentIsCorrect ? '2px solid #52c41a' : '1px solid #d9d9d9',
+                                        backgroundColor: currentIsCorrect ? '#52c41a' : '#fff',
+                                        color: currentIsCorrect ? '#fff' : '#666',
+                                        fontWeight: 600,
+                                        fontSize: '14px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        boxShadow: currentIsCorrect 
+                                          ? '0 4px 12px rgba(82, 196, 26, 0.3)' 
+                                          : '0 2px 4px rgba(0, 0, 0, 0.06)',
+                                        cursor: 'pointer'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!currentIsCorrect) {
+                                          e.currentTarget.style.borderColor = '#52c41a';
+                                          e.currentTarget.style.color = '#52c41a';
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!currentIsCorrect) {
+                                          e.currentTarget.style.borderColor = '#d9d9d9';
+                                          e.currentTarget.style.color = '#666';
+                                        }
+                                      }}
+                                    >
+                                      {currentIsCorrect ? (
+                                        <>
+                                          <CheckCircleOutlined style={{ fontSize: '16px' }} />
+                                          Correct
+                                        </>
+                                      ) : (
+                                        'Mark Correct'
+                                      )}
+                                    </Button>
+                                    <Form.Item
+                                      {...field}
+                                      name={[field.name, 'isCorrect']}
+                                      hidden
+                                    >
+                                      <Input type="hidden" />
+                                    </Form.Item>
+                                  </div>
+                                );
+                              }}
+                            </Form.Item>
+                            {fields.length > 2 && (
+                              <Button 
+                                type="text" 
+                                danger 
+                                icon={<DeleteOutlined />}
+                                onClick={() => remove(field.name)}
+                                style={{ marginLeft: 'auto' }}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      }}
+                    </Form.Item>
+                  ))}
+                  <Button 
+                    type="dashed" 
+                    onClick={() => add({ text: '', isCorrect: false })} 
+                    block 
+                    icon={<PlusOutlined />}
+                    style={{ marginTop: 8 }}
+                  >
+                    Add Option
+                  </Button>
+                </>
+              )}
+            </Form.List>
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="points"
+                label="Points"
+                rules={[{ required: true, message: 'Please enter points' }]}
+              >
+                <InputNumber min={1} placeholder="1" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="orderIndex"
+                label="Order Index"
+                rules={[{ required: true, message: 'Please enter order index' }]}
+              >
+                <InputNumber min={0} placeholder="0" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="correctAnswerIndex"
+            hidden
+          >
+            <InputNumber />
+          </Form.Item>
+
+          <Form.Item name="explanation" label="Explanation (shown after submission)">
+            <TextArea rows={2} placeholder="Optional explanation for the correct answer" />
+          </Form.Item>
+
+          <Form.Item name="isActive" valuePropName="checked" label="Active">
+            <Switch />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                {editingTask ? 'Update' : 'Create'}
+              </Button>
+              <Button onClick={() => {
+                setTaskModalVisible(false);
+                setEditingTask(null);
                 setSelectedLesson(null);
               }}>
                 Cancel

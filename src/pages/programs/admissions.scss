@@ -45,7 +45,7 @@
 
   // Programs Grid Section
   .programs-grid-section {
-    padding: 80px 0 120px;
+    padding: 40px 0 60px;
     background: #fafafa;
     
     .programs-container {
@@ -336,7 +336,7 @@
   .hero-section {
     background: white;
     color: #8b0000;
-    padding: 120px 0;
+    padding: 80px 0 60px;
     position: relative;
     overflow: hidden;
     
@@ -448,7 +448,7 @@
       font-size: 4rem;
       font-weight: 900;
       line-height: 1.1;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       letter-spacing: -0.02em;
       
       .program-word {
@@ -477,7 +477,7 @@
     .hero-subtitle {
       font-size: 1.375rem;
       line-height: 1.6;
-      margin-bottom: 48px;
+      margin-bottom: 32px;
       opacity: 0.95;
       color: #333;
       font-weight: 400;
@@ -722,7 +722,7 @@
 
   // Mentors Section
   .mentors-section {
-    padding: 120px 0;
+    padding: 60px 0;
     // background: url('/img/students.jpg') center/cover no-repeat;
     position: relative;
     overflow: hidden;
@@ -1013,7 +1013,7 @@
 
   // Modules Section
   .modules-section {
-    padding: 120px 0;
+    padding: 60px 0;
     background: white;
     
     .module-card {
@@ -1247,7 +1247,7 @@
 
   // Different Section
   .different-section {
-    padding: 120px 0;
+    padding: 60px 0;
     background: #fafafa;
     
     .different-grid {
@@ -1308,7 +1308,7 @@
 
   // Pricing Section
   .pricing-section {
-    padding: 120px 0;
+    padding: 60px 0;
     background: white;
 
     @media (max-width: 768px) {
@@ -1593,7 +1593,7 @@
 
   // CTA Section
   .cta-section {
-    padding: 120px 0;
+    padding: 60px 0;
     background: #8b0000;
     color: white;
     text-align: center;
@@ -1681,7 +1681,7 @@
   // Responsive Design
   @media (max-width: 1024px) {
     .hero-section {
-      padding: 100px 0;
+      padding: 60px 0;
       
       .hero-title {
         font-size: 3.5rem;
