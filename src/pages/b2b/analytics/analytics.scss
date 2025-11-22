@@ -72,6 +72,25 @@
     margin-bottom: 24px;
   }
 
+  .enrollment-chart-container {
+    padding: 8px 0;
+    
+    .recharts-wrapper {
+      .recharts-cartesian-grid-horizontal line {
+        stroke-dasharray: 3 3;
+      }
+      
+      .recharts-bar-rectangle {
+        transition: all 0.3s ease;
+        
+        &:hover {
+          opacity: 0.85;
+          filter: brightness(1.1);
+        }
+      }
+    }
+  }
+
   .chart-card,
   .performance-card,
   .insight-card {

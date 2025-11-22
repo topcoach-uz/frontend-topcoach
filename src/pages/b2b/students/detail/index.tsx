@@ -79,14 +79,23 @@ const StudentDetailPage: React.FC = () => {
         secure: true,
       });
       
-      const studentData = dashboardResponse.data?.find((s: StudentData) => s.userId === id);
+      // Get all enrollments for this student
+      const studentEnrollments = dashboardResponse.data?.filter((s: StudentData) => s.userId === id) || [];
       
-      if (!studentData) {
+      if (studentEnrollments.length === 0) {
         setLoading(false);
         return;
       }
       
-      setStudent(studentData);
+      // Use the first enrollment for basic student info
+      const firstEnrollment = studentEnrollments[0];
+      setStudent({
+        ...firstEnrollment,
+        // Calculate overall progress across all courses
+        progressPercentage: studentEnrollments.length > 0
+          ? Math.round(studentEnrollments.reduce((sum: number, e: StudentData) => sum + (e.progressPercentage || 0), 0) / studentEnrollments.length)
+          : firstEnrollment.progressPercentage,
+      });
 
       // Fetch user details
       try {
@@ -100,39 +109,65 @@ const StudentDetailPage: React.FC = () => {
         console.error('Error fetching user details:', error);
       }
 
-      // Set course data from enrollment
-      if (studentData.courseType) {
-        setCourses([{
-          courseName: `${studentData.courseType.toUpperCase()} Course`,
-          courseType: studentData.courseType,
-          progress: Math.round(studentData.progressPercentage || 0),
-          lessonsCompleted: 0,
-          totalLessons: 0,
-          enrolledDate: studentData.enrolledAt || new Date().toISOString(),
-          status: studentData.status === 'completed' && studentData.paymentStatus === 'completed' 
+      // Set course data from all enrollments
+      const courseData: CourseProgress[] = studentEnrollments
+        .filter(e => e.courseName || e.courseType)
+        .map((enrollment: StudentData) => {
+          const courseName = enrollment.courseName 
+            ? (enrollment.courseName === 'admissions' ? 'Admissions Program' : enrollment.courseName === 'sat' ? 'SAT Prep Course' : enrollment.courseName.toUpperCase())
+            : enrollment.courseType 
+            ? `${enrollment.courseType.toUpperCase()} Course`
+            : 'Unknown Course';
+          
+          // Status should be based on actual progress, not just enrollment status
+          const progress = Math.round(enrollment.progressPercentage || 0);
+          const status = progress >= 100 
             ? 'completed' 
-            : 'in-progress',
-        }]);
-      }
+            : progress > 0 
+            ? 'in-progress' 
+            : 'not-started';
+          
+          return {
+            courseName,
+            courseType: enrollment.courseType || enrollment.courseName || 'unknown',
+            progress,
+            lessonsCompleted: 0,
+            totalLessons: 0,
+            enrolledDate: enrollment.enrolledAt || new Date().toISOString(),
+            status,
+          };
+        });
+      setCourses(courseData);
 
-      // Generate mock activities from student data
+      // Generate activities from all enrollments
       const mockActivities: Activity[] = [];
-      if (studentData.enrolledAt) {
-        mockActivities.push({
-          id: '1',
-          message: `${studentData.userName} enrolled in ${studentData.courseType?.toUpperCase() || 'course'}`,
-          timestamp: studentData.enrolledAt,
-          courseName: studentData.courseType ? `${studentData.courseType.toUpperCase()} Course` : undefined,
-        });
-      }
-      if (studentData.progressPercentage && studentData.progressPercentage > 0) {
-        mockActivities.push({
-          id: '2',
-          message: `${studentData.userName} reached ${Math.round(studentData.progressPercentage || 0)}% progress`,
-          timestamp: new Date().toISOString(),
-          courseName: studentData.courseType ? `${studentData.courseType.toUpperCase()} Course` : undefined,
-        });
-      }
+      studentEnrollments.forEach((enrollment: StudentData, index: number) => {
+        const courseName = enrollment.courseName 
+          ? (enrollment.courseName === 'admissions' ? 'Admissions Program' : enrollment.courseName === 'sat' ? 'SAT Prep Course' : enrollment.courseName.toUpperCase())
+          : enrollment.courseType 
+          ? `${enrollment.courseType.toUpperCase()} Course`
+          : 'Course';
+        
+        if (enrollment.enrolledAt) {
+          mockActivities.push({
+            id: `enroll-${index}`,
+            message: `${firstEnrollment.userName} enrolled in ${courseName}`,
+            timestamp: enrollment.enrolledAt,
+            courseName,
+          });
+        }
+        if (enrollment.progressPercentage && enrollment.progressPercentage > 0) {
+          mockActivities.push({
+            id: `progress-${index}`,
+            message: `${firstEnrollment.userName} reached ${Math.round(enrollment.progressPercentage || 0)}% progress in ${courseName}`,
+            timestamp: enrollment.updatedAt || new Date().toISOString(),
+            courseName,
+          });
+        }
+      });
+      
+      // Sort activities by timestamp
+      mockActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       setActivities(mockActivities);
     } catch (error: any) {
       console.error('Error fetching student data:', error);
@@ -274,7 +309,7 @@ const StudentDetailPage: React.FC = () => {
                 <CheckCircleOutlined /> Completed Courses
               </div>
               <div className="stat-value">
-                {courses.filter((c) => c.status === 'completed').length}
+                {courses.filter((c) => c.status === 'completed' && c.progress >= 100).length}
               </div>
             </div>
             <div className="stat-item">
@@ -282,7 +317,7 @@ const StudentDetailPage: React.FC = () => {
                 <ClockCircleOutlined /> In Progress
               </div>
               <div className="stat-value">
-                {courses.filter((c) => c.status === 'in-progress').length}
+                {courses.filter((c) => c.status === 'in-progress' || (c.status !== 'completed' && c.progress > 0 && c.progress < 100)).length}
               </div>
             </div>
           </Card>
@@ -299,8 +334,8 @@ const StudentDetailPage: React.FC = () => {
                       <div>
                         <h3>{course.courseName}</h3>
                         <Space>
-                          <Tag color={getCourseStatusColor(course.status)} style={{ textTransform: 'capitalize' }}>
-                            {course.status}
+                          <Tag color={getCourseStatusColor(course.progress >= 100 ? 'completed' : course.progress > 0 ? 'in-progress' : 'not-started')} style={{ textTransform: 'capitalize' }}>
+                            {course.progress >= 100 ? 'completed' : course.progress > 0 ? 'in-progress' : 'not-started'}
                           </Tag>
                           <span style={{ color: '#6b7280', fontSize: 12 }}>
                             Enrolled {new Date(course.enrolledDate).toLocaleDateString()}

@@ -46,10 +46,22 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
       // Load results for already submitted tasks
       const results: Record<string, TaskResultDto> = {};
       existingSubmissions.forEach((sub: any) => {
+        const task = tasks.find((t: CourseTaskDto) => t.id === sub.taskId);
         results[sub.taskId] = {
+          submission: {
+            id: sub.id || '',
+            taskId: sub.taskId,
+            userId: sub.userId || '',
+            selectedAnswerIndex: sub.submittedAnswerIndex || 0,
+            isCorrect: sub.isCorrect,
+            score: sub.isCorrect ? 1 : 0,
+            attemptNumber: 1,
+            submittedAt: sub.submittedAt || new Date().toISOString(),
+          },
           isCorrect: sub.isCorrect,
           score: sub.isCorrect ? 1 : 0,
-          correctAnswerIndex: tasks.find((t: CourseTaskDto) => t.id === sub.taskId)?.correctAnswerIndex || 0,
+          correctAnswerIndex: task?.correctAnswerIndex || 0,
+          explanation: task?.explanation || '',
         };
       });
       setTaskResults(results);

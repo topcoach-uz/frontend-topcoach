@@ -150,6 +150,21 @@ const CoursesPage: React.FC = () => {
       sorter: (a, b) => a.enrolledStudents - b.enrolledStudents,
     },
     {
+      title: 'Average Progress',
+      key: 'avgProgress',
+      width: 150,
+      render: (_, record) => (
+        <div>
+          <Progress
+            type="circle"
+            percent={record.averageProgress}
+            size={60}
+            strokeColor={record.averageProgress >= 80 ? '#52c41a' : record.averageProgress >= 50 ? '#faad14' : '#ff4d4f'}
+          />
+        </div>
+      ),
+    },
+    {
       title: 'Completion Rate',
       key: 'completion',
       width: 200,
@@ -168,21 +183,6 @@ const CoursesPage: React.FC = () => {
         </div>
       ),
       sorter: (a, b) => a.completionRate - b.completionRate,
-    },
-    {
-      title: 'Average Progress',
-      key: 'avgProgress',
-      width: 150,
-      render: (_, record) => (
-        <div>
-          <Progress
-            type="circle"
-            percent={record.averageProgress}
-            size={60}
-            strokeColor={record.averageProgress >= 80 ? '#52c41a' : record.averageProgress >= 50 ? '#faad14' : '#ff4d4f'}
-          />
-        </div>
-      ),
     },
     {
       title: 'Actions',
@@ -204,15 +204,16 @@ const CoursesPage: React.FC = () => {
 
   // Calculate overall statistics
   const totalCourses = courses.length;
-  const totalEnrollments = data.length;
-  // Count students who have access (paymentStatus and status both completed)
-  const studentsWithAccess = data.filter(
+  // Count all enrollments (not unique students)
+  const totalEnrollments = data.filter(d => d.courseName).length;
+  // Count enrollments with access (paymentStatus and status both completed)
+  const enrollmentsWithAccess = data.filter(
     s => s.paymentStatus === 'completed' && s.status === 'completed'
   );
-  // Count students who actually completed the course (100% progress), not just enrollment status
-  const totalCompleted = studentsWithAccess.filter(s => (s.progressPercentage || 0) >= 100).length;
-  const overallCompletionRate = studentsWithAccess.length > 0
-    ? Math.round((totalCompleted / studentsWithAccess.length) * 100)
+  // Count enrollments where student actually completed the course (100% progress)
+  const totalCompleted = enrollmentsWithAccess.filter(s => (s.progressPercentage || 0) >= 100).length;
+  const overallCompletionRate = enrollmentsWithAccess.length > 0
+    ? Math.round((totalCompleted / enrollmentsWithAccess.length) * 100)
     : 0;
 
   if (loading) {

@@ -27,7 +27,8 @@ interface StudentData {
   userEmail: string;
   telegramPhoneNumber: string | null;
   telegramStatus: string | null;
-  courseType: string | null;
+  courseType: string | null; // Keep for backward compatibility
+  courseName: string | null; // Admissions or SAT
   amount: number | null;
   paymentStatus: string | null;
   status: string | null;
@@ -117,7 +118,10 @@ const StudentsPage: React.FC = () => {
     }
     
     if (courseFilter !== 'all') {
-      filtered = filtered.filter((student) => student.courseType === courseFilter);
+      filtered = filtered.filter((student) => 
+        (student.courseName && student.courseName === courseFilter) || 
+        (!student.courseName && student.courseType === courseFilter)
+      );
     }
 
     return filtered;
@@ -134,7 +138,9 @@ const StudentsPage: React.FC = () => {
       'Email': student.userEmail,
       'Phone Number': student.telegramPhoneNumber || 'N/A',
       'Telegram Status': student.telegramStatus || 'N/A',
-      'Course Type': student.courseType?.toUpperCase() || 'N/A',
+      'Course': student.courseName 
+        ? (student.courseName === 'admissions' ? 'Admissions Program' : student.courseName === 'sat' ? 'SAT Prep Course' : student.courseName.toUpperCase())
+        : student.courseType?.toUpperCase() || 'N/A',
       'Progress (%)': Math.round(student.progressPercentage || 0),
       'Enrolled At': student.enrolledAt ? new Date(student.enrolledAt).toLocaleDateString() : 'N/A',
     }));
@@ -176,7 +182,9 @@ const StudentsPage: React.FC = () => {
       student.userEmail,
       student.telegramPhoneNumber || 'N/A',
       student.telegramStatus || 'N/A',
-      student.courseType?.toUpperCase() || 'N/A',
+      student.courseName 
+        ? (student.courseName === 'admissions' ? 'Admissions Program' : student.courseName === 'sat' ? 'SAT Prep Course' : student.courseName.toUpperCase())
+        : student.courseType?.toUpperCase() || 'N/A',
       `${Math.round(student.progressPercentage || 0)}%`,
       student.enrolledAt ? new Date(student.enrolledAt).toLocaleDateString() : 'N/A',
     ]);
@@ -236,12 +244,24 @@ const StudentsPage: React.FC = () => {
       title: 'Student',
       key: 'student',
       width: 250,
-      render: (_, record) => (
-        <div>
-          <div style={{ fontWeight: 600, color: '#1f2937' }}>{record.userName}</div>
-          <div style={{ fontSize: 12, color: '#6b7280' }}>{record.userEmail}</div>
-        </div>
-      ),
+      render: (_, record) => {
+        // Count how many enrollments this student has
+        const studentEnrollments = data.filter(d => d.userId === record.userId);
+        const enrollmentCount = studentEnrollments.length;
+        return (
+          <div>
+            <div style={{ fontWeight: 600, color: '#1f2937' }}>
+              {record.userName}
+              {enrollmentCount > 1 && (
+                <Tag color="blue" style={{ marginLeft: 8, fontSize: '11px' }}>
+                  {enrollmentCount} courses
+                </Tag>
+              )}
+            </div>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>{record.userEmail}</div>
+          </div>
+        );
+      },
     },
     {
       title: 'Telegram Status',
@@ -268,20 +288,28 @@ const StudentsPage: React.FC = () => {
       render: (phone: string | null) => phone || 'N/A',
     },
     {
-      title: 'Course Type',
-      dataIndex: 'courseType',
-      key: 'courseType',
-      width: 120,
-      render: (type: string | null) => type ? (
-        <Tag color={type === 'premium' ? 'gold' : 'blue'}>
-          {type.toUpperCase()}
-        </Tag>
-      ) : 'N/A',
+      title: 'Course',
+      dataIndex: 'courseName',
+      key: 'courseName',
+      width: 150,
+      render: (courseName: string | null, record: StudentData) => {
+        const course = courseName || record.courseType;
+        if (!course) return 'N/A';
+        
+        // Map course names to display names
+        const courseDisplay = course.toLowerCase() === 'admissions' 
+          ? 'Admissions Program' 
+          : course.toLowerCase() === 'sat' 
+          ? 'SAT Prep Course' 
+          : course.toUpperCase();
+        const color = course.toLowerCase() === 'admissions' ? 'blue' : course.toLowerCase() === 'sat' ? 'purple' : 'default';
+        return <Tag color={color}>{courseDisplay}</Tag>;
+      },
       filters: [
-        { text: 'Standard', value: 'standard' },
-        { text: 'Premium', value: 'premium' },
+        { text: 'Admissions Program', value: 'admissions' },
+        { text: 'SAT Prep Course', value: 'sat' },
       ],
-      onFilter: (value, record) => record.courseType === value,
+      onFilter: (value, record) => (record.courseName || record.courseType) === value,
     },
     {
       title: 'Progress',
@@ -333,11 +361,14 @@ const StudentsPage: React.FC = () => {
     },
   ];
 
-  // Get unique course types for filter
+  // Get unique course names for filter
   const allCourses = useMemo(() => {
     const courseSet = new Set<string>();
     data.forEach((student) => {
-      if (student.courseType) {
+      if (student.courseName) {
+        courseSet.add(student.courseName);
+      } else if (student.courseType) {
+        // Fallback to courseType for backward compatibility
         courseSet.add(student.courseType);
       }
     });
@@ -403,11 +434,18 @@ const StudentsPage: React.FC = () => {
             suffixIcon={<FilterOutlined />}
           >
             <Option value="all">All Courses</Option>
-            {allCourses.map((courseType) => (
-              <Option key={courseType} value={courseType}>
-                {courseType.toUpperCase()}
-              </Option>
-            ))}
+            {allCourses.map((course) => {
+              const displayName = course === 'admissions' 
+                ? 'Admissions Program' 
+                : course === 'sat' 
+                ? 'SAT Prep Course' 
+                : course.toUpperCase();
+              return (
+                <Option key={course} value={course}>
+                  {displayName}
+                </Option>
+              );
+            })}
           </Select>
           <div className="results-count">
             Showing {filteredStudents.length} of {data.length} students

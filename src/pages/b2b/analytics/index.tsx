@@ -99,7 +99,9 @@ const AnalyticsPage: React.FC = () => {
   }
 
   // Calculate overall statistics
-  const totalStudents = analytics.totalStudents || 0;
+  const uniqueStudentIds = new Set(data.map(d => d.userId));
+  const totalStudents = uniqueStudentIds.size;
+  const totalEnrollments = data.filter(d => d.courseName).length;
   const studentsWithAccess = analytics.studentsWithAccess || 0;
   const averageProgress = analytics.averageProgress || 0;
   const accessRate = totalStudents > 0 ? Math.round((studentsWithAccess / totalStudents) * 100) : 0;
@@ -124,39 +126,46 @@ const AnalyticsPage: React.FC = () => {
     },
   ];
 
-  // Course type breakdown
-  const courseTypeBreakdown = analytics.courseTypeBreakdown || [];
+  // Course name breakdown
+  const courseNameBreakdown = analytics.courseNameBreakdown || [];
 
-  const courseTypeColumns: ColumnsType<any> = [
+  const courseNameColumns: ColumnsType<any> = [
     {
-      title: 'Course Type',
-      dataIndex: 'courseType',
-      key: 'courseType',
+      title: 'Course',
+      dataIndex: 'courseName',
+      key: 'courseName',
       width: 200,
-      render: (type: string) => (
-        <Tag color={type === 'premium' ? 'gold' : 'blue'}>
-          {type?.toUpperCase() || 'N/A'}
-        </Tag>
-      ),
+      render: (courseName: string) => {
+        const courseDisplay = courseName === 'admissions' 
+          ? 'Admissions Program' 
+          : courseName === 'sat' 
+          ? 'SAT Prep Course' 
+          : courseName?.toUpperCase() || 'N/A';
+        const color = courseName === 'admissions' ? 'blue' : courseName === 'sat' ? 'purple' : 'default';
+        return <Tag color={color}>{courseDisplay}</Tag>;
+      },
     },
     {
-      title: 'Students',
+      title: 'Enrollments',
       dataIndex: 'count',
       key: 'count',
-      width: 100,
+      width: 120,
       sorter: (a, b) => a.count - b.count,
+      render: (count: number) => `${count} enrollment${count !== 1 ? 's' : ''}`,
     },
     {
       title: 'Percentage',
       key: 'percentage',
       width: 200,
       render: (_, record) => {
-        const percentage = totalStudents > 0 ? Math.round((record.count / totalStudents) * 100) : 0;
+        // Calculate percentage based on total enrollments, not total students
+        const percentage = totalEnrollments > 0 ? Math.round((record.count / totalEnrollments) * 100) : 0;
+        const strokeColor = record.courseName === 'admissions' ? '#1890ff' : record.courseName === 'sat' ? '#722ed1' : '#8b0000';
         return (
           <div>
             <Progress
               percent={percentage}
-              strokeColor={record.courseType === 'premium' ? '#faad14' : '#1890ff'}
+              strokeColor={strokeColor}
               size="small"
               showInfo={false}
               style={{ marginBottom: 4 }}
@@ -168,15 +177,15 @@ const AnalyticsPage: React.FC = () => {
     },
   ];
 
-  // Top performers
+  // Top performers - filter by courseName to show per-course
   const topPerformers = data
-    .filter((s) => s.progressPercentage !== null && s.progressPercentage >= 80)
+    .filter((s) => s.progressPercentage !== null && s.progressPercentage >= 80 && s.courseName)
     .sort((a, b) => (b.progressPercentage || 0) - (a.progressPercentage || 0))
     .slice(0, 5);
 
-  // Needs attention
+  // Needs attention - filter by courseName to show per-course
   const needsAttention = data
-    .filter((s) => s.progressPercentage !== null && s.progressPercentage < 50 && s.status === 'completed')
+    .filter((s) => s.progressPercentage !== null && s.progressPercentage < 50 && s.status === 'completed' && s.courseName)
     .sort((a, b) => (a.progressPercentage || 0) - (b.progressPercentage || 0))
     .slice(0, 5);
 
@@ -241,36 +250,88 @@ const AnalyticsPage: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card title="Enrollment Trends" className="chart-card">
             {analytics.enrollmentTrends && analytics.enrollmentTrends.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={analytics.enrollmentTrends}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="#666"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#666"
-                    style={{ fontSize: '12px' }}
-                    allowDecimals={false}
-                    tickFormatter={(value) => Math.floor(value).toString()}
-                  />
-                  <Tooltip 
-                    formatter={(value: any) => [value, 'Enrollments']}
-                    labelStyle={{ color: '#333' }}
-                  />
-                  <Bar 
-                    dataKey="count" 
-                    fill="#8b0000" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="enrollment-chart-container">
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart
+                    data={analytics.enrollmentTrends}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                    barCategoryGap="20%"
+                  >
+                    <defs>
+                      <linearGradient id="enrollmentGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#8b0000" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#a52a2a" stopOpacity={0.8} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke="#e5e7eb" 
+                      vertical={false}
+                      strokeOpacity={0.6}
+                    />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#6b7280"
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      height={50}
+                      tickFormatter={(value: string) => {
+                        // Extract just the month name for X-axis display (e.g., "Jan 2025" -> "Jan")
+                        const parts = value.split(' ');
+                        return parts[0] || value;
+                      }}
+                    />
+                    <YAxis 
+                      stroke="#6b7280"
+                      tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }}
+                      tickLine={{ stroke: '#d1d5db' }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                      allowDecimals={false}
+                      tickFormatter={(value) => Math.floor(value).toString()}
+                      width={40}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        padding: '12px 16px',
+                      }}
+                      labelStyle={{ 
+                        color: '#1f2937', 
+                        fontWeight: 600,
+                        marginBottom: '4px',
+                        fontSize: '13px',
+                      }}
+                      labelFormatter={(label: string) => {
+                        // Label already includes year from backend (e.g., "Jan 2025")
+                        return label;
+                      }}
+                      formatter={(value: any) => [
+                        <span style={{ color: '#8b0000', fontWeight: 600 }}>{value}</span>,
+                        'Enrollments'
+                      ]}
+                      cursor={{ fill: 'rgba(139, 0, 0, 0.1)' }}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      fill="url(#enrollmentGradient)"
+                      radius={[8, 8, 0, 0]}
+                      stroke="#8b0000"
+                      strokeWidth={1}
+                      animationDuration={800}
+                      animationBegin={0}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No enrollment data available</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📊</div>
+                <div style={{ fontSize: '14px', fontWeight: 500 }}>No enrollment data available</div>
+              </div>
             )}
           </Card>
         </Col>
@@ -297,12 +358,15 @@ const AnalyticsPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Course Type Breakdown */}
-      <Card title="Course Type Breakdown" className="performance-card" style={{ marginBottom: 24 }}>
+      {/* Course Breakdown */}
+      <Card title="Course Breakdown" className="performance-card" style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 16, fontSize: '14px', color: '#6b7280' }}>
+          {totalStudents} student{totalStudents !== 1 ? 's' : ''} with {totalEnrollments} enrollment{totalEnrollments !== 1 ? 's' : ''}
+        </div>
         <Table
-          columns={courseTypeColumns}
-          dataSource={courseTypeBreakdown}
-          rowKey="courseType"
+          columns={courseNameColumns}
+          dataSource={courseNameBreakdown}
+          rowKey="courseName"
           pagination={false}
         />
       </Card>
@@ -313,22 +377,34 @@ const AnalyticsPage: React.FC = () => {
           <Card title="Top Performers" className="insight-card">
             <div className="top-performers">
               {topPerformers.length > 0 ? (
-                topPerformers.map((student) => (
-                  <div key={student.userId} className="performer-item">
-                    <div className="performer-info">
-                      <span className="performer-name">{student.userName}</span>
-                      <span className="performer-email">{student.userEmail}</span>
+                topPerformers.map((student, index) => {
+                  const courseDisplay = student.courseName === 'admissions' 
+                    ? 'Admissions Program' 
+                    : student.courseName === 'sat' 
+                    ? 'SAT Prep Course' 
+                    : student.courseName?.toUpperCase() || 'N/A';
+                  return (
+                    <div key={`${student.userId}-${student.courseName}-${index}`} className="performer-item">
+                      <div className="performer-info">
+                        <span className="performer-name">{student.userName}</span>
+                        <span className="performer-email">{student.userEmail}</span>
+                        <div style={{ marginTop: 4 }}>
+                          <Tag color={student.courseName === 'admissions' ? 'blue' : student.courseName === 'sat' ? 'purple' : 'default'} style={{ fontSize: '11px' }}>
+                            {courseDisplay}
+                          </Tag>
+                        </div>
+                      </div>
+                      <div className="performer-progress">
+                        <Progress
+                          type="circle"
+                          percent={Math.round(student.progressPercentage || 0)}
+                          size={50}
+                          strokeColor="#52c41a"
+                        />
+                      </div>
                     </div>
-                    <div className="performer-progress">
-                      <Progress
-                        type="circle"
-                        percent={Math.round(student.progressPercentage || 0)}
-                        size={50}
-                        strokeColor="#52c41a"
-                      />
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No top performers yet</div>
               )}
@@ -339,22 +415,34 @@ const AnalyticsPage: React.FC = () => {
           <Card title="Needs Attention" className="insight-card">
             <div className="needs-attention">
               {needsAttention.length > 0 ? (
-                needsAttention.map((student) => (
-                  <div key={student.userId} className="attention-item">
-                    <div className="attention-info">
-                      <span className="attention-name">{student.userName}</span>
-                      <span className="attention-email">{student.userEmail}</span>
+                needsAttention.map((student, index) => {
+                  const courseDisplay = student.courseName === 'admissions' 
+                    ? 'Admissions Program' 
+                    : student.courseName === 'sat' 
+                    ? 'SAT Prep Course' 
+                    : student.courseName?.toUpperCase() || 'N/A';
+                  return (
+                    <div key={`${student.userId}-${student.courseName}-${index}`} className="attention-item">
+                      <div className="attention-info">
+                        <span className="attention-name">{student.userName}</span>
+                        <span className="attention-email">{student.userEmail}</span>
+                        <div style={{ marginTop: 4 }}>
+                          <Tag color={student.courseName === 'admissions' ? 'blue' : student.courseName === 'sat' ? 'purple' : 'default'} style={{ fontSize: '11px' }}>
+                            {courseDisplay}
+                          </Tag>
+                        </div>
+                      </div>
+                      <div className="attention-progress">
+                        <Progress
+                          type="circle"
+                          percent={Math.round(student.progressPercentage || 0)}
+                          size={50}
+                          strokeColor="#ff4d4f"
+                        />
+                      </div>
                     </div>
-                    <div className="attention-progress">
-                      <Progress
-                        type="circle"
-                        percent={Math.round(student.progressPercentage || 0)}
-                        size={50}
-                        strokeColor="#ff4d4f"
-                      />
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>All students are on track! 🎉</div>
               )}

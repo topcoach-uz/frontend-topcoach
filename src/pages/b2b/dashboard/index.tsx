@@ -19,7 +19,8 @@ interface DashboardData {
   userEmail: string;
   telegramPhoneNumber: string | null;
   telegramStatus: string | null;
-  courseType: string | null;
+  courseType: string | null; // Keep for backward compatibility
+  courseName: string | null; // Admissions or SAT
   amount: number | null;
   paymentStatus: string | null;
   status: string | null;
@@ -104,11 +105,30 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  // Calculate metrics
-  const totalStudents = analytics?.totalStudents || data.length;
-  const studentsWithAccess = analytics?.studentsWithAccess || 0;
-  const averageProgress = Math.round(analytics?.averageProgress || 0);
-  const activeStudents = data.filter(s => s.status === 'completed' && s.paymentStatus === 'completed').length;
+  // Calculate metrics - count unique students
+  const uniqueStudentIds = new Set(data.map(d => d.userId));
+  const totalStudents = uniqueStudentIds.size;
+  
+  // Count total enrollments
+  const totalEnrollments = data.filter(d => d.courseName).length;
+  
+  // Count students with access (paymentStatus and status both completed) - unique students
+  const studentsWithAccessSet = new Set(
+    data
+      .filter(s => s.status === 'completed' && s.paymentStatus === 'completed')
+      .map(s => s.userId)
+  );
+  const studentsWithAccess = studentsWithAccessSet.size;
+  
+  // Calculate average progress from all enrollments with access
+  const enrollmentsWithProgress = data.filter(
+    s => s.status === 'completed' && s.paymentStatus === 'completed' && s.progressPercentage !== null
+  );
+  const averageProgress = enrollmentsWithProgress.length > 0
+    ? Math.round(enrollmentsWithProgress.reduce((sum, s) => sum + (s.progressPercentage || 0), 0) / enrollmentsWithProgress.length)
+    : Math.round(analytics?.averageProgress || 0);
+  
+  const activeStudents = studentsWithAccess;
 
   // Recent enrollments for table
   const recentEnrollments = data
@@ -119,7 +139,7 @@ const DashboardPage: React.FC = () => {
       key: index,
       student: item.userName,
       email: item.userEmail,
-      course: item.courseType || 'N/A',
+      course: item.courseName || item.courseType || 'N/A', // Prefer courseName, fallback to courseType
       enrolledAt: item.enrolledAt,
       progress: Math.round(item.progressPercentage || 0),
     }));
@@ -140,11 +160,17 @@ const DashboardPage: React.FC = () => {
       title: 'Course',
       dataIndex: 'course',
       key: 'course',
-      render: (type: string) => type ? (
-        <Tag color={type === 'premium' ? 'gold' : 'blue'}>
-          {type.toUpperCase()}
-        </Tag>
-      ) : 'N/A',
+      render: (course: string) => {
+        if (!course) return 'N/A';
+        // Map course names to display names
+        const courseDisplay = course.toLowerCase() === 'admissions' 
+          ? 'Admissions Program' 
+          : course.toLowerCase() === 'sat' 
+          ? 'SAT Prep Course' 
+          : course.toUpperCase();
+        const color = course.toLowerCase() === 'admissions' ? 'blue' : course.toLowerCase() === 'sat' ? 'purple' : 'default';
+        return <Tag color={color}>{courseDisplay}</Tag>;
+      },
     },
     {
       title: 'Enrolled At',
@@ -162,9 +188,9 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
-  // Students needing attention (low progress)
+  // Students needing attention (low progress) - show all enrollments with low progress
   const studentsNeedingAttention = data
-    .filter(s => s.progressPercentage !== null && s.progressPercentage < 50 && s.status === 'completed')
+    .filter(s => s.progressPercentage !== null && s.progressPercentage < 50 && s.status === 'completed' && s.courseName)
     .slice(0, 5);
 
   return (
@@ -242,50 +268,76 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card title="Students Needing Attention" className="attention-card">
             {studentsNeedingAttention.length > 0 ? (
-              studentsNeedingAttention.map((student) => (
-                <div key={student.userId} className="student-item">
-                  <div className="student-info">
-                    <div>
-                      <div className="student-name">{student.userName}</div>
-                      <div className="student-email">{student.userEmail}</div>
+              studentsNeedingAttention.map((student, index) => {
+                const courseDisplay = student.courseName === 'admissions' 
+                  ? 'Admissions Program' 
+                  : student.courseName === 'sat' 
+                  ? 'SAT Prep Course' 
+                  : student.courseName?.toUpperCase() || 'N/A';
+                return (
+                  <div key={`${student.userId}-${student.courseName}-${index}`} className="student-item">
+                    <div className="student-info">
+                      <div>
+                        <div className="student-name">{student.userName}</div>
+                        <div className="student-email">{student.userEmail}</div>
+                        <div style={{ marginTop: 4 }}>
+                          <Tag color={student.courseName === 'admissions' ? 'blue' : student.courseName === 'sat' ? 'purple' : 'default'} style={{ fontSize: '11px' }}>
+                            {courseDisplay}
+                          </Tag>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="student-progress">
+                      <Progress
+                        percent={Math.round(student.progressPercentage || 0)}
+                        size="small"
+                        strokeColor="#faad14"
+                        format={(percent) => `${Math.round(percent || 0)}%`}
+                      />
                     </div>
                   </div>
-                  <div className="student-progress">
-                    <Progress
-                      percent={Math.round(student.progressPercentage || 0)}
-                      size="small"
-                      strokeColor="#faad14"
-                      format={(percent) => `${Math.round(percent || 0)}%`}
-                    />
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="empty-state">All students are on track! 🎉</div>
             )}
           </Card>
         </Col>
 
-        {/* Course Type Breakdown */}
+        {/* Course Breakdown */}
         <Col xs={24} lg={12}>
-          <Card title="Course Type Breakdown" className="courses-card">
-            {analytics?.courseTypeBreakdown && analytics.courseTypeBreakdown.length > 0 ? (
-              analytics.courseTypeBreakdown.map((item: any) => (
-                <div key={item.courseType} className="course-item">
-                  <div className="course-header">
-                    <h4>{item.courseType?.toUpperCase() || 'N/A'}</h4>
-                    <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'}>
-                      {item.count} students
-                    </Tag>
-                  </div>
-                  <Progress
-                    percent={totalStudents > 0 ? (item.count / totalStudents * 100) : 0}
-                    strokeColor={item.courseType === 'premium' ? '#faad14' : '#1890ff'}
-                    showInfo={false}
-                    style={{ marginTop: 8 }}
-                  />
+          <Card title="Course Breakdown" className="courses-card">
+            {analytics?.courseNameBreakdown && analytics.courseNameBreakdown.length > 0 ? (
+              <>
+                <div style={{ marginBottom: 16, fontSize: '14px', color: '#6b7280' }}>
+                  {totalStudents} student{totalStudents !== 1 ? 's' : ''} with {totalEnrollments} enrollment{totalEnrollments !== 1 ? 's' : ''}
                 </div>
-              ))
+                {analytics.courseNameBreakdown.map((item: any) => {
+                  const courseDisplay = item.courseName === 'admissions' 
+                    ? 'Admissions Program' 
+                    : item.courseName === 'sat' 
+                    ? 'SAT Prep Course' 
+                    : item.courseName?.toUpperCase() || 'N/A';
+                  const color = item.courseName === 'admissions' ? 'blue' : item.courseName === 'sat' ? 'purple' : 'default';
+                  const strokeColor = item.courseName === 'admissions' ? '#1890ff' : item.courseName === 'sat' ? '#722ed1' : '#8b0000';
+                  return (
+                    <div key={item.courseName} className="course-item">
+                      <div className="course-header">
+                        <h4>{courseDisplay}</h4>
+                        <Tag color={color}>
+                          {item.count} enrollment{item.count !== 1 ? 's' : ''}
+                        </Tag>
+                      </div>
+                      <Progress
+                        percent={totalEnrollments > 0 ? Math.round((item.count / totalEnrollments) * 100) : 0}
+                        strokeColor={strokeColor}
+                        showInfo={false}
+                        style={{ marginTop: 8 }}
+                      />
+                    </div>
+                  );
+                })}
+              </>
             ) : (
               <div className="empty-state">No course data available</div>
             )}
