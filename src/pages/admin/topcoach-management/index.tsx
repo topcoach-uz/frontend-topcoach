@@ -95,6 +95,7 @@ const ProgramDashboard: React.FC = () => {
   const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat'>('all');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsTab, setAnalyticsTab] = useState<'admissions' | 'sat'>('admissions');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
@@ -239,13 +240,14 @@ const ProgramDashboard: React.FC = () => {
     return colors[status || ''] || 'default';
   };
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (courseName?: 'admissions' | 'sat') => {
     setAnalyticsLoading(true);
     try {
-      console.log('[TopCoach Management] Fetching analytics data from: /program-dashboard/analytics');
+      const params = courseName ? `?courseName=${courseName}` : '';
+      console.log(`[TopCoach Management] Fetching analytics data from: /program-dashboard/analytics${params}`);
       
       const response = await api.request({
-        path: '/program-dashboard/analytics',
+        path: `/program-dashboard/analytics${params}`,
         method: 'GET',
         secure: true,
       });
@@ -274,10 +276,10 @@ const ProgramDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 'analytics' && !analyticsData) {
-      fetchAnalytics();
+    if (activeTab === 'analytics') {
+      fetchAnalytics(analyticsTab);
     }
-  }, [activeTab]);
+  }, [activeTab, analyticsTab]);
 
   const fetchOrganizations = async (bypassCache = false) => {
     setOrganizationsLoading(true);
@@ -707,8 +709,22 @@ const ProgramDashboard: React.FC = () => {
       return <Alert message="No analytics data available" type="info" />;
     }
 
+    const courseTabs = [
+      { key: 'admissions', label: 'Admissions Program' },
+      { key: 'sat', label: 'SAT Prep Course' },
+    ];
+
     return (
       <div>
+        <Tabs
+          activeKey={analyticsTab}
+          onChange={(key) => setAnalyticsTab(key as 'admissions' | 'sat')}
+          items={courseTabs.map(tab => ({
+            key: tab.key,
+            label: tab.label,
+          }))}
+          style={{ marginBottom: 24 }}
+        />
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12} md={6}>
             <Card>
@@ -889,33 +905,35 @@ const ProgramDashboard: React.FC = () => {
               </Space>
             </Card>
           </Col>
-          <Col xs={24} lg={12}>
-            <Card title="Course Type" loading={analyticsLoading}>
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                {analyticsData.courseTypeBreakdown && analyticsData.courseTypeBreakdown.length > 0 ? (
-                  analyticsData.courseTypeBreakdown.map((item: any, index: number) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        padding: '12px 0',
-                        borderBottom: index < analyticsData.courseTypeBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
-                      }}
-                    >
-                      <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                        {item.courseType?.toUpperCase()}
-                      </Tag>
-                      <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No data available</div>
-                )}
-              </Space>
-            </Card>
-          </Col>
+          {analyticsTab === 'admissions' && (
+            <Col xs={24} lg={12}>
+              <Card title="Course Type" loading={analyticsLoading}>
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                  {analyticsData.courseTypeBreakdown && analyticsData.courseTypeBreakdown.length > 0 ? (
+                    analyticsData.courseTypeBreakdown.map((item: any, index: number) => (
+                      <div 
+                        key={index} 
+                        style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          padding: '12px 0',
+                          borderBottom: index < analyticsData.courseTypeBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
+                        }}
+                      >
+                        <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'} style={{ fontSize: '14px', padding: '4px 12px' }}>
+                          {item.courseType?.toUpperCase()}
+                        </Tag>
+                        <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No data available</div>
+                  )}
+                </Space>
+              </Card>
+            </Col>
+          )}
         </Row>
 
         <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
