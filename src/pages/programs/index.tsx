@@ -83,7 +83,7 @@ const ProgramsPage: React.FC = () => {
             <div className="program-card sat-card">
             <div className="program-visual">
                 <div className="preview-image">
-                  <img src="/img/coming.jpg" alt="SAT Prep Course Preview" />
+                  <img src="/img/abdulaziz_sat.jpg" alt="SAT Prep Course Preview" />
                   {/* <div className="play-overlay" onClick={handleVideoPreviewClick}>
                     <PlayCircleOutlined />
                   </div> */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Card, Modal, Alert, message, Spin, Progress } from 'antd';
+import { Button, Card, Modal, Alert, message, Spin, Progress, Avatar } from 'antd';
 import { 
   BookOutlined,
   CheckCircleOutlined,
@@ -10,7 +10,8 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   TeamOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
@@ -202,18 +203,6 @@ const SatPage: React.FC = () => {
       description: 'Comprehensive math coverage from basics to advanced topics',
       modules: [
         {
-          name: 'Pre-Algebra',
-          lessons: [
-            'Linear Equations',
-            'Linear Inequalities',
-            'Linear Word Problems',
-            'Linear Functions',
-            'Interpreting Linear Functions',
-            'Linear Graphs',
-            'Systems of Equations'
-          ]
-        },
-        {
           name: 'Algebra',
           lessons: [
             'Exponents & Radicals',
@@ -275,21 +264,39 @@ const SatPage: React.FC = () => {
     }
   ];
 
+  const mentors = [
+    {
+      id: '1',
+      name: 'Abdulaziz Sharopov',
+      university: 'Northwestern University in Qatar',
+      scholarship: 'Full-Ride $260,000',
+      image: '/img/abdulaziz_sat.jpg', // User will update this path
+      achievements: [
+        'Full Scholarship Graduate of Tashkent International School',
+        'SAT Coach since 2020 with 2800+ Students',
+        '146 Students studying abroad with Full Scholarships'
+      ],
+      stats: {
+        studentsMentored: '2800+',
+      }
+    }
+  ];
+
   const testimonials = [
     {
-      name: 'Sarah M.',
+      name: 'Sardor M.',
       score: '1520',
       improvement: '+180 points',
       text: 'The personalized study plan and expert strategies helped me improve my score significantly. Highly recommend!'
     },
     {
-      name: 'Alex K.',
+      name: 'Malika N.',
       score: '1480',
       improvement: '+150 points',
       text: 'The practice tests and detailed feedback were game-changers. I felt confident and prepared on test day.'
     },
     {
-      name: 'Emma L.',
+      name: 'Jasur M.',
       score: '1550',
       improvement: '+200 points',
       text: 'The instructors were amazing and the small group sessions made learning engaging and effective.'
@@ -307,30 +314,29 @@ const SatPage: React.FC = () => {
               <span className="program-word">Prep Course</span>
             </h1>
             <p className="hero-subtitle">
-              Transform your SAT performance with our comprehensive preparation program. 
-              Get expert guidance, proven strategies, and comprehensive practice to boost your score 
-              and strengthen your college application.
+              Master every possible question that can appear on the SAT English & Math sections. 
+              You'll learn the overall exam structure as well as tips & secrets for answering questions quickly AND effectively.
             </p>
             <div className="hero-stats">
               <div className="stat">
-                <StarOutlined />
+                <FileTextOutlined />
                 <div className="stat-content">
-                  <span className="stat-value">1500+</span>
-                  <span className="stat-label">Average Score</span>
+                  <span className="stat-value">3000+</span>
+                  <span className="stat-label">Practice Questions</span>
                 </div>
               </div>
               <div className="stat">
                 <TeamOutlined />
                 <div className="stat-content">
                   <span className="stat-value">200+</span>
-                  <span className="stat-label">Students Helped</span>
+                  <span className="stat-label">Students with SAT 1400+</span>
                 </div>
               </div>
               <div className="stat">
                 <TrophyOutlined />
                 <div className="stat-content">
-                  <span className="stat-value">95%</span>
-                  <span className="stat-label">Success Rate</span>
+                  <span className="stat-value">1590</span>
+                  <span className="stat-label">Scores up to 1590</span>
                 </div>
               </div>
             </div>
@@ -369,7 +375,7 @@ const SatPage: React.FC = () => {
           </div>
           <div className="hero-visual">
             <div className="hero-image">
-              <img src="/img/coming.jpg" alt="SAT Prep Course" />
+              <img src="/img/abdulaziz_sat.jpg" alt="SAT Prep Course" />
             </div>
           </div>
         </div>
@@ -459,6 +465,67 @@ const SatPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Mentors Section */}
+      <section className="mentors-section">
+        {/* Background Image */}
+        <img 
+          src="/img/yale.jpeg" 
+          alt="University Background" 
+          className="mentors-bg-image"
+          onError={(e) => {
+            console.error('Background image failed to load:', e);
+            e.currentTarget.src = '/img/students.jpeg';
+          }}
+        />
+        
+        <div className="section-header">
+          <div className="header-content">
+            <h2>Meet Your Instructor</h2>
+            <p>Learn from an expert who has helped thousands of students achieve their target SAT scores</p>
+          </div>
+        </div>
+        <div className="mentors-grid">
+          {mentors.map((mentor) => (
+            <Card key={mentor.id} className="mentor-card" hoverable>
+              <div className="mentor-header">
+                <div className="mentor-avatar">
+                  <Avatar size={80} src={mentor.image} />
+                </div>
+                <div className="mentor-info">
+                  <h3>{mentor.name}</h3>
+                  <div className="university-info">
+                    <p className="university">{mentor.university}</p>
+                    <p className="scholarship">{mentor.scholarship}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mentor-achievements">
+                <h4>Key Achievements</h4>
+                <ul>
+                  {mentor.achievements.map((achievement, index) => (
+                    <li key={index}>
+                      <CheckCircleOutlined />
+                      {achievement}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mentor-stats">
+                <div className="stat-item">
+                  <UserOutlined />
+                  <div>
+                    <span className="stat-number">{mentor.stats.studentsMentored}</span>
+                    <span className="stat-label">Students Mentored</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       {/* Curriculum Section */}
       <section className="sat-curriculum">
         <div className="container">
@@ -531,7 +598,7 @@ const SatPage: React.FC = () => {
 
 
       {/* Pricing Section */}
-      {isAuthenticated && !satEnrollmentStatus?.isEnrolled && (
+      {/* {isAuthenticated && !satEnrollmentStatus?.isEnrolled && (
         <section className="pricing-section">
           <div className="section-header">
             <div className="header-content">
@@ -578,7 +645,7 @@ const SatPage: React.FC = () => {
             </div>
           ) : null}
         </section>
-      )}
+      )} */}
 
       {/* CTA Section */}
       {(!isAuthenticated || !satEnrollmentStatus?.isEnrolled) && (
@@ -588,16 +655,16 @@ const SatPage: React.FC = () => {
             <p>Join hundreds of students who have improved their SAT scores with our proven program</p>
             <div className="cta-stats">
               <div className="cta-stat">
-                <div className="cta-stat-value">1500+</div>
-                <div className="cta-stat-label">Average Score</div>
+                <div className="cta-stat-value">3000+</div>
+                <div className="cta-stat-label">Practice Questions</div>
               </div>
               <div className="cta-stat">
                 <div className="cta-stat-value">200+</div>
-                <div className="cta-stat-label">Students Helped</div>
+                <div className="cta-stat-label">Students with SAT 1400+</div>
               </div>
               <div className="cta-stat">
-                <div className="cta-stat-value">95%</div>
-                <div className="cta-stat-label">Success Rate</div>
+                <div className="cta-stat-value">1590</div>
+                <div className="cta-stat-label">Scores up to 1590</div>
               </div>
             </div>
             <Button 
