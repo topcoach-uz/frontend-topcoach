@@ -203,7 +203,18 @@ const SatPage: React.FC = () => {
       description: 'Comprehensive math coverage from basics to advanced topics',
       modules: [
         {
-          name: 'Algebra',
+          name: 'Pre Algebra',
+          lessons: [
+            'Exponents & Radicals',
+            'Quadratic Functions',
+            'Exponential Functions',
+            'Nonlinear Graphs',
+            'Manipulating Functions',
+            'Nonlinear Function Word Problems'
+          ]
+        },
+        {
+          name: 'SAT Algebra',
           lessons: [
             'Exponents & Radicals',
             'Quadratic Functions',
@@ -257,6 +268,17 @@ const SatPage: React.FC = () => {
             'Desmos for Algebra',
             'Desmos for Statistics',
             'Desmos for Geometry'
+          ]
+        },
+        {
+          name: 'Math Practise Test',
+          lessons: [
+            'Exponents & Radicals',
+            'Quadratic Functions',
+            'Exponential Functions',
+            'Nonlinear Graphs',
+            'Manipulating Functions',
+            'Nonlinear Function Word Problems'
           ]
         }
       ],
