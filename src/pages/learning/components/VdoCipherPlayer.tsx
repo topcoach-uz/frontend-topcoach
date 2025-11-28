@@ -284,24 +284,31 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             <div className="error-icon">⚠️</div>
             <h3>Video Error</h3>
             <p>{error}</p>
-            {error.includes('Domain not allowed') && (
+            {(error.includes('Domain not allowed') || error.includes('403') || error.includes('2014') || error.includes('6007')) && (
               <div className="domain-error-help" style={{ 
                 marginTop: '16px', 
                 padding: '12px', 
-                backgroundColor: '#f0f0f0', 
+                backgroundColor: '#fff3cd', 
+                border: '1px solid #ffc107',
                 borderRadius: '4px',
                 fontSize: '12px',
                 textAlign: 'left'
               }}>
-                <strong>How to fix:</strong>
-                <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                  <li>Log in to your VdoCipher dashboard</li>
-                  <li>Go to Settings → Domain Restrictions</li>
-                  <li>Add <code>{window.location.hostname}</code> to the allowed domains list</li>
-                  <li>For localhost development, add: <code>localhost</code> and <code>127.0.0.1</code></li>
+                <strong style={{ color: '#856404' }}>⚠️ Domain Whitelisting Required:</strong>
+                <p style={{ margin: '8px 0', color: '#856404' }}>
+                  The domain <code style={{ backgroundColor: '#f8f9fa', padding: '2px 4px', borderRadius: '2px' }}>{window.location.hostname}</code> needs to be whitelisted in the VdoCipher dashboard.
+                </p>
+                <ol style={{ margin: '8px 0', paddingLeft: '20px', color: '#856404' }}>
+                  <li>Log in to <strong>VdoCipher Dashboard</strong> (https://dashboard.vdocipher.com)</li>
+                  <li>Navigate to <strong>Config</strong> section</li>
+                  <li>Go to <strong>Domain Restrictions</strong> or <strong>Allowed Domains</strong></li>
+                  <li>Add <code style={{ backgroundColor: '#f8f9fa', padding: '2px 4px', borderRadius: '2px' }}>{window.location.hostname}</code> to the whitelist</li>
+                  <li>Save the changes and wait a few minutes for propagation</li>
+                  <li>Refresh this page</li>
                 </ol>
-                <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#666' }}>
-                  Alternatively, use a tunneling service like ngrok for development.
+                <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#856404', fontStyle: 'italic' }}>
+                  <strong>Important:</strong> This must be done by an administrator with access to the VdoCipher account. 
+                  Contact your administrator or support if you need assistance.
                 </p>
               </div>
             )}

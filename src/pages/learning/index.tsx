@@ -189,25 +189,34 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         throw new Error('No authentication token found');
       }
 
-      // Extract domain from current location
-      const domain = window.location.hostname;
-      const protocol = window.location.protocol;
-      const port = window.location.port;
+      // Extract and clean domain from current location
+      // VdoCipher requires clean domain format (no protocol, no www, no port for production)
+      let domain = window.location.hostname;
       
-      // Build full origin for domain whitelisting
-      // For localhost, include both localhost and 127.0.0.1
+      // Remove 'www.' prefix if present
+      if (domain.startsWith('www.')) {
+        domain = domain.substring(4);
+      }
+      
+      // Build domain list for whitelisting
+      // Note: Domain must be whitelisted in VdoCipher dashboard first
       const domains: string[] = [];
+      
       if (domain === 'localhost' || domain === '127.0.0.1') {
+        // For localhost, include both variants
         domains.push('localhost');
         domains.push('127.0.0.1');
       } else {
-        // For production/staging, use the actual domain
+        // For production, use clean domain (no port)
         domains.push(domain);
-        // Also include without port if port is present
-        if (port) {
+        // Also include with port for development/staging if port is present and not standard
+        const port = window.location.port;
+        if (port && port !== '80' && port !== '443') {
           domains.push(`${domain}:${port}`);
         }
       }
+
+      console.log('Extracted domains for VdoCipher OTP:', domains);
 
       const response = await fetch(`${baseUrl}/vdocipher/generate-otp`, {
         method: 'POST',
