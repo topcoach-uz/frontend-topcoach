@@ -189,6 +189,26 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         throw new Error('No authentication token found');
       }
 
+      // Extract domain from current location
+      const domain = window.location.hostname;
+      const protocol = window.location.protocol;
+      const port = window.location.port;
+      
+      // Build full origin for domain whitelisting
+      // For localhost, include both localhost and 127.0.0.1
+      const domains: string[] = [];
+      if (domain === 'localhost' || domain === '127.0.0.1') {
+        domains.push('localhost');
+        domains.push('127.0.0.1');
+      } else {
+        // For production/staging, use the actual domain
+        domains.push(domain);
+        // Also include without port if port is present
+        if (port) {
+          domains.push(`${domain}:${port}`);
+        }
+      }
+
       const response = await fetch(`${baseUrl}/vdocipher/generate-otp`, {
         method: 'POST',
         headers: {
@@ -198,18 +218,20 @@ const LearningPage: React.FC<LearningPageProps> = () => {
         body: JSON.stringify({
           videoId,
           ttl: 300,
+          domain: domains, // Pass array of allowed domains
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to generate OTP: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(`Failed to generate OTP: ${response.status} - ${errorData.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
       setVdocipherOTP(data.otp);
       setVdocipherPlaybackInfo(data.playbackInfo);
       
-      console.log('VdoCipher OTP generated successfully');
+      console.log('VdoCipher OTP generated successfully for domain:', domain);
     } catch (error) {
       console.error('Failed to generate VdoCipher OTP:', error);
       message.error('Failed to load secure video. Please try again.');

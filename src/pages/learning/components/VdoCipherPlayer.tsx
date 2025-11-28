@@ -102,6 +102,20 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         // Add iframe to container
         playerRef.current.appendChild(iframe);
 
+        // Track handshake completion and authentication timeout
+        let handshakeCompleted = false;
+        let authenticationTimeout: NodeJS.Timeout | null = null;
+
+        // Set up authentication timeout (after handshake, if no play event within 10 seconds, likely auth failure)
+        const checkAuthentication = () => {
+          if (handshakeCompleted && !isPlaying && isLoading) {
+            console.warn('Authentication may have failed - handshake completed but video not playing');
+            const currentDomain = window.location.hostname;
+            setError(`Video authentication failed. The domain "${currentDomain}" may need to be whitelisted in your VdoCipher dashboard. Please contact support.`);
+            setIsLoading(false);
+          }
+        };
+
         // Set up message listener for iframe communication
         const handleMessage = (event: MessageEvent) => {
           if (event.origin !== 'https://player.vdocipher.com') {
@@ -123,11 +137,21 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
               console.log('VdoCipher iframe ready - setting loading to false');
               setIsReady(true);
               setIsLoading(false);
+              handshakeCompleted = true;
+              // Set timeout to check if authentication succeeds (10 seconds after handshake)
+              authenticationTimeout = setTimeout(() => {
+                checkAuthentication();
+              }, 10000);
             }
           } else if (data.type === 'play') {
             console.log('Video started playing');
             setIsPlaying(true);
             setIsLoading(false);
+            // Clear authentication timeout since video is playing
+            if (authenticationTimeout) {
+              clearTimeout(authenticationTimeout);
+              authenticationTimeout = null;
+            }
           } else if (data.type === 'pause') {
             setIsPlaying(false);
           } else if (data.type === 'ended') {
@@ -140,16 +164,32 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             }
           } else if (data.type === 'error') {
             console.error('VdoCipher iframe error:', data.error);
+            // Clear authentication timeout on error
+            if (authenticationTimeout) {
+              clearTimeout(authenticationTimeout);
+              authenticationTimeout = null;
+            }
             // Check for domain restriction errors
-            if (data.error && (data.error.includes('Domain not allowed') || data.error.includes('2014'))) {
-              const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            // VdoCipher error codes: 2014 = Domain not allowed, 6007 = Domain restriction
+            if (data.error && (
+              data.error.includes('Domain not allowed') || 
+              data.error.includes('2014') || 
+              data.error.includes('6007') ||
+              (typeof data.error === 'object' && (data.error.code === 2014 || data.error.code === 6007))
+            )) {
+              const currentDomain = window.location.hostname;
+              const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
               if (isLocalhost) {
-                setError('Domain not allowed: VdoCipher requires domain whitelisting. Please add localhost to your VdoCipher dashboard or use a development domain.');
+                setError(`Domain not allowed: The domain "${currentDomain}" needs to be whitelisted in your VdoCipher dashboard. Please contact support or add this domain to your VdoCipher account settings.`);
               } else {
-                setError('Domain not allowed: Please add this domain to your VdoCipher dashboard whitelist.');
+                setError(`Domain not allowed: The domain "${currentDomain}" needs to be whitelisted in your VdoCipher dashboard. Please contact support.`);
               }
+            } else if (data.error && data.error.includes('403')) {
+              // 403 Forbidden usually means domain restriction
+              const currentDomain = window.location.hostname;
+              setError(`Access denied: The domain "${currentDomain}" may not be whitelisted. Please contact support.`);
             } else {
-              setError('Video playback error. Please try again.');
+              setError('Video playback error. Please try again or contact support if the issue persists.');
             }
             setIsLoading(false);
           } else if (data.type === 'loadedmetadata') {
@@ -177,11 +217,9 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             window.removeEventListener('message', messageHandlerRef.current);
           }
           clearTimeout(fallbackTimeout);
-        };
-
-        // Cleanup function
-        return () => {
-          window.removeEventListener('message', handleMessage);
+          if (authenticationTimeout) {
+            clearTimeout(authenticationTimeout);
+          }
         };
 
       } catch (error) {
