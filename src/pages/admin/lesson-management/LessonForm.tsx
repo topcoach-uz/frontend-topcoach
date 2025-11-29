@@ -13,7 +13,7 @@ interface LessonFormProps {
 
 const LessonForm: React.FC<LessonFormProps> = ({ initialValues, onSubmit, loading }) => {
   const [form] = Form.useForm();
-  const [videoType, setVideoType] = useState<'regular' | 'vdocipher'>('regular');
+  const [videoType, setVideoType] = useState<'regular' | 'vdocipher'>('vdocipher');
 
   useEffect(() => {
     if (initialValues) {
@@ -175,13 +175,6 @@ const LessonForm: React.FC<LessonFormProps> = ({ initialValues, onSubmit, loadin
               style={{ marginBottom: 16, backgroundColor: '#f6ffed', borderColor: '#b7eb8f' }}
             >
               <h4 style={{ color: '#52c41a', margin: 0 }}>🔒 VdoCipher Security Features</h4>
-              <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
-                <li>Screen recording prevention</li>
-                <li>Download prevention</li>
-                <li>DRM protection</li>
-                <li>Domain restriction</li>
-                <li>Session-based access control</li>
-              </ul>
             </Card>
           </>
         )}

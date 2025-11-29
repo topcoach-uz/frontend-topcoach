@@ -1239,7 +1239,7 @@ const CourseManagementAdmin: React.FC = () => {
               : { 
                   moduleId: selectedModule?.id,
                   lessonType: 'video',
-                  videoType: 'regular'
+                  videoType: 'vdocipher'
                 }
           }
           onValuesChange={(changedValues, allValues) => {
@@ -1418,13 +1418,6 @@ const CourseManagementAdmin: React.FC = () => {
                                 marginBottom: '16px' 
                               }}>
                                 <h4 style={{ color: '#52c41a', margin: '0 0 8px 0' }}>🔒 VdoCipher Security Features</h4>
-                                <ul style={{ margin: '0', paddingLeft: '20px', color: '#52c41a' }}>
-                                  <li>Screen recording prevention</li>
-                                  <li>Download prevention</li>
-                                  <li>DRM protection</li>
-                                  <li>Domain restriction</li>
-                                  <li>Session-based access control</li>
-                                </ul>
                               </div>
                             </>
                           );
