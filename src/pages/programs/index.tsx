@@ -86,7 +86,7 @@ const ProgramsPage: React.FC = () => {
           </Link>
 
           {/* SAT Course Card */}
-          <Link to="/programs/sat" className="program-card-link">
+          {/* <Link to="/programs/sat" className="program-card-link">
             <div className="program-card sat-card">
             <div className="program-visual">
                 <div className="preview-image">
@@ -119,7 +119,7 @@ const ProgramsPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          </Link>
+          </Link> */}
         </div>
       </section>
 
