@@ -67,9 +67,14 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
       setTaskResults(results);
       
       // Check if all tasks are already submitted
-      if (submittedTaskIds.size === tasks.length) {
+      // Only set to true if there are actual submissions (not just empty array)
+      if (existingSubmissions.length > 0 && submittedTaskIds.size === tasks.length) {
         setAllTasksSubmitted(true);
         setReviewMode(true);
+      } else {
+        // Reset if no submissions exist
+        setAllTasksSubmitted(false);
+        setReviewMode(false);
       }
     }
   }, [existingSubmissions, tasks]);
@@ -253,13 +258,18 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   const result = taskResults[currentTask.id];
   const selectedAnswer = selectedAnswers[currentTask.id];
   
-  // Calculate statistics
+  // Calculate statistics - only count submitted tasks
   const correctCount = tasks.filter((task) => {
     const taskResult = taskResults[task.id];
     return taskResult && taskResult.isCorrect;
   }).length;
   
-  const incorrectCount = tasks.length - correctCount;
+  const incorrectCount = tasks.filter((task) => {
+    const taskResult = taskResults[task.id];
+    return taskResult && !taskResult.isCorrect;
+  }).length;
+  
+  const submittedCount = correctCount + incorrectCount;
   const percentage = tasks.length > 0 ? Math.round((correctCount / tasks.length) * 100) : 0;
   const canCompleteLesson = percentage >= 80;
 
@@ -269,7 +279,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         <Title level={3} className="tasks-section-title">
           Practice Questions
         </Title>
-        {!allTasksSubmitted ? (
+        {!allTasksSubmitted || submittedCount === 0 ? (
           <Text type="secondary" className="tasks-section-description">
             Answer all questions. You'll see your results at the end.
           </Text>

@@ -24,6 +24,7 @@ import {
   useGetUserProgressQuery,
 } from 'src/app/services/courses';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
+import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
 import './sat.scss';
 
 const SatPage: React.FC = () => {
@@ -396,9 +397,23 @@ const SatPage: React.FC = () => {
             </div>
           </div>
           <div className="hero-visual">
-            <div className="hero-image">
-              <img src="/img/abdulaziz_sat.jpg" alt="SAT Prep Course" />
-            </div>
+            <VideoPreviewSection 
+              onVideoClick={(video) => console.log('Video clicked:', video)}
+              previewImage="/img/abdulaziz_sat.jpg"
+              modalTitle="SAT Prep Course Preview"
+              previewTitle="Watch Course Preview"
+              previewVideos={[
+                {
+                  id: '1',
+                  title: 'SAT Prep Course Preview',
+                  description: 'Master every possible question that can appear on the SAT English & Math sections. Learn the overall exam structure as well as tips & secrets for answering questions quickly AND effectively.',
+                  duration: '4:09',
+                  thumbnail: '/img/abdulaziz_sat.jpg',
+                  videoUrl: 'https://www.youtube.com/embed/svyiTsu2vPQ?autoplay=1&rel=0',
+                  views: 100,
+                }
+              ]}
+            />
           </div>
         </div>
       </section>

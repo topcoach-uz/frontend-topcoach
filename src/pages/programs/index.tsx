@@ -21,6 +21,13 @@ const ProgramsPage: React.FC = () => {
     setIsVideoModalVisible(true);
   };
 
+  const handleSatVideoPreviewClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setVideoSrc('https://www.youtube.com/embed/svyiTsu2vPQ?autoplay=1&rel=0');
+    setIsVideoModalVisible(true);
+  };
+
   const handleModalClose = () => {
     setIsVideoModalVisible(false);
     // Stop the video by clearing the src
@@ -84,9 +91,9 @@ const ProgramsPage: React.FC = () => {
             <div className="program-visual">
                 <div className="preview-image">
                   <img src="/img/abdulaziz_sat.jpg" alt="SAT Prep Course Preview" />
-                  {/* <div className="play-overlay" onClick={handleVideoPreviewClick}>
+                  <div className="play-overlay" onClick={handleSatVideoPreviewClick}>
                     <PlayCircleOutlined />
-                  </div> */}
+                  </div>
                 </div>
               </div>
 

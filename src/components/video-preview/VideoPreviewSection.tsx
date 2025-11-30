@@ -17,15 +17,25 @@ interface VideoPreview {
 }
 
 interface VideoPreviewSectionProps {
-  onVideoClick: (video: VideoPreview) => void;
+  onVideoClick?: (video: VideoPreview) => void;
+  previewImage?: string;
+  previewVideos?: VideoPreview[];
+  modalTitle?: string;
+  previewTitle?: string;
 }
 
-const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick }) => {
+const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ 
+  onVideoClick,
+  previewImage,
+  previewVideos: customPreviewVideos,
+  modalTitle: customModalTitle,
+  previewTitle: customPreviewTitle
+}) => {
   const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<VideoPreview | null>(null);
 
-  const previewVideos: VideoPreview[] = [
+  const defaultPreviewVideos: VideoPreview[] = [
     {
       id: '1',
       title: t('videoPreview.video2.title'),
@@ -55,10 +65,17 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
     }
   ];
 
+  const previewVideos = customPreviewVideos || defaultPreviewVideos;
+  const imageSrc = previewImage || '/img/students.jpeg';
+  const modalTitle = customModalTitle || t('videoPreview.modalTitle');
+  const previewTitle = customPreviewTitle || t('videoPreview.previewTitle');
+
   const handleImageClick = () => {
     setCurrentVideo(previewVideos[0]); // Start with first video
     setModalVisible(true);
-    onVideoClick(previewVideos[0]);
+    if (onVideoClick) {
+      onVideoClick(previewVideos[0]);
+    }
   };
 
   const handleModalClose = () => {
@@ -74,7 +91,7 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
     <div className={styles.video_preview_section}>
       <div className={styles.preview_image_container} onClick={handleImageClick}>
         <img 
-          src="/img/students.jpeg" 
+          src={imageSrc} 
           alt={t('videoPreview.previewImageAlt')} 
           className={styles.preview_image}
         />
@@ -82,14 +99,14 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({ onVideoClick 
           <PlayCircleOutlined className={styles.play_icon} />
           <div className={styles.preview_text}>
             <Title level={4} className={styles.preview_title}>
-              {t('videoPreview.previewTitle')}
+              {previewTitle}
             </Title>
           </div>
         </div>
       </div>
 
       <Modal
-        title={t('videoPreview.modalTitle')}
+        title={modalTitle}
         open={modalVisible}
         onCancel={handleModalClose}
         footer={null}
