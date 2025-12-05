@@ -241,6 +241,17 @@ const AdmissionsPage: React.FC = () => {
   }
 
   const handleEnroll = async (planType: CourseTypeEnum) => {
+    // NOTE: We are replacing the payment redirect with interest form redirect
+    // Previously, this function created an enrollment and redirected to payment page
+    // Now it redirects to the interest form (contact-form) instead, same as "Need more info" button
+    // TODO: When ready to restore payment flow, uncomment the enrollment creation code below
+    // and change the redirect back to payment page
+    
+    // Redirect to interest form instead of payment
+    navigate('/contact-form');
+    return;
+
+    /* COMMENTED OUT: Original payment flow - restore when ready to enable payments
     if (!isAuthenticated) {
       message.info('Please log in to enroll in the course');
       navigate('/auth/signin');
@@ -248,7 +259,7 @@ const AdmissionsPage: React.FC = () => {
     }
 
     // Check if user is connected to Telegram bot (only for students)
-if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
+    if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
       dispatch(show());
       message.warning('Please connect your Telegram account to enroll in the course');
       return;
@@ -283,6 +294,7 @@ if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connecte
     } finally {
       setSelectedPlan(null);
     }
+    */
   };
 
   const handleContinueLearning = () => {
