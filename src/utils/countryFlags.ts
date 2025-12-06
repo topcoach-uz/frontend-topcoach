@@ -174,6 +174,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of California, Merced Extension': '🇺🇸',
   'University of California, San Francisco Extension': '🇺🇸',
   'University of California, Hastings Extension': '🇺🇸',
+  'Gettysburg College': '🇺🇸',
   
   // Default fallback
   'default': '🌍'
