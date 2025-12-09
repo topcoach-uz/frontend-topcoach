@@ -1,0 +1,84 @@
+.school-counselor-courses {
+  .courses-table-card {
+    .ant-pagination {
+      margin-top: 32px !important;
+      margin-bottom: 8px !important;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+  .courses-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    .info-badge {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 6px;
+      color: #1890ff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  .stats-row {
+    margin-bottom: 24px;
+
+    .stat-card {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .ant-statistic-title {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .ant-statistic-content {
+        font-size: 32px;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .courses-table-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .ant-table-thead > tr > th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  .course-detail-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}
+

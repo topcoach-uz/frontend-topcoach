@@ -15,7 +15,7 @@ import EventsSection from '../_components/events';
 import FavoriteUniversitiesSection from '../_components/university';
 import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
 import LearningProgramSection from '../_components/learningProgram';
-import B2BDashboardSection from '../_components/b2bDashboard';
+import SchoolCounselorDashboardSection from '../_components/schoolCounselorDashboard';
 import styles from '../mentor/_components/profile_status/profile_status.module.scss';
 import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import { api } from 'src/app/api';
@@ -104,12 +104,12 @@ function MenteeHomePage() {
           </div>
         </div>
       ) : null}
-      {/* Show Learning Program for enrolled students, B2B Dashboard for counselors, or Banner for others */}
+      {/* Show Learning Program for enrolled students, School Counselor Dashboard for counselors, or Banner for others */}
       {/* Always render LearningProgramSection first - it handles its own loading state */}
       <LearningProgramSection />
       {!counselorLoading && (
         <>
-          {isCounselor && <B2BDashboardSection />}
+          {isCounselor && <SchoolCounselorDashboardSection />}
           {!enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning ? (
             !isCounselor ? <BannerSection /> : null
           ) : null}

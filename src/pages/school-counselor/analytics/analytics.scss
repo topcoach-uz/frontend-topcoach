@@ -1,0 +1,228 @@
+.school-counselor-analytics {
+  .analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    .filters {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .metrics-row {
+    margin-bottom: 24px;
+
+    .metric-card {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .ant-statistic-title {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .ant-statistic-content {
+        font-size: 32px;
+        font-weight: 700;
+      }
+
+      .metric-change {
+        margin-top: 8px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        &.positive {
+          color: #52c41a;
+        }
+
+        &.negative {
+          color: #ff4d4f;
+        }
+      }
+    }
+  }
+
+  .charts-row {
+    margin-bottom: 24px;
+  }
+
+  .enrollment-chart-container {
+    padding: 8px 0;
+    
+    .recharts-wrapper {
+      .recharts-cartesian-grid-horizontal line {
+        stroke-dasharray: 3 3;
+      }
+      
+      .recharts-bar-rectangle {
+        transition: all 0.3s ease;
+        
+        &:hover {
+          opacity: 0.85;
+          filter: brightness(1.1);
+        }
+      }
+    }
+  }
+
+  .chart-card,
+  .performance-card,
+  .insight-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .ant-card-head {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ant-card-head-title {
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  .simple-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 200px;
+    padding: 20px 0;
+    gap: 8px;
+
+    .chart-bar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+
+      .bar-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .bar-container {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        position: relative;
+
+        .bar {
+          width: 100%;
+          max-width: 40px;
+          border-radius: 4px 4px 0 0;
+          transition: all 0.3s;
+          position: relative;
+          min-height: 20px;
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: #1f2937;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  .progress-distribution {
+    .distribution-item {
+      margin-bottom: 20px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .dist-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .dist-range {
+          font-weight: 600;
+          color: #1f2937;
+        }
+
+        .dist-count {
+          font-size: 12px;
+          color: #6b7280;
+        }
+      }
+    }
+  }
+
+  .top-performers,
+  .needs-attention {
+    .performer-item,
+    .attention-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .performer-info,
+      .attention-info {
+        flex: 1;
+
+        .performer-name,
+        .attention-name {
+          display: block;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 4px;
+        }
+
+        .performer-email,
+        .attention-email {
+          display: block;
+          font-size: 12px;
+          color: #6b7280;
+        }
+      }
+    }
+  }
+}
+

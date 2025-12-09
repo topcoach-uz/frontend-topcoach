@@ -1,0 +1,363 @@
+.school-counselor-layout {
+  min-height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+
+  .school-counselor-sider {
+    background: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 260px;
+    min-height: 100%;
+    align-self: stretch;
+    overflow: hidden;
+    z-index: 100;
+    position: relative;
+
+    &.ant-layout-sider-collapsed {
+      width: 80px;
+
+      .sidebar-header {
+        justify-content: center;
+        padding: 16px 12px;
+
+        .sidebar-title {
+          display: none;
+        }
+      }
+    }
+
+    .sidebar-header {
+      padding: 16px 20px 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-bottom: none;
+      gap: 12px;
+
+      .sidebar-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #8b0000;
+        flex: 1;
+        margin-left: 1px;
+      }
+
+      .organization-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        margin-top: 8px;
+        margin-bottom: 0;
+        padding: 0;
+        line-height: 1.4;
+        display: block;
+      }
+
+      .sidebar-toggle {
+        background: none;
+        border: none;
+        color: #8b0000;
+        font-size: 18px;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+
+        &:hover {
+          background-color: rgba(139, 0, 0, 0.1);
+          color: #8b0000;
+        }
+      }
+    }
+
+    .sidebar-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .school-counselor-menu {
+      background: transparent;
+      border: none;
+      flex: 1;
+      padding: 8px 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      .ant-menu-item {
+        margin: 4px 16px;
+        border-radius: 12px;
+        height: 56px;
+        line-height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 18px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        width: calc(100% - 32px);
+
+        &:hover {
+          background-color: rgba(139, 0, 0, 0.05);
+          color: #8b0000;
+
+          .ant-menu-item-icon {
+            color: #8b0000;
+          }
+        }
+
+        &.ant-menu-item-selected {
+          background-color: #8b0000;
+          color: white;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(139, 0, 0, 0.15);
+
+          &::after {
+            display: none;
+          }
+
+          .ant-menu-item-icon {
+            color: white !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+
+            svg {
+              color: white !important;
+              fill: white !important;
+              stroke: white !important;
+            }
+          }
+        }
+      }
+
+      .ant-menu-item-icon {
+        font-size: 18px;
+        color: #8b0000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        transition: color 0.2s ease;
+
+        svg {
+          color: #8b0000;
+          fill: #8b0000;
+          transition: all 0.2s ease;
+        }
+      }
+    }
+
+    // When collapsed, center icons
+    &.ant-layout-sider-collapsed {
+      .school-counselor-menu {
+        .ant-menu-item {
+          justify-content: center !important;
+          padding: 0 !important;
+          margin: 4px 8px !important;
+          width: calc(100% - 16px) !important;
+          margin-left: 8px !important;
+          margin-right: 8px !important;
+          text-align: center !important;
+
+          .ant-menu-item-icon {
+            margin: 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: auto !important;
+            flex: none !important;
+          }
+
+          .ant-menu-title-content {
+            display: none !important;
+          }
+        }
+
+        .ant-menu-item-selected {
+          width: calc(100% - 16px) !important;
+          margin-left: 8px !important;
+          margin-right: 8px !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          text-align: center !important;
+
+          .ant-menu-item-icon {
+            margin: 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: auto !important;
+            flex: none !important;
+          }
+
+          .ant-menu-title-content {
+            display: none !important;
+          }
+        }
+      }
+    }
+
+  }
+
+  .main-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  // Custom dropdown menu styling for logout
+  .user-dropdown-menu {
+    .ant-dropdown-menu-item-danger,
+    .logout-menu-item {
+      color: #8b0000 !important;
+
+      &:hover {
+        background: rgba(139, 0, 0, 0.08) !important;
+        color: #8b0000 !important;
+      }
+
+      .ant-dropdown-menu-item-icon {
+        color: #8b0000 !important;
+      }
+    }
+  }
+
+  .school-counselor-content {
+    margin: 24px;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+
+    // Ensure scrollbar is visible
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+}
+
+// Mobile menu button
+.mobile-menu-button {
+  display: none;
+  position: fixed;
+  top: 80px; // Position below main header (adjust based on header height)
+  left: 16px;
+  z-index: 10001;
+  background-color: #8b0000 !important;
+  border-color: #8b0000 !important;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+  
+  &:hover {
+    background-color: #660000 !important;
+    border-color: #660000 !important;
+  }
+}
+
+// Mobile sidebar overlay
+.mobile-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .school-counselor-layout {
+    .main-layout {
+      margin-left: 0;
+
+      &.collapsed {
+        margin-left: 0;
+      }
+    }
+
+    .school-counselor-sider {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 10000;
+      transform: translateX(-100%); // Always hidden by default in mobile
+      transition: transform 0.3s ease;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+      width: 260px; // Always full width when visible in mobile
+
+      // In mobile, collapsed always means hidden
+      &.ant-layout-sider-collapsed {
+        transform: translateX(-100%);
+      }
+
+      // When mobile sidebar is explicitly opened, slide in from left
+      &.mobile-open {
+        transform: translateX(0);
+      }
+      
+      // Ensure sidebar is always hidden when not explicitly opened in mobile
+      &:not(.mobile-open) {
+        transform: translateX(-100%) !important;
+      }
+    }
+
+    // Show mobile menu button
+    .mobile-menu-button {
+      display: block;
+    }
+
+    // Show mobile overlay when sidebar is open
+    .mobile-sidebar-overlay {
+      display: block;
+    }
+  }
+}
+

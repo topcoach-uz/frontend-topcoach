@@ -298,7 +298,7 @@ export default function LearningProgramSection() {
               <CustomButton
                 size="small"
                 height={40}
-                onClick={() => navigate('/b2b')}
+                onClick={() => navigate('/school-counselor')}
                 icon={<DashboardOutlined />}
                 style={{ 
                   backgroundColor: 'transparent',
@@ -308,7 +308,7 @@ export default function LearningProgramSection() {
                   minHeight: '40px'
                 }}
               >
-                B2B Dashboard
+                School Counselor Dashboard
               </CustomButton>
               <CustomButton
                 size="small"
