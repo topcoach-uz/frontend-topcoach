@@ -13,7 +13,7 @@
   display: flex;
   justify-content: flex-end;
   margin-top: -32px;
-  margin-bottom: 0;
+  margin-bottom: 24px;
 }
 
 .cards_wrapper {
@@ -67,14 +67,6 @@
 
 .card_description {
   padding: 16px;
-
-  .event_name {
-    // width: calc(100%);
-    // overflow: hidden;
-    // display: inline-block !important;
-    // text-overflow: ellipsis;
-    // white-space: nowrap;
-  }
 }
 
 .events_tabs {
