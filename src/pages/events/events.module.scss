@@ -5,6 +5,17 @@
   padding-bottom: 40px;
 }
 
+.header_section {
+  position: relative;
+}
+
+.filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
 .cards_wrapper {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 4fr));

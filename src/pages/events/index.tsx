@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Spin } from 'antd';
 import { api } from 'src/app/api';
 import MainTitleDescription from 'src/components/mainTitleDesc';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
+import CustomSelect from 'src/components/common/select';
 
 interface Event {
   id: string;
@@ -23,8 +24,15 @@ export default function EventsPage() {
   const { response: eventsData, isLoading: eventsLoading } = useApi(() => api.camps.campsList());
   const { response: workshopsData, isLoading: workshopsLoading } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
+  const [selectedType, setSelectedType] = useState<string>('all');
   
   const isLoading = eventsLoading || workshopsLoading;
+
+  const typeFilterOptions = [
+    { label: 'All', value: 'all' },
+    { label: 'Workshops', value: 'workshop' },
+    { label: 'Camps & bootcamps', value: 'event' },
+  ];
 
   // Set page title in browser header
   useEffect(() => {
@@ -32,65 +40,101 @@ export default function EventsPage() {
   }, []);
 
   // Categorize events based on dates
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const allEventsData = eventsData?.data.data || [];
   const allWorkshopsData = workshopsData?.data || [];
 
-  // Separate events and workshops
-  const regularEvents = allEventsData.filter((event: any) => 
-    event.type !== 'workshop' && event.type !== 'Workshop'
-  );
+  // Helper function to check if event is a workshop
+  const isWorkshop = (event: any) => {
+    return event.type === 'workshop' || event.type === 'Workshop';
+  };
 
-  const workshops = allEventsData.filter((event: any) => 
-    event.type === 'workshop' || event.type === 'Workshop'
-  );
+  // Separate events and workshops
+  const regularEvents = useMemo(() => {
+    return allEventsData.filter((event: any) => !isWorkshop(event));
+  }, [allEventsData]);
+
+  const workshops = useMemo(() => {
+    return allEventsData.filter((event: any) => isWorkshop(event));
+  }, [allEventsData]);
+
+  // Helper function to check if event matches the selected filter
+  const matchesFilter = useMemo(() => {
+    return (event: any) => {
+      if (selectedType === 'all') return true;
+      if (selectedType === 'workshop') return isWorkshop(event);
+      if (selectedType === 'event') return !isWorkshop(event);
+      return true;
+    };
+  }, [selectedType]);
 
   // Get upcoming events and workshops (for the upcoming section)
-  const upcomingEvents = regularEvents.filter((event: Event) => {
-    const startDate = new Date(event.startDate);
-    return startDate > now;
-  });
+  const upcomingEvents = useMemo(() => {
+    return regularEvents.filter((event: Event) => {
+      const startDate = new Date(event.startDate);
+      return startDate > now && matchesFilter(event);
+    });
+  }, [regularEvents, now, matchesFilter]);
 
-  const upcomingWorkshops = workshops.filter((workshop: any) => {
-    const startDate = new Date(workshop.startDate);
-    return startDate > now;
-  });
+  const upcomingWorkshops = useMemo(() => {
+    return workshops.filter((workshop: any) => {
+      const startDate = new Date(workshop.startDate);
+      return startDate > now && matchesFilter(workshop);
+    });
+  }, [workshops, now, matchesFilter]);
 
   // Get all events and workshops that have passed deadline
   // For workshops: check if deadline has passed
   // For events: check if endDate has passed
-  const pastItems = [
-    ...regularEvents.filter((event: Event) => {
+  const pastItems = useMemo(() => {
+    const pastEvents = regularEvents.filter((event: Event) => {
       const endDate = new Date(event.endDate);
-      return endDate < now;
-    }),
-    ...workshops.filter((workshop: any) => {
+      return endDate < now && matchesFilter(event);
+    });
+
+    const pastWorkshops = workshops.filter((workshop: any) => {
       // Check if deadline has passed, or if no deadline, check endDate
+      let isPast = false;
       if (workshop.deadline) {
         const deadline = new Date(workshop.deadline);
-        return deadline < now;
+        isPast = deadline < now;
       } else {
         const endDate = new Date(workshop.endDate);
-        return endDate < now;
+        isPast = endDate < now;
       }
-    }),
-  ];
+      return isPast && matchesFilter(workshop);
+    });
 
-  // Sort by endDate or deadline (most recent first)
-  pastItems.sort((a: any, b: any) => {
-    const dateA = a.deadline ? new Date(a.deadline) : new Date(a.endDate);
-    const dateB = b.deadline ? new Date(b.deadline) : new Date(b.endDate);
-    return dateB.getTime() - dateA.getTime();
-  });
+    const allPastItems = [...pastEvents, ...pastWorkshops];
+
+    // Sort by endDate or deadline (most recent first)
+    allPastItems.sort((a: any, b: any) => {
+      const dateA = a.deadline ? new Date(a.deadline) : new Date(a.endDate);
+      const dateB = b.deadline ? new Date(b.deadline) : new Date(b.endDate);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return allPastItems;
+  }, [regularEvents, workshops, now, matchesFilter]);
 
   return (
     <main>
       <div className={'container ' + styles.container}>
-        <MainTitleDescription
-          title={t('events.workshops')}
-          description={t('events.description')}
-          mb={48}
-        />
+        <div className={styles.header_section}>
+          <MainTitleDescription
+            title={t('events.workshops')}
+            description={t('events.description')}
+            mb={48}
+          />
+        </div>
+        <div className={styles.filter}>
+          <CustomSelect
+            defaultValue={'all'}
+            style={{ width: 180 }}
+            options={typeFilterOptions}
+            onChange={(value) => setSelectedType(value)}
+          />
+        </div>
         
         {isLoading ? (
           <div className={styles.loading_container}>
