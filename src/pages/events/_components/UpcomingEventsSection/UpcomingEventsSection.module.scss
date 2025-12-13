@@ -6,33 +6,39 @@
 }
 
 .upcoming_cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   padding: 0;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+}
+
+.upcoming_card_wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .upcoming_card {
   border-radius: 12px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
   transition: all 0.3s ease !important;
   overflow: hidden !important;
   border: none !important;
-  background: white !important;
+  background: transparent !important;
+  width: 100% !important;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: none !important;
   }
 
   .ant-card-actions {
-    background: white !important;
+    background: transparent !important;
     border-top: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    border-radius: 0 0 12px 12px !important;
+    border-radius: 0 !important;
     
     &::before {
       display: none !important;
@@ -47,35 +53,36 @@
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
-    background: white !important;
+    background: transparent !important;
   }
 
   .ant-card-actions > li > span {
     display: block !important;
     width: 100% !important;
-    background: white !important;
+    background: transparent !important;
     border: none !important;
   }
 }
 
 .card_image {
   position: relative;
-  height: 600px; // Increased height to show full image
+  height: 500px;
   overflow: hidden;
-  border-radius: 12px 12px 0 0;
+  border-radius: 16px;
+  width: 100%;
+  margin-bottom: 36px;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover; // Cover full width
+    object-fit: cover;
     object-position: center;
-    transform: scale(0.95); // Zoom out slightly to show more of the image
     transition: transform 0.3s ease;
-    border-radius: 12px 12px 0 0;
+    border-radius: 16px;
   }
 
   &:hover img {
-    transform: scale(0.97); // Slight zoom on hover (reduced effect)
+    transform: scale(1.02);
   }
 }
 
@@ -103,7 +110,7 @@
 }
 
 .card_content {
-  padding: 20px 24px;
+  padding: 0;
   background: transparent;
 }
 
@@ -115,11 +122,11 @@
 }
 
 .summary_section {
-  margin: 16px 0;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #dc3545;
+  margin: 20px 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
 }
 
 .workshop_summary,
@@ -188,7 +195,8 @@
 
 .event_info {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 .info_item {
@@ -207,7 +215,7 @@
 }
 
 .register_button {
-  width: calc(100% - 40px);
+  width: 100%;
   height: 40px;
   font-weight: 600;
   border-radius: 8px;
@@ -215,7 +223,8 @@
   border: none !important;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(153, 0, 0, 0.3) !important;
-  margin: 0 20px;
+  margin: 0;
+  margin-top: 20px;
 
   &:hover {
     background: #800000 !important;
@@ -229,7 +238,7 @@
 }
 
 .registered_button {
-  width: calc(100% - 40px);
+  width: 100%;
   height: 40px;
   font-weight: 600;
   border-radius: 8px;
@@ -238,7 +247,8 @@
   color: white !important;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
-  margin: 0 20px;
+  margin: 0;
+  margin-top: 20px;
   cursor: not-allowed !important;
 
   &:hover {
@@ -251,15 +261,16 @@
 // Horizontal workshop card styles
 .workshop_card_horizontal {
   border-radius: 12px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
   transition: all 0.3s ease !important;
   overflow: hidden !important;
   border: none !important;
-  background: white !important;
+  background: transparent !important;
+  width: 100% !important;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: none !important;
   }
 
   .ant-card-body {
@@ -267,11 +278,11 @@
   }
 
   .ant-card-actions {
-    background: white !important;
-    border-top: 1px solid #f0f0f0 !important;
-    padding: 16px 20px !important;
+    background: transparent !important;
+    border-top: none !important;
+    padding: 0 !important;
     margin: 0 !important;
-    border-radius: 0 0 12px 12px !important;
+    border-radius: 0 !important;
     
     &::before {
       display: none !important;
@@ -286,21 +297,21 @@
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
-    background: white !important;
+    background: transparent !important;
   }
 
   .ant-card-actions > li > span {
     display: block !important;
     width: 100% !important;
-    background: white !important;
+    background: transparent !important;
     border: none !important;
   }
 }
 
 .workshop_horizontal_content {
   display: flex;
-  gap: 20px;
-  padding: 20px;
+  gap: 24px;
+  padding: 24px;
   align-items: flex-start;
   position: relative;
 }
@@ -317,8 +328,8 @@
 
 .workshop_image_container {
   flex-shrink: 0;
-  width: 280px;
-  height: 200px;
+  width: 400px;
+  height: 280px;
   border-radius: 8px;
   overflow: hidden;
   background: #f8f9fa;
@@ -385,8 +396,7 @@
   }
 
   .upcoming_cards {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 24px;
     padding: 0;
   }
 
@@ -395,7 +405,7 @@
   }
 
   .card_image {
-    height: 200px; // Increased from 160px for better mobile display
+    height: 300px;
   }
 
   .card_content {
@@ -414,7 +424,7 @@
 
   .workshop_image_container {
     width: 100%;
-    height: 250px; // Increased height to show full image
+    height: 300px;
   }
 
   .workshop_image {
@@ -447,7 +457,7 @@
   }
 
   .card_image {
-    height: 180px; // Increased from 140px for better small mobile display
+    height: 250px;
   }
 
   .card_content {
@@ -469,7 +479,7 @@
   }
 
   .workshop_image_container {
-    height: 240px; // Increased height to show full image on small mobile
+    height: 280px;
   }
 
   .workshop_image {

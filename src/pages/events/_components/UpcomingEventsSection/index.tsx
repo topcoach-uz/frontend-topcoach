@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Space, Tag, Typography, message } from 'antd';
+import { Button, Space, Tag, Typography, message } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
@@ -151,52 +151,31 @@ export default function UpcomingEventsSection({
     <div className={styles.upcoming_section}>
       <div className={styles.upcoming_cards}>
         {upcomingEvents.map((event) => (
-          <Card
-            key={`event-${event.id}`}
-            className={styles.upcoming_card}
-            cover={
-              <div className={styles.card_image}>
-                <img 
-                  src={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
-                  alt={event.title}
-                />
-                <div className={styles.card_overlay}>
-                  <Tag color="green" className={styles.upcoming_tag}>
-                    {t('events.upcoming')}
-                  </Tag>
-                </div>
+          <div key={`event-${event.id}`} className={styles.upcoming_card_wrapper}>
+            <div className={styles.card_image}>
+              <img 
+                src={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
+                alt={event.title}
+              />
+              <div className={styles.card_overlay}>
+                <Tag color="green" className={styles.upcoming_tag}>
+                  {t('events.upcoming')}
+                </Tag>
               </div>
-            }
-            actions={[
-              registeredEvents.has(event.id) ? (
-                <Button
-                  key="registered"
-                  type="default"
-                  size="large"
-                  disabled
-                  className={styles.registered_button}
-                >
-                  {t('events.registered')}
-                </Button>
-              ) : (
-                <Button
-                  key="register"
-                  type="primary"
-                  size="large"
-                  onClick={() => handleRegister(event.id, event.title, 'event')}
-                  className={styles.register_button}
-                >
-                  {t('events.registerNow')}
-                </Button>
-              )
-            ]}
-          >
+            </div>
             <div className={styles.card_content}>
               <Title level={4} className={styles.event_title}>
                 {event.title}
               </Title>
               
-              {event.summary && (
+              <Space direction="vertical" size="small" className={styles.event_info}>
+                <div className={styles.info_item}>
+                  <CalendarOutlined className={styles.info_icon} />
+                  <span>{formatDateRange(event.startDate, event.endDate)}</span>
+                </div>
+              </Space>
+
+              {event.summary && getTranslation(event.summary)?.trim() && getTranslation(event.summary)?.trim().toLowerCase() !== 'empty' && (
                 <div className={styles.summary_section}>
                   <Text className={styles.event_summary}>
                     {getTranslation(event.summary)}
@@ -209,15 +188,28 @@ export default function UpcomingEventsSection({
                   <RichTextRenderer blocks={event.content.blocks} id={event.id} />
                 </div>
               )}
-              
-              <Space direction="vertical" size="small" className={styles.event_info}>
-                <div className={styles.info_item}>
-                  <CalendarOutlined className={styles.info_icon} />
-                  <span>{formatDateRange(event.startDate, event.endDate)}</span>
-                </div>
-              </Space>
+
+              {registeredEvents.has(event.id) ? (
+                <Button
+                  type="default"
+                  size="large"
+                  disabled
+                  className={styles.registered_button}
+                >
+                  {t('events.registered')}
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => handleRegister(event.id, event.title, 'event')}
+                  className={styles.register_button}
+                >
+                  {t('events.registerNow')}
+                </Button>
+              )}
             </div>
-          </Card>
+          </div>
         ))}
 
         {upcomingWorkshops.map((workshop) => (
@@ -274,7 +266,7 @@ export default function UpcomingEventsSection({
                   {workshop.title}
                 </Title>
                 
-                {(workshop.summary && getTranslation(workshop.summary)) && (
+                {workshop.summary && getTranslation(workshop.summary)?.trim() && getTranslation(workshop.summary)?.trim().toLowerCase() !== 'empty' && (
                   <Text className={styles.workshop_summary_compact}>
                     {getTranslation(workshop.summary)}
                   </Text>

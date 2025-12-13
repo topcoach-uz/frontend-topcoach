@@ -1,5 +1,5 @@
 import { Modal, Form, Input, Button, message, Typography, Space } from 'antd';
-import { UserOutlined, MailOutlined, CalendarOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, CalendarOutlined, LinkOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
@@ -68,6 +68,10 @@ export default function RegistrationModal({
     onClose();
   };
 
+  // Check if this is the "Become a Startup Scout" event
+  const isStartupScoutEvent = eventTitle.toLowerCase().includes('become a startup scout');
+  const ambassadorLink = 'https://ambassador.topcoach.uz';
+
   return (
     <Modal
       title={
@@ -88,76 +92,97 @@ export default function RegistrationModal({
       centered
     >
       <div className={styles.modal_content}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className={styles.registration_form}
-        >
-          <Form.Item
-            name="name"
-            label={t('events.fullName')}
-            rules={[
-              { required: true, message: t('events.nameRequired') },
-              { min: 2, message: t('events.nameMinLength') }
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined className={styles.input_icon} />}
-              placeholder={t('events.enterFullName')}
-              size="large"
-              className={styles.form_input}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            label={t('events.email')}
-            rules={[
-              { required: true, message: t('events.emailRequired') },
-              { type: 'email', message: t('events.emailInvalid') }
-            ]}
-          >
-            <Input
-              prefix={<MailOutlined className={styles.input_icon} />}
-              placeholder={t('events.enterEmail')}
-              size="large"
-              className={styles.form_input}
-            />
-          </Form.Item>
-
-          <div className={styles.registration_info}>
-            <Space direction="vertical" size="small">
-              <Text className={styles.info_text}>
-                <CalendarOutlined className={styles.info_icon} />
-                {t('events.registrationConfirmation')}
-              </Text>
-              <Text className={styles.info_text}>
-                <MailOutlined className={styles.info_icon} />
-                {t('events.emailConfirmation')}
-              </Text>
-            </Space>
+        {isStartupScoutEvent ? (
+          <div className={styles.ambassador_link_section}>
+            <Text className={styles.ambassador_link_text}>
+              <span className={styles.link_line}>
+                Go to{' '}
+                <a 
+                  href={ambassadorLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className={styles.ambassador_link}
+                >
+                  {ambassadorLink}
+                </a>
+              </span>
+              <span className={styles.link_line}>and submit your application</span>
+            </Text>
           </div>
+        ) : (
+          <>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              className={styles.registration_form}
+            >
+              <Form.Item
+                name="name"
+                label={t('events.fullName')}
+                rules={[
+                  { required: true, message: t('events.nameRequired') },
+                  { min: 2, message: t('events.nameMinLength') }
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined className={styles.input_icon} />}
+                  placeholder={t('events.enterFullName')}
+                  size="large"
+                  className={styles.form_input}
+                />
+              </Form.Item>
 
-          <div className={styles.form_actions}>
-            <Button
-              onClick={handleCancel}
-              size="large"
-              className={styles.cancel_button}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              size="large"
-              className={styles.submit_button}
-            >
-              {t('events.registerNow')}
-            </Button>
-          </div>
-        </Form>
+              <Form.Item
+                name="email"
+                label={t('events.email')}
+                rules={[
+                  { required: true, message: t('events.emailRequired') },
+                  { type: 'email', message: t('events.emailInvalid') }
+                ]}
+              >
+                <Input
+                  prefix={<MailOutlined className={styles.input_icon} />}
+                  placeholder={t('events.enterEmail')}
+                  size="large"
+                  className={styles.form_input}
+                />
+              </Form.Item>
+
+              <div className={styles.registration_info}>
+                <Space direction="vertical" size="small">
+                  <Text className={styles.info_text}>
+                    <CalendarOutlined className={styles.info_icon} />
+                    {t('events.registrationConfirmation')}
+                  </Text>
+                  <Text className={styles.info_text}>
+                    <MailOutlined className={styles.info_icon} />
+                    {t('events.emailConfirmation')}
+                  </Text>
+                </Space>
+              </div>
+
+              <div className={styles.form_actions}>
+                <Button
+                  onClick={handleCancel}
+                  size="large"
+                  className={styles.cancel_button}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  size="large"
+                  className={styles.submit_button}
+                >
+                  {t('events.registerNow')}
+                </Button>
+              </div>
+            </Form>
+          </>
+        )}
       </div>
     </Modal>
   );
