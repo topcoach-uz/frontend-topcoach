@@ -68,8 +68,8 @@ export default function RegistrationModal({
     onClose();
   };
 
-  // Check if this is the "Become a Startup Scout" event
-  const isStartupScoutEvent = eventTitle.toLowerCase().includes('become a startup scout');
+  // Check if this is the "Become a Startup Ambassador in your district!" event
+  const isStartupScoutEvent = eventTitle.toLowerCase().includes('a Startup Ambassador in your district!');
   const ambassadorLink = 'https://ambassador.topcoach.uz';
 
   return (
