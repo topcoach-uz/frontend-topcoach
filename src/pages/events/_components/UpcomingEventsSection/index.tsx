@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Space, Tag, Typography, message } from 'antd';
+import { Card, Button, Space, Tag, Typography, message } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
