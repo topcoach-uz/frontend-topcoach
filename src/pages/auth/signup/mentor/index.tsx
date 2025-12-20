@@ -10,6 +10,7 @@ import { FormButtonsProps } from '../_components/buttons';
 import DetailedInfo from '../_components/detailedInfo';
 import PersonalInfo from '../_components/personalInfo';
 import Support from '../_components/support';
+import AboutMeAndMotivation from '../_components/aboutMeAndMotivation';
 import styles from './mentor.module.scss';
 import useMentorSignup from './useMentorSignup';
 
@@ -46,6 +47,7 @@ export default function MentorRegistration() {
         <Step className={styles.individual_step} />
         <Step className={styles.individual_step} />
         <Step className={styles.individual_step} />
+        <Step className={styles.individual_step} />
       </Steps>
 
       <Link to="/">
@@ -68,11 +70,16 @@ export default function MentorRegistration() {
           formButtonsProps={{ current, onNext, onPrev, onComplete }}
         />
       ) : current === 3 ? (
-        <Support
+        <AboutMeAndMotivation
           form={form}
           formButtonsProps={{ current, onNext, onPrev, onComplete }}
         />
       ) : current === 4 ? (
+        <Support
+          form={form}
+          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+        />
+      ) : current === 5 ? (
         <Background
           form={form}
           formButtonsProps={{ current, onNext, onPrev, onComplete, loading }}

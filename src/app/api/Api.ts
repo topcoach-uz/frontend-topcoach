@@ -144,6 +144,30 @@ export enum MentorExperienceLevel {
   Probono = "probono",
 }
 
+export interface MentorEducationHistorySchema {
+  id: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  deletedAt: string;
+  mentorProfileId: string;
+  university: string;
+  major: string;
+  /** BA, BS, MA, MS, MBA, PhD, etc. */
+  degree: string;
+  /** University start date in YYYY-MM format */
+  startDate: string;
+  /** University end date in YYYY-MM format */
+  endDate?: string | null;
+  isCurrent: boolean;
+  /** URL to university logo (uploaded by admin) */
+  universityLogo?: string | null;
+  /** Display order */
+  order: number;
+}
+
 export interface MentorProfilesSchema {
   id: string;
   /** @format date-time */
@@ -161,6 +185,10 @@ export interface MentorProfilesSchema {
   mentorshipValue: string;
   mentoringExperience: string;
   background?: string;
+  /** Why do I coach? Personal motivation and passion */
+  whyDoICoach?: string;
+  /** Specialization tags (business, computer-science, law, etc.) */
+  tags?: string[] | null;
   status: MentorProfileStatusEnum;
   level: MentorExperienceLevel;
   force: boolean;
@@ -169,6 +197,8 @@ export interface MentorProfilesSchema {
   universityStartDate: string;
   /** University end date in YYYY-MM format */
   universityEndDate: string;
+  /** Full education history */
+  educationHistory?: MentorEducationHistorySchema[] | null;
 }
 
 export interface ReviewsSchema {
@@ -829,6 +859,7 @@ export interface SocialsDto {
 }
 
 export interface MentorProfileBaseDto {
+  summary?: string;
   university: string;
   major: string;
   /** Languages that mentor can speak */
@@ -836,6 +867,10 @@ export interface MentorProfileBaseDto {
   mentorshipValue: string;
   mentoringExperience: string;
   background?: string;
+  /** Why do I coach? Personal motivation and passion */
+  whyDoICoach?: string;
+  /** Specialization tags (business, computer-science, law, etc.) */
+  tags?: string[] | null;
   /** University start date in YYYY-MM format */
   universityStartDate: string;
   /** University end date in YYYY-MM format */

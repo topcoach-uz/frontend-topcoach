@@ -1,0 +1,21 @@
+.education_item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.university_logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.university_info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+

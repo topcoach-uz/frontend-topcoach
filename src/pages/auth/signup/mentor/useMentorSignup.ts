@@ -138,6 +138,7 @@ export default function useMentorSignup() {
           linkedin: val.socials?.trim(),
         },
         mentorProfile: {
+          summary: val.summary?.trim(),
           major: val.major?.trim(),
           languages: val.languages,
           universityEndDate: dayjs(val.university_end_date).format('YYYY-MM'),
@@ -147,6 +148,8 @@ export default function useMentorSignup() {
           background: val.background?.trim(),
           mentorshipValue: val.mentorshipValue?.trim(),
           mentoringExperience: val.mentoringExperience?.trim(),
+          whyDoICoach: val.whyDoICoach?.trim(),
+          tags: val.tags || [],
           ...university,
         },
         selectedUniversities,

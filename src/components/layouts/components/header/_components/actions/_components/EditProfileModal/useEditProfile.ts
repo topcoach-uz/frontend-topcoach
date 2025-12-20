@@ -103,6 +103,10 @@ export default function useEditProfile({
           email: userData?.email,
           major: userData?.mentorProfile?.major,
           summary: userData?.mentorProfile?.summary,
+          whyDoICoach: userData?.mentorProfile?.whyDoICoach,
+          mentorshipValue: userData?.mentorProfile?.mentorshipValue,
+          mentoringExperience: userData?.mentorProfile?.mentoringExperience,
+          tags: userData?.mentorProfile?.tags || [],
           selectedUniversities: userData?.selectedUniversities?.[0]?.id,
           // @ts-ignore
           linkedin: userData?.profile?.contacts?.socials?.linkedin,
@@ -169,6 +173,10 @@ export default function useEditProfile({
       mentorProfile: {
         major: values.major?.trim(),
         summary: values.summary?.trim(),
+        whyDoICoach: values.whyDoICoach?.trim(),
+        mentorshipValue: values.mentorshipValue?.trim(),
+        mentoringExperience: values.mentoringExperience?.trim(),
+        tags: values.tags || [],
         ...university,
       },
       // @ts-ignore
@@ -191,6 +199,7 @@ export default function useEditProfile({
     const normalizeValue = (value: any) => value?.trim?.() || '';
 
     // Updated isDataChanged logic
+    const normalizeArray = (arr: any[]) => (Array.isArray(arr) ? arr.sort().join(',') : '');
     const isDataChanged =
       normalizeValue(values.phoneNumber) !==
         normalizeValue(userData?.phoneNumber) ||
@@ -200,6 +209,14 @@ export default function useEditProfile({
         normalizeValue(userData?.mentorProfile?.major) ||
       normalizeValue(values.summary) !==
         normalizeValue(userData?.mentorProfile?.summary) ||
+      normalizeValue(values.whyDoICoach) !==
+        normalizeValue(userData?.mentorProfile?.whyDoICoach) ||
+      normalizeValue(values.mentorshipValue) !==
+        normalizeValue(userData?.mentorProfile?.mentorshipValue) ||
+      normalizeValue(values.mentoringExperience) !==
+        normalizeValue(userData?.mentorProfile?.mentoringExperience) ||
+      normalizeArray(values.tags || []) !==
+        normalizeArray(userData?.mentorProfile?.tags || []) ||
       normalizeValue(values.name) !== normalizeValue(userData?.profile?.name) ||
       normalizeValue(values.selectedUniversities) !==
         normalizeValue(userData?.selectedUniversities?.[0]?.id) ||

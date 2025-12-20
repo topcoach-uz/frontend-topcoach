@@ -11,6 +11,11 @@ import Background from './_components/background';
 import MentorAvailableSessions from './_components/MentorAvailableSessions';
 import MentorVideosView from './_components/MentorVideosView';
 import Overview from './_components/overview';
+import WhyICoach from './_components/whyICoach';
+import Education from './_components/education';
+import HowICanHelp from './_components/howICanHelp';
+import MentoringExperience from './_components/mentoringExperience';
+import Specializations from './_components/specializations';
 import GiveawaySessions from './_components/GiveawaySessions';
 import PackageBalance from './_components/PackageBalance';
 import Socials from './_components/socials';
@@ -257,6 +262,11 @@ export default function MentorDetailsPage() {
             maxWidth: 'calc(100% - 400px)'
           }}>
             <Overview />
+            <WhyICoach />
+            <Education />
+            <Specializations />
+            <HowICanHelp />
+            <MentoringExperience />
             <MentorVideosView
               demoLesson={demoLesson}
               introductionVideo={introVideo}

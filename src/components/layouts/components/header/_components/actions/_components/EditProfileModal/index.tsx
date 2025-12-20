@@ -138,6 +138,31 @@ export default function EditProfileModal({
               message={t('signUp.universityError')}
             />
           )}
+          <SelectFormItem
+            name="tags"
+            label={t('signUp.tags') || 'Specializations'}
+            placeholder={t('signUp.tagsPlaceholder') || 'Select your areas of specialization (optional)'}
+            options={[
+              { label: 'Business & MBA', value: 'business' },
+              { label: 'Computer Science & Engineering', value: 'computer-science' },
+              { label: 'Medicine & Health Sciences', value: 'medicine' },
+              { label: 'Law', value: 'law' },
+              { label: 'Humanities & Social Sciences', value: 'humanities' },
+              { label: 'Arts & Design', value: 'arts' },
+              { label: 'Natural Sciences', value: 'natural-sciences' },
+              { label: 'Mathematics & Statistics', value: 'mathematics' },
+              { label: 'Economics & Finance', value: 'economics' },
+              { label: 'Engineering', value: 'engineering' },
+              { label: 'Education', value: 'education' },
+              { label: 'International Relations', value: 'international-relations' },
+            ]}
+            mode="multiple"
+            col={24}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+          />
           <Link to="/auth/forgot-password/sent">Reset Password</Link>
           <VideoUploadFormItems form={form} />
             </>
@@ -169,12 +194,42 @@ const getFormItems = (t: TFunction): IFormItemType[] => [
   {
     name: 'summary',
     type: 'input',
-    label: t('shared.summary'),
-    placeholder: t('shared.summaryPlaceholder'),
+    label: t('signUp.aboutMe') || 'About Me',
+    placeholder: t('signUp.aboutMePlaceholder') || 'Introduce yourself briefly...',
     inputType: 'textarea',
     col: 24,
     row: 4,
-    message: "Please provide a brief overview of your background and expertise",
+    message: "Please provide a brief introduction",
+  },
+  {
+    name: 'whyDoICoach',
+    type: 'input',
+    label: t('signUp.whyDoICoach') || 'Why do I coach?',
+    placeholder: t('signUp.whyDoICoachPlaceholder') || 'Share your motivation...',
+    inputType: 'textarea',
+    col: 24,
+    row: 4,
+    message: "Please share your motivation",
+  },
+  {
+    name: 'mentorshipValue',
+    type: 'input',
+    label: t('signUp.value') || 'What value can you provide?',
+    placeholder: t('signUp.valuePlaceholder') || 'Describe how you can support mentees...',
+    inputType: 'textarea',
+    col: 24,
+    row: 4,
+    message: "Please describe your value",
+  },
+  {
+    name: 'mentoringExperience',
+    type: 'input',
+    label: t('signUp.experience') || 'Mentoring experience',
+    placeholder: t('signUp.experiencePlaceholder') || 'If you have mentoring experience...',
+    inputType: 'textarea',
+    col: 24,
+    row: 4,
+    message: "Please describe your experience",
   },
   {
     name: 'linkedin',

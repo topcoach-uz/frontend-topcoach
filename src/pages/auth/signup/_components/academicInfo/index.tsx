@@ -112,8 +112,7 @@ export default function AcademicInfo({
           />
         )}
 
-        {/* <RangePicker defaultValue={dayjs('2015-01-01', 'YYYY-MM-DD')} /> */}
-        <Flex justify="space-between">
+        <Flex justify="space-between" style={{ marginTop: '24px' }}>
           <DateFormItem
             col={11}
             label={t('signUp.startData')}
@@ -122,6 +121,7 @@ export default function AcademicInfo({
             mode="month"
             message={t('signUp.dateError')}
             formItemProps=""
+            required={false}
           />
 
           <DateFormItem
@@ -132,6 +132,7 @@ export default function AcademicInfo({
             mode="month"
             message={t('signUp.dateError')}
             formItemProps=""
+            required={false}
           />
         </Flex>
         <FormButtons {...formButtonsProps} />
