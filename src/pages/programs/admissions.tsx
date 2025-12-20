@@ -362,7 +362,7 @@ const AdmissionsPage: React.FC = () => {
               <Button 
                 type="primary" 
                 size="large"
-                onClick={() => document.querySelector('.pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => navigate('/contact-form')}
                 icon={<RocketOutlined />}
                 className="apply-now-btn"
               >
@@ -624,7 +624,8 @@ const AdmissionsPage: React.FC = () => {
       </section>
       )}
 
-      {/* Pricing Section */}
+      {/* Pricing Section - Hidden */}
+      {false && (
       <section className="pricing-section">
         <div className="section-header">
           <div className="header-content">
@@ -678,6 +679,7 @@ const AdmissionsPage: React.FC = () => {
           ))}
         </div>
       </section>
+      )}
 
       {/* Referral Code Display - Only show for enrolled users with approved status */}
       {enrollmentStatus?.enrollment && enrollmentStatus.canAccessLearning && (
@@ -696,7 +698,7 @@ const AdmissionsPage: React.FC = () => {
           <Button 
             type="primary" 
             size="large"
-            onClick={() => document.querySelector('.pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/contact-form')}
             icon={<RocketOutlined />}
           >
             {t('pricing.getStartedToday')}
