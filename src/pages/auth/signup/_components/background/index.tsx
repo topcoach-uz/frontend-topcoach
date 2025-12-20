@@ -52,9 +52,10 @@ export default function Background({
           col={24}
           message={t('signUp.tagsError')}
           showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
+          filterOption={(input, option) => {
+            const label = String(option?.label ?? '');
+            return label.toLowerCase().includes(input.toLowerCase());
+          }}
         />
         <InputFormItem
           name="background"

@@ -159,9 +159,10 @@ export default function EditProfileModal({
             mode="multiple"
             col={24}
             showSearch
-            filterOption={(input, option) =>
-              (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-            }
+            filterOption={(input, option) => {
+              const label = String(option?.label ?? '');
+              return label.toLowerCase().includes(input.toLowerCase());
+            }}
           />
           <Link to="/auth/forgot-password/sent">Reset Password</Link>
           <VideoUploadFormItems form={form} />

@@ -97,7 +97,7 @@ export default function MentorDetailsEducation() {
                     >
                       {formatDateRange(
                         edu.startDate,
-                        edu.isCurrent ? undefined : edu.endDate
+                        edu.isCurrent ? undefined : (edu.endDate ?? undefined)
                       )}
                     </CustomText>
                   )}
