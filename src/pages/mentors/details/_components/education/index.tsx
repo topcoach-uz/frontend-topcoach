@@ -39,8 +39,21 @@ export default function MentorDetailsEducation() {
   };
 
   const formatDateRange = (start?: string, end?: string) => {
-    const startFormatted = formatDate(start);
-    const endFormatted = end ? formatDate(end) : 'Present';
+    // Ensure dates are in correct order (start should be before end)
+    let actualStart = start;
+    let actualEnd = end;
+    
+    if (start && end) {
+      // Compare dates as strings (YYYY-MM format allows string comparison)
+      if (start > end) {
+        // Dates are swapped, fix them
+        actualStart = end;
+        actualEnd = start;
+      }
+    }
+    
+    const startFormatted = formatDate(actualStart);
+    const endFormatted = actualEnd ? formatDate(actualEnd) : 'Present';
     if (!startFormatted) return '';
     return `${startFormatted} - ${endFormatted}`;
   };
