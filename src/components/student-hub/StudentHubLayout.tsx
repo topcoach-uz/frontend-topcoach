@@ -224,7 +224,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               onClick={() => setMobileDrawerVisible(true)}
               className="mobile-menu-trigger"
             />
-            <h1 className="mobile-title">Student Hub</h1>
+            <h1 className="mobile-title">Student Dashboard</h1>
           </div>
         </Header>
       )}
@@ -242,7 +242,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         <div className="sidebar-header">
           {!collapsed && (
             <div className="logo">
-              <span className="logo-text">Student Hub</span>
+              <span className="logo-text">Student Dashboard</span>
             </div>
           )}
           <Button
@@ -288,7 +288,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         closable={false}
       >
         <div className="mobile-drawer-header">
-          <span className="mobile-drawer-title">Student Hub</span>
+          <span className="mobile-drawer-title">Student Dashboard</span>
           <Button
             type="text"
             icon={<FontAwesomeIcon icon="times" />}
