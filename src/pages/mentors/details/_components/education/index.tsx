@@ -46,12 +46,13 @@ export default function MentorDetailsEducation() {
   };
 
   return (
-    <div style={{ margin: '24px 0' }}>
+    <div style={{ margin: '16px 0', paddingTop: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
       <CustomText
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        mb={16}
+        mb={0}
+        style={{ marginBottom: '10px' }}
       >
         {t('mentors.education') || 'Education'}
       </CustomText>
@@ -60,11 +61,10 @@ export default function MentorDetailsEducation() {
         educationHistory
           .sort((a, b) => (a.order || 0) - (b.order || 0))
           .map((edu, index) => (
-            <CustomCard
+            <div
               key={edu.id || index}
-              shadowed={false}
-              bordered
-              style={{ marginTop: index > 0 ? 16 : 0 }}
+              className={styles.education_card}
+              style={{ marginTop: index > 0 ? 20 : 0 }}
             >
               <div className={styles.education_item}>
                 {edu.universityLogo && (
@@ -103,12 +103,12 @@ export default function MentorDetailsEducation() {
                   )}
                 </div>
               </div>
-            </CustomCard>
+            </div>
           ))
       ) : (
         /* Fallback to primary university if no education history */
         primaryUniversity && (
-          <CustomCard shadowed={false} bordered>
+          <div className={styles.education_card}>
             <div className={styles.education_item}>
               <div className={styles.university_info}>
                 <CustomText
@@ -138,7 +138,7 @@ export default function MentorDetailsEducation() {
                 )}
               </div>
             </div>
-          </CustomCard>
+          </div>
         )
       )}
     </div>

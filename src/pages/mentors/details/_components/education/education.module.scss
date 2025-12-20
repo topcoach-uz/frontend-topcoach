@@ -1,15 +1,24 @@
+.education_card {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
 .education_item {
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  padding: 8px 0;
+  padding: 0;
 }
 
 .university_logo {
   width: 48px;
   height: 48px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 

@@ -16,20 +16,21 @@ export default function MentorDetailsMentoringExperience() {
   }
 
   return (
-    <div style={{ margin: '24px 0' }}>
+    <div style={{ margin: '16px 0', paddingTop: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
       <CustomText
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        mb={16}
+        mb={0}
+        style={{ marginBottom: '10px' }}
       >
         {t('mentors.mentoringExperience') || 'Mentoring Experience'}
       </CustomText>
       <CustomText 
         color={colors.colorTextSecondary} 
-        lineHeight={'25px'}
+        lineHeight={'24px'}
         style={{ 
-          marginBottom: '16px',
+          marginBottom: 0,
           textAlign: 'left',
           maxWidth: '800px'
         }}

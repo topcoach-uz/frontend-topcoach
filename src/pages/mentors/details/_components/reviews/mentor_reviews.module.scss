@@ -1,30 +1,53 @@
+.section_wrapper {
+  margin: 16px 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 .review_list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+  padding: 0;
+  margin: 24px 0 0 0;
 }
 
-.card_wrapper {
+.review_item {
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.review_card {
   display: flex;
-  align-items: start;
-  gap: 14px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .review_description {
   font-family: 'Nunito Sans', serif !important;
 }
 
-.no_reviews_card {
+.no_reviews_wrapper {
   min-height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 40px 0;
+  color: rgba(0, 0, 0, 0.45);
 }
 
 .summary_card {
   background: #fafafa;
-  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
 .summary_content {

@@ -19,28 +19,23 @@ export default function MentorDetailsSpecializations() {
   }
 
   return (
-    <div style={{ margin: '24px 0' }}>
+    <div style={{ margin: '16px 0', paddingTop: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
       <CustomText
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        mb={16}
+        mb={0}
+        style={{ marginBottom: '10px' }}
       >
         {t('mentors.specializations') || 'Specializations'}
       </CustomText>
-      <CustomCard shadowed={false} bordered>
-        <div className={styles.tags_container}>
-          {tags.map((tag, index) => (
-            <Tag
-              key={index}
-              color={colors.colorPrimary}
-              className={styles.tag}
-            >
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      </CustomCard>
+      <div className={styles.tags_container}>
+        {tags.map((tag, index) => (
+          <span key={index} className={styles.tag}>
+            {tag}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

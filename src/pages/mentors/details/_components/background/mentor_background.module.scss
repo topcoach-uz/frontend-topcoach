@@ -1,25 +1,41 @@
 @import '/src/styles/variables.scss';
 
-.background_item_wrapper {
+.section_wrapper {
+  margin: 16px 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.background_item {
   display: flex;
-  justify-content: space-between;
-  gap: 25px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.item_label {
+  margin-bottom: 4px;
 }
 
 .items_list {
   display: flex;
-  list-style-type: none;
   gap: 8px;
   flex-wrap: wrap;
+}
 
-  li {
-    font-size: $fontSizeTitle9;
-    font-weight: $fontWeightMedium;
-    border-radius: 6px;
-    background-color: $colorFillQuaternary;
-    color: $colorText;
-    padding: 4px 12px;
-    border: 1px solid $colorBorder;
-    line-height: 20px;
-  }
+.item_tag {
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 16px;
+  background-color: rgba(0, 0, 0, 0.04);
+  color: $colorText;
+  padding: 6px 14px;
+  border: none;
+  line-height: 20px;
+  display: inline-block;
 }

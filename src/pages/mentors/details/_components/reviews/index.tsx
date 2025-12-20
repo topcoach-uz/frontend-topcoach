@@ -35,50 +35,41 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
 
   if (totalReviews === 0) {
     return (
-      <div>
+      <div className={styles.section_wrapper}>
         <CustomText
           fontWeight={themeFontWeight.fontWeightSemibold}
           fontSize={themeFontSize.fontSizeTitle5}
           color={colors.colorText}
-          mt={10}
           mb={16}
         >
           {t('mentors.reviews')}
         </CustomText>
-        <CustomCard
-          className={styles.no_reviews_card}
-          bordered
-          shadowed={false}
-        >
+        <div className={styles.no_reviews_wrapper}>
           <CustomText
             color={colors.colorTextSecondary}
             fontSize={themeFontSize.fontSizeTitle9}
           >
             {t('mentors.noReviewsYet')}
           </CustomText>
-        </CustomCard>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className={styles.section_wrapper}>
       <CustomText
         fontWeight={themeFontWeight.fontWeightSemibold}
         fontSize={themeFontSize.fontSizeTitle5}
         color={colors.colorText}
-        style={{ marginTop: 16, marginBottom: 16 }}
+        mb={0}
+        style={{ marginBottom: '10px' }}
       >
-        {t('mentors.reviews')}
+        {totalReviews} {t('mentors.reviews')}
       </CustomText>
 
       {/* Summary Statistics */}
-      <CustomCard
-        className={styles.summary_card}
-        bordered
-        shadowed={false}
-        style={{ marginBottom: 24 }}
-      >
+      <div className={styles.summary_card}>
         <div className={styles.summary_content}>
           <div className={styles.summary_left}>
             <div className={styles.total_reviews}>
@@ -144,17 +135,13 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
             ))}
           </div>
         </div>
-      </CustomCard>
+      </div>
 
       {/* Individual Reviews */}
       <ul className={styles.review_list}>
         {data.map((review) => (
-          <li key={review.id}>
-            <CustomCard
-              className={styles.card_wrapper}
-              bordered
-              shadowed={false}
-            >
+          <li key={review.id} className={styles.review_item}>
+            <div className={styles.review_card}>
                               <div>
                   <div className={styles.review_header}>
                     <div>
@@ -194,7 +181,7 @@ export default function MentorDetailsReviews({ data = [] }: ReviewProps) {
                   {review.summary}
                 </CustomText>
               </div>
-            </CustomCard>
+            </div>
           </li>
         ))}
       </ul>
