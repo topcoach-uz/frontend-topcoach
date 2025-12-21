@@ -24,8 +24,8 @@ export const rtkQueryErrorLogger: Middleware =
       let originalRequestEndpoint = '';
       try {
         const requestUrl = action.meta?.baseQueryMeta?.request?.url || '';
-        if (requestUrl.includes('topcoach.uz')) {
-          originalRequestEndpoint = requestUrl.split('topcoach.uz')[1] || '';
+        if (requestUrl.includes('topcoachuni.com') || requestUrl.includes('topcoach.uz')) {
+          originalRequestEndpoint = requestUrl.split('topcoachuni.com')[1] || requestUrl.split('topcoach.uz')[1] || '';
         } else if (requestUrl.includes('localhost') || requestUrl.includes('127.0.0.1')) {
           // Handle localhost URLs
           const urlParts = requestUrl.split('/api/');

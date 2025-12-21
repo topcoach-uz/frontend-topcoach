@@ -53,7 +53,7 @@ export const ReferralCodeDisplay: React.FC = () => {
 
   const shareToSocialMedia = (platform: string) => {
     const text = `🎓 Get 5% off your TopCoach course with my referral code: ${referralCode}! Join me in this amazing learning journey! 🚀`;
-    const url = 'https://topcoach.uz/programs';
+    const url = 'https://topcoachuni.com/programs';
     
     let shareUrl = '';
     

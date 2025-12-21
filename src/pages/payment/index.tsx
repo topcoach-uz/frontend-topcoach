@@ -63,13 +63,13 @@ function PaymentPage() {
   // Determine return URL based on payment type
   const getReturnUrl = () => {
     if (paymentType === "course" && enrollmentId) {
-      return "https://topcoach.uz/programs/success?success=true";
+      return "https://topcoachuni.com/programs/success?success=true";
     } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
-      return "https://topcoach.uz/?payment_status=success&type=subscription";
+      return "https://topcoachuni.com/?payment_status=success&type=subscription";
     } else if (sessionId && mentorId) {
-      return "https://topcoach.uz/?payment_status=success&type=session";
+      return "https://topcoachuni.com/?payment_status=success&type=session";
     } else {
-      return "https://topcoach.uz/?payment_status=success";
+      return "https://topcoachuni.com/?payment_status=success";
     }
   };
 

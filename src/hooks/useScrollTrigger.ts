@@ -25,7 +25,7 @@ export function useScrollTrigger(options: UseScrollTriggerOptions = {}) {
       });
     }
 
-    // Don't show popup if user is authenticated (works on both topcoach.uz and topcoachuni.com)
+    // Don't show popup if user is authenticated
     if (checkAuth && isAuthenticated) {
       if (shouldLog) console.log('[LeadCapture] Not showing: user is authenticated');
       return;

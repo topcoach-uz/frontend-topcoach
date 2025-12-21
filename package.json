@@ -11,7 +11,7 @@
     "comp": "generate-react component --type=component",
     "pcomp": "generate-react component --type=pageComponent",
     "page": "generate-react component --type=page",
-    "api": "swagger-typescript-api -p https://topcoach.uz/api/docs-json -o src/app/api --responses --axios"
+    "api": "swagger-typescript-api -p https://topcoachuni.com/api/docs-json -o src/app/api --responses --axios"
   },
   "dependencies": {
     "@editorjs/checklist": "1.1.0",

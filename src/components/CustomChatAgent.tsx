@@ -49,7 +49,7 @@ const CustomChatAgent: React.FC<ChatAgentProps> = ({
       // Use our backend API endpoint instead of calling ElevenLabs directly
       const apiUrl = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000/api/ai/chat'
-        : 'https://topcoach.uz/api/ai/chat';
+        : 'https://topcoachuni.com/api/ai/chat';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {

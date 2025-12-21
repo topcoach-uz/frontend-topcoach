@@ -19,7 +19,7 @@ export default function LandingPage() {
   const [popupVisible, setPopupVisible] = useState(false);
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   
-  // Use scroll trigger for popup - works on both topcoach.uz and topcoachuni.com
+  // Use scroll trigger for popup
   const { shouldShow } = useScrollTrigger({
     threshold: 0.03, // Show after 5% scroll (very early - user just started scrolling)
     checkAuth: true,
@@ -101,7 +101,7 @@ export default function LandingPage() {
   }, []);
 
   // Show popup when scroll threshold is reached
-  // This works on both topcoach.uz and topcoachuni.com for unauthenticated users
+  // Works for unauthenticated users
   // Since topcoachuni.com is now the main domain, this ensures it works there too
   useLayoutEffect(() => {
     const hostname = window.location.hostname;
@@ -126,7 +126,7 @@ export default function LandingPage() {
     }
 
     // Only check if form was submitted - if yes, never show (domain-specific localStorage)
-    // localStorage is domain-specific, so submission on topcoach.uz doesn't affect topcoachuni.com
+    // localStorage is domain-specific
     // However, we allow reset via URL parameter for testing
     const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
     if (wasSubmitted === 'true') {
@@ -144,7 +144,7 @@ export default function LandingPage() {
     }
 
     // If scroll threshold reached and not closed/submitted, show popup
-    // This works on both domains: topcoach.uz and topcoachuni.com
+    // Works for unauthenticated users
     if (shouldShow && !popupVisible) {
       if (shouldLog) console.log('[LandingPage] ✅ Showing popup now on', hostname);
       // Small delay for better UX

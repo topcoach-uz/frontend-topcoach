@@ -7,21 +7,21 @@ export default function TermsOfUsePage() {
         <h1 className={styles.title}>Terms and Conditions</h1>
         <p className={styles.lastUpdated}>Last updated: March 18, 2025</p>
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Welcome to TopCoach.uz!</h2>
+          <h2 className={styles.sectionTitle}>Welcome to TopCoach!</h2>
           <p>
             These terms and conditions outline the rules and regulations for the
-            use of TopCoach.uz’s platform, located at https://www.topcoach.uz/.
+            use of TopCoach's platform, located at https://www.topcoachuni.com/.
           </p>
           <p>
             By accessing this website, we assume you accept these terms and
-            conditions. Do not continue to use TopCoach.uz if you do not agree
+            conditions. Do not continue to use TopCoach if you do not agree
             to take all of the terms and conditions stated on this page.
           </p>
         </section>
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>License</h2>
           <p>
-            Unless otherwise stated, TopCoach.uz and/or its licensors own the
+            Unless otherwise stated, TopCoach and/or its licensors own the
             intellectual property rights for all material on the platform. All
             intellectual property rights are reserved.
           </p>
@@ -30,17 +30,17 @@ export default function TermsOfUsePage() {
             restrictions set in these terms and conditions. You must not:
           </p>
           <ul className={styles.list}>
-            <li>Republish material from TopCoach.uz</li>
-            <li>Sell, rent, or sub-license material from TopCoach.uz</li>
-            <li>Reproduce, duplicate or copy material from TopCoach.uz</li>
-            <li>Redistribute content from TopCoach.uz</li>
+            <li>Republish material from TopCoach</li>
+            <li>Sell, rent, or sub-license material from TopCoach</li>
+            <li>Reproduce, duplicate or copy material from TopCoach</li>
+            <li>Redistribute content from TopCoach</li>
           </ul>
         </section>
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>User-Generated Content</h2>
           <p>
-            Users of TopCoach.uz may post and share comments, feedback, or other
-            materials on the platform. By doing so, you grant TopCoach.uz a
+            Users of TopCoach may post and share comments, feedback, or other
+            materials on the platform. By doing so, you grant TopCoach a
             non-exclusive license to use, reproduce, and display your content
             for educational and promotional purposes.
           </p>
@@ -50,29 +50,29 @@ export default function TermsOfUsePage() {
             necessary consent to share the content.
           </p>
           <p>
-            TopCoach.uz reserves the right to remove content that is deemed
+            TopCoach reserves the right to remove content that is deemed
             inappropriate or violates these terms.
           </p>
         </section>
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Linking to Our Content</h2>
           <p>
-            You may link to TopCoach.uz’s home page and content, provided that:
+            You may link to TopCoach's home page and content, provided that:
           </p>
           <ul className={styles.list}>
             <li>The link is not misleading or deceptive;</li>
             <li>
               The link does not falsely imply sponsorship or endorsement by
-              TopCoach.uz;
+              TopCoach;
             </li>
             <li>
-              The link fits within the context of the linking party’s site.
+              The link fits within the context of the linking party's site.
             </li>
           </ul>
           <p>
             Please contact us at{' '}
             <a href="mailto:support@topcoach.uz">support@topcoach.uz.</a> for
-            approval if you wish to use TopCoach.uz content in any other way.
+            approval if you wish to use TopCoach content in any other way.
           </p>
         </section>
         <section className={styles.section}>
@@ -86,7 +86,7 @@ export default function TermsOfUsePage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Content Liability</h2>
           <p>
-            TopCoach.uz is not responsible for any content displayed on
+            TopCoach is not responsible for any content displayed on
             third-party websites. By linking to our platform, you agree to
             protect and defend us from any claims that arise from your website's
             content.

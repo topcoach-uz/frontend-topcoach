@@ -1926,7 +1926,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "https://topcoach.uz/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "https://topcoachuni.com/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -2018,7 +2018,7 @@ export class HttpClient<SecurityDataType = unknown> {
 /**
  * @title topcoach
  * @version 0.0.1
- * @baseUrl https://topcoach.uz/api
+ * @baseUrl https://topcoachuni.com/api
  * @contact
  *
  * TopCoach backend API
