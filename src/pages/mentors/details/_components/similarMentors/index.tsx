@@ -25,7 +25,8 @@ export default function SimilarMentors() {
     }
 
     const currentTags = currentMentor.mentorProfile.tags || [];
-    const currentMentorId = currentMentor.id;
+    // Get mentor ID from profile.id since UserDetailsResponseDto doesn't have id at root level
+    const currentMentorId = currentMentor?.profile?.id || (currentMentor as any)?.id;
 
     // Filter mentors that share at least one tag and exclude current mentor
     const filtered = allMentors.filter((mentor) => {
