@@ -15,7 +15,6 @@ import WhyICoach from './_components/whyICoach';
 import Education from './_components/education';
 import HowICanHelp from './_components/howICanHelp';
 import MentoringExperience from './_components/mentoringExperience';
-import Specializations from './_components/specializations';
 import GiveawaySessions from './_components/GiveawaySessions';
 import PackageBalance from './_components/PackageBalance';
 import Socials from './_components/socials';
@@ -266,7 +265,6 @@ export default function MentorDetailsPage() {
             <WhyICoach />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-15px' }}>
               <Education />
-              <Specializations />
               <HowICanHelp />
               <MentoringExperience />
             </div>
