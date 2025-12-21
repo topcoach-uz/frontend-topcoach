@@ -165,21 +165,39 @@ export default function MentorCard({
           )}
         </div>
 
-        {/* Available sessions */}
+        {/* Pricing based on mentor level */}
         <div className={styles.sessionsSection}>
           <CustomText
             color={colors.colorTextSecondary}
-            fontSize={15}
+            fontSize={13}
             fontWeight={500}
+            style={{ marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
           >
-            {availableSessions} {availableSessions === 1 ? t('mentors.availableSession') : t('mentors.availableSessions')}
+            {level === 'probono' 
+              ? t('mentors.complimentarySession') || 'Complimentary' 
+              : t('mentors.rate') || 'Rate'}
+          </CustomText>
+          <CustomText
+            color={colors.colorText}
+            fontSize={16}
+            fontWeight={600}
+          >
+            {level === 'expert' 
+              ? '$50 – $100 / session' 
+              : level === 'senior' 
+                ? '$25 – $50 / session' 
+                : level === 'junior'
+                  ? '$12.50 – $25 / session'
+                  : level === 'probono'
+                    ? t('mentors.freeSession') || 'Free / Pro-bono'
+                    : t('mentors.contactForPricing') || 'Contact for pricing'}
           </CustomText>
           {isGiveaway && (
             <CustomText
               color={giveawaySessionsCount > 0 ? "#FF6B35" : "#999999"}
               fontSize={13}
               fontWeight={600}
-              style={{ marginTop: '4px' }}
+              style={{ marginTop: '8px' }}
             >
               🎁 {giveawaySessionsCount} giveaway {giveawaySessionsCount === 1 ? 'session' : 'sessions'}
             </CustomText>

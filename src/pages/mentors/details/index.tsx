@@ -26,6 +26,7 @@ import MentorBookingPaymentModal from './bookModal/_components/payment';
 import styles from './mentor_details.module.scss';
 import { useTranslation } from 'react-i18next';
 import Reviews from './_components/reviews';
+import SimilarMentors from './_components/similarMentors';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useAppDispatch } from 'src/app/store';
 import { show as showProfilePopup } from 'src/app/slices/profilePopupSlice';
@@ -263,16 +264,18 @@ export default function MentorDetailsPage() {
           }}>
             <Overview />
             <WhyICoach />
-            <Education />
-            <Specializations />
-            <HowICanHelp />
-            <MentoringExperience />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-15px' }}>
+              <Education />
+              <Specializations />
+              <HowICanHelp />
+              <MentoringExperience />
+            </div>
             <MentorVideosView
               demoLesson={demoLesson}
               introductionVideo={introVideo}
             />
-            <Background />
             <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            <SimilarMentors />
           </div>
           {screenSize > 1024 && (
             <div style={{ 
@@ -299,6 +302,9 @@ export default function MentorDetailsPage() {
                 isAuthenticated={isAuthenticated}
               />
               {isAuthenticated && <PackageBalance />}
+              <div style={{ paddingLeft: '2px', marginTop: '-8px' }}>
+                <Background />
+              </div>
             </div>
           )}
         </div>
