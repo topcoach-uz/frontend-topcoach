@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
@@ -14,10 +14,15 @@ export default function SimilarMentors() {
   const colors = useColors();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const currentMentor = useTypedSelector(
     (state) => state.mentor?.lastMentorData
   );
   const { data: allMentors, isLoading } = useGetMentorsQuery();
+
+  // Extract mentorId from URL path
+  const splittedPathname = pathname.split('/');
+  const currentMentorId = splittedPathname[splittedPathname.length - 1].split('?')[0];
 
   const similarMentors = useMemo(() => {
     if (!currentMentor?.mentorProfile?.tags || !allMentors) {
@@ -25,12 +30,14 @@ export default function SimilarMentors() {
     }
 
     const currentTags = currentMentor.mentorProfile.tags || [];
-    // Get mentor ID from profile.id since UserDetailsResponseDto doesn't have id at root level
-    const currentMentorId = currentMentor?.profile?.id || (currentMentor as any)?.id;
 
     // Filter mentors that share at least one tag and exclude current mentor
     const filtered = allMentors.filter((mentor) => {
-      if (mentor.id === currentMentorId) return false;
+      // Exclude current mentor by comparing IDs
+      // Compare both root id and profile.id to be thorough
+      if (mentor.id === currentMentorId || mentor.profile?.id === currentMentorId) {
+        return false;
+      }
       if (!mentor.mentorProfile?.tags || mentor.mentorProfile.tags.length === 0) return false;
       
       // Check if mentor has at least one matching tag
@@ -52,7 +59,7 @@ export default function SimilarMentors() {
       .sort((a, b) => b.matchingCount - a.matchingCount)
       .slice(0, 10) // Limit to 10 similar mentors
       .map((item) => item.mentor);
-  }, [currentMentor, allMentors]);
+  }, [currentMentor, allMentors, currentMentorId]);
 
   if (isLoading || similarMentors.length === 0) {
     return null;
