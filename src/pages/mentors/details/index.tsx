@@ -275,7 +275,6 @@ export default function MentorDetailsPage() {
               introductionVideo={introVideo}
             />
             <Reviews data={(mentorData as any)?.receivedReviews || []} />
-            <SimilarMentors />
           </div>
           {screenSize > 1024 && (
             <div style={{ 
@@ -307,6 +306,16 @@ export default function MentorDetailsPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Similar Mentors section - placed outside column to allow wider display (at least 3 cards visible) */}
+        <div style={{ 
+          width: '100%',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: screenSize > 1024 ? '0' : '0 16px'
+        }}>
+          <SimilarMentors />
         </div>
 
         {/* Mobile sections - moved after the main flex container */}

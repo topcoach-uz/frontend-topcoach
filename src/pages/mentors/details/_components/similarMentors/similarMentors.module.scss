@@ -4,6 +4,9 @@
   margin: 48px 0;
   padding: 24px 0;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
+  width: 100%;
+  // Allow wrapper to use full width of parent container (up to 1400px)
+  // This ensures at least 3 cards are visible: 320px × 3 + 40px gaps = 1000px
 }
 
 .mentors_scroll_container {
@@ -13,6 +16,9 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  // Ensure container shows at least 3 full cards by default
+  // 320px × 3 cards + 40px (2 gaps) = 1000px minimum visible width
+  width: 100%;
 
   &::-webkit-scrollbar {
     height: 8px;
@@ -40,16 +46,16 @@
 }
 
 .mentor_card_wrapper {
-  flex: 0 0 290px;
-  min-width: 290px;
-  max-width: 290px;
+  flex: 0 0 320px;
+  min-width: 320px;
+  max-width: 320px;
 }
 
 @media (max-width: 768px) {
   .mentor_card_wrapper {
-    flex: 0 0 260px;
-    min-width: 260px;
-    max-width: 260px;
+    flex: 0 0 280px;
+    min-width: 280px;
+    max-width: 280px;
   }
 }
 
