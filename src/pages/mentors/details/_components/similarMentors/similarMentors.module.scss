@@ -40,16 +40,16 @@
 }
 
 .mentor_card_wrapper {
-  flex: 0 0 320px;
-  min-width: 320px;
-  max-width: 320px;
+  flex: 0 0 290px;
+  min-width: 290px;
+  max-width: 290px;
 }
 
 @media (max-width: 768px) {
   .mentor_card_wrapper {
-    flex: 0 0 280px;
-    min-width: 280px;
-    max-width: 280px;
+    flex: 0 0 260px;
+    min-width: 260px;
+    max-width: 260px;
   }
 }
 
