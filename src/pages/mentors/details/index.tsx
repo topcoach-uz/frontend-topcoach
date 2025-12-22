@@ -306,21 +306,22 @@ export default function MentorDetailsPage() {
           )}
         </div>
 
-        {/* Similar Mentors section - placed outside column to allow wider display (at least 3 cards visible) */}
-        <div style={{ 
-          width: '100%',
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: screenSize > 1024 ? '0' : '0 16px'
-        }}>
-          <SimilarMentors />
-        </div>
+        {/* Similar Mentors section - placed outside column to allow wider display (at least 3 cards visible) - Desktop only */}
+        {screenSize > 1024 && (
+          <div style={{ 
+            width: '100%',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '0'
+          }}>
+            <SimilarMentors />
+          </div>
+        )}
 
-        {/* Mobile sections - moved after the main flex container */}
+        {/* Mobile sections - reordered as requested */}
         {screenSize < 1024 && (
           <div className={styles.mobile_layout}>
-            <Overview />
-            <Statistics />
+            {/* Booking section first */}
             <MentorAvailableSessions
               noSessions={noSessions}
               availableSessions={availableSessions}
@@ -336,6 +337,24 @@ export default function MentorDetailsPage() {
             />
             {/* @ts-ignore */}
             {isAuthenticated && <PackageBalance />}
+            
+            {/* About section */}
+            <Overview />
+            
+            {/* Education section */}
+            <Education />
+            
+            {/* How I Can Help section */}
+            <HowICanHelp />
+            
+            {/* Mentoring Experience section */}
+            <MentoringExperience />
+            
+            {/* Rating/Reviews section */}
+            <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            
+            {/* Similar Mentors at the end */}
+            <SimilarMentors />
           </div>
         )}
       </div>
