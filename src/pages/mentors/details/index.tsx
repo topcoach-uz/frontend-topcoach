@@ -11,7 +11,6 @@ import Background from './_components/background';
 import MentorAvailableSessions from './_components/MentorAvailableSessions';
 import MentorVideosView from './_components/MentorVideosView';
 import Overview from './_components/overview';
-import WhyICoach from './_components/whyICoach';
 import Education from './_components/education';
 import HowICanHelp from './_components/howICanHelp';
 import GiveawaySessions from './_components/GiveawaySessions';
@@ -261,10 +260,7 @@ export default function MentorDetailsPage() {
             maxWidth: 'calc(100% - 400px)'
           }}>
             <Overview />
-            <div style={{ marginTop: '-24px' }}>
-              <WhyICoach />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-24px' }}>
               <HowICanHelp />
               <Education />
             </div>
