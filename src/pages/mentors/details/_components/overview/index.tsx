@@ -20,19 +20,28 @@ export default function MentorDetailsOverview({
   const summary = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.mentorProfile?.summary
   );
+  const mentoringExperience = useTypedSelector(
+    (state) => state.mentor?.lastMentorData?.mentorProfile?.mentoringExperience
+  );
   const mentorName = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.profile?.name
   );
   const { t } = useTranslation();
 
-  if (!summary) return null;
+  // Combine summary and mentoring experience
+  const combinedContent = [
+    summary,
+    mentoringExperience
+  ].filter(Boolean).join('\n\n');
+
+  if (!combinedContent) return null;
 
   // Get first name from full name
   const firstName = mentorName?.split(' ')[0] || 'Mentor';
-  const needsTruncation = summary.length > MAX_PREVIEW_LENGTH;
+  const needsTruncation = combinedContent.length > MAX_PREVIEW_LENGTH;
   const displayText = isExpanded || !needsTruncation 
-    ? summary 
-    : `${summary.substring(0, MAX_PREVIEW_LENGTH)}...`;
+    ? combinedContent 
+    : `${combinedContent.substring(0, MAX_PREVIEW_LENGTH)}...`;
 
   return (
     <div className={styles.section_wrapper}>

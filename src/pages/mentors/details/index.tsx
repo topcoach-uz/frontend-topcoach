@@ -14,7 +14,6 @@ import Overview from './_components/overview';
 import WhyICoach from './_components/whyICoach';
 import Education from './_components/education';
 import HowICanHelp from './_components/howICanHelp';
-import MentoringExperience from './_components/mentoringExperience';
 import GiveawaySessions from './_components/GiveawaySessions';
 import PackageBalance from './_components/PackageBalance';
 import Socials from './_components/socials';
@@ -262,17 +261,22 @@ export default function MentorDetailsPage() {
             maxWidth: 'calc(100% - 400px)'
           }}>
             <Overview />
-            <WhyICoach />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-15px' }}>
-              <Education />
-              <HowICanHelp />
-              <MentoringExperience />
+            <div style={{ marginTop: '-24px' }}>
+              <WhyICoach />
             </div>
-            <MentorVideosView
-              demoLesson={demoLesson}
-              introductionVideo={introVideo}
-            />
-            <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-32px' }}>
+              <HowICanHelp />
+              <Education />
+            </div>
+            <div style={{ marginTop: '-24px' }}>
+              <MentorVideosView
+                demoLesson={demoLesson}
+                introductionVideo={introVideo}
+              />
+            </div>
+            <div style={{ marginTop: '-24px' }}>
+              <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            </div>
           </div>
           {screenSize > 1024 && (
             <div style={{ 
@@ -341,17 +345,20 @@ export default function MentorDetailsPage() {
             {/* About section */}
             <Overview />
             
-            {/* Education section */}
-            <Education />
-            
             {/* How I Can Help section */}
-            <HowICanHelp />
+            <div style={{ marginTop: '-24px' }}>
+              <HowICanHelp />
+            </div>
             
-            {/* Mentoring Experience section */}
-            <MentoringExperience />
+            {/* Education section */}
+            <div style={{ marginTop: '-24px' }}>
+              <Education />
+            </div>
             
             {/* Rating/Reviews section */}
-            <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            <div style={{ marginTop: '-24px' }}>
+              <Reviews data={(mentorData as any)?.receivedReviews || []} />
+            </div>
             
             {/* Similar Mentors at the end */}
             <SimilarMentors />
