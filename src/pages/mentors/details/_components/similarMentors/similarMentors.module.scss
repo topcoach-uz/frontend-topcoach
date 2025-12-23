@@ -1,8 +1,8 @@
 @import '/src/styles/variables.scss';
 
 .similar_mentors_wrapper {
-  margin: 48px 0;
-  padding: 24px 0;
+  margin: 24px 0 48px 0;
+  padding: 16px 0 24px 0;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
   // Allow wrapper to use full width of parent container (up to 1400px)
