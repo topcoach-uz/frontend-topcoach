@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Button, Spin, Alert, Typography, List, Tag, Rate, Space, Divider, Empty, message } from 'antd';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import { 
   useCreateMajorMatchMutation, 
   useGetMajorMatchSessionsQuery,
@@ -9,11 +11,13 @@ import {
 } from '../../../app/services/api';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { CalendarOutlined, GlobalOutlined, TrophyOutlined, LinkOutlined } from '@ant-design/icons';
+import { formatLocaleDate } from '../../../utils/dateFormatter';
 import './MajorMatchPage.scss';
 
 const { Title, Text, Paragraph } = Typography;
 
 const MajorMatchPage: React.FC = () => {
+  const { t } = useTranslation();
   const { profile: studentProfile } = useStudentProfile();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   
@@ -60,14 +64,14 @@ const MajorMatchPage: React.FC = () => {
           <Empty
             description={
               <span>
-                <Text strong>Complete your profile to 100% to use Major Match</Text>
+                <Text strong>{t('studentHub.majorMatch.completeProfile')}</Text>
                 <br />
-                <Text type="secondary">Current completion: {studentProfile?.completionPercentage || 0}%</Text>
+                <Text type="secondary">{t('studentHub.majorMatch.currentCompletion', { percentage: studentProfile?.completionPercentage || 0 })}</Text>
               </span>
             }
           >
             <Button type="primary" onClick={() => window.location.href = '/student-hub/profile'}>
-              Go to Profile
+              {t('studentHub.majorMatch.goToProfile')}
             </Button>
           </Empty>
         </Card>
@@ -79,8 +83,8 @@ const MajorMatchPage: React.FC = () => {
     <div className="major-match-page">
       {/* Page Header */}
       <div className="page-header">
-        <h1 className="page-title">Major Match</h1>
-        <p className="page-subtitle">AI-powered major recommendations based on your complete profile</p>
+        <h1 className="page-title">{t('studentHub.majorMatch.title')}</h1>
+        <p className="page-subtitle">{t('studentHub.majorMatch.subtitle')}</p>
       </div>
 
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -88,9 +92,9 @@ const MajorMatchPage: React.FC = () => {
         <Card>
           <Space style={{ width: '100%', justifyContent: 'space-between' }}>
             <div>
-              <Title level={4}>Start New Analysis</Title>
+              <Title level={4}>{t('studentHub.majorMatch.startNewAnalysis')}</Title>
               <Text type="secondary">
-                Get personalized major recommendations based on your profile, interests, and goals
+                {t('studentHub.majorMatch.startNewAnalysisDesc')}
               </Text>
             </div>
             <Button 
@@ -100,14 +104,14 @@ const MajorMatchPage: React.FC = () => {
               loading={creating}
               disabled={creating}
             >
-              {creating ? 'Analyzing...' : 'Start Analysis'}
+              {creating ? t('studentHub.majorMatch.analyzing') : t('studentHub.majorMatch.startAnalysis')}
             </Button>
           </Space>
         </Card>
 
         {/* Sessions History */}
         {sessions.length > 0 && (
-          <Card title={`Analysis History (${sessions.length})`}>
+          <Card title={t('studentHub.majorMatch.analysisHistory', { count: sessions.length })}>
             <List
               dataSource={sessions}
               renderItem={(session) => (
@@ -117,16 +121,16 @@ const MajorMatchPage: React.FC = () => {
                       type="link"
                       onClick={() => setSelectedSessionId(session.id)}
                     >
-                      View Details
+                      {t('studentHub.majorMatch.viewDetails')}
                     </Button>
                   ]}
                 >
                   <List.Item.Meta
                     title={
                       <Space>
-                        <Text strong>Analysis #{sessions.length - sessions.indexOf(session)}</Text>
+                        <Text strong>{t('studentHub.majorMatch.analysis', { number: sessions.length - sessions.indexOf(session) })}</Text>
                         <Tag color="blue">
-                          {session.analysisResult?.suggestedMajors?.length || 0} Majors
+                          {session.analysisResult?.suggestedMajors?.length || 0} {t('studentHub.majorMatch.majors')}
                         </Tag>
                       </Space>
                     }
@@ -134,7 +138,7 @@ const MajorMatchPage: React.FC = () => {
                       <Space>
                         <CalendarOutlined />
                         <Text type="secondary">
-                          {new Date(session.createdAt).toLocaleDateString()}
+                          {formatLocaleDate(session.createdAt, i18n.language, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </Text>
                       </Space>
                     }
@@ -162,7 +166,7 @@ const MajorMatchPage: React.FC = () => {
 
         {sessions.length === 0 && !creating && (
           <Card>
-            <Empty description="No analysis sessions yet. Start your first analysis above!" />
+            <Empty description={t('studentHub.majorMatch.noSessions')} />
           </Card>
         )}
       </Space>
@@ -177,6 +181,7 @@ interface MajorMatchDetailsProps {
 }
 
 const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedback, submittingFeedback }) => {
+  const { t } = useTranslation();
   const { analysisResult } = session;
   const [feedbackRating, setFeedbackRating] = useState(session.feedbackRating || 0);
   const [feedbackComment, setFeedbackComment] = useState(session.feedbackComment || '');
@@ -184,12 +189,12 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={3}>Analysis Results</Title>
-        <Tag color="green">Processed in {session.processingTimeMs ? `${(session.processingTimeMs / 1000).toFixed(1)}s` : 'N/A'}</Tag>
+        <Title level={3}>{t('studentHub.majorMatch.analysisResults')}</Title>
+        <Tag color="green">{session.processingTimeMs ? t('studentHub.majorMatch.processedIn', { time: (session.processingTimeMs / 1000).toFixed(1) }) : 'N/A'}</Tag>
       </div>
 
       {/* Suggested Majors */}
-      <Card title={<><TrophyOutlined /> Suggested Majors</>} size="small">
+      <Card title={<><TrophyOutlined /> {t('studentHub.majorMatch.suggestedMajors')}</>} size="small">
         <List
           dataSource={analysisResult?.suggestedMajors || []}
           renderItem={(major: any, index: number) => (
@@ -198,14 +203,14 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Title level={4}>#{index + 1} {major.major}</Title>
                   <Space>
-                    <Tag color="green">Confidence: {(major.confidence * 100).toFixed(0)}%</Tag>
-                    <Tag color="blue">Alignment: {major.alignmentScore}/100</Tag>
+                    <Tag color="green">{t('studentHub.majorMatch.confidence', { percentage: (major.confidence * 100).toFixed(0) })}</Tag>
+                    <Tag color="blue">{t('studentHub.majorMatch.alignment', { score: major.alignmentScore })}</Tag>
                   </Space>
                 </div>
                 <Paragraph>{major.reasoning}</Paragraph>
                 {major.keyFactors && major.keyFactors.length > 0 && (
                   <div>
-                    <Text strong>Key Factors: </Text>
+                    <Text strong>{t('studentHub.majorMatch.keyFactors')} </Text>
                     {major.keyFactors.map((factor: string, i: number) => (
                       <Tag key={i} style={{ marginTop: 4 }}>{factor}</Tag>
                     ))}
@@ -218,7 +223,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
       </Card>
 
       {/* Universities */}
-      <Card title={<><GlobalOutlined /> Recommended Universities</>} size="small">
+      <Card title={<><GlobalOutlined /> {t('studentHub.majorMatch.recommendedUniversities')}</>} size="small">
         <List
           dataSource={analysisResult?.universities || []}
           renderItem={(university: any) => (
@@ -231,7 +236,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                     href={university.website}
                     target="_blank"
                   >
-                    Website
+                    {t('studentHub.majorMatch.website')}
                   </Button>
                 )
               ]}
@@ -248,7 +253,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                   <Space direction="vertical" size="small">
                     {university.programs && university.programs.length > 0 && (
                       <div>
-                        <Text strong>Programs: </Text>
+                        <Text strong>{t('studentHub.majorMatch.programs')} </Text>
                         {university.programs.map((program: string, i: number) => (
                           <Tag key={i}>{program}</Tag>
                         ))}
@@ -256,7 +261,11 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                     )}
                     {university.tuitionInfo && (
                       <Text type="secondary">
-                        Tuition: {university.tuitionInfo.currency || 'USD'} {university.tuitionInfo.estimatedCost?.toLocaleString()} {university.tuitionInfo.note}
+                        {t('studentHub.majorMatch.tuition', { 
+                          currency: university.tuitionInfo.currency || 'USD', 
+                          amount: university.tuitionInfo.estimatedCost?.toLocaleString() || '0',
+                          note: university.tuitionInfo.note || ''
+                        })}
                       </Text>
                     )}
                   </Space>
@@ -269,7 +278,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
 
       {/* Scholarships */}
       {analysisResult?.scholarships && analysisResult.scholarships.length > 0 && (
-        <Card title={<><TrophyOutlined /> Available Scholarships</>} size="small">
+        <Card title={<><TrophyOutlined /> {t('studentHub.majorMatch.availableScholarships')}</>} size="small">
           <List
             dataSource={analysisResult.scholarships}
             renderItem={(scholarship: any) => (
@@ -309,7 +318,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                       )}
                       {scholarship.applicationDeadline && (
                         <Text type="secondary">
-                          Deadline: {new Date(scholarship.applicationDeadline).toLocaleDateString()}
+                          {t('studentHub.majorMatch.deadline', { date: formatLocaleDate(scholarship.applicationDeadline, i18n.language, { year: 'numeric', month: 'short', day: 'numeric' }) })}
                         </Text>
                       )}
                     </Space>
@@ -347,10 +356,10 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
 
       {/* Feedback Section */}
       <Divider />
-      <Card title="Feedback" size="small">
+      <Card title={t('studentHub.majorMatch.feedback')} size="small">
         <Space direction="vertical" style={{ width: '100%' }}>
           <div>
-            <Text strong>Rate this analysis: </Text>
+            <Text strong>{t('studentHub.majorMatch.rateAnalysis')}: </Text>
             <Rate 
               value={feedbackRating} 
               onChange={(value) => {

@@ -1,0 +1,129 @@
+.readonly-wrapper {
+  position: relative;
+  background: transparent;
+
+  .readonly-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: transparent;
+  }
+
+  // Disable interactive elements by default
+  button:not(.ant-alert-close-icon):not(.ant-tabs-tab-btn),
+  input:not([readonly]):not(.ant-input-disabled),
+  textarea:not([readonly]):not(.ant-input-disabled),
+  select:not(.ant-select-disabled),
+  [role="button"]:not(.ant-tabs-tab):not(.ant-tabs-tab-btn),
+  a[href]:not(.ant-tabs-tab):not(.ant-tabs-tab-btn),
+  .ant-upload,
+  .ant-upload-drag {
+    pointer-events: none !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Allow viewing/list items and card content
+  .ant-list-item,
+  .essay-card-content,
+  .document-item,
+  .essay-card .ant-card-body,
+  .essay-card {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+  }
+
+  // Essays: Allow download button (2nd button in card actions)
+  .ant-card-actions button:nth-child(2) {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+  }
+
+  // Essays: Disable edit (1st) and delete (3rd) buttons
+  .ant-card-actions button:first-child,
+  .ant-card-actions button:nth-child(3) {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+
+  // Documents: Allow download button (1st button in Space)
+  .document-actions .ant-space > button:first-child {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+  }
+
+  // Documents: Disable delete button (2nd button in Space)
+  .document-actions .ant-space > button:nth-child(2) {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+
+  // Disable all upload components
+  .ant-upload,
+  .ant-upload-drag {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+
+  // Allow scrolling
+  overflow-y: visible;
+
+  // Ensure tab navigation still works
+  .ant-tabs,
+  .ant-tabs-tab,
+  .ant-tabs-tab-btn,
+  .ant-tabs-nav-list,
+  .ant-tabs-nav {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+
+  // Style for tabs within student hub pages - selected tab icons should be crimson
+  // Target tabs inside the content area (not the main navigation tabs)
+  .ant-tabs-nav {
+    .ant-tabs-tab {
+      &.ant-tabs-tab-active {
+        svg,
+        .anticon,
+        [class*="icon"],
+        .menu-icon,
+        .tab-label svg,
+        .tab-label .anticon {
+          color: #8b0000 !important;
+          fill: #8b0000 !important;
+          stroke: #8b0000 !important;
+        }
+
+        .tab-label {
+          svg,
+          .anticon {
+            color: #8b0000 !important;
+            fill: #8b0000 !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Ensure FontAwesome icons in active tabs are crimson
+  .ant-tabs-tab-active {
+    .tab-label,
+    .tab-label svg,
+    .tab-label svg path,
+    .tab-label svg g {
+      color: #8b0000 !important;
+      fill: #8b0000 !important;
+    }
+  }
+}
+

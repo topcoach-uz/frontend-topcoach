@@ -257,8 +257,8 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
   return (
     <div className="personal-profile">
       <Alert
-        message="Complete Your Profile for AI Recommendations"
-        description="To get the best AI-powered essay assistance and major matching, please complete all required fields marked with *"
+        message={t('studentHub.profile.completeForAI')}
+        description={t('studentHub.profile.completeForAIDesc')}
         type="info"
         showIcon
         style={{ marginBottom: 24 }}
@@ -271,15 +271,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
         className="personal-form"
       >
         {/* Location Information Section */}
-        <Card title="Location Information" className="section-card">
+        <Card title={t('studentHub.profile.locationInformation')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="country"
-                label="Country"
-                rules={[{ required: true, message: 'Please select your country' }]}
+                label={t('studentHub.profile.country')}
+                rules={[{ required: true, message: t('studentHub.profile.selectCountryMessage') }]}
               >
-                <Select placeholder="Select country" className="form-select">
+                <Select placeholder={t('studentHub.profile.selectCountry')} className="form-select">
                   {countryOptions.map(option => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
@@ -289,32 +289,32 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
-              <Form.Item name="state" label="State/Province">
-                <Input placeholder="Enter your state or province" className="form-input" />
+              <Form.Item name="state" label={t('studentHub.profile.stateProvince')}>
+                <Input placeholder={t('studentHub.profile.enterStateProvince')} className="form-input" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="city"
-                label="City"
-                rules={[{ required: true, message: 'Please enter your city' }]}
+                label={t('studentHub.profile.city')}
+                rules={[{ required: true, message: t('studentHub.profile.enterCityMessage') }]}
               >
-                <Input placeholder="Enter your city" className="form-input" />
+                <Input placeholder={t('studentHub.profile.enterCity')} className="form-input" />
               </Form.Item>
             </Col>
           </Row>
         </Card>
 
         {/* Required Fields for AI Recommendations */}
-        <Card title="Required for AI Recommendations *" className="section-card">
+        <Card title={t('studentHub.profile.requiredForAI')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="intendedMajor"
-                label="Intended Major *"
-                rules={[{ required: true, message: 'Please select your intended major' }]}
+                label={t('studentHub.profile.intendedMajor')}
+                rules={[{ required: true, message: t('studentHub.profile.selectIntendedMajorMessage') }]}
               >
-                <Select placeholder="Select your intended major" className="form-select">
+                <Select placeholder={t('studentHub.profile.selectIntendedMajor')} className="form-select">
                   {majorOptions.map(major => (
                     <Option key={major} value={major}>{major}</Option>
                   ))}
@@ -324,9 +324,9 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="intendedMajorConfidence"
-                label="Confidence Level (1-5)"
-                tooltip="How confident are you about this major choice?"
-                rules={[{ type: 'number', min: 1, max: 5, message: 'Please select a confidence level between 1 and 5' }]}
+                label={t('studentHub.profile.confidenceLevel')}
+                tooltip={t('studentHub.profile.confidenceLevelTooltip')}
+                rules={[{ type: 'number', min: 1, max: 5, message: t('studentHub.profile.confidenceLevelMessage') }]}
               >
                 <Rate allowHalf count={5} />
               </Form.Item>
@@ -334,11 +334,11 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24}>
               <Form.Item
                 name="intendedMajorWhy"
-                label="Why are you interested in this major?"
-                tooltip="This helps AI provide better essay and major recommendations"
+                label={t('studentHub.profile.whyInterestedMajor')}
+                tooltip={t('studentHub.profile.whyInterestedMajorTooltip')}
               >
                 <TextArea
-                  placeholder="Describe what draws you to this field..."
+                  placeholder={t('studentHub.profile.describeMajorInterest')}
                   rows={3}
                   className="form-textarea"
                 />
@@ -347,13 +347,13 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24}>
               <Form.Item
                 name="interests"
-                label="Personal Interests *"
-                rules={[{ required: true, message: 'Please select at least one interest' }]}
-                tooltip="Your interests help AI understand your passions for essay personalization"
+                label={t('studentHub.profile.personalInterests')}
+                rules={[{ required: true, message: t('studentHub.profile.selectInterestsMessage') }]}
+                tooltip={t('studentHub.profile.interestsTooltip')}
               >
                 <Select
                   mode="multiple"
-                  placeholder="Select your interests"
+                  placeholder={t('studentHub.profile.selectInterests')}
                   className="form-select"
                 >
                   {interestOptions.map(interest => (
@@ -365,12 +365,12 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24}>
               <Form.Item
                 name="careerGoals"
-                label="Career Goals *"
-                rules={[{ required: true, message: 'Please describe your career goals' }]}
-                tooltip="Describe your short-term and long-term career aspirations (one per line)"
+                label={t('studentHub.profile.careerGoals')}
+                rules={[{ required: true, message: t('studentHub.profile.describeCareerGoals') }]}
+                tooltip={t('studentHub.profile.careerGoalsTooltip')}
               >
                 <TextArea
-                  placeholder="Enter your career goals, one per line..."
+                  placeholder={t('studentHub.profile.enterCareerGoals')}
                   rows={4}
                   className="form-textarea"
                 />
@@ -379,9 +379,9 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24}>
               <Form.Item
                 name="languages"
-                label="Languages Spoken *"
-                rules={[{ required: true, message: 'Please add at least one language' }]}
-                tooltip="Required for AI essay assistance and mentorship matching"
+                label={t('studentHub.profile.languagesSpoken')}
+                rules={[{ required: true, message: t('studentHub.profile.addLanguageMessage') }]}
+                tooltip={t('studentHub.profile.languagesTooltip')}
               >
                 <Form.List name="languages">
                   {(fields, { add, remove }) => (
@@ -391,9 +391,9 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
                           <Form.Item
                             {...restField}
                             name={[name, 'language']}
-                            rules={[{ required: true, message: 'Select language' }]}
+                            rules={[{ required: true, message: t('studentHub.profile.selectLanguage') }]}
                           >
-                            <Select placeholder="Language" style={{ width: 150 }}>
+                            <Select placeholder={t('studentHub.profile.language')} style={{ width: 150 }}>
                               {languageOptions.map(lang => (
                                 <Option key={lang} value={lang}>{lang}</Option>
                               ))}
@@ -402,19 +402,19 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
                           <Form.Item
                             {...restField}
                             name={[name, 'proficiency']}
-                            rules={[{ required: true, message: 'Select proficiency' }]}
+                            rules={[{ required: true, message: t('studentHub.profile.selectProficiency') }]}
                           >
-                            <Select placeholder="Proficiency" style={{ width: 150 }}>
+                            <Select placeholder={t('studentHub.profile.proficiency')} style={{ width: 150 }}>
                               {proficiencyOptions.map(opt => (
                                 <Option key={opt.value} value={opt.value}>{opt.label}</Option>
                               ))}
                             </Select>
                           </Form.Item>
-                          <Button type="link" onClick={() => remove(name)}>Remove</Button>
+                          <Button type="link" onClick={() => remove(name)}>{t('studentHub.profile.remove')}</Button>
                         </Space>
                       ))}
                       <Button type="dashed" onClick={() => add()} block>
-                        + Add Language
+                        {t('studentHub.profile.addLanguage')}
                       </Button>
                     </>
                   )}
@@ -424,11 +424,11 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data }) => {
             <Col xs={24} sm={12}>
               <Form.Item
                 name="backupMajors"
-                label="Backup Majors"
+                label={t('studentHub.profile.backupMajors')}
               >
                 <Select
                   mode="multiple"
-                  placeholder="Select backup majors"
+                  placeholder={t('studentHub.profile.selectBackupMajors')}
                   className="form-select"
                 >
                   {majorOptions.map(major => (

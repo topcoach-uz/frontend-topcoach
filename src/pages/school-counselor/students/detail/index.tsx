@@ -10,6 +10,7 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   TrophyOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
 import { api } from 'src/app/api';
 import { useOrganization } from '../../context/OrganizationContext';
@@ -250,6 +251,16 @@ const StudentDetailPage: React.FC = () => {
                 </span>
               )}
             </Space>
+            <div style={{ marginTop: 12 }}>
+              <Button
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={() => navigate(`/school-counselor/students/${id}/my-journey`)}
+                style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
+              >
+                View My Journey
+              </Button>
+            </div>
           </div>
         </div>
       </div>

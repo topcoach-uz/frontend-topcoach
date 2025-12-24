@@ -144,17 +144,16 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
         <div className="sidebar-header">
           {!collapsed && (
             <>
-              <div className="sidebar-title">Tracking Portal</div>
               {isSuperAdmin && selectedOrganizationId && (
                 <div className="organization-name">
                   {organizations.find((org) => org.id === selectedOrganizationId)?.name || ''}
                 </div>
               )}
-              {/* {isCounselor && counselorOrganizationId && (
-                <div style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
-                  Viewing your organization
+              {isCounselor && counselorOrganizationId && (
+                <div className="organization-name">
+                  {organizations.find((org) => org.id === counselorOrganizationId)?.name || ''}
                 </div>
-              )} */}
+              )}
             </>
           )}
           {!isMobile && (

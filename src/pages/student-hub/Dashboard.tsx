@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Spin, Alert, Tabs, message, Dropdown, Menu } from 'antd';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import FontAwesomeIcon from '../../components/common/icons/FontAwesomeIcon';
 import { 
@@ -84,13 +85,32 @@ const Dashboard: React.FC = () => {
 
   // Helper function to format dates like Applications page
   const formatDate = (dateString: string | Date) => {
-    if (!dateString) return 'TBD';
+    if (!dateString) return t('studentHub.applications.tbd') || 'TBD';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    const localeMap: { [key: string]: string } = {
+      en: 'en-US',
+      ru: 'ru-RU',
+      uz: 'uz-UZ',
+      kk: 'ru-RU',
+    };
+    const lang = i18n.language || 'en';
+    const mappedLocale = localeMap[lang] || 'en-US';
+    return date.toLocaleDateString(mappedLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const getStatusText = (status: string) => {
+    if (!status) return 'UNKNOWN';
+    const statusKey = `studentHub.applications.status.${status}`;
+    const translated = t(statusKey);
+    // If translation key doesn't exist, fallback to formatted status
+    if (translated === statusKey) {
+      return status.replace('_', ' ').toUpperCase();
+    }
+    return translated.toUpperCase();
   };
 
   // Loading is handled by useStudentHub hook - no need for duplicate loading state
@@ -245,32 +265,32 @@ const Dashboard: React.FC = () => {
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, marginBottom: studentProfile.completionPercentage < 100 ? 8 : 0, lineHeight: '1.5' }}>
                   {studentProfile.completionPercentage === 100 
                     ? '🎉 Profile Complete!' 
-                    : 'Complete Your Profile for AI Recommendations'}
+                    : t('studentHub.profile.completeForAI')}
                 </h3>
                 {studentProfile.completionPercentage < 100 && (
                   <div style={{ fontSize: 13, color: '#666' }}>
-                    <span style={{ fontWeight: 500 }}>Missing: </span>
+                    <span style={{ fontWeight: 500 }}>{t('studentHub.dashboard.missing')}</span>
                     {(() => {
                       const missingFields: string[] = [];
                       
                       // Check required Personal Profile fields (matches backend calculation)
                       if (!studentProfile.personalProfile?.country) {
-                        missingFields.push('Country');
+                        missingFields.push(t('studentHub.profile.country'));
                       }
                       if (!studentProfile.personalProfile?.city) {
-                        missingFields.push('City');
+                        missingFields.push(t('studentHub.profile.city'));
                       }
                       if (!studentProfile.personalProfile?.intendedMajors?.length) {
-                        missingFields.push('Intended Major');
+                        missingFields.push(t('studentHub.profile.intendedMajor').replace(' *', ''));
                       }
                       if (!studentProfile.personalProfile?.personalInterests?.length) {
-                        missingFields.push('Personal Interests');
+                        missingFields.push(t('studentHub.profile.personalInterests').replace(' *', ''));
                       }
                       if (!studentProfile.personalProfile?.careerGoals?.length) {
-                        missingFields.push('Career Goals');
+                        missingFields.push(t('studentHub.profile.careerGoals').replace(' *', ''));
                       }
                       if (!studentProfile.personalProfile?.demographics?.languages?.length) {
-                        missingFields.push('Languages Spoken');
+                        missingFields.push(t('studentHub.profile.languagesSpoken').replace(' *', ''));
                       }
                       
                       // Check Academic Profile required fields (matches backend - ALL 5 fields required)
@@ -486,20 +506,46 @@ const Dashboard: React.FC = () => {
                               </div>
                               <div className="activity-subtitle">{item.subtitle}</div>
                               <div className="activity-date">
-                                {new Date(item.timestamp).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                {(() => {
+                                  const localeMap: { [key: string]: string } = {
+                                    en: 'en-US',
+                                    ru: 'ru-RU',
+                                    uz: 'uz-UZ',
+                                    kk: 'ru-RU',
+                                  };
+                                  const lang = i18n.language || 'en';
+                                  const mappedLocale = localeMap[lang] || 'en-US';
+                                  return new Date(item.timestamp).toLocaleDateString(mappedLocale, {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  });
+                                })()}
                               </div>
                             </div>
                           </div>
                           <div className="activity-status">
                             <Badge
-                              status={getStatusColor(item.status) as any}
-                              text={item.status?.replace('_', ' ').toUpperCase()}
+                              status={(() => {
+                                switch (item.status) {
+                                  case 'submitted':
+                                    return 'processing';
+                                  case 'accepted':
+                                    return 'success';
+                                  case 'rejected':
+                                    return 'error';
+                                  case 'waitlisted':
+                                    return 'warning';
+                                  case 'in_progress':
+                                  case 'applying':
+                                    return 'default';
+                                  default:
+                                    return 'default';
+                                }
+                              })() as any}
+                              text={getStatusText(item.status)}
                             />
                           </div>
                         </div>
@@ -611,7 +657,18 @@ const Dashboard: React.FC = () => {
                     </div>
                     <Badge
                       color={item.type === 'scholarship' ? 'blue' : 'green'}
-                      text={item.type === 'scholarship' ? t('studentHub.applications.scholarship').toUpperCase() : t('studentHub.applications.university').toUpperCase()}
+                      text={(() => {
+                        const getCategoryText = (category: string) => {
+                          if (!category) return 'UNKNOWN';
+                          const categoryKey = `studentHub.applications.category.${category}`;
+                          const translated = t(categoryKey);
+                          if (translated === categoryKey) {
+                            return category.toUpperCase();
+                          }
+                          return translated.toUpperCase();
+                        };
+                        return item.type === 'scholarship' ? getCategoryText('scholarship') : getCategoryText('university');
+                      })()}
                     />
                   </List.Item>
                 )}
@@ -626,12 +683,22 @@ const Dashboard: React.FC = () => {
                         second: '2-digit',
                         hour12: false
                       })}</div>
-                      <div className="date-date">{currentTime.toLocaleDateString('en-US', { 
-                        weekday: 'long',
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}</div>
+                      <div className="date-date">{(() => {
+                        const localeMap: { [key: string]: string } = {
+                          en: 'en-US',
+                          ru: 'ru-RU',
+                          uz: 'uz-UZ',
+                          kk: 'ru-RU',
+                        };
+                        const lang = i18n.language || 'en';
+                        const mappedLocale = localeMap[lang] || 'en-US';
+                        return currentTime.toLocaleDateString(mappedLocale, { 
+                          weekday: 'long',
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        });
+                      })()}</div>
                     </div>
                   </div>
                   <p>{t('studentHub.dashboard.noUpcomingDeadlines')}</p>

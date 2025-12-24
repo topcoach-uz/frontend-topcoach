@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider, Spin, Avatar } from 'antd';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { APPLICATION_ICONS, STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/icons';
@@ -255,11 +256,52 @@ const ApplicationsPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     if (!dateString) return t('studentHub.applications.tbd');
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    const localeMap: { [key: string]: string } = {
+      en: 'en-US',
+      ru: 'ru-RU',
+      uz: 'uz-UZ',
+      kk: 'ru-RU',
+    };
+    const lang = i18n.language || 'en';
+    const mappedLocale = localeMap[lang] || 'en-US';
+    return date.toLocaleDateString(mappedLocale, { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
+  };
+
+  const getStatusText = (status: string) => {
+    if (!status) return 'UNKNOWN';
+    const statusKey = `studentHub.applications.status.${status}`;
+    const translated = t(statusKey);
+    // If translation key doesn't exist, fallback to formatted status
+    if (translated === statusKey) {
+      return status.replace('_', ' ').toUpperCase();
+    }
+    return translated.toUpperCase();
+  };
+
+  const getCategoryText = (category: string) => {
+    if (!category) return 'UNKNOWN';
+    const categoryKey = `studentHub.applications.category.${category}`;
+    const translated = t(categoryKey);
+    // If translation key doesn't exist, fallback to formatted category
+    if (translated === categoryKey) {
+      return category.toUpperCase();
+    }
+    return translated.toUpperCase();
+  };
+
+  const getApplicationTypeText = (type: string) => {
+    if (!type) return 'UNKNOWN';
+    const typeKey = `studentHub.applications.applicationType.${type}`;
+    const translated = t(typeKey);
+    // If translation key doesn't exist, fallback to formatted type
+    if (translated === typeKey) {
+      return type.replace('-', ' ').toUpperCase();
+    }
+    return translated.toUpperCase();
   };
 
   const getCategoryColor = (category: string) => {
@@ -400,7 +442,7 @@ const ApplicationsPage: React.FC = () => {
                         </div>
                       </div>
                       <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item?.category)}>
-                        {item.type === 'scholarship' ? t('studentHub.applications.scholarship').toUpperCase() : t('studentHub.applications.university').toUpperCase()}
+                        {item.type === 'scholarship' ? getCategoryText('scholarship') : getCategoryText('university')}
                       </Tag>
                     </List.Item>
                   )}
@@ -476,7 +518,7 @@ const ApplicationsPage: React.FC = () => {
                             color={application.status === 'accepted' ? 'green' : application.status === 'rejected' ? 'red' : application.status === 'applying' ? 'blue' : 'orange'}
                             className="status-tag"
                           >
-                            {application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
+                            {getStatusText(application.status)}
                           </Tag>
                         </div>
                       </div>
@@ -485,7 +527,7 @@ const ApplicationsPage: React.FC = () => {
                         <div className="detail-item">
                           <FontAwesomeIcon icon="file-alt" className="detail-icon" />
                           <span className="detail-label">{t('studentHub.applications.applicationType')}</span>
-                          <span className="detail-value">{application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                          <span className="detail-value">{getApplicationTypeText(application.applicationType)}</span>
                         </div>
                         <div className="detail-item">
                           <FontAwesomeIcon icon="calendar" className="detail-icon" />
@@ -563,7 +605,7 @@ const ApplicationsPage: React.FC = () => {
                         {scholarship?.scholarshipName || t('studentHub.applications.unknownScholarship')}
                         <span className="scholarship-amount-inline">${scholarship?.amount?.toLocaleString() || '0'}</span>
                       </div>
-                      <div className="scholarship-status">{scholarship?.status?.toUpperCase() || 'UNKNOWN'}</div>
+                      <div className="scholarship-status">{getStatusText(scholarship?.status)}</div>
                     </div>
 
                     <div className="scholarship-details">
@@ -594,7 +636,7 @@ const ApplicationsPage: React.FC = () => {
                         <li>
                           <FontAwesomeIcon icon="info-circle" className="detail-icon" />
                           <strong>{t('studentHub.applications.status')}:</strong>
-                          <span>{scholarship?.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}</span>
+                          <span>{getStatusText(scholarship?.status)}</span>
                         </li>
                       </ul>
                     </div>
@@ -677,9 +719,9 @@ const ApplicationsPage: React.FC = () => {
           <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 6 }}>
             <strong>{applicationToDelete.universityName || applicationToDelete.scholarshipName}</strong>
             <br />
-            <small>{t('studentHub.applications.category')}: {applicationToDelete.category?.toUpperCase()}</small>
+            <small>{t('studentHub.applications.category')}: {getCategoryText(applicationToDelete.category)}</small>
             <br />
-            <small>{t('studentHub.applications.status')}: {applicationToDelete.status?.replace('_', ' ').toUpperCase()}</small>
+            <small>{t('studentHub.applications.status')}: {getStatusText(applicationToDelete.status)}</small>
           </div>
         )}
         <p style={{ marginTop: 16, color: '#8b0000' }}>

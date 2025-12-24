@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, List, Upload, message, Row, Col, Tag, Space, Progress, Tabs, Input, Modal, Select, Statistic, Badge, Empty, Spin, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { useStudentHub } from '../../../hooks/useStudentHub';
@@ -9,7 +10,6 @@ import {
   useUploadDocumentMutation, 
   useDeleteDocumentMutation,
   useDownloadDocumentMutation,
-  useGetDocumentStatsQuery,
   DOCUMENT_CATEGORIES,
   DocumentType
 } from '../../../app/services/student-hub/documentManagementApi';
@@ -21,7 +21,12 @@ const { Dragger } = Upload;
 const { Search } = Input;
 const { Option } = Select;
 
-const DocumentsPage: React.FC = () => {
+interface DocumentsPageProps {
+  hideStats?: boolean;
+  documentCount?: number;
+}
+
+const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, documentCount = 0 }) => {
   const { t } = useTranslation();
   
   // Helper function to get translated category labels
@@ -84,7 +89,6 @@ const DocumentsPage: React.FC = () => {
     limit: 100,
     documentType: selectedCategory === 'all' ? undefined : selectedCategory
   });
-  const { data: statsResponse, isLoading: statsLoading } = useGetDocumentStatsQuery();
   const [uploadDocument, { isLoading: uploadLoading }] = useUploadDocumentMutation();
   const [deleteDocument, { isLoading: deleteLoading }] = useDeleteDocumentMutation();
   const [downloadDocument] = useDownloadDocumentMutation();
@@ -94,7 +98,8 @@ const DocumentsPage: React.FC = () => {
   const filteredDocuments = allDocuments.filter(doc =>
     doc.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const stats = statsResponse?.data;
+  // Always use the actual document count from the data
+  const totalDocumentCount = documentCount !== undefined && documentCount !== 0 ? documentCount : allDocuments.length;
   const documentsByCategory = filteredDocuments.reduce((acc, doc) => {
     if (!acc[doc.documentType]) acc[doc.documentType] = [];
     acc[doc.documentType].push(doc);
@@ -235,7 +240,15 @@ const DocumentsPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const localeMap: { [key: string]: string } = {
+      en: 'en-US',
+      ru: 'ru-RU',
+      uz: 'uz-UZ',
+      kk: 'ru-RU',
+    };
+    const lang = i18n.language || 'en';
+    const mappedLocale = localeMap[lang] || 'en-US';
+    return new Date(dateString).toLocaleDateString(mappedLocale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -245,7 +258,7 @@ const DocumentsPage: React.FC = () => {
   };
 
   // Show loading state
-  if (documentsLoading || statsLoading) {
+  if (documentsLoading) {
     return (
       <div className="documents-loading">
         <Spin size="large" />
@@ -258,7 +271,9 @@ const DocumentsPage: React.FC = () => {
     <div className="documents-page">
       {/* Page Header */}
       <div className="page-header">
-        <h1 className="page-title">{t('studentHub.documents.title')}</h1>
+        <h1 className="page-title">
+          {t('studentHub.documents.title')} ({totalDocumentCount})
+        </h1>
         <p className="page-subtitle">{t('studentHub.documents.subtitle')}</p>
         <div className="page-actions">
           <Input
@@ -280,29 +295,6 @@ const DocumentsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Document Statistics */}
-      <Row gutter={[24, 24]} className="stats-row">
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={t('studentHub.documents.totalDocuments')}
-              value={stats?.total || 0}
-              prefix={<FontAwesomeIcon icon="file" />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={t('studentHub.documents.storageUsed')}
-              value={formatFileSize(stats?.totalSize || 0)}
-              prefix={<FontAwesomeIcon icon="hdd" />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-      </Row>
 
       {/* Main Content */}
       <Card className="documents-main-card">
