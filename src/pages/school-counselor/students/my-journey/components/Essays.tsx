@@ -1,20 +1,19 @@
 import React from 'react';
 import EssaysPage from 'src/pages/student-hub/essays/EssaysPage';
-import { StudentContext } from '../context/StudentContext';
 import './readonly-overlay.scss';
 
 interface StudentHubEssaysProps {
   studentId: string;
+  studentName?: string;
 }
 
-const StudentHubEssays: React.FC<StudentHubEssaysProps> = ({ studentId }) => {
+const StudentHubEssays: React.FC<StudentHubEssaysProps> = ({ studentId, studentName }) => {
+  // Pass props directly to EssaysPage - no context needed
   return (
-    <StudentContext.Provider value={{ studentId, readOnly: true }}>
-      <div className="readonly-wrapper">
-        <EssaysPage />
-        <div className="readonly-overlay" />
-      </div>
-    </StudentContext.Provider>
+    <div className="readonly-wrapper">
+      <EssaysPage readOnly={true} studentId={studentId} />
+      <div className="readonly-overlay" />
+    </div>
   );
 };
 

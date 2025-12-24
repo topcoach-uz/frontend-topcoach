@@ -8,6 +8,11 @@ export const authApi = RtkApi.injectEndpoints({
       query: () => ({ url: '/users/me' }),
       providesTags: ['GetMe'],
     }),
+    // Get user by ID (for counselors viewing student data)
+    getUserById: build.query<UsersSchema, string>({
+      query: (userId) => ({ url: `/users/${userId}` }),
+      providesTags: (result, error, userId) => [{ type: 'Users', id: userId }],
+    }),
     linkCalendar: build.mutation<void, CalendarLinkDto>({
       query: (body) => ({
         url: '/auth/google/calendar/link',
@@ -53,6 +58,7 @@ export const authApi = RtkApi.injectEndpoints({
 
 export const {
   useGetMeQuery,
+  useGetUserByIdQuery,
   useLinkCalendarMutation,
   useInvalidateGetMeMutation,
   useUpdateTelegramPhoneNumberMutation,

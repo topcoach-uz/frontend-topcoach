@@ -7,6 +7,7 @@ import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { ESSAY_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
 import { useGetStudentEssaysQuery, useDeleteStudentEssayMutation } from '../../../app/services/student-hub/essayManagementApi';
+import { useGetStudentJourneyEssaysQuery } from '../../../app/services/student-hub/studentJourneyReadonlyApi';
 import { baseUrl } from '../../../app/services/api/const';
 import NewEssayPage from './NewEssayPage';
 import WriteTab from './components/WriteTab';
@@ -15,7 +16,13 @@ import './EssaysPage.scss';
 
 const { Option } = Select;
 
-const EssaysPage: React.FC = () => {
+// Props interface for EssaysPage - supports both normal and read-only mode
+export interface EssaysPageProps {
+  readOnly?: boolean;
+  studentId?: string;
+}
+
+const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +32,25 @@ const EssaysPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const { dashboard, isLoading } = useStudentHub();
-  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery({ page: 1, limit: 100 });
+  const isReadOnly = readOnly === true;
+  
+  // Normal mode - fetch current user's essays
+  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  
+  // Read-only mode - fetch student's essays via counselor API
+  const { data: readOnlyEssaysResponse, isLoading: readOnlyEssaysLoading } = useGetStudentJourneyEssaysQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  
+  // Merge data based on mode - type as any[] for flexibility
+  const finalEssaysData: any[] = isReadOnly 
+    ? (readOnlyEssaysResponse?.data as any)?.essays || []
+    : (essaysResponse?.data as any)?.essays || [];
+  
   const [deleteStudentEssay, { isLoading: isDeleting }] = useDeleteStudentEssayMutation();
 
   // Handle URL parameters for tab navigation and essay editing
@@ -52,16 +77,16 @@ const EssaysPage: React.FC = () => {
     }
   };
 
-  // Use real data from API
+  // Use real data from API - use merged data that handles both normal and read-only modes
   const essaysData = {
     overview: {
-      totalEssays: essaysResponse?.data?.length || 0,
-      inProgress: essaysResponse?.data?.filter(e => e.status === 'draft').length || 0,
-      completed: essaysResponse?.data?.filter(e => e.status === 'final').length || 0,
-      submitted: essaysResponse?.data?.filter(e => e.status === 'submitted').length || 0,
-      wordCount: essaysResponse?.data?.reduce((sum, e) => sum + (e.wordCount || 0), 0) || 0,
+      totalEssays: finalEssaysData?.length || 0,
+      inProgress: finalEssaysData?.filter((e: any) => e.status === 'draft').length || 0,
+      completed: finalEssaysData?.filter((e: any) => e.status === 'final').length || 0,
+      submitted: finalEssaysData?.filter((e: any) => e.status === 'submitted').length || 0,
+      wordCount: finalEssaysData?.reduce((sum: number, e: any) => sum + (e.wordCount || 0), 0) || 0,
     },
-    essays: essaysResponse?.data || [],
+    essays: finalEssaysData || [],
     templates: [
       {
         id: 1,

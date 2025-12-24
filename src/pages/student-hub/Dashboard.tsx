@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Spin, Alert, Tabs, message, Dropdown, Menu } from 'antd';
+import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Spin, Alert, Tabs, message, Dropdown, Menu, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
@@ -22,12 +22,25 @@ import {
 import { 
   useGetDocumentsQuery 
 } from '../../app/services/student-hub/documentManagementApi';
+import {
+  useGetStudentJourneyCollegeApplicationsQuery,
+  useGetStudentJourneyScholarshipApplicationsQuery,
+  useGetStudentJourneyEssaysQuery,
+  useGetStudentJourneyDocumentsQuery,
+  useGetStudentJourneyDashboardQuery,
+} from '../../app/services/student-hub/studentJourneyReadonlyApi';
 import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
 import './Dashboard.scss';
 
-const { TabPane } = Tabs;
+// Props interface for Dashboard - supports both normal and read-only mode
+export interface DashboardProps {
+  // For read-only mode (counselor viewing student)
+  readOnly?: boolean;
+  studentId?: string;
+  studentName?: string;
+}
 
 // Component to display university name - fetches from universityId if available
 const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: string }> = ({ universityId, universityName }) => {
@@ -49,12 +62,20 @@ const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: 
   return <>{universityName || t('studentHub.dashboard.unknownUniversity')}</>;
 };
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, studentName }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { dashboard, stats, profile, notifications, isLoading, hasError } = useStudentHub();
-  const { profile: studentProfile, recalculateCompletion } = useStudentProfile();
-  const { data: userData } = useGetMeQuery();
+  
+  // Pass studentId to hooks when in read-only mode to fetch correct student data
+  const hookOptions = readOnly && studentId ? { studentId } : undefined;
+  const { dashboard, stats, profile, notifications, isLoading, hasError } = useStudentHub(hookOptions);
+  const { profile: studentProfile, recalculateCompletion } = useStudentProfile(hookOptions);
+  
+  // Determine if we're in read-only mode from props
+  const isReadOnly = readOnly === true;
+  
+  // Get user data - only for current user (not in read-only mode)
+  const { data: currentUserData } = useGetMeQuery(undefined, { skip: isReadOnly });
   
   const handleRecalculate = async () => {
     if (studentProfile?.id) {
@@ -62,8 +83,10 @@ const Dashboard: React.FC = () => {
     }
   };
   
-  // Get user name from user data
-  const userName = userData?.profile?.name || 'Student';
+  // Get user name - from props if in read-only mode, otherwise from current user
+  const userName = isReadOnly 
+    ? (studentName || t('studentHub.dashboard.student'))
+    : (currentUserData?.profile?.name || t('studentHub.dashboard.student'));
   
   // State for current time
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -77,11 +100,58 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
   
-  // Fetch the same data as Applications page
-  const { data: applicationsResponse, isLoading: applicationsLoading } = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
-  const { data: scholarshipsResponse, isLoading: scholarshipsLoading } = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 });
-  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery({ page: 1, limit: 100 });
-  const { data: documentsResponse, isLoading: documentsLoading } = useGetDocumentsQuery({ page: 1, limit: 100 });
+  // ========== DATA FETCHING ==========
+  // Use different APIs based on whether we're in read-only mode (counselor viewing student)
+  // or normal mode (student viewing their own data)
+  
+  // Normal mode - fetch current user's data
+  const { data: applicationsResponse, isLoading: applicationsLoading } = useGetCollegeApplicationsQuery(
+    { page: 1, limit: 100 }, 
+    { skip: isReadOnly }
+  );
+  const { data: scholarshipsResponse, isLoading: scholarshipsLoading } = useGetScholarshipApplicationsQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  const { data: essaysResponse, isLoading: essaysLoading } = useGetStudentEssaysQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  const { data: documentsResponse, isLoading: documentsLoading } = useGetDocumentsQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+
+  // Read-only mode - fetch student's data via counselor API
+  const { data: readOnlyApplicationsResponse, isLoading: readOnlyApplicationsLoading } = useGetStudentJourneyCollegeApplicationsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  const { data: readOnlyScholarshipsResponse, isLoading: readOnlyScholarshipsLoading } = useGetStudentJourneyScholarshipApplicationsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  const { data: readOnlyEssaysResponse, isLoading: readOnlyEssaysLoading } = useGetStudentJourneyEssaysQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  const { data: readOnlyDocumentsResponse, isLoading: readOnlyDocumentsLoading } = useGetStudentJourneyDocumentsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  const { data: readOnlyDashboardResponse } = useGetStudentJourneyDashboardQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+
+  // Merge data based on mode
+  const finalApplicationsData = isReadOnly ? readOnlyApplicationsResponse?.data : applicationsResponse?.data;
+  const finalScholarshipsData = isReadOnly ? readOnlyScholarshipsResponse?.data : scholarshipsResponse?.data;
+  const finalEssaysData = isReadOnly 
+    ? (readOnlyEssaysResponse?.data as any)?.essays 
+    : (essaysResponse?.data as any)?.essays;
+  const finalDocumentsData = isReadOnly ? readOnlyDocumentsResponse?.data : documentsResponse?.data;
+  const finalStats = isReadOnly ? readOnlyDashboardResponse?.data?.stats : null;
 
   // Helper function to format dates like Applications page
   const formatDate = (dateString: string | Date) => {
@@ -132,16 +202,17 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Use real data from API
+  // Use real data from API - in read-only mode, use the stats from the read-only API
+  const effectiveStats = isReadOnly ? finalStats : stats;
   const dashboardData = {
-    applicationsCount: stats?.totalApplications || 0,
-    essaysCount: stats?.totalEssays || 0,
+    applicationsCount: effectiveStats?.totalApplications || finalApplicationsData?.length || 0,
+    essaysCount: effectiveStats?.totalEssays || finalEssaysData?.length || 0,
     tasksCount: stats?.totalTasks || 0,
     upcomingDeadlines: [],
     recentActivity: [],
     quickStats: {
-      applicationsSubmitted: stats?.submittedApplications || 0,
-      essaysInProgress: stats?.inProgressEssays || 0,
+      applicationsSubmitted: effectiveStats?.submittedApplications || 0,
+      essaysInProgress: effectiveStats?.inProgressEssays || 0,
       tasksOverdue: stats?.overdueTasks || 0,
     },
   };
@@ -401,7 +472,7 @@ const Dashboard: React.FC = () => {
               <FontAwesomeIcon icon="file" style={{ color: '#8b0000' }} />
               <span className="stat-title">{t('studentHub.dashboard.documents')}</span>
             </div>
-            <div className="stat-value">{documentsResponse?.data?.length || 0}</div>
+            <div className="stat-value">{finalDocumentsData?.length || 0}</div>
           </Card>
         </Col>
         {/* Tasks card commented out as requested */}
@@ -428,11 +499,11 @@ const Dashboard: React.FC = () => {
           {/* Recent Activity */}
           <Card title={t('studentHub.dashboard.recentActivity')} className="activity-card">
             {(() => {
-              // Get data from the same sources as Applications page
-              const applicationsData = applicationsResponse?.data || [];
-              const scholarshipsData = scholarshipsResponse?.data || [];
-              const essaysData = essaysResponse?.data || [];
-              const documentsData = documentsResponse?.data || [];
+              // Get data - use final merged data that handles both normal and read-only modes
+              const applicationsData = finalApplicationsData || [];
+              const scholarshipsData = finalScholarshipsData || [];
+              const essaysData = finalEssaysData || [];
+              const documentsData = finalDocumentsData || [];
               
               // Combine all recent activities
               const recentActivities = [
@@ -618,9 +689,9 @@ const Dashboard: React.FC = () => {
           {/* Upcoming Deadlines */}
           <Card title={t('studentHub.dashboard.upcomingDeadlines')} className="deadlines-card">
             {(() => {
-              // Get data from the same sources as Applications page
-              const applicationsData = applicationsResponse?.data || [];
-              const scholarshipsData = scholarshipsResponse?.data || [];
+              // Get data - use final merged data that handles both normal and read-only modes
+              const applicationsData = finalApplicationsData || [];
+              const scholarshipsData = finalScholarshipsData || [];
               
               // Filter and combine upcoming deadlines
               const upcomingDeadlines = [

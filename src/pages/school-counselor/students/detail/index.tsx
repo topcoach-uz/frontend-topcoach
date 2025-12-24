@@ -12,6 +12,7 @@ import {
   TrophyOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { useOrganization } from '../../context/OrganizationContext';
 import './detail.scss';
@@ -50,6 +51,7 @@ interface Activity {
 }
 
 const StudentDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
@@ -258,7 +260,7 @@ const StudentDetailPage: React.FC = () => {
                 onClick={() => navigate(`/school-counselor/students/${id}/my-journey`)}
                 style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
               >
-                View My Journey
+                {t('schoolCounselor.viewStudentJourney', { name: student.userName })}
               </Button>
             </div>
           </div>

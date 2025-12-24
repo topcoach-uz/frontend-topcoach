@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Tabs, Button, Alert } from 'antd';
+import { Tabs, Button, Alert, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
+import { useGetUserByIdQuery } from 'src/app/services/users';
 import StudentHubDashboard from './components/Dashboard';
 import StudentHubProfile from './components/Profile';
 import StudentHubApplications from './components/Applications';
@@ -13,13 +14,18 @@ import StudentHubGPACalculator from './components/GPACalculator';
 import StudentHubMajorMatch from './components/MajorMatch';
 import './my-journey.scss';
 
-const { TabPane } = Tabs;
-
 const StudentMyJourneyView: React.FC = () => {
   const { id: studentId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Fetch the student's user data to get their name
+  const { data: studentUser, isLoading: userLoading } = useGetUserByIdQuery(studentId || '', { 
+    skip: !studentId 
+  });
+
+  const studentName = studentUser?.profile?.name || t('Student');
 
   if (!studentId) {
     return (
@@ -34,6 +40,81 @@ const StudentMyJourneyView: React.FC = () => {
     );
   }
 
+  if (userLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Tab items using the new `items` prop (fixing deprecation warning)
+  const tabItems = [
+    {
+      key: 'dashboard',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="tachometer-alt" style={{ marginRight: 8 }} />
+          {t('Dashboard')}
+        </span>
+      ),
+    },
+    {
+      key: 'profile',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="user" style={{ marginRight: 8 }} />
+          {t('My Profile')}
+        </span>
+      ),
+    },
+    {
+      key: 'major-match',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="book" style={{ marginRight: 8 }} />
+          {t('Major Match')}
+        </span>
+      ),
+    },
+    {
+      key: 'applications',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="building" style={{ marginRight: 8 }} />
+          {t('Applications')}
+        </span>
+      ),
+    },
+    {
+      key: 'essays',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="pen" style={{ marginRight: 8 }} />
+          {t('Essays')}
+        </span>
+      ),
+    },
+    {
+      key: 'documents',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="file" style={{ marginRight: 8 }} />
+          {t('Documents')}
+        </span>
+      ),
+    },
+    {
+      key: 'gpa-calculator',
+      label: (
+        <span>
+          <FontAwesomeIcon icon="calculator" style={{ marginRight: 8 }} />
+          {t('GPA Calculator')}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="student-my-journey-view">
       <div className="journey-header">
@@ -46,7 +127,7 @@ const StudentMyJourneyView: React.FC = () => {
           {t('Back to Student Details')}
         </Button>
         <h1 className="page-title">
-          {t('My Journey')}
+          {studentName}'s {t('My Journey')}
           <span className="read-only-badge">- {t('Read Only')}</span>
         </h1>
       </div>
@@ -56,81 +137,18 @@ const StudentMyJourneyView: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           type="line"
-        >
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="tachometer-alt" style={{ marginRight: 8 }} />
-                {t('Dashboard')}
-              </span>
-            }
-            key="dashboard"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="user" style={{ marginRight: 8 }} />
-                {t('My Profile')}
-              </span>
-            }
-            key="profile"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="building" style={{ marginRight: 8 }} />
-                {t('Applications')}
-              </span>
-            }
-            key="applications"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="pen" style={{ marginRight: 8 }} />
-                {t('Essays')}
-              </span>
-            }
-            key="essays"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="file" style={{ marginRight: 8 }} />
-                {t('Documents')}
-              </span>
-            }
-            key="documents"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="calculator" style={{ marginRight: 8 }} />
-                {t('GPA Calculator')}
-              </span>
-            }
-            key="gpa-calculator"
-          />
-          <TabPane
-            tab={
-              <span>
-                <FontAwesomeIcon icon="book" style={{ marginRight: 8 }} />
-                {t('Major Match')}
-              </span>
-            }
-            key="major-match"
-          />
-        </Tabs>
+          items={tabItems}
+        />
       </div>
 
       <div className="tabs-content-wrapper">
-        {activeTab === 'dashboard' && <StudentHubDashboard studentId={studentId} />}
-        {activeTab === 'profile' && <StudentHubProfile studentId={studentId} />}
-        {activeTab === 'applications' && <StudentHubApplications studentId={studentId} />}
-        {activeTab === 'essays' && <StudentHubEssays studentId={studentId} />}
-        {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} />}
-        {activeTab === 'gpa-calculator' && <StudentHubGPACalculator studentId={studentId} />}
-        {activeTab === 'major-match' && <StudentHubMajorMatch studentId={studentId} />}
+        {activeTab === 'dashboard' && <StudentHubDashboard studentId={studentId} studentName={studentName} />}
+        {activeTab === 'profile' && <StudentHubProfile studentId={studentId} studentName={studentName} />}
+        {activeTab === 'applications' && <StudentHubApplications studentId={studentId} studentName={studentName} />}
+        {activeTab === 'essays' && <StudentHubEssays studentId={studentId} studentName={studentName} />}
+        {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} studentName={studentName} />}
+        {activeTab === 'gpa-calculator' && <StudentHubGPACalculator studentId={studentId} studentName={studentName} />}
+        {activeTab === 'major-match' && <StudentHubMajorMatch studentId={studentId} studentName={studentName} />}
       </div>
     </div>
   );

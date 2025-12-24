@@ -1,20 +1,24 @@
 import React from 'react';
 import Dashboard from 'src/pages/student-hub/Dashboard';
-import { StudentContext } from '../context/StudentContext';
 import './readonly-overlay.scss';
 
 interface StudentHubDashboardProps {
   studentId: string;
+  studentName?: string;
 }
 
-const StudentHubDashboard: React.FC<StudentHubDashboardProps> = ({ studentId }) => {
+const StudentHubDashboard: React.FC<StudentHubDashboardProps> = ({ studentId, studentName }) => {
+  // Pass props directly to Dashboard - no context needed
+  // studentId is the userId from the URL
   return (
-    <StudentContext.Provider value={{ studentId, readOnly: true }}>
-      <div className="readonly-wrapper">
-        <Dashboard />
-        <div className="readonly-overlay" />
-      </div>
-    </StudentContext.Provider>
+    <div className="readonly-wrapper">
+      <Dashboard 
+        readOnly={true} 
+        studentId={studentId} 
+        studentName={studentName} 
+      />
+      <div className="readonly-overlay" />
+    </div>
   );
 };
 

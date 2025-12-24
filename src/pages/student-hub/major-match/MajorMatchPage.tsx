@@ -16,12 +16,25 @@ import './MajorMatchPage.scss';
 
 const { Title, Text, Paragraph } = Typography;
 
-const MajorMatchPage: React.FC = () => {
+// Props interface for MajorMatchPage - supports both normal and read-only mode
+export interface MajorMatchPageProps {
+  readOnly?: boolean;
+  studentId?: string;
+}
+
+const MajorMatchPage: React.FC<MajorMatchPageProps> = ({ readOnly = false, studentId }) => {
   const { t } = useTranslation();
-  const { profile: studentProfile } = useStudentProfile();
+  const isReadOnly = readOnly === true;
+  const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
+  const { profile: studentProfile } = useStudentProfile(hookOptions);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   
-  const { data: sessions = [], isLoading: sessionsLoading, refetch: refetchSessions } = useGetMajorMatchSessionsQuery();
+  // In read-only mode, we can't fetch sessions (they're tied to the logged-in user)
+  // For now, we'll skip the query in read-only mode
+  const { data: sessions = [], isLoading: sessionsLoading, refetch: refetchSessions } = useGetMajorMatchSessionsQuery(
+    undefined,
+    { skip: isReadOnly }
+  );
   const { data: selectedSession, isLoading: sessionLoading } = useGetMajorMatchSessionQuery(selectedSessionId || '', {
     skip: !selectedSessionId,
   });
@@ -88,26 +101,28 @@ const MajorMatchPage: React.FC = () => {
       </div>
 
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* Action Card */}
-        <Card>
-          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-            <div>
-              <Title level={4}>{t('studentHub.majorMatch.startNewAnalysis')}</Title>
-              <Text type="secondary">
-                {t('studentHub.majorMatch.startNewAnalysisDesc')}
-              </Text>
-            </div>
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={handleCreateAnalysis}
-              loading={creating}
-              disabled={creating}
-            >
-              {creating ? t('studentHub.majorMatch.analyzing') : t('studentHub.majorMatch.startAnalysis')}
-            </Button>
-          </Space>
-        </Card>
+        {/* Action Card - Hide in read-only mode */}
+        {!isReadOnly && (
+          <Card>
+            <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+              <div>
+                <Title level={4}>{t('studentHub.majorMatch.startNewAnalysis')}</Title>
+                <Text type="secondary">
+                  {t('studentHub.majorMatch.startNewAnalysisDesc')}
+                </Text>
+              </div>
+              <Button 
+                type="primary" 
+                size="large"
+                onClick={handleCreateAnalysis}
+                loading={creating}
+                disabled={creating}
+              >
+                {creating ? t('studentHub.majorMatch.analyzing') : t('studentHub.majorMatch.startAnalysis')}
+              </Button>
+            </Space>
+          </Card>
+        )}
 
         {/* Sessions History */}
         {sessions.length > 0 && (

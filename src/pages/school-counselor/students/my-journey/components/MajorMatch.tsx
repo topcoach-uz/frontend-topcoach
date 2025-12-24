@@ -1,20 +1,19 @@
 import React from 'react';
 import MajorMatchPage from 'src/pages/student-hub/major-match/MajorMatchPage';
-import { StudentContext } from '../context/StudentContext';
 import './readonly-overlay.scss';
 
 interface StudentHubMajorMatchProps {
   studentId: string;
+  studentName?: string;
 }
 
-const StudentHubMajorMatch: React.FC<StudentHubMajorMatchProps> = ({ studentId }) => {
+const StudentHubMajorMatch: React.FC<StudentHubMajorMatchProps> = ({ studentId, studentName }) => {
+  // Pass props directly to MajorMatchPage - no context needed
   return (
-    <StudentContext.Provider value={{ studentId, readOnly: true }}>
-      <div className="readonly-wrapper">
-        <MajorMatchPage />
-        <div className="readonly-overlay" />
-      </div>
-    </StudentContext.Provider>
+    <div className="readonly-wrapper">
+      <MajorMatchPage readOnly={true} studentId={studentId} />
+      <div className="readonly-overlay" />
+    </div>
   );
 };
 

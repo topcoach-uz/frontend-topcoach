@@ -13,6 +13,7 @@ import {
   DOCUMENT_CATEGORIES,
   DocumentType
 } from '../../../app/services/student-hub/documentManagementApi';
+import { useGetStudentJourneyDocumentsQuery } from '../../../app/services/student-hub/studentJourneyReadonlyApi';
 import { baseUrl } from '../../../app/services/api/const';
 import { StudentDocument } from '../../../app/services/student-hub/types';
 import './DocumentsPage.scss';
@@ -24,10 +25,13 @@ const { Option } = Select;
 interface DocumentsPageProps {
   hideStats?: boolean;
   documentCount?: number;
+  readOnly?: boolean;
+  studentId?: string;
 }
 
-const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, documentCount = 0 }) => {
+const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, documentCount = 0, readOnly = false, studentId }) => {
   const { t } = useTranslation();
+  const isReadOnly = readOnly === true;
   
   // Helper function to get translated category labels
   const getTranslatedCategoryLabel = (type: string): string => {
@@ -83,18 +87,31 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
   const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType>(DocumentType.OTHER);
   const [fileList, setFileList] = useState<any[]>([]);
 
-  // API hooks
-  const { data: documentsResponse, isLoading: documentsLoading, refetch: refetchDocuments } = useGetDocumentsQuery({ 
-    page: 1, 
-    limit: 100,
-    documentType: selectedCategory === 'all' ? undefined : selectedCategory
-  });
+  // API hooks - use different API based on read-only mode
+  // Normal mode - fetch current user's documents
+  const { data: documentsResponse, isLoading: documentsLoading, refetch: refetchDocuments } = useGetDocumentsQuery(
+    { 
+      page: 1, 
+      limit: 100,
+      documentType: selectedCategory === 'all' ? undefined : selectedCategory
+    },
+    { skip: isReadOnly }
+  );
+  
+  // Read-only mode - fetch student's documents via counselor API
+  const { data: readOnlyDocumentsResponse, isLoading: readOnlyDocumentsLoading } = useGetStudentJourneyDocumentsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  
   const [uploadDocument, { isLoading: uploadLoading }] = useUploadDocumentMutation();
   const [deleteDocument, { isLoading: deleteLoading }] = useDeleteDocumentMutation();
   const [downloadDocument] = useDownloadDocumentMutation();
 
-  // Data processing
-  const allDocuments = documentsResponse?.data || [];
+  // Data processing - use merged data based on mode
+  const allDocuments = isReadOnly 
+    ? (readOnlyDocumentsResponse?.data || []) 
+    : (documentsResponse?.data || []);
   const filteredDocuments = allDocuments.filter(doc =>
     doc.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );

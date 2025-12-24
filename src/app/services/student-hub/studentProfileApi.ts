@@ -18,13 +18,22 @@ export const studentProfileApi = RtkApi.injectEndpoints({
       providesTags: ['StudentProfile'],
     }),
 
-    // Get student profile by ID
+    // Get student profile by ID (accepts both profile ID and userId)
     getStudentProfile: builder.query<ApiResponse<StudentProfile>, string>({
       query: (id) => ({
         url: `/student-profile/${id}`,
         method: 'GET',
       }),
       providesTags: (result, error, id) => [{ type: 'StudentProfile', id }],
+    }),
+
+    // Get student profile by userId (for school counselors)
+    getStudentProfileByUserId: builder.query<ApiResponse<StudentProfile>, string>({
+      query: (userId) => ({
+        url: `/student-profile/user/${userId}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, userId) => [{ type: 'StudentProfile', id: userId }],
     }),
 
     // Get all student profiles (Admin/Mentor)
@@ -128,6 +137,7 @@ export const studentProfileApi = RtkApi.injectEndpoints({
 export const {
   useGetMyStudentProfileQuery,
   useGetStudentProfileQuery,
+  useGetStudentProfileByUserIdQuery,
   useGetStudentProfilesQuery,
   useCreateStudentProfileMutation,
   useUpdateStudentProfileMutation,

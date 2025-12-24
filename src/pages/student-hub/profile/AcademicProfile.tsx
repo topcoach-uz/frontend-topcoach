@@ -15,13 +15,17 @@ interface AcademicProfileProps {
     percentage: number;
     lastUpdated: string;
   };
+  readOnly?: boolean;
+  studentId?: string;
 }
 
-const AcademicProfile: React.FC<AcademicProfileProps> = ({ data }) => {
+const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = false, studentId }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const [updateLoading, setUpdateLoading] = useState(false);
-  const { profile, updateStudentProfile, refetchProfile } = useStudentProfile();
+  const isReadOnly = readOnly === true;
+  const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
+  const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
 
   // Initialize form with data from API
   useEffect(() => {

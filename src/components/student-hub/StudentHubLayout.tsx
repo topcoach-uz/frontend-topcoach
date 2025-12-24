@@ -63,6 +63,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       label: t('My Profile'),
     },
     {
+      key: '/student-hub/major-match',
+      icon: <BookIcon />,
+      label: t('Major Match'),
+    },
+    {
       key: '/student-hub/applications',
       icon: <BuildingIcon />,
       label: t('Applications'),
@@ -81,11 +86,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       key: '/student-hub/gpa-calculator',
       icon: <CalculatorIcon />,
       label: t('GPA Calculator'),
-    },
-    {
-      key: '/student-hub/major-match',
-      icon: <BookIcon />,
-      label: t('Major Match'),
     },
     // TODO: Implement notifications page later
     // {

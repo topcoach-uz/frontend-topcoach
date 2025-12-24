@@ -13,12 +13,22 @@ import './ProfilePage.scss';
 
 const { TabPane } = Tabs;
 
-const ProfilePage: React.FC = () => {
+// Props interface for ProfilePage - supports both normal and read-only mode
+export interface ProfilePageProps {
+  readOnly?: boolean;
+  studentId?: string;
+}
+
+const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
-  const { profile, isLoading, error, isProfileComplete, profileStatus } = useStudentProfile();
+  const isReadOnly = readOnly === true;
+  
+  // Pass studentId to hook when in read-only mode to fetch correct student data
+  const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
+  const { profile, isLoading, error, isProfileComplete, profileStatus } = useStudentProfile(hookOptions);
 
   // Handle URL parameters for tab navigation
   useEffect(() => {
@@ -121,7 +131,7 @@ const ProfilePage: React.FC = () => {
           <span>{t('studentHub.profile.personalProfile')}</span>
         </div>
       ),
-      children: <PersonalProfile data={profileData.sections.personal} />,
+      children: <PersonalProfile data={profileData.sections.personal} readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'academic',
@@ -131,7 +141,7 @@ const ProfilePage: React.FC = () => {
           <span>{t('studentHub.profile.academicProfile')}</span>
         </div>
       ),
-      children: <AcademicProfile data={profileData.sections.academic} />,
+      children: <AcademicProfile data={profileData.sections.academic} readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'activities',
@@ -141,7 +151,7 @@ const ProfilePage: React.FC = () => {
           <span>{t('studentHub.profile.activitiesAchievements')}</span>
         </div>
       ),
-      children: <ActivitiesProfile data={profileData.sections.activities} />,
+      children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
   ];
 

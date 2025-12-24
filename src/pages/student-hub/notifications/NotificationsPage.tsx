@@ -15,7 +15,7 @@ const NotificationsPage: React.FC = () => {
   // Use real data from API
   const notificationsData = {
     overview: {
-      totalNotifications: notifications?.totalNotifications || 0,
+      totalNotifications: notifications?.notifications?.length || 0,
       unread: notifications?.unreadCount || 0,
       today: 0, // Not available in current schema
       thisWeek: 0, // Not available in current schema

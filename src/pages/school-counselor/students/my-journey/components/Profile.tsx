@@ -1,20 +1,20 @@
 import React from 'react';
 import ProfilePage from 'src/pages/student-hub/profile/ProfilePage';
-import { StudentContext } from '../context/StudentContext';
 import './readonly-overlay.scss';
 
 interface StudentHubProfileProps {
   studentId: string;
+  studentName?: string;
 }
 
-const StudentHubProfile: React.FC<StudentHubProfileProps> = ({ studentId }) => {
+const StudentHubProfile: React.FC<StudentHubProfileProps> = ({ studentId, studentName }) => {
+  // Pass props directly to ProfilePage - no context needed  
+  // Note: ProfilePage uses useStudentProfile hook which accepts studentId parameter
   return (
-    <StudentContext.Provider value={{ studentId, readOnly: true }}>
-      <div className="readonly-wrapper">
-        <ProfilePage />
-        <div className="readonly-overlay" />
-      </div>
-    </StudentContext.Provider>
+    <div className="readonly-wrapper">
+      <ProfilePage readOnly={true} studentId={studentId} />
+      <div className="readonly-overlay" />
+    </div>
   );
 };
 

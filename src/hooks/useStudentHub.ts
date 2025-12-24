@@ -6,6 +6,7 @@ import { message } from 'antd';
 import { useTypedSelector } from '../app/store';
 import {
   useGetMyStudentProfileQuery,
+  useGetStudentProfileByUserIdQuery,
   useUpdateMyStudentProfileMutation,
   useCalculateCompletionMutation,
 } from '../app/services/student-hub/studentProfileApi';
@@ -30,37 +31,68 @@ import {
 // 👤 STUDENT PROFILE HOOKS
 // ========================================
 
-export const useStudentProfile = () => {
+// Options for read-only mode (when counselors view student data)
+interface StudentProfileOptions {
+  studentId?: string;  // If provided, fetch this student's profile (read-only mode)
+}
+
+export const useStudentProfile = (options?: StudentProfileOptions) => {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   
+  // Determine if we're in read-only mode based on options
+  const isReadOnly = !!options?.studentId;
+  const targetStudentId = options?.studentId;
+
+  // If in read-only mode, fetch the specific student's profile by userId
+  const { 
+    data: studentProfileResponse, 
+    isLoading: studentProfileLoading, 
+    error: studentProfileError,
+    refetch: refetchStudentProfile 
+  } = useGetStudentProfileByUserIdQuery(targetStudentId || '', {
+    skip: !isReadOnly || !targetStudentId || !isAuthenticated,
+  });
+
+  // Normal mode - get current user's profile
   const {
     data: profileData,
     isLoading: profileLoading,
     error: profileError,
     refetch: refetchProfile,
   } = useGetMyStudentProfileQuery(undefined, {
-    skip: !isAuthenticated, // Skip the query if user is not authenticated
+    skip: isReadOnly || !isAuthenticated, // Skip if in read-only mode
   });
 
-  // Safe refetch function that checks authentication
+  // Use the appropriate profile data based on mode
+  const actualProfileData = isReadOnly 
+    ? ((studentProfileResponse as any)?.data || studentProfileResponse)
+    : profileData;
+  
+  const actualProfileLoading = isReadOnly ? studentProfileLoading : profileLoading;
+  const actualProfileError = isReadOnly ? studentProfileError : profileError;
+  
+  const actualRefetchProfile = isReadOnly 
+    ? refetchStudentProfile 
+    : refetchProfile;
+
+  // Safe refetch function that checks authentication and mode
   const safeRefetchProfile = useCallback(() => {
     if (isAuthenticated) {
-      return refetchProfile();
+      return actualRefetchProfile();
     }
     return Promise.resolve();
-  }, [isAuthenticated, refetchProfile]);
+  }, [isAuthenticated, actualRefetchProfile]);
 
   const [updateProfile, { isLoading: updateLoading }] = useUpdateMyStudentProfileMutation();
   const [calculateCompletion, { isLoading: calculateLoading }] = useCalculateCompletionMutation();
 
-  const profile = profileData;
+  const profile = actualProfileData;
   const isProfileComplete = profile?.completionPercentage === 100;
   const profileStatus = profile?.profileStatus;
 
-
   const updateStudentProfile = useCallback(
     async (data: any) => {
-      if (!profile?.id) return;
+      if (!profile?.id || isReadOnly) return; // Don't allow updates in read-only mode
 
       try {
         const result = await updateProfile(data).unwrap();
@@ -70,11 +102,11 @@ export const useStudentProfile = () => {
         throw error;
       }
     },
-    [profile?.id, updateProfile, safeRefetchProfile]
+    [profile?.id, updateProfile, safeRefetchProfile, isReadOnly]
   );
 
   const recalculateCompletion = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!profile?.id || isReadOnly) return; // Don't allow recalculation in read-only mode
 
     try {
       await calculateCompletion(profile.id).unwrap();
@@ -84,12 +116,12 @@ export const useStudentProfile = () => {
       message.error(error?.data?.message || 'Failed to recalculate completion');
       throw error;
     }
-  }, [profile?.id, calculateCompletion, safeRefetchProfile]);
+  }, [profile?.id, calculateCompletion, safeRefetchProfile, isReadOnly]);
 
   return {
     profile,
-    isLoading: profileLoading,
-    error: profileError,
+    isLoading: actualProfileLoading,
+    error: actualProfileError,
     isProfileComplete,
     profileStatus,
     updateStudentProfile,
@@ -150,12 +182,11 @@ export const useDashboard = () => {
   }, [dashboard]);
 
   const recentActivity = dashboard?.notifications?.recentActivity || [];
-  const progressOverview = dashboard?.profile ? [
-    { category: 'Academic Profile', completed: 0, total: 1, percentage: 0, status: 'pending' },
-    { category: 'Personal Profile', completed: 0, total: 1, percentage: 0, status: 'pending' },
-    { category: 'Activities Profile', completed: 0, total: 1, percentage: 0, status: 'pending' },
-    { category: 'Documents Profile', completed: 0, total: 1, percentage: 0, status: 'pending' },
-  ] : [];
+  const progressOverview = dashboard?.profile ? {
+    completionPercentage: dashboard.profile.completionPercentage,
+    sectionsCompleted: dashboard.profile.sectionsCompleted || 0,
+    totalSections: dashboard.profile.totalSections || 5,
+  } : null;
 
   return {
     dashboard,
@@ -172,7 +203,7 @@ export const useDashboard = () => {
 // 🔔 NOTIFICATIONS HOOKS
 // ========================================
 
-export const useNotifications = (page = 1, limit = 10) => {
+export const useNotifications = () => {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   
   const {
@@ -180,19 +211,22 @@ export const useNotifications = (page = 1, limit = 10) => {
     isLoading: notificationsLoading,
     error: notificationsError,
     refetch: refetchNotifications,
-  } = useGetNotificationsQuery({ page, limit }, {
-    skip: !isAuthenticated, // Skip the query if user is not authenticated
+  } = useGetNotificationsQuery({} as any, {
+    skip: !isAuthenticated,
   });
 
   const {
     data: unreadCountData,
     isLoading: unreadCountLoading,
+    error: unreadCountError,
     refetch: refetchUnreadCount,
   } = useGetUnreadNotificationCountQuery(undefined, {
-    skip: !isAuthenticated, // Skip the query if user is not authenticated
+    skip: !isAuthenticated,
   });
 
-  // Safe refetch functions that check authentication
+  const [markAsRead, { isLoading: markAsReadLoading }] = useMarkNotificationAsReadMutation();
+
+  // Safe refetch functions
   const safeRefetchNotifications = useCallback(() => {
     if (isAuthenticated) {
       return refetchNotifications();
@@ -206,12 +240,6 @@ export const useNotifications = (page = 1, limit = 10) => {
     }
     return Promise.resolve();
   }, [isAuthenticated, refetchUnreadCount]);
-
-  const [markAsRead, { isLoading: markAsReadLoading }] = useMarkNotificationAsReadMutation();
-
-  const notifications = notificationsData?.data || [];
-  const totalNotifications = notificationsData?.total || 0;
-  const unreadCount = unreadCountData?.count || 0;
 
   const markNotificationAsRead = useCallback(
     async (notificationId: string) => {
@@ -227,30 +255,15 @@ export const useNotifications = (page = 1, limit = 10) => {
     [markAsRead, safeRefetchNotifications, safeRefetchUnreadCount]
   );
 
-  const markAllAsRead = useCallback(async () => {
-    try {
-      // This would need to be implemented in the backend
-      // For now, we'll mark each notification individually
-      const unreadNotifications = notifications.filter(n => n.status === 'unread');
-      await Promise.all(unreadNotifications.map(n => markAsRead(n.id).unwrap()));
-      safeRefetchNotifications();
-      safeRefetchUnreadCount();
-      message.success('All notifications marked as read');
-    } catch (error: any) {
-      message.error('Failed to mark all notifications as read');
-      throw error;
-    }
-  }, [notifications, markAsRead, safeRefetchNotifications, safeRefetchUnreadCount]);
+  const notifications = notificationsData?.data || [];
+  const unreadCount = (unreadCountData as any)?.count || 0;
 
   return {
     notifications,
-    totalNotifications,
     unreadCount,
-    isLoading: notificationsLoading,
-    unreadCountLoading,
-    error: notificationsError,
+    isLoading: notificationsLoading || unreadCountLoading,
+    error: notificationsError || unreadCountError,
     markNotificationAsRead,
-    markAllAsRead,
     markAsReadLoading,
     refetchNotifications: safeRefetchNotifications,
     refetchUnreadCount: safeRefetchUnreadCount,
@@ -335,24 +348,6 @@ export const useUserPreferences = () => {
     [preferences, updatePreferences, safeRefetchPreferences]
   );
 
-  const updateAISettings = useCallback(
-    async (settings: UserPreferences['aiSettings']) => {
-      if (!preferences) return;
-
-      try {
-        await updatePreferences({
-          aiSettings: { ...preferences.aiSettings, ...settings },
-        }).unwrap();
-        message.success('AI settings updated!');
-        safeRefetchPreferences();
-      } catch (error: any) {
-        message.error('Failed to update AI settings');
-        throw error;
-      }
-    },
-    [preferences, updatePreferences, safeRefetchPreferences]
-  );
-
   return {
     preferences,
     isLoading: preferencesLoading,
@@ -360,7 +355,6 @@ export const useUserPreferences = () => {
     updateUserPreferences,
     updateNotificationSettings,
     updateDisplaySettings,
-    updateAISettings,
     updateLoading,
     refetchPreferences: safeRefetchPreferences,
   };
@@ -370,8 +364,13 @@ export const useUserPreferences = () => {
 // 🎯 COMBINED STUDENT HUB HOOK
 // ========================================
 
-export const useStudentHub = () => {
-  const profile = useStudentProfile();
+// Options for the main useStudentHub hook
+interface StudentHubOptions {
+  studentId?: string;  // If provided, fetch this student's data (read-only mode for counselors)
+}
+
+export const useStudentHub = (options?: StudentHubOptions) => {
+  const profile = useStudentProfile(options);
   const dashboard = useDashboard();
   const notifications = useNotifications();
   const preferences = useUserPreferences();

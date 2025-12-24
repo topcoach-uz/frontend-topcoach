@@ -13,6 +13,10 @@ import {
   useDeleteCollegeApplicationMutation,
   useDeleteScholarshipApplicationMutation
 } from '../../../app/services/student-hub/applicationTrackingApi';
+import {
+  useGetStudentJourneyCollegeApplicationsQuery,
+  useGetStudentJourneyScholarshipApplicationsQuery,
+} from '../../../app/services/student-hub/studentJourneyReadonlyApi';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
 import NewApplicationPage from './NewApplicationPage';
@@ -21,6 +25,12 @@ import NewScholarshipPage from './NewScholarshipPage';
 import './ApplicationsPage.scss';
 
 const { TabPane } = Tabs;
+
+// Props interface for ApplicationsPage - supports both normal and read-only mode
+export interface ApplicationsPageProps {
+  readOnly?: boolean;
+  studentId?: string;
+}
 
 // Component to display university info card
 const UniversityInfoCard: React.FC<{ universityId: string }> = ({ universityId }) => {
@@ -76,8 +86,9 @@ const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: 
   return <>{universityName || t('studentHub.applications.unknownUniversity')}</>;
 };
 
-const ApplicationsPage: React.FC = () => {
+const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, studentId }) => {
   const { t } = useTranslation();
+  const isReadOnly = readOnly === true;
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -87,9 +98,35 @@ const ApplicationsPage: React.FC = () => {
   const { dashboard, isLoading, hasError } = useStudentHub();
   
   // Fetch applications, tasks, and scholarships data - MUST be called before any early returns
-  const { data: applicationsResponse, isLoading: applicationsLoading, refetch: refetchApplications } = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
-  const { data: tasksResponse, isLoading: tasksLoading, refetch: refetchTasks } = useGetApplicationTasksQuery({ page: 1, limit: 100 });
-  const { data: scholarshipsResponse, isLoading: scholarshipsLoading, refetch: refetchScholarships } = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 });
+  // Normal mode - fetch current user's data
+  const { data: applicationsResponse, isLoading: applicationsLoading, refetch: refetchApplications } = useGetCollegeApplicationsQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  const { data: tasksResponse, isLoading: tasksLoading, refetch: refetchTasks } = useGetApplicationTasksQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  const { data: scholarshipsResponse, isLoading: scholarshipsLoading, refetch: refetchScholarships } = useGetScholarshipApplicationsQuery(
+    { page: 1, limit: 100 },
+    { skip: isReadOnly }
+  );
+  
+  // Read-only mode - fetch student's data via counselor API
+  const { data: readOnlyApplicationsResponse, isLoading: readOnlyApplicationsLoading } = useGetStudentJourneyCollegeApplicationsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  const { data: readOnlyScholarshipsResponse, isLoading: readOnlyScholarshipsLoading } = useGetStudentJourneyScholarshipApplicationsQuery(
+    studentId || '',
+    { skip: !isReadOnly || !studentId }
+  );
+  
+  // Merge data based on mode
+  const finalApplicationsData = isReadOnly ? readOnlyApplicationsResponse?.data : applicationsResponse?.data;
+  const finalScholarshipsData = isReadOnly ? readOnlyScholarshipsResponse?.data : scholarshipsResponse?.data;
+  const finalTasksData = isReadOnly ? [] : tasksResponse?.data; // Tasks not available in read-only mode
+  
   const [deleteCollegeApplication, { isLoading: deleteLoading }] = useDeleteCollegeApplicationMutation();
   const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
 
@@ -165,9 +202,9 @@ const ApplicationsPage: React.FC = () => {
       rejected: 0, // Not available in current API
       waitlisted: 0, // Not available in current API
     },
-    applications: applicationsResponse?.data || [],
-    tasks: tasksResponse?.data || [],
-    scholarships: scholarshipsResponse?.data || [],
+    applications: finalApplicationsData || [],
+    tasks: finalTasksData || [],
+    scholarships: finalScholarshipsData || [],
   };
 
   console.log('ApplicationsPage - Dashboard data:', dashboard);
