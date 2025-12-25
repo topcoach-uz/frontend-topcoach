@@ -32,8 +32,8 @@ export default function MentorHome() {
         <div className="container" style={{ paddingTop: '40px', paddingBottom: '24px' }}>
           <CustomCard
             bgColor={colors.colorBgContainer}
-            mb={0}
-            shadowed
+            mb={24}
+            shadowed={true}
             borderRadius={24}
             padding={24}
           >
