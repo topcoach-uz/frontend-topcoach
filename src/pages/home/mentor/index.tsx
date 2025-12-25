@@ -29,10 +29,10 @@ export default function MentorHome() {
     <main>
       {/* SuperAdmin Quick Access Links - Show at top before Complete your profile section */}
       {isSuperAdmin && (
-        <div className="container" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px' }}>
+        <div className="container" style={{ paddingTop: '40px', paddingBottom: '24px' }}>
           <CustomCard
             bgColor={colors.colorBgContainer}
-            mb={24}
+            mb={0}
             shadowed
             borderRadius={24}
             padding={24}
