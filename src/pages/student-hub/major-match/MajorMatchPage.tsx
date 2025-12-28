@@ -323,7 +323,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
                       <Paragraph>{scholarship.description}</Paragraph>
                       {scholarship.eligibility && scholarship.eligibility.length > 0 && (
                         <div>
-                          <Text strong>Eligibility: </Text>
+                          <Text strong>{t('studentHub.majorMatch.eligibility')}: </Text>
                           <ul style={{ margin: '4px 0', paddingLeft: 20 }}>
                             {scholarship.eligibility.map((req: string, i: number) => (
                               <li key={i}><Text>{req}</Text></li>
@@ -347,12 +347,12 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
 
       {/* Overall Analysis */}
       {analysisResult?.overallAnalysis && (
-        <Card title="Overall Analysis" size="small">
+        <Card title={t('studentHub.majorMatch.overallAnalysis')} size="small">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             {analysisResult.overallAnalysis.profileStrengths && (
               <div>
-                <Title level={5}>Profile Strengths</Title>
-                <ul>
+                <Title level={5}>{t('studentHub.majorMatch.profileStrengths')}</Title>
+                <ul style={{ margin: '4px 0', paddingLeft: 20 }}>
                   {analysisResult.overallAnalysis.profileStrengths.map((strength: string, i: number) => (
                     <li key={i}><Text>{strength}</Text></li>
                   ))}
@@ -361,7 +361,7 @@ const MajorMatchDetails: React.FC<MajorMatchDetailsProps> = ({ session, onFeedba
             )}
             {analysisResult.overallAnalysis.recommendedPath && (
               <div>
-                <Title level={5}>Recommended Path</Title>
+                <Title level={5}>{t('studentHub.majorMatch.recommendedPath')}</Title>
                 <Paragraph>{analysisResult.overallAnalysis.recommendedPath}</Paragraph>
               </div>
             )}
