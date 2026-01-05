@@ -109,7 +109,7 @@ export default function UpcomingCard({
   }, [conversations, id, currentUser?.id, role, (mentor as any)?.id, participants]);
 
   // Fetch threads for the conversation to find the session thread
-  const { data: threadsData } = useGetThreadsQuery(conversationId || '', {
+  const { data: threadsData, refetch: refetchThreads } = useGetThreadsQuery(conversationId || '', {
     skip: !conversationId,
   });
 
@@ -141,66 +141,99 @@ export default function UpcomingCard({
   }, [threadsData, threadId, currentUser?.id, role]);
 
   const handleChatClick = async () => {
-    if (conversationId) {
-      setChatModalOpen(true);
-    } else {
-      // Try to create conversation/thread if it doesn't exist
-      // This handles cases where sessions were booked before conversation creation was added
-      try {
+    try {
+      // For students: mentor is the session's mentor, student is current user
+      // For mentors: mentor is current user, student is the participant
+      const mentorId = role === UserRole.Student ? (mentor as any)?.id : currentUser?.id;
+      const studentId = role === UserRole.Student ? currentUser?.id : (participants?.[0] as any)?.id;
+      
+      if (!mentorId || !studentId) {
+        message.error('Unable to set up chat: missing user information');
+        return;
+      }
+
+      let finalConversationId = conversationId;
+      let finalThreadId = threadId;
+
+      // Step 1: Find or create conversation
+      if (!finalConversationId) {
         message.loading({ content: 'Setting up chat...', key: 'chat-setup' });
         
-        // Debug logging
-        console.log('Chat click debug:', {
-          role,
-          mentor,
-          mentorId: (mentor as any)?.id,
-          currentUser,
-          currentUserId: currentUser?.id,
-          participants,
-          participantId: (participants?.[0] as any)?.id,
-        });
-        
-        // For students: mentor is the session's mentor, student is current user
-        // For mentors: mentor is current user, student is the participant
-        const mentorId = role === UserRole.Student ? (mentor as any)?.id : currentUser?.id;
-        const studentId = role === UserRole.Student ? currentUser?.id : (participants?.[0] as any)?.id;
-        
-        console.log('Computed IDs:', { mentorId, studentId });
-        
-        if (!mentorId || !studentId) {
-          console.error('Missing IDs:', { mentorId, studentId, role, mentor, currentUser, participants });
-          message.error({ content: 'Unable to set up chat: missing user information', key: 'chat-setup' });
-          return;
-        }
-        
-        // Create conversation
         const conversationResult = await findOrCreateConversation({
           mentorId,
           studentId,
         }).unwrap();
         
+        finalConversationId = conversationResult.conversation.id;
+        setConversationId(finalConversationId);
+        
         // Refetch conversations to update the list
         await refetchConversations();
-        
-        // Create thread for this session
-        if (conversationResult.conversation.id) {
-          const threadResult = await createThread({
-            conversationId: conversationResult.conversation.id,
-            sessionId: id,
-          }).unwrap();
-          
-          setConversationId(conversationResult.conversation.id);
-          setThreadId(threadResult.thread.id);
-          message.success({ content: 'Chat ready!', key: 'chat-setup' });
-          setChatModalOpen(true);
-        }
-      } catch (error: any) {
-        console.error('Error setting up chat:', error);
-        message.error({ 
-          content: error?.data?.message || 'Failed to set up chat. Please try again.', 
-          key: 'chat-setup' 
-        });
       }
+
+      // Step 2: Find or create thread for this specific session
+      if (finalConversationId) {
+        // Refetch threads to ensure we have the latest data
+        if (refetchThreads) {
+          const threadsResult = await refetchThreads();
+          const threads = threadsResult.data?.threads || [];
+          const existingThread = threads.find((t) => t.sessionId === id);
+          
+          if (existingThread) {
+            // Thread exists, use it
+            finalThreadId = existingThread.id;
+            setThreadId(finalThreadId);
+          } else {
+            // Thread doesn't exist, create it
+            if (!threadId) {
+              message.loading({ content: 'Creating session thread...', key: 'chat-setup' });
+            }
+            
+            const threadResult = await createThread({
+              conversationId: finalConversationId,
+              sessionId: id,
+            }).unwrap();
+            
+            finalThreadId = threadResult.thread.id;
+            setThreadId(finalThreadId);
+            
+            // Refetch threads again after creating
+            await refetchThreads();
+          }
+        } else {
+          // Fallback: check existing threadsData
+          const threads = threadsData?.threads || [];
+          const existingThread = threads.find((t) => t.sessionId === id);
+          
+          if (existingThread) {
+            finalThreadId = existingThread.id;
+            setThreadId(finalThreadId);
+          } else {
+            // Create thread
+            if (!threadId) {
+              message.loading({ content: 'Creating session thread...', key: 'chat-setup' });
+            }
+            
+            const threadResult = await createThread({
+              conversationId: finalConversationId,
+              sessionId: id,
+            }).unwrap();
+            
+            finalThreadId = threadResult.thread.id;
+            setThreadId(finalThreadId);
+          }
+        }
+      }
+
+      // Step 3: Open the chat modal with the specific thread
+      setChatModalOpen(true);
+      message.success({ content: 'Chat ready!', key: 'chat-setup' });
+    } catch (error: any) {
+      console.error('Error setting up chat:', error);
+      message.error({ 
+        content: error?.data?.message || 'Failed to set up chat. Please try again.', 
+        key: 'chat-setup' 
+      });
     }
   };
 

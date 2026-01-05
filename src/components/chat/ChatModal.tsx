@@ -6,6 +6,7 @@ import { useTypedSelector } from 'src/app/store';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import ThreadSelector from './ThreadSelector';
+import ConversationList from './ConversationList';
 import styles from './ChatModal.module.scss';
 
 interface ChatModalProps {
@@ -14,6 +15,7 @@ interface ChatModalProps {
   open: boolean;
   onClose: () => void;
   onConversationChange?: (conversationId: string) => void;
+  onThreadChange?: (threadId: string) => void;
 }
 
 const ChatModal: React.FC<ChatModalProps> = ({
@@ -22,6 +24,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   open,
   onClose,
   onConversationChange,
+  onThreadChange,
 }) => {
   const { screenSize } = useScreenSize();
   const isMobile = screenSize < 768;
@@ -60,7 +63,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     return '35vh';
   };
 
-  const title = (
+  const title = conversationId ? (
     <div className={styles.chatHeader}>
       {userAvatar && (
         <img src={userAvatar} alt={userName} className={styles.headerAvatar} />
@@ -72,18 +75,32 @@ const ChatModal: React.FC<ChatModalProps> = ({
         )}
       </div>
     </div>
+  ) : (
+    <div className={styles.chatHeader}>
+      <div className={styles.headerInfo}>
+        <div className={styles.headerName}>Conversations</div>
+      </div>
+    </div>
   );
 
   const content = (
     <div className={styles.chatContainer}>
-      {conversationId && (
+      {!conversationId ? (
+        <ConversationList
+          onConversationClick={(selectedConversationId) => {
+            if (onConversationChange) {
+              onConversationChange(selectedConversationId);
+            }
+          }}
+        />
+      ) : (
         <>
           {!threadId ? (
             <ThreadSelector
               conversationId={conversationId}
               onThreadSelect={(selectedThreadId) => {
-                if (onConversationChange) {
-                  onConversationChange(selectedThreadId);
+                if (onThreadChange) {
+                  onThreadChange(selectedThreadId);
                 }
               }}
             />
@@ -117,10 +134,14 @@ const ChatModal: React.FC<ChatModalProps> = ({
     );
   }
 
-  const modalBodyHeight = threadId 
+  const modalBodyHeight = !conversationId 
+    ? '70vh'
+    : threadId 
     ? '70vh' 
     : getThreadSelectorHeight();
-  const modalBodyMaxHeight = threadId 
+  const modalBodyMaxHeight = !conversationId
+    ? '700px'
+    : threadId 
     ? '700px' 
     : threadsCount <= 3 ? '300px' : '500px';
 

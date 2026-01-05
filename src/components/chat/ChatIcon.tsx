@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Badge } from 'antd';
 import { MessageOutlined } from '@ant-design/icons';
-import { useGetUnreadCountQuery, useGetConversationsQuery } from 'src/app/services/chat/chatApi';
-import { isConversationArray } from 'src/app/services/chat/types';
+import { useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
 import { useTypedSelector } from 'src/app/store';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
@@ -22,43 +21,30 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     undefined,
     {
       skip: !isAuthenticated,
-      pollingInterval: 30000,
-    }
-  );
-
-  // Fetch conversations to get the first one
-  const { data: conversationsData } = useGetConversationsQuery(
-    undefined,
-    {
-      skip: !isAuthenticated,
+      pollingInterval: 10000, // Poll every 10 seconds for real-time updates
     }
   );
 
   const unreadCount = unreadData?.unreadCount || 0;
-
-  // Get first conversation
-  const conversations = conversationsData
-    ? (isConversationArray(conversationsData) ? conversationsData : conversationsData.conversations || [])
-    : [];
-  const firstConversationId = conversations.length > 0 ? conversations[0].id : null;
-
-  useEffect(() => {
-    // Set the first conversation when conversations are loaded
-    if (firstConversationId && !selectedConversationId) {
-      setSelectedConversationId(firstConversationId);
-    }
-  }, [firstConversationId, selectedConversationId]);
 
   if (!isAuthenticated) {
     return null;
   }
 
   const handleIconClick = () => {
-    if (firstConversationId) {
-      setSelectedConversationId(firstConversationId);
-      setSelectedThreadId(null);
-      setChatModalOpen(true);
-    }
+    // Open modal without a specific conversation - will show conversation list
+    setSelectedConversationId(null);
+    setSelectedThreadId(null);
+    setChatModalOpen(true);
+  };
+
+  const handleConversationSelect = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+    setSelectedThreadId(null);
+  };
+
+  const handleThreadSelect = (threadId: string) => {
+    setSelectedThreadId(threadId);
   };
 
   return (
@@ -77,12 +63,11 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
         open={chatModalOpen}
         onClose={() => {
           setChatModalOpen(false);
+          setSelectedConversationId(null);
           setSelectedThreadId(null);
         }}
-        onConversationChange={(newThreadId) => {
-          // Handle thread selection
-          setSelectedThreadId(newThreadId || null);
-        }}
+        onConversationChange={handleConversationSelect}
+        onThreadChange={handleThreadSelect}
       />
     </>
   );

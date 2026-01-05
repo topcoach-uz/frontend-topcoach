@@ -75,7 +75,7 @@ export const chatApi = RtkApi.injectEndpoints({
         url: '/chat/unread-count',
         method: 'GET',
       }),
-      providesTags: ['ChatConversations'],
+      providesTags: ['ChatConversations', 'ChatThreads'],
     }),
 
     // ========================================
@@ -135,6 +135,7 @@ export const chatApi = RtkApi.injectEndpoints({
       invalidatesTags: (result, error, id) => [
         { type: 'ChatThreads', id },
         'ChatThreads',
+        'ChatConversations',
       ],
     }),
 

@@ -3,6 +3,8 @@ import { Spin, Empty, Typography } from 'antd';
 import {
   useGetConversationMessagesQuery,
   useGetConversationQuery,
+  useMarkThreadAsReadMutation,
+  useMarkConversationAsReadMutation,
   chatApi,
 } from 'src/app/services/chat/chatApi';
 import { useAppDispatch } from 'src/app/store';
@@ -50,6 +52,10 @@ const MessageList: React.FC<MessageListProps> = ({
     skip: !conversationId,
   });
 
+  // Mark as read mutations
+  const [markThreadAsRead] = useMarkThreadAsReadMutation();
+  const [markConversationAsRead] = useMarkConversationAsReadMutation();
+
   const messages = messagesData?.messages || [];
   const total = messagesData?.total || 0;
 
@@ -58,6 +64,29 @@ const MessageList: React.FC<MessageListProps> = ({
     conversationId,
     threadId,
   });
+
+  // Mark thread/conversation as read when messages are loaded
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      const markAsRead = async () => {
+        try {
+          if (threadId) {
+            // Mark thread as read
+            await markThreadAsRead(threadId).unwrap();
+          } else {
+            // Mark conversation as read
+            await markConversationAsRead(conversationId).unwrap();
+          }
+        } catch (error) {
+          console.error('Error marking as read:', error);
+        }
+      };
+      
+      // Small delay to ensure messages are rendered
+      const timer = setTimeout(markAsRead, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, messages.length, threadId, conversationId, markThreadAsRead, markConversationAsRead]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
