@@ -11,6 +11,7 @@ import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from '../actions.module.scss';
 import { Link } from 'react-router-dom';
 import { MailOutlined } from '@ant-design/icons';
+import ChatIcon from 'src/components/chat/ChatIcon';
 
 interface Props {
   handleDarkMode: () => void;
@@ -24,6 +25,7 @@ export default function ActionsMobileVersion({
   profileMenuItems,
   isOpen,
   toggleMenu,
+  isAuthLoading,
 }: Props) {
   const { screenSize } = useScreenSize();
   const isDark = useTypedSelector((state) => state.layout.darkMode);
@@ -55,6 +57,7 @@ export default function ActionsMobileVersion({
           <Link to="/contact" className={styles.contactIcon}>
             <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
           </Link>
+          {!isAuthLoading && isAuthenticated && <ChatIcon />}
           <LanguageSelect />
         </>
       )}

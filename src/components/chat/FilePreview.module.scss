@@ -1,0 +1,93 @@
+@import '/src/styles/variables.scss';
+
+.filePreview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fileIconContainer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.fileIcon {
+  font-size: 24px;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.fileName {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #333;
+}
+
+.fileSize {
+  font-size: 12px;
+  color: #999;
+}
+
+.fileActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  .downloadButton,
+  .closeButton {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 12px;
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .filePreview {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .fileIconContainer {
+    width: 32px;
+    height: 32px;
+  }
+
+  .fileIcon {
+    font-size: 20px;
+  }
+
+  .fileName {
+    font-size: 13px;
+  }
+}
+

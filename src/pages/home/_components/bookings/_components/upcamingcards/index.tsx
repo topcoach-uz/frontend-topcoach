@@ -1,7 +1,7 @@
-import { Dropdown, Form, Input, MenuProps, message, Rate } from 'antd';
+import { Badge, Dropdown, Form, Input, MenuProps, message, Rate } from 'antd';
 import dayjs from 'dayjs';
 import { Brodcast } from 'iconsax-react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { SessionsSchema, SessionTypeEnum, UserRole } from 'src/app/api/Api';
@@ -14,6 +14,9 @@ import { GoogleMeetingSvg, RightUpSvg, ThreeDotsSvg } from 'src/assets/svg';
 import { CustomCard } from 'src/components/cards';
 import { CustomButton, CustomModal, CustomText } from 'src/components/common';
 import styles from './upcoming.module.scss';
+import ChatModal from 'src/components/chat/ChatModal';
+import { useGetConversationsQuery, useGetThreadsQuery, useCreateThreadMutation, useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
+import { MessageOutlined } from '@ant-design/icons';
 
 import {
   useRateSessionMutation,
@@ -72,6 +75,134 @@ export default function UpcomingCard({
   const [rating, setRating] = useState<number>(0);
   const role = useTypedSelector((state) => state.auth.profile?.profile?.role);
   const currentUser = useTypedSelector((state) => state.auth.profile);
+  
+  // Chat integration
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const { data: conversations, refetch: refetchConversations } = useGetConversationsQuery(undefined, {
+    skip: !currentUser?.id,
+  });
+  const [findOrCreateConversation] = useFindOrCreateConversationMutation();
+  const [createThread] = useCreateThreadMutation();
+
+  // Find conversation for this session
+  useEffect(() => {
+    if (!conversations || !id || !currentUser?.id) return;
+
+    const conversationList = Array.isArray(conversations) 
+      ? conversations 
+      : conversations.conversations || [];
+
+    // Find conversation with mentor/student
+    const conversation = conversationList.find((conv) => {
+      if (role === UserRole.Student) {
+        return conv.mentorId === mentor?.id && conv.studentId === currentUser.id;
+      } else {
+        return conv.mentorId === currentUser.id && conv.studentId === participants?.[0]?.id;
+      }
+    });
+
+    if (conversation) {
+      setConversationId(conversation.id);
+    }
+  }, [conversations, id, currentUser?.id, role, mentor?.id, participants]);
+
+  // Fetch threads for the conversation to find the session thread
+  const { data: threadsData } = useGetThreadsQuery(conversationId || '', {
+    skip: !conversationId,
+  });
+
+  useEffect(() => {
+    if (!threadsData || !id) return;
+    
+    const threads = threadsData.threads || [];
+    const thread = threads.find((t) => t.sessionId === id);
+    if (thread) {
+      setThreadId(thread.id);
+    } else {
+      setThreadId(null);
+    }
+  }, [threadsData, id]);
+
+  // Get unread count for thread
+  const unreadCount = React.useMemo(() => {
+    if (!threadsData || !threadId || !currentUser?.id) return 0;
+    
+    const threads = threadsData.threads || [];
+    const thread = threads.find((t) => t.id === threadId);
+    if (!thread) return 0;
+    
+    if (role === UserRole.Student) {
+      return thread.unreadCountStudent;
+    } else {
+      return thread.unreadCountMentor;
+    }
+  }, [threadsData, threadId, currentUser?.id, role]);
+
+  const handleChatClick = async () => {
+    if (conversationId) {
+      setChatModalOpen(true);
+    } else {
+      // Try to create conversation/thread if it doesn't exist
+      // This handles cases where sessions were booked before conversation creation was added
+      try {
+        message.loading({ content: 'Setting up chat...', key: 'chat-setup' });
+        
+        // Debug logging
+        console.log('Chat click debug:', {
+          role,
+          mentor,
+          mentorId: mentor?.id,
+          currentUser,
+          currentUserId: currentUser?.id,
+          participants,
+          participantId: participants?.[0]?.id,
+        });
+        
+        // For students: mentor is the session's mentor, student is current user
+        // For mentors: mentor is current user, student is the participant
+        const mentorId = role === UserRole.Student ? mentor?.id : currentUser?.id;
+        const studentId = role === UserRole.Student ? currentUser?.id : participants?.[0]?.id;
+        
+        console.log('Computed IDs:', { mentorId, studentId });
+        
+        if (!mentorId || !studentId) {
+          console.error('Missing IDs:', { mentorId, studentId, role, mentor, currentUser, participants });
+          message.error({ content: 'Unable to set up chat: missing user information', key: 'chat-setup' });
+          return;
+        }
+        
+        // Create conversation
+        const conversationResult = await findOrCreateConversation({
+          mentorId,
+          studentId,
+        }).unwrap();
+        
+        // Refetch conversations to update the list
+        await refetchConversations();
+        
+        // Create thread for this session
+        if (conversationResult.conversation.id) {
+          const threadResult = await createThread({
+            conversationId: conversationResult.conversation.id,
+            sessionId: id,
+          }).unwrap();
+          
+          setConversationId(conversationResult.conversation.id);
+          setThreadId(threadResult.thread.id);
+          message.success({ content: 'Chat ready!', key: 'chat-setup' });
+          setChatModalOpen(true);
+        }
+      } catch (error: any) {
+        console.error('Error setting up chat:', error);
+        message.error({ 
+          content: error?.data?.message || 'Failed to set up chat. Please try again.', 
+          key: 'chat-setup' 
+        });
+      }
+    }
+  };
 
   // Helper function to check if current user has rated this session
   const hasUserRated = () => {
@@ -408,6 +539,41 @@ export default function UpcomingCard({
               mentor?.profile?.name}
         </CustomButton>
       </div>
+      <div className={styles.chatButtonContainer}>
+        {conversationId ? (
+          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+            <CustomButton
+              type="primary"
+              icon={<MessageOutlined />}
+              onClick={handleChatClick}
+              style={{ 
+                backgroundColor: '#8b0000',
+                borderColor: '#8b0000',
+                width: '100%',
+                marginTop: '8px',
+              }}
+              title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+            >
+              {role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+            </CustomButton>
+          </Badge>
+        ) : (
+          <CustomButton
+            type="primary"
+            icon={<MessageOutlined />}
+            onClick={handleChatClick}
+            style={{ 
+              backgroundColor: '#8b0000',
+              borderColor: '#8b0000',
+              width: '100%',
+              marginTop: '8px',
+            }}
+            title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+          >
+            {role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+          </CustomButton>
+        )}
+      </div>
 
       {/* Cancel meeting */}
       <CustomModal
@@ -656,6 +822,19 @@ export default function UpcomingCard({
             : comments}
         </CustomText>
       </CustomModal>
+      
+      {/* Chat Modal */}
+      {conversationId && (
+        <ChatModal
+          conversationId={conversationId}
+          threadId={threadId || undefined}
+          open={chatModalOpen}
+          onClose={() => setChatModalOpen(false)}
+          onConversationChange={(newConversationId) => {
+            setConversationId(newConversationId);
+          }}
+        />
+      )}
     </CustomCard>
   );
 }

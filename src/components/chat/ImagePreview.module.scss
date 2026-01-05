@@ -1,0 +1,112 @@
+@import '/src/styles/variables.scss';
+
+.imagePreview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 300px;
+}
+
+.imageContainer {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f5f5f5;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+
+    .overlay {
+      opacity: 1;
+    }
+  }
+
+  .image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .viewIcon {
+      color: white;
+      font-size: 24px;
+    }
+  }
+}
+
+.imageInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
+
+  .fileName {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fileSize {
+    color: #999;
+    white-space: nowrap;
+  }
+}
+
+.imageActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+
+  .downloadButton,
+  .closeButton {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 12px;
+  }
+}
+
+.modalImageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #000;
+  border-radius: 8px;
+}
+
+.modalImage {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .imagePreview {
+    max-width: 200px;
+  }
+
+  .imageContainer .image {
+    max-height: 200px;
+  }
+}
+

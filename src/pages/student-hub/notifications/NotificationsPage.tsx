@@ -32,8 +32,28 @@ const NotificationsPage: React.FC = () => {
     message.success('All notifications marked as read');
   };
 
-  const handleViewNotification = (notificationId: string) => {
-    navigate(`/student-hub/notifications/${notificationId}`);
+  const handleViewNotification = (notification: any) => {
+    // Handle chat notifications
+    if (notification.type === 'mentor_message') {
+      const metadata = notification.metadata || {};
+      const conversationId = metadata.conversationId;
+      const threadId = metadata.threadId;
+      
+      if (conversationId) {
+        // Open chat modal via global event that ChatIcon can listen to
+        window.dispatchEvent(new CustomEvent('openChat', {
+          detail: { conversationId, threadId }
+        }));
+        return;
+      }
+    }
+    
+    // Handle other notification types
+    if (notification.targetUrl) {
+      navigate(notification.targetUrl);
+    } else {
+      navigate(`/student-hub/notifications/${notification.id}`);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -50,6 +70,8 @@ const NotificationsPage: React.FC = () => {
         return 'user';
       case 'system':
         return 'cog';
+      case 'mentor_message':
+        return 'comment-dots';
       default:
         return 'bell';
     }
@@ -69,6 +91,8 @@ const NotificationsPage: React.FC = () => {
         return 'default';
       case 'system':
         return 'purple';
+      case 'mentor_message':
+        return 'blue';
       default:
         return 'default';
     }
@@ -154,7 +178,11 @@ const NotificationsPage: React.FC = () => {
             <List
               dataSource={notificationsData.notifications}
               renderItem={(notification: any) => (
-                <List.Item className={`notification-item ${!notification.read ? 'unread' : ''}`}>
+                <List.Item 
+                  className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                  onClick={() => handleViewNotification(notification)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <Card className="notification-card">
                     <div className="notification-content">
                       <div className="notification-icon">
@@ -179,15 +207,21 @@ const NotificationsPage: React.FC = () => {
                               <Button
                                 type="link"
                                 size="small"
-                                onClick={() => handleViewNotification(notification.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewNotification(notification);
+                                }}
                               >
-                                View Details
+                                {notification.type === 'mentor_message' ? 'Open Chat' : 'View Details'}
                               </Button>
                               {!notification.read && (
                                 <Button
                                   type="link"
                                   size="small"
-                                  onClick={() => handleMarkAsRead(notification.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsRead(notification.id);
+                                  }}
                                 >
                                   Mark as Read
                                 </Button>

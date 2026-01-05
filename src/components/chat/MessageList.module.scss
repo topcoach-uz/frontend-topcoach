@@ -1,0 +1,70 @@
+@import '/src/styles/variables.scss';
+
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+    border-radius: 3px;
+
+    &:hover {
+      background: #bfbfbf;
+    }
+  }
+}
+
+.loadingContainer,
+.emptyContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: white;
+}
+
+.loadingMore {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}
+
+.dateHeader {
+  text-align: center;
+  margin: 16px 0 8px;
+  padding: 4px 12px;
+
+  span {
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 4px 12px;
+    border-radius: 12px;
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .messageList {
+    padding: 12px;
+    gap: 6px;
+  }
+
+  .dateHeader {
+    margin: 12px 0 6px;
+  }
+}
+

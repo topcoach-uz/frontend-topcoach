@@ -12,8 +12,17 @@ export default defineConfig({
       'localhost',
       '127.0.0.1',
     ],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+        // Don't rewrite the path, just pass /api/* to backend
+      },
+    },
   },
   optimizeDeps: {
+    include: ['socket.io-client'], // Explicitly include socket.io-client for pre-bundling
     force: false, // Set to true if you need to force re-optimization
   },
 });

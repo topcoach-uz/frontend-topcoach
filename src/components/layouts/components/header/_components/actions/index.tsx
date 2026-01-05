@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MailOutlined } from '@ant-design/icons';
+import ChatIcon from 'src/components/chat/ChatIcon';
 
 export default function Actions() {
   const {
@@ -58,6 +59,7 @@ export default function Actions() {
           isOpen={isMenuOpen}
           profileMenuItems={profileMenuItems}
           toggleMenu={toggleMenu}
+          isAuthLoading={isAuthLoading}
         />
       </>
     );
@@ -90,6 +92,7 @@ export default function Actions() {
       <Link to="/contact" className={styles.contactIcon}>
         <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
       </Link>
+      {!isAuthLoading && isAuthenticated && <ChatIcon />}
       <LanguageSelect />
       <div className={styles.authContainer}>
         {!isAuthLoading && (

@@ -154,10 +154,17 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
         .unwrap()
       .then((res: any) => {
         if (res && res.paymentRequired) {
-          // Directly redirect to payment, bypassing quota modal
+          const mentorLevel = mentorData?.mentorProfile?.level;
+          
+          // For pro bono mentors, never redirect to payment - show error instead
+          if (mentorLevel && mentorLevel.toLowerCase() === 'probono') {
+            message.error(res.message || 'Unable to book this pro bono session. Please try again later.');
+            return;
+          }
+          
+          // Directly redirect to payment, bypassing quota modal (only for non-pro bono mentors)
           if (sessionData.chosenIntervalId.value && bookingInfo?.planId && mentorData && plans) {
             const plan = plans.find(p => p.id === bookingInfo.planId);
-            const mentorLevel = mentorData?.mentorProfile?.level;
             
             if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
               const sessionAmount = (plan.prices as any)[mentorLevel];
