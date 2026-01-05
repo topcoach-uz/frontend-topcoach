@@ -68,6 +68,8 @@ export default function GoogleAuthenticationPage() {
   };
 
   useEffect(() => {
+    if (!exchangeToken) return;
+    
     api.auth
       .exchangeTokens({ code: exchangeToken })
       .then((res) => {
@@ -125,7 +127,14 @@ export default function GoogleAuthenticationPage() {
     }
   };
 
-  if (isLoading) {
+  // Show loader during token exchange and while loading user data
+  // Never show welcome screen during sign-in process
+  if (!exchangeSuccess || isLoading) {
+    return <Loader />;
+  }
+
+  // Don't show welcome screen if profile is already complete
+  if (data?.profile.profileComplete) {
     return <Loader />;
   }
 

@@ -63,4 +63,10 @@
 .chatButtonContainer {
   margin-top: 12px;
   width: 100%;
+  display: flex;
+  
+  :global(.ant-badge) {
+    width: 100%;
+    display: flex;
+  }
 }

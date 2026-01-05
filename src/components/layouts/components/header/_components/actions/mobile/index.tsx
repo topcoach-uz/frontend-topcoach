@@ -58,10 +58,10 @@ export default function ActionsMobileVersion({
           <Link to="/contact" className={styles.contactIcon}>
             <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
           </Link>
-          {!isAuthLoading && isAuthenticated && <ChatIcon />}
           <LanguageSelect />
         </>
       )}
+      {!isAuthLoading && isAuthenticated && <ChatIcon />}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
       ) : (
