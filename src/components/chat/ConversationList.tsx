@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { List, Avatar, Empty, Spin, Typography } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { useGetConversationsQuery, chatApi } from 'src/app/services/chat/chatApi';
 import {
   Conversation,
@@ -7,6 +8,7 @@ import {
 } from 'src/app/services/chat/types';
 import { useTypedSelector, useAppDispatch } from 'src/app/store';
 import { useSocket } from 'src/lib/socket';
+import { getLatestCreatedImg } from 'src/utils';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import styles from './ConversationList.module.scss';
@@ -69,6 +71,23 @@ const ConversationList: React.FC<ConversationListProps> = ({
     return conversation.mentor;
   };
 
+  const getOtherUserAvatar = (conversation: Conversation) => {
+    const otherUser = getOtherUser(conversation);
+    if (!otherUser) return null;
+
+    // Check if it's a mentor (has media array) or student
+    const isMentor = conversation.mentorId === otherUser.id;
+    
+    if (isMentor && otherUser.profile?.media) {
+      // For mentors, use getLatestCreatedImg to get image from media array
+      const mediaImage = getLatestCreatedImg(otherUser.profile.media as any);
+      if (mediaImage) return mediaImage;
+    }
+    
+    // Fallback to avatar or null
+    return otherUser.profile?.avatar || null;
+  };
+
   const getUnreadCount = (conversation: Conversation) => {
     if (!currentUser?.id) return 0;
     if (conversation.mentorId === currentUser.id) {
@@ -127,11 +146,12 @@ const ConversationList: React.FC<ConversationListProps> = ({
             <List.Item.Meta
               avatar={
                 <Avatar
-                  src={otherUser?.profile?.avatar}
+                  src={getOtherUserAvatar(conversation)}
                   size={48}
+                  icon={!getOtherUserAvatar(conversation) ? <UserOutlined /> : undefined}
                   style={{ backgroundColor: '#8b0000' }}
                 >
-                  {otherUser?.profile?.name?.[0]?.toUpperCase() || 'U'}
+                  {!getOtherUserAvatar(conversation) && (otherUser?.profile?.name?.[0]?.toUpperCase() || 'U')}
                 </Avatar>
               }
               title={

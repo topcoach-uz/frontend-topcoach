@@ -17,7 +17,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
   // Fetch unread count
-  const { data: unreadData } = useGetUnreadCountQuery(
+  const { data: unreadData, error: unreadError, isLoading: unreadLoading } = useGetUnreadCountQuery(
     undefined,
     {
       skip: !isAuthenticated,
@@ -25,7 +25,23 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     }
   );
 
-  const unreadCount = unreadData?.unreadCount || 0;
+  // Debug logging
+  React.useEffect(() => {
+    if (unreadData !== undefined) {
+      console.log('Unread count data:', unreadData);
+      console.log('Unread count value:', unreadData?.unreadCount);
+    }
+    if (unreadError) {
+      console.error('Unread count error:', unreadError);
+    }
+  }, [unreadData, unreadError]);
+
+  const unreadCount = unreadData?.unreadCount ?? 0;
+
+  // Debug: Log the count to verify it's being calculated
+  React.useEffect(() => {
+    console.log('[ChatIcon] Unread count:', unreadCount, 'Data:', unreadData, 'Error:', unreadError);
+  }, [unreadCount, unreadData, unreadError]);
 
   if (!isAuthenticated) {
     return null;
