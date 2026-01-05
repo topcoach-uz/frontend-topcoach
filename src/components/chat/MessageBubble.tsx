@@ -28,7 +28,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) 
   const isSenderMentor = conversation?.mentorId === message.senderId;
   // For mentors, use getLatestCreatedImg to get image from media array
   const senderAvatar = isSenderMentor 
-    ? getLatestCreatedImg(conversation?.mentor?.profile?.media || []) || conversation?.mentor?.profile?.avatar
+    ? (conversation?.mentor?.profile?.media ? getLatestCreatedImg(conversation.mentor.profile.media as any) : null) || conversation?.mentor?.profile?.avatar
     : conversation?.student?.profile?.avatar;
   const senderName = isSenderMentor
     ? conversation?.mentor?.profile?.name

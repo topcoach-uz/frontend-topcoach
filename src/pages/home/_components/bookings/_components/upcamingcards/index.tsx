@@ -97,16 +97,16 @@ export default function UpcomingCard({
     // Find conversation with mentor/student
     const conversation = conversationList.find((conv) => {
       if (role === UserRole.Student) {
-        return conv.mentorId === mentor?.id && conv.studentId === currentUser.id;
+        return conv.mentorId === (mentor as any)?.id && conv.studentId === currentUser.id;
       } else {
-        return conv.mentorId === currentUser.id && conv.studentId === participants?.[0]?.id;
+        return conv.mentorId === currentUser.id && conv.studentId === (participants?.[0] as any)?.id;
       }
     });
 
     if (conversation) {
       setConversationId(conversation.id);
     }
-  }, [conversations, id, currentUser?.id, role, mentor?.id, participants]);
+  }, [conversations, id, currentUser?.id, role, (mentor as any)?.id, participants]);
 
   // Fetch threads for the conversation to find the session thread
   const { data: threadsData } = useGetThreadsQuery(conversationId || '', {
@@ -153,17 +153,17 @@ export default function UpcomingCard({
         console.log('Chat click debug:', {
           role,
           mentor,
-          mentorId: mentor?.id,
+          mentorId: (mentor as any)?.id,
           currentUser,
           currentUserId: currentUser?.id,
           participants,
-          participantId: participants?.[0]?.id,
+          participantId: (participants?.[0] as any)?.id,
         });
         
         // For students: mentor is the session's mentor, student is current user
         // For mentors: mentor is current user, student is the participant
-        const mentorId = role === UserRole.Student ? mentor?.id : currentUser?.id;
-        const studentId = role === UserRole.Student ? currentUser?.id : participants?.[0]?.id;
+        const mentorId = role === UserRole.Student ? (mentor as any)?.id : currentUser?.id;
+        const studentId = role === UserRole.Student ? currentUser?.id : (participants?.[0] as any)?.id;
         
         console.log('Computed IDs:', { mentorId, studentId });
         
@@ -311,8 +311,7 @@ export default function UpcomingCard({
     }
 
     const values = form.getFieldsValue();
-    // @ts-ignore
-    const subjectId = mentor?.id;
+    const subjectId = (mentor as any)?.id;
     const finalReport = selectedReportReason;
     const finalComment = values.reportText;
 
@@ -453,8 +452,7 @@ export default function UpcomingCard({
 
   const handleMentorNameClick = () => {
     if (role === UserRole.Student) {
-      // @ts-ignore
-      navigate(`/mentors/${mentor?.id}`);
+      navigate(`/mentors/${(mentor as any)?.id}`);
     }
   };
 

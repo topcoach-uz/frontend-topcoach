@@ -235,7 +235,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <Button
           type="primary"
           icon={<SendOutlined />}
-          onClick={handleSend}
+          onClick={() => handleSend()}
           loading={isLoading}
           disabled={!message.trim() && !selectedFile}
           className={styles.sendButton}

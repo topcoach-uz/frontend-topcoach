@@ -18,6 +18,7 @@ interface Props {
   profileMenuItems: MenuProps['items'];
   isOpen: boolean;
   toggleMenu: () => void;
+  isAuthLoading?: boolean;
 }
 
 export default function ActionsMobileVersion({
