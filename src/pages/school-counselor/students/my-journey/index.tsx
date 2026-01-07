@@ -11,7 +11,6 @@ import StudentHubApplications from './components/Applications';
 import StudentHubEssays from './components/Essays';
 import StudentHubDocuments from './components/Documents';
 import StudentHubGPACalculator from './components/GPACalculator';
-import StudentHubMajorMatch from './components/MajorMatch';
 import './my-journey.scss';
 
 const StudentMyJourneyView: React.FC = () => {
@@ -65,15 +64,6 @@ const StudentMyJourneyView: React.FC = () => {
         <span>
           <FontAwesomeIcon icon="user" style={{ marginRight: 8 }} />
           {t('My Profile')}
-        </span>
-      ),
-    },
-    {
-      key: 'major-match',
-      label: (
-        <span>
-          <FontAwesomeIcon icon="book" style={{ marginRight: 8 }} />
-          {t('Major Match')}
         </span>
       ),
     },
@@ -148,7 +138,6 @@ const StudentMyJourneyView: React.FC = () => {
         {activeTab === 'essays' && <StudentHubEssays studentId={studentId} studentName={studentName} />}
         {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} studentName={studentName} />}
         {activeTab === 'gpa-calculator' && <StudentHubGPACalculator studentId={studentId} studentName={studentName} />}
-        {activeTab === 'major-match' && <StudentHubMajorMatch studentId={studentId} studentName={studentName} />}
       </div>
     </div>
   );

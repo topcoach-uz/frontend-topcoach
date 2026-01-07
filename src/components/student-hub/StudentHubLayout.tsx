@@ -63,11 +63,6 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       label: t('My Profile'),
     },
     {
-      key: '/student-hub/major-match',
-      icon: <BookIcon />,
-      label: t('Major Match'),
-    },
-    {
       key: '/student-hub/applications',
       icon: <BuildingIcon />,
       label: t('Applications'),

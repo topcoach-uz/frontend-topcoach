@@ -8,7 +8,6 @@ import ApplicationsPage from './applications/ApplicationsPage';
 import EssaysPage from './essays/EssaysPage';
 import GpaCalculatorPage from './gpa-calculator/GpaCalculatorPage';
 import DocumentsPage from './documents/DocumentsPage';
-import MajorMatchPage from './major-match/MajorMatchPage';
 // TODO: Implement notifications page later
 // import NotificationsPage from './notifications/NotificationsPage';
 
@@ -28,8 +27,6 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/gpa-calculator/*" element={<GpaCalculatorPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/documents/*" element={<DocumentsPage />} />
-          <Route path="/major-match" element={<MajorMatchPage />} />
-          <Route path="/major-match/*" element={<MajorMatchPage />} />
           {/* TODO: Implement notifications page later */}
           {/* <Route path="/notifications" element={<NotificationsPage />} /> */}
           {/* <Route path="/notifications/*" element={<NotificationsPage />} /> */}

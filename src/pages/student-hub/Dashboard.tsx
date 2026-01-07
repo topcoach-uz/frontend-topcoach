@@ -414,16 +414,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   >
                     {studentProfile.completionPercentage === 100 ? 'View Profile' : 'Complete Profile'}
                   </Button>
-                  {studentProfile.completionPercentage === 100 && (
-                    <Button
-                      type="primary"
-                      size="middle"
-                      onClick={() => navigate('/student-hub/major-match')}
-                      icon={<FontAwesomeIcon icon="book" />}
-                    >
-                      Try Major Match
-                    </Button>
-                  )}
                   <Button
                     type="link"
                     size="small"

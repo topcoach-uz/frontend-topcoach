@@ -89,9 +89,6 @@ const PaymentPageLazy = lazy(() => import("src/pages/payment"));
 const PaymentSmsPageLazy = lazy(
   () => import("src/pages/payment/sms")
 );
-const AiMajorMatchPageLazy = lazy(
-  () => import("src/pages/ai-major-match/AiMajorMatch")
-);
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
 const ProgramsAdmissionsPageLazy = lazy(() => import("src/pages/programs/admissions"));
 const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
@@ -240,10 +237,6 @@ function RouterProvider() {
               <Route
                 path="/payment/sms"
                 element={<PaymentSmsPageLazy />}
-              />
-              <Route
-                path="/ai-major-match"
-                element={<Custom404PageLazy />}
               />
               <Route path="*" element={<Custom404PageLazy />} />
             </Route>
