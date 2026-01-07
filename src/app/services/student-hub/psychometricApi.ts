@@ -15,6 +15,7 @@ export interface AssessmentQuestion {
     options?: string[];
     scale?: { min: number; max: number; labels?: string[] };
     weight?: number;
+    maxLength?: number; // for open-ended questions
   };
   order: number;
   translations?: {

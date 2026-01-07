@@ -39,6 +39,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const [currentStep, setCurrentStep] = useState<AssessmentStep>('start');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
   const [language, setLanguage] = useState<'en' | 'uz' | 'ru'>('en');
   const [includeAptitude, setIncludeAptitude] = useState(false);
 
