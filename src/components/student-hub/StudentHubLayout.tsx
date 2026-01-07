@@ -47,6 +47,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const FileIcon = () => <FontAwesomeIcon icon="file" className="menu-icon" />;
   const CalculatorIcon = () => <FontAwesomeIcon icon="calculator" className="menu-icon" />;
   const BellIcon = () => <FontAwesomeIcon icon="bell" className="menu-icon" />;
+  const ChartLineIcon = () => <FontAwesomeIcon icon="chart-line" className="menu-icon" />;
   const MenuIcon = () => <FontAwesomeIcon icon="bars" className="menu-icon" />;
   const BookIcon = () => <FontAwesomeIcon icon="book" className="menu-icon" />;
 
@@ -61,6 +62,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       key: '/student-hub/profile',
       icon: <UserIcon />,
       label: t('My Profile'),
+    },
+    {
+      key: '/student-hub/psychometric-assessment',
+      icon: <ChartLineIcon />,
+      label: 'Major Match',
     },
     {
       key: '/student-hub/applications',

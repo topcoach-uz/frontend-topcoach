@@ -38,49 +38,64 @@ $crimson-900: #7f1d1d;
       .profile-complete-celebration {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
         width: 100%;
 
         .celebration-header {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 4px;
+          gap: 10px;
+          margin-bottom: 8px;
 
           .celebration-emoji {
-            font-size: 24px;
+            font-size: 28px;
             animation: bounce 1s ease-in-out;
+            line-height: 1;
           }
 
           .celebration-text {
-            font-size: $text-lg;
+            font-size: $text-xl;
             font-weight: $font-bold;
             color: #10b981;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
           }
         }
 
         .progress-container.success {
+          margin-bottom: 12px;
+
           .ant-progress-bg {
-            height: 10px !important;
+            height: 12px !important;
             background: linear-gradient(90deg, #10b981 0%, #34d399 100%) !important;
+            border-radius: 6px;
           }
 
           .ant-progress-text {
             font-weight: $font-bold;
-            font-size: $text-base;
+            font-size: $text-lg;
             color: #10b981 !important;
+            margin-left: 12px;
           }
+        }
+
+        .button-group {
+          margin-top: 4px;
         }
 
         .view-profile-btn {
           border-color: #10b981;
           color: #10b981;
+          height: 40px;
+          font-weight: $font-medium;
+          padding: 0 20px;
           
           &:hover {
             background: #10b981;
             border-color: #10b981;
             color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
           }
         }
       }

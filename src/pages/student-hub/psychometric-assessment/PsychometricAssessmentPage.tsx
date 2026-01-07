@@ -145,17 +145,14 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     {
       title: 'Start',
       description: 'Begin Assessment',
-      icon: <FontAwesomeIcon icon="play" />,
     },
     {
       title: 'Questions',
       description: 'Answer Questions',
-      icon: <FontAwesomeIcon icon="question-circle" />,
     },
     {
       title: 'Results',
       description: 'View Results',
-      icon: <FontAwesomeIcon icon="chart-line" />,
     },
   ];
 
@@ -166,18 +163,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       <Card className="assessment-header-card">
         <div className="assessment-header">
           <div className="header-content">
-            <Title level={2}>🎯 Psychometric Assessment</Title>
+            <Title level={2}>Psychometric Assessment</Title>
             <Paragraph>
               Discover your ideal major and career path through a comprehensive assessment of your interests, 
               personality, values, and aptitudes.
             </Paragraph>
           </div>
-          <Button
-            icon={<FontAwesomeIcon icon="arrow-left" />}
-            onClick={() => navigate('/student-hub')}
-          >
-            Back to Dashboard
-          </Button>
         </div>
       </Card>
 
@@ -185,7 +176,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         <Steps
           current={currentStepIndex}
           items={stepItems}
-          size="small"
+          size="default"
+          labelPlacement="vertical"
         />
       </Card>
 

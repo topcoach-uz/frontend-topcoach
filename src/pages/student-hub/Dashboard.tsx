@@ -335,7 +335,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%' }}>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, marginBottom: studentProfile.completionPercentage < 100 ? 8 : 0, lineHeight: '1.5' }}>
                   {studentProfile.completionPercentage === 100 
-                    ? '🎉 Profile Complete!' 
+                    ? 'Profile Complete!' 
                     : t('studentHub.profile.completeForAI')}
                 </h3>
                 {studentProfile.completionPercentage < 100 && (
@@ -702,7 +702,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   {t('studentHub.dashboard.newEssay')}
                 </Button>
               </Col>
-              <Col xs={12} sm={8} md={6}>
+              {/* <Col xs={12} sm={8} md={6}>
                 <Button
                   type="dashed"
                   block
@@ -712,7 +712,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 >
                   {t('studentHub.dashboard.newDocument')}
                 </Button>
-              </Col>
+              </Col> */}
               <Col xs={12} sm={8} md={6}>
                 <Button
                   type="dashed"
