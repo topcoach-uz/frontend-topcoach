@@ -63,11 +63,12 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       icon: <UserIcon />,
       label: t('My Profile'),
     },
-    {
-      key: '/student-hub/psychometric-assessment',
-      icon: <ChartLineIcon />,
-      label: 'Major Match',
-    },
+    // Major Match - hidden from sidebar but accessible via URL
+    // {
+    //   key: '/student-hub/psychometric-assessment',
+    //   icon: <ChartLineIcon />,
+    //   label: 'Major Match',
+    // },
     {
       key: '/student-hub/applications',
       icon: <BuildingIcon />,
