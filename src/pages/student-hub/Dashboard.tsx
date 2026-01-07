@@ -395,35 +395,78 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             </Col>
             <Col xs={24} md={10}>
               <div className="profile-completion-actions">
-                <div className="progress-container">
-                  <Progress 
-                    percent={studentProfile.completionPercentage} 
-                    strokeColor={studentProfile.completionPercentage === 100 ? '#10b981' : '#f59e0b'}
-                    status={studentProfile.completionPercentage === 100 ? 'success' : 'active'}
-                    format={(percent) => `${percent}%`}
-                    strokeWidth={8}
-                    showInfo={true}
-                  />
-                </div>
-                <div className="button-group">
-                  <Button
-                    type={studentProfile.completionPercentage === 100 ? 'default' : 'primary'}
-                    size="middle"
-                    onClick={() => navigate('/student-hub/profile?tab=personal')}
-                    icon={<FontAwesomeIcon icon="user" />}
-                  >
-                    {studentProfile.completionPercentage === 100 ? 'View Profile' : 'Complete Profile'}
-                  </Button>
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={handleRecalculate}
-                    className="refresh-button"
-                    title="Recalculate completion percentage"
-                  >
-                    ↻ Refresh
-                  </Button>
-                </div>
+                {studentProfile.completionPercentage === 100 ? (
+                  <div className="profile-complete-celebration">
+                    <div className="celebration-header">
+                      <span className="celebration-emoji">🎉</span>
+                      <span className="celebration-text">Profile Complete!</span>
+                    </div>
+                    <div className="progress-container success">
+                      <Progress 
+                        percent={100} 
+                        strokeColor="#10b981"
+                        status="success"
+                        format={() => '100%'}
+                        strokeWidth={10}
+                        showInfo={true}
+                      />
+                    </div>
+                    <div className="button-group">
+                      <Button
+                        type="default"
+                        size="middle"
+                        onClick={() => navigate('/student-hub/profile?tab=personal')}
+                        icon={<FontAwesomeIcon icon="user" />}
+                        className="view-profile-btn"
+                      >
+                        View Profile
+                      </Button>
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={handleRecalculate}
+                        className="refresh-button"
+                        title="Recalculate completion percentage"
+                        icon={<FontAwesomeIcon icon="sync" />}
+                      >
+                        Refresh
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="progress-container">
+                      <Progress 
+                        percent={studentProfile.completionPercentage} 
+                        strokeColor="#f59e0b"
+                        status="active"
+                        format={(percent) => `${percent}%`}
+                        strokeWidth={8}
+                        showInfo={true}
+                      />
+                    </div>
+                    <div className="button-group">
+                      <Button
+                        type="primary"
+                        size="middle"
+                        onClick={() => navigate('/student-hub/profile?tab=personal')}
+                        icon={<FontAwesomeIcon icon="user" />}
+                      >
+                        Complete Profile
+                      </Button>
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={handleRecalculate}
+                        className="refresh-button"
+                        title="Recalculate completion percentage"
+                        icon={<FontAwesomeIcon icon="sync" />}
+                      >
+                        Refresh
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </Col>
           </Row>
@@ -668,6 +711,17 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   onClick={handleUploadDocument}
                 >
                   {t('studentHub.dashboard.newDocument')}
+                </Button>
+              </Col>
+              <Col xs={12} sm={8} md={6}>
+                <Button
+                  type="dashed"
+                  block
+                  icon={<FontAwesomeIcon icon="chart-line" />}
+                  className="quick-action-btn"
+                  onClick={() => navigate('/student-hub/psychometric-assessment')}
+                >
+                  Major Match
                 </Button>
               </Col>
             </Row>

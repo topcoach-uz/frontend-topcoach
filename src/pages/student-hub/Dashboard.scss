@@ -34,6 +34,57 @@ $crimson-900: #7f1d1d;
         justify-content: flex-end;
       }
 
+      // Celebration state (100% complete)
+      .profile-complete-celebration {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+
+        .celebration-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+
+          .celebration-emoji {
+            font-size: 24px;
+            animation: bounce 1s ease-in-out;
+          }
+
+          .celebration-text {
+            font-size: $text-lg;
+            font-weight: $font-bold;
+            color: #10b981;
+            letter-spacing: 0.5px;
+          }
+        }
+
+        .progress-container.success {
+          .ant-progress-bg {
+            height: 10px !important;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%) !important;
+          }
+
+          .ant-progress-text {
+            font-weight: $font-bold;
+            font-size: $text-base;
+            color: #10b981 !important;
+          }
+        }
+
+        .view-profile-btn {
+          border-color: #10b981;
+          color: #10b981;
+          
+          &:hover {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+          }
+        }
+      }
+
       .progress-container {
         width: 100%;
         min-width: 0;
@@ -105,6 +156,16 @@ $crimson-900: #7f1d1d;
           white-space: nowrap;
         }
       }
+    }
+  }
+
+  // Bounce animation for celebration emoji
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
     }
   }
 

@@ -1,0 +1,187 @@
+@import '../../../styles/student-hub-design-system.scss';
+
+.psychometric-assessment-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .psychometric-assessment-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    .ant-spin {
+      margin-bottom: 16px;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: $text-base;
+    }
+  }
+
+  .assessment-header-card {
+    margin-bottom: 24px;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-md;
+
+    .assessment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+
+      .header-content {
+        flex: 1;
+
+        h2 {
+          margin: 0 0 8px 0;
+          color: $text-primary;
+        }
+
+        p {
+          margin: 0;
+          color: $text-secondary;
+          font-size: $text-base;
+        }
+      }
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  }
+
+  .assessment-steps-card {
+    margin-bottom: 24px;
+    border-radius: $radius-xl;
+
+    .ant-steps {
+      padding: 16px 0;
+    }
+  }
+
+  .assessment-content {
+    min-height: 400px;
+  }
+}
+
+// Assessment Start Styles
+.assessment-start {
+  .start-info-card {
+    margin-bottom: 24px;
+    border-radius: $radius-xl;
+
+    .assessment-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+
+  .settings-card {
+    border-radius: $radius-lg;
+    height: 100%;
+  }
+
+  .start-actions-card {
+    border-radius: $radius-xl;
+    text-align: center;
+
+    .start-actions {
+      padding: 16px;
+    }
+  }
+}
+
+// Assessment Questions Styles
+.assessment-questions {
+  .question-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-md;
+
+    .question-header {
+      margin-bottom: 24px;
+
+      .question-progress {
+        .ant-progress {
+          margin-top: 8px;
+        }
+      }
+    }
+
+    .question-content {
+      padding: 24px 0;
+      min-height: 300px;
+
+      .question-input {
+        margin-top: 32px;
+      }
+    }
+
+    .question-actions {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 24px;
+      border-top: 1px solid $border-light;
+    }
+  }
+}
+
+// Assessment Results Styles
+.assessment-results {
+  .results-summary-card {
+    margin-bottom: 24px;
+    border-radius: $radius-xl;
+
+    .ant-card-body {
+      > .ant-typography {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .recommendations-card {
+    margin-bottom: 24px;
+    border-radius: $radius-xl;
+
+    .recommendation-item {
+      border: 1px solid $border-light;
+      border-radius: $radius-lg;
+      margin-bottom: 16px;
+      transition: all $transition-base;
+
+      &:hover {
+        box-shadow: $shadow-md;
+        transform: translateY(-2px);
+      }
+    }
+
+    .ant-list-item {
+      padding: 0;
+      border-bottom: none;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .psychometric-assessment-page {
+    padding: 16px;
+
+    .assessment-header-card {
+      .assessment-header {
+        .header-content {
+          h2 {
+            font-size: $text-xl;
+          }
+        }
+      }
+    }
+  }
+}
+

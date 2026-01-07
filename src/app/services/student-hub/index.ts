@@ -6,3 +6,4 @@ export * from './studentProfileApi';
 export * from './applicationTrackingApi';
 export * from './essayManagementApi';
 export * from './dashboardApi';
+export * from './psychometricApi';
