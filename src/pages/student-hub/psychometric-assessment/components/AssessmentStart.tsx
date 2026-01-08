@@ -3,6 +3,7 @@ import { Card, Button, Radio, Space, Typography, Alert, Tag, Row, Col, Divider, 
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -31,23 +32,29 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     onStart(selectedLanguage, includeAptitude);
   };
 
-  const assessmentFeatures = [
+  const assessmentFeatures: Array<{
+    icon: IconProp;
+    title: string;
+    description: string;
+    count: number;
+    color: string;
+  }> = [
     {
-      icon: 'user-circle',
+      icon: 'user-circle' as IconProp,
       title: 'Interest Inventory (RIASEC)',
       description: '42 questions to identify your career interests and personality type',
       count: 42,
       color: '#8b0000',
     },
     {
-      icon: 'heart',
+      icon: 'heart' as IconProp,
       title: 'Values Assessment',
       description: '12 questions about what matters most to you in your career',
       count: 12,
       color: '#dc2626',
     },
     {
-      icon: 'brain',
+      icon: 'brain' as IconProp,
       title: 'Personality Profile (Big Five)',
       description: '20 questions to understand your personality traits and working style',
       count: 20,
