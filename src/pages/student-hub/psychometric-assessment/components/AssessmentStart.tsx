@@ -32,140 +32,98 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     onStart(selectedLanguage, includeAptitude);
   };
 
-  const assessmentFeatures: Array<{
-    icon: IconProp;
-    title: string;
-    description: string;
-    count: number;
-    color: string;
-  }> = [
-    {
-      icon: 'user-circle' as IconProp,
-      title: 'Interest Inventory (RIASEC)',
-      description: '42 questions to identify your career interests and personality type',
-      count: 42,
-      color: '#8b0000',
-    },
-    {
-      icon: 'heart' as IconProp,
-      title: 'Values Assessment',
-      description: '12 questions about what matters most to you in your career',
-      count: 12,
-      color: '#dc2626',
-    },
-    {
-      icon: 'brain' as IconProp,
-      title: 'Personality Profile (Big Five)',
-      description: '20 questions to understand your personality traits and working style',
-      count: 20,
-      color: '#b91c1c',
-    },
-  ];
-
   const totalQuestions = 74 + (includeAptitude ? 16 : 0);
+  const estimatedTime = includeAptitude ? '20-25' : '15-20';
 
   return (
     <div className="assessment-start">
-      {/* Hero Section */}
-      <Card className="hero-section-card">
-        <Row gutter={[32, 32]} align="middle">
-          <Col xs={24} lg={14}>
-            <div className="hero-content">
-              <div className="hero-icon">
-                <FontAwesomeIcon icon="brain" />
-              </div>
-              <Title level={2} className="hero-title">
-                Discover Your Perfect Major Match
-              </Title>
-              <Paragraph className="hero-description">
-                Our comprehensive psychometric assessment analyzes your interests, personality, 
-                values, and aptitudes to provide personalized major recommendations that align 
-                with who you are and where you want to go.
-              </Paragraph>
-              <div className="hero-stats">
-                <div className="stat-item">
-                  <div className="stat-value">{totalQuestions}</div>
-                  <div className="stat-label">Questions</div>
-                </div>
-                <div className="stat-divider" />
-                <div className="stat-item">
-                  <div className="stat-value">{includeAptitude ? '20-25' : '15-20'}</div>
-                  <div className="stat-label">Minutes</div>
-                </div>
-                <div className="stat-divider" />
-                <div className="stat-item">
-                  <div className="stat-value">100%</div>
-                  <div className="stat-label">Personalized</div>
-                </div>
-              </div>
+      {/* Overview Section */}
+      <Card className="assessment-overview-card" title="Assessment Overview">
+        <Row gutter={[24, 24]}>
+          <Col xs={24} sm={8}>
+            <div className="overview-item">
+              <Text type="secondary" className="overview-label">Total Questions</Text>
+              <Title level={4} style={{ margin: 0 }}>{totalQuestions}</Title>
             </div>
           </Col>
-          <Col xs={24} lg={10}>
-            <div className="hero-visual">
-              <div className="visual-card">
-                <FontAwesomeIcon icon="chart-line" className="visual-icon" />
-              </div>
+          <Col xs={24} sm={8}>
+            <div className="overview-item">
+              <Text type="secondary" className="overview-label">Estimated Time</Text>
+              <Title level={4} style={{ margin: 0 }}>{estimatedTime} min</Title>
+            </div>
+          </Col>
+          <Col xs={24} sm={8}>
+            <div className="overview-item">
+              <Text type="secondary" className="overview-label">Assessment Type</Text>
+              <Title level={4} style={{ margin: 0 }}>Comprehensive</Title>
             </div>
           </Col>
         </Row>
       </Card>
 
-      {/* Assessment Features */}
-      <Card className="features-card">
-        <Title level={4} className="section-title">
-          What You'll Discover
-        </Title>
-        <Row gutter={[24, 24]}>
-          {assessmentFeatures.map((feature, index) => (
-            <Col xs={24} md={8} key={index}>
-              <div className="feature-card">
-                <div className="feature-icon" style={{ backgroundColor: `${feature.color}15` }}>
-                  <FontAwesomeIcon icon={feature.icon} style={{ color: feature.color }} />
-                </div>
-                <div className="feature-content">
-                  <div className="feature-header">
-                    <Title level={5} className="feature-title">{feature.title}</Title>
-                    <Badge count={feature.count} className="feature-badge" />
-                  </div>
-                  <Paragraph className="feature-description">{feature.description}</Paragraph>
-                </div>
+      {/* Assessment Components */}
+      <Card className="assessment-components-card" title="Assessment Components">
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="user-circle" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Interest Inventory (RIASEC)</Text>
+                <Text type="secondary" className="component-description">
+                  42 questions to identify your career interests
+                </Text>
               </div>
-            </Col>
-          ))}
+              <Badge count={42} className="component-badge" />
+            </div>
+          </Col>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="heart" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Values Assessment</Text>
+                <Text type="secondary" className="component-description">
+                  12 questions about what matters most to you
+                </Text>
+              </div>
+              <Badge count={12} className="component-badge" />
+            </div>
+          </Col>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="brain" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Personality Profile (Big Five)</Text>
+                <Text type="secondary" className="component-description">
+                  20 questions to understand your personality traits
+                </Text>
+              </div>
+              <Badge count={20} className="component-badge" />
+            </div>
+          </Col>
           {includeAptitude && (
-            <Col xs={24} md={8}>
-              <div className="feature-card feature-card-highlight">
-                <div className="feature-icon" style={{ backgroundColor: '#3b82f615' }}>
-                  <FontAwesomeIcon icon="flask" style={{ color: '#3b82f6' }} />
+            <Col xs={24} md={12}>
+              <div className="component-item component-item-highlight">
+                <FontAwesomeIcon icon="flask" className="component-icon" />
+                <div className="component-content">
+                  <Text strong>Aptitude Tests</Text>
+                  <Text type="secondary" className="component-description">
+                    16 questions to assess cognitive abilities
+                  </Text>
                 </div>
-                <div className="feature-content">
-                  <div className="feature-header">
-                    <Title level={5} className="feature-title">Aptitude Tests</Title>
-                    <Badge count={16} className="feature-badge" />
-                  </div>
-                  <Paragraph className="feature-description">
-                    Assess your cognitive abilities in numerical, verbal, and spatial reasoning
-                  </Paragraph>
-                </div>
+                <Badge count={16} className="component-badge" />
               </div>
             </Col>
           )}
         </Row>
       </Card>
 
-      {/* Settings Card */}
+      {/* Settings */}
       <Row gutter={[24, 24]}>
-        <Col xs={24} lg={14}>
-          <Card className="settings-card">
-            <Title level={4} className="section-title">
-              <FontAwesomeIcon icon="cog" style={{ marginRight: 8 }} />
-              Assessment Settings
-            </Title>
+        <Col xs={24} lg={16}>
+          <Card className="assessment-settings-card" title="Assessment Settings">
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <div className="setting-group">
-                <Text strong className="setting-label">
-                  Language
-                </Text>
+                <Text strong className="setting-label">Language</Text>
                 <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
                   Choose your preferred language for the assessment
                 </Paragraph>
@@ -173,56 +131,27 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
                   size="large"
-                  className="language-radio-group"
                 >
-                  <Radio.Button value="en">
-                    <span className="radio-label">
-                      <FontAwesomeIcon icon="globe" style={{ marginRight: 6 }} />
-                      English
-                    </span>
-                  </Radio.Button>
-                  <Radio.Button value="uz">
-                    <span className="radio-label">
-                      <FontAwesomeIcon icon="globe" style={{ marginRight: 6 }} />
-                      O'zbek
-                    </span>
-                  </Radio.Button>
-                  <Radio.Button value="ru">
-                    <span className="radio-label">
-                      <FontAwesomeIcon icon="globe" style={{ marginRight: 6 }} />
-                      Русский
-                    </span>
-                  </Radio.Button>
+                  <Radio.Button value="en">English</Radio.Button>
+                  <Radio.Button value="uz">O'zbek</Radio.Button>
+                  <Radio.Button value="ru">Русский</Radio.Button>
                 </Radio.Group>
               </div>
 
-              <Divider />
+              <Divider style={{ margin: '16px 0' }} />
 
               <div className="setting-group">
-                <Text strong className="setting-label">
-                  Include Aptitude Tests
-                </Text>
+                <Text strong className="setting-label">Include Aptitude Tests</Text>
                 <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
-                  Get deeper insights with cognitive ability assessment (adds 16 more questions)
+                  Get deeper insights with cognitive ability assessment (+16 questions)
                 </Paragraph>
                 <Radio.Group
                   value={includeAptitude}
                   onChange={(e) => setIncludeAptitude(e.target.value)}
                   size="large"
-                  className="aptitude-radio-group"
                 >
-                  <Radio.Button value={true}>
-                    <span className="radio-label">
-                      <FontAwesomeIcon icon="check-circle" style={{ marginRight: 6 }} />
-                      Yes (+16 questions)
-                    </span>
-                  </Radio.Button>
-                  <Radio.Button value={false}>
-                    <span className="radio-label">
-                      <FontAwesomeIcon icon="times-circle" style={{ marginRight: 6 }} />
-                      No
-                    </span>
-                  </Radio.Button>
+                  <Radio.Button value={true}>Yes</Radio.Button>
+                  <Radio.Button value={false}>No</Radio.Button>
                 </Radio.Group>
                 <div className="aptitude-hint">
                   <FontAwesomeIcon icon="lightbulb" style={{ marginRight: 6 }} />
@@ -235,34 +164,29 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           </Card>
         </Col>
 
-        <Col xs={24} lg={10}>
-          <Card className="summary-card">
-            <Title level={4} className="section-title">
-              Assessment Summary
-            </Title>
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Col xs={24} lg={8}>
+          <Card className="assessment-summary-card" title="Summary">
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <div className="summary-item">
                 <Text type="secondary">Total Questions</Text>
-                <Text strong style={{ fontSize: 24 }}>{totalQuestions}</Text>
+                <Text strong style={{ fontSize: 18 }}>{totalQuestions}</Text>
               </div>
-              <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '8px 0' }} />
               <div className="summary-item">
                 <Text type="secondary">Estimated Time</Text>
-                <Text strong style={{ fontSize: 24 }}>
-                  {includeAptitude ? '20-25' : '15-20'} min
-                </Text>
+                <Text strong style={{ fontSize: 18 }}>{estimatedTime} min</Text>
               </div>
-              <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '8px 0' }} />
               <div className="summary-item">
                 <Text type="secondary">Language</Text>
-                <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
+                <Tag color="blue">
                   {selectedLanguage === 'en' ? 'English' : selectedLanguage === 'uz' ? "O'zbek" : 'Русский'}
                 </Tag>
               </div>
-              <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: '8px 0' }} />
               <div className="summary-item">
                 <Text type="secondary">Aptitude Tests</Text>
-                <Tag color={includeAptitude ? 'green' : 'default'} style={{ fontSize: 14, padding: '4px 12px' }}>
+                <Tag color={includeAptitude ? 'green' : 'default'}>
                   {includeAptitude ? 'Included' : 'Not Included'}
                 </Tag>
               </div>
@@ -274,52 +198,36 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
       {/* Existing Assessment Alert */}
       {hasExistingAssessment && (
         <Alert
-          message={
-            <Space>
-              <FontAwesomeIcon icon="info-circle" />
-              <Text strong>Previous Assessment Found</Text>
-            </Space>
-          }
-          description="You have completed this assessment before. You can view your previous results or start a new assessment to get updated recommendations."
+          message="Previous Assessment Found"
+          description="You have completed this assessment before. You can view your previous results or start a new assessment."
           type="info"
-          showIcon={false}
-          className="existing-assessment-alert"
+          showIcon
+          style={{ marginBottom: 24 }}
           action={
-            <Button type="link" size="small" onClick={onViewExisting}>
+            <Button size="small" onClick={onViewExisting}>
               View Previous Results
             </Button>
           }
         />
       )}
 
-      {/* CTA Section */}
-      <Card className="cta-card">
-        <div className="cta-content">
-          <div className="cta-icon">
-            <FontAwesomeIcon icon="rocket" />
-          </div>
-          <Title level={3} className="cta-title">
-            Ready to Discover Your Perfect Major?
-          </Title>
-          <Paragraph className="cta-description">
-            Start your personalized assessment now and get actionable insights in minutes
-          </Paragraph>
+      {/* Start Button */}
+      <Card className="assessment-actions-card">
+        <div className="actions-content">
           <Button
             type="primary"
             size="large"
             onClick={handleStart}
             loading={isLoading}
-            className="cta-button"
+            className="start-button"
             icon={<FontAwesomeIcon icon="play-circle" />}
+            block
           >
             Start Assessment
           </Button>
-          <div className="cta-note">
-            <FontAwesomeIcon icon="shield-alt" style={{ marginRight: 6 }} />
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              Your responses are confidential and used only for recommendations
-            </Text>
-          </div>
+          <Text type="secondary" style={{ display: 'block', marginTop: 12, textAlign: 'center' }}>
+            Your responses are confidential and used only for recommendations
+          </Text>
         </div>
       </Card>
     </div>
