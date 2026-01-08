@@ -1,4 +1,4 @@
-import { Form, message } from "antd";
+import { Form, message, Card, Row, Col, Input, Select, Button, Space, Typography, Tag, Divider, Radio } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,12 +9,16 @@ import { InputFormItem } from "src/components/form";
 import styles from "./payment.module.scss";
 import useParamsHook from "src/hooks/params";
 import { themeFontSize, themeFontWeight } from "src/constants/theme";
-import { ArrowLeft, ShieldTick, Card, Mobile } from "iconsax-react";
+import { ArrowLeft, ShieldTick, Card as CardIcon, Mobile, Lock } from "iconsax-react";
 import CustomSelect from "src/components/common/select";
 import { Spin } from "antd";
 import { useGetPlansQuery } from "src/app/services/mentors";
 import { useGetMentorDetailQuery } from "src/app/services/mentors";
 import { ReferralCodeInput } from "src/components/referral/ReferralCodeInput";
+import FontAwesomeIcon from "src/components/common/icons/FontAwesomeIcon";
+
+const { Title, Paragraph, Text } = Typography;
+const { Option } = Select;
 
 function PaymentPage() {
   const colors = useTypedSelector((state) => state.layout.colors);
@@ -31,55 +35,10 @@ function PaymentPage() {
   const paymentType = searchParams.get("type") ?? "";
   const buyType = searchParams.get("buyType") ?? "";
   
-  // Debug logging
-  console.log('Payment page params:', {
-    amount,
-    currencyName,
-    sessionId,
-    planId,
-    mentorId,
-    enrollmentId,
-    paymentType,
-    buyType
-  });
-  
-  // Determine payment scenario
-  const paymentScenario = (() => {
-    if (paymentType === 'course' && enrollmentId) {
-      return 'COURSE_PAYMENT';
-    } else if (paymentType === 'subscription' || (planId && !sessionId && !mentorId)) {
-      return 'SUBSCRIPTION_PAYMENT';
-    } else if (sessionId && mentorId && planId) {
-      return 'SESSION_BOOKING';
-    } else if (planId && mentorId && !sessionId) {
-      return 'PACKAGE_PURCHASE';
-    } else {
-      return 'UNKNOWN';
-    }
-  })();
-  
-  console.log('Payment scenario detected:', paymentScenario);
-  
-  // Determine return URL based on payment type
-  const getReturnUrl = () => {
-    if (paymentType === "course" && enrollmentId) {
-      return "https://topcoachuni.com/programs/success?success=true";
-    } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
-      return "https://topcoachuni.com/?payment_status=success&type=subscription";
-    } else if (sessionId && mentorId) {
-      return "https://topcoachuni.com/?payment_status=success&type=session";
-    } else {
-      return "https://topcoachuni.com/?payment_status=success";
-    }
-  };
-
-  const returnUrl = getReturnUrl();
-
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('card');
   const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
   const [calculatedCurrency, setCalculatedCurrency] = useState<string>("USD");
-  
-  // Referral code state
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState<number | null>(null);
@@ -102,26 +61,20 @@ function PaymentPage() {
       if (paymentStatus === 'success') {
         message.success('Payment completed successfully!');
         
-        // Redirect based on payment type - avoid infinite loops
         if (paymentType === 'subscription') {
-          // Clear the URL parameters and redirect to home
           window.history.replaceState({}, document.title, '/');
           navigate('/?payment_status=success&type=subscription');
         } else if (paymentType === 'session') {
-          // Clear the URL parameters and redirect to home
           window.history.replaceState({}, document.title, '/');
           navigate('/?payment_status=success&type=session');
         } else if (paymentType === 'course') {
           navigate('/programs/success?success=true');
         } else {
-          // Default redirect - clear parameters first
           window.history.replaceState({}, document.title, '/');
           navigate('/');
         }
       } else if (error) {
         console.log('Payment error detected:', error);
-        // Don't show error message immediately - let user try again
-        // message.error('Payment was not completed. Please try again.');
       }
     };
 
@@ -135,44 +88,21 @@ function PaymentPage() {
       const mentorLevel = mentorDetail?.mentorProfile?.level;
       
       if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
-        // If amount is not in URL, calculate it
         if (!amount) {
           const sessionAmount = (plan.prices as any)[mentorLevel];
           setCalculatedAmount(sessionAmount);
-          
-          // Determine currency based on amount size and plan currency
           let currency = (plan.currency as any)?.name;
           if (!currency) {
-            // If no currency specified, determine based on amount size
-            // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
             currency = sessionAmount > 1000 ? 'UZS' : 'USD';
           }
-          
           setCalculatedCurrency(currency);
-          console.log('Calculated session amount:', {
-            planType: plan.type,
-            mentorLevel,
-            amount: sessionAmount,
-            currency: currency,
-            originalCurrency: (plan.currency as any)?.name
-          });
         } else {
-          // If amount is in URL, just determine the currency
           let currency = (plan.currency as any)?.name;
           if (!currency) {
-            // Determine currency based on the amount in URL
             const urlAmount = parseFloat(amount);
             currency = urlAmount > 1000 ? 'UZS' : 'USD';
           }
-          
           setCalculatedCurrency(currency);
-          console.log('URL amount currency detection:', {
-            planType: plan.type,
-            mentorLevel,
-            urlAmount: amount,
-            currency: currency,
-            originalCurrency: (plan.currency as any)?.name
-          });
         }
       }
     }
@@ -181,33 +111,7 @@ function PaymentPage() {
   // Check if we have required parameters
   if (!planId && !sessionId && !enrollmentId) {
     message.error('Missing payment information.');
-    return;
-  }
-
-  // For course payments, we need to get the enrollment details to show proper amount
-  const [enrollmentDetails, setEnrollmentDetails] = useState<any>(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-
-  // Fetch enrollment details for course payments
-  useEffect(() => {
-    if (enrollmentId && paymentType === 'course') {
-      setLoadingDetails(true);
-      // You can add an API call here to get enrollment details if needed
-      // For now, we'll use the amount from URL params
-      setLoadingDetails(false);
-    }
-  }, [enrollmentId, paymentType]);
-
-  // Show loading while fetching details
-  if (loadingDetails) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingContent}>
-          <Spin size="large" />
-          <p>Loading payment details...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Determine the amount to display
@@ -225,64 +129,29 @@ function PaymentPage() {
   // Enhanced currency detection for URL parameters
   if (!calculatedAmount && amount) {
     const amountValue = parseFloat(amount);
-    // If amount is very large (>10000), it's definitely UZS
     if (amountValue > 10000) {
       displayCurrency = 'UZS';
-    }
-    // If amount is between 1000-10000 and no currency specified, likely UZS
-    else if (amountValue > 1000 && !currencyName && !calculatedCurrency) {
+    } else if (amountValue > 1000 && !currencyName && !calculatedCurrency) {
       displayCurrency = 'UZS';
-    }
-    // If amount is small (<100) and no currency specified, likely USD
-    else if (amountValue < 100 && !currencyName && !calculatedCurrency) {
+    } else if (amountValue < 100 && !currencyName && !calculatedCurrency) {
       displayCurrency = 'USD';
     }
   }
-  
-  // Debug logging
-  console.log('Payment display debug:', {
-    amount,
-    calculatedAmount,
-    currencyName,
-    calculatedCurrency,
-    displayAmount,
-    displayCurrency,
-    paymentType
-  });
 
-  const handleSubmit = async () => {
-    form.validateFields().then((values) => {
-      console.log('Form values:', values);
-      
-      const payload = {
-        cardNumber: values.cardNumber.replace(/\s/g, ""),
-        expireDate: values.expireDate.replace("/", ""), // Fixed: was using values.phone
-        cardType: values.cardType,
-      };
-
-      console.log('Payment payload:', payload);
-      setIsLoading(true);
-
-      const response = api.payments
-        // @ts-ignore
-        .initPayment(method, payload)
-        .then((res) => {
-          console.log('Payment init successful:', res);
-          // @ts-ignore
-          navigate(
-            // @ts-ignore
-            `/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`,
-          );
-        })
-        .catch((err) => {
-          console.error('Payment init failed:', err);
-          message.error(err.response?.data?.message || 'Payment initialization failed');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    });
+  // Determine return URL based on payment type
+  const getReturnUrl = () => {
+    if (paymentType === "course" && enrollmentId) {
+      return "https://topcoachuni.com/programs/success?success=true";
+    } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
+      return "https://topcoachuni.com/?payment_status=success&type=subscription";
+    } else if (sessionId && mentorId) {
+      return "https://topcoachuni.com/?payment_status=success&type=session";
+    } else {
+      return "https://topcoachuni.com/?payment_status=success";
+    }
   };
+
+  const returnUrl = getReturnUrl();
 
   // Referral code handlers
   const handleReferralCodeApplied = (code: string, discount: number, final: number) => {
@@ -297,9 +166,44 @@ function PaymentPage() {
     setFinalAmount(null);
   };
 
-  // Helper to POST to backend and redirect (for subscription and session payments)
-  const handleProviderRedirect = async (provider: string) => {
+  // Handle card payment submission
+  const handleCardSubmit = async (values: any) => {
+    try {
+      console.log('Form values:', values);
+      
+      // Backend only uses cardNumber, expireDate, cardType
+      // userId comes from current user (JWT), save defaults to false
+      const payload = {
+        cardNumber: values.cardNumber.replace(/\s/g, ""),
+        expireDate: values.expireDate.replace("/", ""),
+        cardType: values.cardType,
+        userId: "", // Backend gets this from current user (@CurrentUser)
+        save: false,
+        ipAddress: "", // Optional, backend can get this from request
+      } as any;
 
+      console.log('Payment payload:', payload);
+      setIsLoading(true);
+
+      const res = await api.payments.initPayment(method, payload);
+      console.log('Payment init successful:', res);
+      
+      navigate(`/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`);
+    } catch (error: any) {
+      if (error.errorFields) {
+        // Form validation errors
+        return;
+      }
+      console.error('Payment init failed:', error);
+      message.error(error.response?.data?.message || 'Payment initialization failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  // Handle provider redirect (Click, Atmos)
+  const handleProviderRedirect = async (provider: 'click' | 'atmos') => {
     if (!planId && !sessionId && !enrollmentId) {
       message.error('No payment information found');
       return;
@@ -310,14 +214,12 @@ function PaymentPage() {
       let payload;
       
       if (paymentType === 'course' && enrollmentId) {
-        // Course payment: only send enrollmentId
         payload = { 
           enrollmentId,
           returnUrl,
           ...(referralCode && { referralCode })
         };
       } else {
-        // Subscription/session payment: send planId and other fields
         payload = { 
           planId, 
           returnUrl,
@@ -327,31 +229,17 @@ function PaymentPage() {
         };
       }
       
-      console.log('Payment payload:', payload);
-      console.log('Payment provider:', provider);
-      
       const res = await api.payments.getRedirectUrl(provider, payload);
       
       if (res.data?.url || res.data?.redirectUrl) {
         const redirectUrl = res.data.url || res.data.redirectUrl;
-        console.log('Redirecting to:', redirectUrl);
-        
-        // For Paycom, add a small delay to ensure backend processing
-        if (provider === 'payme') {
-          message.info('Redirecting to secure payment page...');
-          setTimeout(() => {
-            window.location.href = redirectUrl;
-          }, 1000);
-        } else {
-          window.location.href = redirectUrl;
-        }
+        window.location.href = redirectUrl;
       } else {
         message.error('No redirect URL received.');
       }
     } catch (err: any) {
       console.error('Payment redirect error:', err);
       
-      // More specific error messages
       if (err.response?.status === 400) {
         message.error('Invalid payment request. Please check your payment details.');
       } else if (err.response?.status === 500) {
@@ -364,7 +252,12 @@ function PaymentPage() {
     }
   };
 
-  const cardType = [
+  // Handle payment method change
+  const handlePaymentMethodChange = (e: any) => {
+    setPaymentMethod(e.target.value);
+  };
+
+  const cardTypeOptions = [
     { label: "Humo", value: "humo" },
     { label: "Uzcard", value: "uzcard" },
   ];
@@ -373,101 +266,269 @@ function PaymentPage() {
     <div className={styles.pageContainer}>
       {/* Header Section */}
       <div className={styles.header}>
-        <CustomButton
-          icon={<ArrowLeft />}
+        <Button
+          icon={<ArrowLeft size={20} />}
           onClick={() => navigate(-1)}
           className={styles.backButton}
+          type="text"
         >
           Back
-        </CustomButton>
+        </Button>
       </div>
 
       {/* Main Payment Container */}
       <div className={styles.paymentContainer}>
-        {/* Payment Summary and Methods Row */}
-        <div className={styles.mainRow}>
-          {/* Payment Summary Card - Left Side */}
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryHeader}>
-              <h2>Payment Summary</h2>
-              <div className={styles.secureBadge}>
-                <ShieldTick size={16} />
-                <span>Secure Payment</span>
-              </div>
-            </div>
-            
-            <div className={styles.amountSection}>
-              <div className={styles.amountDisplay}>
-                <span className={styles.currency}>
-                  {displayCurrency === 'UZS' ? 'UZS' : '$'}
-                </span>
-                <span className={styles.amount}>
-                  {finalDisplayAmount.toFixed(2)}
-                </span>
-              </div>
-              <div className={styles.paymentType}>
-                {paymentType === 'course' ? 'Course Enrollment' : 
-                 paymentType === 'subscription' ? 'Subscription Plan' : 
-                 'Mentor Session'}
-              </div>
-            </div>
+        <Row gutter={[32, 32]}>
+          {/* Payment Summary - Left Side */}
+          <Col xs={24} lg={10}>
+            <Card className={styles.summaryCard} title="Payment Summary">
+              <div className={styles.summaryContent}>
+                <div className={styles.secureBadge}>
+                  <ShieldTick size={16} />
+                  <Text strong>Secure Payment</Text>
+                </div>
 
-            {/* Referral Code Section - Only for Course Payments */}
-            {paymentType === 'course' && (
-              <div className={styles.referralSection}>
-                <ReferralCodeInput
-                  onCodeApplied={handleReferralCodeApplied}
-                  onCodeRemoved={handleReferralCodeRemoved}
-                  originalAmount={originalAmount}
-                  currency={displayCurrency}
-                  disabled={isLoading}
-                />
+                <div className={styles.amountSection}>
+                  <div className={styles.amountDisplay}>
+                    <Text className={styles.currency}>
+                      {displayCurrency === 'UZS' ? 'UZS' : '$'}
+                    </Text>
+                    <Title level={2} className={styles.amount}>
+                      {finalDisplayAmount.toLocaleString('en-US', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                      })}
+                    </Title>
+                  </div>
+                  <Text type="secondary" className={styles.paymentType}>
+                    {paymentType === 'course' ? 'Course Enrollment' : 
+                     paymentType === 'subscription' ? 'Subscription Plan' : 
+                     'Mentor Session'}
+                  </Text>
+                </div>
+
+                {/* Referral Code Section - Only for Course Payments */}
+                {paymentType === 'course' && (
+                  <div className={styles.referralSection}>
+                    <ReferralCodeInput
+                      onCodeApplied={handleReferralCodeApplied}
+                      onCodeRemoved={handleReferralCodeRemoved}
+                      originalAmount={originalAmount}
+                      currency={displayCurrency}
+                      disabled={isLoading}
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </Card>
+          </Col>
 
           {/* Payment Methods - Right Side */}
-          <div className={styles.paymentMethods}>
-            <div className={styles.methodsHeader}>
-              <h3>Choose Payment Method</h3>
-              <p>Select your preferred way to pay</p>
-            </div>
-            
-            <div className={styles.methodsGrid}>
-              <div 
-                className={`${styles.methodCard} ${isLoading ? styles.disabled : ''}`}
-                onClick={() => !isLoading && handleProviderRedirect('click')}
+          <Col xs={24} lg={14}>
+            <Card className={styles.paymentMethodsCard} title="Choose Payment Method">
+              <Radio.Group 
+                value={paymentMethod} 
+                onChange={handlePaymentMethodChange}
+                className={styles.paymentMethodRadio}
+                size="large"
               >
-                <div className={styles.methodIcon}>
-                  <img src="/img/click.jpg" alt="Click" />
-                </div>
-                <div className={styles.methodInfo}>
-                  <h4>Click</h4>
-                  <p>Pay with Click</p>
-                </div>
-                <div className={styles.methodArrow}>
-                  <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  {/* Direct Card Input Option */}
+                  <Radio.Button value="card" className={styles.methodOption}>
+                    <div className={styles.methodOptionContent}>
+                      <FontAwesomeIcon icon="credit-card" className={styles.methodIcon} />
+                      <div className={styles.methodText}>
+                        <Text strong>Credit or Debit Card</Text>
+                        <Text type="secondary" className={styles.methodSubtext}>
+                          Pay directly with your card
+                        </Text>
+                      </div>
+                      <div className={styles.cardIcons}>
+                        <img src="/img/visa.svg" alt="Visa" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <img src="/img/mastercard.svg" alt="Mastercard" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      </div>
+                    </div>
+                  </Radio.Button>
+
+                  {/* Click Payment Option */}
+                  <Radio.Button value="click" className={styles.methodOption}>
+                    <div className={styles.methodOptionContent}>
+                      <img src="/img/click.jpg" alt="Click" className={styles.paymentLogo} />
+                      <div className={styles.methodText}>
+                        <Text strong>Click</Text>
+                        <Text type="secondary" className={styles.methodSubtext}>
+                          Pay with Click
+                        </Text>
+                      </div>
+                      <ArrowLeft size={20} className={styles.arrowIcon} style={{ transform: 'rotate(180deg)' }} />
+                    </div>
+                  </Radio.Button>
+
+                  {/* Atmos Payment Option */}
+                  <Radio.Button value="atmos" className={styles.methodOption}>
+                    <div className={styles.methodOptionContent}>
+                      <img src="/img/atmos.png" alt="Atmos" className={styles.paymentLogo} />
+                      <div className={styles.methodText}>
+                        <Text strong>Atmos</Text>
+                        <Text type="secondary" className={styles.methodSubtext}>
+                          Pay with Atmos
+                        </Text>
+                      </div>
+                      <ArrowLeft size={20} className={styles.arrowIcon} style={{ transform: 'rotate(180deg)' }} />
+                    </div>
+                  </Radio.Button>
+                </Space>
+              </Radio.Group>
+
+              {/* Payme - Coming Soon (Not a Radio Button) */}
+              <div className={`${styles.methodOption} ${styles.methodOptionDisabled}`}>
+                <div className={styles.methodOptionContent}>
+                  <div className={styles.paymentLogoPlaceholder}>
+                    <FontAwesomeIcon icon="wallet" className={styles.placeholderIcon} />
+                  </div>
+                  <div className={styles.methodText}>
+                    <Text strong>Payme</Text>
+                    <Text type="secondary" className={styles.methodSubtext}>
+                      Coming Soon
+                    </Text>
+                  </div>
+                  <Tag color="default">Soon</Tag>
                 </div>
               </div>
 
-              <div 
-                className={`${styles.methodCard} ${isLoading ? styles.disabled : ''}`}
-                onClick={() => !isLoading && handleProviderRedirect('atmos')}
-              >
-                <div className={styles.methodIcon}>
-                  <img src="/img/atmos.png" alt="Atmos" />
+              <Divider style={{ margin: '24px 0' }} />
+
+              {/* Card Details Form - Shown when card is selected */}
+              {paymentMethod === 'card' && (
+                <div className={styles.cardForm}>
+                  <Form form={form} layout="vertical" onFinish={handleCardSubmit}>
+                    <Form.Item
+                      name="cardNumber"
+                      label="Card Number"
+                      rules={[
+                        { required: true, message: 'Card number is required' },
+                        { pattern: /^[\d\s]{13,19}$/, message: 'Invalid card number' }
+                      ]}
+                    >
+                      <Input
+                        placeholder="1234 1234 1234 1234"
+                        maxLength={19}
+                        prefix={<CardIcon size={20} />}
+                        className={styles.cardInput}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                          const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                          form.setFieldsValue({ cardNumber: formatted.substring(0, 19) });
+                        }}
+                      />
+                    </Form.Item>
+
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="expireDate"
+                          label="Expiry Date"
+                          rules={[
+                            { required: true, message: 'Expiry date is required' },
+                            { pattern: /^\d{2}\/\d{2}$/, message: 'Format: MM/YY' }
+                          ]}
+                        >
+                          <Input
+                            placeholder="MM/YY"
+                            maxLength={5}
+                            className={styles.cardInput}
+                            onChange={(e) => {
+                              let value = e.target.value.replace(/\D/g, '');
+                              let formatted = value;
+                              if (value.length >= 2) {
+                                formatted = value.substring(0, 2) + '/' + value.substring(2, 4);
+                              }
+                              form.setFieldsValue({ expireDate: formatted });
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="cvc"
+                          label="CVC"
+                          rules={[
+                            { required: true, message: 'CVC is required' },
+                            { pattern: /^\d{3,4}$/, message: 'Invalid CVC' }
+                          ]}
+                        >
+                          <Input
+                            placeholder="123"
+                            maxLength={4}
+                            prefix={<Lock size={16} />}
+                            className={styles.cardInput}
+                            onChange={(e) => {
+                              let value = e.target.value.replace(/\D/g, '').substring(0, 4);
+                              form.setFieldsValue({ cvc: value });
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.Item
+                      name="cardType"
+                      label="Card Type"
+                      rules={[{ required: true, message: 'Card type is required' }]}
+                    >
+                      <Select placeholder="Select card type" className={styles.cardInput}>
+                        {cardTypeOptions.map((option) => (
+                          <Option key={option.value} value={option.value}>
+                            {option.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={isLoading}
+                        block
+                        size="large"
+                        className={styles.submitButton}
+                      >
+                        Pay {displayCurrency === 'UZS' ? 'UZS' : '$'}{finalDisplayAmount.toLocaleString('en-US', { 
+                          minimumFractionDigits: 2, 
+                          maximumFractionDigits: 2 
+                        })}
+                      </Button>
+                    </Form.Item>
+                  </Form>
                 </div>
-                <div className={styles.methodInfo}>
-                  <h4>Atmos</h4>
-                  <p>Pay with Atmos</p>
+              )}
+
+              {/* Payment Buttons for Click/Atmos */}
+              {paymentMethod !== 'card' && paymentMethod !== 'payme' && (
+                <div className={styles.paymentAction}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    loading={isLoading}
+                    onClick={() => handleProviderRedirect(paymentMethod)}
+                    className={styles.submitButton}
+                  >
+                    Continue with {paymentMethod === 'click' ? 'Click' : 'Atmos'}
+                  </Button>
                 </div>
-                <div className={styles.methodArrow}>
-                  <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
-                </div>
+              )}
+
+              <div className={styles.securityNote}>
+                <Lock size={16} />
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Your payment information is encrypted and secure
+                </Text>
               </div>
-            </div>
-          </div>
-        </div>
+            </Card>
+          </Col>
+        </Row>
       </div>
     </div>
   );
