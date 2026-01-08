@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, Button, Spin, Alert, Steps, Typography, message } from 'antd';
+import { Card, Button, Spin, Alert, Steps, Typography, message, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
@@ -90,7 +90,20 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setCurrentStep('questions');
       navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
     } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to start assessment');
+      console.error('Assessment start error:', error);
+      const errorMessage = error?.data?.message || error?.message || 'Failed to start assessment';
+      message.error({
+        content: errorMessage,
+        duration: 5,
+      });
+      
+      // If 404, suggest backend restart
+      if (error?.status === 404 || error?.status === 'FETCH_ERROR') {
+        message.warning({
+          content: 'The assessment endpoint may not be available. Please ensure the backend server is running and has been restarted.',
+          duration: 8,
+        });
+      }
     }
   };
 
@@ -160,26 +173,32 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   return (
     <div className="psychometric-assessment-page">
-      <Card className="assessment-header-card">
-        <div className="assessment-header">
-          <div className="header-content">
-            <Title level={2}>Psychometric Assessment</Title>
-            <Paragraph>
-              Discover your ideal major and career path through a comprehensive assessment of your interests, 
-              personality, values, and aptitudes.
-            </Paragraph>
+      {/* Header - only show on start step */}
+      {currentStep === 'start' && (
+        <Card className="assessment-header-card">
+          <div className="assessment-header">
+            <div className="header-content">
+              <Title level={2}>Psychometric Assessment</Title>
+              <Paragraph>
+                Discover your ideal major and career path through a comprehensive assessment of your interests, 
+                personality, values, and aptitudes.
+              </Paragraph>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      <Card className="assessment-steps-card">
-        <Steps
-          current={currentStepIndex}
-          items={stepItems}
-          size="default"
-          labelPlacement="vertical"
-        />
-      </Card>
+      {/* Progress Steps - show on all steps */}
+      {currentStep !== 'start' && (
+        <Card className="assessment-steps-card">
+          <Steps
+            current={currentStepIndex}
+            items={stepItems}
+            size="default"
+            labelPlacement="vertical"
+          />
+        </Card>
+      )}
 
       <div className="assessment-content">
         {currentStep === 'start' && (
