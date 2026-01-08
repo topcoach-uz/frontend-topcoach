@@ -332,7 +332,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         >
           <Row gutter={[16, 12]} align="middle">
             <Col xs={24} md={14}>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%' }}> */}
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%' }}>
                 {studentProfile.completionPercentage < 100 && (
                   <div style={{ fontSize: 13, color: '#666' }}>
                     <span style={{ fontWeight: 500 }}>{t('studentHub.dashboard.missing')}</span>
