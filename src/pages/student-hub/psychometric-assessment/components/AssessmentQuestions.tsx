@@ -221,6 +221,29 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
           </Radio.Group>
         );
 
+      case 'forced-choice':
+        if (!currentQuestion.questionData.options || currentQuestion.questionData.options.length === 0) {
+          console.error('Forced choice options are missing!', currentQuestion.questionData);
+          return <Alert message="Error: Forced choice options are missing" type="error" />;
+        }
+
+        return (
+          <Radio.Group
+            value={answers[currentQuestion.id]}
+            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+            style={{ width: '100%' }}
+            size="large"
+          >
+            <Space direction="vertical" style={{ width: '100%' }} size="large">
+              {currentQuestion.questionData.options.map((option, index) => (
+                <Radio key={index} value={option} style={{ fontSize: 16, padding: '12px 0', minHeight: '48px' }}>
+                  {option}
+                </Radio>
+              ))}
+            </Space>
+          </Radio.Group>
+        );
+
       case 'open-ended':
         return (
           <TextArea
