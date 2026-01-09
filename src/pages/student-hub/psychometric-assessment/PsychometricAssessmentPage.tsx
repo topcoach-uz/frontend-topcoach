@@ -69,9 +69,16 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     }
   }, [studentProfile?.id, latestAssessment]);
 
-  // Load session from localStorage on mount
+  // Load session from localStorage on mount - only if explicitly requested (not on cancel)
   useEffect(() => {
     if (studentProfile?.id && currentStep === 'start') {
+      // Check if there's a flag to prevent auto-resume (set when user cancels)
+      const preventResume = sessionStorage.getItem(`prevent_resume_${studentProfile.id}`);
+      if (preventResume) {
+        sessionStorage.removeItem(`prevent_resume_${studentProfile.id}`);
+        return; // Don't auto-resume if user just canceled
+      }
+      
       const savedSession = localStorage.getItem(`psychometric_session_${studentProfile.id}`);
       if (savedSession) {
         try {
@@ -165,10 +172,16 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   };
 
   const handleBackToStart = () => {
+    // Clear session from localStorage when canceling
+    if (studentProfile?.id) {
+      localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
+      // Set flag to prevent auto-resume
+      sessionStorage.setItem(`prevent_resume_${studentProfile.id}`, 'true');
+    }
     setCurrentStep('start');
     setSessionId(null);
     setAssessmentId(null);
-    // Don't clear localStorage - allow user to resume later
+    setQuestions([]);
     navigate('/student-hub/psychometric-assessment?step=start');
   };
 
@@ -240,8 +253,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
               danger 
               type="text"
               className="cancel-button-top-right"
+              icon={<FontAwesomeIcon icon="times" />}
             >
-              Cancel
+              Cancel Assessment
             </Button>
           )}
         </div>

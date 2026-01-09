@@ -175,10 +175,11 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
           return <Alert message="Error: Likert scale configuration is missing" type="error" />;
         }
 
-        if (!scale.labels || scale.labels.length === 0) {
-          console.error('Likert scale labels are missing!', scale);
-          return <Alert message="Error: Likert scale labels are missing" type="error" />;
-        }
+        // Default labels if missing
+        const defaultLabels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
+        const labels = scale.labels && scale.labels.length > 0 
+          ? scale.labels 
+          : defaultLabels.slice(0, scale.max - scale.min + 1);
 
         return (
           <Radio.Group
@@ -188,7 +189,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
             size="large"
           >
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {scale.labels.map((label, index) => (
+              {labels.map((label, index) => (
                 <Radio key={index} value={index + scale.min} style={{ fontSize: 16, padding: '8px 0' }}>
                   {label}
                 </Radio>
