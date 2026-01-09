@@ -331,106 +331,87 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           }}
         >
           <Row gutter={[16, 12]} align="middle">
-            <Col xs={24} md={14}>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%' }}>
-                {studentProfile.completionPercentage < 100 && (
-                  <div style={{ fontSize: 13, color: '#666' }}>
-                    <span style={{ fontWeight: 500 }}>{t('studentHub.dashboard.missing')}</span>
-                    {(() => {
-                      const missingFields: string[] = [];
-                      
-                      // Check required Personal Profile fields (matches backend calculation)
-                      if (!studentProfile.personalProfile?.country) {
-                        missingFields.push(t('studentHub.profile.country'));
-                      }
-                      if (!studentProfile.personalProfile?.city) {
-                        missingFields.push(t('studentHub.profile.city'));
-                      }
-                      if (!studentProfile.personalProfile?.intendedMajors?.length) {
-                        missingFields.push(t('studentHub.profile.intendedMajor').replace(' *', ''));
-                      }
-                      if (!studentProfile.personalProfile?.personalInterests?.length) {
-                        missingFields.push(t('studentHub.profile.personalInterests').replace(' *', ''));
-                      }
-                      if (!studentProfile.personalProfile?.careerGoals?.length) {
-                        missingFields.push(t('studentHub.profile.careerGoals').replace(' *', ''));
-                      }
-                      if (!studentProfile.personalProfile?.demographics?.languages?.length) {
-                        missingFields.push(t('studentHub.profile.languagesSpoken').replace(' *', ''));
-                      }
-                      
-                      // Check Academic Profile required fields (matches backend - ALL 5 fields required)
-                      if (studentProfile.academicProfile) {
-                        const academic = studentProfile.academicProfile;
-                        const missingAcademic: string[] = [];
-                        if (!academic.graduationYear) missingAcademic.push('Graduation Year');
-                        if (!academic.curriculum) missingAcademic.push('Curriculum');
-                        if (!(academic.gpa && Object.keys(academic.gpa).length > 0)) missingAcademic.push('GPA');
-                        if (!(academic.testScores && Object.keys(academic.testScores).length > 0)) missingAcademic.push('Test Scores');
-                        if (!(academic.englishProficiency && Object.keys(academic.englishProficiency).length > 0)) missingAcademic.push('English Proficiency');
-                        
-                        if (missingAcademic.length > 0) {
-                          missingFields.push(`Academic: ${missingAcademic.join(', ')}`);
-                        }
-                      } else {
-                        missingFields.push('Academic Profile');
-                      }
-                      
-                      // Check Activities Profile
-                      if (!studentProfile.activitiesProfile || 
-                          (!studentProfile.activitiesProfile.extracurricularActivities?.length)) {
-                        missingFields.push('Activities & Achievements');
-                      }
-                      
-                      return missingFields.length > 0 ? missingFields.join(', ') : 'All required fields completed';
-                    })()}
-                  </div>
-                )}
-              </div>
-            </Col>
-            <Col xs={24} md={10}>
-              <div className="profile-completion-actions">
+            <Col xs={24}>
+              <div className="profile-completion-actions-inline">
                 {studentProfile.completionPercentage === 100 ? (
-                  <div className="profile-complete-celebration">
-                    <div className="celebration-header">
-                      <span className="celebration-emoji">🎉</span>
-                      <span className="celebration-text">Profile Complete!</span>
-                    </div>
-                    <div className="progress-container success">
-                      <Progress 
-                        percent={100} 
-                        strokeColor="#10b981"
-                        status="success"
-                        format={() => '100%'}
-                        strokeWidth={10}
-                        showInfo={true}
-                      />
-                    </div>
-                    <div className="button-group">
-                      <Button
-                        type="default"
-                        size="middle"
-                        onClick={() => navigate('/student-hub/profile?tab=personal')}
-                        icon={<FontAwesomeIcon icon="user" />}
-                        className="view-profile-btn"
-                      >
-                        View Profile
-                      </Button>
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={handleRecalculate}
-                        className="refresh-button"
-                        title="Recalculate completion percentage"
-                        icon={<FontAwesomeIcon icon="sync" />}
-                      >
-                        Refresh
-                      </Button>
-                    </div>
+                  <div className="profile-complete-celebration-inline">
+                    <span className="celebration-emoji">🎉</span>
+                    <span className="celebration-text">Profile Complete!</span>
+                    <span className="celebration-percentage">100%</span>
+                    <Button
+                      type="default"
+                      size="middle"
+                      onClick={() => navigate('/student-hub/profile?tab=personal')}
+                      icon={<FontAwesomeIcon icon="user" />}
+                      className="view-profile-btn"
+                    >
+                      View Profile
+                    </Button>
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={handleRecalculate}
+                      className="refresh-button"
+                      title="Recalculate completion percentage"
+                      icon={<FontAwesomeIcon icon="sync" />}
+                    >
+                      Refresh
+                    </Button>
                   </div>
                 ) : (
-                  <>
-                    <div className="progress-container">
+                  <div className="profile-incomplete-inline">
+                    <div style={{ fontSize: 13, color: '#666', marginRight: 16 }}>
+                      <span style={{ fontWeight: 500 }}>{t('studentHub.dashboard.missing')}</span>
+                      {(() => {
+                        const missingFields: string[] = [];
+                        
+                        // Check required Personal Profile fields (matches backend calculation)
+                        if (!studentProfile.personalProfile?.country) {
+                          missingFields.push(t('studentHub.profile.country'));
+                        }
+                        if (!studentProfile.personalProfile?.city) {
+                          missingFields.push(t('studentHub.profile.city'));
+                        }
+                        if (!studentProfile.personalProfile?.intendedMajors?.length) {
+                          missingFields.push(t('studentHub.profile.intendedMajor').replace(' *', ''));
+                        }
+                        if (!studentProfile.personalProfile?.personalInterests?.length) {
+                          missingFields.push(t('studentHub.profile.personalInterests').replace(' *', ''));
+                        }
+                        if (!studentProfile.personalProfile?.careerGoals?.length) {
+                          missingFields.push(t('studentHub.profile.careerGoals').replace(' *', ''));
+                        }
+                        if (!studentProfile.personalProfile?.demographics?.languages?.length) {
+                          missingFields.push(t('studentHub.profile.languagesSpoken').replace(' *', ''));
+                        }
+                        
+                        // Check Academic Profile required fields (matches backend - ALL 5 fields required)
+                        if (studentProfile.academicProfile) {
+                          const academic = studentProfile.academicProfile;
+                          const missingAcademic: string[] = [];
+                          if (!academic.graduationYear) missingAcademic.push('Graduation Year');
+                          if (!academic.curriculum) missingAcademic.push('Curriculum');
+                          if (!(academic.gpa && Object.keys(academic.gpa).length > 0)) missingAcademic.push('GPA');
+                          if (!(academic.testScores && Object.keys(academic.testScores).length > 0)) missingAcademic.push('Test Scores');
+                          if (!(academic.englishProficiency && Object.keys(academic.englishProficiency).length > 0)) missingAcademic.push('English Proficiency');
+                          
+                          if (missingAcademic.length > 0) {
+                            missingFields.push(`Academic: ${missingAcademic.join(', ')}`);
+                          }
+                        } else {
+                          missingFields.push('Academic Profile');
+                        }
+                        
+                        // Check Activities Profile
+                        if (!studentProfile.activitiesProfile || 
+                            (!studentProfile.activitiesProfile.extracurricularActivities?.length)) {
+                          missingFields.push('Activities & Achievements');
+                        }
+                        
+                        return missingFields.length > 0 ? missingFields.join(', ') : 'All required fields completed';
+                      })()}
+                    </div>
+                    <div className="progress-container-inline">
                       <Progress 
                         percent={studentProfile.completionPercentage} 
                         strokeColor="#f59e0b"
@@ -440,7 +421,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                         showInfo={true}
                       />
                     </div>
-                    <div className="button-group">
+                    <div className="button-group-inline">
                       <Button
                         type="primary"
                         size="middle"
@@ -460,7 +441,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                         Refresh
                       </Button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </Col>

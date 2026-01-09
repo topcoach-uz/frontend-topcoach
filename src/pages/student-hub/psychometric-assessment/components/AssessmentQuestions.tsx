@@ -87,7 +87,9 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
+  // Allow navigation even if not answered - user can come back to answer later
   const isAnswered = currentQuestion && answers[currentQuestion?.id] !== undefined;
+  const canNavigate = true; // Allow navigation regardless of answer status
 
   if (!currentQuestion) {
     return (
@@ -106,22 +108,45 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   };
 
   const renderQuestionInput = () => {
-    const questionType = currentQuestion.questionData.type;
+    // Debug: Log question data to see structure
+    console.log('Current question:', currentQuestion);
+    console.log('Question data:', currentQuestion.questionData);
+    
+    if (!currentQuestion.questionData) {
+      console.error('Question data is missing!');
+      return <Alert message="Error: Question data is missing" type="error" />;
+    }
+
+    const questionType = currentQuestion.questionData?.type;
+
+    if (!questionType) {
+      console.error('Question type is missing!', currentQuestion);
+      return <Alert message="Error: Question type is missing" type="error" />;
+    }
 
     switch (questionType) {
       case 'likert':
         const scale = currentQuestion.questionData.scale;
-        if (!scale) return null;
+        if (!scale) {
+          console.error('Likert scale is missing!', currentQuestion.questionData);
+          return <Alert message="Error: Likert scale configuration is missing" type="error" />;
+        }
+
+        if (!scale.labels || scale.labels.length === 0) {
+          console.error('Likert scale labels are missing!', scale);
+          return <Alert message="Error: Likert scale labels are missing" type="error" />;
+        }
 
         return (
           <Radio.Group
             value={answers[currentQuestion.id]}
             onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
             style={{ width: '100%' }}
+            size="large"
           >
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {scale.labels?.map((label, index) => (
-                <Radio key={index} value={index + scale.min}>
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              {scale.labels.map((label, index) => (
+                <Radio key={index} value={index + scale.min} style={{ fontSize: 16, padding: '8px 0' }}>
                   {label}
                 </Radio>
               ))}
@@ -130,15 +155,21 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
         );
 
       case 'multiple-choice':
+        if (!currentQuestion.questionData.options || currentQuestion.questionData.options.length === 0) {
+          console.error('Multiple choice options are missing!', currentQuestion.questionData);
+          return <Alert message="Error: Multiple choice options are missing" type="error" />;
+        }
+
         return (
           <Radio.Group
             value={answers[currentQuestion.id]}
             onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
             style={{ width: '100%' }}
+            size="large"
           >
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {currentQuestion.questionData.options?.map((option, index) => (
-                <Radio key={index} value={option}>
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              {currentQuestion.questionData.options.map((option, index) => (
+                <Radio key={index} value={option} style={{ fontSize: 16, padding: '8px 0' }}>
                   {option}
                 </Radio>
               ))}
@@ -155,11 +186,13 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
             placeholder="Type your answer here..."
             maxLength={currentQuestion.questionData.maxLength || 500}
             showCount
+            size="large"
           />
         );
 
       default:
-        return null;
+        console.error('Unknown question type:', questionType);
+        return <Alert message={`Error: Unknown question type: ${questionType}`} type="error" />;
     }
   };
 
@@ -198,7 +231,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
               <Button
                 type="primary"
                 onClick={handleNext}
-                disabled={!isAnswered}
+                disabled={!canNavigate}
                 icon={<FontAwesomeIcon icon="arrow-right" />}
               >
                 Next

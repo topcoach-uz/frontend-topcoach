@@ -77,12 +77,21 @@ $crimson-dark: #660000;
 
         .ant-steps-item-container {
           .ant-steps-item-icon {
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
             font-size: $text-base;
             border-width: 2px;
-            font-weight: $font-medium;
+            font-weight: $font-semibold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            // Ensure numbers are white inside red circles
+            span {
+              color: white !important;
+              font-weight: $font-semibold;
+            }
           }
 
           .ant-steps-item-content {
@@ -106,7 +115,11 @@ $crimson-dark: #660000;
             .ant-steps-item-icon {
               border-color: $crimson-primary;
               background: $crimson-primary;
-              color: white;
+              color: white !important;
+              
+              span {
+                color: white !important;
+              }
             }
 
             .ant-steps-item-title {
@@ -121,7 +134,16 @@ $crimson-dark: #660000;
             .ant-steps-item-icon {
               border-color: $crimson-primary;
               background: $crimson-primary;
-              color: white;
+              color: white !important;
+              
+              // Checkmark should be white
+              .anticon {
+                color: white !important;
+              }
+              
+              span {
+                color: white !important;
+              }
             }
           }
         }
@@ -132,6 +154,10 @@ $crimson-dark: #660000;
               border-color: $border-medium;
               background: white;
               color: $text-tertiary;
+              
+              span {
+                color: $text-tertiary !important;
+              }
             }
           }
         }

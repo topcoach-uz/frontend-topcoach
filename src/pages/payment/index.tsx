@@ -36,7 +36,7 @@ function PaymentPage() {
   const buyType = searchParams.get("buyType") ?? "";
   
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('click');
   const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
   const [calculatedCurrency, setCalculatedCurrency] = useState<string>("USD");
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -333,23 +333,6 @@ function PaymentPage() {
                 size="large"
               >
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  {/* Direct Card Input Option */}
-                  <Radio.Button value="card" className={styles.methodOption}>
-                    <div className={styles.methodOptionContent}>
-                      <FontAwesomeIcon icon="credit-card" className={styles.methodIcon} />
-                      <div className={styles.methodText}>
-                        <Text strong>Credit or Debit Card</Text>
-                        <Text type="secondary" className={styles.methodSubtext}>
-                          Pay directly with your card
-                        </Text>
-                      </div>
-                      <div className={styles.cardIcons}>
-                        <img src="/img/visa.svg" alt="Visa" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        <img src="/img/mastercard.svg" alt="Mastercard" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      </div>
-                    </div>
-                  </Radio.Button>
-
                   {/* Click Payment Option */}
                   <Radio.Button value="click" className={styles.methodOption}>
                     <div className={styles.methodOptionContent}>
@@ -375,6 +358,25 @@ function PaymentPage() {
                         </Text>
                       </div>
                       <ArrowLeft size={20} className={styles.arrowIcon} style={{ transform: 'rotate(180deg)' }} />
+                    </div>
+                  </Radio.Button>
+
+                  {/* Direct Card Input Option */}
+                  <Radio.Button value="card" className={styles.methodOption}>
+                    <div className={styles.methodOptionContent}>
+                      <div className={styles.methodIcon}>
+                        <FontAwesomeIcon icon="credit-card" style={{ fontSize: '24px' }} />
+                      </div>
+                      <div className={styles.methodText}>
+                        <Text strong>Credit or Debit Card</Text>
+                        <Text type="secondary" className={styles.methodSubtext}>
+                          Pay directly with your card
+                        </Text>
+                      </div>
+                      <div className={styles.cardIcons}>
+                        <img src="/img/visa.svg" alt="Visa" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <img src="/img/mastercard.svg" alt="Mastercard" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      </div>
                     </div>
                   </Radio.Button>
                 </Space>
@@ -476,7 +478,11 @@ function PaymentPage() {
                       label="Card Type"
                       rules={[{ required: true, message: 'Card type is required' }]}
                     >
-                      <Select placeholder="Select card type" className={styles.cardInput}>
+                      <Select 
+                        placeholder="Select card type" 
+                        className={styles.cardInput}
+                        suffixIcon={null}
+                      >
                         {cardTypeOptions.map((option) => (
                           <Option key={option.value} value={option.value}>
                             {option.label}
@@ -494,7 +500,7 @@ function PaymentPage() {
                         size="large"
                         className={styles.submitButton}
                       >
-                        Pay {displayCurrency === 'UZS' ? 'UZS' : '$'}{finalDisplayAmount.toLocaleString('en-US', { 
+                        Pay {displayCurrency === 'UZS' ? 'UZS' : '$'} {finalDisplayAmount.toLocaleString('en-US', { 
                           minimumFractionDigits: 2, 
                           maximumFractionDigits: 2 
                         })}

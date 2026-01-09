@@ -86,9 +86,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       }).unwrap();
 
       setSessionId(response.sessionId);
-      setQuestions(response.questions);
+      setQuestions(response.questions || []);
       setCurrentStep('questions');
       navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+      
+      // Scroll to top when assessment starts
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error: any) {
       console.error('Assessment start error:', error);
       const errorMessage = error?.data?.message || error?.message || 'Failed to start assessment';
@@ -193,7 +196,18 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         <Card className="assessment-steps-card">
           <Steps
             current={currentStepIndex}
-            items={stepItems}
+            items={stepItems.map((item, index) => ({
+              ...item,
+              icon: (
+                <span style={{ 
+                  color: currentStepIndex >= index ? 'white' : '#9ca3af',
+                  fontWeight: 600,
+                  fontSize: 14
+                }}>
+                  {index + 1}
+                </span>
+              ),
+            }))}
             size="default"
             labelPlacement="vertical"
           />

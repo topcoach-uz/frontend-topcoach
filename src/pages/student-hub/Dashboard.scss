@@ -21,6 +21,101 @@ $crimson-900: #7f1d1d;
   
   // Profile Completion Card Responsive Styles
   .profile-completion-card {
+    .profile-completion-actions-inline {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      flex-wrap: wrap;
+
+      // Celebration state (100% complete) - inline
+      .profile-complete-celebration-inline {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        flex-wrap: wrap;
+
+        .celebration-emoji {
+          font-size: 24px;
+          animation: bounce 1s ease-in-out;
+          line-height: 1;
+        }
+
+        .celebration-text {
+          font-size: $text-lg;
+          font-weight: $font-bold;
+          color: #10b981;
+          letter-spacing: 0.3px;
+          line-height: 1.2;
+        }
+
+        .celebration-percentage {
+          font-size: $text-lg;
+          font-weight: $font-bold;
+          color: #10b981;
+          margin-left: 4px;
+        }
+
+        .view-profile-btn {
+          border-color: #10b981;
+          color: #10b981;
+          height: 36px;
+          font-weight: $font-medium;
+          padding: 0 16px;
+          margin-left: auto;
+          
+          &:hover {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          }
+        }
+
+        .refresh-button {
+          flex: 0 0 auto;
+          font-size: 12px;
+          padding: 4px 8px;
+          white-space: nowrap;
+        }
+      }
+
+      // Incomplete state - inline
+      .profile-incomplete-inline {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+        flex-wrap: wrap;
+
+        .progress-container-inline {
+          flex: 1;
+          min-width: 200px;
+          max-width: 300px;
+
+          .ant-progress {
+            width: 100% !important;
+          }
+        }
+
+        .button-group-inline {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-left: auto;
+
+          .refresh-button {
+            flex: 0 0 auto;
+            font-size: 12px;
+            padding: 4px 8px;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
     .profile-completion-actions {
       display: flex;
       flex-direction: column;
