@@ -69,6 +69,37 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     }
   }, [studentProfile?.id, latestAssessment]);
 
+  // Load session from localStorage on mount
+  useEffect(() => {
+    if (studentProfile?.id && currentStep === 'start') {
+      const savedSession = localStorage.getItem(`psychometric_session_${studentProfile.id}`);
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          // Check if session is recent (within 24 hours)
+          const sessionAge = Date.now() - (session.timestamp || 0);
+          const hours24 = 24 * 60 * 60 * 1000;
+          
+          if (sessionAge < hours24 && session.sessionId && session.questions) {
+            setSessionId(session.sessionId);
+            setQuestions(session.questions);
+            setLanguage(session.language || 'en');
+            setIncludeAptitude(session.includeAptitude || false);
+            setCurrentStep('questions');
+            navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${session.sessionId}`);
+            message.info('Resuming your previous assessment session');
+          } else {
+            // Clear old session
+            localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
+          }
+        } catch (error) {
+          console.error('Error loading saved session:', error);
+          localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
+        }
+      }
+    }
+  }, [studentProfile?.id, navigate, currentStep]);
+
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
     if (!studentProfile?.id) {
       message.error('Student profile not found');
@@ -89,6 +120,15 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setQuestions(response.questions || []);
       setCurrentStep('questions');
       navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+      
+      // Save session to localStorage
+      localStorage.setItem(`psychometric_session_${studentProfile.id}`, JSON.stringify({
+        sessionId: response.sessionId,
+        questions: response.questions || [],
+        language: lang,
+        includeAptitude: aptitude,
+        timestamp: Date.now(),
+      }));
       
       // Scroll to top when assessment starts
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -115,6 +155,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setSessionId(null);
     setCurrentStep('results');
     navigate('/student-hub/psychometric-assessment?step=results');
+    
+    // Clear saved session from localStorage
+    if (studentProfile?.id) {
+      localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
+    }
+    
     message.success('Assessment completed successfully!');
   };
 
@@ -122,6 +168,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setCurrentStep('start');
     setSessionId(null);
     setAssessmentId(null);
+    // Don't clear localStorage - allow user to resume later
     navigate('/student-hub/psychometric-assessment?step=start');
   };
 
@@ -176,43 +223,29 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   return (
     <div className="psychometric-assessment-page">
-      {/* Header - only show on start step */}
-      {currentStep === 'start' && (
-        <Card className="assessment-header-card">
-          <div className="assessment-header">
-            <div className="header-content">
-              <Title level={2}>Psychometric Assessment</Title>
-              <Paragraph>
-                Discover your ideal major and career path through a comprehensive assessment of your interests, 
-                personality, values, and aptitudes.
-              </Paragraph>
-            </div>
+      {/* Header - show on all steps */}
+      <Card className="assessment-header-card">
+        <div className="assessment-header">
+          <div className="header-content">
+            <Title level={2}>Psychometric Assessment</Title>
+            <Paragraph>
+              Discover your ideal major and career path through a comprehensive assessment of your interests, 
+              personality, values, and aptitudes.
+            </Paragraph>
           </div>
-        </Card>
-      )}
-
-      {/* Progress Steps - show on all steps */}
-      {currentStep !== 'start' && (
-        <Card className="assessment-steps-card">
-          <Steps
-            current={currentStepIndex}
-            items={stepItems.map((item, index) => ({
-              ...item,
-              icon: (
-                <span style={{ 
-                  color: currentStepIndex >= index ? 'white' : '#9ca3af',
-                  fontWeight: 600,
-                  fontSize: 14
-                }}>
-                  {index + 1}
-                </span>
-              ),
-            }))}
-            size="default"
-            labelPlacement="vertical"
-          />
-        </Card>
-      )}
+          {/* Cancel button in top right - only show on questions step */}
+          {currentStep === 'questions' && (
+            <Button 
+              onClick={handleBackToStart} 
+              danger 
+              type="text"
+              className="cancel-button-top-right"
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
+      </Card>
 
       <div className="assessment-content">
         {currentStep === 'start' && (

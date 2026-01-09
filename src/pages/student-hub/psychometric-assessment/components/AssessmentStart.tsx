@@ -32,6 +32,8 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     onStart(selectedLanguage, includeAptitude);
   };
 
+  // Note: totalQuestions will be updated when questions are loaded
+  // This is just an estimate for display
   const totalQuestions = 74 + (includeAptitude ? 16 : 0);
   const estimatedTime = includeAptitude ? '20-25' : '15-20';
 
@@ -78,7 +80,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           </Col>
           <Col xs={24} md={12}>
             <div className="component-item">
-              <FontAwesomeIcon icon="heart" className="component-icon" />
+              <FontAwesomeIcon icon="star" className="component-icon" />
               <div className="component-content">
                 <Text strong>Values Assessment</Text>
                 <Text type="secondary" className="component-description">
@@ -211,7 +213,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
         />
       )}
 
-      {/* Start Button */}
+      {/* Start Button - moved below header section */}
       <Card className="assessment-actions-card">
         <div className="actions-content">
           <Button

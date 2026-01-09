@@ -40,7 +40,13 @@ $crimson-dark: #660000;
     }
 
     .assessment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      
       .header-content {
+        flex: 1;
+        
         h2 {
           margin: 0 0 $space-2 0;
           color: $text-primary;
@@ -54,6 +60,11 @@ $crimson-dark: #660000;
           font-size: $text-base;
           line-height: 1.6;
         }
+      }
+      
+      .cancel-button-top-right {
+        margin-left: $space-4;
+        align-self: flex-start;
       }
     }
   }

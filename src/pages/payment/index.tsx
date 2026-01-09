@@ -139,15 +139,16 @@ function PaymentPage() {
   }
 
   // Determine return URL based on payment type
+  // Using topcoach.uz for payment return URLs since merchant accounts are configured for this domain
   const getReturnUrl = () => {
     if (paymentType === "course" && enrollmentId) {
-      return "https://topcoachuni.com/programs/success?success=true";
+      return "https://topcoach.uz/programs/success?success=true";
     } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
-      return "https://topcoachuni.com/?payment_status=success&type=subscription";
+      return "https://topcoach.uz/?payment_status=success&type=subscription";
     } else if (sessionId && mentorId) {
-      return "https://topcoachuni.com/?payment_status=success&type=session";
+      return "https://topcoach.uz/?payment_status=success&type=session";
     } else {
-      return "https://topcoachuni.com/?payment_status=success";
+      return "https://topcoach.uz/?payment_status=success";
     }
   };
 
