@@ -16,6 +16,25 @@ import { useGetPlansQuery } from "src/app/services/mentors";
 import { useGetMentorDetailQuery } from "src/app/services/mentors";
 import { ReferralCodeInput } from "src/components/referral/ReferralCodeInput";
 import FontAwesomeIcon from "src/components/common/icons/FontAwesomeIcon";
+import axios from "axios";
+import { baseUrl } from "src/app/services/api/const";
+import { ACCESS_TOKEN } from "src/constants/storage";
+
+// Custom payment redirect function with longer timeout (2 minutes)
+// Payment processing can take up to 30+ seconds for booking creation
+const paymentRedirectWithTimeout = async (provider: string, payload: any) => {
+  const token = localStorage.getItem(ACCESS_TOKEN);
+  
+  const response = await axios.post(`${baseUrl}/payments/redirect/${provider}`, payload, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    timeout: 120000, // 2 minutes timeout for payment processing
+  });
+  
+  return response.data;
+};
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -230,10 +249,11 @@ function PaymentPage() {
         };
       }
       
-      const res = await api.payments.getRedirectUrl(provider, payload);
+      // Use custom function with longer timeout (2 min) for payment processing
+      const res = await paymentRedirectWithTimeout(provider, payload);
       
-      if (res.data?.url || res.data?.redirectUrl) {
-        const redirectUrl = res.data.url || res.data.redirectUrl;
+      if (res?.url || res?.redirectUrl) {
+        const redirectUrl = res.url || res.redirectUrl;
         window.location.href = redirectUrl;
       } else {
         message.error('No redirect URL received.');
@@ -241,7 +261,9 @@ function PaymentPage() {
     } catch (err: any) {
       console.error('Payment redirect error:', err);
       
-      if (err.response?.status === 400) {
+      if (err.code === 'ECONNABORTED') {
+        message.error('Payment request timed out. Please try again.');
+      } else if (err.response?.status === 400) {
         message.error('Invalid payment request. Please check your payment details.');
       } else if (err.response?.status === 500) {
         message.error('Payment service temporarily unavailable. Please try again.');
