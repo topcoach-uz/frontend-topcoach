@@ -178,7 +178,7 @@ export const ValuesChart: React.FC<ValuesChartProps> = ({
               <LabelList
                 dataKey="value"
                 position="right"
-                formatter={(value: number) => `${value.toFixed(0)}%`}
+                formatter={(value: any) => `${Number(value).toFixed(0)}%`}
                 style={{ fill: '#333', fontWeight: 600, fontSize: 12 }}
               />
             </Bar>
