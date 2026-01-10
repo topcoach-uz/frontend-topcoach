@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, Button, Spin, Alert, Steps, Typography, message, Row, Col } from 'antd';
+import { Card, Button, Spin, Alert, Typography, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
@@ -8,6 +8,7 @@ import {
   useStartAssessmentMutation,
   useGetLatestAssessmentQuery,
   useGetRecommendationsQuery,
+  useCancelSessionMutation,
 } from '../../../app/services/student-hub/psychometricApi';
 import { AssessmentStart } from './components/AssessmentStart';
 import { AssessmentQuestions } from './components/AssessmentQuestions';
@@ -42,9 +43,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const [questions, setQuestions] = useState<any[]>([]);
   const [language, setLanguage] = useState<'en' | 'uz' | 'ru'>('en');
   const [includeAptitude, setIncludeAptitude] = useState(false);
+  const [savedAnswers, setSavedAnswers] = useState<Record<string, any>>({});
+  const [isResuming, setIsResuming] = useState(false);
 
   // API hooks
   const [startAssessment, { isLoading: startingAssessment }] = useStartAssessmentMutation();
+  const [cancelSession] = useCancelSessionMutation();
   const { data: latestAssessment, isLoading: assessmentLoading } = useGetLatestAssessmentQuery(
     studentProfile?.id || '',
     { skip: !studentProfile?.id || currentStep !== 'results' }
@@ -69,44 +73,6 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     }
   }, [studentProfile?.id, latestAssessment]);
 
-  // Load session from localStorage on mount - only if explicitly requested (not on cancel)
-  useEffect(() => {
-    if (studentProfile?.id && currentStep === 'start') {
-      // Check if there's a flag to prevent auto-resume (set when user cancels)
-      const preventResume = sessionStorage.getItem(`prevent_resume_${studentProfile.id}`);
-      if (preventResume) {
-        sessionStorage.removeItem(`prevent_resume_${studentProfile.id}`);
-        return; // Don't auto-resume if user just canceled
-      }
-      
-      const savedSession = localStorage.getItem(`psychometric_session_${studentProfile.id}`);
-      if (savedSession) {
-        try {
-          const session = JSON.parse(savedSession);
-          // Check if session is recent (within 24 hours)
-          const sessionAge = Date.now() - (session.timestamp || 0);
-          const hours24 = 24 * 60 * 60 * 1000;
-          
-          if (sessionAge < hours24 && session.sessionId && session.questions) {
-            setSessionId(session.sessionId);
-            setQuestions(session.questions);
-            setLanguage(session.language || 'en');
-            setIncludeAptitude(session.includeAptitude || false);
-            setCurrentStep('questions');
-            navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${session.sessionId}`);
-            message.info('Resuming your previous assessment session');
-          } else {
-            // Clear old session
-            localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
-          }
-        } catch (error) {
-          console.error('Error loading saved session:', error);
-          localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
-        }
-      }
-    }
-  }, [studentProfile?.id, navigate, currentStep]);
-
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
     if (!studentProfile?.id) {
       message.error('Student profile not found');
@@ -125,17 +91,15 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
       setSessionId(response.sessionId);
       setQuestions(response.questions || []);
+      
+      // Check if this is a resumed session
+      if (response.resumedFrom) {
+        setIsResuming(true);
+        message.info(`Resuming your previous session (${response.resumedFrom.answeredCount}/${response.resumedFrom.totalCount} questions answered)`);
+      }
+      
       setCurrentStep('questions');
       navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
-      
-      // Save session to localStorage
-      localStorage.setItem(`psychometric_session_${studentProfile.id}`, JSON.stringify({
-        sessionId: response.sessionId,
-        questions: response.questions || [],
-        language: lang,
-        includeAptitude: aptitude,
-        timestamp: Date.now(),
-      }));
       
       // Scroll to top when assessment starts
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -163,25 +127,29 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setCurrentStep('results');
     navigate('/student-hub/psychometric-assessment?step=results');
     
-    // Clear saved session from localStorage
-    if (studentProfile?.id) {
-      localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
-    }
-    
     message.success('Assessment completed successfully!');
   };
 
-  const handleBackToStart = () => {
-    // Clear session from localStorage when canceling
-    if (studentProfile?.id) {
-      localStorage.removeItem(`psychometric_session_${studentProfile.id}`);
-      // Set flag to prevent auto-resume
-      sessionStorage.setItem(`prevent_resume_${studentProfile.id}`, 'true');
+  const handleBackToStart = async () => {
+    // Cancel the session on the backend if we have one
+    if (sessionId && studentProfile?.id) {
+      try {
+        await cancelSession({
+          sessionId,
+          studentProfileId: studentProfile.id,
+        }).unwrap();
+      } catch (error) {
+        console.error('Error cancelling session:', error);
+        // Continue anyway - the session will expire
+      }
     }
+    
     setCurrentStep('start');
     setSessionId(null);
     setAssessmentId(null);
     setQuestions([]);
+    setSavedAnswers({});
+    setIsResuming(false);
     navigate('/student-hub/psychometric-assessment?step=start');
   };
 
@@ -216,23 +184,6 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       />
     );
   }
-
-  const stepItems = [
-    {
-      title: 'Start',
-      description: 'Begin Assessment',
-    },
-    {
-      title: 'Questions',
-      description: 'Answer Questions',
-    },
-    {
-      title: 'Results',
-      description: 'View Results',
-    },
-  ];
-
-  const currentStepIndex = currentStep === 'start' ? 0 : currentStep === 'questions' ? 1 : 2;
 
   return (
     <div className="psychometric-assessment-page">
@@ -299,4 +250,3 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 };
 
 export default PsychometricAssessmentPage;
-

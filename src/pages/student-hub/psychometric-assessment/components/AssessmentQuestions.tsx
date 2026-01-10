@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Radio, Slider, Input, Progress, Typography, Space, message, Spin, Alert } from 'antd';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card, Button, Radio, Input, Progress, Typography, Space, message, Spin, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import {
   useSubmitAnswerMutation,
   useCompleteAssessmentMutation,
+  useGetSessionProgressQuery,
 } from '../../../../app/services/student-hub/psychometricApi';
 import type { AssessmentQuestion } from '../../../../app/services/student-hub/psychometricApi';
+import { AssessmentProgress } from './AssessmentProgress';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 interface AssessmentQuestionsProps {
@@ -16,6 +18,7 @@ interface AssessmentQuestionsProps {
   studentProfileId: string;
   language: 'en' | 'uz' | 'ru';
   questions: any[];
+  includeAptitude?: boolean;
   onComplete: (assessment: any) => void;
   onCancel: () => void;
 }
@@ -25,6 +28,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   studentProfileId,
   language,
   questions: initialQuestions,
+  includeAptitude = false,
   onComplete,
   onCancel,
 }) => {
@@ -33,29 +37,42 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   const [questions] = useState<AssessmentQuestion[]>(initialQuestions || []);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [startTime] = useState<Date>(new Date());
 
   const [submitAnswer] = useSubmitAnswerMutation();
   const [completeAssessment, { isLoading: isCompleting }] = useCompleteAssessmentMutation();
+  
+  // Fetch session progress to restore answers on resume
+  const { data: sessionProgress, isLoading: progressLoading } = useGetSessionProgressQuery(
+    sessionId,
+    { skip: !sessionId }
+  );
 
-  // Load saved answers from localStorage on mount
+  // Load saved answers from backend when session progress is loaded
   useEffect(() => {
-    if (sessionId && studentProfileId) {
-      const savedSession = localStorage.getItem(`psychometric_session_${studentProfileId}`);
-      if (savedSession) {
-        try {
-          const session = JSON.parse(savedSession);
-          if (session.sessionId === sessionId && session.answers) {
-            setAnswers(session.answers);
-            if (session.currentQuestionIndex !== undefined) {
-              setCurrentQuestionIndex(session.currentQuestionIndex);
-            }
-          }
-        } catch (error) {
-          console.error('Error loading saved answers:', error);
+    if (sessionProgress && !isInitialized) {
+      const restoredAnswers: Record<string, any> = {};
+      sessionProgress.responses.forEach((r) => {
+        restoredAnswers[r.questionId] = r.answer;
+      });
+      setAnswers(restoredAnswers);
+      
+      // Find the first unanswered question
+      if (sessionProgress.responses.length > 0) {
+        const answeredIds = new Set(sessionProgress.responses.map(r => r.questionId));
+        const firstUnansweredIndex = questions.findIndex(q => !answeredIds.has(q.id));
+        if (firstUnansweredIndex >= 0) {
+          setCurrentQuestionIndex(firstUnansweredIndex);
+        } else {
+          // All answered, go to last question
+          setCurrentQuestionIndex(questions.length - 1);
         }
       }
+      
+      setIsInitialized(true);
     }
-  }, [sessionId, studentProfileId]);
+  }, [sessionProgress, questions, isInitialized]);
 
   const handleAnswerChange = async (questionId: string, value: any) => {
     setAnswers((prev) => ({
@@ -70,8 +87,13 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
         questionId,
         answer: value,
       }).unwrap();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting answer:', error);
+      // Check if session expired
+      if (error?.status === 400 || error?.status === 404) {
+        message.error('Session expired or not found. Please start a new assessment.');
+        onCancel();
+      }
     }
   };
 
@@ -97,49 +119,49 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
       onComplete(assessment);
     } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to complete assessment');
+      console.error('Error completing assessment:', error);
+      const errorMessage = error?.data?.message || 'Failed to complete assessment';
+      message.error(errorMessage);
+      
+      // Check if session expired
+      if (error?.status === 400 || error?.status === 404) {
+        message.warning('Session may have expired. Please start a new assessment.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Show loading while fetching progress
+  if (progressLoading || !isInitialized) {
+    return (
+      <Card>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <p>Loading your progress...</p>
+        </div>
+      </Card>
+    );
+  }
+
   const currentQuestion = questions[currentQuestionIndex];
-  const totalQuestions = questions.length; // Use actual questions array length
+  const totalQuestions = questions.length;
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
-  // Allow navigation even if not answered - user can come back to answer later
   const isAnswered = currentQuestion && answers[currentQuestion?.id] !== undefined;
-  const canNavigate = true; // Allow navigation regardless of answer status
-  
-  // Save progress to localStorage periodically
-  useEffect(() => {
-    if (sessionId && studentProfileId) {
-      const saveProgress = () => {
-        try {
-          const savedSession = localStorage.getItem(`psychometric_session_${studentProfileId}`);
-          if (savedSession) {
-            const session = JSON.parse(savedSession);
-            session.answers = answers;
-            session.currentQuestionIndex = currentQuestionIndex;
-            session.timestamp = Date.now();
-            localStorage.setItem(`psychometric_session_${studentProfileId}`, JSON.stringify(session));
-          }
-        } catch (error) {
-          console.error('Error saving progress:', error);
-        }
-      };
-      
-      // Save every 5 seconds
-      const interval = setInterval(saveProgress, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [sessionId, studentProfileId, answers, currentQuestionIndex]);
+  const answeredCount = Object.keys(answers).length;
 
   if (!currentQuestion) {
     return (
       <Card>
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" />
-          <p>Loading questions...</p>
+          <Alert 
+            message="No questions available" 
+            description="Please try starting a new assessment."
+            type="warning" 
+          />
+          <Button onClick={onCancel} style={{ marginTop: 16 }}>
+            Go Back
+          </Button>
         </div>
       </Card>
     );
@@ -151,10 +173,6 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   };
 
   const renderQuestionInput = () => {
-    // Debug: Log question data to see structure
-    console.log('Current question:', currentQuestion);
-    console.log('Question data:', currentQuestion.questionData);
-    
     if (!currentQuestion.questionData) {
       console.error('Question data is missing!');
       return <Alert message="Error: Question data is missing" type="error" />;
@@ -265,16 +283,17 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
   return (
     <div className="assessment-questions">
-      <Card className="question-card">
-        <div className="question-header">
-          <div className="question-progress">
-            <Text type="secondary">
-              Question {currentQuestionIndex + 1} of {totalQuestions}
-            </Text>
-            <Progress percent={progress} showInfo={false} strokeColor="#8b0000" />
-          </div>
-        </div>
+      {/* Enhanced Progress Indicator */}
+      <AssessmentProgress
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={totalQuestions}
+        currentQuestionType={currentQuestion?.questionType || 'riasec'}
+        startTime={startTime}
+        includeAptitude={includeAptitude}
+        language={language}
+      />
 
+      <Card className="question-card">
         <div className="question-content">
           <Title level={4} style={{ marginBottom: 24 }}>
             {getQuestionText()}
@@ -298,7 +317,6 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
               <Button
                 type="primary"
                 onClick={handleNext}
-                disabled={!canNavigate}
                 icon={<FontAwesomeIcon icon="arrow-right" />}
               >
                 Next
@@ -307,8 +325,8 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
               <Button
                 type="primary"
                 onClick={handleComplete}
-                loading={isCompleting}
-                disabled={!isAnswered}
+                loading={isCompleting || isSubmitting}
+                disabled={answeredCount === 0}
                 icon={<FontAwesomeIcon icon="check" />}
               >
                 Complete Assessment
@@ -320,4 +338,3 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
     </div>
   );
 };
-

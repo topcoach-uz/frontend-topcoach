@@ -33,6 +33,16 @@ export interface StartAssessmentRequest {
 export interface StartAssessmentResponse {
   sessionId: string;
   questions: AssessmentQuestion[];
+  resumedFrom?: {
+    answeredCount: number;
+    totalCount: number;
+  };
+}
+
+export interface SessionProgressResponse {
+  answeredCount: number;
+  totalCount: number;
+  responses: Array<{ questionId: string; answer: any }>;
 }
 
 export interface SubmitAnswerRequest {
@@ -140,6 +150,7 @@ export interface MajorExplanation {
   keyContributors: string[];
   academicFeasibility: string;
   nextSteps: string[];
+  confidence?: 'High' | 'Medium' | 'Low'; // Confidence in this recommendation
 }
 
 export interface MajorRecommendation {
@@ -161,6 +172,7 @@ export interface MajorRecommendation {
 export interface RecommendationsResponse {
   recommendations: MajorRecommendation[];
   shouldRecommendAptitude: boolean;
+  confidenceScore?: number; // Overall confidence level (0-100)
   assessmentSummary: {
     riasecCode: string;
     topInterests: Array<{ dimension: string; score: number }>;
@@ -238,6 +250,24 @@ export const psychometricApi = RtkApi.injectEndpoints({
       }),
       providesTags: ['PsychometricAssessment'],
     }),
+
+    // Get session progress
+    getSessionProgress: builder.query<SessionProgressResponse, string>({
+      query: (sessionId) => ({
+        url: `/psychometric-assessment/session/${sessionId}/progress`,
+        method: 'GET',
+      }),
+    }),
+
+    // Cancel session
+    cancelSession: builder.mutation<{ success: boolean }, { sessionId: string; studentProfileId: string }>({
+      query: ({ sessionId, studentProfileId }) => ({
+        url: `/psychometric-assessment/session/${sessionId}/cancel`,
+        method: 'POST',
+        body: { studentProfileId },
+      }),
+      invalidatesTags: ['PsychometricAssessment'],
+    }),
   }),
   overrideExisting: false,
 });
@@ -250,5 +280,7 @@ export const {
   useGetAllAssessmentsQuery,
   useCalculateMajorFitScoresQuery,
   useGetRecommendationsQuery,
+  useGetSessionProgressQuery,
+  useCancelSessionMutation,
 } = psychometricApi;
 
