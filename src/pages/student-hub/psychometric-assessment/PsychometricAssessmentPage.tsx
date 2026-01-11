@@ -130,7 +130,17 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     message.success('Assessment completed successfully!');
   };
 
-  const handleBackToStart = async () => {
+  // Save and exit - keeps session alive for resuming later
+  const handleSaveAndExit = () => {
+    message.success('Progress saved! You can continue later.');
+    setCurrentStep('start');
+    setSessionId(null);
+    setQuestions([]);
+    navigate('/student-hub/psychometric-assessment?step=start');
+  };
+
+  // Abandon - permanently cancels the session
+  const handleAbandon = async () => {
     // Cancel the session on the backend if we have one
     if (sessionId && studentProfile?.id) {
       try {
@@ -187,30 +197,20 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   return (
     <div className="psychometric-assessment-page">
-      {/* Header - show on all steps */}
-      <Card className="assessment-header-card">
-        <div className="assessment-header">
-          <div className="header-content">
-            <Title level={2}>Psychometric Assessment</Title>
-            <Paragraph>
-              Discover your ideal major and career path through a comprehensive assessment of your interests, 
-              personality, values, and aptitudes.
-            </Paragraph>
+      {/* Header - only show on start and results steps */}
+      {currentStep !== 'questions' && (
+        <Card className="assessment-header-card">
+          <div className="assessment-header">
+            <div className="header-content">
+              <Title level={2}>Psychometric Assessment</Title>
+              <Paragraph>
+                Discover your ideal major and career path through a comprehensive assessment of your interests, 
+                personality, values, and aptitudes.
+              </Paragraph>
+            </div>
           </div>
-          {/* Cancel button in top right - only show on questions step */}
-          {currentStep === 'questions' && (
-            <Button 
-              onClick={handleBackToStart} 
-              danger 
-              type="text"
-              className="cancel-button-top-right"
-              icon={<FontAwesomeIcon icon="times" />}
-            >
-              Cancel Assessment
-            </Button>
-          )}
-        </div>
-      </Card>
+        </Card>
+      )}
 
       <div className="assessment-content">
         {currentStep === 'start' && (
@@ -229,8 +229,10 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             studentProfileId={studentProfile.id}
             language={language}
             questions={questions}
+            includeAptitude={includeAptitude}
             onComplete={handleAssessmentComplete}
-            onCancel={handleBackToStart}
+            onSaveAndExit={handleSaveAndExit}
+            onAbandon={handleAbandon}
           />
         )}
 
@@ -240,7 +242,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             studentProfileId={studentProfile.id}
             assessment={latestAssessment}
             recommendations={recommendations}
-            onRetake={handleBackToStart}
+            onRetake={handleAbandon}
             isLoading={assessmentLoading || recommendationsLoading}
           />
         )}

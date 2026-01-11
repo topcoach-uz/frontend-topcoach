@@ -20,7 +20,8 @@ interface AssessmentQuestionsProps {
   questions: any[];
   includeAptitude?: boolean;
   onComplete: (assessment: any) => void;
-  onCancel: () => void;
+  onSaveAndExit: () => void;
+  onAbandon: () => void;
 }
 
 export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
@@ -30,7 +31,8 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   questions: initialQuestions,
   includeAptitude = false,
   onComplete,
-  onCancel,
+  onSaveAndExit,
+  onAbandon,
 }) => {
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -91,7 +93,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
       // Check if session expired
       if (error?.status === 400 || error?.status === 404) {
         message.error('Session expired or not found. Please start a new assessment.');
-        onCancel();
+        onAbandon();
       }
     }
   };
@@ -158,7 +160,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
             description="Please try starting a new assessment."
             type="warning" 
           />
-          <Button onClick={onCancel} style={{ marginTop: 16 }}>
+          <Button onClick={onAbandon} style={{ marginTop: 16 }}>
             Go Back
           </Button>
         </div>
@@ -282,13 +284,15 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
   return (
     <div className="assessment-questions">
-      {/* Enhanced Progress Indicator */}
+      {/* Enhanced Progress Indicator with Exit options */}
       <AssessmentProgress
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
         currentQuestionType={currentQuestion?.questionType || 'riasec'}
         includeAptitude={includeAptitude}
         language={language}
+        onSaveAndExit={onSaveAndExit}
+        onAbandon={onAbandon}
       />
 
       <Card className="question-card">
