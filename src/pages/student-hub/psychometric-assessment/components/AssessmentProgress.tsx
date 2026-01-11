@@ -138,9 +138,6 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
           <Col flex="auto">
             <div style={{ marginBottom: 8 }}>
               <Text type="secondary">Overall Progress</Text>
-              <Text strong style={{ float: 'right' }}>
-                Question {currentQuestionIndex + 1} of {totalQuestions}
-              </Text>
             </div>
             <Progress
               percent={overallProgress}
@@ -198,7 +195,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                 color: moduleConfig.color,
               }}
             >
-              {moduleProgress.questionsInCurrentModule} / {moduleProgress.currentModuleTotal}
+              {currentQuestionIndex + 1} / {totalQuestions}
             </Tag>
           </div>
 

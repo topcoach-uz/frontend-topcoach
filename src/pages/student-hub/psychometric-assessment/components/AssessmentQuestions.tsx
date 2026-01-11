@@ -99,7 +99,17 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    // Check if we're on the last question
+    if (currentQuestionIndex === questions.length - 1) {
+      // Find first unanswered question
+      const firstUnansweredIndex = questions.findIndex(q => answers[q.id] === undefined);
+      if (firstUnansweredIndex >= 0) {
+        // Navigate to first unanswered question
+        setCurrentQuestionIndex(firstUnansweredIndex);
+        message.warning('Please answer all questions before completing the assessment.');
+      }
+    } else {
+      // Normal next navigation
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
@@ -150,6 +160,7 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
   const isAnswered = currentQuestion && answers[currentQuestion?.id] !== undefined;
   const answeredCount = Object.keys(answers).length;
+  const allQuestionsAnswered = answeredCount === totalQuestions;
 
   if (!currentQuestion) {
     return (
@@ -194,10 +205,10 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
           return <Alert message="Error: Likert scale configuration is missing" type="error" />;
         }
 
-        // Default labels if missing
-        const defaultLabels = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'];
+        // Default labels if missing (reversed order: Strongly Agree -> Strongly Disagree)
+        const defaultLabels = ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'];
         const labels = scale.labels && scale.labels.length > 0 
-          ? scale.labels 
+          ? [...scale.labels].reverse() // Reverse the labels array
           : defaultLabels.slice(0, scale.max - scale.min + 1);
 
         return (
@@ -208,11 +219,15 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
             size="large"
           >
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {labels.map((label, index) => (
-                <Radio key={index} value={index + scale.min} style={{ fontSize: 16, padding: '8px 0' }}>
-                  {label}
-                </Radio>
-              ))}
+              {labels.map((label, index) => {
+                // Map reversed labels to values: first label (Strongly Agree) gets highest value (scale.max)
+                const value = scale.max - index;
+                return (
+                  <Radio key={index} value={value} style={{ fontSize: 16, padding: '8px 0' }}>
+                    {label}
+                  </Radio>
+                );
+              })}
             </Space>
           </Radio.Group>
         );
@@ -315,20 +330,20 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
             >
               Previous
             </Button>
-            {currentQuestionIndex < questions.length - 1 ? (
+            {currentQuestionIndex < questions.length - 1 || !allQuestionsAnswered ? (
               <Button
                 type="primary"
                 onClick={handleNext}
-                icon={<FontAwesomeIcon icon="arrow-right" />}
+                icon={<FontAwesomeIcon icon={currentQuestionIndex === questions.length - 1 ? "search" : "arrow-right"} />}
               >
-                Next
+                {currentQuestionIndex === questions.length - 1 ? 'Find Unanswered' : 'Next'}
               </Button>
             ) : (
               <Button
                 type="primary"
                 onClick={handleComplete}
                 loading={isCompleting || isSubmitting}
-                disabled={answeredCount === 0}
+                disabled={!allQuestionsAnswered}
                 icon={<FontAwesomeIcon icon="check" />}
               >
                 Complete Assessment
