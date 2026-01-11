@@ -39,6 +39,64 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
   return (
     <div className="assessment-start">
+      {/* Start Button - moved to top, right after header */}
+      <Card className="assessment-actions-card" style={{ marginBottom: 24 }}>
+        <div className="actions-content">
+          <Row gutter={[24, 16]} align="middle">
+            <Col xs={24} sm={18}>
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 14 }}>Total Questions</Text>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: '#8b0000' }}>{totalQuestions}</div>
+                  </div>
+                  <Divider type="vertical" style={{ height: 40 }} />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 14 }}>Estimated Time</Text>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: '#8b0000' }}>{estimatedTime} min</div>
+                  </div>
+                  <Divider type="vertical" style={{ height: 40 }} />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 14 }}>Language</Text>
+                    <div style={{ marginTop: 4 }}>
+                      <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
+                        {selectedLanguage === 'en' ? 'English' : selectedLanguage === 'uz' ? "O'zbek" : 'Русский'}
+                      </Tag>
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: 40 }} />
+                  <div>
+                    <Text type="secondary" style={{ fontSize: 14 }}>Aptitude Tests</Text>
+                    <div style={{ marginTop: 4 }}>
+                      <Tag color={includeAptitude ? 'green' : 'default'} style={{ fontSize: 14, padding: '4px 12px' }}>
+                        {includeAptitude ? 'Included' : 'Not Included'}
+                      </Tag>
+                    </div>
+                  </div>
+                </div>
+              </Space>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleStart}
+                loading={isLoading}
+                className="start-button"
+                icon={<FontAwesomeIcon icon="play-circle" />}
+                block
+                style={{ height: 48, fontSize: 16 }}
+              >
+                Start Assessment
+              </Button>
+            </Col>
+          </Row>
+          <Text type="secondary" style={{ display: 'block', marginTop: 16, textAlign: 'center', fontSize: 13 }}>
+            Your responses are confidential and used only for recommendations
+          </Text>
+        </div>
+      </Card>
+
       {/* Overview Section */}
       <Card className="assessment-overview-card" title="Assessment Overview">
         <Row gutter={[24, 24]}>
@@ -213,25 +271,6 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
         />
       )}
 
-      {/* Start Button - moved below header section */}
-      <Card className="assessment-actions-card">
-        <div className="actions-content">
-          <Button
-            type="primary"
-            size="large"
-            onClick={handleStart}
-            loading={isLoading}
-            className="start-button"
-            icon={<FontAwesomeIcon icon="play-circle" />}
-            block
-          >
-            Start Assessment
-          </Button>
-          <Text type="secondary" style={{ display: 'block', marginTop: 12, textAlign: 'center' }}>
-            Your responses are confidential and used only for recommendations
-          </Text>
-        </div>
-      </Card>
     </div>
   );
 };
