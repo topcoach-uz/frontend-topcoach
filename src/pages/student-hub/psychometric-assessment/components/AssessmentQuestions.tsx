@@ -38,7 +38,6 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [startTime] = useState<Date>(new Date());
 
   const [submitAnswer] = useSubmitAnswerMutation();
   const [completeAssessment, { isLoading: isCompleting }] = useCompleteAssessmentMutation();
@@ -288,7 +287,6 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
         currentQuestionType={currentQuestion?.questionType || 'riasec'}
-        startTime={startTime}
         includeAptitude={includeAptitude}
         language={language}
       />

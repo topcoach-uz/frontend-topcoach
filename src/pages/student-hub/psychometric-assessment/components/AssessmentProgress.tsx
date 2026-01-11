@@ -8,7 +8,6 @@ interface AssessmentProgressProps {
   currentQuestionIndex: number;
   totalQuestions: number;
   currentQuestionType: string;
-  startTime: Date;
   includeAptitude: boolean;
   language?: 'en' | 'uz' | 'ru';
 }
@@ -68,7 +67,6 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
   currentQuestionIndex,
   totalQuestions,
   currentQuestionType,
-  startTime,
   includeAptitude,
   language = 'en',
 }) => {
@@ -107,27 +105,6 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
       currentModuleTotal,
     };
   }, [currentQuestionIndex, includeAptitude]);
-
-  // Calculate time estimates
-  const timeEstimates = useMemo(() => {
-    const elapsedMs = Date.now() - startTime.getTime();
-    const elapsedMinutes = elapsedMs / 60000;
-    
-    // Average time per question so far
-    const avgTimePerQuestion = currentQuestionIndex > 0 ? elapsedMinutes / currentQuestionIndex : 0.3;
-    
-    // Remaining questions
-    const remainingQuestions = totalQuestions - currentQuestionIndex - 1;
-    
-    // Estimated remaining time (in minutes)
-    const estimatedRemaining = Math.max(1, Math.ceil(remainingQuestions * avgTimePerQuestion));
-    
-    return {
-      elapsedMinutes: Math.round(elapsedMinutes),
-      estimatedRemaining,
-      avgTimePerQuestion,
-    };
-  }, [currentQuestionIndex, totalQuestions, startTime]);
 
   const overallProgress = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
   const moduleConfig = MODULES[moduleProgress.currentModule as ModuleKey];
@@ -169,9 +146,8 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
               boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
             }}
           >
-            <FontAwesomeIcon icon="clock" style={{ color: '#8b0000', marginRight: 8 }} />
-            <Text>
-              ~{timeEstimates.estimatedRemaining} min remaining
+            <Text strong style={{ color: '#8b0000' }}>
+              {overallProgress}% Complete
             </Text>
           </div>
         </Col>
@@ -279,28 +255,6 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
         </div>
       </div>
 
-      {/* Time Tracking */}
-      <div
-        style={{
-          marginTop: 16,
-          padding: '8px 12px',
-          background: 'white',
-          borderRadius: 8,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <FontAwesomeIcon icon="stopwatch" style={{ color: '#6b7280', marginRight: 8 }} />
-          <Text type="secondary">Time elapsed: {timeEstimates.elapsedMinutes} min</Text>
-        </div>
-        <div>
-          <Text type="secondary">
-            {overallProgress}% complete
-          </Text>
-        </div>
-      </div>
     </Card>
   );
 };
