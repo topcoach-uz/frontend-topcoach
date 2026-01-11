@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
+import { UserRole } from 'src/app/services/users/type';
 
 interface INavLink {
   path?: string;
@@ -12,16 +13,21 @@ export default function useNavigation() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  const userProfile = useTypedSelector((state) => state.auth.profile);
+  const isMentor = userProfile?.profile?.role === UserRole.Mentor;
 
   const navLinks: INavLink[] = [
     {
       path: '/',
       text: t('header.home'),
     },
-    {
-      path: '/student-hub',
-      text: t('header.studentHub', 'My Journey'),
-    },
+    // Hide "My Journey" for mentors - it's only for students
+    ...(isMentor ? [] : [
+      {
+        path: '/student-hub',
+        text: t('header.studentHub', 'My Journey'),
+      },
+    ]),
     {
       path: '/mentors',
       text: t('header.mentors'),

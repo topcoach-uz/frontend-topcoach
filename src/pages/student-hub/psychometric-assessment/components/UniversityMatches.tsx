@@ -229,18 +229,13 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
 
   return (
     <Card className="university-matches-card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <Title level={4} style={{ margin: 0 }}>
-            🎓 University Matches
-          </Title>
-          <Text type="secondary">
-            Based on your interests, personality, and academic profile
-          </Text>
-        </div>
-        <Button type="link" onClick={() => navigate('/student-hub/universities')}>
-          View All Universities <FontAwesomeIcon icon="arrow-right" style={{ marginLeft: 4 }} />
-        </Button>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={4} style={{ margin: 0 }}>
+          🎓 University Matches
+        </Title>
+        <Text type="secondary">
+          Based on your interests, personality, and academic profile
+        </Text>
       </div>
 
       <List
@@ -250,9 +245,7 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
           <List.Item>
             <Card
               size="small"
-              hoverable
               style={{ height: '100%' }}
-              onClick={() => navigate(`/student-hub/universities/${uni.id}`)}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                 <Avatar
@@ -353,9 +346,9 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
         <Button
           type="primary"
           style={{ marginTop: 8 }}
-          onClick={() => navigate('/student-hub/universities')}
+          onClick={() => navigate('/universities')}
         >
-          Explore All Universities
+          Explore All Top 100 Universities
         </Button>
       </div>
     </Card>

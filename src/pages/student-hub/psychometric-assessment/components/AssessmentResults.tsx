@@ -532,28 +532,12 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
       {/* Actions */}
       <Card style={{ marginTop: 24 }}>
-        <div style={{ textAlign: 'center' }}>
-          <Space size="large" wrap>
-            <Button type="primary" size="large" onClick={onRetake}>
-              <FontAwesomeIcon icon="redo" style={{ marginRight: 8 }} />
-              Retake Assessment
-            </Button>
-            {!derivedData.aptitudeTaken && onTakeAptitude && (
-              <Button size="large" onClick={onTakeAptitude} style={{ borderColor: '#8b0000', color: '#8b0000' }}>
-                <FontAwesomeIcon icon="bolt" style={{ marginRight: 8 }} />
-                Take Aptitude Test
-              </Button>
-            )}
-            <PdfExport assessment={assessment} recommendations={recommendations} />
-            <Button size="large" onClick={() => window.print()}>
-              <FontAwesomeIcon icon="print" style={{ marginRight: 8 }} />
-              Print Results
-            </Button>
-            <Button size="large">
-              <FontAwesomeIcon icon="share-alt" style={{ marginRight: 8 }} />
-              Share Results
-            </Button>
-          </Space>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+          <Button type="primary" size="large" onClick={onRetake}>
+            <FontAwesomeIcon icon="redo" style={{ marginRight: 8 }} />
+            Retake Assessment
+          </Button>
+          <PdfExport assessment={assessment} recommendations={recommendations} />
         </div>
       </Card>
 

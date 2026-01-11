@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty } from 'antd';
+import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty, Collapse } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
 import { useGetAllAssessmentsQuery } from '../../../../app/services/student-hub/psychometricApi';
+
+const { Panel } = Collapse;
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -59,60 +61,67 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     <div className="assessment-start">
       {/* Completed Assessments History */}
       {allAssessments && allAssessments.length > 0 && (
-        <Card 
-          title={
-            <span>
-              <FontAwesomeIcon icon="history" style={{ marginRight: 8 }} />
-              Assessment History
-            </span>
-          }
+        <Collapse
+          defaultActiveKey={[]}
           style={{ marginBottom: 24 }}
-        >
-          <List
-            dataSource={allAssessments}
-            loading={assessmentsLoading}
-            locale={{ emptyText: <Empty description="No completed assessments yet" /> }}
-            renderItem={(assessment) => (
-              <List.Item
-                actions={[
-                  <Button 
-                    key="view" 
-                    type="link" 
-                    onClick={() => onViewExisting(assessment.id)}
-                  >
-                    View Results
-                  </Button>
-                ]}
-              >
-                <List.Item.Meta
-                  title={
-                    <Space>
-                      <Text strong>Assessment #{allAssessments.indexOf(assessment) + 1}</Text>
-                      <Badge 
-                        color={assessment.aptitudeScores ? 'green' : 'blue'} 
-                        text={assessment.aptitudeScores ? 'With Aptitude' : 'Core Only'}
+          items={[
+            {
+              key: 'history',
+              label: (
+                <span>
+                  <FontAwesomeIcon icon="history" style={{ marginRight: 8 }} />
+                  Assessment History ({allAssessments.length})
+                </span>
+              ),
+              children: (
+                <List
+                  dataSource={allAssessments}
+                  loading={assessmentsLoading}
+                  locale={{ emptyText: <Empty description="No completed assessments yet" /> }}
+                  renderItem={(assessment) => (
+                    <List.Item
+                      actions={[
+                        <Button 
+                          key="view" 
+                          type="link" 
+                          onClick={() => onViewExisting(assessment.id)}
+                        >
+                          View Results
+                        </Button>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        title={
+                          <Space>
+                            <Text strong>Assessment #{allAssessments.indexOf(assessment) + 1}</Text>
+                            <Badge 
+                              color={assessment.aptitudeScores ? 'green' : 'blue'} 
+                              text={assessment.aptitudeScores ? 'With Aptitude' : 'Core Only'}
+                            />
+                          </Space>
+                        }
+                        description={
+                          <Space direction="vertical" size={4}>
+                            <Text type="secondary">
+                              Completed: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
+                            </Text>
+                            <Text type="secondary">
+                              RIASEC Code: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
+                              {' • '}
+                              Questions: {assessment.assessmentMetadata?.questionCount || 'N/A'}
+                              {' • '}
+                              Time: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} min
+                            </Text>
+                          </Space>
+                        }
                       />
-                    </Space>
-                  }
-                  description={
-                    <Space direction="vertical" size={4}>
-                      <Text type="secondary">
-                        Completed: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
-                      </Text>
-                      <Text type="secondary">
-                        RIASEC Code: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
-                        {' • '}
-                        Questions: {assessment.assessmentMetadata?.questionCount || 'N/A'}
-                        {' • '}
-                        Time: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} min
-                      </Text>
-                    </Space>
-                  }
+                    </List.Item>
+                  )}
                 />
-              </List.Item>
-            )}
-          />
-        </Card>
+              ),
+            },
+          ]}
+        />
       )}
 
       {/* Assessment Overview with Start Button */}

@@ -128,7 +128,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
     <>
       {/* Exit Button Outside Card */}
       {(onSaveAndExit || onAbandon) && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
           <Button
             type="text"
             onClick={handleExitClick}
@@ -142,13 +142,14 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
       <Card
         className="assessment-progress"
         style={{
-          background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-          marginBottom: 24,
+          background: '#ffffff',
+          marginBottom: 16,
         }}
+        bodyStyle={{ padding: '16px 20px' }}
       >
         {/* Module Progress */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <div
               style={{
                 width: 40,
@@ -183,7 +184,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
           </div>
 
           {/* Module Stepper */}
-          <div style={{ display: 'flex', gap: 4, marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
             {moduleProgress.modules.map((moduleKey, index) => {
               const module = MODULES[moduleKey];
               const isActive = index === moduleProgress.currentModuleIndex;
@@ -210,7 +211,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
           </div>
 
           {/* Module Labels */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
             {moduleProgress.modules.map((moduleKey, index) => {
               const module = MODULES[moduleKey];
               const isActive = index === moduleProgress.currentModuleIndex;
