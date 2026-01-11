@@ -235,6 +235,7 @@ export const chatApi = RtkApi.injectEndpoints({
         },
         { type: 'ChatConversations', id: conversationId },
         'ChatConversations',
+        'ChatThreads',
       ],
     }),
 
@@ -262,6 +263,7 @@ export const chatApi = RtkApi.injectEndpoints({
         },
         { type: 'ChatConversations', id: conversationId },
         'ChatConversations',
+        'ChatThreads',
       ],
     }),
 
