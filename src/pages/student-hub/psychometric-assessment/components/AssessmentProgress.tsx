@@ -27,7 +27,7 @@ const MODULES = {
   values: {
     name: 'Values',
     shortName: 'Values',
-    icon: 'heart',
+    icon: 'star',
     color: '#ec4899',
     questionCount: 12,
     description: 'What motivates you',
@@ -133,12 +133,22 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
           marginBottom: 24,
         }}
       >
-        {/* Overall Progress with Exit Button */}
+        {/* Exit Button at Top */}
+        {(onSaveAndExit || onAbandon) && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            <Button
+              type="text"
+              onClick={handleExitClick}
+              icon={<FontAwesomeIcon icon="sign-out-alt" />}
+            >
+              Exit
+            </Button>
+          </div>
+        )}
+
+        {/* Overall Progress */}
         <Row gutter={[16, 16]} align="middle">
           <Col flex="auto">
-            <div style={{ marginBottom: 8 }}>
-              <Text type="secondary">Overall Progress</Text>
-            </div>
             <Progress
               percent={overallProgress}
               strokeColor={{
@@ -149,18 +159,6 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
               showInfo={false}
             />
           </Col>
-          {(onSaveAndExit || onAbandon) && (
-            <Col>
-              <Button
-                type="text"
-                onClick={handleExitClick}
-                icon={<FontAwesomeIcon icon="sign-out-alt" />}
-                style={{ marginLeft: 16 }}
-              >
-                Exit
-              </Button>
-            </Col>
-          )}
         </Row>
 
         {/* Module Progress */}
@@ -193,9 +191,14 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                 background: `${moduleConfig.color}15`,
                 borderColor: moduleConfig.color,
                 color: moduleConfig.color,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
               }}
             >
-              {currentQuestionIndex + 1} / {totalQuestions}
+              <span>{overallProgress}%</span>
+              <span style={{ opacity: 0.6 }}>•</span>
+              <span>{currentQuestionIndex + 1} / {totalQuestions}</span>
             </Tag>
           </div>
 

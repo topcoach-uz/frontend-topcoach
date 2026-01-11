@@ -341,31 +341,37 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   >
                                     {rec.fitScore.toFixed(0)}% Match
                                   </Tag>
-                                  {rec.explanation.confidence && (
+                                  {rec.explanation?.confidence && (
                                     <Tag color="blue">{rec.explanation.confidence} Confidence</Tag>
                                   )}
                                 </div>
                               </div>
 
-                              <Paragraph style={{ margin: '8px 0' }}>{rec.explanation.whyFits}</Paragraph>
+                              {rec.explanation?.whyFits && (
+                                <Paragraph style={{ margin: '8px 0' }}>{rec.explanation.whyFits}</Paragraph>
+                              )}
 
-                              <div>
-                                <Text strong>Key Contributors: </Text>
-                                <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                  {rec.explanation.keyContributors.map((contributor, i) => (
-                                    <Tag key={i} color="geekblue">
-                                      {contributor}
-                                    </Tag>
-                                  ))}
+                              {rec.explanation?.keyContributors && rec.explanation.keyContributors.length > 0 && (
+                                <div>
+                                  <Text strong>Key Contributors: </Text>
+                                  <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                    {rec.explanation.keyContributors.map((contributor, i) => (
+                                      <Tag key={i} color="geekblue">
+                                        {contributor}
+                                      </Tag>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
+                              )}
 
-                              <div style={{ marginTop: 8 }}>
-                                <Text strong>Academic Feasibility: </Text>
-                                <Text>{rec.explanation.academicFeasibility}</Text>
-                              </div>
+                              {rec.explanation?.academicFeasibility && (
+                                <div style={{ marginTop: 8 }}>
+                                  <Text strong>Academic Feasibility: </Text>
+                                  <Text>{rec.explanation.academicFeasibility}</Text>
+                                </div>
+                              )}
 
-                              {rec.explanation.nextSteps && rec.explanation.nextSteps.length > 0 && (
+                              {rec.explanation?.nextSteps && rec.explanation.nextSteps.length > 0 && (
                                 <div style={{ marginTop: 8 }}>
                                   <Text strong>Next Steps:</Text>
                                   <ul style={{ marginTop: 4, marginBottom: 0, paddingLeft: 20 }}>
@@ -562,15 +568,18 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         <Row gutter={16}>
           {comparisonMajors.map((idx) => {
             const rec = topRecommendations[idx];
+            if (!rec) return null;
             return (
               <Col key={idx} xs={24} md={12}>
                 <Card title={rec.majorName}>
                   <p>
                     <strong>Fit Score:</strong> {rec.fitScore.toFixed(0)}%
                   </p>
-                  <p>
-                    <strong>Why it fits:</strong> {rec.explanation.whyFits}
-                  </p>
+                  {rec.explanation?.whyFits && (
+                    <p>
+                      <strong>Why it fits:</strong> {rec.explanation.whyFits}
+                    </p>
+                  )}
                 </Card>
               </Col>
             );

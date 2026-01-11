@@ -31,7 +31,10 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     onStart(selectedLanguage, includeAptitude);
   };
 
-  const totalQuestions = 74 + (includeAptitude ? 16 : 0);
+  // Core: 74 (42 RIASEC + 12 Values + 20 Big Five)
+  // Open-ended: 2 (always included for AI analysis)
+  // Aptitude: 16 (optional)
+  const totalQuestions = 74 + 2 + (includeAptitude ? 16 : 0); // 76 without aptitude, 92 with aptitude
   const estimatedTime = includeAptitude ? '20-25' : '15-20';
 
   return (

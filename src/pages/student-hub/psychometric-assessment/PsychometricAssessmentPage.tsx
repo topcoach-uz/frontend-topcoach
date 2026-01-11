@@ -92,8 +92,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setSessionId(response.sessionId);
       setQuestions(response.questions || []);
       
-      // Check if this is a resumed session
-      if (response.resumedFrom) {
+      // Check if this is a resumed session (only show message if there are actually answered questions)
+      if (response.resumedFrom && response.resumedFrom.answeredCount > 0) {
         setIsResuming(true);
         message.info(`Resuming your previous session (${response.resumedFrom.answeredCount}/${response.resumedFrom.totalCount} questions answered)`);
       }
@@ -197,8 +197,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   return (
     <div className="psychometric-assessment-page">
-      {/* Header - only show on start and results steps */}
-      {currentStep !== 'questions' && (
+      {/* Header - only show on start step, NOT on results */}
+      {currentStep === 'start' && (
         <Card className="assessment-header-card">
           <div className="assessment-header">
             <div className="header-content">
