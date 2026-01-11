@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge } from 'antd';
+import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
+import { useGetAllAssessmentsQuery } from '../../../../app/services/student-hub/psychometricApi';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -10,7 +11,7 @@ interface AssessmentStartProps {
   studentProfile: StudentProfile;
   onStart: (language: 'en' | 'uz' | 'ru', includeAptitude: boolean) => void;
   hasExistingAssessment: boolean;
-  onViewExisting: () => void;
+  onViewExisting: (assessmentId: string) => void;
   isLoading: boolean;
 }
 
@@ -27,6 +28,12 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   );
   const [includeAptitude, setIncludeAptitude] = useState(false);
 
+  // Fetch all completed assessments
+  const { data: allAssessments, isLoading: assessmentsLoading } = useGetAllAssessmentsQuery(
+    studentProfile?.id || '',
+    { skip: !studentProfile?.id }
+  );
+
   const handleStart = () => {
     onStart(selectedLanguage, includeAptitude);
   };
@@ -37,22 +44,75 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   const totalQuestions = 74 + 2 + (includeAptitude ? 16 : 0); // 76 without aptitude, 92 with aptitude
   const estimatedTime = includeAptitude ? '20-25' : '15-20';
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="assessment-start">
-      {/* Existing Assessment Alert */}
-      {hasExistingAssessment && (
-        <Alert
-          message="Previous Assessment Found"
-          description="You have completed this assessment before. You can view your previous results or start a new assessment."
-          type="info"
-          showIcon
-          style={{ marginBottom: 24 }}
-          action={
-            <Button size="small" onClick={onViewExisting}>
-              View Previous Results
-            </Button>
+      {/* Completed Assessments History */}
+      {allAssessments && allAssessments.length > 0 && (
+        <Card 
+          title={
+            <span>
+              <FontAwesomeIcon icon="history" style={{ marginRight: 8 }} />
+              Assessment History
+            </span>
           }
-        />
+          style={{ marginBottom: 24 }}
+        >
+          <List
+            dataSource={allAssessments}
+            loading={assessmentsLoading}
+            locale={{ emptyText: <Empty description="No completed assessments yet" /> }}
+            renderItem={(assessment) => (
+              <List.Item
+                actions={[
+                  <Button 
+                    key="view" 
+                    type="link" 
+                    onClick={() => onViewExisting(assessment.id)}
+                  >
+                    View Results
+                  </Button>
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Space>
+                      <Text strong>Assessment #{allAssessments.indexOf(assessment) + 1}</Text>
+                      <Badge 
+                        color={assessment.aptitudeScores ? 'green' : 'blue'} 
+                        text={assessment.aptitudeScores ? 'With Aptitude' : 'Core Only'}
+                      />
+                    </Space>
+                  }
+                  description={
+                    <Space direction="vertical" size={4}>
+                      <Text type="secondary">
+                        Completed: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
+                      </Text>
+                      <Text type="secondary">
+                        RIASEC Code: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
+                        {' • '}
+                        Questions: {assessment.assessmentMetadata?.questionCount || 'N/A'}
+                        {' • '}
+                        Time: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} min
+                      </Text>
+                    </Space>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </Card>
       )}
 
       {/* Assessment Overview with Start Button */}

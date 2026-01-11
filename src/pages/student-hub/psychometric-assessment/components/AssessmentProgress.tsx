@@ -126,6 +126,19 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
 
   return (
     <>
+      {/* Exit Button Outside Card */}
+      {(onSaveAndExit || onAbandon) && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <Button
+            type="text"
+            onClick={handleExitClick}
+            icon={<FontAwesomeIcon icon="sign-out-alt" />}
+          >
+            Exit
+          </Button>
+        </div>
+      )}
+
       <Card
         className="assessment-progress"
         style={{
@@ -133,36 +146,8 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
           marginBottom: 24,
         }}
       >
-        {/* Exit Button at Top */}
-        {(onSaveAndExit || onAbandon) && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <Button
-              type="text"
-              onClick={handleExitClick}
-              icon={<FontAwesomeIcon icon="sign-out-alt" />}
-            >
-              Exit
-            </Button>
-          </div>
-        )}
-
-        {/* Overall Progress */}
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Progress
-              percent={overallProgress}
-              strokeColor={{
-                '0%': '#8b0000',
-                '100%': '#dc143c',
-              }}
-              strokeWidth={12}
-              showInfo={false}
-            />
-          </Col>
-        </Row>
-
         {/* Module Progress */}
-        <div style={{ marginTop: 16 }}>
+        <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <div
               style={{
@@ -191,14 +176,9 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                 background: `${moduleConfig.color}15`,
                 borderColor: moduleConfig.color,
                 color: moduleConfig.color,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
               }}
             >
-              <span>{overallProgress}%</span>
-              <span style={{ opacity: 0.6 }}>•</span>
-              <span>{currentQuestionIndex + 1} / {totalQuestions}</span>
+              {currentQuestionIndex + 1} / {totalQuestions}
             </Tag>
           </div>
 

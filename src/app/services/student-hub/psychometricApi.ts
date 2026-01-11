@@ -224,6 +224,15 @@ export const psychometricApi = RtkApi.injectEndpoints({
       providesTags: ['PsychometricAssessment'],
     }),
 
+    // Get assessment by ID
+    getAssessmentById: builder.query<PsychometricAssessment, string>({
+      query: (assessmentId) => ({
+        url: `/psychometric-assessment/assessment/${assessmentId}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, assessmentId) => [{ type: 'PsychometricAssessment', id: assessmentId }],
+    }),
+
     // Get all assessments
     getAllAssessments: builder.query<PsychometricAssessment[], string>({
       query: (studentProfileId) => ({
@@ -277,6 +286,7 @@ export const {
   useSubmitAnswerMutation,
   useCompleteAssessmentMutation,
   useGetLatestAssessmentQuery,
+  useGetAssessmentByIdQuery,
   useGetAllAssessmentsQuery,
   useCalculateMajorFitScoresQuery,
   useGetRecommendationsQuery,

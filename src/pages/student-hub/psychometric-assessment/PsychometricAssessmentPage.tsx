@@ -7,6 +7,7 @@ import { useStudentProfile } from '../../../hooks/useStudentHub';
 import {
   useStartAssessmentMutation,
   useGetLatestAssessmentQuery,
+  useGetAssessmentByIdQuery,
   useGetRecommendationsQuery,
   useCancelSessionMutation,
 } from '../../../app/services/student-hub/psychometricApi';
@@ -51,7 +52,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const [cancelSession] = useCancelSessionMutation();
   const { data: latestAssessment, isLoading: assessmentLoading } = useGetLatestAssessmentQuery(
     studentProfile?.id || '',
-    { skip: !studentProfile?.id || currentStep !== 'results' }
+    { skip: !studentProfile?.id || (currentStep !== 'results' || !!assessmentId) }
+  );
+  const { data: selectedAssessment, isLoading: selectedAssessmentLoading } = useGetAssessmentByIdQuery(
+    assessmentId || '',
+    { skip: !assessmentId || currentStep !== 'results' }
   );
   const { data: recommendations, isLoading: recommendationsLoading } = useGetRecommendationsQuery(
     studentProfile?.id || '',
@@ -163,9 +168,10 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     navigate('/student-hub/psychometric-assessment?step=start');
   };
 
-  const handleViewResults = () => {
-    if (latestAssessment) {
-      setAssessmentId(latestAssessment.id);
+  const handleViewResults = (assessmentId?: string) => {
+    const idToUse = assessmentId || latestAssessment?.id;
+    if (idToUse) {
+      setAssessmentId(idToUse);
       setCurrentStep('results');
       navigate('/student-hub/psychometric-assessment?step=results');
     }
@@ -240,10 +246,10 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
           <AssessmentResults
             assessmentId={assessmentId}
             studentProfileId={studentProfile.id}
-            assessment={latestAssessment}
+            assessment={selectedAssessment || latestAssessment}
             recommendations={recommendations}
             onRetake={handleAbandon}
-            isLoading={assessmentLoading || recommendationsLoading}
+            isLoading={selectedAssessmentLoading || assessmentLoading || recommendationsLoading}
           />
         )}
       </div>
