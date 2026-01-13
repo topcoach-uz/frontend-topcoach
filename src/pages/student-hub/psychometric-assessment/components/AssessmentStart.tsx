@@ -206,9 +206,6 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             >
               Start Assessment
             </Button>
-            <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
-              Your responses are confidential
-            </Text>
           </Col>
         </Row>
       </Card>

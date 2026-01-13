@@ -46,6 +46,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const [includeAptitude, setIncludeAptitude] = useState(false);
   const [savedAnswers, setSavedAnswers] = useState<Record<string, any>>({});
   const [isResuming, setIsResuming] = useState(false);
+  const [isGeneratingResults, setIsGeneratingResults] = useState(false);
 
   // API hooks
   const [startAssessment, { isLoading: startingAssessment }] = useStartAssessmentMutation();
@@ -77,6 +78,13 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setAssessmentId(latestAssessment.id);
     }
   }, [studentProfile?.id, latestAssessment]);
+
+  // Reset isGeneratingResults when data is loaded (results are ready)
+  useEffect(() => {
+    if ((selectedAssessment || latestAssessment) && recommendations && !(assessmentLoading || selectedAssessmentLoading || recommendationsLoading)) {
+      setIsGeneratingResults(false);
+    }
+  }, [selectedAssessment, latestAssessment, recommendations, assessmentLoading, selectedAssessmentLoading, recommendationsLoading]);
 
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
     if (!studentProfile?.id) {
@@ -131,6 +139,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const handleAssessmentComplete = (assessment: any) => {
     setAssessmentId(assessment.id);
     setSessionId(null);
+    setIsGeneratingResults(true); // Mark that we're generating results for the first time
     setCurrentStep('results');
     navigate('/student-hub/psychometric-assessment?step=results');
     
@@ -174,6 +183,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     const idToUse = assessmentId || latestAssessment?.id;
     if (idToUse) {
       setAssessmentId(idToUse);
+      setIsGeneratingResults(false); // Mark that we're viewing existing results
       setCurrentStep('results');
       navigate('/student-hub/psychometric-assessment?step=results');
     }
@@ -251,7 +261,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             assessment={selectedAssessment || latestAssessment}
             recommendations={recommendations}
             onRetake={handleAbandon}
-            isLoading={selectedAssessmentLoading || assessmentLoading || recommendationsLoading}
+            onTakeAptitude={handleStartAssessment.bind(null, language, true)}
+            isLoading={assessmentLoading || selectedAssessmentLoading || recommendationsLoading}
+            isGeneratingResults={isGeneratingResults}
           />
         )}
       </div>

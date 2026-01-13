@@ -39,6 +39,7 @@ interface AssessmentResultsProps {
   onRetake: () => void;
   onTakeAptitude?: () => void;
   isLoading: boolean;
+  isGeneratingResults?: boolean; // True when initially completing, false when viewing existing
 }
 
 // Career path visualization component
@@ -81,6 +82,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   onRetake,
   onTakeAptitude,
   isLoading,
+  isGeneratingResults = false,
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
@@ -121,9 +123,13 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
         <Spin size="large" />
         <Title level={4} style={{ marginTop: 24 }}>
-          Analyzing Your Results...
+          {isGeneratingResults ? 'Analyzing Your Results...' : 'Loading Your Results...'}
         </Title>
-        <Text type="secondary">Our AI is generating personalized insights</Text>
+        <Text type="secondary">
+          {isGeneratingResults 
+            ? 'Our AI is generating personalized insights and recommendations' 
+            : 'Fetching your assessment data and recommendations'}
+        </Text>
       </div>
     );
   }

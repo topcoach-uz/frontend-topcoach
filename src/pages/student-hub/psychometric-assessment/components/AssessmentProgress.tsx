@@ -128,7 +128,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
     <>
       {/* Exit Button Outside Card */}
       {(onSaveAndExit || onAbandon) && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
           <Button
             type="text"
             onClick={handleExitClick}
