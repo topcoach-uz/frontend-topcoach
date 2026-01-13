@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty, Collapse } from 'antd';
+import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty, Collapse, Modal, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
-import { useGetAllAssessmentsQuery } from '../../../../app/services/student-hub/psychometricApi';
+import { useGetAllAssessmentsQuery, useDeleteAssessmentMutation } from '../../../../app/services/student-hub/psychometricApi';
 
 const { Panel } = Collapse;
 
@@ -29,6 +29,8 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     (i18n.language.split('-')[0] as 'en' | 'uz' | 'ru') || 'en'
   );
   const [includeAptitude, setIncludeAptitude] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = useState<string | null>(null);
 
   // Fetch all completed assessments
   const { data: allAssessments, isLoading: assessmentsLoading } = useGetAllAssessmentsQuery(
@@ -36,8 +38,34 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     { skip: !studentProfile?.id }
   );
 
+  // Delete assessment mutation
+  const [deleteAssessment, { isLoading: isDeleting }] = useDeleteAssessmentMutation();
+
   const handleStart = () => {
     onStart(selectedLanguage, includeAptitude);
+  };
+
+  const handleDeleteClick = (assessmentId: string) => {
+    setAssessmentToDelete(assessmentId);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!assessmentToDelete) return;
+
+    try {
+      await deleteAssessment(assessmentToDelete).unwrap();
+      message.success('Assessment deleted successfully');
+      setDeleteModalVisible(false);
+      setAssessmentToDelete(null);
+    } catch (error: any) {
+      message.error(error?.data?.message || 'Failed to delete assessment');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setAssessmentToDelete(null);
   };
 
   // Core: 74 (42 RIASEC + 12 Values + 20 Big Five)
@@ -87,6 +115,15 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                           onClick={() => onViewExisting(assessment.id)}
                         >
                           View Results
+                        </Button>,
+                        <Button
+                          key="delete"
+                          type="link"
+                          danger
+                          icon={<FontAwesomeIcon icon="trash-alt" />}
+                          onClick={() => handleDeleteClick(assessment.id)}
+                        >
+                          Delete
                         </Button>
                       ]}
                     >
@@ -277,6 +314,23 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           </Col>
         </Row>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        title="Delete Assessment"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        confirmLoading={isDeleting}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        cancelText="Cancel"
+      >
+        <p>Are you sure you want to delete this assessment? This action cannot be undone.</p>
+        <p style={{ color: '#ff4d4f', fontWeight: 500 }}>
+          All assessment data, scores, and recommendations will be permanently removed.
+        </p>
+      </Modal>
     </div>
   );
 };

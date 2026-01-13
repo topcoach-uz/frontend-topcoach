@@ -183,69 +183,75 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
             </Tag>
           </div>
 
-          {/* Module Stepper */}
-          <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
-            {moduleProgress.modules.map((moduleKey, index) => {
-              const module = MODULES[moduleKey];
-              const isActive = index === moduleProgress.currentModuleIndex;
-              const isCompleted = index < moduleProgress.currentModuleIndex;
-              
-              return (
-                <div
-                  key={moduleKey}
-                  style={{
-                    flex: module.questionCount,
-                    height: 6,
-                    borderRadius: 3,
-                    background: isCompleted
-                      ? module.color
-                      : isActive
-                      ? `linear-gradient(90deg, ${module.color} ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%, #e5e7eb ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%)`
-                      : '#e5e7eb',
-                    transition: 'all 0.3s ease',
-                  }}
-                  title={`${module.name}: ${module.questionCount} questions`}
-                />
-              );
-            })}
-          </div>
-
-          {/* Module Labels */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            {moduleProgress.modules.map((moduleKey, index) => {
-              const module = MODULES[moduleKey];
-              const isActive = index === moduleProgress.currentModuleIndex;
-              const isCompleted = index < moduleProgress.currentModuleIndex;
-              
-              return (
-                <div
-                  key={moduleKey}
-                  style={{
-                    textAlign: 'center',
-                    flex: 1,
-                    opacity: isActive ? 1 : isCompleted ? 0.7 : 0.4,
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={isCompleted ? 'check-circle' : (module.icon as any)}
+          {/* Module Stepper with Labels Below Each Section */}
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+              {moduleProgress.modules.map((moduleKey, index) => {
+                const module = MODULES[moduleKey];
+                const isActive = index === moduleProgress.currentModuleIndex;
+                const isCompleted = index < moduleProgress.currentModuleIndex;
+                
+                return (
+                  <div
+                    key={moduleKey}
                     style={{
-                      color: isCompleted ? '#10b981' : isActive ? module.color : '#9ca3af',
-                      fontSize: 14,
+                      flex: module.questionCount,
+                      height: 6,
+                      borderRadius: 3,
+                      background: isCompleted
+                        ? module.color
+                        : isActive
+                        ? `linear-gradient(90deg, ${module.color} ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%, #e5e7eb ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%)`
+                        : '#e5e7eb',
+                      transition: 'all 0.3s ease',
                     }}
+                    title={`${module.name}: ${module.questionCount} questions`}
                   />
-                  <Text
+                );
+              })}
+            </div>
+
+            {/* Module Labels - Centered Below Each Section */}
+            <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+              {moduleProgress.modules.map((moduleKey, index) => {
+                const module = MODULES[moduleKey];
+                const isActive = index === moduleProgress.currentModuleIndex;
+                const isCompleted = index < moduleProgress.currentModuleIndex;
+                
+                return (
+                  <div
+                    key={moduleKey}
                     style={{
-                      display: 'block',
-                      fontSize: 10,
-                      color: isActive ? module.color : '#6b7280',
-                      fontWeight: isActive ? 600 : 400,
+                      flex: module.questionCount,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: isActive ? 1 : isCompleted ? 0.7 : 0.4,
                     }}
                   >
-                    {module.shortName}
-                  </Text>
-                </div>
-              );
-            })}
+                    <FontAwesomeIcon
+                      icon={isCompleted ? 'check-circle' : (module.icon as any)}
+                      style={{
+                        color: isCompleted ? '#10b981' : isActive ? module.color : '#9ca3af',
+                        fontSize: 14,
+                        marginBottom: 4,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: isActive ? module.color : '#6b7280',
+                        fontWeight: isActive ? 600 : 400,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {module.shortName}
+                    </Text>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </Card>

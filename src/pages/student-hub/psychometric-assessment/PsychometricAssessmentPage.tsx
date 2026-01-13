@@ -97,10 +97,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setSessionId(response.sessionId);
       setQuestions(response.questions || []);
       
-      // Check if this is a resumed session (only show message if there are actually answered questions)
-      if (response.resumedFrom && response.resumedFrom.answeredCount > 0) {
+      // Only show resuming message if there are meaningful answers (more than 1)
+      if (response.resumedFrom && response.resumedFrom.answeredCount > 1) {
         setIsResuming(true);
         message.info(`Resuming your previous session (${response.resumedFrom.answeredCount}/${response.resumedFrom.totalCount} questions answered)`);
+      } else {
+        setIsResuming(false);
       }
       
       setCurrentStep('questions');

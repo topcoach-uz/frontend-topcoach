@@ -277,6 +277,15 @@ export const psychometricApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['PsychometricAssessment'],
     }),
+
+    // Delete assessment
+    deleteAssessment: builder.mutation<{ success: boolean; message: string }, string>({
+      query: (assessmentId) => ({
+        url: `/psychometric-assessment/assessment/${assessmentId}/delete`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['PsychometricAssessment'],
+    }),
   }),
   overrideExisting: false,
 });
@@ -292,5 +301,6 @@ export const {
   useGetRecommendationsQuery,
   useGetSessionProgressQuery,
   useCancelSessionMutation,
+  useDeleteAssessmentMutation,
 } = psychometricApi;
 

@@ -382,8 +382,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                 </div>
                               )}
 
-                              {/* Career paths (shown when selected) */}
-                              {selectedMajor === index && rec.majorProfile && (
+                              {/* Career paths (always shown for all majors) */}
+                              {rec.majorProfile && (
                                 <CareerPathCard
                                   majorName={rec.majorName}
                                   careers={rec.majorProfile.relatedCareers || []}
@@ -537,7 +537,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             <FontAwesomeIcon icon="redo" style={{ marginRight: 8 }} />
             Retake Assessment
           </Button>
-          <PdfExport assessment={assessment} recommendations={recommendations} />
+          {/* PDF Export temporarily hidden */}
+          {/* <PdfExport assessment={assessment} recommendations={recommendations} /> */}
         </div>
       </Card>
 
