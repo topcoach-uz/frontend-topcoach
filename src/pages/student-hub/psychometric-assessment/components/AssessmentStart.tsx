@@ -188,7 +188,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               <Col xs={12} sm={6}>
                 <div className="overview-item">
                   <Text type="secondary" style={{ fontSize: 12 }}>Components</Text>
-                  <Title level={4} style={{ margin: 0 }}>{includeAptitude ? 4 : 3} Sections</Title>
+                  <Title level={4} style={{ margin: 0 }}>{includeAptitude ? 5 : 4} Sections</Title>
                 </div>
               </Col>
             </Row>
@@ -249,6 +249,18 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               <Badge count={20} className="component-badge" />
             </div>
           </Col>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="edit" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Open-Ended Questions</Text>
+                <Text type="secondary" className="component-description">
+                  2 questions for AI-powered personalization
+                </Text>
+              </div>
+              <Badge count={2} className="component-badge" />
+            </div>
+          </Col>
           {includeAptitude && (
             <Col xs={24} md={12}>
               <div className="component-item component-item-highlight">
@@ -269,7 +281,8 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
       {/* Settings */}
       <Card className="assessment-settings-card" title="Assessment Settings">
         <Row gutter={[24, 24]}>
-          <Col xs={24} md={12}>
+          {/* Language selection temporarily hidden - not working yet */}
+          {/* <Col xs={24} md={12}>
             <div className="setting-group">
               <Text strong className="setting-label">Language</Text>
               <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
@@ -285,9 +298,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                 <Radio.Button value="ru">Русский</Radio.Button>
               </Radio.Group>
             </div>
-          </Col>
+          </Col> */}
 
-          <Col xs={24} md={12}>
+          <Col xs={24} md={24}>
             <div className="setting-group">
               <Text strong className="setting-label">Include Aptitude Tests</Text>
               <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
