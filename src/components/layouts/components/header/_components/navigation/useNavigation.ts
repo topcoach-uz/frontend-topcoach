@@ -15,6 +15,11 @@ export default function useNavigation() {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const userProfile = useTypedSelector((state) => state.auth.profile);
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
+  
+  // Exception: CEO email (oumarovna@gmail.com) should see "My Journey" even if they're a mentor
+  // const isCEO = userProfile?.email === 'sheraliozodov03@gmail.com';
+  const isCEO = userProfile?.email === 'oumarovna@gmail.com';
+  const shouldShowMyJourney = !isMentor || isCEO;
 
   const navLinks: INavLink[] = [
     {
@@ -22,12 +27,13 @@ export default function useNavigation() {
       text: t('header.home'),
     },
     // Hide "My Journey" for mentors - it's only for students
-    ...(isMentor ? [] : [
+    // Exception: CEO (oumarovna@gmail.com) can see it for pitching to schools
+    ...(shouldShowMyJourney ? [
       {
         path: '/student-hub',
         text: t('header.studentHub', 'My Journey'),
       },
-    ]),
+    ] : []),
     {
       path: '/mentors',
       text: t('header.mentors'),

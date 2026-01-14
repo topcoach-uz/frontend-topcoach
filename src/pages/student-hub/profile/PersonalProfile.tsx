@@ -25,7 +25,7 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
   const [loading, setLoading] = useState(false);
   const isReadOnly = readOnly === true;
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
-  const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
+  const { profile, updateStudentProfile, refetchProfile, isProfileComplete } = useStudentProfile(hookOptions);
 
   // Initialize form with data from API
   useEffect(() => {
@@ -260,13 +260,16 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
 
   return (
     <div className="personal-profile">
-      <Alert
-        message={t('studentHub.profile.completeForAI')}
-        description={t('studentHub.profile.completeForAIDesc')}
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      {/* Only show alert if overall profile is not complete (100% completion) */}
+      {!isProfileComplete && (
+        <Alert
+          message={t('studentHub.profile.completeForAI')}
+          description={t('studentHub.profile.completeForAIDesc')}
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
+      )}
       
       <Form
         form={form}

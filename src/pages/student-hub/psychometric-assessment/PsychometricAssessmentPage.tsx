@@ -87,6 +87,12 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   }, [selectedAssessment, latestAssessment, recommendations, assessmentLoading, selectedAssessmentLoading, recommendationsLoading]);
 
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
+    // Prevent starting assessment in read-only mode
+    if (readOnly) {
+      message.warning('Assessment cannot be started in read-only mode');
+      return;
+    }
+    
     if (!studentProfile?.id) {
       message.error('Student profile not found');
       return;
@@ -238,6 +244,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             hasExistingAssessment={!!latestAssessment}
             onViewExisting={handleViewResults}
             isLoading={startingAssessment}
+            readOnly={readOnly}
           />
         )}
 

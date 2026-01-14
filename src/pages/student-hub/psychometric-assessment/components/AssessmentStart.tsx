@@ -15,6 +15,7 @@ interface AssessmentStartProps {
   hasExistingAssessment: boolean;
   onViewExisting: (assessmentId: string) => void;
   isLoading: boolean;
+  readOnly?: boolean;
 }
 
 export const AssessmentStart: React.FC<AssessmentStartProps> = ({
@@ -23,6 +24,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   hasExistingAssessment,
   onViewExisting,
   isLoading,
+  readOnly = false,
 }) => {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'uz' | 'ru'>(
@@ -199,10 +201,12 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               size="large"
               onClick={handleStart}
               loading={isLoading}
+              disabled={readOnly}
               className="start-button"
               icon={<FontAwesomeIcon icon="play-circle" />}
               block
               style={{ height: 56, fontSize: 16, fontWeight: 600 }}
+              title={readOnly ? 'Assessment cannot be started in read-only mode' : undefined}
             >
               Start Assessment
             </Button>
