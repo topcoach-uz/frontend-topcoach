@@ -50,6 +50,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const ChartLineIcon = () => <FontAwesomeIcon icon="chart-line" className="menu-icon" />;
   const MenuIcon = () => <FontAwesomeIcon icon="bars" className="menu-icon" />;
   const BookIcon = () => <FontAwesomeIcon icon="book" className="menu-icon" />;
+  const CrownIcon = () => <FontAwesomeIcon icon="crown" className="menu-icon" />;
 
   // Navigation items
   const menuItems = [
@@ -87,6 +88,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       key: '/student-hub/gpa-calculator',
       icon: <CalculatorIcon />,
       label: t('GPA Calculator'),
+    },
+    {
+      key: '/student-hub/admissions-program',
+      icon: <CrownIcon />,
+      label: 'Admissions Program',
     },
     // TODO: Implement notifications page later
     // {
