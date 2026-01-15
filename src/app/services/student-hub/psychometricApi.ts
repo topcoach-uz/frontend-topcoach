@@ -7,7 +7,7 @@ import { ApiResponse, PaginatedResponse } from './types';
 
 export interface AssessmentQuestion {
   id: string;
-  questionType: 'riasec' | 'big-five' | 'values' | 'aptitude' | 'work-style';
+  questionType: 'riasec' | 'big-five' | 'values' | 'aptitude' | 'work-style' | 'sjt';
   category: string;
   questionText: string;
   questionData: {
@@ -16,6 +16,13 @@ export interface AssessmentQuestion {
     scale?: { min: number; max: number; labels?: string[] };
     weight?: number;
     maxLength?: number; // for open-ended questions
+    /**
+     * V2: Forced-choice scoring metadata
+     * Each option maps to a dimension for proper scoring
+     */
+    forcedChoiceMeta?: {
+      optionDimensions: string[];
+    };
   };
   order: number;
   translations?: {
@@ -43,6 +50,15 @@ export interface SessionProgressResponse {
   answeredCount: number;
   totalCount: number;
   responses: Array<{ questionId: string; answer: any }>;
+}
+
+export interface ActiveSessionResponse {
+  hasActiveSession: boolean;
+  sessionId?: string;
+  answeredCount?: number;
+  totalCount?: number;
+  includeAptitude?: boolean;
+  lastUpdated?: string;
 }
 
 export interface SubmitAnswerRequest {
@@ -268,6 +284,15 @@ export const psychometricApi = RtkApi.injectEndpoints({
       }),
     }),
 
+    // Check for active session
+    checkActiveSession: builder.query<ActiveSessionResponse, string>({
+      query: (studentProfileId) => ({
+        url: `/psychometric-assessment/active-session/${studentProfileId}`,
+        method: 'GET',
+      }),
+      providesTags: ['PsychometricAssessment'],
+    }),
+
     // Cancel session
     cancelSession: builder.mutation<{ success: boolean }, { sessionId: string; studentProfileId: string }>({
       query: ({ sessionId, studentProfileId }) => ({
@@ -300,6 +325,7 @@ export const {
   useCalculateMajorFitScoresQuery,
   useGetRecommendationsQuery,
   useGetSessionProgressQuery,
+  useCheckActiveSessionQuery,
   useCancelSessionMutation,
   useDeleteAssessmentMutation,
 } = psychometricApi;

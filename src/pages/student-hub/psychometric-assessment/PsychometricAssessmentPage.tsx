@@ -10,6 +10,7 @@ import {
   useGetAssessmentByIdQuery,
   useGetRecommendationsQuery,
   useCancelSessionMutation,
+  useCheckActiveSessionQuery,
 } from '../../../app/services/student-hub/psychometricApi';
 import { AssessmentStart } from './components/AssessmentStart';
 import { AssessmentQuestions } from './components/AssessmentQuestions';
@@ -62,6 +63,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const { data: recommendations, isLoading: recommendationsLoading } = useGetRecommendationsQuery(
     studentProfile?.id || '',
     { skip: !studentProfile?.id || currentStep !== 'results' }
+  );
+  // Check for active (saved) session
+  const { data: activeSession, refetch: refetchActiveSession } = useCheckActiveSessionQuery(
+    studentProfile?.id || '',
+    { skip: !studentProfile?.id || currentStep !== 'start' }
   );
 
   // Check URL params for navigation
@@ -159,6 +165,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setSessionId(null);
     setQuestions([]);
     navigate('/student-hub/psychometric-assessment?step=start');
+    // Refetch active session so the Start/Resume button updates
+    setTimeout(() => refetchActiveSession(), 100);
   };
 
   // Abandon - permanently cancels the session
@@ -183,6 +191,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setSavedAnswers({});
     setIsResuming(false);
     navigate('/student-hub/psychometric-assessment?step=start');
+    // Refetch active session so the Start/Resume button updates
+    setTimeout(() => refetchActiveSession(), 100);
   };
 
   const handleViewResults = (assessmentId?: string) => {
@@ -245,6 +255,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             onViewExisting={handleViewResults}
             isLoading={startingAssessment}
             readOnly={readOnly}
+            activeSession={activeSession}
           />
         )}
 

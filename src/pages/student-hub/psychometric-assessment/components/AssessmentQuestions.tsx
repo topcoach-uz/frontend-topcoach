@@ -306,6 +306,12 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
         currentQuestionType={currentQuestion?.questionType || 'riasec'}
         includeAptitude={includeAptitude}
         language={language}
+        questions={questions} // Pass actual questions for dynamic progress calculation
+        onSave={async () => {
+          // Answers are auto-saved on each change, this just confirms to the user
+          // Optionally trigger a sync or verify with backend here
+          await new Promise(resolve => setTimeout(resolve, 300)); // Brief delay for UX
+        }}
         onSaveAndExit={onSaveAndExit}
         onAbandon={onAbandon}
       />

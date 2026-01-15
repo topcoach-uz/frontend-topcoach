@@ -9,6 +9,15 @@ const { Panel } = Collapse;
 
 const { Title, Paragraph, Text } = Typography;
 
+interface ActiveSessionInfo {
+  hasActiveSession: boolean;
+  sessionId?: string;
+  answeredCount?: number;
+  totalCount?: number;
+  includeAptitude?: boolean;
+  lastUpdated?: string;
+}
+
 interface AssessmentStartProps {
   studentProfile: StudentProfile;
   onStart: (language: 'en' | 'uz' | 'ru', includeAptitude: boolean) => void;
@@ -16,6 +25,7 @@ interface AssessmentStartProps {
   onViewExisting: (assessmentId: string) => void;
   isLoading: boolean;
   readOnly?: boolean;
+  activeSession?: ActiveSessionInfo;
 }
 
 export const AssessmentStart: React.FC<AssessmentStartProps> = ({
@@ -25,6 +35,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   onViewExisting,
   isLoading,
   readOnly = false,
+  activeSession,
 }) => {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'uz' | 'ru'>(
@@ -70,11 +81,11 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     setAssessmentToDelete(null);
   };
 
-  // Core: 74 (42 RIASEC + 12 Values + 20 Big Five)
-  // Open-ended: 2 (always included for AI analysis)
-  // Aptitude: 16 (optional)
-  const totalQuestions = 74 + 2 + (includeAptitude ? 16 : 0); // 76 without aptitude, 92 with aptitude
-  const estimatedTime = includeAptitude ? '20-25' : '15-20';
+  // V2 Question counts:
+  // Core: 48 (12 RIASEC + 20 Big Five + 10 Values + 4 SJT + 2 Open-ended)
+  // Aptitude: 12 (optional)
+  const totalQuestions = 48 + (includeAptitude ? 12 : 0); // 48 without aptitude, 60 with aptitude
+  const estimatedTime = includeAptitude ? '18-22' : '12-15';
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -203,39 +214,36 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               loading={isLoading}
               disabled={readOnly}
               className="start-button"
-              icon={<FontAwesomeIcon icon="play-circle" />}
+              icon={<FontAwesomeIcon icon={activeSession?.hasActiveSession ? "redo" : "play-circle"} />}
               block
               style={{ height: 56, fontSize: 16, fontWeight: 600 }}
               title={readOnly ? 'Assessment cannot be started in read-only mode' : undefined}
             >
-              Start Assessment
+              {activeSession?.hasActiveSession 
+                ? `Resume (${activeSession.answeredCount}/${activeSession.totalCount})`
+                : 'Start Assessment'}
             </Button>
+            {activeSession?.hasActiveSession && activeSession.lastUpdated && (
+              <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
+                Last saved: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
+                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                })}
+              </Text>
+            )}
           </Col>
         </Row>
       </Card>
 
-      {/* Assessment Components */}
+      {/* Assessment Components (V2) */}
       <Card className="assessment-components-card" title="Assessment Components" style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <div className="component-item">
-              <FontAwesomeIcon icon="user-circle" className="component-icon" />
+              <FontAwesomeIcon icon="compass" className="component-icon" />
               <div className="component-content">
                 <Text strong>Interest Inventory (RIASEC)</Text>
                 <Text type="secondary" className="component-description">
-                  42 questions to identify your career interests
-                </Text>
-              </div>
-              <Badge count={42} className="component-badge" />
-            </div>
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="star" className="component-icon" />
-              <div className="component-content">
-                <Text strong>Values Assessment</Text>
-                <Text type="secondary" className="component-description">
-                  12 questions about what matters most to you
+                  12 choice pairs to identify your career interests
                 </Text>
               </div>
               <Badge count={12} className="component-badge" />
@@ -251,6 +259,30 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                 </Text>
               </div>
               <Badge count={20} className="component-badge" />
+            </div>
+          </Col>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="star" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Values Assessment</Text>
+                <Text type="secondary" className="component-description">
+                  10 questions about what matters most to you
+                </Text>
+              </div>
+              <Badge count={10} className="component-badge" />
+            </div>
+          </Col>
+          <Col xs={24} md={12}>
+            <div className="component-item">
+              <FontAwesomeIcon icon="lightbulb" className="component-icon" />
+              <div className="component-content">
+                <Text strong>Real-Life Scenarios (SJT)</Text>
+                <Text type="secondary" className="component-description">
+                  4 situational judgment questions
+                </Text>
+              </div>
+              <Badge count={4} className="component-badge" />
             </div>
           </Col>
           <Col xs={24} md={12}>
@@ -272,10 +304,10 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                 <div className="component-content">
                   <Text strong>Aptitude Tests</Text>
                   <Text type="secondary" className="component-description">
-                    16 questions to assess cognitive abilities
+                    12 questions to assess cognitive abilities
                   </Text>
                 </div>
-                <Badge count={16} className="component-badge" />
+                <Badge count={12} className="component-badge" />
               </div>
             </Col>
           )}
@@ -308,7 +340,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             <div className="setting-group">
               <Text strong className="setting-label">Include Aptitude Tests</Text>
               <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
-                Get deeper insights with cognitive ability assessment (+16 questions)
+                Get deeper insights with cognitive ability assessment (+12 questions)
               </Paragraph>
               <Radio.Group
                 value={includeAptitude}

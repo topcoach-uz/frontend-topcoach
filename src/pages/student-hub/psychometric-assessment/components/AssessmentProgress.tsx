@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Progress, Typography, Card, Row, Col, Tag, Button, Modal, Space } from 'antd';
+import { Progress, Typography, Card, Row, Col, Tag, Button, Modal, Space, message } from 'antd';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 
 const { Text, Title } = Typography;
@@ -10,43 +10,45 @@ interface AssessmentProgressProps {
   currentQuestionType: string;
   includeAptitude: boolean;
   language?: 'en' | 'uz' | 'ru';
+  onSave?: () => Promise<void>; // New: just save without exiting
   onSaveAndExit?: () => void;
   onAbandon?: () => void;
+  questions?: Array<{ questionType: string }>; // Actual questions for dynamic calculation
 }
 
-// Module configuration
+// Module configuration V2 (updated question counts)
 const MODULES = {
   riasec: {
     name: 'Interests',
     shortName: 'RIASEC',
     icon: 'compass',
     color: '#8b0000',
-    questionCount: 42,
+    questionCount: 12, // V2: 12 forced-choice pairs
     description: 'Discover your career interests',
-  },
-  values: {
-    name: 'Values',
-    shortName: 'Values',
-    icon: 'star',
-    color: '#ec4899',
-    questionCount: 12,
-    description: 'What motivates you',
   },
   'big-five': {
     name: 'Personality',
     shortName: 'Big Five',
     icon: 'brain',
     color: '#6366f1',
-    questionCount: 20,
+    questionCount: 20, // V2: Behavioral + reverse scoring
     description: 'Your work style',
   },
-  aptitude: {
-    name: 'Aptitude',
-    shortName: 'Aptitude',
-    icon: 'calculator',
-    color: '#10b981',
-    questionCount: 16,
-    description: 'Skills assessment',
+  values: {
+    name: 'Values',
+    shortName: 'Values',
+    icon: 'star',
+    color: '#ec4899',
+    questionCount: 10, // V2: Reduced, more tradeoffs
+    description: 'What motivates you',
+  },
+  sjt: {
+    name: 'Scenarios',
+    shortName: 'SJT',
+    icon: 'lightbulb',
+    color: '#14b8a6',
+    questionCount: 4, // V2: New - Situational Judgment
+    description: 'Real-life situations',
   },
   'work-style': {
     name: 'Open Questions',
@@ -55,6 +57,14 @@ const MODULES = {
     color: '#f59e0b',
     questionCount: 2,
     description: 'Tell us about yourself',
+  },
+  aptitude: {
+    name: 'Aptitude',
+    shortName: 'Aptitude',
+    icon: 'calculator',
+    color: '#10b981',
+    questionCount: 12, // V2: Reduced from 16
+    description: 'Skills assessment',
   },
 };
 
@@ -66,23 +76,69 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
   currentQuestionType,
   includeAptitude,
   language = 'en',
+  onSave,
   onSaveAndExit,
   onAbandon,
+  questions = [],
 }) => {
   const [showExitModal, setShowExitModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Calculate module progress
+  // Handle save button click (saves progress without exiting)
+  const handleSaveClick = async () => {
+    if (!onSave) return;
+    setIsSaving(true);
+    try {
+      await onSave();
+      message.success('Progress saved successfully!');
+    } catch (error) {
+      message.error('Failed to save progress');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Calculate actual question counts from questions array (dynamic, not hardcoded)
+  const actualModuleCounts = useMemo(() => {
+    if (questions.length === 0) {
+      // Fallback to hardcoded counts if questions not provided
+      return null;
+    }
+    
+    const counts: Record<string, number> = {};
+    questions.forEach(q => {
+      const type = q.questionType;
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return counts;
+  }, [questions]);
+
+  // Calculate module progress (dynamically from actual questions)
   const moduleProgress = useMemo(() => {
-    const modules: ModuleKey[] = includeAptitude
-      ? ['riasec', 'values', 'big-five', 'aptitude', 'work-style']
-      : ['riasec', 'values', 'big-five', 'work-style'];
+    // Determine which modules exist based on actual questions or default order
+    const defaultModules: ModuleKey[] = includeAptitude
+      ? ['riasec', 'big-five', 'values', 'sjt', 'work-style', 'aptitude']
+      : ['riasec', 'big-five', 'values', 'sjt', 'work-style'];
+
+    // Filter to only modules that have questions (handles V1 vs V2)
+    const modules = actualModuleCounts
+      ? (defaultModules.filter(m => (actualModuleCounts[m] || 0) > 0) as ModuleKey[])
+      : defaultModules;
+
+    // Get question count for each module (from actual data or fallback to hardcoded)
+    const getModuleCount = (moduleKey: ModuleKey): number => {
+      if (actualModuleCounts && actualModuleCounts[moduleKey] !== undefined) {
+        return actualModuleCounts[moduleKey];
+      }
+      return MODULES[moduleKey].questionCount;
+    };
 
     let questionsSoFar = 0;
     let currentModuleIndex = 0;
 
     for (let i = 0; i < modules.length; i++) {
       const moduleKey = modules[i];
-      const moduleQuestionCount = MODULES[moduleKey].questionCount;
+      const moduleQuestionCount = getModuleCount(moduleKey);
       
       if (currentQuestionIndex < questionsSoFar + moduleQuestionCount) {
         currentModuleIndex = i;
@@ -96,7 +152,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
 
     const currentModule = modules[currentModuleIndex];
     const questionsInCurrentModule = currentQuestionIndex - questionsSoFar + 1;
-    const currentModuleTotal = MODULES[currentModule].questionCount;
+    const currentModuleTotal = getModuleCount(currentModule);
 
     return {
       modules,
@@ -104,8 +160,9 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
       currentModule,
       questionsInCurrentModule,
       currentModuleTotal,
+      getModuleCount,
     };
-  }, [currentQuestionIndex, includeAptitude]);
+  }, [currentQuestionIndex, includeAptitude, actualModuleCounts]);
 
   const overallProgress = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
   const moduleConfig = MODULES[moduleProgress.currentModule as ModuleKey];
@@ -126,9 +183,19 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
 
   return (
     <>
-      {/* Exit Button Outside Card */}
-      {(onSaveAndExit || onAbandon) && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+      {/* Save and Exit Buttons Outside Card */}
+      {(onSaveAndExit || onAbandon || onSave) && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
+          {onSave && (
+            <Button
+              type="text"
+              onClick={handleSaveClick}
+              loading={isSaving}
+              icon={<FontAwesomeIcon icon="save" />}
+            >
+              Save
+            </Button>
+          )}
           <Button
             type="text"
             onClick={handleExitClick}
@@ -188,6 +255,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
             <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
               {moduleProgress.modules.map((moduleKey, index) => {
                 const module = MODULES[moduleKey];
+                const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
                 const isActive = index === moduleProgress.currentModuleIndex;
                 const isCompleted = index < moduleProgress.currentModuleIndex;
                 
@@ -195,17 +263,17 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                   <div
                     key={moduleKey}
                     style={{
-                      flex: module.questionCount,
+                      flex: moduleCount, // Use dynamic count for proportional width
                       height: 6,
                       borderRadius: 3,
                       background: isCompleted
                         ? module.color
                         : isActive
-                        ? `linear-gradient(90deg, ${module.color} ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%, #e5e7eb ${(moduleProgress.questionsInCurrentModule / module.questionCount) * 100}%)`
+                        ? `linear-gradient(90deg, ${module.color} ${(moduleProgress.questionsInCurrentModule / moduleCount) * 100}%, #e5e7eb ${(moduleProgress.questionsInCurrentModule / moduleCount) * 100}%)`
                         : '#e5e7eb',
                       transition: 'all 0.3s ease',
                     }}
-                    title={`${module.name}: ${module.questionCount} questions`}
+                    title={`${module.name}: ${moduleCount} questions`}
                   />
                 );
               })}
@@ -215,6 +283,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
             <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
               {moduleProgress.modules.map((moduleKey, index) => {
                 const module = MODULES[moduleKey];
+                const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
                 const isActive = index === moduleProgress.currentModuleIndex;
                 const isCompleted = index < moduleProgress.currentModuleIndex;
                 
@@ -222,7 +291,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                   <div
                     key={moduleKey}
                     style={{
-                      flex: module.questionCount,
+                      flex: moduleCount, // Use dynamic count for proportional width
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
