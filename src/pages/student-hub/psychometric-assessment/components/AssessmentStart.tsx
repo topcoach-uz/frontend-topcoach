@@ -201,7 +201,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               <Col xs={12} sm={6}>
                 <div className="overview-item">
                   <Text type="secondary" style={{ fontSize: 12 }}>Components</Text>
-                  <Title level={4} style={{ margin: 0 }}>{includeAptitude ? 5 : 4} Sections</Title>
+                  <Title level={4} style={{ margin: 0 }}>{includeAptitude ? 6 : 5} Sections</Title>
                 </div>
               </Col>
             </Row>
