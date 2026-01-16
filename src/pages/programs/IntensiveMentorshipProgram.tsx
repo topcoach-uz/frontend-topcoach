@@ -116,7 +116,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
             type="primary" 
             size="large"
             className="hero__cta"
-            onClick={() => window.open('https://forms.gle/YOUR_GOOGLE_FORM_ID', '_blank')}
+            onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
           >
             Apply Now <ArrowRightOutlined />
           </Button>
@@ -170,7 +170,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
           <Button 
             type="primary" 
             size="large"
-            onClick={() => window.open('https://forms.gle/YOUR_GOOGLE_FORM_ID', '_blank')}
+            onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
           >
             Apply Now <ArrowRightOutlined />
           </Button>
