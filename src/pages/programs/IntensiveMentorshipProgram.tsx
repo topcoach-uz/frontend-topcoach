@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Typography, Collapse } from 'antd';
 import { 
   ArrowRightOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import './IntensiveMentorshipProgram.scss';
 
@@ -16,6 +17,62 @@ interface Phase {
 }
 
 const IntensiveMentorshipProgram: React.FC = () => {
+  const [completedPhases, setCompletedPhases] = useState<Set<number>>(new Set());
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const phaseRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return;
+
+      const timelineTop = timelineRef.current.offsetTop;
+      const timelineHeight = timelineRef.current.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+
+      // Calculate scroll progress through timeline (0 to 1)
+      const timelineStart = timelineTop - windowHeight * 0.5;
+      const timelineEnd = timelineTop + timelineHeight - windowHeight * 0.5;
+      const progress = Math.max(0, Math.min(1, (scrollY - timelineStart) / Math.max(1, timelineEnd - timelineStart)));
+      setScrollProgress(progress);
+
+      // Check which phases are visible/completed
+      const newCompleted = new Set<number>();
+      
+      phaseRefs.current.forEach((ref, index) => {
+        if (!ref) return;
+        
+        const rect = ref.getBoundingClientRect();
+        const viewportMiddle = windowHeight * 0.6; // Trigger slightly earlier for better UX
+        
+        // Phase is "completed" if it has passed 60% of viewport height
+        // Also mark as completed if it's fully visible
+        if (rect.top < viewportMiddle) {
+          newCompleted.add(index + 1);
+        }
+      });
+
+      setCompletedPhases(newCompleted);
+    };
+
+    // Use requestAnimationFrame for smoother performance
+    let ticking = false;
+    const optimizedScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', optimizedScroll, { passive: true });
+    handleScroll(); // Initial check
+
+    return () => window.removeEventListener('scroll', optimizedScroll);
+  }, []);
 
   const phases: Phase[] = [
     {
@@ -37,7 +94,8 @@ const IntensiveMentorshipProgram: React.FC = () => {
         'Choose specialized track',
         'Research paper mentorship',
         'Startup launch support',
-        'Build major expertise'
+        'Build your project under mentorship',
+        'Develop your academic major interest'
       ]
     },
     {
@@ -68,21 +126,16 @@ const IntensiveMentorshipProgram: React.FC = () => {
     {
       key: '1',
       label: 'Who is this program designed for?',
-      children: 'This program is designed for Grade 10 students who are serious about securing admission to top-tier universities and want to get ahead early.'
+      children: 'This program is designed for students applying for class of 2031 who are serious about securing admission to top-tier universities and want to get ahead early.'
     },
     {
       key: '2',
       label: 'What makes this program different?',
-      children: 'We start early (Grade 10), include guaranteed corporate internship, and focus on building a "spike" - deep expertise in one area rather than shallow participation.'
-    },
-    {
-      key: '3',
-      label: 'How much time is required?',
-      children: '8 hours of mentorship per month, plus independent work. Expect 10-15 hours per week for program activities.'
+      children: 'We start early, include corporate internship, and focus on building a "spike" - deep expertise in one area rather than shallow participation.'
     },
     {
       key: '4',
-      label: 'Are internships guaranteed?',
+      label: 'Are internships included?',
       children: 'Yes, we have secured contracts with partner organizations. All students will be placed in professional internships during Phase 3.'
     },
     {
@@ -108,7 +161,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
           </Title>
           
           <Paragraph className="hero__description">
-            A personalized strategic roadmap for Grade 10 students.<br />
+            A personalized strategic roadmap for students applying for class of 2031.<br />
             From SAT prep to application submission — we guide every step.
           </Paragraph>
 
@@ -124,39 +177,55 @@ const IntensiveMentorshipProgram: React.FC = () => {
       </section>
 
       {/* Timeline Section */}
-      <section className="timeline">
+      <section className="timeline" ref={timelineRef}>
         <div className="timeline__header">
           <Title level={2}>Program Phases</Title>
           <Paragraph>Your 12-month journey to top universities</Paragraph>
         </div>
 
         <div className="timeline__content">
-          <div className="timeline__line" />
+          <div 
+            className="timeline__line" 
+            style={{ 
+              background: `linear-gradient(180deg, var(--primary) 0%, var(--primary) ${scrollProgress * 100}%, #e0e0e0 ${scrollProgress * 100}%, #e0e0e0 100%)`
+            }}
+          />
+          <div className="timeline__line-mobile" 
+            style={{ 
+              background: `linear-gradient(180deg, var(--primary) 0%, var(--primary) ${scrollProgress * 100}%, #e0e0e0 ${scrollProgress * 100}%, #e0e0e0 100%)`
+            }}
+          />
           
-          {phases.map((phase, index) => (
-            <div 
-              key={phase.id} 
-              className={`timeline__item ${index % 2 === 0 ? 'timeline__item--left' : 'timeline__item--right'}`}
-            >
-              <div className="timeline__marker">
-                <span>{phase.id}</span>
-              </div>
-              
-              <div className="timeline__connector" />
-              
-              <div className="timeline__card">
-                <div className="timeline__card-header">
-                  <Text className="timeline__duration">{phase.duration}</Text>
-                  <Title level={4} className="timeline__card-title">{phase.title}</Title>
+          {phases.map((phase, index) => {
+            const isCompleted = completedPhases.has(phase.id);
+            return (
+              <div 
+                key={phase.id} 
+                ref={(el) => { phaseRefs.current[index] = el; }}
+                className={`timeline__item ${index % 2 === 0 ? 'timeline__item--left' : 'timeline__item--right'} ${isCompleted ? 'timeline__item--completed' : ''}`}
+              >
+                <div className={`timeline__marker ${isCompleted ? 'timeline__marker--completed' : ''}`}>
+                  {isCompleted ? (
+                    <CheckCircleOutlined />
+                  ) : (
+                    <span>{phase.id}</span>
+                  )}
                 </div>
-                <ul className="timeline__points">
-                  {phase.points.map((point, idx) => (
-                    <li key={idx}>{point}</li>
-                  ))}
-                </ul>
+              
+                <div className="timeline__card">
+                  <div className="timeline__card-header">
+                    <Text className="timeline__duration">{phase.duration}</Text>
+                    <Title level={4} className="timeline__card-title">{phase.title}</Title>
+                  </div>
+                  <ul className="timeline__points">
+                    {phase.points.map((point, idx) => (
+                      <li key={idx}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
