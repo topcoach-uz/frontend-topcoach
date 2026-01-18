@@ -1406,6 +1406,7 @@ export interface PaymentPlansSchema {
     junior?: number;
     senior?: number;
     expert?: number;
+    uzcombinator?: number;
   };
   aiSearchCount: number;
   currency: object;

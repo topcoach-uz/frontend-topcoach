@@ -87,7 +87,9 @@ export default function IndividualSessionsTab({
   const isValidMentorLevel =
     mentorLevel && mentorLevel !== MentorExperienceLevel.Probono;
 
-  const price = isValidMentorLevel ? selectedPlan?.prices[mentorLevel] : 'N/A';
+  const price = isValidMentorLevel && mentorLevel 
+    ? selectedPlan?.prices[mentorLevel as 'junior' | 'senior' | 'expert' | 'uzcombinator']
+    : 'N/A';
 
   const isProbono =
     lastMentorData?.mentorProfile?.level === MentorExperienceLevel.Probono;

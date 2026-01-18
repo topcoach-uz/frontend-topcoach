@@ -225,7 +225,7 @@ export default function useMentorSignup() {
               background: val.background?.trim(),
               mentorshipValue: val.mentorshipValue?.trim(),
               mentoringExperience: val.mentoringExperience?.trim(),
-              level: val.isUzCombinatorMentor ? 'uzcombinator' : undefined,
+              ...(val.isUzCombinatorMentor && { level: 'uzcombinator' }),
               ...university,
             },
             // Just giving the id itself
