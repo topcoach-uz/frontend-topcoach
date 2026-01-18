@@ -15,7 +15,7 @@ export default function AboutMeAndMotivation({
 }: MentorRegistrationFormProps) {
   const { t } = useTranslation();
   const { colors } = useTypedSelector((state) => state.layout);
-  const isUzCombinatorMentor = useWatch('isUzCombinatorMentor', form);
+  const isUzCombinatorMentor = useWatch('isUzCombinatorMentor', form) || form.getFieldValue('isUzCombinatorMentor') || false;
   
   return (
     <div>

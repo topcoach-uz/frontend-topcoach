@@ -1,6 +1,7 @@
 import { Checkbox, Flex, Form } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useEffect, useState } from 'react';
+import { useWatch } from 'antd/es/form/Form';
 import { api } from 'src/app/api';
 import CustomSelect from 'src/components/common/select';
 import {
@@ -24,6 +25,7 @@ export default function AcademicInfo({
     form.getFieldValue('customUniversity')
   );
   const { t } = useTranslation();
+  const isUzCombinatorMentor = useWatch('isUzCombinatorMentor', form) || form.getFieldValue('isUzCombinatorMentor') || false;
   const { response } = useApi(() => api.university.getUnivsList());
   const universityList = response?.data;
 
@@ -46,19 +48,34 @@ export default function AcademicInfo({
         description={t('signUp.academicBackgroundText')}
       />
       <Form layout="vertical" form={form}>
-        <Form.Item
-          label={t('signUp.language')}
-          name="languages"
-          rules={[{ required: true, message: t('signUp.languageError') }]}
-          required={true}
-        >
-          <CustomSelect
-            mode="multiple"
-            placeholder={t('signUp.languagePlaceholder')}
-            optionFilterProp="label"
-            options={languageSelectOptions}
+        {isUzCombinatorMentor ? (
+          <InputFormItem
+            col={24}
+            name="languages"
+            label="What languages can you coach in?"
+            placeholder="Example: English, Russian, Uzbek"
+            height={40}
+            textarea
+            row={4}
+            message="Please list the languages you can coach in"
+            inputType="textarea"
+            required
           />
-        </Form.Item>
+        ) : (
+          <Form.Item
+            label={t('signUp.language')}
+            name="languages"
+            rules={[{ required: true, message: t('signUp.languageError') }]}
+            required={true}
+          >
+            <CustomSelect
+              mode="multiple"
+              placeholder={t('signUp.languagePlaceholder')}
+              optionFilterProp="label"
+              options={languageSelectOptions}
+            />
+          </Form.Item>
+        )}
         <InputFormItem
           name="major"
           col={24}

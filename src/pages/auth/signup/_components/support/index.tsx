@@ -14,7 +14,7 @@ export default function Support({
   formButtonsProps,
 }: MentorRegistrationFormProps) {
   const { t } = useTranslation();
-  const isUzCombinatorMentor = useWatch('isUzCombinatorMentor', form);
+  const isUzCombinatorMentor = useWatch('isUzCombinatorMentor', form) || form.getFieldValue('isUzCombinatorMentor') || false;
   
   return (
     <div>
