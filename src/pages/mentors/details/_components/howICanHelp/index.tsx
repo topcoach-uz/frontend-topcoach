@@ -13,16 +13,22 @@ export default function MentorDetailsHowICanHelp() {
   const mentorshipValue = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.mentorProfile?.mentorshipValue
   );
+  const mentoringExperience = useTypedSelector(
+    (state) => state.mentor?.lastMentorData?.mentorProfile?.mentoringExperience
+  );
   const whyDoICoach = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.mentorProfile?.whyDoICoach
   );
+  const mentorLevel = useTypedSelector(
+    (state) => state.mentor?.lastMentorData?.mentorProfile?.level
+  );
   const { t } = useTranslation();
 
-  // Combine whyDoICoach and mentorshipValue
-  const combinedContent = [
-    whyDoICoach,
-    mentorshipValue
-  ].filter(Boolean).join('\n\n');
+  // For UzCombinator mentors: show mentoringExperience (background) and mentorshipValue (expectations) separately
+  // For regular mentors: combine whyDoICoach and mentorshipValue
+  const combinedContent = mentorLevel === 'uzcombinator'
+    ? [mentoringExperience, mentorshipValue].filter(Boolean).join('\n\n')
+    : [whyDoICoach, mentorshipValue].filter(Boolean).join('\n\n');
 
   if (!combinedContent) {
     return null;

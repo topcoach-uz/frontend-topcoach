@@ -40,6 +40,7 @@ export default function MentorsPage() {
     { label: 'Junior', value: MentorExperienceLevel.Junior },
     { label: 'Senior', value: MentorExperienceLevel.Senior },
     { label: 'Expert', value: MentorExperienceLevel.Expert },
+    { label: 'UzCombinator', value: MentorExperienceLevel.Uzcombinator },
   ];
 
   // Dynamic title and subtitle based on selected filter
@@ -57,6 +58,9 @@ export default function MentorsPage() {
   } else if (selectedLevel === MentorExperienceLevel.Expert) {
     title = 'Expert Mentors';
     subtitle = 'Connect with expert mentors who provide premium guidance for your university application journey.';
+  } else if (selectedLevel === MentorExperienceLevel.Uzcombinator) {
+    title = 'UzCombinator Mentors';
+    subtitle = 'Connect with startup mentors who provide guidance for building and scaling your startup.';
   }
 
   const filteredMentors = useMemo(() => {

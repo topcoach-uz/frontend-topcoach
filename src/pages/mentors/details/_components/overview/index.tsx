@@ -23,16 +23,19 @@ export default function MentorDetailsOverview({
   const mentoringExperience = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.mentorProfile?.mentoringExperience
   );
+  const mentorLevel = useTypedSelector(
+    (state) => state.mentor?.lastMentorData?.mentorProfile?.level
+  );
   const mentorName = useTypedSelector(
     (state) => state.mentor?.lastMentorData?.profile?.name
   );
   const { t } = useTranslation();
 
-  // Combine summary and mentoring experience
-  const combinedContent = [
-    summary,
-    mentoringExperience
-  ].filter(Boolean).join('\n\n');
+  // For UzCombinator mentors, show summary only (topics/skills they teach)
+  // For regular mentors, combine summary and mentoring experience
+  const combinedContent = mentorLevel === 'uzcombinator'
+    ? summary || ''
+    : [summary, mentoringExperience].filter(Boolean).join('\n\n');
 
   if (!combinedContent) return null;
 

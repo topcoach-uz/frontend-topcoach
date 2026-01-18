@@ -1,4 +1,4 @@
-import { Divider, Form } from 'antd';
+import { Checkbox, Divider, Form } from 'antd';
 import { FormInstance } from 'antd/lib';
 import { useNavigate } from 'react-router-dom';
 import { CustomButton, CustomText } from 'src/components/common';
@@ -40,6 +40,14 @@ export default function PersonalInfo({
 
       <Form form={form} layout="vertical" onFinish={formButtonsProps?.onNext}>
         <FormMaker formItems={formItems} formError={error} />
+
+        <Form.Item name="isUzCombinatorMentor" valuePropName="checked" style={{ marginTop: 16 }}>
+          <Checkbox>
+            <CustomText fontSize={14} fontWeight={400}>
+              Are you applying as a UzCombinator mentor?
+            </CustomText>
+          </Checkbox>
+        </Form.Item>
 
         <CustomButton
           type="primary"

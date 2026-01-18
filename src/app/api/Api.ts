@@ -142,6 +142,7 @@ export enum MentorExperienceLevel {
   Senior = "senior",
   Expert = "expert",
   Probono = "probono",
+  Uzcombinator = "uzcombinator",
 }
 
 export interface MentorEducationHistorySchema {

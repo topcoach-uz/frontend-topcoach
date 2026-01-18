@@ -86,7 +86,9 @@ export default function MentorCard({
                 ? '#4A90E2' // Professional blue for senior
                 : level === 'junior'
                   ? '#7ED321' // Fresh green for junior
-                  : '#F4D03F' // Yellowish for probono
+                  : level === 'uzcombinator'
+                    ? '#8B5CF6' // Purple for UzCombinator
+                    : '#F4D03F' // Yellowish for probono
           }
           className={styles.coach}
         >
@@ -98,7 +100,7 @@ export default function MentorCard({
               letterSpacing: '0.2px'
             }}
           >
-            {level} Coach
+            {level === 'uzcombinator' ? 'UzCombinator' : level} Coach
           </CustomText>
         </CustomCard>
 
@@ -188,6 +190,8 @@ export default function MentorCard({
                 ? '$25 – $50 / session' 
                 : level === 'junior'
                   ? '$12.50 – $25 / session'
+                  : level === 'uzcombinator'
+                    ? t('mentors.contactForPricing') || 'Contact for pricing'
                   : level === 'probono'
                     ? t('mentors.freeSession') || 'Free / Pro-bono'
                     : t('mentors.contactForPricing') || 'Contact for pricing'}
