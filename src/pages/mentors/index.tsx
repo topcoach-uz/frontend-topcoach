@@ -40,7 +40,7 @@ export default function MentorsPage() {
     { label: 'Junior', value: MentorExperienceLevel.Junior },
     { label: 'Senior', value: MentorExperienceLevel.Senior },
     { label: 'Expert', value: MentorExperienceLevel.Expert },
-    { label: 'UzCombinator', value: MentorExperienceLevel.Uzcombinator },
+    { label: 'UzC', value: MentorExperienceLevel.Uzcombinator },
   ];
 
   // Dynamic title and subtitle based on selected filter
