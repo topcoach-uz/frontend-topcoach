@@ -80,10 +80,10 @@ const IntensiveMentorshipProgram: React.FC = () => {
       title: 'The Foundation & SAT Spike',
       duration: 'Months 1-4',
       points: [
-        'Intensive SAT preparation',
-        'Finish testing early',
-        'Portfolio audit & launch',
-        'Summer program applications'
+        'Intensive SAT prep and early testing',
+        '16+ hours of extracurricular & profile building',
+        'Strategic summer program applications',
+        'Foundation for academic excellence'
       ]
     },
     {
@@ -91,11 +91,10 @@ const IntensiveMentorshipProgram: React.FC = () => {
       title: 'The Project',
       duration: 'Months 4-5',
       points: [
-        'Choose specialized track',
-        'Research paper mentorship',
-        'Startup launch support',
-        'Build your project under mentorship',
-        'Develop your academic major interest'
+        'Specialized track selection',
+        'Research paper or startup mentorship',
+        'Build your standout project',
+        'Develop deep academic interest'
       ]
     },
     {
@@ -103,10 +102,10 @@ const IntensiveMentorshipProgram: React.FC = () => {
       title: 'The Professional Summer',
       duration: 'Months 6-8',
       points: [
-        'Complete Personal Statement',
+        'Personal statement completion',
         'Multiple refinement rounds',
         'Corporate internship placement',
-        'Professional recommendation letter'
+        'Professional recommendation letters'
       ]
     },
     {
@@ -114,10 +113,10 @@ const IntensiveMentorshipProgram: React.FC = () => {
       title: 'Application Season',
       duration: 'Months 9-12',
       points: [
-        'Maintain high GPA',
-        'Finalize college list',
-        'Complete all essays',
-        'Final review & submission'
+        'Finalize strategic college list',
+        'Complete all application essays',
+        '24+ hours of personalized mentorship',
+        'Final review and submission'
       ]
     }
   ];
@@ -157,7 +156,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
           
           <Title level={1} className="hero__title">
             12-Month Intensive<br />
-            <span>Mentorship Program</span>
+            <span>Full Support Mentorship Program</span>
           </Title>
           
           <Paragraph className="hero__description">
