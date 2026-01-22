@@ -973,6 +973,7 @@ export interface EventsSchema {
   price: number;
   /** @format date-time */
   applicationStartDate: string;
+  visible: boolean;
   /** @example {"en":{"blocks":[{"type":"paragraph","data":{"text":"English content"}}]},"uz":{"blocks":[{"type":"paragraph","data":{"text":"Uzbek content"}}]},"ru":{"blocks":[{"type":"paragraph","data":{"text":"Russian content"}}]},"kk":{"blocks":[{"type":"paragraph","data":{"text":"Kazakh content"}}]}} */
   content:
     | {
