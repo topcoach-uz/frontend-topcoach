@@ -974,6 +974,10 @@ export interface EventsSchema {
   /** @format date-time */
   applicationStartDate: string;
   visible: boolean;
+  youtubeVideoType?: string | null;
+  youtubeVideoId?: string | null;
+  youtubePlaylistId?: string | null;
+  youtubePlaylistName?: string | null;
   /** @example {"en":{"blocks":[{"type":"paragraph","data":{"text":"English content"}}]},"uz":{"blocks":[{"type":"paragraph","data":{"text":"Uzbek content"}}]},"ru":{"blocks":[{"type":"paragraph","data":{"text":"Russian content"}}]},"kk":{"blocks":[{"type":"paragraph","data":{"text":"Kazakh content"}}]}} */
   content:
     | {

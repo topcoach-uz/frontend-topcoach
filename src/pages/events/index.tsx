@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
+import YouTubeSection from './_components/YouTubeSection';
 import CustomSelect from 'src/components/common/select';
 
 interface Event {
@@ -148,6 +149,9 @@ export default function EventsPage() {
               upcomingEvents={upcomingEvents}
               upcomingWorkshops={upcomingWorkshops}
             />
+            
+            {/* YouTube Videos & Playlists Section */}
+            <YouTubeSection events={[...allEventsData, ...allWorkshopsData]} />
             
             {/* Unified past events and workshops */}
             <div className={styles.cards_wrapper}>
