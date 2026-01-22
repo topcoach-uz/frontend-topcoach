@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Spin, Empty } from 'antd';
-import { api, EventsSchema } from 'src/app/api';
+import { api } from 'src/app/api';
+import { EventsSchema } from 'src/app/api/Api';
 import { useNavigate } from 'react-router-dom';
 import EventCard from '../card';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Spin } from 'antd';
 import { api } from 'src/app/api';
 import MainTitleDescription from 'src/components/mainTitleDesc';
@@ -46,16 +46,23 @@ export default function EventsPage() {
   const allWorkshopsData = workshopsData?.data || [];
 
   // Helper function to check if event is a workshop
-  const isWorkshop = (event: any) => {
+  const isWorkshop = useCallback((event: any) => {
     return event.type === 'workshop' || event.type === 'Workshop';
-  };
+  }, []);
+
+  // Helper function to check if event is in a playlist
+  const isInPlaylist = useCallback((event: any) => {
+    return event.youtubeVideoType && 
+           event.youtubeVideoType !== 'none' && 
+           (event.youtubePlaylistId || event.youtubePlaylistName);
+  }, []);
 
   // Separate events and workshops, excluding those in playlists
   const regularEvents = useMemo(() => {
     return allEventsData.filter((event: any) => 
       !isWorkshop(event) && !isInPlaylist(event)
     );
-  }, [allEventsData]);
+  }, [allEventsData, isWorkshop, isInPlaylist]);
 
   const workshops = useMemo(() => {
     // Filter workshops from both allEventsData and allWorkshopsData, excluding those in playlists
@@ -71,7 +78,7 @@ export default function EventsPage() {
       index === self.findIndex((w) => w.id === workshop.id)
     );
     return uniqueWorkshops;
-  }, [allEventsData, allWorkshopsData]);
+  }, [allEventsData, allWorkshopsData, isWorkshop, isInPlaylist]);
 
   // Helper function to check if event matches the selected filter
   const matchesFilter = useMemo(() => {

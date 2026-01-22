@@ -13,8 +13,6 @@ interface YouTubePlaylistCardProps {
 }
 
 const YouTubePlaylistCard: React.FC<YouTubePlaylistCardProps> = ({
-  type,
-  videoId,
   playlistId,
   playlistName,
   thumbnailUrl,
