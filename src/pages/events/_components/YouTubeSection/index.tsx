@@ -25,17 +25,17 @@ const YouTubeSection: React.FC<YouTubeSectionProps> = ({ events }) => {
     name: string;
   } | null>(null);
 
-  // Group events by playlist or show standalone videos
-  const { playlists, standaloneVideos } = useMemo(() => {
+  // Group events by playlist
+  const { playlists, regularEvents } = useMemo(() => {
     const playlistsMap = new Map<string, { name: string; events: Event[] }>();
-    const standalone: Event[] = [];
 
     events.forEach((event) => {
-      if (!event.youtubeVideoType || !event.youtubeVideoId) return;
+      // Skip events that are not in any playlist
+      if (!event.youtubeVideoType || event.youtubeVideoType === 'none') {
+        return;
+      }
 
-      if (event.youtubeVideoType === 'standalone') {
-        standalone.push(event);
-      } else if (
+      if (
         event.youtubeVideoType === 'existing_playlist' &&
         event.youtubePlaylistId
       ) {
@@ -64,12 +64,17 @@ const YouTubeSection: React.FC<YouTubeSectionProps> = ({ events }) => {
       }
     });
 
+    // Regular events are those not in any playlist
+    const regular = events.filter(
+      (event) => !event.youtubeVideoType || event.youtubeVideoType === 'none'
+    );
+
     return {
       playlists: Array.from(playlistsMap.entries()).map(([id, data]) => ({
         id,
         ...data,
       })),
-      standaloneVideos: standalone,
+      regularEvents: regular,
     };
   }, [events]);
 
@@ -77,46 +82,21 @@ const YouTubeSection: React.FC<YouTubeSectionProps> = ({ events }) => {
     setSelectedPlaylist({ id: playlistId, name: playlistName });
   };
 
-  const handleVideoClick = (videoId: string) => {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-  };
-
-  if (playlists.length === 0 && standaloneVideos.length === 0) {
+  if (playlists.length === 0) {
     return null;
   }
 
   return (
     <div className={styles.youtubeSection}>
       <Title level={2} className={styles.sectionTitle}>
-        Videos & Playlists
+        Event Playlists
       </Title>
-
-      {/* Standalone Videos */}
-      {standaloneVideos.length > 0 && (
-        <div className={styles.section}>
-          <Title level={4} className={styles.subtitle}>
-            Videos
-          </Title>
-          <div className={styles.grid}>
-            {standaloneVideos.map((event) => (
-              <YouTubePlaylistCard
-                key={event.id}
-                type="video"
-                videoId={event.youtubeVideoId || undefined}
-                onClick={() =>
-                  handleVideoClick(event.youtubeVideoId || '')
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Playlists */}
       {playlists.length > 0 && (
         <div className={styles.section}>
           <Title level={4} className={styles.subtitle}>
-            Playlists
+            Grouped Events
           </Title>
           <div className={styles.grid}>
             {playlists.map((playlist) => (

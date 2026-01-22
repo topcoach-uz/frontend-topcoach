@@ -4,8 +4,7 @@ import { PlayCircleOutlined } from '@ant-design/icons';
 import styles from './YouTubePlaylistCard.module.scss';
 
 interface YouTubePlaylistCardProps {
-  type: 'video' | 'playlist';
-  videoId?: string;
+  type: 'playlist';
   playlistId?: string;
   playlistName?: string;
   thumbnailUrl?: string;
@@ -25,11 +24,8 @@ const YouTubePlaylistCard: React.FC<YouTubePlaylistCardProps> = ({
   // Generate thumbnail URL if not provided
   const getThumbnailUrl = () => {
     if (thumbnailUrl) return thumbnailUrl;
-    if (type === 'video' && videoId) {
-      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    }
-    // Default placeholder
-    return 'https://via.placeholder.com/320x180?text=Video';
+    // Default placeholder for playlist
+    return 'https://via.placeholder.com/320x180?text=Playlist';
   };
 
   return (
@@ -40,22 +36,22 @@ const YouTubePlaylistCard: React.FC<YouTubePlaylistCardProps> = ({
         <div className={styles.thumbnailContainer}>
           <img
             src={getThumbnailUrl()}
-            alt={type === 'playlist' ? playlistName || 'Playlist' : 'Video'}
+            alt={playlistName || 'Playlist'}
             className={styles.thumbnail}
           />
           <div className={styles.overlay}>
             <PlayCircleOutlined className={styles.playIcon} />
           </div>
-          {type === 'playlist' && videoCount !== undefined && (
+          {videoCount !== undefined && (
             <div className={styles.videoCount}>
-              {videoCount} {videoCount === 1 ? 'video' : 'videos'}
+              {videoCount} {videoCount === 1 ? 'event' : 'events'}
             </div>
           )}
         </div>
       }
       onClick={onClick}
     >
-      {type === 'playlist' && playlistName && (
+      {playlistName && (
         <Card.Meta title={playlistName} />
       )}
     </Card>

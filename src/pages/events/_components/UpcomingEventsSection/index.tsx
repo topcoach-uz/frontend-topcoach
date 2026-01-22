@@ -24,6 +24,9 @@ interface Event {
   startDate: string;
   endDate: string;
   media: MediaSchema[];
+  youtubeVideoType?: string | null;
+  youtubePlaylistId?: string | null;
+  youtubePlaylistName?: string | null;
 }
 
 interface Workshop {

@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Spin, Empty } from 'antd';
-import { api } from 'src/app/api';
-import YouTubePlaylistCard from '../YouTubePlaylistCard';
-
-interface PlaylistVideo {
-  id: string;
-  title: string;
-  thumbnailUrl: string;
-  videoId: string;
-}
+import { api, EventsSchema } from 'src/app/api';
+import { useNavigate } from 'react-router-dom';
+import EventCard from '../card';
+import { formatDateRange, getLatestCreatedImg } from 'src/utils';
+import { MEDIA_TAGS } from 'src/app/api/Api';
 
 interface PlaylistModalProps {
   visible: boolean;
@@ -23,38 +19,39 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   playlistName,
   onClose,
 }) => {
-  const [videos, setVideos] = useState<PlaylistVideo[]>([]);
+  const navigate = useNavigate();
+  const [events, setEvents] = useState<EventsSchema[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible && playlistId) {
-      fetchPlaylistVideos();
+      fetchPlaylistEvents();
     }
   }, [visible, playlistId]);
 
-  const fetchPlaylistVideos = async () => {
+  const fetchPlaylistEvents = async () => {
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API endpoint when YouTube API is integrated
       const response = await api.request({
         path: `/camps/youtube/playlist/${playlistId}/videos`,
         method: 'GET',
       });
-      setVideos(response.data || []);
+      // The API returns events in the playlist
+      setEvents(Array.isArray(response.data) ? response.data : []);
     } catch (err: any) {
-      console.error('Error fetching playlist videos:', err);
-      setError(err.message || 'Failed to load playlist videos');
-      // For now, show empty state - will be populated when YouTube API is integrated
-      setVideos([]);
+      console.error('Error fetching playlist events:', err);
+      setError(err.message || 'Failed to load playlist events');
+      setEvents([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVideoClick = (videoId: string) => {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+  const handleEventClick = (eventId: string) => {
+    navigate(`/events/${eventId}`);
+    onClose();
   };
 
   return (
@@ -69,36 +66,44 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Spin size="large" />
-          <p style={{ marginTop: 16 }}>Loading playlist videos...</p>
+          <p style={{ marginTop: 16 }}>Loading playlist events...</p>
         </div>
       ) : error ? (
         <Empty
           description={error}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
-      ) : videos.length === 0 ? (
+      ) : events.length === 0 ? (
         <Empty
-          description="No videos in this playlist yet"
+          description="No events in this playlist yet"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '20px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '24px',
             padding: '20px 0',
           }}
         >
-          {videos.map((video) => (
-            <YouTubePlaylistCard
-              key={video.id}
-              type="video"
-              videoId={video.videoId}
-              thumbnailUrl={video.thumbnailUrl}
-              onClick={() => handleVideoClick(video.videoId)}
-            />
-          ))}
+          {events.map((event) => {
+            const eventTitle = typeof event.title === 'string' 
+              ? event.title 
+              : (event.title as any)?.en || 'Untitled';
+            const eventMedia = Array.isArray(event.media) ? event.media : [];
+            
+            return (
+              <EventCard
+                key={event.id}
+                id={event.id}
+                name={eventTitle}
+                img={getLatestCreatedImg(eventMedia, MEDIA_TAGS.General) || ''}
+                date={formatDateRange(event.startDate, event.endDate)}
+                isUpcoming={new Date(event.startDate) > new Date()}
+              />
+            );
+          })}
         </div>
       )}
     </Modal>

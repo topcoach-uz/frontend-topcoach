@@ -50,14 +50,28 @@ export default function EventsPage() {
     return event.type === 'workshop' || event.type === 'Workshop';
   };
 
-  // Separate events and workshops
+  // Separate events and workshops, excluding those in playlists
   const regularEvents = useMemo(() => {
-    return allEventsData.filter((event: any) => !isWorkshop(event));
+    return allEventsData.filter((event: any) => 
+      !isWorkshop(event) && !isInPlaylist(event)
+    );
   }, [allEventsData]);
 
   const workshops = useMemo(() => {
-    return allEventsData.filter((event: any) => isWorkshop(event));
-  }, [allEventsData]);
+    // Filter workshops from both allEventsData and allWorkshopsData, excluding those in playlists
+    const workshopsFromEvents = allEventsData.filter((event: any) => 
+      isWorkshop(event) && !isInPlaylist(event)
+    );
+    const workshopsFromData = (allWorkshopsData || []).filter((workshop: any) => 
+      !isInPlaylist(workshop)
+    );
+    // Combine and deduplicate by id
+    const allWorkshops = [...workshopsFromEvents, ...workshopsFromData];
+    const uniqueWorkshops = allWorkshops.filter((workshop, index, self) =>
+      index === self.findIndex((w) => w.id === workshop.id)
+    );
+    return uniqueWorkshops;
+  }, [allEventsData, allWorkshopsData]);
 
   // Helper function to check if event matches the selected filter
   const matchesFilter = useMemo(() => {
