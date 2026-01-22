@@ -92,23 +92,21 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
             const eventTitle = typeof event.title === 'string' 
               ? event.title 
               : (event.title as any)?.en || 'Untitled';
-            // Ensure media is properly typed as MediaSchema[]
-            const eventMedia: MediaSchema[] = Array.isArray(event.media) 
-              ? event.media.filter((m): m is MediaSchema => 
-                  typeof m === 'object' && m !== null && 'id' in m
-                )
-              : [];
+            
+            // Handle media - EventsSchema type says string[] but API actually returns MediaSchema[]
+            // Cast to MediaSchema[] to match what getLatestCreatedImg expects
+            const eventMedia = ((event as any).media || []) as MediaSchema[];
             
             return (
-              <EventCard
-                key={event.id}
-                id={event.id}
-                name={eventTitle}
-                img={getLatestCreatedImg(eventMedia, MEDIA_TAGS.General) || ''}
-                date={formatDateRange(event.startDate, event.endDate)}
-                isUpcoming={new Date(event.startDate) > new Date()}
-                onClick={() => handleEventClick(event.id)}
-              />
+              <div key={event.id} onClick={() => handleEventClick(event.id)} style={{ cursor: 'pointer' }}>
+                <EventCard
+                  id={event.id}
+                  name={eventTitle}
+                  img={getLatestCreatedImg(eventMedia, MEDIA_TAGS.General) || ''}
+                  date={formatDateRange(event.startDate, event.endDate)}
+                  isUpcoming={new Date(event.startDate) > new Date()}
+                />
+              </div>
             );
           })}
         </div>
