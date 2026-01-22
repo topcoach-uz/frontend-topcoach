@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Spin, Empty } from 'antd';
 import { api } from 'src/app/api';
-import { EventsSchema } from 'src/app/api/Api';
+import { EventsSchema, MediaSchema } from 'src/app/api/Api';
 import { useNavigate } from 'react-router-dom';
 import EventCard from '../card';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
@@ -92,7 +92,12 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
             const eventTitle = typeof event.title === 'string' 
               ? event.title 
               : (event.title as any)?.en || 'Untitled';
-            const eventMedia = Array.isArray(event.media) ? event.media : [];
+            // Ensure media is properly typed as MediaSchema[]
+            const eventMedia: MediaSchema[] = Array.isArray(event.media) 
+              ? event.media.filter((m): m is MediaSchema => 
+                  typeof m === 'object' && m !== null && 'id' in m
+                )
+              : [];
             
             return (
               <EventCard
@@ -102,6 +107,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
                 img={getLatestCreatedImg(eventMedia, MEDIA_TAGS.General) || ''}
                 date={formatDateRange(event.startDate, event.endDate)}
                 isUpcoming={new Date(event.startDate) > new Date()}
+                onClick={() => handleEventClick(event.id)}
               />
             );
           })}
