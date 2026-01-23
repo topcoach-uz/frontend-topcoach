@@ -1,4 +1,4 @@
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CustomButton, CustomText } from 'src/components/common';
@@ -7,29 +7,52 @@ import { IFormItemType } from 'src/components/form/type';
 import { Logo } from 'src/components/logos';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
+import { useSubmitFormMutation } from 'src/app/services/contactApi';
 
 export default function MailForm() {
   const colors = useColors();
   const { t } = useTranslation();
 
   const [form] = Form.useForm();
-  const [mailtoLink, setMailtoLink] = useState('');
+  const [submitForm, { isLoading }] = useSubmitFormMutation();
 
-  const handleSubmit = () => {
-    const formValues = form.getFieldsValue();
-    const { name, message } = formValues;
+  const handleSubmit = async () => {
+    try {
+      const formValues = form.getFieldsValue();
+      const { name, email, message: msg } = formValues;
 
-    const subject = 'Form Submission';
-    const body = `
-      Name: ${name}
-      Message: ${message}
-    `;
-    const newMailtoLink = `mailto:support@topcoach.uz?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setMailtoLink(newMailtoLink);
-    console.log('formValues', formValues);
+      // Validate required fields
+      if (!name || !name.trim()) {
+        message.error(t('contact.formValidationError') || 'Please enter your name');
+        return;
+      }
 
-    // clear the form fields
-    form.resetFields();
+      if (!email || !email.trim()) {
+        message.error(t('contact.formValidationError') || 'Please enter your email address');
+        return;
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        message.error(t('contact.formValidationError') || 'Please enter a valid email address');
+        return;
+      }
+
+      const submitData = {
+        fullName: name.trim(),
+        email: email.trim().toLowerCase(),
+        additionalMessage: msg?.trim() || '',
+      };
+
+      const result = await submitForm(submitData).unwrap();
+
+      message.success(result.message || t('contact.formSuccessMessage') || 'Message sent successfully!');
+      form.resetFields();
+    } catch (error: any) {
+      console.error('Contact form submission error:', error);
+      message.error(error?.data?.message || t('contact.formErrorMessage') || 'Failed to send message. Please try again.');
+    }
   };
 
   const formItems: IFormItemType[] = [
@@ -41,17 +64,19 @@ export default function MailForm() {
       placeholder: t('contact.contactUsNamePlaceholder'),
       message: 'Please, enter your name',
       col: 24,
+      required: true,
     },
-    // {
-    //   name: 'email',
-    //   label: 'Mail',
-    //   type: 'input',
-    //   inputType: 'text',
-    //   htmlType: 'email',
-    //   placeholder: 'example@gmail.com',
-    //   message: 'Please, enter your email',
-    //   col: 24,
-    // },
+    {
+      name: 'email',
+      label: t('contact.contactUsEmail') || 'Email',
+      type: 'input',
+      inputType: 'text',
+      htmlType: 'email',
+      placeholder: t('contact.contactUsEmailPlaceholder') || 'your.email@example.com',
+      message: 'Please, enter your email',
+      col: 24,
+      required: true,
+    },
     {
       name: 'message',
       label: t('contact.contactUsMessage'),
@@ -82,14 +107,12 @@ export default function MailForm() {
       >
         {t('contact.contactUsSubtitle')}
       </CustomText>
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <FormMaker formItems={formItems} />
         <Form.Item>
-          <a href={mailtoLink} onClick={handleSubmit}>
-            <CustomButton type="primary" width="100%">
-              {t('btn.send')}
-            </CustomButton>
-          </a>
+          <CustomButton type="primary" width="100%" htmlType="submit" loading={isLoading}>
+            {t('btn.send')}
+          </CustomButton>
         </Form.Item>
       </Form>
     </div>
