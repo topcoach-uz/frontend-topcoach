@@ -4,9 +4,9 @@ import { baseQuery } from './api';
 // Types
 export interface ContactFormRequest {
   fullName: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   email: string;
-  country: string;
+  country?: string;
   howDidYouHear?: string;
   currentEducationLevel?: string;
   additionalMessage?: string;

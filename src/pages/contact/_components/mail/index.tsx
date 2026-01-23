@@ -39,7 +39,13 @@ export default function MailForm() {
         return;
       }
 
-      const submitData = {
+      const submitData: {
+        fullName: string;
+        email: string;
+        additionalMessage?: string;
+        phoneNumber?: string;
+        country?: string;
+      } = {
         fullName: name.trim(),
         email: email.trim().toLowerCase(),
         additionalMessage: msg?.trim() || '',
@@ -64,7 +70,6 @@ export default function MailForm() {
       placeholder: t('contact.contactUsNamePlaceholder'),
       message: 'Please, enter your name',
       col: 24,
-      required: true,
     },
     {
       name: 'email',
@@ -75,7 +80,6 @@ export default function MailForm() {
       placeholder: t('contact.contactUsEmailPlaceholder') || 'your.email@example.com',
       message: 'Please, enter your email',
       col: 24,
-      required: true,
     },
     {
       name: 'message',
