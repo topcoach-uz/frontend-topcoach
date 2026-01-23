@@ -44,7 +44,7 @@
   "contact.contactUsName": "Name",
   "contact.contactUsNamePlaceholder": "Your name",
   "contact.contactUsEmail": "Email",
-  "contact.contactUsEmailPlaceholder": "your.email@example.com",
+  "contact.contactUsEmailPlaceholder": "email@example.com",
   "contact.formValidationError": "Please fill in all required fields",
   "contact.formSuccessMessage": "Message sent successfully!",
   "contact.formErrorMessage": "Failed to send message. Please try again.",

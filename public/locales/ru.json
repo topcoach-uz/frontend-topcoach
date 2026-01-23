@@ -44,7 +44,7 @@
   "contact.contactUsName": "Имя",
   "contact.contactUsNamePlaceholder": "Ваше имя",
   "contact.contactUsEmail": "Email",
-  "contact.contactUsEmailPlaceholder": "ваш.email@example.com",
+  "contact.contactUsEmailPlaceholder": "email@example.com",
   "contact.formValidationError": "Пожалуйста, заполните все обязательные поля",
   "contact.formSuccessMessage": "Сообщение успешно отправлено!",
   "contact.formErrorMessage": "Не удалось отправить сообщение. Пожалуйста, попробуйте снова.",

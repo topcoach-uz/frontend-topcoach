@@ -77,7 +77,7 @@ export default function MailForm() {
       type: 'input',
       inputType: 'text',
       htmlType: 'email',
-      placeholder: t('contact.contactUsEmailPlaceholder') || 'your.email@example.com',
+      placeholder: t('contact.contactUsEmailPlaceholder') || 'email@example.com',
       message: 'Please, enter your email',
       col: 24,
     },
