@@ -193,9 +193,22 @@ function RouterProvider() {
               />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route path="/contact-form" element={<ContactFormPageLazy />} />
-              <Route 
+              {/* Student Hub: mentees + CEO mentor (oumarovna@gmail.com) only; other mentors → / */}
+              <Route
                 path="/student-hub/*"
-                element={<StudentHubRoutesLazy />}
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : currentUser?.profile?.role === 'Mentor' && currentUser?.email !== 'oumarovna@gmail.com' ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <StudentHubRoutesLazy />
+                  )
+                }
               />
               <Route 
                 path="/school-counselor/*"

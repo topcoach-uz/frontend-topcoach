@@ -25,40 +25,24 @@ export default function MentorHome() {
   const currentUser = userData || user;
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
 
+  const sectionSpacing = 24;
+
   return (
     <main>
-      {/* SuperAdmin Quick Access Links - Show at top before Complete your profile section */}
+      {/* 1. Admin Dashboard – same card style as Sessions / Events, consistent spacing */}
       {isSuperAdmin && (
-        <div className="container" style={{ paddingTop: '24px', paddingBottom: '16px' }}>
+        <div className="container" style={{ paddingTop: 24, marginBottom: sectionSpacing }}>
           <CustomCard
             bgColor={colors.colorBgContainer}
-            mb={16}
             shadowed={false}
-            bordered={false}
             borderRadius={24}
             padding={24}
-            style={{ 
-              boxShadow: 'none',
-              width: '100%',
-              maxWidth: '100%',
-              border: 'none',
-              borderWidth: 0
-            }}
+            style={{ width: '100%', maxWidth: '100%', boxShadow: 'none', border: 'none', borderWidth: 0 }}
           >
-            <CustomText 
-              fontSize={20}
-              fontWeight={600}
-              mb={16}
-              color={colors.colorTextBase}
-            >
+            <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={4}>
               Admin Dashboard
             </CustomText>
-            <CustomText 
-              fontSize={14} 
-              fontWeight={500}
-              color={colors.colorTextSecondary}
-              style={{ marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}
-            >
+            <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
               Quick Access
             </CustomText>
             <Space size="small" wrap>
@@ -67,12 +51,12 @@ export default function MentorHome() {
                 height={40}
                 onClick={() => navigate('/school-counselor')}
                 icon={<DashboardOutlined />}
-                style={{ 
+                style={{
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
                   color: colors.colorPrimary,
                   height: '40px',
-                  minHeight: '40px'
+                  minHeight: '40px',
                 }}
               >
                 School Counselor Dashboard
@@ -82,12 +66,12 @@ export default function MentorHome() {
                 height={40}
                 onClick={() => navigate('/topcoach-management')}
                 icon={<SettingOutlined />}
-                style={{ 
+                style={{
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
                   color: colors.colorPrimary,
                   height: '40px',
-                  minHeight: '40px'
+                  minHeight: '40px',
                 }}
               >
                 TopCoach Management
@@ -97,12 +81,12 @@ export default function MentorHome() {
                 height={40}
                 onClick={() => navigate('/course-admin/courses/modules')}
                 icon={<BookOutlined />}
-                style={{ 
+                style={{
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
                   color: colors.colorPrimary,
                   height: '40px',
-                  minHeight: '40px'
+                  minHeight: '40px',
                 }}
               >
                 Course Content Management
@@ -111,12 +95,11 @@ export default function MentorHome() {
           </CustomCard>
         </div>
       )}
-      <ProfileStatusSection />
+      {/* 2. Sessions (Bookings) – above Events, same spacing */}
       <BookingsSection />
-      {/* <FavoriteUniversitiesSection /> */}
+      {/* 3. Events – same spacing */}
       <EventsSection />
-      {/* Temporarily hidden - rethinking subscription plans */}
-      {/* <SubscriptionPlans /> */}
+      <ProfileStatusSection />
     </main>
   );
 }

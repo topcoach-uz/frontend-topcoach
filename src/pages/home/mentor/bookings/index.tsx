@@ -147,30 +147,30 @@ export default function BookingsSection() {
 
   return (
     <div className={'container ' + styles.bookings}>
-      <CustomText
-        fontSize={32}
-        fontWeight={600}
-        color={colors.colorTextBase}
-        lineHeight="38px"
-        mb={4}
-      >
-        {t('homeMentor.upcomingBookings')}
-      </CustomText>
-      <CustomText
-        fontSize={16}
-        fontWeight={400}
-        mb={24}
-        lineHeight="22px"
-        color={colors.colorTextSecondary}
-      >
-        {t('homeMentor.upcomingBookingsDescription')}
-      </CustomText>
       <CustomCard
         className={styles.card_wrapper}
         padding={24}
         borderRadius={24}
         shadowed={false}
       >
+        <CustomText
+          fontSize={32}
+          fontWeight={600}
+          color={colors.colorTextBase}
+          lineHeight="38px"
+          mb={4}
+        >
+          {t('homeMentor.upcomingBookings')}
+        </CustomText>
+        <CustomText
+          fontSize={16}
+          fontWeight={400}
+          mb={24}
+          lineHeight="22px"
+          color={colors.colorTextSecondary}
+        >
+          {t('homeMentor.upcomingBookingsDescription')}
+        </CustomText>
         <div className={styles.main_tab_wrapper}>
           <Segmented
             value={mainTab}

@@ -21,7 +21,7 @@ const OpportunitiesPage: React.FC = () => {
         </span>
       ),
       children: (
-        <div className="opportunities-content">
+        <div className="opportunities-tab-content">
           <Empty
             description="No scholarships available at the moment"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -48,7 +48,7 @@ const OpportunitiesPage: React.FC = () => {
         </span>
       ),
       children: (
-        <div className="opportunities-content">
+        <div className="opportunities-tab-content">
           <Empty
             description="No events available at the moment"
             image={Empty.PRESENTED_IMAGE_SIMPLE}

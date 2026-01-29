@@ -15,22 +15,15 @@ export default function useNavigation() {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const userProfile = useTypedSelector((state) => state.auth.profile);
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
-  
-  // Exception: CEO email (oumarovna@gmail.com) should see "My Journey" even if they're a mentor
-  // const isCEO = userProfile?.email === 'sheraliozodov03@gmail.com';
   const isCEO = userProfile?.email === 'oumarovna@gmail.com';
+  // Mentees: My Journey only (no Home). Mentors: Home only. CEO (mentor): both Home + My Journey.
   const shouldShowMyJourney = !isMentor || isCEO;
 
   const navLinks: INavLink[] = [
-    // Hide "My Journey" for mentors - it's only for students
-    // Exception: CEO (oumarovna@gmail.com) can see it for pitching to schools
-    // "Home" removed - students are redirected to /student-hub, mentors see their home page
-    ...(shouldShowMyJourney ? [
-      {
-        path: '/student-hub',
-        text: t('header.studentHub', 'My Journey'),
-      },
-    ] : []),
+    ...(isMentor ? [{ path: '/', text: t('header.home', 'Home') }] : []),
+    ...(shouldShowMyJourney
+      ? [{ path: '/student-hub', text: t('header.studentHub', 'My Journey') }]
+      : []),
     {
       path: '/mentors',
       text: t('header.mentors'),

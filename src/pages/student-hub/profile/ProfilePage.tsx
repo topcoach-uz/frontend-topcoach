@@ -11,7 +11,7 @@ import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
 import GpaCalculatorPage from '../gpa-calculator/GpaCalculatorPage';
-import SettingsPage from '../settings/SettingsPage';
+// import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
 const { TabPane } = Tabs;
@@ -36,7 +36,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['personal', 'academic', 'activities', 'gpa-calculator', 'settings'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['personal', 'academic', 'activities', 'gpa-calculator' /* 'settings' */].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     } else {
       // Default to personal if no tab specified
@@ -170,16 +170,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       ),
       children: <GpaCalculatorPage />,
     },
-    {
-      key: 'settings',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="settings" size="sm" color="primary" />
-          <span>Settings</span>
-        </div>
-      ),
-      children: <SettingsPage />,
-    },
+    // Settings tab hidden for now
+    // {
+    //   key: 'settings',
+    //   label: (
+    //     <div className="tab-label">
+    //       <UnifiedIcon name="settings" size="sm" color="primary" />
+    //       <span>Settings</span>
+    //     </div>
+    //   ),
+    //   children: <SettingsPage />,
+    // },
   ];
 
   return (

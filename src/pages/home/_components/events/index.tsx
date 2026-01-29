@@ -249,7 +249,7 @@ export default function EventsSection() {
       <div className={'container ' + styles.events}>
         <CustomCard
           bgColor={colors.colorBgContainer}
-          mb={40}
+          mb={24}
           shadowed
           borderRadius={24}
           padding={24}
@@ -265,7 +265,7 @@ export default function EventsSection() {
             {t('home.eventSubtitle')}
           </CustomText>
           <CustomTabs
-            accessKey={activeTab}
+            activeKey={activeTab}
             items={tabItems}
             onChange={(key) => setActiveTab(key)}
           />
