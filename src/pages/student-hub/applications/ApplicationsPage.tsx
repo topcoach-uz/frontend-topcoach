@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Row, Col, Statistic, List, Badge, Space, Tag, message, Modal, Avatar, Spin, Select, Alert } from 'antd';
+import { Card, Button, Row, Col, Statistic, List, Badge, Space, Tag, message, Modal, Avatar, Spin, Select, Alert, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,7 +9,8 @@ import {
   useGetCollegeApplicationsQuery,
   useGetScholarshipApplicationsQuery,
   useDeleteCollegeApplicationMutation,
-  useDeleteScholarshipApplicationMutation
+  useDeleteScholarshipApplicationMutation,
+  useUpdateCollegeApplicationMutation,
 } from '../../../app/services/student-hub/applicationTrackingApi';
 import {
   useGetStudentJourneyCollegeApplicationsQuery,
@@ -24,6 +25,7 @@ import NewApplicationPage from './NewApplicationPage';
 import NewScholarshipPage from './NewScholarshipPage';
 import RequirementsChecklist from './components/RequirementsChecklist';
 import MentorAssignment from './components/MentorAssignment';
+import GlobalActivityTimeline from './components/GlobalActivityTimeline';
 import './ApplicationsPage.scss';
 
 // Props interface for ApplicationsPage - supports both normal and read-only mode
@@ -102,6 +104,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all'); // 'all', 'application', 'scholarship'
   const [sortBy, setSortBy] = useState<string>('deadline'); // 'deadline', 'priority', 'recent'
+  const [applicationsTab, setApplicationsTab] = useState<'applications' | 'timeline'>('applications');
   const { dashboard, isLoading, hasError } = useStudentHub();
   
   // Get psychometric data for match scores
@@ -143,6 +146,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   
   const [deleteCollegeApplication, { isLoading: deleteLoading }] = useDeleteCollegeApplicationMutation();
   const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
+  const [updateCollegeApplication] = useUpdateCollegeApplicationMutation();
 
   // Refetch data when returning from creation pages
   useEffect(() => {
@@ -398,12 +402,6 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
       factors += 1;
     }
 
-    // Notes factor (10 points) - having notes shows engagement
-    if (app.notes) {
-      score += 10;
-      factors += 1;
-    }
-
     return factors > 0 ? Math.round(score / factors) : 0;
   };
 
@@ -614,48 +612,51 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
       >
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={24} md={14} lg={15}>
-            <Space size="middle" wrap style={{ width: '100%' }}>
-              <Select 
-                value={typeFilter} 
-                onChange={setTypeFilter} 
-                style={{ minWidth: 130 }}
-                size="middle"
-                suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
-              >
-                <Select.Option value="all">All Applications</Select.Option>
-                <Select.Option value="application">Universities</Select.Option>
-                <Select.Option value="scholarship">Scholarships</Select.Option>
-              </Select>
-              <Select 
-                value={statusFilter} 
-                onChange={setStatusFilter} 
-                style={{ minWidth: 130 }}
-                size="middle"
-                suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
-              >
-                <Select.Option value="all">All Status</Select.Option>
-                <Select.Option value="in_progress">In Progress</Select.Option>
-                <Select.Option value="submitted">Submitted</Select.Option>
-                <Select.Option value="accepted">Accepted</Select.Option>
-                <Select.Option value="rejected">Rejected</Select.Option>
-              </Select>
-              <Select 
-                value={sortBy} 
-                onChange={setSortBy} 
-                style={{ minWidth: 160 }}
-                size="middle"
-                suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
-              >
-                <Select.Option value="deadline">Deadline (Soonest)</Select.Option>
-                <Select.Option value="priority">Priority (Highest)</Select.Option>
-                <Select.Option value="match">Match Score</Select.Option>
-                <Select.Option value="health">Health Score</Select.Option>
-                <Select.Option value="recent">Recently Updated</Select.Option>
-              </Select>
-            </Space>
+            {applicationsTab === 'applications' && (
+              <Space size="middle" wrap style={{ width: '100%' }}>
+                <Select 
+                  value={typeFilter} 
+                  onChange={setTypeFilter} 
+                  style={{ minWidth: 130 }}
+                  size="middle"
+                  suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
+                >
+                  <Select.Option value="all">All Applications</Select.Option>
+                  <Select.Option value="application">Universities</Select.Option>
+                  <Select.Option value="scholarship">Scholarships</Select.Option>
+                </Select>
+                <Select 
+                  value={statusFilter} 
+                  onChange={setStatusFilter} 
+                  style={{ minWidth: 130 }}
+                  size="middle"
+                  suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
+                >
+                  <Select.Option value="all">All Status</Select.Option>
+                  <Select.Option value="in_progress">In Progress</Select.Option>
+                  <Select.Option value="submitted">Submitted</Select.Option>
+                  <Select.Option value="accepted">Accepted</Select.Option>
+                  <Select.Option value="rejected">Rejected</Select.Option>
+                </Select>
+                <Select 
+                  value={sortBy} 
+                  onChange={setSortBy} 
+                  style={{ minWidth: 160 }}
+                  size="middle"
+                  suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
+                >
+                  <Select.Option value="deadline">Deadline (Soonest)</Select.Option>
+                  <Select.Option value="priority">Priority (Highest)</Select.Option>
+                  <Select.Option value="match">Match Score</Select.Option>
+                  <Select.Option value="health">Health Score</Select.Option>
+                  <Select.Option value="recent">Recently Updated</Select.Option>
+                </Select>
+              </Space>
+            )}
           </Col>
           <Col xs={24} sm={24} md={10} lg={9} className="applications-actions-col">
             <Space size="small" wrap className="applications-actions-btns">
+              {/* Add Scholarship – hidden for now
               <Button 
                 size="middle"
                 icon={<UnifiedIcon name="award" size="sm" color="primary" />} 
@@ -670,6 +671,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               >
                 Add Scholarship
               </Button>
+              */}
               <Button 
                 type="primary" 
                 size="middle"
@@ -689,8 +691,35 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
         </Row>
       </Card>
 
+      <Tabs
+        activeKey={applicationsTab}
+        onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
+        size="middle"
+        style={{ marginBottom: 16 }}
+        items={[
+          { key: 'applications', label: 'Your applications' },
+          { key: 'timeline', label: 'Timeline' },
+        ]}
+      />
+
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={16}>
+          {applicationsTab === 'timeline' ? (
+            <Card
+              id="applications-timeline"
+              title="Activity timeline"
+              className="applications-card applications-card--compact"
+              style={{ minHeight: 200 }}
+              styles={{ body: { padding: '16px 20px' } }}
+            >
+              <GlobalActivityTimeline
+                applications={applicationsData.applications || []}
+                scholarships={applicationsData.scholarships || []}
+                emptyMessage="No activity yet. Add applications and complete checklist items to see your timeline."
+                onApplicationClick={(id) => navigate(`/student-hub/applications/${id}/edit`)}
+              />
+            </Card>
+          ) : (
           <Card 
             id="applications-list" 
             title={typeFilter === 'all' ? 'Your applications' : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
@@ -790,50 +819,67 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                           </div>
                         </div>
 
-                        {/* Inline meta: deadline, type, priority – subtle colored icons */}
+                        {/* Inline meta: deadline, type, priority | Assign Mentor (right) */}
                         <div className="application-card-meta">
-                          <span className="application-meta-item application-meta-item--deadline">
-                            <UnifiedIcon name="calendar" size="sm" color="#0ea5e9" />
-                            {formatDate(item.deadline || item.applicationDeadline)}
-                          </span>
-                          {!isSch && item.applicationType && (
-                            <span className="application-meta-item application-meta-item--type">
-                              <UnifiedIcon name="file-text" size="sm" color="#6366f1" />
-                              {getApplicationTypeText(item.applicationType)}
+                          <div className="application-card-meta-left">
+                            <span className="application-meta-item application-meta-item--deadline">
+                              <UnifiedIcon name="calendar" size="sm" color="#0ea5e9" />
+                              {formatDate(item.deadline || item.applicationDeadline)}
                             </span>
-                          )}
-                          {!isSch && item.priority != null && (
-                            <span className="application-meta-item application-meta-item--priority">
-                              <UnifiedIcon name="star" size="sm" color="#f59e0b" />
-                              {getPriorityText(item.priority)}
-                            </span>
+                            {!isSch && item.applicationType && (
+                              <span className="application-meta-item application-meta-item--type">
+                                <UnifiedIcon name="file-text" size="sm" color="#6366f1" />
+                                {getApplicationTypeText(item.applicationType)}
+                              </span>
+                            )}
+                            {!isSch && item.priority != null && (
+                              <span className="application-meta-item application-meta-item--priority">
+                                <UnifiedIcon name="star" size="sm" color="#f59e0b" />
+                                {getPriorityText(item.priority)}
+                              </span>
+                            )}
+                          </div>
+                          {!isSch && item.id && (
+                            <div
+                              className="application-card-meta-mentor"
+                              onClick={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
+                              <MentorAssignment
+                                applicationId={item.id}
+                                mentorId={item.mentorId}
+                                onUpdate={() => refetchApplications()}
+                              />
+                            </div>
                           )}
                         </div>
 
-                        {/* Requirements + Mentor: compact row */}
+                        {/* Requirements only */}
                         {!isSch && item.id && (
-                          <div className="application-card-requirements-mentor">
+                          <div className="application-card-requirements">
                             <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                               <RequirementsChecklist
                                 applicationId={item.id}
                                 requirements={item.requirements}
-                                onUpdate={() => refetchApplications()}
+                                onUpdate={
+                                  !isReadOnly
+                                    ? (r, meta) =>
+                                        updateCollegeApplication({
+                                          id: item.id,
+                                          data: {
+                                            requirements: r,
+                                            ...(meta && {
+                                              activityEvent: {
+                                                type: 'checklist_item_completed',
+                                                payload: meta,
+                                              },
+                                            }),
+                                          },
+                                        })
+                                    : undefined
+                                }
                               />
                             </div>
-                            <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} className="application-mentor-cell">
-                              <MentorAssignment
-                                applicationId={item.id}
-                                mentorId={item.mentorId}
-                                onUpdate={(mentorId) => refetchApplications()}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {item.notes && (
-                          <div className="application-card-notes">
-                            <UnifiedIcon name="info" size="sm" color="#64748b" style={{ flexShrink: 0, marginTop: 2 }} />
-                            <span>{item.notes}</span>
                           </div>
                         )}
 
@@ -859,9 +905,9 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                           )}
                           <Button
                             size="small"
-                            danger
-                            style={{ height: 32, borderRadius: 8, fontWeight: 600, fontSize: 13 }}
+                            className="btn-delete-crimson"
                             icon={<UnifiedIcon name="trash-2" size="xs" color="white" />}
+                            style={{ height: 32, borderRadius: 8, fontWeight: 600, fontSize: 13 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
@@ -878,6 +924,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               }}
             />
           </Card>
+          )}
         </Col>
         <Col xs={24} lg={8}>
           <Card 

@@ -18,11 +18,12 @@ import {
 } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
 import type {
   PsychometricAssessment,
   RecommendationsResponse,
 } from '../../../../app/services/student-hub/psychometricApi';
-import { RiasecRadarChart } from './RiasecRadarChart';
+import { RiasecRadarChart, RIASEC_DESCRIPTIONS } from './RiasecRadarChart';
 import { ValuesChart } from './ValuesChart';
 import { BigFiveChart } from './BigFiveChart';
 import { ConfidenceIndicator } from './ConfidenceIndicator';
@@ -195,6 +196,37 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         </Row>
       </Card>
 
+      {/* RIASEC code explanation — simple, clear for high-school-age users */}
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 24 }}
+        message="What does my RIASEC code mean?"
+        description={
+          <div>
+            <Paragraph style={{ margin: '0 0 12px 0', fontSize: 14 }}>
+              Your code <strong>{assessment.riasecCode}</strong> shows your top three interest types. RIASEC helps you explore majors and careers that fit you — especially useful when you're deciding what to study (e.g. in high school or before university).
+            </Paragraph>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px' }}>
+              {(assessment.riasecCode || '')
+                .split(/[- ]/)
+                .map((letter) => letter.trim().toUpperCase())
+                .filter(Boolean)
+                .map((L) => {
+                  const info = RIASEC_DESCRIPTIONS[L];
+                  if (!info) return null;
+                  return (
+                    <div key={L} style={{ flex: '1 1 180px', maxWidth: 280 }}>
+                      <Text strong style={{ color: '#8b0000' }}>{info.full} ({L})</Text>
+                      <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>{info.description}</div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        }
+      />
+
       {/* Tabs for different views */}
       <Tabs
         activeKey={activeTab}
@@ -205,7 +237,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             key: 'overview',
             label: (
               <span>
-                <FontAwesomeIcon icon="chart-pie" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="bar-chart" size="sm" color="primary" style={{ marginRight: 8 }} />
                 Overview
               </span>
             ),
@@ -294,7 +326,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             key: 'majors',
             label: (
               <span>
-                <FontAwesomeIcon icon="graduation-cap" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="graduation-cap" size="sm" color="primary" style={{ marginRight: 8 }} />
                 Major Recommendations
               </span>
             ),
@@ -494,34 +526,10 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             ),
           },
           {
-            key: 'personality',
-            label: (
-              <span>
-                <FontAwesomeIcon icon="brain" style={{ marginRight: 8 }} />
-                Personality Deep Dive
-              </span>
-            ),
-            children: (
-              <Row gutter={[24, 24]}>
-                <Col xs={24}>
-                  <BigFiveChart
-                    scores={assessment.bigFiveScores}
-                    workStyleProfile={assessment.workStyleProfile}
-                    variant="detailed"
-                    height={350}
-                  />
-                </Col>
-                <Col xs={24}>
-                  <ValuesChart scores={assessment.valuesScores} variant="horizontal" height={350} />
-                </Col>
-              </Row>
-            ),
-          },
-          {
             key: 'universities',
             label: (
               <span>
-                <FontAwesomeIcon icon="university" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="university" size="sm" color="primary" style={{ marginRight: 8 }} />
                 University Matches
               </span>
             ),

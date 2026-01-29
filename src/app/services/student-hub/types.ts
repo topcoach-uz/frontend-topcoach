@@ -348,6 +348,12 @@ export interface UpdateStudentDocumentRequest extends Partial<CreateStudentDocum
 // 🎓 COLLEGE APPLICATIONS TYPES
 // ========================================
 
+export interface ApplicationActivityEvent {
+  type: string;
+  at: string;
+  payload?: Record<string, unknown>;
+}
+
 export interface CollegeApplication {
   id: string;
   studentProfileId: string;
@@ -363,6 +369,8 @@ export interface CollegeApplication {
   requirements?: Record<string, any>;
   mentorId?: string;
   notes?: string;
+  whyThisSchool?: string;
+  activity?: ApplicationActivityEvent[];
   createdAt: string;
   updatedAt: string;
 }
@@ -380,9 +388,12 @@ export interface CreateCollegeApplicationRequest {
   requirements?: Record<string, any>;
   mentorId?: string;
   notes?: string;
+  whyThisSchool?: string;
 }
 
-export interface UpdateCollegeApplicationRequest extends Partial<CreateCollegeApplicationRequest> {}
+export interface UpdateCollegeApplicationRequest extends Partial<CreateCollegeApplicationRequest> {
+  activityEvent?: { type: string; payload?: Record<string, unknown> };
+}
 
 // ========================================
 // ✅ APPLICATION TASKS TYPES

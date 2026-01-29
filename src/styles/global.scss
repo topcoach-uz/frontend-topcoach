@@ -116,3 +116,28 @@ body {
 main {
   min-height: calc(100vh - 393px);
 }
+
+/* TopCoach delete buttons – consistent crimson (#8b0000) */
+.ant-btn.btn-delete-crimson {
+  background-color: #8b0000 !important;
+  border-color: #8b0000 !important;
+  color: #fff !important;
+  &:hover,
+  &:focus {
+    background-color: #a00000 !important;
+    border-color: #a00000 !important;
+    color: #fff !important;
+  }
+}
+
+.ant-btn.btn-delete-crimson-link {
+  color: #8b0000 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  &:hover,
+  &:focus {
+    color: #a00000 !important;
+    background: #fff1f0 !important;
+    border-color: transparent !important;
+  }
+}

@@ -1,10 +1,6 @@
 .opportunities-page {
-  // Match Programs tab main area: min-height + vertical center for empty states
+  // Compact empty states (match "No programs enrolled" height)
   .opportunities-tab-content {
-    min-height: 360px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    padding: 24px 24px 32px;
   }
 }

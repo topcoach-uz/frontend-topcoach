@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Progress, Typography, Card, Row, Col, Tag, Button, Modal, Space, message } from 'antd';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
 
 const { Text, Title } = Typography;
 
@@ -354,11 +355,11 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
             
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
               <Button
-                danger
+                className="btn-delete-crimson"
                 size="large"
                 block
                 onClick={handleAbandon}
-                icon={<FontAwesomeIcon icon="trash-alt" style={{ marginRight: 8 }} />}
+                icon={<UnifiedIcon name="trash-2" size="sm" color="white" />}
               >
                 Abandon Assessment
               </Button>

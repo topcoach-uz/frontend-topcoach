@@ -47,7 +47,6 @@ const BookingsCard: React.FC<BookingsCardProps> = ({ compact = true, maxItems = 
       key: '1',
       label: (
         <span>
-          <UnifiedIcon name={BOOKING_ICONS.BOOKING} size="sm" color="primary" style={{ marginRight: 4 }} />
           {t('home.upcoming')}
           {upcomingSessions && upcomingSessions.length > 0 && (
             <span style={{ marginLeft: 8, fontSize: 12, color: '#8b0000' }}>

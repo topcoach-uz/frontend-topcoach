@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { useGetCollegeApplicationQuery } from '../../../app/services/student-hub/applicationTrackingApi';
+import ApplicationTimeline from './components/ApplicationTimeline';
 import './ViewApplicationPage.scss';
 
 const ViewApplicationPage: React.FC = () => {
@@ -154,11 +155,11 @@ const ViewApplicationPage: React.FC = () => {
               {/* Submitted and decision dates not available in current schema */}
             </Descriptions>
 
-            {application.notes && (
-              <div className="notes-section">
-                <Divider orientation="left">Notes</Divider>
-                <div className="notes-content">
-                  {application.notes}
+            {application.whyThisSchool && (
+              <div className="why-this-school-section" style={{ marginTop: 16 }}>
+                <Divider orientation="left">Why this school</Divider>
+                <div className="why-this-school-content" style={{ color: '#333', whiteSpace: 'pre-wrap' }}>
+                  {application.whyThisSchool}
                 </div>
               </div>
             )}
@@ -256,8 +257,6 @@ const ViewApplicationPage: React.FC = () => {
                   text={application.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
                 />
               </div>
-              
-              {/* Submitted and decision info not available in current schema */}
 
               <div className="progress-info">
                 <h4>Application Progress</h4>
@@ -265,9 +264,16 @@ const ViewApplicationPage: React.FC = () => {
                   <span>Application Started</span>
                   <FontAwesomeIcon icon="check-circle" style={{ color: 'green' }} />
                 </div>
-                {/* Application submitted and decision progress not available in current schema */}
               </div>
             </div>
+          </Card>
+
+          <Card title="Activity" className="activity-card" style={{ marginTop: 24 }}>
+            <ApplicationTimeline
+              createdAt={application.createdAt}
+              activity={application.activity}
+              emptyMessage="Complete checklist items or update status to see activity here."
+            />
           </Card>
         </Col>
       </Row>

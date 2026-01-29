@@ -1,0 +1,21 @@
+.ai-suggestions-card {
+  .ant-card-head {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .ai-suggestion-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  .ai-suggestion-priority--high {
+    background: #fff1f0 !important;
+  }
+  .ai-suggestion-priority--medium {
+    background: #fff7e6 !important;
+  }
+  .ai-suggestion-priority--low {
+    background: #f6ffed !important;
+  }
+}

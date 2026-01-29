@@ -17,6 +17,7 @@ import BookingsCard from './components/BookingsCard';
 import EventsCard from './components/EventsCard';
 import JourneyStatusHeader from './components/JourneyStatusHeader';
 import NextBestActionCard from './components/NextBestActionCard';
+import AISuggestionsCard, { type SuggestionItem } from './components/AISuggestionsCard';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
@@ -512,6 +513,160 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
 
   const nextBestAction = calculateNextBestAction();
 
+  // AI-powered suggestions: multiple contextual next actions
+  const calculateAISuggestions = (): SuggestionItem[] => {
+    const out: SuggestionItem[] = [];
+    const apps = finalApplicationsData || [];
+    const now = new Date();
+
+    const reqCompletion = (r: any): number => {
+      if (!r || typeof r !== 'object') return 100;
+      if (r.essays) {
+        const e = r.essays;
+        const req = e.required || 0;
+        const done = e.completed || 0;
+        if (req === 0) return 100;
+        return Math.round((done / req) * 100);
+      }
+      if (r.recommendations) {
+        const e = r.recommendations;
+        const req = e.required || 0;
+        const done = e.submitted || 0;
+        if (req === 0) return 100;
+        return Math.round((done / req) * 100);
+      }
+      return 50;
+    };
+
+    apps.forEach((app: any) => {
+      const appId = app?.id || app?._id;
+      const deadline = app?.deadline;
+      const uniId = app?.universityId;
+      const uniName = app?.universityName || app?.name;
+      const completion = reqCompletion(app?.requirements);
+      const hasMentor = !!app?.mentorId;
+      const hasWhy = !!(app?.whyThisSchool || '').trim();
+
+      if (deadline) {
+        const d = new Date(deadline);
+        const days = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        if (days < 0) {
+          out.push({
+            id: `overdue-${appId}`,
+            type: 'overdue',
+            title: 'Application overdue',
+            description: `Submit or update your application — deadline passed.`,
+            priority: 'high',
+            actionLabel: 'Open application',
+            actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
+            applicationId: appId,
+            universityId: uniId,
+            universityName: uniName,
+          });
+          return;
+        }
+        if (days <= 7 && completion < 100) {
+          out.push({
+            id: `prioritize-${appId}`,
+            type: 'application',
+            title: 'Prioritize application',
+            description: `${days} days left — complete checklist to stay on track.`,
+            priority: 'high',
+            actionLabel: 'Complete now',
+            actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
+            applicationId: appId,
+            universityId: uniId,
+            universityName: uniName,
+          });
+        }
+      }
+
+      const req = app?.requirements;
+      const essays = req?.essays;
+      const recs = req?.recommendations;
+      if (essays && (essays.required || 0) > (essays.completed || 0)) {
+        out.push({
+          id: `essay-${appId}`,
+          type: 'essay',
+          title: 'Work on essays',
+          description: hasWhy ? 'You listed goals for this school — make progress on essays.' : 'Complete required essays for this application.',
+          priority: 'medium',
+          actionLabel: 'Open Essays Hub',
+          actionPath: '/student-hub/essays',
+          applicationId: appId,
+          universityId: uniId,
+          universityName: uniName,
+        });
+      }
+      if (recs && (recs.required || 0) > (recs.submitted || 0)) {
+        out.push({
+          id: `rec-${appId}`,
+          type: 'recommendation',
+          title: 'Request recommendation',
+          description: `Get recommendation letters — ${recs.submitted || 0} of ${recs.required} submitted.`,
+          priority: 'medium',
+          actionLabel: 'Open Documents',
+          actionPath: '/student-hub/documents',
+          applicationId: appId,
+          universityId: uniId,
+          universityName: uniName,
+        });
+      }
+      if (!hasMentor) {
+        out.push({
+          id: `mentor-${appId}`,
+          type: 'mentor',
+          title: 'Assign mentor',
+          description: 'Link a mentor to this application for guidance.',
+          priority: 'low',
+          actionLabel: 'Assign mentor',
+          actionPath: '/student-hub/applications',
+          applicationId: appId,
+          universityId: uniId,
+          universityName: uniName,
+        });
+      }
+    });
+
+    if ((psychometricAssessments?.length || 0) === 0) {
+      out.push({
+        id: 'psychometric',
+        type: 'psychometric',
+        title: 'Complete psychometric assessment',
+        description: 'Unlock match scores and university fit insights.',
+        priority: 'high',
+        actionLabel: 'Start assessment',
+        actionPath: '/student-hub/psychometric-assessment',
+      });
+    }
+    if (journeyProgress < 80) {
+      out.push({
+        id: 'profile',
+        type: 'profile',
+        title: 'Complete your profile',
+        description: 'Unlock personalized recommendations and journey insights.',
+        priority: 'medium',
+        actionLabel: 'Complete profile',
+        actionPath: '/student-hub/profile',
+      });
+    }
+    if (apps.length === 0 && (finalScholarshipsData || []).length === 0) {
+      out.push({
+        id: 'first-app',
+        type: 'application',
+        title: 'Add your first application',
+        description: 'Start tracking universities and deadlines.',
+        priority: 'high',
+        actionLabel: 'Add application',
+        actionPath: '/student-hub/applications/new',
+      });
+    }
+
+    return out.slice(0, 6);
+  };
+
+  const aiSuggestions = calculateAISuggestions();
+
   return (
     <div className="student-hub-dashboard">
       {/* Welcome Brief - Clean, Minimal */}
@@ -603,10 +758,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       {nextBestAction && (
         <div style={{ marginBottom: 32 }}>
           <NextBestActionCard action={nextBestAction} />
-      </div>
+        </div>
       )}
-
-      {/* Profile Completion Card removed - NextBestActionCard handles this */}
 
       {/* PRIORITY 1: Bookings (Left) + Events (Right) - Side by Side - Equal Height */}
       <Row gutter={[24, 24]} className="priority-1-row equal-height-cards" style={{ marginBottom: 24 }}>
@@ -777,65 +930,61 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
               const documentsData = finalDocumentsData || [];
               const assessmentsData = psychometricAssessments || [];
               
-              // Combine all recent activities including psychometric assessments
+              // High-level activity labels: "Application added", "Essay uploaded", etc.
               const recentActivities = [
-                // College Applications
-                ...applicationsData.map((app: any) => ({ 
-                  ...app, 
+                ...applicationsData.map((app: any) => ({
+                  ...app,
                   type: 'application',
-                  activityType: t('studentHub.dashboard.collegeApplication'),
-                  title: null, // Will be rendered with UniversityNameDisplay component
-                  subtitle: `${t('studentHub.dashboard.major')}: ${app?.major || t('studentHub.applications.notSpecified')}`,
+                  activityType: 'Application added',
+                  title: null,
+                  subtitle: `${app?.major || t('studentHub.applications.notSpecified')} • ${app?.applicationType || 'application'}`,
                   timestamp: app?.createdAt || app?.updatedAt,
-                  status: app?.status || 'unknown'
+                  status: app?.status || 'unknown',
                 })),
-                        // Scholarships - only show priority if status is 'applying' or 'submitted'
-                ...scholarshipsData.map((scholarship: any) => ({ 
-                  ...scholarship, 
+                ...scholarshipsData.map((scholarship: any) => ({
+                  ...scholarship,
                   type: 'scholarship',
-                  activityType: t('studentHub.dashboard.scholarship'),
+                  activityType: 'Scholarship added',
                   title: scholarship?.scholarshipName || t('studentHub.dashboard.unknownScholarship'),
-                  subtitle: `${t('studentHub.dashboard.organization')}: ${scholarship?.organization || t('studentHub.applications.unknownOrganization')}`,
+                  subtitle: `${scholarship?.organization || t('studentHub.applications.unknownOrganization')}`,
                   timestamp: scholarship?.createdAt || scholarship?.updatedAt,
-                          status: scholarship?.status || 'unknown',
-                          showPriority: scholarship?.status === 'applying' || scholarship?.status === 'submitted' || scholarship?.status === 'under_review'
+                  status: scholarship?.status || 'unknown',
+                  showPriority: scholarship?.status === 'applying' || scholarship?.status === 'submitted' || scholarship?.status === 'under_review',
                 })),
-                // Essays
-                ...essaysData.map((essay: any) => ({ 
-                  ...essay, 
+                ...essaysData.map((essay: any) => ({
+                  ...essay,
                   type: 'essay',
-                  activityType: t('studentHub.dashboard.essay'),
+                  activityType: 'Essay uploaded',
                   title: essay?.title || t('studentHub.dashboard.untitledEssay'),
-                  subtitle: `${t('studentHub.dashboard.type')}: ${essay?.essayType || t('studentHub.profile.status.unknown')}`,
+                  subtitle: essay?.essayType || t('studentHub.profile.status.unknown'),
                   timestamp: essay?.createdAt || essay?.updatedAt,
-                  status: essay?.status || 'unknown'
+                  status: essay?.status || 'unknown',
                 })),
-                // Documents
-                ...documentsData.map((document: any) => ({ 
-                  ...document, 
+                ...documentsData.map((document: any) => ({
+                  ...document,
                   type: 'document',
-                  activityType: t('studentHub.dashboard.document'),
+                  activityType: 'Document uploaded',
                   title: document?.fileName || t('studentHub.dashboard.untitledDocument'),
-                  subtitle: `${t('studentHub.dashboard.type')}: ${document?.documentType || t('studentHub.profile.status.unknown')}`,
+                  subtitle: document?.documentType || t('studentHub.profile.status.unknown'),
                   timestamp: document?.createdAt || document?.updatedAt,
-                  status: document?.isVerified ? 'verified' : 'pending'
-                        })),
-                        // Psychometric Assessments
-                        ...assessmentsData.map((assessment: any) => {
-                          const isCompleted = !!assessment?.completedAt;
-                          return {
-                            ...assessment, 
-                            type: 'psychometric',
-                            activityType: t('studentHub.dashboard.psychometricAssessment') || 'Psychometric Assessment',
-                            title: t('studentHub.dashboard.psychometricAssessment') || 'Psychometric Assessment',
-                            subtitle: isCompleted 
-                              ? `${t('studentHub.dashboard.completed') || 'Completed'}: ${formatDate(assessment.completedAt)}`
-                              : (t('studentHub.dashboard.inProgress') || 'In Progress'),
-                            timestamp: assessment?.completedAt || assessment?.createdAt || assessment?.updatedAt,
-                            status: isCompleted ? 'completed' : 'in_progress'
-                          };
-                        })
-              ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+                  status: document?.isVerified ? 'verified' : 'pending',
+                })),
+                ...assessmentsData.map((assessment: any) => {
+                  const completedAt = assessment?.assessmentMetadata?.completedAt ?? assessment?.completedAt;
+                  const isCompleted = !!completedAt;
+                  return {
+                    ...assessment,
+                    type: 'psychometric',
+                    activityType: isCompleted ? 'Psychometric test completed' : 'Psychometric test started',
+                    title: null,
+                    subtitle: isCompleted ? formatDate(completedAt) : (t('studentHub.dashboard.inProgress') || 'In progress'),
+                    timestamp: completedAt || assessment?.createdAt || assessment?.updatedAt,
+                    status: isCompleted ? 'completed' : 'in_progress',
+                  };
+                }),
+              ]
+                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                .slice(0, 8);
 
               return recentActivities.length > 0 ? (
                 <List
@@ -866,13 +1015,16 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                               />
                             </div>
                             <div className="activity-info">
-                              <div className="activity-title">
-                                {item.type === 'application' 
-                                  ? <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
-                                  : item.title
-                                }
+                              <div className="activity-title">{item.activityType}</div>
+                              <div className="activity-subtitle">
+                                {item.type === 'application' ? (
+                                  <><UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />{item.subtitle ? ` • ${item.subtitle}` : ''}</>
+                                ) : item.title ? (
+                                  <>{item.title}{item.subtitle ? ` • ${item.subtitle}` : ''}</>
+                                ) : (
+                                  item.subtitle
+                                )}
                               </div>
-                              <div className="activity-subtitle">{item.subtitle}</div>
                                       {/* Only show priority for scholarships that were applied to */}
                                       {item.type === 'scholarship' && item.showPriority && item.priorityLevel && (
                                         <div className="activity-priority" style={{ marginTop: 4, fontSize: 12, color: '#666' }}>
@@ -939,6 +1091,13 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Card>
         </Col>
       </Row>
+
+      {/* AI-powered suggestions — below Upcoming Deadlines */}
+      {aiSuggestions.length > 0 && (
+        <div style={{ marginTop: 24, marginBottom: 24 }}>
+          <AISuggestionsCard suggestions={aiSuggestions} />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Collapse, Checkbox, Progress, Space, Tag, Button, Typography, Tooltip } from 'antd';
+import { Link } from 'react-router-dom';
 import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-const { Panel } = Collapse;
 const { Text } = Typography;
 
 interface RequirementItem {
   id: string;
-  type: 'essay' | 'document' | 'recommendation' | 'interview' | 'portfolio' | 'financial_aid' | 'test_score';
+  type: 'essay' | 'document' | 'recommendation' | 'interview' | 'portfolio' | 'financial_aid' | 'test_score' | 'other';
   name: string;
   required: boolean;
   dueDate?: string;
@@ -20,6 +20,8 @@ interface RequirementItem {
 
 interface RequirementsChecklistProps {
   applicationId: string;
+  /** When true, show only "Requirements X% Complete" — no expandable bullet points */
+  headerOnly?: boolean;
   requirements?: {
     essays?: {
       required: number;
@@ -51,14 +53,97 @@ interface RequirementsChecklistProps {
       completed: number;
       prompts?: string[];
     };
+    custom?: {
+      items: Array<{ id: string; title: string; completed: boolean }>;
+    };
   };
-  onUpdate?: (requirements: any) => void;
+  onUpdate?: (requirements: any, activityMeta?: { itemId: string; itemName: string }) => void;
+}
+
+function applyRequirementToggle(
+  requirements: Record<string, any>,
+  item: RequirementItem,
+  checked: boolean
+): Record<string, any> {
+  const next = JSON.parse(JSON.stringify(requirements || {}));
+
+  if (item.id.startsWith('essay-')) {
+    const i = parseInt(item.id.replace('essay-', ''), 10);
+    const e = next.essays || { required: 0, completed: 0, prompts: [] };
+    const required = e.required || 0;
+    let completed = Math.max(0, Math.min(required, e.completed ?? 0));
+    if (checked) completed = Math.min(required, Math.max(completed, i + 1));
+    else completed = Math.max(0, Math.min(completed, i));
+    next.essays = { ...e, required, completed, prompts: e.prompts || [] };
+    return next;
+  }
+
+  if (item.id.startsWith('recommendation-')) {
+    const i = parseInt(item.id.replace('recommendation-', ''), 10);
+    const r = next.recommendations || { required: 0, submitted: 0, requested: 0 };
+    const required = r.required || 0;
+    let submitted = Math.max(0, Math.min(required, r.submitted ?? 0));
+    if (checked) submitted = Math.min(required, Math.max(submitted, i + 1));
+    else submitted = Math.max(0, Math.min(submitted, i));
+    next.recommendations = { ...r, required, submitted, requested: r.requested ?? 0 };
+    return next;
+  }
+
+  if (item.id === 'transcript') {
+    const t = next.transcripts || { status: 'pending', verified: false };
+    next.transcripts = { ...t, status: checked ? 'received' : 'pending' };
+    return next;
+  }
+
+  if (item.id.startsWith('test-')) {
+    const i = parseInt(item.id.replace('test-', ''), 10);
+    const ts = next.testScores || { status: 'pending', required: [], submitted: [] };
+    const required = ts.required || [];
+    const name = required[i] || `Test ${i + 1}`;
+    let submitted = [...(ts.submitted || [])];
+    if (checked) { if (!submitted.includes(name)) submitted.push(name); }
+    else submitted = submitted.filter((s: string) => s !== name);
+    next.testScores = { ...ts, required, submitted };
+    return next;
+  }
+
+  if (item.id === 'interview') {
+    const inv = next.interviews || { required: true, scheduled: undefined, completed: undefined };
+    next.interviews = { ...inv, completed: checked ? new Date().toISOString() : undefined };
+    return next;
+  }
+
+  if (item.id.startsWith('supplement-')) {
+    const i = parseInt(item.id.replace('supplement-', ''), 10);
+    const s = next.supplements || { required: 0, completed: 0, prompts: [] };
+    const required = s.required || 0;
+    let completed = Math.max(0, Math.min(required, s.completed ?? 0));
+    if (checked) completed = Math.min(required, Math.max(completed, i + 1));
+    else completed = Math.max(0, Math.min(completed, i));
+    next.supplements = { ...s, required, completed, prompts: s.prompts || [] };
+    return next;
+  }
+
+  // Custom items
+  if (item.type === 'other' && ((next as any).custom?.items)) {
+    const list = (next as any).custom.items as Array<{ id: string; title: string; completed: boolean }>;
+    const idx = list.findIndex((c) => (c.id || '').toString() === item.id);
+    if (idx >= 0) {
+      const updated = [...list];
+      updated[idx] = { ...updated[idx], completed: checked };
+      (next as any).custom = { items: updated };
+    }
+    return next;
+  }
+
+  return next;
 }
 
 const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
   applicationId,
   requirements = {},
   onUpdate,
+  headerOnly = false,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -149,6 +234,20 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
       }
     }
 
+    // Custom items
+    const customItems = (requirements as any).custom?.items;
+    if (Array.isArray(customItems)) {
+      customItems.forEach((c: { id: string; title: string; completed: boolean }, i: number) => {
+        items.push({
+          id: c.id || `custom-${i}`,
+          type: 'other',
+          name: c.title || `Custom ${i + 1}`,
+          required: true,
+          status: c.completed ? 'completed' : 'not_started',
+        });
+      });
+    }
+
     return items;
   };
 
@@ -199,6 +298,8 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
         return 'dollar-sign';
       case 'test_score':
         return 'check-circle';
+      case 'other':
+        return 'file';
       default:
         return 'file';
     }
@@ -220,7 +321,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
     }
   };
 
-  if (totalItems === 0) {
+  if (totalItems === 0 && !headerOnly) {
     return (
       <div style={{ padding: '4px 0', color: '#94a3b8', fontSize: '12px' }}>
         <Text type="secondary">No requirements tracked yet. Add them in the edit page.</Text>
@@ -228,39 +329,42 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
     );
   }
 
-  return (
-    <div 
-      className="requirements-checklist"
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      <Collapse
-        activeKey={expanded ? 'requirements' : undefined}
-        onChange={(keys) => setExpanded(keys.includes('requirements'))}
-        style={{ background: 'transparent', border: 'none' }}
+  const headerBlock = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 8 }}>
+      <Space size="small">
+        <span style={{ fontWeight: 500 }}>Requirements</span>
+        <Tag color={completionPercentage === 100 ? 'success' : completionPercentage >= 50 ? 'processing' : 'warning'}>
+          {completionPercentage}% Complete
+        </Tag>
+      </Space>
+      <Progress
+        percent={completionPercentage}
+        size="small"
+        strokeColor={completionPercentage === 100 ? '#22c55e' : completionPercentage >= 50 ? '#3b82f6' : '#f59e0b'}
+        style={{ width: 100, flexShrink: 0 }}
+        showInfo={false}
+      />
+    </div>
+  );
+
+  if (headerOnly) {
+    return (
+      <div
+        className="requirements-checklist requirements-checklist--header-only"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
-        <Panel
-          key="requirements"
-          header={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <Space>
-                <UnifiedIcon name="check-square" size="sm" color="primary" />
-                <span style={{ fontWeight: 500 }}>Requirements</span>
-                <Tag color={completionPercentage === 100 ? 'success' : completionPercentage >= 50 ? 'processing' : 'warning'}>
-                  {completionPercentage}% Complete
-                </Tag>
-              </Space>
-              <Progress
-                percent={completionPercentage}
-                size="small"
-                strokeColor={completionPercentage === 100 ? '#22c55e' : completionPercentage >= 50 ? '#3b82f6' : '#f59e0b'}
-                style={{ width: 100, marginRight: 8 }}
-                showInfo={false}
-              />
-            </div>
-          }
-          style={{ background: '#f9fafb', borderRadius: 8, marginTop: 8 }}
-        >
+        {headerBlock}
+      </div>
+    );
+  }
+
+  const collapseItems = [
+    {
+      key: 'requirements',
+      label: headerBlock,
+      children: (
+        <>
           <Space direction="vertical" style={{ width: '100%' }} size="small">
             {requirementItems.map((item) => (
               <div
@@ -278,21 +382,38 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
                 <Checkbox
                   checked={item.status === 'completed'}
                   onChange={(e) => {
-                    // Update requirement status
-                    if (onUpdate) {
-                      const updatedRequirements = { ...requirements };
-                      // Update logic would go here based on item type
-                      onUpdate(updatedRequirements);
-                    }
+                    if (!onUpdate) return;
+                    const checked = e.target.checked;
+                    const updated = applyRequirementToggle(requirements, item, checked);
+                    const activityMeta = checked ? { itemId: item.id, itemName: item.name } : undefined;
+                    onUpdate(updated, activityMeta);
                   }}
                   onClick={(e) => e.stopPropagation()}
                 />
-                <Space style={{ flex: 1, marginLeft: 8 }}>
+                <Space style={{ flex: 1, marginLeft: 8 }} wrap>
                   <UnifiedIcon name={getTypeIcon(item.type)} size="sm" color="primary" />
                   <Text style={{ flex: 1 }}>{item.name}</Text>
                   <Tag color={getStatusColor(item.status)}>
                     {getStatusText(item.status)}
                   </Tag>
+                  {item.type === 'essay' && (
+                    <Link
+                      to="/student-hub/essays"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ fontSize: 12, whiteSpace: 'nowrap' }}
+                    >
+                      Open in Essays Hub →
+                    </Link>
+                  )}
+                  {(item.type === 'document' || item.type === 'recommendation') && (
+                    <Link
+                      to="/student-hub/documents"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ fontSize: 12, whiteSpace: 'nowrap' }}
+                    >
+                      Open in Documents →
+                    </Link>
+                  )}
                 </Space>
               </div>
             ))}
@@ -308,8 +429,24 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
               </Button>
             </div>
           )}
-        </Panel>
-      </Collapse>
+        </>
+      ),
+      style: { background: '#f9fafb', borderRadius: 8, marginTop: 8 },
+    },
+  ];
+
+  return (
+    <div
+      className="requirements-checklist"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <Collapse
+        activeKey={expanded ? ['requirements'] : undefined}
+        onChange={(keys) => setExpanded(Array.isArray(keys) && keys.includes('requirements'))}
+        items={collapseItems}
+        style={{ background: 'transparent', border: 'none' }}
+      />
     </div>
   );
 };

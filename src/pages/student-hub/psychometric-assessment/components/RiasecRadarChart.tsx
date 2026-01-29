@@ -31,8 +31,8 @@ interface RiasecRadarChartProps {
   comparisonLabel?: string;
 }
 
-// RIASEC dimension descriptions
-const RIASEC_DESCRIPTIONS: Record<string, { full: string; description: string; careers: string[] }> = {
+// RIASEC dimension descriptions (exported for use in results explanation)
+export const RIASEC_DESCRIPTIONS: Record<string, { full: string; description: string; careers: string[] }> = {
   R: {
     full: 'Realistic',
     description: 'Hands-on, practical work with tools, machines, plants, or animals',

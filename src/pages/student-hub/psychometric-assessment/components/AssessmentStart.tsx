@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty, Collapse, Modal, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
 import { useGetAllAssessmentsQuery, useDeleteAssessmentMutation } from '../../../../app/services/student-hub/psychometricApi';
 
@@ -132,8 +133,8 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                         <Button
                           key="delete"
                           type="link"
-                          danger
-                          icon={<FontAwesomeIcon icon="trash-alt" />}
+                          className="btn-delete-crimson-link"
+                          icon={<UnifiedIcon name="trash-2" size="sm" color="primary" />}
                           onClick={() => handleDeleteClick(assessment.id)}
                         >
                           Delete

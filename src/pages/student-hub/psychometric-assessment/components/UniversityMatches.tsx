@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card, Typography, Row, Col, Tag, Progress, Button, Avatar, Tooltip, List, Empty } from 'antd';
+import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
 import { useNavigate } from 'react-router-dom';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type {
@@ -20,6 +21,8 @@ interface UniversityMatch {
   campusType: 'large' | 'medium' | 'small';
   environment: 'research-intensive' | 'liberal-arts' | 'technical' | 'comprehensive';
   logo?: string;
+  /** Official university website — card click opens this in a new tab */
+  website?: string;
 }
 
 interface UniversityMatchesProps {
@@ -53,6 +56,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Computer Science', 'Mechanical Engineering', 'Data Science', 'Physics'],
       campusType: 'medium',
       environment: 'research-intensive',
+      website: 'https://www.mit.edu',
     },
     {
       id: '2',
@@ -64,6 +68,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Computer Science', 'Business Administration', 'Biology', 'Psychology'],
       campusType: 'large',
       environment: 'research-intensive',
+      website: 'https://www.utoronto.ca',
     },
     {
       id: '3',
@@ -75,6 +80,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Electrical Engineering', 'Computer Science', 'Mechanical Engineering', 'Architecture'],
       campusType: 'large',
       environment: 'technical',
+      website: 'https://www.tum.de',
     },
     {
       id: '4',
@@ -86,6 +92,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Business Administration', 'Computer Science', 'Economics', 'Data Science'],
       campusType: 'large',
       environment: 'comprehensive',
+      website: 'https://www.nus.edu.sg',
     },
     {
       id: '5',
@@ -97,6 +104,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Psychology', 'Biology', 'Business Administration', 'International Relations'],
       campusType: 'large',
       environment: 'research-intensive',
+      website: 'https://www.ubc.ca',
     },
     {
       id: '6',
@@ -108,6 +116,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Engineering', 'Business Administration', 'Economics', 'Medicine'],
       campusType: 'large',
       environment: 'research-intensive',
+      website: 'https://en.snu.ac.kr',
     },
     {
       id: '7',
@@ -119,6 +128,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Computer Science', 'Electrical Engineering', 'Data Science', 'Biotechnology'],
       campusType: 'medium',
       environment: 'technical',
+      website: 'https://www.kaist.ac.kr',
     },
     {
       id: '8',
@@ -130,6 +140,7 @@ const generateUniversityMatches = (
       programsAvailable: ['Economics', 'Psychology', 'English Literature', 'Political Science'],
       campusType: 'small',
       environment: 'liberal-arts',
+      website: 'https://www.williams.edu',
     },
   ];
 
@@ -230,8 +241,9 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
   return (
     <Card className="university-matches-card">
       <div style={{ marginBottom: 24 }}>
-        <Title level={4} style={{ margin: 0 }}>
-          🎓 University Matches
+        <Title level={4} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <UnifiedIcon name="university" size="md" color="primary" />
+          University Matches
         </Title>
         <Text type="secondary">
           Based on your interests, personality, and academic profile
@@ -243,10 +255,17 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
         dataSource={universityMatches}
         renderItem={(uni) => (
           <List.Item>
-            <Card
-              size="small"
-              style={{ height: '100%' }}
-            >
+            <Tooltip title={uni.website ? 'Click to visit official website' : undefined}>
+              <Card
+                size="small"
+                style={{ height: '100%', cursor: uni.website ? 'pointer' : undefined }}
+                hoverable={!!uni.website}
+                onClick={() => {
+                  if (uni.website) {
+                    window.open(uni.website, '_blank', 'noopener,noreferrer');
+                  }
+                }}
+              >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                 <Avatar
                   size={48}
@@ -324,7 +343,8 @@ export const UniversityMatches: React.FC<UniversityMatchesProps> = ({
                   {uni.programsAvailable.length > 3 && ` +${uni.programsAvailable.length - 3} more`}
                 </Text>
               </div>
-            </Card>
+              </Card>
+            </Tooltip>
           </List.Item>
         )}
       />

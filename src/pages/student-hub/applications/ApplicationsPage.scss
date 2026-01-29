@@ -1330,11 +1330,27 @@
   }
   .application-card-meta {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px 16px;
     margin-bottom: 12px;
     padding-bottom: 12px;
     border-bottom: 1px solid #f1f5f9;
+  }
+  .application-card-meta-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .application-card-meta-mentor {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .application-card-meta-mentor .mentor-assignment-trigger {
+    width: auto;
+    min-width: 120px;
   }
   .application-meta-item {
     display: inline-flex;
@@ -1346,19 +1362,28 @@
   .application-meta-item--deadline { color: #0c4a6e; }
   .application-meta-item--type { color: #3730a3; }
   .application-meta-item--priority { color: #92400e; }
-  .application-card-requirements-mentor {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  .application-card-requirements {
     margin-bottom: 12px;
     padding: 10px 12px;
     background: #f8fafc;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
   }
-  .application-mentor-cell {
-    display: flex;
-    align-items: flex-start;
+  .application-card-requirements .requirements-checklist {
+    padding: 0;
+  }
+  .application-card-requirements .requirements-checklist--header-only {
+    padding: 2px 0;
+  }
+  .application-card-requirements .ant-collapse-header {
+    padding-left: 20px !important;
+    padding-right: 12px !important;
+  }
+  .application-card-requirements .ant-collapse-header .ant-collapse-arrow {
+    margin-right: 6px;
+  }
+  .application-card-requirements .ant-collapse-content-box {
+    padding: 8px 12px 12px !important;
   }
   .application-card-notes {
     display: flex;
@@ -1378,7 +1403,6 @@
     justify-content: flex-end;
     gap: 8px;
     padding-top: 12px;
-    border-top: 1px solid #f1f5f9;
   }
 }
 

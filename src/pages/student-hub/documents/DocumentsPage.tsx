@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, List, Upload, message, Row, Col, Tag, Space, Progress, Tabs, Input, Modal, Select, Statistic, Badge, Empty, Spin, Alert } from 'antd';
+import React, { useState } from 'react';
+import { Card, Button, List, Upload, message, Row, Col, Tag, Space, Tabs, Input, Modal, Select, Empty, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
-import { useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
-import { useStudentHub } from '../../../hooks/useStudentHub';
 import { 
   useGetDocumentsQuery, 
   useUploadDocumentMutation, 
@@ -19,7 +17,6 @@ import { StudentDocument } from '../../../app/services/student-hub/types';
 import './DocumentsPage.scss';
 
 const { Dragger } = Upload;
-const { Search } = Input;
 const { Option } = Select;
 
 interface DocumentsPageProps {
@@ -76,9 +73,6 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
     }
     return '';
   };
-  const navigate = useNavigate();
-  const { profile } = useStudentHub();
-  
   // State management
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedCategory, setSelectedCategory] = useState<DocumentType | 'all'>('all');
@@ -286,85 +280,88 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
 
   return (
     <div className="documents-page">
-      {/* Page Header */}
-      <div className="page-header">
-        <h1 className="page-title">
-          {t('studentHub.documents.title')} ({totalDocumentCount})
-        </h1>
-        <p className="page-subtitle">{t('studentHub.documents.subtitle')}</p>
-        <div className="page-actions">
+      {/* Compact Header */}
+      <div className="documents-page-header">
+        <div className="documents-page-header-left">
+          <h1 className="documents-page-title">
+            {t('studentHub.documents.title')} <span className="documents-page-count">({totalDocumentCount})</span>
+          </h1>
+          <p className="documents-page-subtitle">{t('studentHub.documents.subtitle')}</p>
+        </div>
+        <div className="documents-page-header-actions">
           <Input
+            className="documents-search-input"
             placeholder={t('studentHub.documents.searchDocuments')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: 300 }}
-            prefix={<UnifiedIcon name="search" size="sm" color="primary" />}
+            prefix={<UnifiedIcon name="search" size="sm" color="secondary" />}
             allowClear
           />
-          <Button 
-            type="primary" 
-            icon={<UnifiedIcon name="plus" size="sm" color="white" />} 
+          <Button
+            type="primary"
+            className="documents-upload-btn"
+            icon={<UnifiedIcon name="upload" size="sm" color="white" />}
             onClick={handleUploadDocument}
-            size="large"
           >
             {t('studentHub.documents.uploadDocument')}
           </Button>
         </div>
       </div>
 
-
       {/* Main Content */}
       <Card className="documents-main-card">
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
+          size="small"
           items={[
             {
               key: 'overview',
               label: t('studentHub.documents.overview'),
               children: (
                 <div className="documents-overview">
-                  <Row gutter={[24, 24]}>
+                  <Row gutter={[12, 12]}>
                     {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => {
                       const categoryDocs = documentsByCategory[type as DocumentType] || [];
                       const isRequired = category.required;
-                      
                       return (
-                        <Col xs={24} md={12} lg={8} key={type}>
-                          <Card 
-                            className={`category-card ${isRequired ? 'required' : ''}`}
-                            hoverable
+                        <Col xs={24} sm={12} md={12} lg={8} key={type}>
+                          <div
+                            className={`documents-category-card ${isRequired ? 'required' : ''}`}
+                            role="button"
+                            tabIndex={0}
                             onClick={() => {
                               setSelectedCategory(type as DocumentType);
                               setActiveTab('documents');
                             }}
+                            onKeyDown={(e) => e.key === 'Enter' && (setSelectedCategory(type as DocumentType), setActiveTab('documents'))}
                           >
-                            <div className="category-header">
-                              <div className={`category-icon ${category.color}`}>
-                                <UnifiedIcon name={category.icon as string || "file-text"} size="sm" color="primary" />
-                              </div>
-                              <div className="category-info">
-                                <h4 className="category-title">
-                                  {getTranslatedCategoryLabel(type)}
-                                  <span className="document-count">({categoryDocs.length})</span>
-                                </h4>
-                                <p className="category-description">{getTranslatedCategoryDescription(type)}</p>
-                              </div>
+                            <div className="documents-category-icon">
+                              <UnifiedIcon name={(category.icon as string) || 'file-text'} size="md" color="primary" />
                             </div>
-                            <div className="category-actions">
-                              <Button 
-                                type="primary" 
+                            <div className="documents-category-body">
+                              <div className="documents-category-title">
+                                {getTranslatedCategoryLabel(type)}
+                                <Tag className="documents-category-count" color={isRequired ? 'blue' : 'default'}>
+                                  {categoryDocs.length}
+                                </Tag>
+                              </div>
+                              <p className="documents-category-desc">{getTranslatedCategoryDescription(type)}</p>
+                              <Button
+                                type="primary"
                                 size="small"
+                                className="documents-category-add-btn"
+                                icon={<UnifiedIcon name="plus" size="xs" color="white" />}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedDocumentType(type as DocumentType);
                                   setUploadModalVisible(true);
                                 }}
                               >
-                                <UnifiedIcon name="plus" size="sm" color="white" /> {t('studentHub.documents.addDocument')}
+                                {t('studentHub.documents.addDocument')}
                               </Button>
                             </div>
-                          </Card>
+                          </div>
                         </Col>
                       );
                     })}
@@ -377,115 +374,75 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
               label: t('studentHub.documents.allDocuments'),
               children: (
                 <div className="documents-list">
-                  <div className="list-header">
-                    <div className="list-filters">
-                      <Select
-                        value={selectedCategory}
-                        onChange={setSelectedCategory}
-                        style={{ width: 200 }}
-                        placeholder={t('studentHub.documents.filterByCategory')}
-                      >
-                        <Option value="all">{t('studentHub.documents.allCategories')}</Option>
-                        {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => (
-                          <Option key={type} value={type}>
-                            {getTranslatedCategoryLabel(type)}
-                          </Option>
-                        ))}
-                      </Select>
-                    </div>
+                  <div className="documents-list-toolbar">
+                    <Select
+                      value={selectedCategory}
+                      onChange={setSelectedCategory}
+                      className="documents-list-filter"
+                      placeholder={t('studentHub.documents.filterByCategory')}
+                      options={[
+                        { value: 'all', label: t('studentHub.documents.allCategories') },
+                        ...Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => ({
+                          value: type,
+                          label: getTranslatedCategoryLabel(type),
+                        })),
+                      ]}
+                    />
                   </div>
 
                   {filteredDocuments.length > 0 ? (
                     <List
                       dataSource={filteredDocuments}
+                      className="documents-list-items"
                       renderItem={(document: StudentDocument) => {
                         const category = DOCUMENT_CATEGORIES[document.documentType as keyof typeof DOCUMENT_CATEGORIES];
                         return (
-                          <List.Item className="document-item">
-                            <Card className="document-card">
-                              <Row gutter={[16, 16]} align="middle">
-                                <Col xs={24} md={16}>
-                                  <div className="document-info">
-                                    <div className="document-header">
-                                      <div className={`document-icon ${category.color}`}>
-                                        <UnifiedIcon name={category.icon as string || "file-text"} size="sm" color="primary" />
-                                      </div>
-                                      <div className="document-details">
-                                        <h4 className="document-title">{document.fileName}</h4>
-                                        <div className="document-meta">
-                                          <Tag color={category.color}>{category.label}</Tag>
-                                          <span className="document-size">{formatFileSize(document.fileSize)}</span>
-                                          <span className="document-date">{formatDate(document.createdAt)}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </Col>
-                                <Col xs={24} md={8}>
-                                  <div className="document-actions">
-                                    <Space>
-                                      <Button 
-                                        icon={<UnifiedIcon name="download" size="sm" color="primary" />}
-                                        onClick={() => handleDownloadDocument(document.id)}
-                                        size="small"
-                                        style={{
-                                          backgroundColor: '#8b0000',
-                                          borderColor: '#8b0000',
-                                          color: 'white',
-                                          padding: '6px 12px',
-                                          height: 'auto',
-                                          minHeight: '32px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#a00000';
-                                          e.currentTarget.style.borderColor = '#a00000';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#8b0000';
-                                          e.currentTarget.style.borderColor = '#8b0000';
-                                        }}
-                                      >
-                                        {t('studentHub.documents.download')}
-                                      </Button>
-                                      <Button 
-                                        onClick={() => handleDeleteDocument(document.id)}
-                                        size="small"
-                                        loading={deleteLoading}
-                                        style={{
-                                          backgroundColor: '#8b0000',
-                                          borderColor: '#8b0000',
-                                          color: 'white',
-                                          padding: '6px 12px',
-                                          height: 'auto',
-                                          minHeight: '32px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#a00000';
-                                          e.currentTarget.style.borderColor = '#a00000';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor = '#8b0000';
-                                          e.currentTarget.style.borderColor = '#8b0000';
-                                        }}
-                                      >
-                                        {t('studentHub.documents.delete')}
-                                      </Button>
-                                    </Space>
-                                  </div>
-                                </Col>
-                              </Row>
-                            </Card>
+                          <List.Item className="documents-list-item">
+                            <div className="documents-doc-row">
+                              <div className="documents-doc-icon">
+                                <UnifiedIcon name={(category?.icon as string) || 'file-text'} size="md" color="primary" />
+                              </div>
+                              <div className="documents-doc-info">
+                                <span className="documents-doc-title">{document.fileName}</span>
+                                <div className="documents-doc-meta">
+                                  <Tag className="documents-doc-tag">{category?.label ?? document.documentType}</Tag>
+                                  <span>{formatFileSize(document.fileSize)}</span>
+                                  <span>{formatDate(document.createdAt)}</span>
+                                </div>
+                              </div>
+                              <Space size="small" className="documents-doc-actions">
+                                <Button
+                                  type="primary"
+                                  size="small"
+                                  icon={<UnifiedIcon name="download" size="sm" color="white" />}
+                                  onClick={() => handleDownloadDocument(document.id)}
+                                  className="documents-doc-download-btn"
+                                >
+                                  {t('studentHub.documents.download')}
+                                </Button>
+                                <Button
+                                  className="btn-delete-crimson"
+                                  size="small"
+                                  icon={<UnifiedIcon name="trash-2" size="sm" color="white" />}
+                                  onClick={() => handleDeleteDocument(document.id)}
+                                  loading={deleteLoading}
+                                >
+                                  {t('studentHub.documents.delete')}
+                                </Button>
+                              </Space>
+                            </div>
                           </List.Item>
                         );
                       }}
                     />
                   ) : (
                     <Empty
+                      className="documents-empty"
                       image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description="No documents uploaded yet"
+                      description={t('studentHub.documents.noDocuments') || 'No documents uploaded yet'}
                     >
-                      <Button type="primary" onClick={handleUploadDocument}>
-                        Upload Your First Document
+                      <Button type="primary" icon={<UnifiedIcon name="upload" size="sm" color="white" />} onClick={handleUploadDocument}>
+                        {t('studentHub.documents.uploadDocument')}
                       </Button>
                     </Empty>
                   )}

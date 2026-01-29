@@ -10,9 +10,9 @@ const ProgramsPage: React.FC = () => {
   return (
     <div className="programs-page">
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+        {/* <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
           Programs
-        </h1>
+        </h1> */}
         <p style={{ fontSize: 16, color: '#666', marginTop: 8, marginBottom: 0 }}>
           Manage your admissions programs, workshops, and mentorship programs
         </p>

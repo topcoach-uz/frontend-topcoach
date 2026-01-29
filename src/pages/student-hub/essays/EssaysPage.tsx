@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Row, Col, List, Badge, Space, Tag, Progress, Input, Select, message, Modal, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { EditOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
@@ -584,10 +584,10 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                       </Button>,
                       <Button
                         type="text"
-                        icon={<DeleteOutlined />}
+                        className="btn-delete-crimson-link"
+                        icon={<UnifiedIcon name="trash-2" size="sm" color="primary" />}
                         onClick={() => handleDeleteEssay(essay)}
                         loading={isDeleting}
-                        style={{ color: '#8b0000' }}
                       >
                         {t('studentHub.essays.delete')}
                       </Button>,

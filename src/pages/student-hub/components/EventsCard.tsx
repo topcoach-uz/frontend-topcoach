@@ -82,7 +82,20 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
       return (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={t('home.noEvents')}
+          description={
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <span>{t('home.noEvents')}</span>
+              <Button
+                type="primary"
+                size="middle"
+                onClick={() => navigate('/events')}
+                icon={<UnifiedIcon name="calendar" size="md" color="white" />}
+                style={{ marginTop: 8 }}
+              >
+                {t('studentHub.dashboard.seeWorkshops') || 'See workshops'}
+              </Button>
+            </div>
+          }
         />
       );
     }
@@ -160,11 +173,21 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
-              <span>
-                {t('home.noEvents')}
-                <br />
-                <small style={{ color: '#999' }}>{t('home.noEventsDesc')}</small>
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                <span>{t('home.noEvents')}</span>
+                {t('home.noEventsDesc') && (
+                  <small style={{ color: '#999' }}>{t('home.noEventsDesc')}</small>
+                )}
+                <Button
+                  type="primary"
+                  size="middle"
+                  onClick={() => navigate('/events')}
+                  icon={<UnifiedIcon name="calendar" size="md" color="white" />}
+                  style={{ marginTop: 8 }}
+                >
+                  {t('studentHub.dashboard.seeWorkshops') || 'See workshops'}
+                </Button>
+              </div>
             }
           />
         )}
