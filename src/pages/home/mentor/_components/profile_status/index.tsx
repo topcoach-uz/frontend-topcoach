@@ -15,23 +15,7 @@ export default function ProfileStatusSection() {
   const { profileChecklist, modalOpen, handleCancel, setVideosUploaded } =
     useProfileStatus();
 
-  // Check if all items are complete
-  const allComplete = profileChecklist.every((check) => check.isComplete);
-
-  // Don't show the section if everything is complete
-  if (allComplete) {
-    return (
-      <div className={'container ' + styles.container}>
-        <MentorProfileStatus />
-        <VideoUploadModal
-          setVideosUploaded={setVideosUploaded}
-          handleCancel={handleCancel}
-          modalOpen={modalOpen}
-        />
-      </div>
-    );
-  }
-
+  // Always show checklist (even when all complete) — keep it visible for mentors
   return (
     <div className={'container ' + styles.container}>
       <MentorProfileStatus />

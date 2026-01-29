@@ -576,10 +576,12 @@ export default function UpcomingCard({
           fallbackRender={() => (
             <CustomButton
               type="primary"
-              icon={<MessageOutlined />}
+              icon={<MessageOutlined style={{ color: '#fff' }} />}
+              textColor="#fff"
               style={{
                 backgroundColor: '#8b0000',
                 borderColor: '#8b0000',
+                color: '#fff',
                 width: '100%',
                 marginTop: '8px',
                 display: 'block',
@@ -596,11 +598,13 @@ export default function UpcomingCard({
             <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
               <CustomButton
                 type="primary"
-                icon={<MessageOutlined />}
+                icon={<MessageOutlined style={{ color: '#fff' }} />}
+                textColor="#fff"
                 onClick={handleChatClick}
                 style={{
                   backgroundColor: '#8b0000',
                   borderColor: '#8b0000',
+                  color: '#fff',
                   width: '100%',
                   marginTop: '8px',
                   display: 'block',
@@ -615,11 +619,13 @@ export default function UpcomingCard({
           ) : (
             <CustomButton
               type="primary"
-              icon={<MessageOutlined />}
+              icon={<MessageOutlined style={{ color: '#fff' }} />}
+              textColor="#fff"
               onClick={handleChatClick}
               style={{
                 backgroundColor: '#8b0000',
                 borderColor: '#8b0000',
+                color: '#fff',
                 width: '100%',
                 marginTop: '8px',
                 display: 'block',

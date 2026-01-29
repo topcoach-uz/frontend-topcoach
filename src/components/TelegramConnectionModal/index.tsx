@@ -111,7 +111,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
     }
   };
 
-  const MAIN_RED = '#C8102E';
+  const CRIMSON = '#8b0000';
 
   // Custom stepper data and rendering
   const steps = [
@@ -139,8 +139,8 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center' }}>
-          <Title level={3} style={{ margin: 0, color: MAIN_RED }}>
+        <div style={{ textAlign: 'center', paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+          <Title level={3} style={{ margin: 0, color: CRIMSON, fontWeight: 700, fontSize: 22, letterSpacing: '0.02em' }}>
             Connect Telegram
           </Title>
         </div>
@@ -150,18 +150,19 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       footer={null}
       width={600}
       centered
+      styles={{ body: { paddingTop: 12 } }}
     >
-      <div style={{ padding: '20px 0' }}>
-        <Card style={{ border: 'none', boxShadow: 'none' }}>
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <div style={{ padding: '0' }}>
+        <Card style={{ border: 'none', boxShadow: 'none' }} bodyStyle={{ padding: 0 }}>
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             {/* Status Display */}
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', marginBottom: 4 }}>
               {isUpdatingStatus ? (
                 <div>
                   <div style={{ fontSize: 48, color: '#1890ff' }}>⏳</div>
                   <div style={{ marginTop: 8 }}>
-                    <Text strong style={{ fontSize: 16 }}>
-                      Updating status...
+                    <Text strong style={{ fontSize: 16, color: CRIMSON }}>
+                      Status: Updating...
                     </Text>
                   </div>
                 </div>
@@ -169,8 +170,8 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                 <>
                   {getStatusIcon()}
                   <div style={{ marginTop: 8 }}>
-                    <Text strong style={{ fontSize: 16 }}>
-                      {getStatusText()}
+                    <Text strong style={{ fontSize: 16, color: CRIMSON, fontWeight: 600 }}>
+                      Status: {getStatusText()}
                     </Text>
                   </div>
                 </>

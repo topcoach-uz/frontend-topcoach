@@ -64,9 +64,19 @@
   margin-top: 12px;
   width: 100%;
   display: flex;
-  
+
   :global(.ant-badge) {
     width: 100%;
     display: flex;
+  }
+
+  /* Force chat button icon and text visible (white on crimson) */
+  :global(.ant-btn) {
+    color: #fff !important;
+  }
+  :global(.ant-btn .anticon),
+  :global(.ant-btn .anticon) svg {
+    color: #fff !important;
+    fill: #fff !important;
   }
 }

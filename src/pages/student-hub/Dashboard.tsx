@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Alert, Tabs, message, Dropdown, Menu, Empty, Tooltip, Collapse } from 'antd';
+import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Alert, Tabs, message, Dropdown, Menu, Empty, Tooltip, Collapse, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import BookingsCard from './components/BookingsCard';
 import EventsCard from './components/EventsCard';
 import JourneyStatusHeader from './components/JourneyStatusHeader';
 import AISuggestionsCard, { type SuggestionItem } from './components/AISuggestionsCard';
+import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
@@ -40,7 +41,7 @@ import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
 import { PageSkeleton, InlineLoader } from '../../components/loading';
-import { ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, ExclamationCircleOutlined, DashboardOutlined, BookOutlined, SettingOutlined } from '@ant-design/icons';
 import './Dashboard.scss';
 
 // Props interface for Dashboard - supports both normal and read-only mode
@@ -85,7 +86,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   
   // Get user data - only for current user (not in read-only mode)
   const { data: currentUserData } = useGetMeQuery(undefined, { skip: isReadOnly });
-  
+  const isSuperAdminAccount = !isReadOnly && currentUserData?.email === 'sheraliozodov6@gmail.com';
+
   const handleRecalculate = async () => {
     if (studentProfile?.id) {
       await recalculateCompletion();
@@ -625,6 +627,28 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             </Button>
           </Dropdown>
         </div>
+
+      {/* Super Admin Quick Access — sheraliozodov6@gmail.com only */}
+      {isSuperAdminAccount && (
+        <Card size="small" style={{ marginBottom: 24, borderColor: '#8b0000', borderWidth: 2, borderRadius: 12 }}>
+          <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>Admin Dashboard</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Access</div>
+          <Space size="small" wrap>
+            <Button size="middle" onClick={() => navigate('/school-counselor')} icon={<DashboardOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+              School Counselor Dashboard
+            </Button>
+            <Button size="middle" onClick={() => navigate('/topcoach-management')} icon={<SettingOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+              TopCoach Management
+            </Button>
+            <Button size="middle" onClick={() => navigate('/course-admin/courses/modules')} icon={<BookOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+              Course Content Management
+            </Button>
+          </Space>
+        </Card>
+      )}
+
+      {/* Telegram connection checklist — mentees only, above AI suggestions; hidden when connected */}
+      <TelegramConnectionChecklist skip={isReadOnly} />
 
       {/* AI-powered suggestions — top placement (replaces "Your next step") */}
       {aiSuggestions.length > 0 && (

@@ -10,6 +10,7 @@
   border-radius: 6px;
   transition: all 0.2s ease-in-out;
   position: relative;
+  color: #fff !important;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -17,6 +18,13 @@
 
   &:active {
     transform: scale(0.95);
+  }
+
+  // Force icon visibility – Ant Design icons use SVG with currentColor; overrides can hide them
+  :global(.anticon),
+  :global(.anticon) svg {
+    color: #fff !important;
+    fill: #fff !important;
   }
 
   // Style the Badge component
@@ -33,7 +41,7 @@
 
 .chatIcon {
   font-size: 20px;
-  color: white;
+  color: #fff !important;
   transition: all 0.2s ease-in-out;
 
   .chatIconWrapper:hover & {

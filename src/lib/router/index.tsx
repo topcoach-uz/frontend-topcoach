@@ -25,6 +25,7 @@ import { GlobalModals } from "src/components/GlobalModals";
 // Pages
 
 const HomePage = lazy(() => import("src/pages/home"));
+const HomeRouter = lazy(() => import("src/pages/home/HomeRouter"));
 const HelpPageLazy = lazy(() => import("src/pages/help"));
 const Custom404PageLazy = lazy(() => import("src/pages/404"));
 const SuccessStoriesPageLazy = lazy(
@@ -99,6 +100,7 @@ const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/mod
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
+const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
 
 function RouterProvider() {
@@ -133,14 +135,9 @@ function RouterProvider() {
                 index
                 element={
                   isAuthenticated ? (
-                    // Redirect students to unified Dashboard (student-hub)
-                    // Keep HomePage for mentors (they have different home page)
-                    // Using string comparison since UserRole enum may not be available at runtime
-                    currentUser?.profile?.role === 'Mentor' ? (
-                      <HomePage />
-                    ) : (
-                      <Navigate to="/student-hub" replace />
-                    )
+                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                      <HomeRouter />
+                    </Suspense>
                   ) : (
                     <LandingPageLazy />
                   )
@@ -193,20 +190,16 @@ function RouterProvider() {
               />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route path="/contact-form" element={<ContactFormPageLazy />} />
-              {/* Student Hub: mentees + CEO mentor (oumarovna@gmail.com) only; other mentors → / */}
+              {/* Student Hub: mentees + oumarovna + sheraliozodov6; mentors/counselors → / (except sheraliozodov6) */}
               <Route
                 path="/student-hub/*"
                 element={
                   !isAuthenticated ? (
                     <Navigate to="/" replace />
-                  ) : profileLoading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
-                    </div>
-                  ) : currentUser?.profile?.role === 'Mentor' && currentUser?.email !== 'oumarovna@gmail.com' ? (
-                    <Navigate to="/" replace />
                   ) : (
-                    <StudentHubRoutesLazy />
+                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Spin size="large" /></div>}>
+                      <StudentHubGateLazy />
+                    </Suspense>
                   )
                 }
               />

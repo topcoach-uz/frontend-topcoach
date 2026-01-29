@@ -32,9 +32,12 @@ function ChatIconFallback() {
         minWidth: 40,
         height: 40,
         cursor: 'default',
+        color: '#fff',
       }}
     >
-      <MessageOutlined style={{ fontSize: 20, color: 'white' }} />
+      <span style={{ display: 'inline-flex', color: '#fff' }}>
+        <MessageOutlined style={{ fontSize: 20, color: '#fff' }} />
+      </span>
     </div>
   );
 }
@@ -73,22 +76,36 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     setSelectedThreadId(threadId);
   };
 
+  const iconEl = (
+    <span style={{ display: 'inline-flex', alignItems: 'center', color: '#fff' }} aria-hidden="true">
+      <MessageOutlined className={styles.chatIcon} style={{ fontSize: 20, color: '#fff' }} />
+    </span>
+  );
+
   return (
     <>
       <div
         className={`${styles.chatIconWrapper} ${className || ''}`}
         onClick={handleIconClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleIconClick(); } }}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           minWidth: 40,
           height: 40,
+          color: '#fff',
         }}
       >
-        <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
-          <MessageOutlined className={styles.chatIcon} style={{ fontSize: 20, color: 'white' }} />
-        </Badge>
+        {unreadCount > 0 ? (
+          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+            {iconEl}
+          </Badge>
+        ) : (
+          iconEl
+        )}
       </div>
       {chatModalOpen && (
         <ChatModal
