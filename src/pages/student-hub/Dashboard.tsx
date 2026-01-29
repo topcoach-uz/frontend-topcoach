@@ -16,7 +16,6 @@ import {
 import BookingsCard from './components/BookingsCard';
 import EventsCard from './components/EventsCard';
 import JourneyStatusHeader from './components/JourneyStatusHeader';
-import NextBestActionCard from './components/NextBestActionCard';
 import AISuggestionsCard, { type SuggestionItem } from './components/AISuggestionsCard';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
@@ -386,133 +385,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
     }).length;
   })();
 
-  // Calculate Next Best Action
-  const calculateNextBestAction = () => {
-    // Priority 1: Overdue deadlines
-    const allDeadlines = [
-      ...(finalApplicationsData || []).map((app: any) => {
-        // Ensure we have proper university name - prefer universityName, fallback to fetching via universityId
-        let universityName = app?.universityName || app?.name;
-        
-        // If we have universityId but no name, we'll need to fetch it
-        // For now, we'll pass both so the component can handle it
-        return {
-          type: 'application' as const, 
-          deadline: app?.deadline, 
-          id: app?.id || app?._id || app?.applicationId,
-          title: universityName, // Will be resolved properly in the component
-          major: app?.major,
-          universityId: app?.universityId,
-          universityName: universityName, // Pass through for fallback
-        };
-      }),
-      ...(finalScholarshipsData || []).map((sch: any) => ({ 
-        type: 'application' as const, 
-        deadline: sch?.applicationDeadline, 
-        id: sch?.id,
-        title: sch?.scholarshipName || sch?.name,
-        major: undefined as string | undefined,
-        universityId: undefined as string | undefined,
-        universityName: undefined as string | undefined,
-      })),
-    ];
-    
-    const now = new Date();
-    const overdueDeadline = allDeadlines.find((item) => {
-      if (!item.deadline) return false;
-      return new Date(item.deadline) < now;
-    });
-
-    if (overdueDeadline) {
-      return {
-        id: overdueDeadline.id,
-        type: 'deadline' as const,
-        title: `${t('studentHub.dashboard.nextAction.submitApplication') || 'Submit application for'}: ${overdueDeadline.title}`,
-        description: overdueDeadline.major 
-          ? `${t('studentHub.dashboard.nextAction.overdueDeadline') || 'This deadline is overdue!'} ${overdueDeadline.major}`
-          : t('studentHub.dashboard.nextAction.overdueDeadline') || 'This deadline is overdue!',
-        deadline: formatDate(overdueDeadline.deadline),
-        priority: 'overdue' as const,
-        actionLabel: t('studentHub.dashboard.nextAction.submitNow') || 'Submit Now',
-        actionPath: `/student-hub/applications?view=${overdueDeadline.id}`,
-      };
-    }
-
-    // Priority 2: Urgent deadlines (within 7 days)
-    const urgentDeadline = allDeadlines.find((item) => {
-      if (!item.deadline) return false;
-      const deadlineDate = new Date(item.deadline);
-      const daysUntil = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return daysUntil > 0 && daysUntil <= 7;
-    });
-
-    if (urgentDeadline) {
-      // Use UniversityNameResolver component to properly fetch university name
-      // For now, we'll create a component that handles this
-      return {
-        id: urgentDeadline.id,
-        type: 'deadline' as const,
-        title: urgentDeadline.title, // Will be resolved by UniversityNameResolver
-        description: urgentDeadline.major 
-          ? `${t('studentHub.dashboard.nextAction.urgentDeadline') || 'Deadline is approaching!'} ${urgentDeadline.major}`
-          : t('studentHub.dashboard.nextAction.urgentDeadline') || 'Deadline is approaching!',
-        deadline: formatDate(urgentDeadline.deadline),
-        priority: 'urgent' as const,
-        actionLabel: t('studentHub.dashboard.nextAction.completeNow') || 'Complete Now',
-        actionPath: urgentDeadline.id ? `/student-hub/applications/${urgentDeadline.id}/edit` : '/student-hub/applications',
-        universityId: urgentDeadline.universityId,
-        universityName: urgentDeadline.universityName,
-      };
-    }
-
-    // Priority 3: Profile completion - Only show if significantly incomplete (< 80%)
-    if (journeyProgress < 80) {
-      return {
-        id: 'profile',
-        type: 'profile' as const,
-        title: t('studentHub.dashboard.nextAction.completeProfile') || 'Complete Your Profile',
-        description: t('studentHub.dashboard.nextAction.completeProfileDesc') || 'Finish your profile to unlock personalized recommendations and start your journey.',
-        priority: 'normal' as const,
-        actionLabel: t('studentHub.dashboard.completeProfile') || 'Complete Profile',
-        actionPath: '/student-hub/profile',
-      };
-    }
-
-    // Priority 4: Take Major Match Assessment
-    const hasAssessment = (psychometricAssessments?.length || 0) > 0;
-    if (!hasAssessment) {
-      return {
-        id: 'assessment',
-        type: 'assessment' as const,
-        title: t('studentHub.dashboard.nextAction.takeMajorMatch') || 'Take Major Match Assessment',
-        description: t('studentHub.dashboard.nextAction.takeMajorMatchDesc') || 'Discover your ideal majors and get university recommendations based on your personality and interests.',
-        priority: 'normal' as const,
-        actionLabel: t('studentHub.dashboard.nextAction.startAssessment') || 'Start Assessment',
-        actionPath: '/student-hub/psychometric-assessment',
-      };
-    }
-
-    // Priority 5: Add first application
-    const applicationsDataForAction = finalApplicationsData || [];
-    const scholarshipsDataForAction = finalScholarshipsData || [];
-    const hasApplicationsForAction = (applicationsDataForAction.length > 0 || scholarshipsDataForAction.length > 0);
-    if (!hasApplicationsForAction) {
-      return {
-        id: 'first-application',
-        type: 'application' as const,
-        title: t('studentHub.dashboard.nextAction.addFirstApplication') || 'Add Your First Application',
-        description: t('studentHub.dashboard.nextAction.addFirstApplicationDesc') || 'Start tracking your university applications and stay organized.',
-        priority: 'normal' as const,
-        actionLabel: t('studentHub.dashboard.addApplication') || 'Add Application',
-        actionPath: '/student-hub/applications/new',
-      };
-    }
-
-    return null;
-  };
-
-  const nextBestAction = calculateNextBestAction();
-
   // AI-powered suggestions: multiple contextual next actions
   const calculateAISuggestions = (): SuggestionItem[] => {
     const out: SuggestionItem[] = [];
@@ -754,10 +626,10 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Dropdown>
         </div>
 
-      {/* PRIORITY 1: NEXT BEST ACTION (Most Important - Large, Prominent) */}
-      {nextBestAction && (
+      {/* AI-powered suggestions — top placement (replaces "Your next step") */}
+      {aiSuggestions.length > 0 && (
         <div style={{ marginBottom: 32 }}>
-          <NextBestActionCard action={nextBestAction} />
+          <AISuggestionsCard suggestions={aiSuggestions} />
         </div>
       )}
 
@@ -1091,13 +963,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Card>
         </Col>
       </Row>
-
-      {/* AI-powered suggestions — below Upcoming Deadlines */}
-      {aiSuggestions.length > 0 && (
-        <div style={{ marginTop: 24, marginBottom: 24 }}>
-          <AISuggestionsCard suggestions={aiSuggestions} />
-        </div>
-      )}
     </div>
   );
 };

@@ -2,6 +2,19 @@
   .ant-card-head {
     border-bottom: 1px solid #f0f0f0;
   }
+  .ai-suggestions-card-title {
+    display: inline-flex;
+    align-items: center;
+  }
+  .ai-suggestions-card-title-text {
+    color: #8b0000;
+    font-weight: 600;
+  }
+  &.ai-suggestions-card--crimson {
+    border: 2px solid #8b0000;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
   .ai-suggestion-item {
     padding: 12px 0;
     border-bottom: 1px solid #f5f5f5;

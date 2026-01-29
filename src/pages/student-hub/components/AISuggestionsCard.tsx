@@ -41,17 +41,15 @@ const AISuggestionsCard: React.FC<AISuggestionsCardProps> = ({ suggestions, load
 
   return (
     <Card
-      className="ai-suggestions-card"
+      className="ai-suggestions-card ai-suggestions-card--crimson"
       title={
-        <span>
-          <UnifiedIcon name="target" size="md" color="primary" style={{ marginRight: 8 }} />
-          AI-powered suggestions
+        <span className="ai-suggestions-card-title">
+          <UnifiedIcon name="target" size="md" color="primary" style={{ marginRight: 8, flexShrink: 0 }} />
+          <span className="ai-suggestions-card-title-text">AI-powered suggestions</span>
+          <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
+            Based on your goals & progress
+          </Typography.Text>
         </span>
-      }
-      extra={
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          Based on your goals & progress
-        </Typography.Text>
       }
     >
       <List
