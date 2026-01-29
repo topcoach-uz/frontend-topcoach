@@ -1,7 +1,7 @@
-import { Badge, Dropdown, Form, Input, MenuProps, message, Rate } from 'antd';
+import { App, Form, Input, MenuProps, Rate } from 'antd';
 import dayjs from 'dayjs';
 import { Brodcast } from 'iconsax-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -17,7 +17,7 @@ import { CustomButton, CustomModal, CustomText } from 'src/components/common';
 import styles from './upcoming.module.scss';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useGetConversationsQuery, useGetThreadsQuery, useCreateThreadMutation, useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
-import { MessageOutlined } from '@ant-design/icons';
+import { FiMessageCircle } from 'react-icons/fi';
 
 import {
   useRateSessionMutation,
@@ -71,12 +71,16 @@ export default function UpcomingCard({
 
   const [rateSession, { isLoading: rateLoading }] = useRateSessionMutation();
   const { t } = useTranslation();
+  const { message } = App.useApp();
 
   const [form] = Form.useForm();
   const [rating, setRating] = useState<number>(0);
   const role = useTypedSelector((state) => state.auth.profile?.profile?.role);
   const currentUser = useTypedSelector((state) => state.auth.profile);
-  
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   // Chat integration
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -125,6 +129,17 @@ export default function UpcomingCard({
       setThreadId(null);
     }
   }, [threadsData, id]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   // Get unread count for thread
   const unreadCount = React.useMemo(() => {
@@ -493,6 +508,24 @@ export default function UpcomingCard({
   const handleLinkClick = () => {
     window.open(calendarInfo?.meetingLink, '_blank');
   };
+
+  const chatButtonStyle: React.CSSProperties = {
+    backgroundColor: '#8b0000',
+    border: '1px solid #8b0000',
+    color: '#fff',
+    width: '100%',
+    marginTop: '8px',
+    padding: '10px 16px',
+    borderRadius: 6,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    cursor: 'pointer',
+    fontWeight: 500,
+    minHeight: 44,
+  };
+
   return (
     <CustomCard
       padding={16}
@@ -521,13 +554,39 @@ export default function UpcomingCard({
           </>
         </div>
         {dropdownVisible && (
-          <Dropdown menu={{ items: menuItems }}>
-            <CustomButton
+          <div ref={dropdownRef} className={styles.dropdownWrap}>
+            <button
+              type="button"
               className={styles.dots}
-              size="small"
-              icon={<ThreeDotsSvg color={colors.colorText} />}
-            />
-          </Dropdown>
+              onClick={() => setDropdownOpen((o) => !o)}
+              aria-expanded={dropdownOpen}
+              aria-haspopup="true"
+            >
+              <ThreeDotsSvg color={colors.colorText} />
+            </button>
+            {dropdownOpen && (
+              <div className={styles.dropdownMenu} role="menu">
+                {menuItems
+                  .filter(
+                    (it): it is NonNullable<typeof it> & { key: string; label: React.ReactNode; onClick?: (info: any) => void } =>
+                      !!it && it.className !== styles.displayNone && 'key' in it && 'label' in it
+                  )
+                  .map((it) => (
+                    <div
+                      key={it.key}
+                      role="menuitem"
+                      className={styles.dropdownItem}
+                      onClick={() => {
+                        it.onClick?.({ key: it.key, keyPath: [], domEvent: {} as any });
+                        setDropdownOpen(false);
+                      }}
+                    >
+                      {it.label}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
       <div className={styles.meetingInfo}>
@@ -571,72 +630,32 @@ export default function UpcomingCard({
               mentor?.profile?.name}
         </CustomButton>
       </div>
-      <div className={styles.chatButtonContainer} style={{ display: 'block', visibility: 'visible', opacity: 1 }}>
+      <div className={styles.chatButtonContainer}>
         <ErrorBoundary
           fallbackRender={() => (
-            <CustomButton
-              type="primary"
-              icon={<MessageOutlined style={{ color: '#fff' }} />}
-              textColor="#fff"
-              style={{
-                backgroundColor: '#8b0000',
-                borderColor: '#8b0000',
-                color: '#fff',
-                width: '100%',
-                marginTop: '8px',
-                display: 'block',
-                visibility: 'visible',
-                opacity: 1,
-              }}
+            <button
+              type="button"
+              className={styles.chatButtonRaw}
               title="Chat"
+              style={chatButtonStyle}
             >
-              Chat
-            </CustomButton>
+              <FiMessageCircle size={18} color="#fff" />
+              <span style={{ color: '#fff' }}>Chat</span>
+            </button>
           )}
         >
-          {conversationId ? (
-            <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
-              <CustomButton
-                type="primary"
-                icon={<MessageOutlined style={{ color: '#fff' }} />}
-                textColor="#fff"
-                onClick={handleChatClick}
-                style={{
-                  backgroundColor: '#8b0000',
-                  borderColor: '#8b0000',
-                  color: '#fff',
-                  width: '100%',
-                  marginTop: '8px',
-                  display: 'block',
-                  visibility: 'visible',
-                  opacity: 1,
-                }}
-                title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-              >
-                {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-              </CustomButton>
-            </Badge>
-          ) : (
-            <CustomButton
-              type="primary"
-              icon={<MessageOutlined style={{ color: '#fff' }} />}
-              textColor="#fff"
-              onClick={handleChatClick}
-              style={{
-                backgroundColor: '#8b0000',
-                borderColor: '#8b0000',
-                color: '#fff',
-                width: '100%',
-                marginTop: '8px',
-                display: 'block',
-                visibility: 'visible',
-                opacity: 1,
-              }}
-              title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-            >
+          <button
+            type="button"
+            className={styles.chatButtonRaw}
+            onClick={handleChatClick}
+            title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+            style={chatButtonStyle}
+          >
+            <FiMessageCircle size={18} color="#fff" />
+            <span style={{ color: '#fff' }}>
               {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-            </CustomButton>
-          )}
+            </span>
+          </button>
         </ErrorBoundary>
       </div>
 

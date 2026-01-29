@@ -4,6 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   width: 40px;
   height: 40px;
   cursor: pointer;
@@ -11,6 +12,8 @@
   transition: all 0.2s ease-in-out;
   position: relative;
   color: #fff !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -20,33 +23,28 @@
     transform: scale(0.95);
   }
 
-  // Force icon visibility – Ant Design icons use SVG with currentColor; overrides can hide them
-  :global(.anticon),
-  :global(.anticon) svg {
+  svg {
+    flex-shrink: 0;
     color: #fff !important;
     fill: #fff !important;
   }
-
-  // Style the Badge component
-  :global(.ant-badge-count) {
-    background: #ff4d4f !important;
-    box-shadow: 0 0 0 1px #fff !important;
-    font-size: 11px !important;
-    min-width: 18px !important;
-    height: 18px !important;
-    line-height: 18px !important;
-    padding: 0 6px !important;
-  }
 }
 
-.chatIcon {
-  font-size: 20px;
-  color: #fff !important;
-  transition: all 0.2s ease-in-out;
-
-  .chatIconWrapper:hover & {
-    transform: scale(1.1);
-  }
+.chatIconBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
+  background: #ff4d4f;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px #fff;
 }
 
 .chatPopover {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Input, Button, Upload, message as antMessage, Space } from 'antd';
+import { App, Input, Button, Upload, Space } from 'antd';
 import { SendOutlined, PaperClipOutlined } from '@ant-design/icons';
 import {
   useSendMessageMutation,
@@ -22,6 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   conversationId,
   threadId,
 }) => {
+  const { message: messageApi } = App.useApp();
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -37,7 +38,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const handleFileSelect = (file: File) => {
     // Validate file size (3MB max)
     if (file.size > MAX_CHAT_FILE_UPLOAD_SIZE) {
-      antMessage.error(
+      messageApi.error(
         `File size exceeds the limit of ${MAX_CHAT_FILE_UPLOAD_SIZE / (1024 * 1024)}MB`
       );
       return false;
@@ -56,7 +57,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      antMessage.error(
+      messageApi.error(
         'Invalid file type. Allowed types: Images (JPEG, PNG, GIF, WEBP), PDF, DOC, DOCX'
       );
       return false;
@@ -160,12 +161,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
       
       // Retry logic for network errors
       if (retryCount < maxRetries && (error?.status === 'FETCH_ERROR' || error?.status === 'TIMEOUT_ERROR')) {
-        antMessage.warning(`Retrying... (${retryCount + 1}/${maxRetries})`);
+        messageApi.warning(`Retrying... (${retryCount + 1}/${maxRetries})`);
         setTimeout(() => {
           handleSend(retryCount + 1);
         }, retryDelay * (retryCount + 1));
       } else {
-        antMessage.error(error?.data?.message || 'Failed to send message. Please try again.');
+        messageApi.error(error?.data?.message || 'Failed to send message. Please try again.');
       }
     }
   };
@@ -229,7 +230,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           placeholder="Type a message..."
           autoSize={{ minRows: 1, maxRows: 4 }}
           className={styles.textInput}
-          bordered={false}
+          variant="borderless"
           disabled={isLoading}
         />
         <Button

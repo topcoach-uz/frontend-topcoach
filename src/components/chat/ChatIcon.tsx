@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Badge } from 'antd';
-import { MessageOutlined } from '@ant-design/icons';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
 import { useTypedSelector } from 'src/app/store';
 import { ACCESS_TOKEN } from 'src/constants/storage';
+import { FiMessageCircle } from 'react-icons/fi';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
 
@@ -31,13 +30,11 @@ function ChatIconFallback() {
         justifyContent: 'center',
         minWidth: 40,
         height: 40,
-        cursor: 'default',
+        cursor: 'pointer',
         color: '#fff',
       }}
     >
-      <span style={{ display: 'inline-flex', color: '#fff' }}>
-        <MessageOutlined style={{ fontSize: 20, color: '#fff' }} />
-      </span>
+      <FiMessageCircle size={22} color="#fff" />
     </div>
   );
 }
@@ -52,7 +49,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
   const { data: unreadData } = useGetUnreadCountQuery(undefined, {
-    skip: true,
+    skip: !showIcon,
   });
   const unreadCount = unreadData?.unreadCount ?? 0;
 
@@ -61,7 +58,6 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   }
 
   const handleIconClick = () => {
-    // Open modal without a specific conversation - will show conversation list
     setSelectedConversationId(null);
     setSelectedThreadId(null);
     setChatModalOpen(true);
@@ -75,12 +71,6 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   const handleThreadSelect = (threadId: string) => {
     setSelectedThreadId(threadId);
   };
-
-  const iconEl = (
-    <span style={{ display: 'inline-flex', alignItems: 'center', color: '#fff' }} aria-hidden="true">
-      <MessageOutlined className={styles.chatIcon} style={{ fontSize: 20, color: '#fff' }} />
-    </span>
-  );
 
   return (
     <>
@@ -97,14 +87,13 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
           minWidth: 40,
           height: 40,
           color: '#fff',
+          visibility: 'visible',
+          opacity: 1,
         }}
       >
-        {unreadCount > 0 ? (
-          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
-            {iconEl}
-          </Badge>
-        ) : (
-          iconEl
+        <FiMessageCircle size={22} color="#fff" />
+        {unreadCount > 0 && (
+          <span className={styles.chatIconBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}
       </div>
       {chatModalOpen && (

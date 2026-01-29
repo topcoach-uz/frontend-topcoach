@@ -33,6 +33,42 @@
 .dots {
   cursor: pointer;
   background-color: $colorBgContainer;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdownWrap {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 160px;
+  background: $colorBgContainer;
+  border: 1px solid $colorBorder;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+  padding: 4px 0;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: $colorText;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $colorFillQuaternary;
+  }
 }
 .reasons {
   display: flex;
@@ -64,18 +100,24 @@
   margin-top: 12px;
   width: 100%;
   display: flex;
+  visibility: visible;
+  opacity: 1;
+}
 
-  :global(.ant-badge) {
-    width: 100%;
-    display: flex;
-  }
+.chatButtonRaw {
+  color: #fff !important;
+  font-family: inherit;
+  visibility: visible !important;
+  opacity: 1 !important;
 
-  /* Force chat button icon and text visible (white on crimson) */
-  :global(.ant-btn) {
+  &:hover {
+    background-color: #a00 !important;
+    border-color: #a00 !important;
     color: #fff !important;
   }
-  :global(.ant-btn .anticon),
-  :global(.ant-btn .anticon) svg {
+
+  svg {
+    flex-shrink: 0;
     color: #fff !important;
     fill: #fff !important;
   }

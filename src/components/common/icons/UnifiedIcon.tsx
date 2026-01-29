@@ -62,6 +62,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   // Charts & Analytics
   'chart-line': FiIcons.FiTrendingUp,
   trending: FiIcons.FiTrendingUp,
+  'trending-up': FiIcons.FiTrendingUp,
   'psychometric': FiIcons.FiTrendingUp,
   'major-match': FiIcons.FiActivity,
   'brain-assessment': FiIcons.FiActivity,
