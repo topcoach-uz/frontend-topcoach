@@ -24,8 +24,6 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
       pollingInterval: 10000, // Poll every 10 seconds for real-time updates
       // Don't refetch on error - just use default value
       refetchOnMountOrArgChange: false,
-      // Don't show error notifications - just use default value
-      errorPolicy: 'ignore',
     }
   );
 

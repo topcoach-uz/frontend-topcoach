@@ -33,7 +33,7 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
   // Get assigned mentor avatar from media array
   const assignedMentorAvatar = assignedMentor?.profile?.media 
     ? getLatestCreatedImg(assignedMentor.profile.media as any)
-    : assignedMentor?.profile?.avatar;
+    : (assignedMentor?.profile as { avatar?: string } | undefined)?.avatar;
 
   const handleAssignMentor = async (newMentorId: string | null) => {
     try {
@@ -65,14 +65,14 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
     const profileImage = mentor.profile?.media 
       ? getLatestCreatedImg(mentor.profile.media as any)
       : null;
-    const avatarUrl = profileImage || mentor.profile?.avatar;
+    const avatarUrl = profileImage || (mentor.profile as { avatar?: string } | undefined)?.avatar;
     
     return {
       value: mentor.id,
       label: mentor.profile?.name || 'Unknown Mentor',
       avatar: avatarUrl || undefined,
       university: mentor.mentorProfile?.university,
-      experience: mentor.mentorProfile?.experienceLevel,
+      experience: (mentor.mentorProfile as { experienceLevel?: string } | undefined)?.experienceLevel,
       profile: mentor.profile, // Pass full profile for media access
     };
   }) || [];
@@ -90,7 +90,7 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
         onChange={handleAssignMentor}
         loading={mentorsLoading}
         filterOption={(input, option) => {
-          const label = option?.label?.toLowerCase() || '';
+          const label = String(option?.label ?? '').toLowerCase();
           return label.includes(input.toLowerCase());
         }}
         allowClear

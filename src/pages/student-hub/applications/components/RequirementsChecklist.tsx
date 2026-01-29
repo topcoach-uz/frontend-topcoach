@@ -290,7 +290,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
                 <Space style={{ flex: 1, marginLeft: 8 }}>
                   <UnifiedIcon name={getTypeIcon(item.type)} size="sm" color="primary" />
                   <Text style={{ flex: 1 }}>{item.name}</Text>
-                  <Tag color={getStatusColor(item.status)} size="small">
+                  <Tag color={getStatusColor(item.status)}>
                     {getStatusText(item.status)}
                   </Tag>
                 </Space>

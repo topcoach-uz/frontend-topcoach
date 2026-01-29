@@ -30,9 +30,9 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   layers: FiIcons.FiLayers,
   clipboard: FiIcons.FiClipboard,
   'check-square': FiIcons.FiCheckSquare,
-  building: FiIcons.FiBuilding,
-  university: FiIcons.FiBuilding,
-  'building-2': FiIcons.FiBuilding,
+  building: FaIcons.FaBuilding,
+  university: FaIcons.FaBuilding,
+  'building-2': FaIcons.FaBuilding,
   
   // Essays & Writing
   essays: FiIcons.FiEdit,
@@ -51,7 +51,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   files: FiIcons.FiFile,
   
   // Tools & Utilities
-  calculator: FiIcons.FiCalculator,
+  calculator: FaIcons.FaCalculator,
   settings: FiIcons.FiSettings,
   cog: FiIcons.FiSettings,
   
@@ -170,7 +170,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   scroll: FaIcons.FaScroll,
   certificate: FaIcons.FaCertificate,
   school: FaIcons.FaSchool,
-  library: FaIcons.FaLibrary,
+  library: FaIcons.FaBook,
   running: FaIcons.FaRunning,
   music: FaIcons.FaMusic,
   palette: FaIcons.FaPalette,
@@ -189,7 +189,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   share: FiIcons.FiShare2,
   'share-2': FiIcons.FiShare2,
   print: FiIcons.FiPrinter,
-  sort: FiIcons.FiArrowUpDown,
+  sort: FaIcons.FaArrowsAltV,
   bars: FiIcons.FiMenu,
   menu: FiIcons.FiMenu,
 };

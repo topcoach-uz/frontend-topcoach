@@ -490,8 +490,9 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     : null;
 
   // Calculate days until next deadline
-  const nextDeadlineDays = nextDeadline
-    ? Math.ceil((new Date(nextDeadline.deadline || nextDeadline.applicationDeadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  const nextDeadlineDate = nextDeadline && ((nextDeadline as { deadline?: string; applicationDeadline?: string }).deadline || (nextDeadline as { deadline?: string; applicationDeadline?: string }).applicationDeadline);
+  const nextDeadlineDays = nextDeadlineDate
+    ? Math.ceil((new Date(nextDeadlineDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
   // Calculate overall completion rate

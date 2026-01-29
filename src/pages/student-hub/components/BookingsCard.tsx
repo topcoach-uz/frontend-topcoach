@@ -68,7 +68,7 @@ const BookingsCard: React.FC<BookingsCardProps> = ({ compact = true, maxItems = 
                 {...session}
               />
             ))}
-            {!compact && joinedSessions?.filter((s: any) => new Date(s.date) > new Date() && !s.cancelStatus).length > maxItems && (
+            {!compact && (joinedSessions?.filter((s: any) => new Date(s.date) > new Date() && !s.cancelStatus) ?? []).length > maxItems && (
               <Button 
                 type="link" 
                 onClick={() => navigate('/')}
@@ -113,11 +113,11 @@ const BookingsCard: React.FC<BookingsCardProps> = ({ compact = true, maxItems = 
                 {...session}
               />
             ))}
-            {!compact && joinedSessions?.filter((s: any) => {
+            {!compact && (joinedSessions?.filter((s: any) => {
               const duration = s.type === SessionTypeEnum.Individual30M ? 30 : 60;
               const endTime = new Date(s.date).getTime() + duration * 60 * 1000;
               return new Date().getTime() > endTime;
-            }).length > maxItems && (
+            }) ?? []).length > maxItems && (
               <Button 
                 type="link" 
                 onClick={() => navigate('/')}

@@ -44,7 +44,7 @@ const NextBestActionCard: React.FC<NextBestActionCardProps> = ({ action }) => {
   // Fetch university name if we have universityId but not a proper title
   const { data: university } = useGetUniversityDetailQuery(
     action.universityId || '', 
-    { skip: !action.universityId || (action.title && !action.title.includes('University Application') && !action.title.includes('Unknown')) }
+    { skip: !action.universityId || !!(action.title && !action.title.includes('University Application') && !action.title.includes('Unknown')) }
   );
 
   // Resolve the display title

@@ -36,7 +36,7 @@ export default function MentorHome() {
             shadowed={false}
             bordered={false}
             borderRadius={24}
-            padding={28}
+            padding={24}
             style={{ 
               boxShadow: 'none',
               width: '100%',

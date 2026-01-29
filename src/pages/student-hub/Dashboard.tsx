@@ -228,7 +228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
 
 
   // Get psychometric assessments data
-  const studentProfileId = studentProfile?.id || currentUserData?.profile?.studentProfile?.id;
+  const studentProfileId = studentProfile?.id || (currentUserData?.profile as { studentProfile?: { id?: string } } | undefined)?.studentProfile?.id;
   const { data: psychometricAssessments } = useGetAllAssessmentsQuery(
     studentProfileId || '',
     { skip: !studentProfileId || isReadOnly }
@@ -410,6 +410,9 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         deadline: sch?.applicationDeadline, 
         id: sch?.id,
         title: sch?.scholarshipName || sch?.name,
+        major: undefined as string | undefined,
+        universityId: undefined as string | undefined,
+        universityName: undefined as string | undefined,
       })),
     ];
     

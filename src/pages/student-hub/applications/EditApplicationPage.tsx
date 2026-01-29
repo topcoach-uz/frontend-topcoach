@@ -275,7 +275,7 @@ const EditApplicationPage: React.FC = () => {
           <h3>Application Not Found</h3>
           <p>
             {error 
-              ? `Error loading application: ${error?.data?.message || error?.message || 'Unknown error'}`
+              ? `Error loading application: ${(error as { data?: { message?: string }; message?: string })?.data?.message ?? (error as { message?: string })?.message ?? 'Unknown error'}`
               : 'The application you\'re trying to edit could not be found.'}
           </p>
           <Button type="primary" onClick={() => navigate('/student-hub/applications')}>

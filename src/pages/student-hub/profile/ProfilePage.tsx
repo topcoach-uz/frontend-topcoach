@@ -3,7 +3,7 @@ import { Card, Tabs, Progress, Button, Row, Col, Statistic, Badge, Alert } from 
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
-import { STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import { STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
 import { InlineLoader, PageSkeleton } from '../../../components/loading';
@@ -144,7 +144,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       key: 'academic',
       label: (
         <div className="tab-label">
-          <FontAwesomeIcon icon={PROFILE_ICONS.ACADEMIC} />
+          <UnifiedIcon name={PROFILE_ICONS.ACADEMIC} size="sm" color="primary" />
           <span>{t('studentHub.profile.academicProfile')}</span>
         </div>
       ),
@@ -164,7 +164,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       key: 'gpa-calculator',
       label: (
         <div className="tab-label">
-          <FontAwesomeIcon icon="calculator" />
+          <UnifiedIcon name="calculator" size="sm" color="primary" />
           <span>GPA Calculator</span>
         </div>
       ),

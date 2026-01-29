@@ -1,7 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, Button, Card } from 'antd';
 import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
-import { STATUS_ICONS } from '../../constants/icons';
 
 interface Props {
   children: ReactNode;
@@ -48,7 +47,7 @@ class StudentHubErrorBoundary extends Component<Props, State> {
           <Card className="error-card">
             <div className="error-content">
               <div className="error-icon">
-                <FontAwesomeIcon icon={STATUS_ICONS.ERROR} size="2xl" />
+                <FontAwesomeIcon icon={"fas fa-exclamation-circle" as any} size="2xl" />
               </div>
               <h2 className="error-title">Something went wrong</h2>
               <p className="error-description">
