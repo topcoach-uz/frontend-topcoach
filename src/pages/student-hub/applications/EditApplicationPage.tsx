@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Form, Input, Select, DatePicker, Button, Row, Col, message, Space, AutoComplete } from 'antd';
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { 
   useGetCollegeApplicationQuery,
   useUpdateCollegeApplicationMutation 
 } from '../../../app/services/student-hub/applicationTrackingApi';
+import type { CollegeApplication } from '../../../app/services/student-hub/types';
 import { api } from 'src/app/api';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
@@ -16,38 +18,40 @@ import './EditApplicationPage.scss';
 const { Option } = Select;
 const { TextArea } = Input;
 
+const EDIT_ID_REGEX = /\/applications\/([^/]+)\/edit$/;
+
+function parseEditIdFromPathname(pathname: string): string | null {
+  const m = pathname.match(EDIT_ID_REGEX);
+  const parsed = m?.[1]?.trim();
+  if (!parsed || parsed === 'undefined') return null;
+  if (parsed.length < 30) return null;
+  return parsed;
+}
+
 const EditApplicationPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { pathname } = useLocation();
+  const paramId = useParams<{ id: string }>().id;
+  const rawParam = paramId && paramId !== 'undefined' && paramId.trim() !== '' ? paramId.trim() : null;
+  const id = (rawParam && rawParam.length >= 30 ? rawParam : null) ?? parseEditIdFromPathname(pathname);
   const [form] = Form.useForm();
   
-  // Validate ID before making query
-  if (!id || id === 'undefined' || id.trim() === '') {
-    return (
-      <div className="edit-application-error">
-        <div className="error-content">
-          <h3>Invalid Application ID</h3>
-          <p>The application ID is missing or invalid. Please go back and try again.</p>
-          <Button type="primary" onClick={() => navigate('/student-hub/applications')}>
-            Back to Applications
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
-  const { data: applicationResponse, isLoading, error } = useGetCollegeApplicationQuery(id, {
-    skip: !id || id === 'undefined',
+  const { data: applicationResponse, isLoading, error } = useGetCollegeApplicationQuery(id ?? '', {
+    skip: !id,
   });
   const [updateCollegeApplication, { isLoading: updateLoading }] = useUpdateCollegeApplicationMutation();
 
-  const application = applicationResponse?.data;
+  const raw = applicationResponse?.data ?? applicationResponse;
+  const application: CollegeApplication | undefined =
+    raw && typeof raw === 'object' && raw !== null && 'id' in raw && typeof (raw as CollegeApplication).id === 'string'
+      ? (raw as CollegeApplication)
+      : undefined;
 
   // University search state
   const [universitySearchValue, setUniversitySearchValue] = useState('');
   const [universityOptions, setUniversityOptions] = useState<Array<{ value: string; label: string; id: string }>>([]);
-  const [selectedUniversityId, setSelectedUniversityId] = useState<string | null>(application?.universityId || null);
+  const [selectedUniversityId, setSelectedUniversityId] = useState<string | null>(application?.universityId ?? null);
   const [majorOptions, setMajorOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [isOtherUniversity, setIsOtherUniversity] = useState(!application?.universityId && !!application?.universityName);
@@ -145,9 +149,10 @@ const EditApplicationPage: React.FC = () => {
   // Populate form when application data is loaded
   useEffect(() => {
     if (application) {
-      const deadlineDate = application.deadline ? new Date(application.deadline) : null;
-      
-      // Set university ID if available
+      const deadlineValue = application.deadline && dayjs(application.deadline).isValid()
+        ? dayjs(application.deadline)
+        : null;
+
       if (application.universityId) {
         setSelectedUniversityId(application.universityId);
         setIsOtherUniversity(false);
@@ -164,7 +169,7 @@ const EditApplicationPage: React.FC = () => {
         status: application.status,
         category: application.category,
         priority: application.priority,
-        deadline: deadlineDate,
+        deadline: deadlineValue,
         notes: application.notes,
       });
     }
@@ -228,10 +233,8 @@ const EditApplicationPage: React.FC = () => {
       }
       
       if (values.deadline) {
-        const deadlineDate = values.deadline instanceof Date 
-          ? values.deadline 
-          : new Date(values.deadline);
-        applicationData.deadline = deadlineDate.toISOString();
+        const d = dayjs(values.deadline);
+        if (d.isValid()) applicationData.deadline = d.toISOString();
       }
       
       if (values.notes !== undefined) {
@@ -256,6 +259,20 @@ const EditApplicationPage: React.FC = () => {
   const handleCancel = () => {
     navigate('/student-hub/applications');
   };
+
+  if (!id) {
+    return (
+      <div className="edit-application-error">
+        <div className="error-content">
+          <h3>Invalid Application ID</h3>
+          <p>The application ID is missing or invalid. Please go back and try again.</p>
+          <Button type="primary" onClick={() => navigate('/student-hub/applications')}>
+            Back to Applications
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -92,7 +92,7 @@ export default function Actions() {
       <Link to="/contact" className={styles.contactIcon}>
         <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
       </Link>
-      {isAuthenticated && <ChatIcon />}
+      <ChatIcon />
       <LanguageSelect />
       <div className={styles.authContainer}>
         {!isAuthLoading && (

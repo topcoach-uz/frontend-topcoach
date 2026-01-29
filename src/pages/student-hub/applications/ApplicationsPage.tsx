@@ -603,21 +603,22 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
 
       {/* Enhanced Filters and Actions Bar - Modern Design */}
       <Card 
+        className="applications-filters-card"
         style={{ 
           marginBottom: 24,
           borderRadius: 16,
           border: '1px solid #e5e7eb',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
         }}
-        styles={{ body: { padding: '16px 20px' } }}
+        styles={{ body: { padding: '16px 24px' } }}
       >
         <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} sm={24} md={18}>
+          <Col xs={24} sm={24} md={14} lg={15}>
             <Space size="middle" wrap style={{ width: '100%' }}>
               <Select 
                 value={typeFilter} 
                 onChange={setTypeFilter} 
-                style={{ minWidth: 140 }}
+                style={{ minWidth: 130 }}
                 size="middle"
                 suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
               >
@@ -628,7 +629,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               <Select 
                 value={statusFilter} 
                 onChange={setStatusFilter} 
-                style={{ minWidth: 150 }}
+                style={{ minWidth: 130 }}
                 size="middle"
                 suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
               >
@@ -641,7 +642,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               <Select 
                 value={sortBy} 
                 onChange={setSortBy} 
-                style={{ minWidth: 180 }}
+                style={{ minWidth: 160 }}
                 size="middle"
                 suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
               >
@@ -653,8 +654,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               </Select>
             </Space>
           </Col>
-          <Col xs={24} sm={24} md={6} style={{ textAlign: 'right' }}>
-            <Space size="small">
+          <Col xs={24} sm={24} md={10} lg={9} className="applications-actions-col">
+            <Space size="small" wrap className="applications-actions-btns">
               <Button 
                 size="middle"
                 icon={<UnifiedIcon name="award" size="sm" color="primary" />} 
@@ -693,25 +694,17 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           <Card 
             id="applications-list" 
             title={typeFilter === 'all' ? 'Your applications' : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
-            className="applications-card"
-            style={{ height: combinedList.length === 0 ? 320 : 'auto', minHeight: combinedList.length === 0 ? 320 : 'auto' }}
-            styles={{ body: { height: combinedList.length === 0 ? 270 : 'auto', minHeight: combinedList.length === 0 ? 270 : 'auto', display: 'flex', flexDirection: 'column' } }}
+            className="applications-card applications-card--compact"
+            style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
+            styles={{ body: { padding: combinedList.length === 0 ? '24px 20px' : '16px 20px', display: 'flex', flexDirection: 'column' } }}
           >
             <List
               dataSource={combinedList}
               locale={{ 
                 emptyText: (
-                  <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    padding: '40px 20px',
-                    minHeight: 200,
-                    textAlign: 'center'
-                  }}>
-                    <UnifiedIcon name="file-text" size="lg" color="secondary" style={{ marginBottom: 16, opacity: 0.5 }} />
-                    <p style={{ fontSize: 16, color: '#666', margin: 0 }}>No applications yet. Add one to get started.</p>
+                  <div className="applications-empty-state">
+                    <UnifiedIcon name="file-text" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
+                    <p>No applications yet. Add one to get started.</p>
                   </div>
                 )
               }}
@@ -724,107 +717,42 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                     })()
                   : null;
                 return (
-                  <List.Item className="application-detail-item" style={{ padding: 0, marginBottom: 24 }}>
+                  <List.Item className="application-detail-item" style={{ padding: 0, marginBottom: 12 }}>
                     <Card
-                      className="application-card"
+                      className="application-card application-card--compact"
                       style={{
-                        borderRadius: 20,
+                        borderRadius: 14,
                         border: '1px solid #e5e7eb',
-                        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        background: '#ffffff',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                        transition: 'all 0.2s ease',
+                        background: '#fff',
                         overflow: 'hidden',
-                        position: 'relative',
                         margin: 0,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 0, 0, 0.12)';
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.borderColor = '#8b0000';
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(139, 0, 0, 0.08)';
+                        e.currentTarget.style.borderColor = '#cbd5e1';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)';
-                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)';
                         e.currentTarget.style.borderColor = '#e5e7eb';
                       }}
                     >
-                      {/* Modern Card Design - Completely Redesigned */}
-                      <div style={{ padding: 0 }}>
-                        {/* Header Section with Gradient */}
-                        <div style={{
-                          padding: '28px 32px',
-                          background: 'linear-gradient(135deg, #fef2f2 0%, #ffffff 100%)',
-                          borderBottom: '1px solid #f1f5f9'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ 
-                                fontSize: 22, 
-                                fontWeight: 700, 
-                                color: '#0f172a', 
-                                marginBottom: 10,
-                                lineHeight: 1.3,
-                                letterSpacing: '-0.02em'
-                              }}>
-                                {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
-                              </div>
-                              {!isSch && item.major && (
-                                <div style={{ 
-                                  fontSize: 15, 
-                                  color: '#64748b', 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: 8,
-                                  fontWeight: 500,
-                                  marginTop: 6
-                                }}>
-                                  <UnifiedIcon name="graduation-cap" size="sm" color="primary" />
-                                  <span>{item.major}</span>
-                                </div>
-                              )}
-                              {isSch && item.amount != null && (
-                                <div style={{ 
-                                  fontSize: 18, 
-                                  color: '#16a34a', 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: 8,
-                                  fontWeight: 700,
-                                  marginTop: 8
-                                }}>
-                                  <UnifiedIcon name="award" size="md" color="success" />
-                                  <span>${Number(item.amount).toLocaleString()}</span>
-                                </div>
-                              )}
-                            </div>
-                            <Space size={8} style={{ flexShrink: 0 }} wrap>
+                      <div className="application-card-inner">
+                        {/* Compact header: title, subtitle, tags */}
+                        <div className="application-card-header">
+                          <div className="application-card-title-row">
+                            <span className="application-card-title">
+                              {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
+                            </span>
+                            <Space size={6} wrap className="application-card-tags">
                               {matchScore && !isSch && matchScore >= 60 && (
-                                <Tag 
-                                  color={matchScore >= 80 ? 'success' : 'warning'} 
-                                  style={{ 
-                                    margin: 0,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    padding: '6px 14px',
-                                    borderRadius: 20,
-                                    border: 'none'
-                                  }}
-                                >
+                                <Tag color={matchScore >= 80 ? 'success' : 'warning'} className="application-tag">
                                   {matchScore}% Match
                                 </Tag>
                               )}
                               {!isSch && item.category && (
-                                <Tag 
-                                  color={getCategoryColor(item.category)} 
-                                  style={{ 
-                                    margin: 0,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    padding: '6px 14px',
-                                    borderRadius: 20,
-                                    border: 'none'
-                                  }}
-                                >
+                                <Tag color={getCategoryColor(item.category)} className="application-tag">
                                   {getCategoryText(item.category)}
                                 </Tag>
                               )}
@@ -833,263 +761,115 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                                 if (deadline) {
                                   const daysUntil = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                                   if (daysUntil <= 7 && daysUntil > 0) {
-                                    return (
-                                      <Tag 
-                                        color="error" 
-                                        style={{ 
-                                          margin: 0,
-                                          fontSize: 12,
-                                          fontWeight: 700,
-                                          padding: '6px 14px',
-                                          borderRadius: 20,
-                                          border: 'none'
-                                        }}
-                                      >
-                                        {daysUntil}d left
-                                      </Tag>
-                                    );
+                                    return <Tag color="error" className="application-tag">{daysUntil}d left</Tag>;
                                   }
                                 }
                                 return null;
                               })()}
-                              <Tag 
+                              <Tag
                                 color={item.status === 'accepted' ? 'success' : item.status === 'rejected' ? 'error' : item.status === 'applying' ? 'processing' : 'default'}
-                                style={{ 
-                                  margin: 0,
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  padding: '6px 14px',
-                                  borderRadius: 20,
-                                  border: 'none'
-                                }}
+                                className="application-tag"
                               >
                                 {getStatusText(item.status)}
                               </Tag>
                             </Space>
                           </div>
+                          <div className="application-card-subtitle">
+                            {!isSch && item.major && (
+                              <span className="application-card-subtitle-major">
+                                <UnifiedIcon name="graduation-cap" size="xs" color="#64748b" style={{ marginRight: 6 }} />
+                                {item.major}
+                              </span>
+                            )}
+                            {isSch && item.amount != null && (
+                              <span className="application-card-amount">
+                                <UnifiedIcon name="award" size="xs" color="#16a34a" style={{ marginRight: 6 }} />
+                                ${Number(item.amount).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Details Section */}
-                        <div style={{ padding: '20px 32px', background: '#ffffff' }}>
-                          <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: 16,
-                            marginBottom: 20
-                          }}>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: 12,
-                              padding: '12px 16px',
-                              background: '#f8fafc',
-                              borderRadius: 12,
-                              border: '1px solid #e2e8f0'
-                            }}>
-                              <div style={{ 
-                                width: 40, 
-                                height: 40, 
-                                borderRadius: 10, 
-                                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                              }}>
-                                <UnifiedIcon name="calendar" size="md" color="primary" />
-                              </div>
-                              <div>
-                                <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
-                                  Deadline
-                                </div>
-                                <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
-                                  {formatDate(item.deadline || item.applicationDeadline)}
-                                </div>
-                              </div>
+                        {/* Inline meta: deadline, type, priority – subtle colored icons */}
+                        <div className="application-card-meta">
+                          <span className="application-meta-item application-meta-item--deadline">
+                            <UnifiedIcon name="calendar" size="sm" color="#0ea5e9" />
+                            {formatDate(item.deadline || item.applicationDeadline)}
+                          </span>
+                          {!isSch && item.applicationType && (
+                            <span className="application-meta-item application-meta-item--type">
+                              <UnifiedIcon name="file-text" size="sm" color="#6366f1" />
+                              {getApplicationTypeText(item.applicationType)}
+                            </span>
+                          )}
+                          {!isSch && item.priority != null && (
+                            <span className="application-meta-item application-meta-item--priority">
+                              <UnifiedIcon name="star" size="sm" color="#f59e0b" />
+                              {getPriorityText(item.priority)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Requirements + Mentor: compact row */}
+                        {!isSch && item.id && (
+                          <div className="application-card-requirements-mentor">
+                            <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                              <RequirementsChecklist
+                                applicationId={item.id}
+                                requirements={item.requirements}
+                                onUpdate={() => refetchApplications()}
+                              />
                             </div>
-                            {!isSch && item.applicationType && (
-                              <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: 12,
-                                padding: '12px 16px',
-                                background: '#f8fafc',
-                                borderRadius: 12,
-                                border: '1px solid #e2e8f0'
-                              }}>
-                                <div style={{ 
-                                  width: 40, 
-                                  height: 40, 
-                                  borderRadius: 10, 
-                                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  flexShrink: 0
-                                }}>
-                                  <UnifiedIcon name="file-text" size="md" color="primary" />
-                                </div>
-                                <div>
-                                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
-                                    Type
-                                  </div>
-                                  <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
-                                    {getApplicationTypeText(item.applicationType)}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            {!isSch && item.priority != null && (
-                              <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: 12,
-                                padding: '12px 16px',
-                                background: '#f8fafc',
-                                borderRadius: 12,
-                                border: '1px solid #e2e8f0'
-                              }}>
-                                <div style={{ 
-                                  width: 40, 
-                                  height: 40, 
-                                  borderRadius: 10, 
-                                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  flexShrink: 0
-                                }}>
-                                  <UnifiedIcon name="star" size="md" color="primary" />
-                                </div>
-                                <div>
-                                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
-                                    Priority
-                                  </div>
-                                  <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
-                                    {getPriorityText(item.priority)}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                            <div onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} className="application-mentor-cell">
+                              <MentorAssignment
+                                applicationId={item.id}
+                                mentorId={item.mentorId}
+                                onUpdate={(mentorId) => refetchApplications()}
+                              />
+                            </div>
                           </div>
+                        )}
 
-                          {/* Requirements and Mentor Section - Fixed to prevent navigation */}
+                        {item.notes && (
+                          <div className="application-card-notes">
+                            <UnifiedIcon name="info" size="sm" color="#64748b" style={{ flexShrink: 0, marginTop: 2 }} />
+                            <span>{item.notes}</span>
+                          </div>
+                        )}
+
+                        <div className="application-card-actions">
                           {!isSch && item.id && (
-                            <div style={{ 
-                              display: 'grid', 
-                              gridTemplateColumns: '1fr 1fr',
-                              gap: 16,
-                              marginBottom: 20,
-                              padding: '20px',
-                              background: '#f8fafc',
-                              borderRadius: 16,
-                              border: '1px solid #e2e8f0'
-                            }}>
-                              <div 
-                              onClick={(e) => e.stopPropagation()}
-                              onMouseDown={(e) => e.stopPropagation()}
-                              >
-                                <RequirementsChecklist
-                                  applicationId={item.id}
-                                  requirements={item.requirements}
-                                  onUpdate={(updatedRequirements) => {
-                                    refetchApplications();
-                                  }}
-                                />
-                              </div>
-                              <div 
-                              onClick={(e) => e.stopPropagation()}
-                              onMouseDown={(e) => e.stopPropagation()}
-                              style={{ display: 'flex', alignItems: 'flex-start' }}
-                              >
-                                <MentorAssignment
-                                  applicationId={item.id}
-                                  mentorId={item.mentorId}
-                                  onUpdate={(mentorId) => {
-                                    refetchApplications();
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {item.notes && (
-                            <div style={{ 
-                              marginBottom: 20,
-                              padding: '16px 20px',
-                              background: '#fffbeb',
-                              borderRadius: 12,
-                              borderLeft: '4px solid #f59e0b'
-                            }}>
-                              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                                <UnifiedIcon name="file-text" size="md" color="warning" style={{ marginTop: 2, flexShrink: 0 }} />
-                                <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.6 }}>
-                                  {item.notes}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Actions Section */}
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'flex-end', 
-                            gap: 12, 
-                            paddingTop: 20,
-                            borderTop: '1px solid #f1f5f9'
-                          }}>
-                            {!isSch && item.id && (
-                              <Button 
-                                size="large"
-                                style={{
-                                  height: 44,
-                                  borderRadius: 12,
-                                  fontWeight: 600,
-                                  borderColor: '#8b0000',
-                                  color: '#8b0000',
-                                  padding: '0 24px',
-                                }}
-                                icon={<UnifiedIcon name="edit" size="sm" color="primary" />} 
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  e.preventDefault();
-                                  // Debug: Log the item to see what we have
-                                  console.log('Edit button clicked, item:', item);
-                                  console.log('Item ID:', item.id);
-                                  
-                                  const applicationId = item.id || item._id || item.applicationId;
-                                  if (applicationId && typeof applicationId === 'string' && applicationId.trim() !== '') {
-                                    console.log('Navigating to edit page with ID:', applicationId);
-                                    navigate(`/student-hub/applications/${applicationId}/edit`); 
-                                  } else {
-                                    console.error('Invalid application ID:', applicationId);
-                                    message.error(`Application ID is missing or invalid. Cannot edit. ID: ${applicationId}`);
-                                  }
-                                }}
-                              >
-                                Edit
-                              </Button>
-                            )}
-                            <Button 
-                              size="large"
-                              danger
-                              style={{
-                                height: 44,
-                                borderRadius: 12,
-                                fontWeight: 600,
-                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
-                                padding: '0 24px',
-                              }}
-                              icon={<UnifiedIcon name="trash-2" size="sm" color="white" />} 
-                              onClick={(e) => { 
-                                e.stopPropagation(); 
+                            <Button
+                              size="small"
+                              style={{ height: 32, borderRadius: 8, fontWeight: 600, borderColor: '#8b0000', color: '#8b0000', fontSize: 13 }}
+                              icon={<UnifiedIcon name="edit" size="xs" color="primary" />}
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 e.preventDefault();
-                                isSch ? handleDeleteScholarship(item) : handleDeleteApplication(item); 
+                                const applicationId = item.id || item._id || item.applicationId;
+                                if (applicationId && typeof applicationId === 'string' && applicationId.trim() !== '') {
+                                  navigate(`/student-hub/applications/${applicationId}/edit`);
+                                } else {
+                                  message.error('Application ID is missing or invalid.');
+                                }
                               }}
                             >
-                              Delete
+                              Edit
                             </Button>
-                          </div>
+                          )}
+                          <Button
+                            size="small"
+                            danger
+                            style={{ height: 32, borderRadius: 8, fontWeight: 600, fontSize: 13 }}
+                            icon={<UnifiedIcon name="trash-2" size="xs" color="white" />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              isSch ? handleDeleteScholarship(item) : handleDeleteApplication(item);
+                            }}
+                          >
+                            Delete
+                          </Button>
                         </div>
                       </div>
                     </Card>
@@ -1102,38 +882,31 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
         <Col xs={24} lg={8}>
           <Card 
             title={t('studentHub.applications.upcomingDeadlines')} 
-            className="deadlines-card"
-            style={{ height: combinedList.length === 0 ? 320 : 'auto', minHeight: combinedList.length === 0 ? 320 : 'auto' }}
-            styles={{ body: { height: combinedList.length === 0 ? 270 : 'auto', minHeight: combinedList.length === 0 ? 270 : 'auto' } }}
+            className="deadlines-card deadlines-card--compact"
+            style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
+            styles={{ body: { padding: upcomingDeadlines.length === 0 ? '24px 20px' : '16px 20px' } }}
           >
             {upcomingDeadlines.length > 0 ? (
               <List
                 dataSource={upcomingDeadlines}
                 renderItem={(item: any) => (
-                  <List.Item className="deadline-item">
+                  <List.Item className="deadline-item deadline-item--compact">
                     <div className="deadline-content">
                       <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
-                      {item.type === 'application' && item.major && <div className="deadline-major" style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{item.major}</div>}
-                      <div className="deadline-date" style={{ marginTop: 8 }}>Deadline: {formatDate(item.deadlineDate)}</div>
+                      {item.type === 'application' && item.major && <div className="deadline-major">{item.major}</div>}
+                      <div className="deadline-date">
+                        <UnifiedIcon name="calendar" size="xs" color="#0ea5e9" style={{ marginRight: 6, flexShrink: 0 }} />
+                        {formatDate(item.deadlineDate)}
+                      </div>
                     </div>
                     <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
                   </List.Item>
                 )}
               />
             ) : (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                padding: '40px 20px',
-                minHeight: 200,
-                textAlign: 'center'
-              }}>
-                <UnifiedIcon name="calendar" size="lg" color="secondary" style={{ marginBottom: 16, opacity: 0.5 }} />
-                <p style={{ fontSize: 16, color: '#666', margin: '0 0 12px 0' }}>
-                  {t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}
-                </p>
+              <div className="deadlines-empty-state">
+                <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
+                <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
                 <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
                   Add application
                 </Button>

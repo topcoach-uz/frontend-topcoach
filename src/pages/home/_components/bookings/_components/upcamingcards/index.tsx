@@ -4,6 +4,7 @@ import { Brodcast } from 'iconsax-react';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 import { SessionsSchema, SessionTypeEnum, UserRole } from 'src/app/api/Api';
 import {
   useCancelSessionAsStudentMutation,
@@ -571,13 +572,12 @@ export default function UpcomingCard({
         </CustomButton>
       </div>
       <div className={styles.chatButtonContainer} style={{ display: 'block', visibility: 'visible', opacity: 1 }}>
-        {conversationId ? (
-          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+        <ErrorBoundary
+          fallbackRender={() => (
             <CustomButton
               type="primary"
               icon={<MessageOutlined />}
-              onClick={handleChatClick}
-              style={{ 
+              style={{
                 backgroundColor: '#8b0000',
                 borderColor: '#8b0000',
                 width: '100%',
@@ -586,30 +586,52 @@ export default function UpcomingCard({
                 visibility: 'visible',
                 opacity: 1,
               }}
-              title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+              title="Chat"
             >
-              {role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
+              Chat
             </CustomButton>
-          </Badge>
-        ) : (
-          <CustomButton
-            type="primary"
-            icon={<MessageOutlined />}
-            onClick={handleChatClick}
-            style={{ 
-              backgroundColor: '#8b0000',
-              borderColor: '#8b0000',
-              width: '100%',
-              marginTop: '8px',
-              display: 'block',
-              visibility: 'visible',
-              opacity: 1,
-            }}
-            title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
-          >
-            {role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
-          </CustomButton>
-        )}
+          )}
+        >
+          {conversationId ? (
+            <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+              <CustomButton
+                type="primary"
+                icon={<MessageOutlined />}
+                onClick={handleChatClick}
+                style={{
+                  backgroundColor: '#8b0000',
+                  borderColor: '#8b0000',
+                  width: '100%',
+                  marginTop: '8px',
+                  display: 'block',
+                  visibility: 'visible',
+                  opacity: 1,
+                }}
+                title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+              >
+                {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+              </CustomButton>
+            </Badge>
+          ) : (
+            <CustomButton
+              type="primary"
+              icon={<MessageOutlined />}
+              onClick={handleChatClick}
+              style={{
+                backgroundColor: '#8b0000',
+                borderColor: '#8b0000',
+                width: '100%',
+                marginTop: '8px',
+                display: 'block',
+                visibility: 'visible',
+                opacity: 1,
+              }}
+              title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+            >
+              {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+            </CustomButton>
+          )}
+        </ErrorBoundary>
       </div>
 
       {/* Cancel meeting */}

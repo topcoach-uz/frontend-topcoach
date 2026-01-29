@@ -222,8 +222,8 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
 
   if (totalItems === 0) {
     return (
-      <div style={{ padding: '12px 0', color: '#999', fontSize: '14px' }}>
-        <Text type="secondary">No requirements tracked yet. Add requirements in the edit page.</Text>
+      <div style={{ padding: '4px 0', color: '#94a3b8', fontSize: '12px' }}>
+        <Text type="secondary">No requirements tracked yet. Add them in the edit page.</Text>
       </div>
     );
   }

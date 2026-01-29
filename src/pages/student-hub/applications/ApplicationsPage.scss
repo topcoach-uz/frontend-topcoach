@@ -2,12 +2,36 @@
 @import '../../../styles/student-hub-design-system.scss';
 
 // ========================================
+// 📐 FILTERS & ACTIONS BAR
+// ========================================
+
+.applications-filters-card {
+  .applications-actions-col {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+  .applications-actions-btns {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  @media (min-width: 768px) {
+    .applications-actions-col {
+      justify-content: flex-end;
+      padding-right: 16px;
+    }
+  }
+}
+
+// ========================================
 // 🔄 LOADING & ERROR STATES
 // ========================================
 
 // Ensure loading overlay positions correctly
 .applications-page {
   position: relative;
+  max-width: 100%;
 }
 
 // Loading state - perfectly centered in main content area
@@ -1230,6 +1254,292 @@
         }
       }
     }
+  }
+}
+
+// ========================================
+// 📋 COMPACT APPLICATION & DEADLINE CARDS
+// ========================================
+
+.applications-empty-state,
+.deadlines-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  min-height: 160px;
+  text-align: center;
+  p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 12px 0;
+  }
+}
+
+.application-card--compact {
+  .ant-card-body { padding: 0 !important; }
+  .application-card-inner {
+    padding: 16px;
+  }
+  .application-card-header {
+    margin-bottom: 10px;
+  }
+  .application-card-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .application-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+  }
+  .application-card-tags {
+    flex-shrink: 0;
+  }
+  .application-tag {
+    margin: 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    border: none !important;
+  }
+  .application-card-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+  }
+  .application-card-subtitle-major {
+    display: inline-flex;
+    align-items: center;
+  }
+  .application-card-amount {
+    display: inline-flex;
+    align-items: center;
+    color: #16a34a;
+    font-weight: 600;
+  }
+  .application-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .application-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .application-meta-item--deadline { color: #0c4a6e; }
+  .application-meta-item--type { color: #3730a3; }
+  .application-meta-item--priority { color: #92400e; }
+  .application-card-requirements-mentor {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .application-mentor-cell {
+    display: flex;
+    align-items: flex-start;
+  }
+  .application-card-notes {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    border-left: 3px solid #94a3b8;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.5;
+  }
+  .application-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+// Mentor assignment (used in application cards)
+.mentor-assignment {
+  width: 100%;
+}
+
+.mentor-assignment-popover {
+  width: 360px;
+  min-width: 360px;
+  padding: 2px 0;
+}
+
+.mentor-assignment-popover-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #0f172a;
+}
+
+.mentor-assignment-select {
+  width: 100% !important;
+  min-width: 0;
+  .ant-select-selector {
+    padding-right: 56px !important; /* room for clear + dropdown icons */
+  }
+}
+
+.mentor-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mentor-option-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mentor-option-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.mentor-option-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.2;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mentor-assignment-actions {
+  margin-top: 4px;
+}
+
+.mentor-assignment-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.mentor-assignment-trigger:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.mentor-assignment-trigger--assigned {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.mentor-assignment-trigger--assigned:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.mentor-trigger-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.mentor-trigger-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.mentor-trigger-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.2;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mentor-assignment-unassign-x {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.mentor-assignment-unassign-x:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.deadlines-card--compact {
+  .deadline-item--compact {
+    padding: 10px 0 !important;
+    border-bottom: 1px solid #f1f5f9;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  .deadline-content .deadline-title {
+    font-size: 14px;
+  }
+  .deadline-major {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .deadline-date {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #0c4a6e;
+    margin-top: 4px;
   }
 }
 

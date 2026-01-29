@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Badge } from 'antd';
 import { MessageOutlined } from '@ant-design/icons';
+import { ErrorBoundary } from 'react-error-boundary';
 import { useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
 import { useTypedSelector } from 'src/app/store';
+import { ACCESS_TOKEN } from 'src/constants/storage';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
 
@@ -10,30 +12,48 @@ interface ChatIconProps {
   className?: string;
 }
 
+function getHasToken(): boolean {
+  try {
+    return typeof window !== 'undefined' && !!localStorage.getItem(ACCESS_TOKEN);
+  } catch {
+    return false;
+  }
+}
+
+function ChatIconFallback() {
+  if (!getHasToken()) return null;
+  return (
+    <div
+      className={styles.chatIconWrapper}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 40,
+        height: 40,
+        cursor: 'default',
+      }}
+    >
+      <MessageOutlined style={{ fontSize: 20, color: 'white' }} />
+    </div>
+  );
+}
+
 const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
-  const { isAuthenticated } = useTypedSelector((state) => state.auth);
+  const isAuthenticated = useTypedSelector((state) => state?.auth?.isAuthenticated) ?? false;
+  const hasToken = getHasToken();
+  const showIcon = isAuthenticated || hasToken;
+
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
-  // Fetch unread count with error handling - always show icon even if query fails
-  const { data: unreadData, error: unreadError } = useGetUnreadCountQuery(
-    undefined,
-    {
-      skip: !isAuthenticated,
-      pollingInterval: 10000, // Poll every 10 seconds for real-time updates
-      // Don't refetch on error - just use default value
-      refetchOnMountOrArgChange: false,
-    }
-  );
+  const { data: unreadData } = useGetUnreadCountQuery(undefined, {
+    skip: true,
+  });
+  const unreadCount = unreadData?.unreadCount ?? 0;
 
-  // Safely get unread count - default to 0 if error or no data
-  // Always use 0 if there's any error to prevent rendering issues
-  const unreadCount = unreadError ? 0 : (unreadData?.unreadCount ?? 0);
-
-  // Always render if authenticated, regardless of query state
-  // This ensures the chat icon is always visible when user is logged in
-  if (!isAuthenticated) {
+  if (!showIcon) {
     return null;
   }
 
@@ -53,34 +73,24 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     setSelectedThreadId(threadId);
   };
 
-  // Always render the chat icon when authenticated
-  // Use try-catch to prevent any rendering errors
-  try {
-    return (
-      <>
-        <div 
-          className={`${styles.chatIconWrapper} ${className || ''}`}
-          onClick={handleIconClick}
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            visibility: 'visible',
-            opacity: 1,
-            pointerEvents: 'auto',
-          }}
-        >
-          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
-            <MessageOutlined 
-              className={styles.chatIcon} 
-              style={{ 
-                display: 'block',
-                visibility: 'visible',
-                opacity: 1,
-              }}
-            />
-          </Badge>
-        </div>
+  return (
+    <>
+      <div
+        className={`${styles.chatIconWrapper} ${className || ''}`}
+        onClick={handleIconClick}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minWidth: 40,
+          height: 40,
+        }}
+      >
+        <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+          <MessageOutlined className={styles.chatIcon} style={{ fontSize: 20, color: 'white' }} />
+        </Badge>
+      </div>
+      {chatModalOpen && (
         <ChatModal
           conversationId={selectedConversationId}
           threadId={selectedThreadId || undefined}
@@ -93,36 +103,18 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
           onConversationChange={handleConversationSelect}
           onThreadChange={handleThreadSelect}
         />
-      </>
-    );
-  } catch (error) {
-    // Fallback: render a simple chat icon even if there's an error
-    console.error('ChatIcon rendering error:', error);
-    return (
-      <div 
-        className={`${styles.chatIconWrapper} ${className || ''}`}
-        onClick={handleIconClick}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          visibility: 'visible',
-          opacity: 1,
-          pointerEvents: 'auto',
-        }}
-      >
-        <MessageOutlined 
-          className={styles.chatIcon}
-          style={{ 
-            display: 'block',
-            visibility: 'visible',
-            opacity: 1,
-          }}
-        />
-      </div>
-    );
-  }
+      )}
+    </>
+  );
 };
 
-export default ChatIcon;
+function ChatIconWithBoundary(props: ChatIconProps) {
+  return (
+    <ErrorBoundary fallbackRender={() => <ChatIconFallback />}>
+      <ChatIcon {...props} />
+    </ErrorBoundary>
+  );
+}
+
+export default ChatIconWithBoundary;
 

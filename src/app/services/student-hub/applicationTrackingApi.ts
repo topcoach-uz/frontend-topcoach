@@ -38,6 +38,15 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         url: `/application-tracking/college-applications/${id}`,
         method: 'GET',
       }),
+      transformResponse: (response: unknown): ApiResponse<CollegeApplication> => {
+        const raw = response && typeof response === 'object' && 'data' in (response as object)
+          ? (response as { data: unknown }).data
+          : response;
+        const entity = raw && typeof raw === 'object' && raw !== null && 'id' in (raw as object)
+          ? (raw as CollegeApplication)
+          : null;
+        return { data: entity as CollegeApplication, success: !!entity };
+      },
       providesTags: (result, error, id) => [{ type: 'CollegeApplications', id }],
     }),
 

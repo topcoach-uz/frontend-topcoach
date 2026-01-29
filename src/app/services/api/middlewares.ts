@@ -74,19 +74,27 @@ export const rtkQueryErrorLogger: Middleware =
           'There is a problem with the server. Please, contact the technical support.'
         );
       } else if (status === 401) {
+        // Don't treat chat API 401 as session expiry – avoids logout and chat icon disappearing
+        const isChatRequest = originalRequestEndpoint && originalRequestEndpoint.includes('/chat');
+        if (isChatRequest) {
+          // Chat API 401 (e.g. webhook/service issues): no logout, no toast. ChatIcon shows 0 unread.
+          return next(action);
+        }
+
         // Only show session expired messages for authenticated requests, not login attempts
         const isLoginAttempt = originalRequestEndpoint && (
-          originalRequestEndpoint.includes('/auth/login') || 
+          originalRequestEndpoint.includes('/auth/login') ||
           originalRequestEndpoint.includes('/auth/exchange') ||
           originalRequestEndpoint.includes('/auth/reset/password') ||
           originalRequestEndpoint.includes('/auth/reset/password/confirm')
         );
-        
+
         if (!isLoginAttempt && originalRequestEndpoint) {
           message.warning('Your session has expired. Please log in again.');
           if (
             !originalRequestEndpoint.startsWith('/sessions') &&
-            !originalRequestEndpoint.startsWith('/camps')
+            !originalRequestEndpoint.startsWith('/camps') &&
+            !originalRequestEndpoint.includes('/chat')
           ) {
             setTimeout(() => {
               store.dispatch(logout());

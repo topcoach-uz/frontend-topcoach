@@ -190,6 +190,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   'share-2': FiIcons.FiShare2,
   print: FiIcons.FiPrinter,
   sort: FaIcons.FaArrowsAltV,
+  'arrow-up-down': FaIcons.FaArrowsAltV,
   bars: FiIcons.FiMenu,
   menu: FiIcons.FiMenu,
 };
