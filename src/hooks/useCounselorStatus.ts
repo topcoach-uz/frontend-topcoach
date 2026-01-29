@@ -3,7 +3,7 @@ import { api } from 'src/app/api';
 
 export function useCounselorStatus(skip?: boolean): { isCounselor: boolean; isLoading: boolean } {
   const [isCounselor, setIsCounselor] = useState(false);
-  const [isLoading, setIsLoading] = useState(!skip);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (skip) {

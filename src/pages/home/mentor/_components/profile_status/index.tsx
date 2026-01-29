@@ -12,10 +12,13 @@ export default function ProfileStatusSection() {
   const colors = useColors();
   const { t } = useTranslation();
 
-  const { profileChecklist, modalOpen, handleCancel, setVideosUploaded } =
+  const { profileChecklist, allComplete, modalOpen, handleCancel, setVideosUploaded } =
     useProfileStatus();
 
-  // Always show checklist (even when all complete) — keep it visible for mentors
+  if (allComplete) {
+    return null;
+  }
+
   return (
     <div className={'container ' + styles.container}>
       <MentorProfileStatus />

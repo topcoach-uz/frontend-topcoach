@@ -500,7 +500,9 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   if (essayId && isLoadingEssay) {
     return (
       <div className="write-tab" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <Spin size="large" tip="Loading essay..." />
+        <Spin size="large" tip="Loading essay...">
+          <div style={{ minHeight: 80 }} />
+        </Spin>
       </div>
     );
   }

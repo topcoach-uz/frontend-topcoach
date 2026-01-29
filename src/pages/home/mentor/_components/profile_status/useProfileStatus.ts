@@ -68,6 +68,8 @@ export default function useProfileStatus() {
     },
   ];
 
+  const allComplete = profileChecklist.every((c) => c.isComplete);
+
   const [linkCalendar, { isLoading }] = useLinkCalendarMutation();
   const login = useGoogleLogin({
     scope: scopes,
@@ -93,7 +95,7 @@ export default function useProfileStatus() {
     onError: (error) => console.log(error),
   });
 
-  return { profileChecklist, modalOpen, handleCancel, setVideosUploaded };
+  return { profileChecklist, allComplete, modalOpen, handleCancel, setVideosUploaded };
 }
 
 export const GOOGLE_AUTH_SCOPES = [

@@ -13,19 +13,17 @@ export interface SpinnerProps {
  * Unified Spinner Component
  * Consistent spinner across the platform with brand colors
  */
-const Spinner: React.FC<SpinnerProps> = ({ 
-  size = 'default', 
-  tip, 
+const Spinner: React.FC<SpinnerProps> = ({
+  size = 'default',
+  tip,
   className = '',
-  style 
+  style
 }) => {
   return (
     <div className={`unified-spinner ${className}`} style={style}>
-      <Spin 
-        size={size} 
-        tip={tip}
-        className="unified-spinner-inner"
-      />
+      <Spin size={size} tip={tip} className="unified-spinner-inner">
+        <div className="unified-spinner-placeholder" style={{ minHeight: tip ? 80 : 40 }} />
+      </Spin>
     </div>
   );
 };

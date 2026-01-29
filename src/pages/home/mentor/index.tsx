@@ -95,11 +95,12 @@ export default function MentorHome() {
           </CustomCard>
         </div>
       )}
-      {/* 2. Sessions (Bookings) – above Events, same spacing */}
-      <BookingsSection />
-      {/* 3. Events – same spacing */}
-      <EventsSection />
+      {/* 2. Complete your profile – above Sessions when not 100%; hidden when complete */}
       <ProfileStatusSection />
+      {/* 3. Sessions (Bookings) – same spacing */}
+      <BookingsSection />
+      {/* 4. Events – same spacing */}
+      <EventsSection />
     </main>
   );
 }

@@ -1,17 +1,20 @@
 /**
  * Decides what to show at / (home): MentorHome, CounselorHome, or redirect to /student-hub.
  * Used at index route when authenticated.
+ *
+ * Hook-order fix: We use only a fixed set of hooks (no useGetMeQuery with skip, no
+ * conditional hook calls). Profile comes from Redux; MainLayout/RouterProvider fetch getMe.
+ * Counselor check lives in HomeRouterContent, which mounts only after profile is ready.
  */
 
 import { useLayoutEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
-import { useGetMeQuery } from 'src/app/services/users';
-import { useCounselorStatus } from 'src/hooks/useCounselorStatus';
 import { useTypedSelector } from 'src/app/store';
 import { PageLoader } from 'src/components/loading';
 import MentorHomePage from './mentor';
 import CounselorHome from './counselor/CounselorHome';
+import { useCounselorStatus } from 'src/hooks/useCounselorStatus';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 
@@ -19,25 +22,33 @@ export default function HomeRouter() {
   const navigate = useNavigate();
   const { searchParams } = useParamsHook();
   const verified = searchParams.get('verified') && !!searchParams.get('verified');
-  const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
 
-  const { data: userData, isLoading: profileLoading } = useGetMeQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-  const profile = userData?.profile ?? useTypedSelector((s) => s.auth.profile?.profile);
-  const email = userData?.email ?? useTypedSelector((s) => s.auth.profile?.email);
-
-  const { isCounselor, isLoading: counselorLoading } = useCounselorStatus(
-    !isAuthenticated || profileLoading || !profile?.role
-  );
+  const profile = useTypedSelector((s) => s.auth.profile?.profile);
+  const email = useTypedSelector((s) => s.auth.profile?.email);
 
   useLayoutEffect(() => {
     if (verified) navigate('/auth/verification?verified=true');
   }, [verified, navigate]);
 
-  if (profileLoading || !profile?.role) {
+  if (!profile?.role) {
     return <PageLoader text="Loading..." />;
   }
+
+  return (
+    <HomeRouterContent
+      profile={profile}
+      email={email ?? ''}
+    />
+  );
+}
+
+interface HomeRouterContentProps {
+  profile: { role?: string };
+  email: string;
+}
+
+function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
+  const { isCounselor, isLoading: counselorLoading } = useCounselorStatus(false);
 
   if (counselorLoading) {
     return <PageLoader text="Loading..." />;
