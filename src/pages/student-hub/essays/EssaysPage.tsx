@@ -3,8 +3,8 @@ import { Card, Tabs, Button, Row, Col, List, Badge, Space, Tag, Progress, Input,
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { ESSAY_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
+import { STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
 import { useGetStudentEssaysQuery, useDeleteStudentEssayMutation } from '../../../app/services/student-hub/essayManagementApi';
 import { useGetStudentJourneyEssaysQuery } from '../../../app/services/student-hub/studentJourneyReadonlyApi';
@@ -421,7 +421,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ width: 250 }}
-                  prefix={<FontAwesomeIcon icon="search" />}
+                  prefix={<UnifiedIcon name="search" size="sm" color="primary" />}
                   allowClear
                 />
                 <Select

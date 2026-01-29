@@ -570,7 +570,7 @@ export default function UpcomingCard({
               mentor?.profile?.name}
         </CustomButton>
       </div>
-      <div className={styles.chatButtonContainer}>
+      <div className={styles.chatButtonContainer} style={{ display: 'block', visibility: 'visible', opacity: 1 }}>
         {conversationId ? (
           <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
             <CustomButton
@@ -582,6 +582,9 @@ export default function UpcomingCard({
                 borderColor: '#8b0000',
                 width: '100%',
                 marginTop: '8px',
+                display: 'block',
+                visibility: 'visible',
+                opacity: 1,
               }}
               title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
             >
@@ -598,6 +601,9 @@ export default function UpcomingCard({
               borderColor: '#8b0000',
               width: '100%',
               marginTop: '8px',
+              display: 'block',
+              visibility: 'visible',
+              opacity: 1,
             }}
             title={role === UserRole.Student ? "Chat with mentor" : "Chat with mentee"}
           >

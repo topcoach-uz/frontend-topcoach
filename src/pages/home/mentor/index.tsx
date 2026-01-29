@@ -29,13 +29,21 @@ export default function MentorHome() {
     <main>
       {/* SuperAdmin Quick Access Links - Show at top before Complete your profile section */}
       {isSuperAdmin && (
-        <div className="container" style={{ paddingTop: '40px', paddingBottom: '24px' }}>
+        <div className="container" style={{ paddingTop: '24px', paddingBottom: '16px' }}>
           <CustomCard
             bgColor={colors.colorBgContainer}
-            mb={24}
-            shadowed={true}
+            mb={16}
+            shadowed={false}
+            bordered={false}
             borderRadius={24}
-            padding={24}
+            padding={28}
+            style={{ 
+              boxShadow: 'none',
+              width: '100%',
+              maxWidth: '100%',
+              border: 'none',
+              borderWidth: 0
+            }}
           >
             <CustomText 
               fontSize={20}

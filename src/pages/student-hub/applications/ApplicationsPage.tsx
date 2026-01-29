@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Button, Row, Col, Statistic, Progress, List, Badge, Space, Tag, message, Modal, Descriptions, Divider, Spin, Avatar } from 'antd';
+import { Card, Button, Row, Col, Statistic, List, Badge, Space, Tag, message, Modal, Avatar, Spin, Select, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { APPLICATION_ICONS, STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useStudentHub } from '../../../hooks/useStudentHub';
-import { 
+import {
   useGetCollegeApplicationsQuery,
-  useGetApplicationTasksQuery,
   useGetScholarshipApplicationsQuery,
   useDeleteCollegeApplicationMutation,
   useDeleteScholarshipApplicationMutation
@@ -19,12 +17,14 @@ import {
 } from '../../../app/services/student-hub/studentJourneyReadonlyApi';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
+import { PageSkeleton } from '../../../components/loading';
+import { useGetAllAssessmentsQuery, useGetRecommendationsQuery } from '../../../app/services/student-hub/psychometricApi';
+import { useGetMeQuery } from '../../../app/services/users';
 import NewApplicationPage from './NewApplicationPage';
-import NewTaskPage from './NewTaskPage';
 import NewScholarshipPage from './NewScholarshipPage';
+import RequirementsChecklist from './components/RequirementsChecklist';
+import MentorAssignment from './components/MentorAssignment';
 import './ApplicationsPage.scss';
-
-const { TabPane } = Tabs;
 
 // Props interface for ApplicationsPage - supports both normal and read-only mode
 export interface ApplicationsPageProps {
@@ -83,7 +83,13 @@ const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: 
     }
   }
   
-  return <>{universityName || t('studentHub.applications.unknownUniversity')}</>;
+  // Fallback: if no universityName provided, show unknown
+  const displayName = universityName?.trim();
+  if (!displayName || displayName === 'undefined' || displayName === 'null') {
+    return <span style={{ color: '#999', fontStyle: 'italic' }}>{t('studentHub.applications.unknownUniversity')}</span>;
+  }
+  
+  return <>{displayName}</>;
 };
 
 const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, studentId }) => {
@@ -91,19 +97,28 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const isReadOnly = readOnly === true;
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('overview');
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [applicationToDelete, setApplicationToDelete] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all'); // 'all', 'application', 'scholarship'
+  const [sortBy, setSortBy] = useState<string>('deadline'); // 'deadline', 'priority', 'recent'
   const { dashboard, isLoading, hasError } = useStudentHub();
+  
+  // Get psychometric data for match scores
+  const { data: currentUserData } = useGetMeQuery(undefined, { skip: isReadOnly });
+  const studentProfileId = (currentUserData?.profile as any)?.studentProfile?.id;
+  const { data: psychometricAssessments } = useGetAllAssessmentsQuery(
+    studentProfileId || '',
+    { skip: !studentProfileId || isReadOnly }
+  );
+  const { data: recommendations } = useGetRecommendationsQuery(
+    studentProfileId || '',
+    { skip: !studentProfileId || isReadOnly || !psychometricAssessments?.length }
+  );
   
   // Fetch applications, tasks, and scholarships data - MUST be called before any early returns
   // Normal mode - fetch current user's data
   const { data: applicationsResponse, isLoading: applicationsLoading, refetch: refetchApplications } = useGetCollegeApplicationsQuery(
-    { page: 1, limit: 100 },
-    { skip: isReadOnly }
-  );
-  const { data: tasksResponse, isLoading: tasksLoading, refetch: refetchTasks } = useGetApplicationTasksQuery(
     { page: 1, limit: 100 },
     { skip: isReadOnly }
   );
@@ -125,36 +140,27 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   // Merge data based on mode
   const finalApplicationsData = isReadOnly ? readOnlyApplicationsResponse?.data : applicationsResponse?.data;
   const finalScholarshipsData = isReadOnly ? readOnlyScholarshipsResponse?.data : scholarshipsResponse?.data;
-  const finalTasksData = isReadOnly ? [] : tasksResponse?.data; // Tasks not available in read-only mode
   
   const [deleteCollegeApplication, { isLoading: deleteLoading }] = useDeleteCollegeApplicationMutation();
   const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
 
-  // Handle URL parameters for tab navigation - MUST be called before any early returns
-  useEffect(() => {
-    const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['overview', 'applications', 'scholarships'].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [searchParams]);
-
-  // Refetch all data when returning from creation pages - MUST be called before any early returns
+  // Refetch data when returning from creation pages
   useEffect(() => {
     if (location.pathname === '/student-hub/applications') {
       refetchApplications();
-      refetchTasks();
       refetchScholarships();
     }
-  }, [location.pathname, refetchApplications, refetchTasks, refetchScholarships]);
+  }, [location.pathname, refetchApplications, refetchScholarships]);
 
-  // Show loading state only in main content area
+  // Show loading state with unified skeleton
   if (isLoading) {
     return (
       <div className="applications-loading-content">
-        <div className="loading-spinner-container">
-          <Spin size="large" />
-          <p>Loading applications...</p>
-        </div>
+        <PageSkeleton 
+          rows={5} 
+          showTitle={true}
+          showAvatar={false}
+        />
       </div>
     );
   }
@@ -172,44 +178,33 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     );
   }
 
-  // Handle different routes
+  // Handle creation and edit routes
   if (location.pathname === '/student-hub/applications/new') {
     return <NewApplicationPage />;
   }
-  
-  if (location.pathname === '/student-hub/applications/tasks/new') {
-    return <NewTaskPage />;
-  }
-  
   if (location.pathname === '/student-hub/applications/scholarships/new') {
     return <NewScholarshipPage />;
   }
+  if (location.pathname.match(/^\/student-hub\/applications\/[^/]+\/edit$/)) {
+    // Lazy load EditApplicationPage to avoid circular dependencies
+    const EditApplicationPage = React.lazy(() => import('./EditApplicationPage'));
+    return (
+      <React.Suspense fallback={<PageSkeleton rows={5} showTitle={true} showAvatar={false} />}>
+        <EditApplicationPage />
+      </React.Suspense>
+    );
+  }
 
-
-  // Handle tab changes
-  const handleTabChange = (key: string) => {
-    setActiveTab(key);
-    setSearchParams({ tab: key });
-  };
-
-  // Use real data from API with defensive programming
   const applicationsData = {
     overview: {
       totalApplications: dashboard?.stats?.totalApplications || 0,
       submitted: dashboard?.stats?.submittedApplications || 0,
       inProgress: dashboard?.stats?.inProgressApplications || 0,
       accepted: dashboard?.stats?.acceptedApplications || 0,
-      rejected: 0, // Not available in current API
-      waitlisted: 0, // Not available in current API
     },
     applications: finalApplicationsData || [],
-    tasks: finalTasksData || [],
     scholarships: finalScholarshipsData || [],
   };
-
-  console.log('ApplicationsPage - Dashboard data:', dashboard);
-  console.log('ApplicationsPage - Stats:', dashboard?.stats);
-  console.log('ApplicationsPage - Applications data:', applicationsData);
 
   // Button click handlers
   const handleNewApplication = () => {
@@ -223,28 +218,33 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   };
 
   const confirmDeleteApplication = async () => {
-    if (!applicationToDelete) return;
-    
+    if (!applicationToDelete) {
+      message.error('No item selected for deletion');
+      return;
+    }
+    const itemId = applicationToDelete.id;
+    if (!itemId || typeof itemId !== 'string' || itemId.trim() === '') {
+      message.error('Invalid item ID. Cannot delete.');
+      return;
+    }
     try {
       if (applicationToDelete.type === 'scholarship') {
-        console.log('🎯 Frontend: Deleting scholarship with ID:', applicationToDelete.id);
-        console.log('🎯 Frontend: About to call deleteScholarshipApplication API');
-        const result = await deleteScholarshipApplication(applicationToDelete.id).unwrap();
-        console.log('🎯 Frontend: Delete API call successful:', result);
-        message.success(t('studentHub.applications.deleteScholarshipSuccess'));
+        await deleteScholarshipApplication(itemId).unwrap();
+        message.success(t('studentHub.applications.deleteScholarshipSuccess') || 'Scholarship deleted successfully');
         refetchScholarships();
       } else {
-        console.log('Deleting application with ID:', applicationToDelete.id);
-        await deleteCollegeApplication(applicationToDelete.id).unwrap();
-        message.success(t('studentHub.applications.deleteSuccess'));
+        await deleteCollegeApplication(itemId).unwrap();
+        message.success(t('studentHub.applications.deleteSuccess') || 'Application deleted successfully');
         refetchApplications();
       }
       setDeleteModalVisible(false);
       setApplicationToDelete(null);
-    } catch (error) {
-      console.error('🎯 Frontend: Error deleting:', error);
-      console.error('🎯 Frontend: Error details:', JSON.stringify(error, null, 2));
-      message.error(t('studentHub.applications.deleteError'));
+    } catch (error: any) {
+      const errorMessage = error?.data?.message ||
+        error?.message ||
+        t('studentHub.applications.deleteError') ||
+        'Failed to delete. Please try again.';
+      message.error(errorMessage);
     }
   };
 
@@ -253,9 +253,13 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     setApplicationToDelete(null);
   };
 
-  const handleDeleteScholarship = (scholarshipId: string) => {
-    console.log('Deleting scholarship with ID:', scholarshipId);
-    setApplicationToDelete({ id: scholarshipId, type: 'scholarship' });
+  const handleDeleteScholarship = (scholarship: any) => {
+    const scholarshipId = scholarship?.id || scholarship?._id || scholarship?.scholarshipId;
+    if (!scholarshipId) {
+      message.error('Cannot delete: Scholarship ID is missing');
+      return;
+    }
+    setApplicationToDelete({ ...scholarship, id: scholarshipId, type: 'scholarship' });
     setDeleteModalVisible(true);
   };
 
@@ -354,415 +358,838 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     }
   };
 
-  const tabItems = [
-    {
-      key: 'overview',
-      label: (
-        <div className="tab-label">
-          <FontAwesomeIcon icon={PROFILE_ICONS.OVERVIEW} />
-          <span>{t('studentHub.applications.overview')}</span>
-        </div>
-      ),
-      children: (
-        <div className="overview-content">
-          <Row gutter={[24, 24]} className="stats-row">
-            <Col xs={12} sm={6}>
-              <Card className="stat-card">
-                <Statistic
-                  title={t('studentHub.applications.totalApplications')}
-                  value={applicationsData.overview.totalApplications}
-                  prefix={<FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stat-card">
-                <Statistic
-                  title={t('studentHub.applications.submitted')}
-                  value={applicationsData.overview.submitted}
-                  valueStyle={{ color: '#3b82f6' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stat-card">
-                <Statistic
-                  title={t('studentHub.applications.inProgress')}
-                  value={applicationsData.overview.inProgress}
-                  valueStyle={{ color: '#f59e0b' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stat-card">
-                <Statistic
-                  title={t('studentHub.applications.accepted')}
-                  value={applicationsData.overview.accepted}
-                  valueStyle={{ color: '#22c55e' }}
-                />
-              </Card>
-            </Col>
-          </Row>
+  // Application Health Score calculation (must be defined before combinedList uses it)
+  const calculateHealthScore = (app: any): number => {
+    let score = 0;
+    let factors = 0;
 
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
-              <Card title={t('studentHub.applications.recentActivities')} className="applications-card">
-                <List
-                  dataSource={[
-                    ...applicationsData.applications.map((app: any) => ({ ...app, type: 'application' })),
-                    ...applicationsData.scholarships.map((scholarship: any) => ({ ...scholarship, type: 'scholarship' }))
-                  ].sort((a: any, b: any) => new Date(b.createdAt || b.updatedAt).getTime() - new Date(a.createdAt || a.updatedAt).getTime()).slice(0, 5)}
-                  renderItem={(item: any) => (
-                    <List.Item className="application-item">
-                      <Card className="application-summary-card">
-                        <div className="application-summary-content">
-                          <div className="application-details">
-                            <ul className="detail-list">
-                              <li>
-                                <FontAwesomeIcon icon={item.type === 'scholarship' ? 'graduation-cap' : 'university'} className="detail-icon" />
-                                <strong>{item.type === 'scholarship' ? `${t('studentHub.applications.scholarship')}:` : `${t('studentHub.applications.university')}:`}</strong>
-                                <span className="detail-value">
-                                  {item.type === 'scholarship' 
-                                    ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship'))
-                                    : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
-                                  }
-                                </span>
-                              </li>
-                              <li>
-                                <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                                <strong>{t('studentHub.applications.deadline')}:</strong>
-                                <span className="detail-value">{formatDate(item.type === 'scholarship' ? item?.applicationDeadline : item?.deadline)}</span>
-                              </li>
-                              <li>
-                                <FontAwesomeIcon icon="star" className="detail-icon" />
-                                <strong>{t('studentHub.applications.priorityLevel')}:</strong>
-                                <span className="detail-value">{item.type === 'scholarship' ? t('studentHub.applications.priority.na') : `${getPriorityText(item?.priority)} (${item?.priority}/10)`}</span>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </Card>
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} lg={8}>
-              <Card title={t('studentHub.applications.upcomingDeadlines')} className="deadlines-card">
-                <List
-                  dataSource={[
-                    ...applicationsData.applications
-                      .filter((app: any) => app?.status === 'under_review' || app?.status === 'applying')
-                      .map((app: any) => ({ ...app, type: 'application' })),
-                    ...applicationsData.scholarships
-                      .filter((scholarship: any) => scholarship?.status === 'researching' || scholarship?.status === 'applying' || scholarship?.status === 'eligible')
-                      .map((scholarship: any) => ({ ...scholarship, type: 'scholarship' }))
-                  ].sort((a: any, b: any) => {
-                    const dateA = new Date(a.type === 'scholarship' ? a.applicationDeadline : a.deadline);
-                    const dateB = new Date(b.type === 'scholarship' ? b.applicationDeadline : b.deadline);
-                    return dateA.getTime() - dateB.getTime();
-                  }).slice(0, 5)}
-                  renderItem={(item: any) => (
-                    <List.Item className="deadline-item">
-                      <div className="deadline-content">
-                        <div className="deadline-title">
-                          {item.type === 'scholarship' 
-                            ? (item?.scholarshipName || t('studentHub.applications.unknownScholarship'))
-                            : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
-                          }
-                        </div>
-                        <div className="deadline-date">
-                          {item.type === 'scholarship' 
-                            ? (item?.applicationDeadline ? new Date(item.applicationDeadline).toLocaleDateString() : t('studentHub.applications.tbd'))
-                            : (item?.deadline ? new Date(item.deadline).toLocaleDateString() : t('studentHub.applications.tbd'))
-                          }
-                        </div>
-                      </div>
-                      <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item?.category)}>
-                        {item.type === 'scholarship' ? getCategoryText('scholarship') : getCategoryText('university')}
-                      </Tag>
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      ),
-    },
-    {
-      key: 'applications',
-      label: (
-        <div className="tab-label">
-          <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />
-          <span>{t('studentHub.applications.addApplications')}</span>
-        </div>
-      ),
-      children: (
-        <div className="applications-content">
-          <div className="applications-header">
-            <h3>{t('studentHub.applications.collegeApplications')}</h3>
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
-              size="large"
-              onClick={handleNewApplication}
-            >
-              {t('studentHub.applications.addApplication')}
-            </Button>
-          </div>
-          <List
-            dataSource={applicationsData.applications}
-            renderItem={(application: any) => {
-              // Fetch university details if universityId is available
-              const UniversityCard = application.universityId ? (
-                <UniversityInfoCard universityId={application.universityId} />
-              ) : null;
+    // Status factor (20 points)
+    if (app.status === 'submitted') score += 20;
+    else if (app.status === 'applying') score += 10;
+    factors += 1;
 
-              return (
-                <List.Item className="application-detail-item">
-                  <Card className="application-card">
-                    <div className="application-card-content">
-                      {/* University Section - Clickable */}
-                      {application.universityId && (
-                        <div 
-                          className="university-section"
-                          onClick={() => navigate(`/universities/${application.universityId}`)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {UniversityCard}
-                        </div>
-                      )}
+    // Priority factor (10 points) - having a priority set
+    if (app.priority != null) {
+      score += 10;
+      factors += 1;
+    }
 
-                      <div className="application-header">
-                        <div className="application-header-left">
-                          <div 
-                            className="university-name"
-                            onClick={application.universityId ? () => navigate(`/universities/${application.universityId}`) : undefined}
-                            style={application.universityId ? { cursor: 'pointer', color: '#8b0000', textDecoration: 'underline' } : {}}
-                          >
-                            <UniversityNameDisplay universityId={application.universityId} universityName={application.universityName} />
-                          </div>
-                          {application.major && (
-                            <div className="application-major">
-                              <FontAwesomeIcon icon="graduation-cap" className="detail-icon" />
-                              <span>{application.major}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="application-header-right">
-                          <Tag 
-                            color={application.status === 'accepted' ? 'green' : application.status === 'rejected' ? 'red' : application.status === 'applying' ? 'blue' : 'orange'}
-                            className="status-tag"
-                          >
-                            {getStatusText(application.status)}
-                          </Tag>
-                        </div>
-                      </div>
+    // Category factor (10 points) - having a category set
+    if (app.category) {
+      score += 10;
+      factors += 1;
+    }
 
-                      <div className="application-details-grid">
-                        <div className="detail-item">
-                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
-                          <span className="detail-label">{t('studentHub.applications.applicationType')}</span>
-                          <span className="detail-value">{getApplicationTypeText(application.applicationType)}</span>
-                        </div>
-                        <div className="detail-item">
-                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                          <span className="detail-label">{t('studentHub.applications.deadline')}</span>
-                          <span className="detail-value">{formatDate(application.deadline)}</span>
-                        </div>
-                        <div className="detail-item">
-                          <FontAwesomeIcon icon="star" className="detail-icon" />
-                          <span className="detail-label">{t('studentHub.applications.priorityLevel')}</span>
-                          <span className="detail-value">
-                            <Tag color={application.priority >= 7 ? 'red' : application.priority >= 4 ? 'orange' : 'default'}>
-                              {getPriorityText(application.priority)} ({application.priority}/10)
-                            </Tag>
-                          </span>
-                        </div>
-                      </div>
+    // Deadline factor (10 points) - having a deadline set
+    if (app.deadline || app.applicationDeadline) {
+      score += 10;
+      factors += 1;
+    }
 
-                      {application.notes && (
-                        <div className="application-notes-compact">
-                          <FontAwesomeIcon icon="sticky-note" className="notes-icon" />
-                          <div className="notes-content-compact">{application.notes}</div>
-                        </div>
-                      )}
+    // Major factor (10 points) - having a major set
+    if (app.major) {
+      score += 10;
+      factors += 1;
+    }
 
-                      <div className="application-actions-compact">
-                        <Button 
-                          size="small"
-                          danger
-                          icon={<FontAwesomeIcon icon="trash" />}
-                          onClick={() => handleDeleteApplication(application)}
-                        >
-                          {t('studentHub.applications.delete')}
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                </List.Item>
-              );
-            }}
-          />
-        </div>
-      ),
-    },
-    {
-      key: 'scholarships',
-      label: (
-        <div className="tab-label">
-          <FontAwesomeIcon icon={APPLICATION_ICONS.SCHOLARSHIPS} />
-          <span>{t('studentHub.applications.addScholarships')}</span>
-        </div>
-      ),
-      children: (
-        <div className="scholarships-content">
-          <div className="scholarships-header">
-            <h3>{t('studentHub.applications.scholarshipApplications')}</h3>
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
-              size="large"
-              onClick={() => navigate('/student-hub/applications/scholarships/new')}
-            >
-              {t('studentHub.applications.addScholarship')}
-            </Button>
-          </div>
-          <List
-            dataSource={applicationsData.scholarships}
-            renderItem={(scholarship: any) => {
-              console.log('Rendering scholarship:', scholarship);
-              return (
-              <List.Item className="scholarship-item">
-                <Card className="scholarship-card">
-                  <div className="scholarship-card-content">
-                    <div className="scholarship-header">
-                      <div className="scholarship-name">
-                        {scholarship?.scholarshipName || t('studentHub.applications.unknownScholarship')}
-                        <span className="scholarship-amount-inline">${scholarship?.amount?.toLocaleString() || '0'}</span>
-                      </div>
-                      <div className="scholarship-status">{getStatusText(scholarship?.status)}</div>
-                    </div>
+    // Application type factor (10 points)
+    if (app.applicationType) {
+      score += 10;
+      factors += 1;
+    }
 
-                    <div className="scholarship-details">
-                      <ul className="detail-list">
-                        <li>
-                          <FontAwesomeIcon icon="building" className="detail-icon" />
-                          <strong>{t('studentHub.applications.organization')}:</strong>
-                          <span>{scholarship?.organization || t('studentHub.applications.unknownOrganization')}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="calendar" className="detail-icon" />
-                          <strong>{t('studentHub.applications.deadline')}:</strong>
-                          <span>{formatDate(scholarship?.applicationDeadline)}</span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="file-alt" className="detail-icon" />
-                          <strong>{t('studentHub.applications.requirements')}:</strong>
-                          <span>
-                            {scholarship?.requirements ? 
-                              Object.entries(scholarship.requirements)
-                                .filter(([_, req]: [string, any]) => req?.required)
-                                .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
-                                .join(', ') || t('studentHub.applications.noneSpecified')
-                              : t('studentHub.applications.noneSpecified')
-                            }
-                          </span>
-                        </li>
-                        <li>
-                          <FontAwesomeIcon icon="info-circle" className="detail-icon" />
-                          <strong>{t('studentHub.applications.status')}:</strong>
-                          <span>{getStatusText(scholarship?.status)}</span>
-                        </li>
-                      </ul>
-                    </div>
+    // Notes factor (10 points) - having notes shows engagement
+    if (app.notes) {
+      score += 10;
+      factors += 1;
+    }
 
-                    
-                    {scholarship?.notes && (
-                      <div className="scholarship-notes">
-                        <div className="notes-label">NOTES</div>
-                        <div className="notes-content">{scholarship.notes}</div>
-                      </div>
-                    )}
-                    
-                    <div className="scholarship-actions">
-                      <Button
-                        size="small"
-                        onClick={() => handleDeleteScholarship(scholarship.id)}
-                        style={{ 
-                          backgroundColor: '#8b0000', 
-                          borderColor: '#8b0000', 
-                          color: 'white' 
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#660000';
-                          e.currentTarget.style.borderColor = '#660000';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#8b0000';
-                          e.currentTarget.style.borderColor = '#8b0000';
-                        }}
-                        >
-                          {t('studentHub.applications.delete')}
-                        </Button>
-                    </div>
-                  </div>
-                </Card>
-              </List.Item>
-              );
-            }}
-          />
-        </div>
-      ),
-    },
+    return factors > 0 ? Math.round(score / factors) : 0;
+  };
+
+  const combinedList: any[] = [
+    ...(applicationsData.applications || []).map((app: any) => ({ 
+      ...app, 
+      id: app.id || app._id || app.applicationId, // Ensure ID is always present
+      itemType: 'application',
+      healthScore: calculateHealthScore(app),
+      // Ensure universityName is available
+      universityName: app.universityName || app.name || null,
+      universityId: app.universityId || null,
+    })),
+    ...(applicationsData.scholarships || []).map((sch: any) => ({ 
+      ...sch, 
+      id: sch.id || sch._id || sch.scholarshipId, // Ensure ID is always present
+      itemType: 'scholarship',
+      healthScore: calculateHealthScore(sch),
+    })),
+  ]
+    .filter((item: any) => (typeFilter === 'all' || item.itemType === typeFilter) && (statusFilter === 'all' || (item.status || item.applicationStatus) === statusFilter))
+    .sort((a: any, b: any) => {
+      if (sortBy === 'deadline') {
+        const dA = new Date(a.deadline || a.applicationDeadline || 0);
+        const dB = new Date(b.deadline || b.applicationDeadline || 0);
+        return dA.getTime() - dB.getTime();
+      }
+      if (sortBy === 'priority') return (b.priority || 0) - (a.priority || 0);
+      if (sortBy === 'health') return a.healthScore - b.healthScore; // Lowest first (fix weak ones)
+      if (sortBy === 'match') {
+        // Sort by match score (would need to calculate from recommendations)
+        return 0; // Placeholder - would calculate match score per application
+      }
+      const dA = new Date(a.updatedAt || a.createdAt || 0);
+      const dB = new Date(b.updatedAt || b.createdAt || 0);
+      return dB.getTime() - dA.getTime();
+    });
+
+  const upcomingDeadlines = [
+    ...(applicationsData.applications || []).filter((a: any) => a?.deadline).map((a: any) => ({ ...a, type: 'application', deadlineDate: a.deadline })),
+    ...(applicationsData.scholarships || []).filter((s: any) => s?.applicationDeadline).map((s: any) => ({ ...s, type: 'scholarship', deadlineDate: s.applicationDeadline })),
+  ].sort((a: any, b: any) => new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime()).slice(0, 10);
+
+  // Safely calculate next deadline with proper null checks
+  const allItems = [
+    ...(applicationsData?.applications || []),
+    ...(applicationsData?.scholarships || [])
   ];
+  
+  const nextDeadline = allItems.length > 0
+    ? allItems
+        .filter((item: any) => {
+          if (!item) return false;
+          const d = item.deadline || item.applicationDeadline;
+          if (!d) return false;
+          try {
+            const days = Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            return days > 0 && days <= 30;
+          } catch {
+            return false;
+          }
+        })
+        .sort((a: any, b: any) => {
+          const dA = a?.deadline || a?.applicationDeadline;
+          const dB = b?.deadline || b?.applicationDeadline;
+          if (!dA || !dB) return 0;
+          try {
+            return new Date(dA).getTime() - new Date(dB).getTime();
+          } catch {
+            return 0;
+          }
+        })[0]
+    : undefined;
+
+  // Calculate application strategy metrics
+  const totalApps = applicationsData.overview.totalApplications;
+  const reachApps = (applicationsData.applications || []).filter((a: any) => a?.category === 'reach' || (a?.priority >= 8)).length;
+  const targetApps = (applicationsData.applications || []).filter((a: any) => a?.category === 'target' || (a?.priority >= 5 && a.priority < 8)).length;
+  const safetyApps = (applicationsData.applications || []).filter((a: any) => a?.category === 'safety' || (a?.priority && a.priority < 5)).length;
+
+  // Calculate average match score from psychometric recommendations
+  const averageMatchScore = recommendations?.recommendations && recommendations.recommendations.length > 0
+    ? Math.round(recommendations.recommendations.reduce((sum: number, rec: any) => sum + (rec.fitScore || 0), 0) / recommendations.recommendations.length)
+    : null;
+
+  // Calculate days until next deadline
+  const nextDeadlineDays = nextDeadline
+    ? Math.ceil((new Date(nextDeadline.deadline || nextDeadline.applicationDeadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  // Calculate overall completion rate
+  const totalSubmitted = applicationsData.overview.submitted;
+  const totalInProgress = applicationsData.overview.inProgress;
+  const completionRate = totalApps > 0 ? Math.round((totalSubmitted / totalApps) * 100) : 0;
+
+  // Strategy recommendations based on mix
+  const getStrategyRecommendation = () => {
+    if (totalApps === 0) {
+      return {
+        type: 'info',
+        message: 'Start building your application strategy',
+        description: 'Aim for 8–12 applications: 2–3 reach, 4–6 target, 2–3 safety schools.',
+      };
+    }
+    if (totalApps < 8) {
+      return {
+        type: 'warning',
+        message: 'Consider adding more applications',
+        description: `You have ${totalApps} application${totalApps !== 1 ? 's' : ''}. For best results, aim for 8–12 total: 2–3 reach, 4–6 target, 2–3 safety.`,
+      };
+    }
+    if (reachApps > 5) {
+      return {
+        type: 'warning',
+        message: 'Too many reach schools',
+        description: `You have ${reachApps} reach applications. Consider adding more target (${targetApps}) and safety (${safetyApps}) schools to balance your strategy.`,
+      };
+    }
+    if (safetyApps < 2) {
+      return {
+        type: 'warning',
+        message: 'Not enough safety schools',
+        description: `You have ${safetyApps} safety application${safetyApps !== 1 ? 's' : ''}. Add at least 2–3 safety schools to ensure admission options.`,
+      };
+    }
+    if (targetApps < 4) {
+      return {
+        type: 'info',
+        message: 'Consider more target schools',
+        description: `You have ${targetApps} target application${targetApps !== 1 ? 's' : ''}. Target schools (4–6) are your best chances for admission.`,
+      };
+    }
+    return {
+      type: 'success',
+      message: 'Well-balanced application strategy',
+      description: `Great mix: ${reachApps} reach, ${targetApps} target, ${safetyApps} safety. This gives you strong options across all admission probability levels.`,
+    };
+  };
+
+  const strategyRec = getStrategyRecommendation();
 
   return (
     <div className="applications-page">
-      <div className="page-header">
-        <h1 className="page-title">{t('studentHub.applications.title')}</h1>
-        <p className="page-subtitle">{t('studentHub.applications.subtitle')}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+            {t('studentHub.applications.title')}
+          </h1>
+          <p style={{ fontSize: 14, color: '#666', marginTop: 4, marginBottom: 0 }}>
+            {t('studentHub.applications.subtitle')}
+          </p>
+        </div>
       </div>
 
-      <Card className="applications-main-card">
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          items={tabItems}
-          className="applications-tabs"
-        />
+      {/* Simplified Stats - Only show key metrics, compact design */}
+      {totalApps > 0 && (
+        <div style={{ 
+          display: 'flex', 
+          gap: 16, 
+          marginBottom: 24, 
+          padding: '16px 20px', 
+          background: '#f9fafb', 
+          borderRadius: 12,
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <UnifiedIcon name="layers" size="sm" color="primary" />
+            <span style={{ fontSize: 14, color: '#666' }}>Total:</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>{totalApps}</span>
+          </div>
+          <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <UnifiedIcon name="check-circle" size="sm" color="success" />
+            <span style={{ fontSize: 14, color: '#666' }}>Submitted:</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: '#22c55e' }}>{applicationsData.overview.submitted}</span>
+          </div>
+          {averageMatchScore && (
+            <>
+              <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <UnifiedIcon name="target" size="sm" color="primary" />
+                <span style={{ fontSize: 14, color: '#666' }}>Avg Match:</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: averageMatchScore >= 70 ? '#22c55e' : averageMatchScore >= 50 ? '#f59e0b' : '#666' }}>
+                  {averageMatchScore}%
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Removed Next Action Banner - redundant with Upcoming Deadlines sidebar */}
+
+      {/* Strategy section removed per user request - not needed */}
+
+      {/* Enhanced Filters and Actions Bar - Modern Design */}
+      <Card 
+        style={{ 
+          marginBottom: 24,
+          borderRadius: 16,
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        }}
+        styles={{ body: { padding: '16px 20px' } }}
+      >
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} sm={24} md={18}>
+            <Space size="middle" wrap style={{ width: '100%' }}>
+              <Select 
+                value={typeFilter} 
+                onChange={setTypeFilter} 
+                style={{ minWidth: 140 }}
+                size="middle"
+                suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
+              >
+                <Select.Option value="all">All Applications</Select.Option>
+                <Select.Option value="application">Universities</Select.Option>
+                <Select.Option value="scholarship">Scholarships</Select.Option>
+              </Select>
+              <Select 
+                value={statusFilter} 
+                onChange={setStatusFilter} 
+                style={{ minWidth: 150 }}
+                size="middle"
+                suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
+              >
+                <Select.Option value="all">All Status</Select.Option>
+                <Select.Option value="in_progress">In Progress</Select.Option>
+                <Select.Option value="submitted">Submitted</Select.Option>
+                <Select.Option value="accepted">Accepted</Select.Option>
+                <Select.Option value="rejected">Rejected</Select.Option>
+              </Select>
+              <Select 
+                value={sortBy} 
+                onChange={setSortBy} 
+                style={{ minWidth: 180 }}
+                size="middle"
+                suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
+              >
+                <Select.Option value="deadline">Deadline (Soonest)</Select.Option>
+                <Select.Option value="priority">Priority (Highest)</Select.Option>
+                <Select.Option value="match">Match Score</Select.Option>
+                <Select.Option value="health">Health Score</Select.Option>
+                <Select.Option value="recent">Recently Updated</Select.Option>
+              </Select>
+            </Space>
+          </Col>
+          <Col xs={24} sm={24} md={6} style={{ textAlign: 'right' }}>
+            <Space size="small">
+              <Button 
+                size="middle"
+                icon={<UnifiedIcon name="award" size="sm" color="primary" />} 
+                onClick={() => navigate('/student-hub/applications/scholarships/new')}
+                style={{
+                  height: 40,
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  borderColor: '#8b0000',
+                  color: '#8b0000',
+                }}
+              >
+                Add Scholarship
+              </Button>
+              <Button 
+                type="primary" 
+                size="middle"
+                icon={<UnifiedIcon name="plus" size="sm" color="white" />} 
+                onClick={handleNewApplication}
+                style={{
+                  height: 40,
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  boxShadow: '0 2px 8px rgba(139, 0, 0, 0.2)',
+                }}
+              >
+                Add Application
+              </Button>
+            </Space>
+          </Col>
+        </Row>
       </Card>
 
-      {/* Delete Confirmation Modal */}
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={16}>
+          <Card 
+            id="applications-list" 
+            title={typeFilter === 'all' ? 'Your applications' : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
+            className="applications-card"
+            style={{ height: combinedList.length === 0 ? 320 : 'auto', minHeight: combinedList.length === 0 ? 320 : 'auto' }}
+            styles={{ body: { height: combinedList.length === 0 ? 270 : 'auto', minHeight: combinedList.length === 0 ? 270 : 'auto', display: 'flex', flexDirection: 'column' } }}
+          >
+            <List
+              dataSource={combinedList}
+              locale={{ 
+                emptyText: (
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    padding: '40px 20px',
+                    minHeight: 200,
+                    textAlign: 'center'
+                  }}>
+                    <UnifiedIcon name="file-text" size="lg" color="secondary" style={{ marginBottom: 16, opacity: 0.5 }} />
+                    <p style={{ fontSize: 16, color: '#666', margin: 0 }}>No applications yet. Add one to get started.</p>
+                  </div>
+                )
+              }}
+              renderItem={(item: any) => {
+                const isSch = item.itemType === 'scholarship';
+                const matchScore = recommendations?.recommendations && item.major
+                  ? (() => {
+                      const m = recommendations.recommendations.find((r: any) => r.majorName?.toLowerCase().includes((item.major || '').toLowerCase()));
+                      return m ? Math.round(m.fitScore) : null;
+                    })()
+                  : null;
+                return (
+                  <List.Item className="application-detail-item" style={{ padding: 0, marginBottom: 24 }}>
+                    <Card
+                      className="application-card"
+                      style={{
+                        borderRadius: 20,
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        background: '#ffffff',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        margin: 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 0, 0, 0.12)';
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.borderColor = '#8b0000';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.borderColor = '#e5e7eb';
+                      }}
+                    >
+                      {/* Modern Card Design - Completely Redesigned */}
+                      <div style={{ padding: 0 }}>
+                        {/* Header Section with Gradient */}
+                        <div style={{
+                          padding: '28px 32px',
+                          background: 'linear-gradient(135deg, #fef2f2 0%, #ffffff 100%)',
+                          borderBottom: '1px solid #f1f5f9'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ 
+                                fontSize: 22, 
+                                fontWeight: 700, 
+                                color: '#0f172a', 
+                                marginBottom: 10,
+                                lineHeight: 1.3,
+                                letterSpacing: '-0.02em'
+                              }}>
+                                {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
+                              </div>
+                              {!isSch && item.major && (
+                                <div style={{ 
+                                  fontSize: 15, 
+                                  color: '#64748b', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: 8,
+                                  fontWeight: 500,
+                                  marginTop: 6
+                                }}>
+                                  <UnifiedIcon name="graduation-cap" size="sm" color="primary" />
+                                  <span>{item.major}</span>
+                                </div>
+                              )}
+                              {isSch && item.amount != null && (
+                                <div style={{ 
+                                  fontSize: 18, 
+                                  color: '#16a34a', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: 8,
+                                  fontWeight: 700,
+                                  marginTop: 8
+                                }}>
+                                  <UnifiedIcon name="award" size="md" color="success" />
+                                  <span>${Number(item.amount).toLocaleString()}</span>
+                                </div>
+                              )}
+                            </div>
+                            <Space size={8} style={{ flexShrink: 0 }} wrap>
+                              {matchScore && !isSch && matchScore >= 60 && (
+                                <Tag 
+                                  color={matchScore >= 80 ? 'success' : 'warning'} 
+                                  style={{ 
+                                    margin: 0,
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    padding: '6px 14px',
+                                    borderRadius: 20,
+                                    border: 'none'
+                                  }}
+                                >
+                                  {matchScore}% Match
+                                </Tag>
+                              )}
+                              {!isSch && item.category && (
+                                <Tag 
+                                  color={getCategoryColor(item.category)} 
+                                  style={{ 
+                                    margin: 0,
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    padding: '6px 14px',
+                                    borderRadius: 20,
+                                    border: 'none'
+                                  }}
+                                >
+                                  {getCategoryText(item.category)}
+                                </Tag>
+                              )}
+                              {(() => {
+                                const deadline = item.deadline || item.applicationDeadline;
+                                if (deadline) {
+                                  const daysUntil = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                                  if (daysUntil <= 7 && daysUntil > 0) {
+                                    return (
+                                      <Tag 
+                                        color="error" 
+                                        style={{ 
+                                          margin: 0,
+                                          fontSize: 12,
+                                          fontWeight: 700,
+                                          padding: '6px 14px',
+                                          borderRadius: 20,
+                                          border: 'none'
+                                        }}
+                                      >
+                                        {daysUntil}d left
+                                      </Tag>
+                                    );
+                                  }
+                                }
+                                return null;
+                              })()}
+                              <Tag 
+                                color={item.status === 'accepted' ? 'success' : item.status === 'rejected' ? 'error' : item.status === 'applying' ? 'processing' : 'default'}
+                                style={{ 
+                                  margin: 0,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  padding: '6px 14px',
+                                  borderRadius: 20,
+                                  border: 'none'
+                                }}
+                              >
+                                {getStatusText(item.status)}
+                              </Tag>
+                            </Space>
+                          </div>
+                        </div>
+
+                        {/* Details Section */}
+                        <div style={{ padding: '20px 32px', background: '#ffffff' }}>
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: 16,
+                            marginBottom: 20
+                          }}>
+                            <div style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 12,
+                              padding: '12px 16px',
+                              background: '#f8fafc',
+                              borderRadius: 12,
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <div style={{ 
+                                width: 40, 
+                                height: 40, 
+                                borderRadius: 10, 
+                                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                              }}>
+                                <UnifiedIcon name="calendar" size="md" color="primary" />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                                  Deadline
+                                </div>
+                                <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
+                                  {formatDate(item.deadline || item.applicationDeadline)}
+                                </div>
+                              </div>
+                            </div>
+                            {!isSch && item.applicationType && (
+                              <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 12,
+                                padding: '12px 16px',
+                                background: '#f8fafc',
+                                borderRadius: 12,
+                                border: '1px solid #e2e8f0'
+                              }}>
+                                <div style={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: 10, 
+                                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}>
+                                  <UnifiedIcon name="file-text" size="md" color="primary" />
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                                    Type
+                                  </div>
+                                  <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
+                                    {getApplicationTypeText(item.applicationType)}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {!isSch && item.priority != null && (
+                              <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 12,
+                                padding: '12px 16px',
+                                background: '#f8fafc',
+                                borderRadius: 12,
+                                border: '1px solid #e2e8f0'
+                              }}>
+                                <div style={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: 10, 
+                                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}>
+                                  <UnifiedIcon name="star" size="md" color="primary" />
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                                    Priority
+                                  </div>
+                                  <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 600 }}>
+                                    {getPriorityText(item.priority)}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Requirements and Mentor Section - Fixed to prevent navigation */}
+                          {!isSch && item.id && (
+                            <div style={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: 16,
+                              marginBottom: 20,
+                              padding: '20px',
+                              background: '#f8fafc',
+                              borderRadius: 16,
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <div 
+                              onClick={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              >
+                                <RequirementsChecklist
+                                  applicationId={item.id}
+                                  requirements={item.requirements}
+                                  onUpdate={(updatedRequirements) => {
+                                    refetchApplications();
+                                  }}
+                                />
+                              </div>
+                              <div 
+                              onClick={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              style={{ display: 'flex', alignItems: 'flex-start' }}
+                              >
+                                <MentorAssignment
+                                  applicationId={item.id}
+                                  mentorId={item.mentorId}
+                                  onUpdate={(mentorId) => {
+                                    refetchApplications();
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {item.notes && (
+                            <div style={{ 
+                              marginBottom: 20,
+                              padding: '16px 20px',
+                              background: '#fffbeb',
+                              borderRadius: 12,
+                              borderLeft: '4px solid #f59e0b'
+                            }}>
+                              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                <UnifiedIcon name="file-text" size="md" color="warning" style={{ marginTop: 2, flexShrink: 0 }} />
+                                <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.6 }}>
+                                  {item.notes}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Actions Section */}
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end', 
+                            gap: 12, 
+                            paddingTop: 20,
+                            borderTop: '1px solid #f1f5f9'
+                          }}>
+                            {!isSch && item.id && (
+                              <Button 
+                                size="large"
+                                style={{
+                                  height: 44,
+                                  borderRadius: 12,
+                                  fontWeight: 600,
+                                  borderColor: '#8b0000',
+                                  color: '#8b0000',
+                                  padding: '0 24px',
+                                }}
+                                icon={<UnifiedIcon name="edit" size="sm" color="primary" />} 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  e.preventDefault();
+                                  // Debug: Log the item to see what we have
+                                  console.log('Edit button clicked, item:', item);
+                                  console.log('Item ID:', item.id);
+                                  
+                                  const applicationId = item.id || item._id || item.applicationId;
+                                  if (applicationId && typeof applicationId === 'string' && applicationId.trim() !== '') {
+                                    console.log('Navigating to edit page with ID:', applicationId);
+                                    navigate(`/student-hub/applications/${applicationId}/edit`); 
+                                  } else {
+                                    console.error('Invalid application ID:', applicationId);
+                                    message.error(`Application ID is missing or invalid. Cannot edit. ID: ${applicationId}`);
+                                  }
+                                }}
+                              >
+                                Edit
+                              </Button>
+                            )}
+                            <Button 
+                              size="large"
+                              danger
+                              style={{
+                                height: 44,
+                                borderRadius: 12,
+                                fontWeight: 600,
+                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+                                padding: '0 24px',
+                              }}
+                              icon={<UnifiedIcon name="trash-2" size="sm" color="white" />} 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                e.preventDefault();
+                                isSch ? handleDeleteScholarship(item) : handleDeleteApplication(item); 
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </List.Item>
+                );
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={8}>
+          <Card 
+            title={t('studentHub.applications.upcomingDeadlines')} 
+            className="deadlines-card"
+            style={{ height: combinedList.length === 0 ? 320 : 'auto', minHeight: combinedList.length === 0 ? 320 : 'auto' }}
+            styles={{ body: { height: combinedList.length === 0 ? 270 : 'auto', minHeight: combinedList.length === 0 ? 270 : 'auto' } }}
+          >
+            {upcomingDeadlines.length > 0 ? (
+              <List
+                dataSource={upcomingDeadlines}
+                renderItem={(item: any) => (
+                  <List.Item className="deadline-item">
+                    <div className="deadline-content">
+                      <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
+                      {item.type === 'application' && item.major && <div className="deadline-major" style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{item.major}</div>}
+                      <div className="deadline-date" style={{ marginTop: 8 }}>Deadline: {formatDate(item.deadlineDate)}</div>
+                    </div>
+                    <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                padding: '40px 20px',
+                minHeight: 200,
+                textAlign: 'center'
+              }}>
+                <UnifiedIcon name="calendar" size="lg" color="secondary" style={{ marginBottom: 16, opacity: 0.5 }} />
+                <p style={{ fontSize: 16, color: '#666', margin: '0 0 12px 0' }}>
+                  {t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}
+                </p>
+                <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
+                  Add application
+                </Button>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
       <Modal
         title={t('studentHub.applications.deleteApplication')}
         open={deleteModalVisible}
         onOk={confirmDeleteApplication}
         onCancel={cancelDeleteApplication}
-        confirmLoading={deleteLoading}
+        confirmLoading={deleteLoading || deleteScholarshipLoading}
         okText={t('studentHub.applications.delete')}
         cancelText={t('common.cancel')}
-        okButtonProps={{ 
-          style: { 
-            backgroundColor: '#8b0000', 
-            borderColor: '#8b0000',
-            color: 'white'
-          }
-        }}
+        okButtonProps={{ style: { backgroundColor: '#8b0000', borderColor: '#8b0000', color: 'white' } }}
       >
         <p>{applicationToDelete?.type === 'scholarship' ? t('studentHub.applications.deleteConfirmScholarship') : t('studentHub.applications.deleteConfirm')}</p>
         {applicationToDelete && (
-          <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 6 }}>
-            <strong>{applicationToDelete.universityName || applicationToDelete.scholarshipName}</strong>
-            <br />
-            <small>{t('studentHub.applications.category')}: {getCategoryText(applicationToDelete.category)}</small>
-            <br />
-            <small>{t('studentHub.applications.status')}: {getStatusText(applicationToDelete.status)}</small>
+          <div style={{ marginTop: 16, padding: 16, backgroundColor: '#f9fafb', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>
+              {applicationToDelete.type === 'scholarship' 
+                ? (applicationToDelete.scholarshipName || applicationToDelete.name || t('studentHub.applications.unknownScholarship'))
+                : <UniversityNameDisplay 
+                    universityId={applicationToDelete.universityId} 
+                    universityName={applicationToDelete.universityName || applicationToDelete.name} 
+                  />
+              }
+            </div>
+            {applicationToDelete.id && (
+              <div style={{ marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#666' }}>ID: </span>
+                <span style={{ fontSize: 12, color: '#999', fontFamily: 'monospace' }}>{applicationToDelete.id}</span>
+              </div>
+            )}
+            {applicationToDelete.category && (
+              <div style={{ marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#666' }}>Category: </span>
+                <Tag color={getCategoryColor(applicationToDelete.category)} style={{ margin: 0 }}>
+                  {getCategoryText(applicationToDelete.category)}
+                </Tag>
+              </div>
+            )}
+            {applicationToDelete.status && (
+              <div style={{ marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#666' }}>Status: </span>
+                <Tag color={getStatusColor(applicationToDelete.status)} style={{ margin: 0 }}>
+                  {getStatusText(applicationToDelete.status)}
+                </Tag>
+              </div>
+            )}
           </div>
         )}
         <p style={{ marginTop: 16, color: '#8b0000' }}>
-          <FontAwesomeIcon icon="exclamation-triangle" style={{ marginRight: 8, color: '#8b0000' }} />
+          <UnifiedIcon name="alert-circle" size="sm" color="#8b0000" style={{ marginRight: 8 }} />
           {t('studentHub.applications.deleteWarning')}
         </p>
       </Modal>

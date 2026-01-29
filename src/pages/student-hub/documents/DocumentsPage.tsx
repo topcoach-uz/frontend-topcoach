@@ -3,7 +3,7 @@ import { Card, Button, List, Upload, message, Row, Col, Tag, Space, Progress, Ta
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
-import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useStudentHub } from '../../../hooks/useStudentHub';
 import { 
   useGetDocumentsQuery, 
@@ -153,7 +153,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
     Modal.confirm({
       title: 'Delete Document',
       content: 'Are you sure you want to delete this document? This action cannot be undone.',
-      icon: <FontAwesomeIcon icon="exclamation-triangle" style={{ color: '#ff4d4f' }} />,
+      icon: <UnifiedIcon name="alert-circle" size="sm" color="#ff4d4f" />,
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
@@ -298,12 +298,12 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ width: 300 }}
-            prefix={<FontAwesomeIcon icon="search" />}
+            prefix={<UnifiedIcon name="search" size="sm" color="primary" />}
             allowClear
           />
           <Button 
             type="primary" 
-            icon={<FontAwesomeIcon icon="plus" />} 
+            icon={<UnifiedIcon name="plus" size="sm" color="white" />} 
             onClick={handleUploadDocument}
             size="large"
           >
@@ -341,7 +341,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
                           >
                             <div className="category-header">
                               <div className={`category-icon ${category.color}`}>
-                                <FontAwesomeIcon icon={category.icon as any} />
+                                <UnifiedIcon name={category.icon as string || "file-text"} size="sm" color="primary" />
                               </div>
                               <div className="category-info">
                                 <h4 className="category-title">
@@ -361,7 +361,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
                                   setUploadModalVisible(true);
                                 }}
                               >
-                                <FontAwesomeIcon icon="plus" /> {t('studentHub.documents.addDocument')}
+                                <UnifiedIcon name="plus" size="sm" color="white" /> {t('studentHub.documents.addDocument')}
                               </Button>
                             </div>
                           </Card>
@@ -408,7 +408,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
                                   <div className="document-info">
                                     <div className="document-header">
                                       <div className={`document-icon ${category.color}`}>
-                                        <FontAwesomeIcon icon={category.icon as any} />
+                                        <UnifiedIcon name={category.icon as string || "file-text"} size="sm" color="primary" />
                                       </div>
                                       <div className="document-details">
                                         <h4 className="document-title">{document.fileName}</h4>
@@ -425,7 +425,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
                                   <div className="document-actions">
                                     <Space>
                                       <Button 
-                                        icon={<FontAwesomeIcon icon="download" />}
+                                        icon={<UnifiedIcon name="download" size="sm" color="primary" />}
                                         onClick={() => handleDownloadDocument(document.id)}
                                         size="small"
                                         style={{
@@ -542,7 +542,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
               className="upload-dragger"
             >
               <p className="ant-upload-drag-icon">
-                <FontAwesomeIcon icon="cloud-upload-alt" />
+                <UnifiedIcon name="upload" size="lg" color="primary" />
               </p>
               <p className="ant-upload-text">{t('studentHub.documents.uploadInstructions')}</p>
               <p className="ant-upload-hint">

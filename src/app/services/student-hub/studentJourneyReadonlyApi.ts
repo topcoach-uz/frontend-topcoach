@@ -107,7 +107,7 @@ export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
       }),
     }),
 
-    // Get student dashboard summary (for counselors)
+    // Get My Journey summary (for counselors)
     getStudentJourneyDashboard: builder.query<ApiResponse<StudentDashboard>, string>({
       query: (userId) => ({
         url: `/student-journey/${userId}/dashboard`,

@@ -1,7 +1,7 @@
 import { useTypedSelector } from 'src/app/store';
 import MenteeHomePage from './mentee';
 import MentorHomePage from './mentor';
-import Loader from 'src/components/loader';
+import { PageLoader } from 'src/components/loading';
 import { useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
@@ -24,7 +24,7 @@ export default function HomePage() {
   }, []);
 
   if (!profile?.role) {
-    return <Loader />;
+    return <PageLoader text="Loading..." />;
   }
 
   return (

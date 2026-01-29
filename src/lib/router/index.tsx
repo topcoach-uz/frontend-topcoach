@@ -9,6 +9,7 @@ import {
 import { Spin } from "antd";
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
+import { UserRole } from "src/app/api/Api";
 
 // Layouts
 import MainLayout from "src/components/layouts/main";
@@ -131,7 +132,18 @@ function RouterProvider() {
               <Route
                 index
                 element={
-                  isAuthenticated ? <HomePage /> : <LandingPageLazy />
+                  isAuthenticated ? (
+                    // Redirect students to unified Dashboard (student-hub)
+                    // Keep HomePage for mentors (they have different home page)
+                    // Using string comparison since UserRole enum may not be available at runtime
+                    currentUser?.profile?.role === 'Mentor' ? (
+                      <HomePage />
+                    ) : (
+                      <Navigate to="/student-hub" replace />
+                    )
+                  ) : (
+                    <LandingPageLazy />
+                  )
                 }
               />
               <Route

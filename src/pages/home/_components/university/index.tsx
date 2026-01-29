@@ -19,7 +19,7 @@ import { scrollToTop } from 'src/utils';
 import UniversityFilter from 'src/pages/universities/_components/filter';
 import styles from './university.module.scss';
 import UniverAiSearchCard from 'src/pages/universities/_components/univerAiSearchCard';
-import Loader from 'src/components/loader';
+import { InlineLoader } from 'src/components/loading';
 
 interface Props {
   isDark?: boolean;
@@ -208,7 +208,7 @@ export default function UniversitySection({
         </CustomText>
       )}
 
-      {!showOnlyFavorites && aiSearchLoading && <Loader height={80} />}
+      {!showOnlyFavorites && aiSearchLoading && <InlineLoader size="default" style={{ minHeight: 80 }} />}
       {/* ai search results */}
 
       {showOnlyFavorites ? (

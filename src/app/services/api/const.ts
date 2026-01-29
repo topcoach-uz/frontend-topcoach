@@ -1,4 +1,4 @@
-// export const hostName = 'http://localhost:3000'; 
+// export const hostName = 'http://localhost:3000';
 export const hostName = 'https://topcoachuni.com';
 // export const hostName = 'https://274hr31c-3000.euw.devtunnels.ms';
 export const baseUrl = `${hostName}/api`;
@@ -35,4 +35,5 @@ export const apiTagTypes = [
   'ChatConversations',
   'ChatThreads',
   'ChatMessages',
+  'PsychometricAssessment',
 ];

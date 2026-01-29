@@ -144,9 +144,9 @@ $crimson-900: #7f1d1d;
 
           .ant-menu-item-icon {
             margin: 0;
-            font-size: $text-xl;
-            width: 20px;
-            height: 20px;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
             display: flex !important;
             color: #8b0000 !important;
             fill: #8b0000 !important;
@@ -261,19 +261,19 @@ $crimson-900: #7f1d1d;
       padding: $space-2 0;
 
       .ant-menu-item {
-        margin: $space-1 $space-4;
-        border-radius: $radius-lg;
-        height: 56px;
-        line-height: 56px;
+        margin: $space-1 $space-3;
+        border-radius: $radius-md;
+        height: 48px;
+        line-height: 48px;
         display: flex;
         align-items: center;
-        gap: $space-4;
-        font-size: $text-lg;
+        gap: $space-3;
+        font-size: $text-base;
         font-weight: $font-medium;
         transition: all 0.2s ease;
         border: none;
-        width: calc(100% - #{$space-8});
-        max-width: calc(300px - #{$space-8});
+        width: calc(100% - #{$space-6});
+        max-width: calc(240px - #{$space-6});
 
         &:hover {
           background-color: $crimson-50;
@@ -418,15 +418,15 @@ $crimson-900: #7f1d1d;
         }
 
         .ant-menu-item-icon {
-          font-size: $text-xl;
-          width: 24px;
+          font-size: 18px;
+          width: 20px;
           text-align: center;
           color: $crimson-primary;
           transition: color 0.2s ease;
 
           .menu-icon {
             color: $crimson-primary;
-            font-size: $text-xl;
+            font-size: 18px;
           }
 
           // Target FontAwesome SVG elements specifically
@@ -625,20 +625,20 @@ $crimson-900: #7f1d1d;
       padding: 0;
     }
 
-    .mobile-menu {
+      .mobile-menu {
       border: none;
       background: white;
-      padding: $space-4 0;
+      padding: $space-3 0;
 
       .ant-menu-item {
-        margin: $space-1 $space-4;
-        border-radius: $radius-lg;
-        height: 56px;
-        line-height: 56px;
+        margin: $space-1 $space-3;
+        border-radius: $radius-md;
+        height: 48px;
+        line-height: 48px;
         display: flex;
         align-items: center;
-        gap: $space-4;
-        font-size: $text-lg;
+        gap: $space-3;
+        font-size: $text-base;
         font-weight: $font-medium;
 
         &:hover {
@@ -973,7 +973,7 @@ $crimson-900: #7f1d1d;
   .student-hub-layout {
     .desktop-sidebar {
       display: block !important;
-      width: 300px !important;
+        width: 240px !important;
     }
     
     .mobile-header {

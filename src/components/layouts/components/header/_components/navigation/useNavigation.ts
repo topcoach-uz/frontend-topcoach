@@ -22,12 +22,9 @@ export default function useNavigation() {
   const shouldShowMyJourney = !isMentor || isCEO;
 
   const navLinks: INavLink[] = [
-    {
-      path: '/',
-      text: t('header.home'),
-    },
     // Hide "My Journey" for mentors - it's only for students
     // Exception: CEO (oumarovna@gmail.com) can see it for pitching to schools
+    // "Home" removed - students are redirected to /student-hub, mentors see their home page
     ...(shouldShowMyJourney ? [
       {
         path: '/student-hub',

@@ -18,7 +18,7 @@ import { scrollToTop } from 'src/utils';
 import UniversityFilter from '../filter';
 import styles from './university.module.scss';
 import UniverAiSearchCard from '../univerAiSearchCard';
-import Loader from 'src/components/loader';
+import { InlineLoader } from 'src/components/loading';
 
 interface Props {
   isDark?: boolean;
@@ -189,7 +189,7 @@ export default function UniversitySection({
           : `You can use AI major finder ${aiLimit} times`}
       </CustomText>
 
-      {aiSearchLoading && <Loader height={80} />}
+      {aiSearchLoading && <InlineLoader size="default" style={{ minHeight: 80 }} />}
       {/* ai search results */}
 
       {aiUni.length === 0 ? (

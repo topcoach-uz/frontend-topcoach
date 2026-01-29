@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Spin, Button, message } from 'antd';
+import { Layout, Button, message } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlined, VideoCameraOutlined, FileTextOutlined, LeftOutlined, RightOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery, useGetTasksByLessonQuery, useGetLessonTaskSubmissionsQuery } from 'src/app/services/courses';
 import type { CourseModuleDto, CourseLessonDto } from 'src/app/services/courses';
+import { InlineLoader } from 'src/components/loading';
 import CourseSidebar from './components/CourseSidebar';
 import VideoPlayer from './components/VideoPlayer';
 import VdoCipherPlayer from './components/VdoCipherPlayer';
@@ -682,11 +683,10 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   if (structureLoading || progressLoading) {
     return (
       <div className="learning-loading">
-        <Spin size="large" />
-        <p>{t('Loading course content...')}</p>
-        <p style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
-          This may take a few moments on first load
-        </p>
+        <InlineLoader 
+          size="large" 
+          text={t('Loading course content...')}
+        />
       </div>
     );
   }

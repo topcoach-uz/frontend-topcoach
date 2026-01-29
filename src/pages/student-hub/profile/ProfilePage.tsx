@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Progress, Button, Row, Col, Statistic, Badge, Spin, Alert } from 'antd';
+import { Card, Tabs, Progress, Button, Row, Col, Statistic, Badge, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { PROFILE_ICONS, STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
+import { STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
+import { InlineLoader, PageSkeleton } from '../../../components/loading';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
+import GpaCalculatorPage from '../gpa-calculator/GpaCalculatorPage';
+import SettingsPage from '../settings/SettingsPage';
 import './ProfilePage.scss';
 
 const { TabPane } = Tabs;
@@ -33,8 +36,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['personal', 'academic', 'activities'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['personal', 'academic', 'activities', 'gpa-calculator', 'settings'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
+    } else {
+      // Default to personal if no tab specified
+      setActiveTab('personal');
     }
   }, [searchParams]);
 
@@ -44,14 +50,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
     setSearchParams({ tab: key });
   };
 
-  // Show loading state only in main content area
+  // Show loading state with unified skeleton
   if (isLoading) {
     return (
       <div className="profile-loading-content">
-        <div className="loading-spinner-container">
-          <Spin size="large" />
-          <p>{t('studentHub.profile.loading')}</p>
-        </div>
+        <PageSkeleton 
+          rows={6} 
+          showTitle={true}
+          showAvatar={false}
+        />
       </div>
     );
   }
@@ -127,7 +134,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       key: 'personal',
       label: (
         <div className="tab-label">
-          <FontAwesomeIcon icon={PROFILE_ICONS.PERSONAL} />
+          <UnifiedIcon name="user" size="sm" color="primary" />
           <span>{t('studentHub.profile.personalProfile')}</span>
         </div>
       ),
@@ -147,11 +154,31 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       key: 'activities',
       label: (
         <div className="tab-label">
-          <FontAwesomeIcon icon={PROFILE_ICONS.ACTIVITIES} />
+          <UnifiedIcon name="award" size="sm" color="primary" />
           <span>{t('studentHub.profile.activitiesAchievements')}</span>
         </div>
       ),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
+    },
+    {
+      key: 'gpa-calculator',
+      label: (
+        <div className="tab-label">
+          <FontAwesomeIcon icon="calculator" />
+          <span>GPA Calculator</span>
+        </div>
+      ),
+      children: <GpaCalculatorPage />,
+    },
+    {
+      key: 'settings',
+      label: (
+        <div className="tab-label">
+          <UnifiedIcon name="settings" size="sm" color="primary" />
+          <span>Settings</span>
+        </div>
+      ),
+      children: <SettingsPage />,
     },
   ];
 

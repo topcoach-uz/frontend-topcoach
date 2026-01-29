@@ -361,6 +361,7 @@ export interface CollegeApplication {
   deadline?: string;
   financialInfo: Record<string, any>;
   requirements?: Record<string, any>;
+  mentorId?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -377,6 +378,7 @@ export interface CreateCollegeApplicationRequest {
   deadline?: string;
   financialInfo?: Record<string, any>;
   requirements?: Record<string, any>;
+  mentorId?: string;
   notes?: string;
 }
 

@@ -443,6 +443,16 @@ $crimson-900: #7f1d1d;
     }
   }
 
+  // Equal height cards for all 4 dashboard cards
+  .equal-height-cards {
+    .ant-col {
+      > * {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
   .main-content-row {
     .activity-card,
     .actions-card {
@@ -450,6 +460,9 @@ $crimson-900: #7f1d1d;
       box-shadow: $shadow-sm;
       border: 1px solid $border-light;
       margin-bottom: $space-6;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
 
       .ant-card-head {
         border-bottom: 1px solid $border-light;
@@ -459,6 +472,13 @@ $crimson-900: #7f1d1d;
           font-weight: $font-semibold;
           color: $text-primary;
         }
+      }
+
+      .ant-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
 
       .activity-item {
@@ -526,6 +546,9 @@ $crimson-900: #7f1d1d;
       box-shadow: $shadow-sm;
       border: 1px solid $border-light;
       margin-bottom: $space-6;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
 
       .ant-card-head {
         border-bottom: 1px solid $border-light;
@@ -537,24 +560,58 @@ $crimson-900: #7f1d1d;
         }
       }
 
+      .ant-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
       .deadline-item {
         padding: $space-3 0;
         border-bottom: 1px solid $border-light;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: $radius-md;
+        margin: $space-1 0;
+        padding-left: $space-3;
+        padding-right: $space-3;
+
+        &:hover {
+          background-color: $gray-50;
+          transform: translateX(4px);
+        }
 
         &:last-child {
           border-bottom: none;
         }
 
         .deadline-content {
+          flex: 1;
+          
+          .deadline-title-section {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+          }
+          
           .deadline-title {
             font-weight: $font-medium;
             color: $text-primary;
-            margin-bottom: $space-1;
+            line-height: 1.4;
+          }
+          
+          .deadline-major {
+            font-size: $text-xs;
+            color: $text-secondary;
+            margin-top: 4px;
+            line-height: 1.3;
           }
 
           .deadline-date {
             color: $text-tertiary;
             font-size: $text-sm;
+            line-height: 1.4;
           }
         }
       }
@@ -700,15 +757,23 @@ $crimson-900: #7f1d1d;
   border-radius: $radius-md;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  cursor: pointer;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    border-color: $primary-500;
   }
 
   .ant-card-body {
     padding: $space-5;
   }
+}
+
+.activity-priority {
+  font-size: $text-xs;
+  color: $text-tertiary;
+  margin-top: $space-1;
 }
 
 .activity-content {

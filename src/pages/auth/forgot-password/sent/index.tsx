@@ -7,7 +7,7 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
 import { Tick2Icon } from 'src/components/icons';
-import Loader from 'src/components/loader';
+import { PageLoader } from 'src/components/loading';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
 
@@ -42,7 +42,7 @@ export default function EmailSentPage() {
   }, [isSuccess, profile?.email]);
 
   if (loading) {
-    return <Loader />;
+    return <PageLoader text="Loading..." />;
   }
 
   if (success)

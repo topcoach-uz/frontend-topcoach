@@ -61,7 +61,7 @@ export default function ActionsMobileVersion({
           <LanguageSelect />
         </>
       )}
-      {!isAuthLoading && isAuthenticated && <ChatIcon />}
+      {isAuthenticated && <ChatIcon />}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
       ) : (

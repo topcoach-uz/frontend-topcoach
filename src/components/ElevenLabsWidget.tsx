@@ -84,21 +84,49 @@ const hideWatermark = () => {
 
 const ElevenLabsWidget = () => {
   useEffect(() => {
+    // Function to ensure widget is visible
+    const ensureWidgetVisible = () => {
+      const widget = document.querySelector('elevenlabs-convai') as HTMLElement;
+      if (widget) {
+        widget.style.display = 'block';
+        widget.style.visibility = 'visible';
+        widget.style.opacity = '1';
+        widget.style.position = 'fixed';
+        widget.style.bottom = '20px';
+        widget.style.right = '20px';
+        widget.style.zIndex = '9999';
+      }
+    };
+
     // Check if widget is already initialized globally
     if (window.elevenLabsWidgetInitialized) {
-      console.log('ElevenLabs widget already initialized globally, skipping');
+      // Still ensure it's visible
+      setTimeout(ensureWidgetVisible, 100);
       return;
     }
 
     // Check if widget is already loaded to prevent duplicates
     if (document.querySelector('elevenlabs-convai')) {
-      console.log('ElevenLabs widget already exists, skipping creation');
+      // Ensure it's visible even if it exists
+      ensureWidgetVisible();
+      window.elevenLabsWidgetInitialized = true;
       return;
     }
 
     // Check if script is already loaded
     if (document.querySelector('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]')) {
-      console.log('ElevenLabs script already loaded, skipping script creation');
+      // Script loaded but widget might not be created yet, wait a bit and check again
+      const checkInterval = setInterval(() => {
+        const widget = document.querySelector('elevenlabs-convai') as HTMLElement;
+        if (widget) {
+          ensureWidgetVisible();
+          window.elevenLabsWidgetInitialized = true;
+          clearInterval(checkInterval);
+        }
+      }, 500);
+      
+      // Stop checking after 10 seconds
+      setTimeout(() => clearInterval(checkInterval), 10000);
       return;
     }
 
@@ -128,17 +156,39 @@ const ElevenLabsWidget = () => {
 
     // Add success callback
     script.onload = () => {
-      console.log('ElevenLabs AI Assistant widget loaded successfully');
       window.elevenLabsWidgetInitialized = true;
 
-      // Hide watermark after widget loads
+      // Ensure widget is visible
       setTimeout(() => {
+        const widget = document.querySelector('elevenlabs-convai') as HTMLElement;
+        if (widget) {
+          widget.style.display = 'block';
+          widget.style.visibility = 'visible';
+          widget.style.opacity = '1';
+          widget.style.position = 'fixed';
+          widget.style.bottom = '20px';
+          widget.style.right = '20px';
+          widget.style.zIndex = '9999';
+        }
+        
+        // Hide watermark after widget loads
         hideWatermark();
-      }, 1000);
+      }, 500);
 
-      // Set up periodic check to hide watermark
+      // Set up periodic check to hide watermark and ensure visibility
       const watermarkInterval = setInterval(() => {
         hideWatermark();
+        // Ensure widget stays visible
+        const widget = document.querySelector('elevenlabs-convai') as HTMLElement;
+        if (widget) {
+          widget.style.display = 'block';
+          widget.style.visibility = 'visible';
+          widget.style.opacity = '1';
+          widget.style.position = 'fixed';
+          widget.style.bottom = '20px';
+          widget.style.right = '20px';
+          widget.style.zIndex = '9999';
+        }
       }, 2000);
 
       // Store interval ID for cleanup
@@ -149,8 +199,29 @@ const ElevenLabsWidget = () => {
     document.body.appendChild(convaiElement);
     document.body.appendChild(script);
 
+    // Set up a global visibility monitor that runs every 3 seconds
+    // This ensures the widget stays visible even if something tries to hide it
+    const visibilityMonitor = setInterval(() => {
+      const widget = document.querySelector('elevenlabs-convai') as HTMLElement;
+      if (widget) {
+        const computedStyle = window.getComputedStyle(widget);
+        if (computedStyle.display === 'none' || 
+            computedStyle.visibility === 'hidden' || 
+            computedStyle.opacity === '0') {
+          widget.style.display = 'block';
+          widget.style.visibility = 'visible';
+          widget.style.opacity = '1';
+          widget.style.position = 'fixed';
+          widget.style.bottom = '20px';
+          widget.style.right = '20px';
+          widget.style.zIndex = '9999';
+        }
+      }
+    }, 3000);
+
     // Cleanup function
     return () => {
+      clearInterval(visibilityMonitor);
       // Remove the widget when component unmounts
       const existingConvai = document.querySelector('elevenlabs-convai');
       const existingScript = document.querySelector('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]');

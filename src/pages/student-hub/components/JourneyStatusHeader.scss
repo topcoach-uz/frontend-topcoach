@@ -1,0 +1,66 @@
+.journey-status-header {
+  .journey-status-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+
+    .journey-status-left {
+      flex: 1;
+      min-width: 300px;
+
+      .greeting-section {
+        .greeting-text {
+          font-size: 24px;
+          font-weight: 600;
+          margin: 0 0 12px 0;
+          color: #1a1a1a;
+        }
+
+        .phase-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          color: white;
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .phase-subtext {
+          font-size: 14px;
+          color: #666;
+          margin: 0;
+        }
+      }
+    }
+
+    .journey-status-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .progress-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .journey-status-header {
+    .journey-status-content {
+      flex-direction: column;
+      text-align: center;
+
+      .journey-status-left {
+        width: 100%;
+      }
+    }
+  }
+}

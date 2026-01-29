@@ -16,33 +16,25 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
-  // Fetch unread count
-  const { data: unreadData, error: unreadError, isLoading: unreadLoading } = useGetUnreadCountQuery(
+  // Fetch unread count with error handling - always show icon even if query fails
+  const { data: unreadData, error: unreadError } = useGetUnreadCountQuery(
     undefined,
     {
       skip: !isAuthenticated,
       pollingInterval: 10000, // Poll every 10 seconds for real-time updates
+      // Don't refetch on error - just use default value
+      refetchOnMountOrArgChange: false,
+      // Don't show error notifications - just use default value
+      errorPolicy: 'ignore',
     }
   );
 
-  // Debug logging
-  React.useEffect(() => {
-    if (unreadData !== undefined) {
-      console.log('Unread count data:', unreadData);
-      console.log('Unread count value:', unreadData?.unreadCount);
-    }
-    if (unreadError) {
-      console.error('Unread count error:', unreadError);
-    }
-  }, [unreadData, unreadError]);
+  // Safely get unread count - default to 0 if error or no data
+  // Always use 0 if there's any error to prevent rendering issues
+  const unreadCount = unreadError ? 0 : (unreadData?.unreadCount ?? 0);
 
-  const unreadCount = unreadData?.unreadCount ?? 0;
-
-  // Debug: Log the count to verify it's being calculated
-  React.useEffect(() => {
-    console.log('[ChatIcon] Unread count:', unreadCount, 'Data:', unreadData, 'Error:', unreadError);
-  }, [unreadCount, unreadData, unreadError]);
-
+  // Always render if authenticated, regardless of query state
+  // This ensures the chat icon is always visible when user is logged in
   if (!isAuthenticated) {
     return null;
   }
@@ -63,30 +55,75 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     setSelectedThreadId(threadId);
   };
 
-  return (
-    <>
+  // Always render the chat icon when authenticated
+  // Use try-catch to prevent any rendering errors
+  try {
+    return (
+      <>
+        <div 
+          className={`${styles.chatIconWrapper} ${className || ''}`}
+          onClick={handleIconClick}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            visibility: 'visible',
+            opacity: 1,
+            pointerEvents: 'auto',
+          }}
+        >
+          <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
+            <MessageOutlined 
+              className={styles.chatIcon} 
+              style={{ 
+                display: 'block',
+                visibility: 'visible',
+                opacity: 1,
+              }}
+            />
+          </Badge>
+        </div>
+        <ChatModal
+          conversationId={selectedConversationId}
+          threadId={selectedThreadId || undefined}
+          open={chatModalOpen}
+          onClose={() => {
+            setChatModalOpen(false);
+            setSelectedConversationId(null);
+            setSelectedThreadId(null);
+          }}
+          onConversationChange={handleConversationSelect}
+          onThreadChange={handleThreadSelect}
+        />
+      </>
+    );
+  } catch (error) {
+    // Fallback: render a simple chat icon even if there's an error
+    console.error('ChatIcon rendering error:', error);
+    return (
       <div 
         className={`${styles.chatIconWrapper} ${className || ''}`}
         onClick={handleIconClick}
-      >
-        <Badge count={unreadCount} showZero={false} offset={[-5, 5]}>
-          <MessageOutlined className={styles.chatIcon} />
-        </Badge>
-      </div>
-      <ChatModal
-        conversationId={selectedConversationId}
-        threadId={selectedThreadId || undefined}
-        open={chatModalOpen}
-        onClose={() => {
-          setChatModalOpen(false);
-          setSelectedConversationId(null);
-          setSelectedThreadId(null);
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          visibility: 'visible',
+          opacity: 1,
+          pointerEvents: 'auto',
         }}
-        onConversationChange={handleConversationSelect}
-        onThreadChange={handleThreadSelect}
-      />
-    </>
-  );
+      >
+        <MessageOutlined 
+          className={styles.chatIcon}
+          style={{ 
+            display: 'block',
+            visibility: 'visible',
+            opacity: 1,
+          }}
+        />
+      </div>
+    );
+  }
 };
 
 export default ChatIcon;

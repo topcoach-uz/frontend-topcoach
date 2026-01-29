@@ -110,9 +110,10 @@ function MenteeHomePage() {
       {!counselorLoading && (
         <>
           {isCounselor && <SchoolCounselorDashboardSection />}
-          {!enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning ? (
+          {/* Banner section temporarily hidden */}
+          {/* {!enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning ? (
             !isCounselor ? <BannerSection /> : null
-          ) : null}
+          ) : null} */}
         </>
       )}
       {/* <HomeAiSearchSection /> */}

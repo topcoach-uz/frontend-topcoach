@@ -222,15 +222,7 @@
   justify-content: center;
   height: 100vh;
   background: #f5f5f5;
-
-  .ant-spin {
-    margin-bottom: 16px;
-  }
-
-  p {
-    margin: 0;
-    color: #666;
-    font-size: 16px;
+  animation: fadeIn 0.3s ease-in;
   }
 }
 

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../common/icons/UnifiedIcon';
 import LoginPrompt from 'src/components/student-hub/LoginPrompt';
 import { useStudentHub } from 'src/hooks/useStudentHub';
 import './StudentHubLayout.scss';
@@ -39,74 +40,66 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // Show mobile header on smaller screens (mobile/tablet) where sidebar is hidden
   const shouldShowMobileHeader = windowWidth < 1200;
 
-  // FontAwesome icon components - color controlled by CSS
-  const DashboardIcon = () => <FontAwesomeIcon icon="tachometer-alt" className="menu-icon" />;
-  const UserIcon = () => <FontAwesomeIcon icon="user" className="menu-icon" />;
-  const BuildingIcon = () => <FontAwesomeIcon icon="building" className="menu-icon" />;
-  const EditIcon = () => <FontAwesomeIcon icon="pen" className="menu-icon" />;
-  const FileIcon = () => <FontAwesomeIcon icon="file" className="menu-icon" />;
-  const CalculatorIcon = () => <FontAwesomeIcon icon="calculator" className="menu-icon" />;
-  const BellIcon = () => <FontAwesomeIcon icon="bell" className="menu-icon" />;
-  const ChartLineIcon = () => <FontAwesomeIcon icon="chart-line" className="menu-icon" />;
+  // Menu icon for toggle
   const MenuIcon = () => <FontAwesomeIcon icon="bars" className="menu-icon" />;
-  const BookIcon = () => <FontAwesomeIcon icon="book" className="menu-icon" />;
-  const CrownIcon = () => <FontAwesomeIcon icon="crown" className="menu-icon" />;
 
-  // Navigation items
+  // Compact Navigation Structure (Phase 2 - SaaS Optimized)
+  // Reduced from 11 items to 6 core items
   const menuItems = [
     {
       key: '/student-hub',
-      icon: <DashboardIcon />,
+      icon: <UnifiedIcon name="dashboard" size="md" color="primary" />,
       label: t('Dashboard'),
     },
     {
-      key: '/student-hub/profile',
-      icon: <UserIcon />,
-      label: t('My Profile'),
-    },
-    {
-      key: '/student-hub/psychometric-assessment',
-      icon: <ChartLineIcon />,
-      label: 'Psychometric Test',
-    },
-    {
       key: '/student-hub/applications',
-      icon: <BuildingIcon />,
+      icon: <UnifiedIcon name="applications" size="md" color="primary" />,
       label: t('Applications'),
     },
     {
       key: '/student-hub/essays',
-      icon: <EditIcon />,
+      icon: <UnifiedIcon name="essays" size="md" color="primary" />,
       label: t('Essays'),
     },
     {
       key: '/student-hub/documents',
-      icon: <FileIcon />,
+      icon: <UnifiedIcon name="documents" size="md" color="primary" />,
       label: t('Documents'),
     },
     {
-      key: '/student-hub/gpa-calculator',
-      icon: <CalculatorIcon />,
-      label: t('GPA Calculator'),
+      key: '/student-hub/psychometric-assessment',
+      icon: <UnifiedIcon name="activity" size="md" color="primary" />,
+      label: 'Major Match',
     },
     {
-      key: '/student-hub/admissions-program',
-      icon: <CrownIcon />,
-      label: 'Admissions Program',
+      key: '/student-hub/opportunities',
+      icon: <UnifiedIcon name="opportunities" size="md" color="primary" />,
+      label: 'Opportunities',
     },
-    // TODO: Implement notifications page later
-    // {
-    //   key: '/student-hub/notifications',
-    //   icon: <BellIcon />,
-    //   label: t('Notifications'),
-    // },
+    {
+      key: '/student-hub/profile',
+      icon: <UnifiedIcon name="profile" size="md" color="primary" />,
+      label: t('My Profile'),
+    },
   ];
 
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    navigate(key);
-    setMobileDrawerVisible(false);
+    // Handle both regular items and submenu items
+    if (key && !key.startsWith('sub-')) {
+      navigate(key);
+      setMobileDrawerVisible(false);
+    }
   };
+
+  // Format menu items for Ant Design Menu (simple flat structure)
+  const formattedMenuItems = React.useMemo(() => {
+    return menuItems.map((item) => ({
+      key: item.key,
+      icon: item.icon,
+      label: item.label,
+    }));
+  }, []);
 
 
   const getSelectedKeys = () => {
@@ -128,7 +121,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 onClick={() => setMobileDrawerVisible(true)}
                 className="mobile-menu-trigger"
               />
-              <h1 className="mobile-title">Student Dashboard</h1>
+              <h1 className="mobile-title">My Journey</h1>
             </div>
           </Header>
         )}
@@ -139,14 +132,14 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           collapsed={collapsed}
           onCollapse={setCollapsed}
           className="desktop-sidebar"
-          width={300}
+          width={240}
           collapsedWidth={80}
           trigger={null}
         >
           <div className="sidebar-header">
             {!collapsed && (
               <div className="logo">
-                <span className="logo-text">Student Dashboard</span>
+                <span className="logo-text">My Journey</span>
               </div>
             )}
             <Button
@@ -159,7 +152,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
           {collapsed ? (
             <div className="collapsed-menu">
-              {menuItems.map((item) => (
+              {formattedMenuItems.map((item) => (
                 <div
                   key={item.key}
                   className={`collapsed-menu-item ${getSelectedKeys().includes(item.key) ? 'selected' : ''}`}
@@ -174,7 +167,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
             <Menu
               mode="inline"
               selectedKeys={getSelectedKeys()}
-              items={menuItems}
+              items={formattedMenuItems}
               onClick={handleMenuClick}
               className="sidebar-menu"
             />
@@ -188,11 +181,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           onClose={() => setMobileDrawerVisible(false)}
           open={mobileDrawerVisible}
           className="mobile-drawer"
-          width={300}
+          width={240}
           closable={false}
         >
           <div className="mobile-drawer-header">
-            <span className="mobile-drawer-title">Student Dashboard</span>
+            <span className="mobile-drawer-title">My Journey</span>
             <Button
               type="text"
               icon={<FontAwesomeIcon icon="times" />}
@@ -203,7 +196,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           <Menu
             mode="inline"
             selectedKeys={getSelectedKeys()}
-            items={menuItems}
+            items={formattedMenuItems}
             onClick={handleMenuClick}
             className="mobile-menu"
           />
@@ -231,7 +224,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               onClick={() => setMobileDrawerVisible(true)}
               className="mobile-menu-trigger"
             />
-            <h1 className="mobile-title">Student Dashboard</h1>
+            <h1 className="mobile-title">My Journey</h1>
           </div>
         </Header>
       )}
@@ -242,14 +235,14 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         className="desktop-sidebar"
-        width={300}
-        collapsedWidth={80}
+        width={240}
+        collapsedWidth={64}
         trigger={null}
       >
         <div className="sidebar-header">
           {!collapsed && (
             <div className="logo">
-              <span className="logo-text">Student Dashboard</span>
+              <span className="logo-text">My Journey</span>
             </div>
           )}
           <Button
@@ -262,7 +255,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
         {collapsed ? (
           <div className="collapsed-menu">
-            {menuItems.map((item) => (
+            {formattedMenuItems.map((item) => (
               <div
                 key={item.key}
                 className={`collapsed-menu-item ${getSelectedKeys().includes(item.key) ? 'selected' : ''}`}
@@ -277,7 +270,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           <Menu
             mode="inline"
             selectedKeys={getSelectedKeys()}
-            items={menuItems}
+            items={formattedMenuItems}
             onClick={handleMenuClick}
             className="sidebar-menu"
           />
@@ -291,11 +284,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         onClose={() => setMobileDrawerVisible(false)}
         open={mobileDrawerVisible}
         className="mobile-drawer"
-        width={300}
+          width={240}
         closable={false}
       >
         <div className="mobile-drawer-header">
-          <span className="mobile-drawer-title">Student Dashboard</span>
+          <span className="mobile-drawer-title">My Journay</span>
           <Button
             type="text"
             icon={<FontAwesomeIcon icon="times" />}
@@ -303,13 +296,13 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
             className="mobile-drawer-close"
           />
         </div>
-        <Menu
-          mode="inline"
-          selectedKeys={getSelectedKeys()}
-          items={menuItems}
-          onClick={handleMenuClick}
-          className="mobile-menu"
-        />
+          <Menu
+            mode="inline"
+            selectedKeys={getSelectedKeys()}
+            items={formattedMenuItems}
+            onClick={handleMenuClick}
+            className="mobile-menu"
+          />
       </Drawer>
 
       <Layout className="main-layout">

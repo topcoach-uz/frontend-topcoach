@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { CustomButton } from 'src/components/common';
-import Loader from 'src/components/loader';
+import { PageLoader } from 'src/components/loading';
 import { Logo } from 'src/components/logos';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from 'src/constants/storage';
 import useParamsHook from 'src/hooks/params';
@@ -130,12 +130,12 @@ export default function GoogleAuthenticationPage() {
   // Show loader during token exchange and while loading user data
   // Never show welcome screen during sign-in process
   if (!exchangeSuccess || isLoading) {
-    return <Loader />;
+    return <PageLoader text="Loading..." />;
   }
 
   // Don't show welcome screen if profile is already complete
   if (data?.profile.profileComplete) {
-    return <Loader />;
+    return <PageLoader text="Loading..." />;
   }
 
   return (

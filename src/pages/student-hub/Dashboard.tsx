@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Spin, Alert, Tabs, message, Dropdown, Menu, Empty } from 'antd';
+import { Row, Col, Card, Statistic, Progress, List, Avatar, Button, Badge, Alert, Tabs, message, Dropdown, Menu, Empty, Tooltip, Collapse } from 'antd';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import FontAwesomeIcon from '../../components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from '../../components/common/icons/UnifiedIcon';
 import { 
   PROFILE_ICONS, 
   APPLICATION_ICONS, 
@@ -11,6 +12,11 @@ import {
   STATUS_ICONS,
   ACTION_ICONS 
 } from '../../constants/icons';
+// Import merged Home page components
+import BookingsCard from './components/BookingsCard';
+import EventsCard from './components/EventsCard';
+import JourneyStatusHeader from './components/JourneyStatusHeader';
+import NextBestActionCard from './components/NextBestActionCard';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
@@ -29,9 +35,12 @@ import {
   useGetStudentJourneyDocumentsQuery,
   useGetStudentJourneyDashboardQuery,
 } from '../../app/services/student-hub/studentJourneyReadonlyApi';
+import { useGetAllAssessmentsQuery } from '../../app/services/student-hub/psychometricApi';
 import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
+import { PageSkeleton, InlineLoader } from '../../components/loading';
+import { ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import './Dashboard.scss';
 
 // Props interface for Dashboard - supports both normal and read-only mode
@@ -50,7 +59,7 @@ const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: 
     const { data: university, isLoading } = useGetUniversityDetailQuery(universityId, { skip: !universityId });
     
     if (isLoading) {
-      return <span>Loading...</span>;
+      return <InlineLoader size="small" />;
     }
     
     if (university) {
@@ -218,6 +227,13 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   };
 
 
+  // Get psychometric assessments data
+  const studentProfileId = studentProfile?.id || currentUserData?.profile?.studentProfile?.id;
+  const { data: psychometricAssessments } = useGetAllAssessmentsQuery(
+    studentProfileId || '',
+    { skip: !studentProfileId || isReadOnly }
+  );
+
   // Quick Add dropdown menu items
   const quickAddMenuItems = [
     {
@@ -237,6 +253,12 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       label: t('studentHub.dashboard.startEssay'),
       icon: <FontAwesomeIcon icon="edit" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/essays'),
+    },
+    {
+      key: 'psychometric',
+      label: 'Psychometric Test',
+      icon: <FontAwesomeIcon icon="chart-line" style={{ color: '#8b0000' }} />,
+      onClick: () => navigate('/student-hub/psychometric-assessment'),
     },
     {
       key: 'document',
@@ -292,229 +314,467 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
     }
   };
 
+  // Calculate urgency for deadlines
+  const getUrgencyLevel = (deadline: string | Date | null | undefined) => {
+    if (!deadline) return null;
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+    const daysUntil = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntil < 0) return { level: 'overdue', icon: <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />, color: '#ff4d4f' };
+    if (daysUntil <= 7) return { level: 'urgent', icon: <ExclamationCircleOutlined style={{ color: '#ff9800' }} />, color: '#ff9800' };
+    if (daysUntil <= 30) return { level: 'soon', icon: <ClockCircleOutlined style={{ color: '#faad14' }} />, color: '#faad14' };
+    return { level: 'normal', icon: <ClockCircleOutlined style={{ color: '#8b0000' }} />, color: '#8b0000' };
+  };
+
+  // Handle card click navigation
+  const handleActivityClick = (item: any) => {
+    if (item.type === 'application') {
+      navigate(`/student-hub/applications?view=${item.id}`);
+    } else if (item.type === 'scholarship') {
+      navigate(`/student-hub/applications?tab=scholarships&view=${item.id}`);
+    } else if (item.type === 'essay') {
+      navigate(`/student-hub/essays?view=${item.id}`);
+    } else if (item.type === 'document') {
+      navigate(`/student-hub/documents?view=${item.id}`);
+    } else if (item.type === 'psychometric') {
+      navigate(`/student-hub/psychometric-assessment?view=${item.id}`);
+    }
+  };
+
+  const handleDeadlineClick = (item: any) => {
+    if (item.type === 'application') {
+      navigate(`/student-hub/applications?view=${item.id}`);
+    } else if (item.type === 'scholarship') {
+      navigate(`/student-hub/applications?tab=scholarships&view=${item.id}`);
+    }
+  };
+
+  // Calculate Journey Phase based on profile completion and applications
+  const calculateJourneyPhase = (): 'discovery' | 'building' | 'applying' | 'finalizing' => {
+    const profileCompletion = studentProfile?.completionPercentage || 0;
+    const applicationsData = finalApplicationsData || [];
+    const scholarshipsData = finalScholarshipsData || [];
+    const hasApplications = applicationsData.length > 0 || scholarshipsData.length > 0;
+    const hasSubmittedApplications = applicationsData.some((app: any) => 
+      app?.status === 'submitted' || app?.status === 'accepted' || app?.status === 'under_review'
+    ) || scholarshipsData.some((sch: any) => 
+      sch?.status === 'submitted' || sch?.status === 'accepted' || sch?.status === 'under_review'
+    );
+
+    if (profileCompletion < 50) return 'discovery';
+    if (!hasApplications) return 'building';
+    if (hasSubmittedApplications) return 'finalizing';
+    return 'applying';
+  };
+
+  const journeyPhase = calculateJourneyPhase();
+  const journeyProgress = studentProfile?.completionPercentage || 0;
+
+  // Calculate upcoming deadlines count (next 14 days)
+  const upcomingDeadlinesCount = (() => {
+    const allDeadlines = [
+      ...(finalApplicationsData || []).filter((app: any) => app?.deadline).map((app: any) => app.deadline),
+      ...(finalScholarshipsData || []).filter((sch: any) => sch?.applicationDeadline).map((sch: any) => sch.applicationDeadline),
+    ];
+    const now = new Date();
+    const in14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    return allDeadlines.filter((deadline: string) => {
+      const deadlineDate = new Date(deadline);
+      return deadlineDate >= now && deadlineDate <= in14Days;
+    }).length;
+  })();
+
+  // Calculate Next Best Action
+  const calculateNextBestAction = () => {
+    // Priority 1: Overdue deadlines
+    const allDeadlines = [
+      ...(finalApplicationsData || []).map((app: any) => {
+        // Ensure we have proper university name - prefer universityName, fallback to fetching via universityId
+        let universityName = app?.universityName || app?.name;
+        
+        // If we have universityId but no name, we'll need to fetch it
+        // For now, we'll pass both so the component can handle it
+        return {
+          type: 'application' as const, 
+          deadline: app?.deadline, 
+          id: app?.id || app?._id || app?.applicationId,
+          title: universityName, // Will be resolved properly in the component
+          major: app?.major,
+          universityId: app?.universityId,
+          universityName: universityName, // Pass through for fallback
+        };
+      }),
+      ...(finalScholarshipsData || []).map((sch: any) => ({ 
+        type: 'application' as const, 
+        deadline: sch?.applicationDeadline, 
+        id: sch?.id,
+        title: sch?.scholarshipName || sch?.name,
+      })),
+    ];
+    
+    const now = new Date();
+    const overdueDeadline = allDeadlines.find((item) => {
+      if (!item.deadline) return false;
+      return new Date(item.deadline) < now;
+    });
+
+    if (overdueDeadline) {
+      return {
+        id: overdueDeadline.id,
+        type: 'deadline' as const,
+        title: `${t('studentHub.dashboard.nextAction.submitApplication') || 'Submit application for'}: ${overdueDeadline.title}`,
+        description: overdueDeadline.major 
+          ? `${t('studentHub.dashboard.nextAction.overdueDeadline') || 'This deadline is overdue!'} ${overdueDeadline.major}`
+          : t('studentHub.dashboard.nextAction.overdueDeadline') || 'This deadline is overdue!',
+        deadline: formatDate(overdueDeadline.deadline),
+        priority: 'overdue' as const,
+        actionLabel: t('studentHub.dashboard.nextAction.submitNow') || 'Submit Now',
+        actionPath: `/student-hub/applications?view=${overdueDeadline.id}`,
+      };
+    }
+
+    // Priority 2: Urgent deadlines (within 7 days)
+    const urgentDeadline = allDeadlines.find((item) => {
+      if (!item.deadline) return false;
+      const deadlineDate = new Date(item.deadline);
+      const daysUntil = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntil > 0 && daysUntil <= 7;
+    });
+
+    if (urgentDeadline) {
+      // Use UniversityNameResolver component to properly fetch university name
+      // For now, we'll create a component that handles this
+      return {
+        id: urgentDeadline.id,
+        type: 'deadline' as const,
+        title: urgentDeadline.title, // Will be resolved by UniversityNameResolver
+        description: urgentDeadline.major 
+          ? `${t('studentHub.dashboard.nextAction.urgentDeadline') || 'Deadline is approaching!'} ${urgentDeadline.major}`
+          : t('studentHub.dashboard.nextAction.urgentDeadline') || 'Deadline is approaching!',
+        deadline: formatDate(urgentDeadline.deadline),
+        priority: 'urgent' as const,
+        actionLabel: t('studentHub.dashboard.nextAction.completeNow') || 'Complete Now',
+        actionPath: urgentDeadline.id ? `/student-hub/applications/${urgentDeadline.id}/edit` : '/student-hub/applications',
+        universityId: urgentDeadline.universityId,
+        universityName: urgentDeadline.universityName,
+      };
+    }
+
+    // Priority 3: Profile completion - Only show if significantly incomplete (< 80%)
+    if (journeyProgress < 80) {
+      return {
+        id: 'profile',
+        type: 'profile' as const,
+        title: t('studentHub.dashboard.nextAction.completeProfile') || 'Complete Your Profile',
+        description: t('studentHub.dashboard.nextAction.completeProfileDesc') || 'Finish your profile to unlock personalized recommendations and start your journey.',
+        priority: 'normal' as const,
+        actionLabel: t('studentHub.dashboard.completeProfile') || 'Complete Profile',
+        actionPath: '/student-hub/profile',
+      };
+    }
+
+    // Priority 4: Take Major Match Assessment
+    const hasAssessment = (psychometricAssessments?.length || 0) > 0;
+    if (!hasAssessment) {
+      return {
+        id: 'assessment',
+        type: 'assessment' as const,
+        title: t('studentHub.dashboard.nextAction.takeMajorMatch') || 'Take Major Match Assessment',
+        description: t('studentHub.dashboard.nextAction.takeMajorMatchDesc') || 'Discover your ideal majors and get university recommendations based on your personality and interests.',
+        priority: 'normal' as const,
+        actionLabel: t('studentHub.dashboard.nextAction.startAssessment') || 'Start Assessment',
+        actionPath: '/student-hub/psychometric-assessment',
+      };
+    }
+
+    // Priority 5: Add first application
+    const applicationsDataForAction = finalApplicationsData || [];
+    const scholarshipsDataForAction = finalScholarshipsData || [];
+    const hasApplicationsForAction = (applicationsDataForAction.length > 0 || scholarshipsDataForAction.length > 0);
+    if (!hasApplicationsForAction) {
+      return {
+        id: 'first-application',
+        type: 'application' as const,
+        title: t('studentHub.dashboard.nextAction.addFirstApplication') || 'Add Your First Application',
+        description: t('studentHub.dashboard.nextAction.addFirstApplicationDesc') || 'Start tracking your university applications and stay organized.',
+        priority: 'normal' as const,
+        actionLabel: t('studentHub.dashboard.addApplication') || 'Add Application',
+        actionPath: '/student-hub/applications/new',
+      };
+    }
+
+    return null;
+  };
+
+  const nextBestAction = calculateNextBestAction();
+
   return (
     <div className="student-hub-dashboard">
-      {/* Welcome Section */}
-      <div className="dashboard-header">
-        <div className="welcome-section">
-          <h1 className="welcome-title">
-            {t('studentHub.dashboard.welcomeBack')}, {userName}!
+      {/* Welcome Brief - Clean, Minimal */}
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+          Hi, {userName}! 👋
           </h1>
-          <p className="welcome-subtitle">
-            {t('studentHub.dashboard.welcomeMessage')}
-          </p>
+        <p style={{ fontSize: 16, color: '#666', marginTop: 8, marginBottom: 0 }}>
+          {t('studentHub.dashboard.welcomeMessage') || 'Let\'s make progress on your college journey today.'}
+        </p>
+      </div>
+
+      {/* TOP BAR: Minimal, Clean - Phase Badge, Progress, Quick Add */}
+      <div className="dashboard-top-bar" style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          {/* Phase Badge */}
+          <div className="phase-badge-minimal" style={{ 
+            backgroundColor: (() => {
+              const phaseColors = {
+                discovery: '#f59e0b',
+                building: '#3b82f6',
+                applying: '#8b0000',
+                finalizing: '#22c55e',
+              };
+              return phaseColors[journeyPhase] || '#8b0000';
+            })(),
+            padding: '6px 14px',
+            borderRadius: '20px',
+            color: 'white',
+            fontSize: 13,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <UnifiedIcon 
+              name={(() => {
+                const phaseIcons = {
+                  discovery: 'search',
+                  building: 'edit',
+                  applying: 'university',
+                  finalizing: 'check-circle',
+                };
+                return phaseIcons[journeyPhase] || 'university';
+              })()} 
+              size="sm" 
+              color="white" 
+            />
+            <span>
+              {(() => {
+                const phaseLabels = {
+                  discovery: t('studentHub.dashboard.phase.discovery') || 'Discovery',
+                  building: t('studentHub.dashboard.phase.building') || 'Building',
+                  applying: t('studentHub.dashboard.phase.applying') || 'Applying',
+                  finalizing: t('studentHub.dashboard.phase.finalizing') || 'Finalizing',
+                };
+                return phaseLabels[journeyPhase] || 'Applying';
+              })()}
+            </span>
+          </div>
+          
+          {/* Deadline Alert */}
+          {upcomingDeadlinesCount > 0 && (
+            <Badge count={upcomingDeadlinesCount} size="small" style={{ backgroundColor: '#ff4d4f' }}>
+              <span style={{ fontSize: 13, color: '#666', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <UnifiedIcon name="clock" size="sm" color="error" />
+                {upcomingDeadlinesCount} {upcomingDeadlinesCount === 1 
+                  ? (t('studentHub.dashboard.deadline') || 'deadline') 
+                  : (t('studentHub.dashboard.deadlines') || 'deadlines')
+                }
+              </span>
+            </Badge>
+          )}
         </div>
-        <div className="header-actions">
+        
+        {/* Quick Add Button */}
           <Dropdown menu={{ items: quickAddMenuItems }} trigger={['click']} placement="bottomRight">
             <Button 
               type="primary" 
-              size="large" 
-              icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
+            size="middle"
+            icon={<UnifiedIcon name="plus" size="md" color="white" />}
             >
               {t('studentHub.dashboard.quickAdd')}
             </Button>
           </Dropdown>
         </div>
-      </div>
 
-      {/* Profile Completion Card - Compact Version */}
-      {studentProfile && (
-        <Card 
-          className="profile-completion-card"
-          size="small"
-          style={{ 
-            marginBottom: 16,
-            background: studentProfile.completionPercentage === 100 
-              ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
-              : 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
-            border: studentProfile.completionPercentage === 100 ? '2px solid #10b981' : '2px solid #f59e0b'
-          }}
-        >
-          <Row gutter={[16, 12]} align="middle">
-            <Col xs={24}>
-              <div className="profile-completion-actions-inline">
-                {studentProfile.completionPercentage === 100 ? (
-                  <div className="profile-complete-celebration-inline">
-                    <span className="celebration-emoji">🎉</span>
-                    <span className="celebration-text">Profile Complete!</span>
-                    <span className="celebration-percentage">100%</span>
-                    <Button
-                      type="default"
-                      size="middle"
-                      onClick={() => navigate('/student-hub/profile?tab=personal')}
-                      icon={<FontAwesomeIcon icon="user" />}
-                      className="view-profile-btn"
-                    >
-                      View Profile
-                    </Button>
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={handleRecalculate}
-                      className="refresh-button"
-                      title="Recalculate completion percentage"
-                      icon={<FontAwesomeIcon icon="sync" />}
-                    >
-                      Refresh
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="profile-incomplete-inline">
-                    <div style={{ fontSize: 13, color: '#666', marginRight: 16 }}>
-                      <span style={{ fontWeight: 500 }}>{t('studentHub.dashboard.missing')}</span>
-                      {(() => {
-                        const missingFields: string[] = [];
-                        
-                        // Check required Personal Profile fields (matches backend calculation)
-                        if (!studentProfile.personalProfile?.country) {
-                          missingFields.push(t('studentHub.profile.country'));
-                        }
-                        if (!studentProfile.personalProfile?.city) {
-                          missingFields.push(t('studentHub.profile.city'));
-                        }
-                        if (!studentProfile.personalProfile?.intendedMajors?.length) {
-                          missingFields.push(t('studentHub.profile.intendedMajor').replace(' *', ''));
-                        }
-                        if (!studentProfile.personalProfile?.personalInterests?.length) {
-                          missingFields.push(t('studentHub.profile.personalInterests').replace(' *', ''));
-                        }
-                        if (!studentProfile.personalProfile?.careerGoals?.length) {
-                          missingFields.push(t('studentHub.profile.careerGoals').replace(' *', ''));
-                        }
-                        if (!studentProfile.personalProfile?.demographics?.languages?.length) {
-                          missingFields.push(t('studentHub.profile.languagesSpoken').replace(' *', ''));
-                        }
-                        
-                        // Check Academic Profile required fields (matches backend - ALL 5 fields required)
-                        if (studentProfile.academicProfile) {
-                          const academic = studentProfile.academicProfile;
-                          const missingAcademic: string[] = [];
-                          if (!academic.graduationYear) missingAcademic.push('Graduation Year');
-                          if (!academic.curriculum) missingAcademic.push('Curriculum');
-                          if (!(academic.gpa && Object.keys(academic.gpa).length > 0)) missingAcademic.push('GPA');
-                          if (!(academic.testScores && Object.keys(academic.testScores).length > 0)) missingAcademic.push('Test Scores');
-                          if (!(academic.englishProficiency && Object.keys(academic.englishProficiency).length > 0)) missingAcademic.push('English Proficiency');
-                          
-                          if (missingAcademic.length > 0) {
-                            missingFields.push(`Academic: ${missingAcademic.join(', ')}`);
-                          }
-                        } else {
-                          missingFields.push('Academic Profile');
-                        }
-                        
-                        // Check Activities Profile
-                        if (!studentProfile.activitiesProfile || 
-                            (!studentProfile.activitiesProfile.extracurricularActivities?.length)) {
-                          missingFields.push('Activities & Achievements');
-                        }
-                        
-                        return missingFields.length > 0 ? missingFields.join(', ') : 'All required fields completed';
-                      })()}
-                    </div>
-                    <div className="progress-container-inline">
-                      <Progress 
-                        percent={studentProfile.completionPercentage} 
-                        strokeColor="#f59e0b"
-                        status="active"
-                        format={(percent) => `${percent}%`}
-                        strokeWidth={8}
-                        showInfo={true}
-                      />
-                    </div>
-                    <div className="button-group-inline">
-                      <Button
-                        type="primary"
-                        size="middle"
-                        onClick={() => navigate('/student-hub/profile?tab=personal')}
-                        icon={<FontAwesomeIcon icon="user" />}
-                      >
-                        Complete Profile
-                      </Button>
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={handleRecalculate}
-                        className="refresh-button"
-                        title="Recalculate completion percentage"
-                        icon={<FontAwesomeIcon icon="sync" />}
-                      >
-                        Refresh
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Col>
-          </Row>
-        </Card>
+      {/* PRIORITY 1: NEXT BEST ACTION (Most Important - Large, Prominent) */}
+      {nextBestAction && (
+        <div style={{ marginBottom: 32 }}>
+          <NextBestActionCard action={nextBestAction} />
+      </div>
       )}
 
-      {/* Quick Stats */}
-      <Row gutter={[24, 24]} className="stats-row">
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="stat-card">
-            <div className="stat-header">
-              <FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} style={{ color: '#8b0000' }} />
-              <span className="stat-title">{t('studentHub.dashboard.applications')}</span>
-            </div>
-            <div className="stat-value">{dashboardData.applicationsCount}</div>
-            <div className="stat-detail">
-              <span className="stat-label">{dashboardData.quickStats.applicationsSubmitted} {t('studentHub.dashboard.submitted')}</span>
-            </div>
-          </Card>
+      {/* Profile Completion Card removed - NextBestActionCard handles this */}
+
+      {/* PRIORITY 1: Bookings (Left) + Events (Right) - Side by Side - Equal Height */}
+      <Row gutter={[24, 24]} className="priority-1-row equal-height-cards" style={{ marginBottom: 24 }}>
+        {/* Left: Upcoming Bookings */}
+        <Col xs={24} lg={12} style={{ display: 'flex' }}>
+          <BookingsCard compact={false} maxItems={10} />
         </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="stat-card">
-            <div className="stat-header">
-              <FontAwesomeIcon icon={ESSAY_ICONS.ESSAYS} style={{ color: '#8b0000' }} />
-              <span className="stat-title">{t('studentHub.dashboard.essays')}</span>
-            </div>
-            <div className="stat-value">{dashboardData.essaysCount}</div>
-            <div className="stat-detail">
-              <span className="stat-label">{dashboardData.quickStats.essaysInProgress} {t('studentHub.dashboard.inProgress')}</span>
-            </div>
-          </Card>
+
+        {/* Right: Events & Camps */}
+        <Col xs={24} lg={12} style={{ display: 'flex' }}>
+          <EventsCard compact={false} maxItems={10} />
         </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="stat-card">
-            <div className="stat-header">
-              <FontAwesomeIcon icon="file" style={{ color: '#8b0000' }} />
-              <span className="stat-title">{t('studentHub.dashboard.documents')}</span>
-            </div>
-            <div className="stat-value">{finalDocumentsData?.length || 0}</div>
-          </Card>
-        </Col>
-        {/* Tasks card commented out as requested */}
-        {/* <Col xs={24} sm={12} lg={6}>
-          <Card className="stat-card">
-            <div className="stat-header">
-              <FontAwesomeIcon icon={APPLICATION_ICONS.TASKS} />
-              <span className="stat-title">Tasks</span>
-            </div>
-            <div className="stat-value">{dashboardData.tasksCount}</div>
-            <div className="stat-detail">
-              <Badge count={dashboardData.quickStats.tasksOverdue} size="small" offset={[10, 0]}>
-                <span className="stat-label">{dashboardData.quickStats.tasksOverdue} overdue</span>
-              </Badge>
-            </div>
-          </Card>
-        </Col> */}
       </Row>
 
-      {/* Main Content */}
-      <Row gutter={[24, 24]} className="main-content-row">
-        {/* Left Column */}
-        <Col xs={24} lg={16}>
-          {/* Recent Activity */}
-          <Card title={t('studentHub.dashboard.recentActivity')} className="activity-card">
+      {/* PRIORITY 2: Deadlines (Left) + Recent Activity (Right) - Side by Side - Equal Height */}
+      <Row gutter={[24, 24]} className="priority-2-row equal-height-cards" style={{ marginBottom: 24 }}>
+        {/* Left: Upcoming Deadlines */}
+        <Col xs={24} lg={12} style={{ display: 'flex' }}>
+          <Card title={
+            <span>
+              <UnifiedIcon name="clock" size="md" color="primary" style={{ marginRight: 8 }} />
+              {t('studentHub.dashboard.upcomingDeadlines')}
+            </span>
+          } className="deadlines-card">
+                    {(() => {
+              // Get data - use final merged data that handles both normal and read-only modes
+              const applicationsData = finalApplicationsData || [];
+              const scholarshipsData = finalScholarshipsData || [];
+              
+              // Show ALL items with ANY status (not just "applying")
+              // Filter to next 14 days only
+              const now = new Date();
+              const in14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+              
+              const upcomingDeadlines = [
+                ...applicationsData
+                  .filter((app: any) => {
+                    if (!app?.deadline) return false;
+                    const deadlineDate = new Date(app.deadline);
+                    return deadlineDate >= now && deadlineDate <= in14Days;
+                  })
+                  .map((app: any) => ({ 
+                    ...app, 
+                    type: 'application',
+                    deadlineDate: app?.deadline
+                  })),
+                ...scholarshipsData
+                  .filter((scholarship: any) => {
+                    if (!scholarship?.applicationDeadline) return false;
+                    const deadlineDate = new Date(scholarship.applicationDeadline);
+                    return deadlineDate >= now && deadlineDate <= in14Days;
+                  })
+                  .map((scholarship: any) => ({ 
+                    ...scholarship, 
+                    type: 'scholarship',
+                    deadlineDate: scholarship?.applicationDeadline
+                  }))
+              ].sort((a: any, b: any) => {
+                const dateA = new Date(a.deadlineDate);
+                const dateB = new Date(b.deadlineDate);
+                return dateA.getTime() - dateB.getTime();
+              }).slice(0, 5);
+
+              return upcomingDeadlines.length > 0 ? (
+                <List
+                  dataSource={upcomingDeadlines}
+                  renderItem={(item: any) => {
+                    const deadline = item.type === 'scholarship' ? item.applicationDeadline : item.deadline;
+                    const urgency = getUrgencyLevel(deadline);
+                    
+                    return (
+                      <List.Item 
+                        className="deadline-item"
+                        onClick={() => handleDeadlineClick(item)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="deadline-content">
+                          <div className="deadline-title-section">
+                            <div className="deadline-title">
+                              {item.type === 'scholarship' 
+                                ? (item?.scholarshipName || t('studentHub.dashboard.unknownScholarship'))
+                                : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
+                              }
+                            </div>
+                            {/* Show major for applications */}
+                            {item.type === 'application' && item?.major && (
+                              <div className="deadline-major" style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                                {item.major}
+                  </div>
+                )}
+                            <div 
+                              className="deadline-date"
+                              style={{ 
+                                color: urgency?.color || '#666',
+                                fontWeight: urgency?.level === 'urgent' || urgency?.level === 'overdue' ? 600 : 400,
+                                marginTop: 8
+                              }}
+                            >
+                              <span style={{ marginRight: 4 }}>Deadline:</span>
+                              {formatDate(deadline)}
+                              {urgency && urgency.level === 'overdue' && (
+                                <span style={{ marginLeft: 8, fontSize: 11, color: '#ff4d4f' }}>
+                                  (Overdue)
+                                </span>
+                              )}
+                              {urgency && urgency.level === 'urgent' && (
+                                <span style={{ marginLeft: 8, fontSize: 11, color: '#ff9800' }}>
+                                  (Urgent)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+              </div>
+                        <Badge
+                          color={item.type === 'scholarship' ? 'blue' : 'green'}
+                          text={(() => {
+                            const getCategoryText = (category: string) => {
+                              if (!category) return 'UNKNOWN';
+                              const categoryKey = `studentHub.applications.category.${category}`;
+                              const translated = t(categoryKey);
+                              if (translated === categoryKey) {
+                                return category.toUpperCase();
+                              }
+                              return translated.toUpperCase();
+                            };
+                            return item.type === 'scholarship' ? getCategoryText('scholarship') : getCategoryText('university');
+                          })()}
+                        />
+                      </List.Item>
+                    );
+                  }}
+                />
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <UnifiedIcon name="clock" size="xl" color="gray" />
+                </div>
+                  <p>{t('studentHub.dashboard.noUpcomingDeadlines')}</p>
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => navigate('/student-hub/applications')}
+                  >
+                    {t('studentHub.dashboard.addApplication')}
+                  </Button>
+                </div>
+              );
+            })()}
+          </Card>
+        </Col>
+
+        {/* Right: Recent Activity */}
+        <Col xs={24} lg={12} style={{ display: 'flex' }}>
+          <Card 
+            title={
+              <span>
+                <UnifiedIcon name="activity" size="md" color="primary" style={{ marginRight: 8 }} />
+                {t('studentHub.dashboard.recentActivity')}
+              </span>
+            }
+            className="activity-card"
+          >
             {(() => {
               // Get data - use final merged data that handles both normal and read-only modes
               const applicationsData = finalApplicationsData || [];
               const scholarshipsData = finalScholarshipsData || [];
               const essaysData = finalEssaysData || [];
               const documentsData = finalDocumentsData || [];
+              const assessmentsData = psychometricAssessments || [];
               
-              // Combine all recent activities
+              // Combine all recent activities including psychometric assessments
               const recentActivities = [
                 // College Applications
                 ...applicationsData.map((app: any) => ({ 
@@ -526,7 +786,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   timestamp: app?.createdAt || app?.updatedAt,
                   status: app?.status || 'unknown'
                 })),
-                // Scholarships
+                        // Scholarships - only show priority if status is 'applying' or 'submitted'
                 ...scholarshipsData.map((scholarship: any) => ({ 
                   ...scholarship, 
                   type: 'scholarship',
@@ -534,7 +794,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   title: scholarship?.scholarshipName || t('studentHub.dashboard.unknownScholarship'),
                   subtitle: `${t('studentHub.dashboard.organization')}: ${scholarship?.organization || t('studentHub.applications.unknownOrganization')}`,
                   timestamp: scholarship?.createdAt || scholarship?.updatedAt,
-                  status: scholarship?.status || 'unknown'
+                          status: scholarship?.status || 'unknown',
+                          showPriority: scholarship?.status === 'applying' || scholarship?.status === 'submitted' || scholarship?.status === 'under_review'
                 })),
                 // Essays
                 ...essaysData.map((essay: any) => ({ 
@@ -555,7 +816,22 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   subtitle: `${t('studentHub.dashboard.type')}: ${document?.documentType || t('studentHub.profile.status.unknown')}`,
                   timestamp: document?.createdAt || document?.updatedAt,
                   status: document?.isVerified ? 'verified' : 'pending'
-                }))
+                        })),
+                        // Psychometric Assessments
+                        ...assessmentsData.map((assessment: any) => {
+                          const isCompleted = !!assessment?.completedAt;
+                          return {
+                            ...assessment, 
+                            type: 'psychometric',
+                            activityType: t('studentHub.dashboard.psychometricAssessment') || 'Psychometric Assessment',
+                            title: t('studentHub.dashboard.psychometricAssessment') || 'Psychometric Assessment',
+                            subtitle: isCompleted 
+                              ? `${t('studentHub.dashboard.completed') || 'Completed'}: ${formatDate(assessment.completedAt)}`
+                              : (t('studentHub.dashboard.inProgress') || 'In Progress'),
+                            timestamp: assessment?.completedAt || assessment?.createdAt || assessment?.updatedAt,
+                            status: isCompleted ? 'completed' : 'in_progress'
+                          };
+                        })
               ].sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
 
               return recentActivities.length > 0 ? (
@@ -563,17 +839,26 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   dataSource={recentActivities}
                   renderItem={(item: any) => (
                     <List.Item className="activity-item">
-                      <Card className="activity-summary-card" size="small">
+                              <Card 
+                                className="activity-summary-card" 
+                                size="small"
+                                hoverable
+                                onClick={() => handleActivityClick(item)}
+                                style={{ cursor: 'pointer' }}
+                              >
                         <div className="activity-content">
                           <div className="activity-header">
                             <div className="activity-icon">
-                              <FontAwesomeIcon 
-                                icon={
+                                      <UnifiedIcon 
+                                        name={
                                   item.type === 'application' ? 'university' :
-                                  item.type === 'scholarship' ? 'graduation-cap' :
+                                          item.type === 'scholarship' ? 'award' :
+                                          item.type === 'psychometric' ? 'trending-up' :
+                                          item.type === 'essay' ? 'edit' :
                                   'file-text'
                                 } 
-                                className="activity-icon-svg"
+                                        size="md"
+                                        color="primary"
                                 style={{ color: '#8b0000' }}
                               />
                             </div>
@@ -585,47 +870,55 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                                 }
                               </div>
                               <div className="activity-subtitle">{item.subtitle}</div>
+                                      {/* Only show priority for scholarships that were applied to */}
+                                      {item.type === 'scholarship' && item.showPriority && item.priorityLevel && (
+                                        <div className="activity-priority" style={{ marginTop: 4, fontSize: 12, color: '#666' }}>
+                                          Priority: {item.priorityLevel}
+                                        </div>
+                                      )}
                               <div className="activity-date">
-                                {(() => {
-                                  const localeMap: { [key: string]: string } = {
-                                    en: 'en-US',
-                                    ru: 'ru-RU',
-                                    uz: 'uz-UZ',
-                                    kk: 'ru-RU',
-                                  };
-                                  const lang = i18n.language || 'en';
-                                  const mappedLocale = localeMap[lang] || 'en-US';
-                                  return new Date(item.timestamp).toLocaleDateString(mappedLocale, {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  });
-                                })()}
+                                        {(() => {
+                                          const localeMap: { [key: string]: string } = {
+                                            en: 'en-US',
+                                            ru: 'ru-RU',
+                                            uz: 'uz-UZ',
+                                            kk: 'ru-RU',
+                                          };
+                                          const lang = i18n.language || 'en';
+                                          const mappedLocale = localeMap[lang] || 'en-US';
+                                          return new Date(item.timestamp).toLocaleDateString(mappedLocale, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                          });
+                                        })()}
                               </div>
                             </div>
                           </div>
                           <div className="activity-status">
                             <Badge
-                              status={(() => {
-                                switch (item.status) {
-                                  case 'submitted':
-                                    return 'processing';
-                                  case 'accepted':
-                                    return 'success';
-                                  case 'rejected':
-                                    return 'error';
-                                  case 'waitlisted':
-                                    return 'warning';
-                                  case 'in_progress':
-                                  case 'applying':
-                                    return 'default';
-                                  default:
-                                    return 'default';
-                                }
-                              })() as any}
-                              text={getStatusText(item.status)}
+                                      status={(() => {
+                                        switch (item.status) {
+                                          case 'submitted':
+                                          case 'under_review':
+                                            return 'processing';
+                                          case 'accepted':
+                                          case 'completed':
+                                            return 'success';
+                                          case 'rejected':
+                                            return 'error';
+                                          case 'waitlisted':
+                                            return 'warning';
+                                          case 'in_progress':
+                                          case 'applying':
+                                            return 'default';
+                                          default:
+                                            return 'default';
+                                        }
+                                      })() as any}
+                                      text={getStatusText(item.status)}
                             />
                           </div>
                         </div>
@@ -641,163 +934,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
               );
             })()}
           </Card>
-
-          {/* Quick Actions */}
-          <Card title={t('studentHub.dashboard.quickActions')} className="actions-card">
-            <Row gutter={[16, 16]}>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="dashed"
-                  block
-                  icon={<FontAwesomeIcon icon={PROFILE_ICONS.ACADEMIC} />}
-                  className="quick-action-btn"
-                  onClick={handleAcademicProfile}
-                >
-                  {t('studentHub.dashboard.academicProfile')}
-                </Button>
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="dashed"
-                  block
-                  icon={<FontAwesomeIcon icon={APPLICATION_ICONS.APPLICATIONS} />}
-                  className="quick-action-btn"
-                  onClick={handleNewApplication}
-                >
-                  {t('studentHub.dashboard.newApplication')}
-                </Button>
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="dashed"
-                  block
-                  icon={<FontAwesomeIcon icon={ESSAY_ICONS.ESSAYS} />}
-                  className="quick-action-btn"
-                  onClick={handleStartEssay}
-                >
-                  {t('studentHub.dashboard.newEssay')}
-                </Button>
-              </Col>
-              {/* <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="dashed"
-                  block
-                  icon={<FontAwesomeIcon icon={PROFILE_ICONS.DOCUMENTS} />}
-                  className="quick-action-btn"
-                  onClick={handleUploadDocument}
-                >
-                  {t('studentHub.dashboard.newDocument')}
-                </Button>
-              </Col> */}
-              {/* <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="dashed"
-                  block
-                  icon={<FontAwesomeIcon icon="chart-line" />}
-                  className="quick-action-btn"
-                  onClick={() => navigate('/student-hub/psychometric-assessment')}
-                >
-                  Major Match
-                </Button>
-              </Col> */}
-            </Row>
-          </Card>
-        </Col>
-
-        {/* Right Column */}
-        <Col xs={24} lg={8}>
-          {/* Upcoming Deadlines */}
-          <Card title={t('studentHub.dashboard.upcomingDeadlines')} className="deadlines-card">
-            {(() => {
-              // Get data - use final merged data that handles both normal and read-only modes
-              const applicationsData = finalApplicationsData || [];
-              const scholarshipsData = finalScholarshipsData || [];
-              
-              // Filter and combine upcoming deadlines
-              const upcomingDeadlines = [
-                ...applicationsData
-                  .filter((app: any) => app?.status === 'under_review' || app?.status === 'applying')
-                  .map((app: any) => ({ ...app, type: 'application' })),
-                ...scholarshipsData
-                  .filter((scholarship: any) => scholarship?.status === 'researching' || scholarship?.status === 'applying' || scholarship?.status === 'eligible')
-                  .map((scholarship: any) => ({ ...scholarship, type: 'scholarship' }))
-              ].sort((a: any, b: any) => {
-                const dateA = new Date(a.type === 'scholarship' ? a.applicationDeadline : a.deadline);
-                const dateB = new Date(b.type === 'scholarship' ? b.applicationDeadline : b.deadline);
-                return dateA.getTime() - dateB.getTime();
-              }).slice(0, 5);
-
-              return upcomingDeadlines.length > 0 ? (
-                <List
-                  dataSource={upcomingDeadlines}
-                renderItem={(item: any) => (
-                  <List.Item className="deadline-item">
-                      <div className="deadline-content">
-                      <div className="deadline-title">
-                        {item.type === 'scholarship' 
-                          ? (item?.scholarshipName || t('studentHub.dashboard.unknownScholarship'))
-                          : <UniversityNameDisplay universityId={item?.universityId} universityName={item?.universityName} />
-                        }
-                      </div>
-                      <div className="deadline-date">
-                        {item.type === 'scholarship' 
-                          ? formatDate(item?.applicationDeadline)
-                          : formatDate(item?.deadline)
-                        }
-                      </div>
-                    </div>
-                    <Badge
-                      color={item.type === 'scholarship' ? 'blue' : 'green'}
-                      text={(() => {
-                        const getCategoryText = (category: string) => {
-                          if (!category) return 'UNKNOWN';
-                          const categoryKey = `studentHub.applications.category.${category}`;
-                          const translated = t(categoryKey);
-                          if (translated === categoryKey) {
-                            return category.toUpperCase();
-                          }
-                          return translated.toUpperCase();
-                        };
-                        return item.type === 'scholarship' ? getCategoryText('scholarship') : getCategoryText('university');
-                      })()}
-                    />
-                  </List.Item>
-                )}
-              />
-              ) : (
-                <div className="empty-state">
-                  <div className="empty-icon">
-                    <div className="dynamic-date-icon">
-                      <div className="date-time">{currentTime.toLocaleTimeString('en-US', { 
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false
-                      })}</div>
-                      <div className="date-date">{(() => {
-                        const localeMap: { [key: string]: string } = {
-                          en: 'en-US',
-                          ru: 'ru-RU',
-                          uz: 'uz-UZ',
-                          kk: 'ru-RU',
-                        };
-                        const lang = i18n.language || 'en';
-                        const mappedLocale = localeMap[lang] || 'en-US';
-                        return currentTime.toLocaleDateString(mappedLocale, { 
-                          weekday: 'long',
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        });
-                      })()}</div>
-                    </div>
-                  </div>
-                  <p>{t('studentHub.dashboard.noUpcomingDeadlines')}</p>
-                </div>
-              );
-            })()}
-          </Card>
-
         </Col>
       </Row>
     </div>
