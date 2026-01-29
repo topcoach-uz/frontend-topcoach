@@ -24,14 +24,15 @@ export default function useProfileStatus() {
   const meRes = useTypedSelector((state) => state.auth.profile);
 
   // const areVideosUploaded = false;
+  const media = meRes?.profile?.media ?? [];
   const areVideosUploaded =
-    meRes?.profile?.media.some((item) =>
+    media.some((item) =>
       // @ts-ignore
-      item.tags?.[0].includes(MEDIA_TAGS.DemoLession)
+      item.tags?.[0]?.includes(MEDIA_TAGS.DemoLession)
     ) &&
-    meRes?.profile?.media.some((item) =>
+    media.some((item) =>
       // @ts-ignore
-      item.tags?.[0].includes(MEDIA_TAGS.IntroVideo)
+      item.tags?.[0]?.includes(MEDIA_TAGS.IntroVideo)
     );
 
   const [videosUploaded, setVideosUploaded] = useState<boolean>(

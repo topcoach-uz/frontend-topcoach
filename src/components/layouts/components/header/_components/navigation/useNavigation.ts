@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { UserRole } from 'src/app/services/users/type';
+import { useGetMeQuery } from 'src/app/services/users';
 
 interface INavLink {
   path?: string;
@@ -13,7 +14,10 @@ export default function useNavigation() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
-  const userProfile = useTypedSelector((state) => state.auth.profile);
+  const authProfile = useTypedSelector((state) => state.auth.profile);
+  const { data: getMeData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  // Prefer getMe (same source as HomeRouter) so nav shows Home vs My Journey correctly for mentors
+  const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
   const isCEO = userProfile?.email === 'oumarovna@gmail.com';
   // Mentees: My Journey only (no Home). Mentors: Home only. CEO (mentor): both Home + My Journey.

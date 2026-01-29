@@ -264,18 +264,20 @@ export default function useMentorSignup() {
           });
 
           if (!rejected) {
+            dispatch(
+              // @ts-ignore
+              setProfileImage(results[0]?.value?.data?.media?.url)
+            );
             // Check for stored redirect URL
             const redirectUrl = localStorage.getItem('redirectAfterLogin');
             if (redirectUrl) {
               localStorage.removeItem('redirectAfterLogin');
               window.location.href = redirectUrl;
             } else {
-              navigate('/');
+              // Full-page redirect so getMe is refetched with fresh role (Mentor).
+              // navigate('/') leaves stale getMe cache and wrongly sends mentors to student-hub.
+              window.location.href = '/';
             }
-            dispatch(
-              // @ts-ignore
-              setProfileImage(results[0]?.value?.data?.media?.url)
-            );
           } else {
             // Handle the case where one or more promises failed
             // You might want to show an error message to the user here
