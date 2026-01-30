@@ -9,7 +9,7 @@ const PROGRAMS = [
   {
     id: 'admissions',
     title: 'TopCoach Admissions Program',
-    description: 'Comprehensive admissions guidance with mentorship, SAT prep, essay support, and strategic application planning for top universities.',
+    description: 'Comprehensive admissions guidance with mentorship, essay support, and strategic application planning for top universities.',
     link: '/programs/admissions',
     image: '/img/students.jpeg', // Same hero image as admissions landing page
   },
