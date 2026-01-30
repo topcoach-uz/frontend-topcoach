@@ -68,10 +68,14 @@ export default function BookingsSection() {
         message.success('Session added successfully');
       })
       .catch((err) => {
-        if (err.response.data.statusCode === 401) {
+        const statusCode = err?.response?.data?.statusCode;
+        const errMessage = err?.response?.data?.message || err?.message || 'Failed to create session';
+        if (statusCode === 401) {
           dispatch(setHasGoogleCredentials(false));
           login();
           message.error('Please connect your Google Calendar to add sessions');
+        } else {
+          message.error(errMessage);
         }
       })
       .finally(() => {
