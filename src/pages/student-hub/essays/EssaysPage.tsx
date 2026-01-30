@@ -16,6 +16,9 @@ import './EssaysPage.scss';
 
 const { Option } = Select;
 
+// Set to false to show full essays functionality
+const ESSAYS_COMING_SOON = true;
+
 // Props interface for EssaysPage - supports both normal and read-only mode
 export interface EssaysPageProps {
   readOnly?: boolean;
@@ -26,6 +29,32 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+
+  if (ESSAYS_COMING_SOON) {
+    return (
+      <div className="essays-page">
+        <div className="page-header">
+          <h1 className="page-title">{t('studentHub.essays.title')}</h1>
+          <p className="page-subtitle">{t('studentHub.essays.subtitle')}</p>
+        </div>
+        <Card className="essays-main-card">
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 8 }}>
+                  Coming Soon
+                </div>
+                <p style={{ color: '#666', margin: 0, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+                  We&apos;re building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!
+                </p>
+              </div>
+            }
+          />
+        </Card>
+      </div>
+    );
+  }
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('write');
   const [searchText, setSearchText] = useState('');
