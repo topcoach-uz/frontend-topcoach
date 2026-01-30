@@ -1,6 +1,7 @@
 import EventsSection from '../_components/events';
 import FavoriteUniversitiesSection from '../_components/university';
 import ProfileStatusSection from './_components/profile_status';
+import AdmissionsProgramProgressCard from '../../student-hub/components/AdmissionsProgramProgressCard';
 import BookingsSection from './bookings';
 import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
 import { CustomCard } from 'src/components/cards';
@@ -29,6 +30,10 @@ export default function MentorHome() {
 
   return (
     <main>
+      {/* 0. Admissions Program Progress — when mentor is enrolled in a course */}
+      <div className="container" style={{ paddingTop: 24 }}>
+        <AdmissionsProgramProgressCard />
+      </div>
       {/* 1. Admin Dashboard – same card style as Sessions / Events, consistent spacing */}
       {isSuperAdmin && (
         <div className="container" style={{ paddingTop: 24, marginBottom: sectionSpacing }}>

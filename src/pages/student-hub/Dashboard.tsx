@@ -18,6 +18,7 @@ import EventsCard from './components/EventsCard';
 import JourneyStatusHeader from './components/JourneyStatusHeader';
 import AISuggestionsCard, { type SuggestionItem } from './components/AISuggestionsCard';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
+import AdmissionsProgramProgressCard from './components/AdmissionsProgramProgressCard';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
@@ -646,6 +647,9 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Space>
         </Card>
       )}
+
+      {/* Admissions Program Progress — for enrolled students, at top of dashboard */}
+      <AdmissionsProgramProgressCard skip={isReadOnly} />
 
       {/* Telegram connection checklist — mentees only, above AI suggestions; hidden when connected */}
       <TelegramConnectionChecklist skip={isReadOnly} />
