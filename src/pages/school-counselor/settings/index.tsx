@@ -110,9 +110,18 @@ const SettingsPage: React.FC = () => {
 
   if (fetching) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px 0' }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 300,
+        padding: 50,
+        gap: 16,
+        textAlign: 'center',
+      }}>
         <Spin size="large" />
-        <div style={{ marginTop: 16 }}>Loading organization settings...</div>
+        <div>Loading organization settings...</div>
       </div>
     );
   }

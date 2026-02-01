@@ -17,15 +17,17 @@ $crimson-dark: #660000;
     min-height: 400px;
     padding: 24px;
     text-align: center;
+    gap: 16px;
 
     .ant-spin {
-      margin-bottom: 24px;
+      margin: 0;
     }
 
     p {
       color: $text-secondary;
       font-size: $text-base;
       font-weight: $font-medium;
+      margin: 0;
     }
   }
 
@@ -335,13 +337,14 @@ $crimson-dark: #660000;
 
       .aptitude-hint {
         margin-top: $space-3;
-        padding: $space-3;
+        padding: $space-2 $space-3;
         background: #fef3c7;
         border-radius: $radius-md;
         display: flex;
         align-items: center;
         color: #92400e;
         font-size: $text-sm;
+        line-height: 1.3;
       }
     }
   }

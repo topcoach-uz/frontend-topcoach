@@ -37,11 +37,17 @@
 
 .edit-application-loading {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 400px;
   
   .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     text-align: center;
     
     .spinner {
@@ -51,7 +57,7 @@
       border-top: 4px solid $primary-500;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto $space-4;
+      margin: 0;
     }
     
     p {

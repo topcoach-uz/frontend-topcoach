@@ -121,16 +121,27 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 20px',
+        gap: 16,
+        textAlign: 'center',
+        minHeight: 300,
+      }}>
         <Spin size="large" />
-        <Title level={4} style={{ marginTop: 24 }}>
-          {isGeneratingResults ? 'Analyzing Your Results...' : 'Loading Your Results...'}
-        </Title>
-        <Text type="secondary">
-          {isGeneratingResults 
-            ? 'Our AI is generating personalized insights and recommendations' 
-            : 'Fetching your assessment data and recommendations'}
-        </Text>
+        <div>
+          <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+            {isGeneratingResults ? 'Analyzing Your Results...' : 'Loading Your Results...'}
+          </Title>
+          <Text type="secondary" style={{ display: 'block' }}>
+            {isGeneratingResults 
+              ? 'Our AI is generating personalized insights and recommendations' 
+              : 'Fetching your assessment data and recommendations'}
+          </Text>
+        </div>
       </div>
     );
   }

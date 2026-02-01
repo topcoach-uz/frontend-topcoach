@@ -254,9 +254,17 @@ const ProgramDashboard: React.FC = () => {
   const renderAnalyticsTab = () => {
     if (analyticsLoading) {
       return (
-        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '50px',
+          gap: 16,
+          textAlign: 'center',
+        }}>
           <Spin size="large" />
-          <div style={{ marginTop: 16 }}>Loading analytics...</div>
+          <div>Loading analytics...</div>
         </div>
       );
     }
@@ -735,9 +743,11 @@ const ProgramDashboard: React.FC = () => {
         justifyContent: 'center',
         minHeight: 300,
         padding: 50,
+        gap: 16,
+        textAlign: 'center',
       }}>
         <Spin size="large" />
-        <div style={{ marginTop: 16 }}>Loading...</div>
+        <div>Loading...</div>
       </div>
     );
   }

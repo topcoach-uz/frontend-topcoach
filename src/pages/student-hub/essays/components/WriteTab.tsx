@@ -499,7 +499,14 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
   // Show loading state while fetching essay
   if (essayId && isLoadingEssay) {
     return (
-      <div className="write-tab" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <div className="write-tab" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px',
+        textAlign: 'center',
+      }}>
         <Spin size="large" tip="Loading essay...">
           <div style={{ minHeight: 80 }} />
         </Spin>

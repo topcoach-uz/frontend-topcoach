@@ -11,10 +11,25 @@
 
 .unified-spinner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   
   .unified-spinner-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    .ant-spin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
     .ant-spin-dot {
       i {
         background-color: $primary-500 !important; // Brand crimson
@@ -25,6 +40,7 @@
       color: $text-secondary;
       font-size: $text-sm;
       margin-top: 12px;
+      text-align: center;
     }
   }
 }
@@ -216,6 +232,20 @@
   &:nth-child(4) { animation-delay: 300ms; }
   &:nth-child(5) { animation-delay: 400ms; }
   &:nth-child(n+6) { animation-delay: 500ms; }
+}
+
+// ========================================
+// ANT DESIGN SPIN + TEXT CENTERING
+// ========================================
+// Ensure Spin with tip displays spinner and text centered as a unit
+.ant-spin.ant-spin-lg .ant-spin-dot,
+.ant-spin .ant-spin-dot {
+  margin: 0 auto;
+}
+.ant-spin .ant-spin-text {
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 // ========================================

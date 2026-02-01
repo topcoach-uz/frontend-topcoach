@@ -104,9 +104,17 @@ const OrganizationSelector: React.FC = () => {
 
   if (loading || fetching) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column' }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        gap: 16,
+        textAlign: 'center',
+      }}>
         <Spin size="large" />
-        <div style={{ marginTop: 16 }}>Loading organizations...</div>
+        <div>Loading organizations...</div>
       </div>
     );
   }
