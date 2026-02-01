@@ -69,22 +69,17 @@ const UniversityInfoCard: React.FC<{ universityId: string }> = ({ universityId }
 };
 
 // Component to display university name - fetches from universityId if available
+// IMPORTANT: Hook must be called unconditionally (Rules of Hooks)
 const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: string }> = ({ universityId, universityName }) => {
   const { t } = useTranslation();
-  
-  if (universityId) {
-    const { data: university, isLoading } = useGetUniversityDetailQuery(universityId, { skip: !universityId });
-    
-    if (isLoading) {
-      return <span>Loading...</span>;
-    }
-    
-    if (university) {
-      const displayName = getTranslation(university.name);
-      return <>{displayName || universityName || t('studentHub.applications.unknownUniversity')}</>;
-    }
+  const { data: university, isLoading } = useGetUniversityDetailQuery(universityId || '', { skip: !universityId });
+
+  if (universityId && isLoading) return <span>Loading...</span>;
+  if (universityId && university) {
+    const displayName = getTranslation(university.name);
+    return <>{displayName || universityName || t('studentHub.applications.unknownUniversity')}</>;
   }
-  
+
   // Fallback: if no universityName provided, show unknown
   const displayName = universityName?.trim();
   if (!displayName || displayName === 'undefined' || displayName === 'null') {

@@ -28,12 +28,19 @@ const PageLoader: React.FC<PageLoaderProps> = ({
     <div
       className={`page-loader ${className}`}
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        minHeight: '100vh',
         height: height,
         background: bgColor ?? colors.colorBgLayout,
-        width: width || 'auto',
+        width: width || '100%',
+        zIndex: 9998,
       }}
     >
       <div className="page-loader-content">

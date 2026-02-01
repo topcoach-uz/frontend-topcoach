@@ -21,9 +21,20 @@
 
   .admissions-progress-loading {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 120px;
+    min-height: 200px;
+    padding: 24px;
+
+    .ant-spin {
+      margin-bottom: 12px;
+    }
+
+    .ant-spin-text {
+      color: #666;
+      font-size: 14px;
+    }
   }
 
   .admissions-progress-courses {

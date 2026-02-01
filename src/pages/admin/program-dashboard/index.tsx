@@ -728,7 +728,14 @@ const ProgramDashboard: React.FC = () => {
   // Show loading while fetching profile
   if (profileLoading) {
     return (
-      <div className="program-dashboard" style={{ textAlign: 'center', padding: '50px 0' }}>
+      <div className="program-dashboard" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 300,
+        padding: 50,
+      }}>
         <Spin size="large" />
         <div style={{ marginTop: 16 }}>Loading...</div>
       </div>

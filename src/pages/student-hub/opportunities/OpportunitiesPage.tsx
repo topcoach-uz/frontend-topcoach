@@ -1,9 +1,10 @@
 import React from 'react';
-import { Card, Tabs, Empty, Button } from 'antd';
+import { Card, Tabs, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import ProgramsPage from '../programs/ProgramsPage';
+import ScholarshipsTab from './ScholarshipsTab';
 import './OpportunitiesPage.scss';
 
 const OpportunitiesPage: React.FC = () => {
@@ -20,14 +21,7 @@ const OpportunitiesPage: React.FC = () => {
           Scholarships
         </span>
       ),
-      children: (
-        <div className="opportunities-tab-content">
-          <Empty
-            description="No scholarships available at the moment"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        </div>
-      ),
+      children: <ScholarshipsTab />,
     },
     {
       key: 'programs',

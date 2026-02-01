@@ -237,7 +237,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             key: 'overview',
             label: (
               <span>
-                <UnifiedIcon name="bar-chart" size="sm" color="primary" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="compass" size="sm" color="primary" style={{ marginRight: 8 }} />
                 Overview
               </span>
             ),
@@ -326,7 +326,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             key: 'majors',
             label: (
               <span>
-                <UnifiedIcon name="graduation-cap" size="sm" color="primary" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="star" size="sm" color="primary" style={{ marginRight: 8 }} />
                 Major Recommendations
               </span>
             ),
@@ -389,6 +389,12 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                 <Paragraph style={{ margin: '8px 0' }}>{rec.explanation.whyFits}</Paragraph>
                               )}
 
+                              {(rec.explanation?.majorOverview || rec.majorProfile?.description) && (
+                                <Paragraph type="secondary" style={{ margin: '4px 0 8px 0', fontSize: 14 }}>
+                                  {rec.explanation?.majorOverview || rec.majorProfile?.description}
+                                </Paragraph>
+                              )}
+
                               {rec.explanation?.keyContributors && rec.explanation.keyContributors.length > 0 && (
                                 <div>
                                   <Text strong>Key Contributors: </Text>
@@ -410,9 +416,9 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                               )}
 
                               {rec.explanation?.nextSteps && rec.explanation.nextSteps.length > 0 && (
-                                <div style={{ marginTop: 8 }}>
+                                <div style={{ marginTop: 8 }} className="major-next-steps">
                                   <Text strong>Next Steps:</Text>
-                                  <ul style={{ marginTop: 4, marginBottom: 0, paddingLeft: 20 }}>
+                                  <ul className="major-next-steps-list">
                                     {rec.explanation.nextSteps.map((step, i) => (
                                       <li key={i}>{step}</li>
                                     ))}
@@ -529,7 +535,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             key: 'universities',
             label: (
               <span>
-                <UnifiedIcon name="university" size="sm" color="primary" style={{ marginRight: 8 }} />
+                <UnifiedIcon name="globe" size="sm" color="primary" style={{ marginRight: 8 }} />
                 University Matches
               </span>
             ),

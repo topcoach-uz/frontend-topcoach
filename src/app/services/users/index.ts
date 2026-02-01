@@ -10,7 +10,7 @@ export const authApi = RtkApi.injectEndpoints({
     }),
     // Get user by ID (for counselors viewing student data)
     getUserById: build.query<UsersSchema, string>({
-      query: (userId) => ({ url: `/users/${userId}` }),
+      query: (userId) => ({ url: `/users/user/${userId}` }),
       providesTags: (result, error, userId) => [{ type: 'Users', id: userId }],
     }),
     linkCalendar: build.mutation<void, CalendarLinkDto>({

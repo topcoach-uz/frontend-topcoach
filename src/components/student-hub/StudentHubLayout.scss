@@ -597,6 +597,7 @@ $crimson-900: #7f1d1d;
     .main-content {
       position: relative; // Ensure loading overlay positions correctly
       padding: $space-8;
+      padding-top: calc(#{$space-8} + 6px); // Slight top offset so scrollbar appears slightly lower
       min-height: calc(100vh - 0px);
       overflow-y: auto;
       flex: 1;

@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, Progress, Button, Spin } from 'antd';
+import { Card, Progress, Button, Spin, Empty } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayCircleOutlined } from '@ant-design/icons';
@@ -20,9 +20,23 @@ import './AdmissionsProgramProgressCard.scss';
 interface AdmissionsProgramProgressCardProps {
   /** Skip rendering (e.g. in read-only mode) */
   skip?: boolean;
+  /** When true, render without outer Card (for embedding in other sections) */
+  embedded?: boolean;
+  /** When true and not enrolled, render Empty state instead of null */
+  showEmptyWhenNotEnrolled?: boolean;
+  /** Optional title override (e.g. "Your Enrolled Programs" for Programs tab) */
+  title?: string;
+  /** Optional subtitle override */
+  subtitle?: string;
 }
 
-export default function AdmissionsProgramProgressCard({ skip }: AdmissionsProgramProgressCardProps) {
+export default function AdmissionsProgramProgressCard({
+  skip,
+  embedded = false,
+  showEmptyWhenNotEnrolled = false,
+  title,
+  subtitle,
+}: AdmissionsProgramProgressCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -68,10 +82,10 @@ export default function AdmissionsProgramProgressCard({ skip }: AdmissionsProgra
 
   const isLoading = enrollmentLoading || (hasAdmissions && progressLoading);
   if (isLoading && !hasAdmissions && !hasSat) {
-    return null;
+    return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
   }
   if (!hasAdmissions && !hasSat) {
-    return null;
+    return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
   }
 
   const renderCourseBlock = (
@@ -126,19 +140,21 @@ export default function AdmissionsProgramProgressCard({ skip }: AdmissionsProgra
     </div>
   );
 
-  return (
-    <Card className="admissions-progress-card" style={{ marginBottom: 24 }}>
-      <div className="admissions-progress-header">
-        <h3 className="admissions-progress-title">
-          {t('programs.enrollment.learningProgress')}
-        </h3>
-        <p className="admissions-progress-subtitle">
-          {t('programs.enrollment.trackJourney')}
-        </p>
-      </div>
+  const content = (
+    <>
+      {!embedded && (
+        <div className="admissions-progress-header">
+          <h3 className="admissions-progress-title">
+            {title ?? t('programs.enrollment.learningProgress')}
+          </h3>
+          <p className="admissions-progress-subtitle">
+            {subtitle ?? t('programs.enrollment.trackJourney')}
+          </p>
+        </div>
+      )}
       {isLoading ? (
         <div className="admissions-progress-loading">
-          <Spin size="large" />
+          <Spin size="large" tip="Loading..." />
         </div>
       ) : (
         <div className="admissions-progress-courses">
@@ -166,6 +182,16 @@ export default function AdmissionsProgramProgressCard({ skip }: AdmissionsProgra
             )}
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <Card className="admissions-progress-card" style={{ marginTop: 24, marginBottom: 24 }}>
+      {content}
     </Card>
   );
 }

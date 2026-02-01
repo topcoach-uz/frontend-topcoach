@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Spin, Alert, Empty, Button, Tag } from 'antd';
+import { Card, Row, Col, Spin, Empty, Button, Tag } from 'antd';
 import { TeamOutlined, PlusOutlined, ArrowRightOutlined, UserOutlined, CalendarOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
+
+const DESCRIPTION_PREVIEW_LENGTH = 120;
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
@@ -24,6 +27,31 @@ interface OrganizationWithDetails {
     userEmail: string;
   }>;
 }
+
+const OrganizationDescription: React.FC<{ text: string }> = ({ text }) => {
+  const [expanded, setExpanded] = useState(false);
+  const needsTruncate = text.length > DESCRIPTION_PREVIEW_LENGTH;
+  const displayText = expanded || !needsTruncate ? text : `${text.slice(0, DESCRIPTION_PREVIEW_LENGTH).trim()}...`;
+
+  return (
+    <p className="org-description">
+      {displayText}
+      {needsTruncate && (
+        <Button
+          type="link"
+          size="small"
+          className="org-read-more"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(!expanded);
+          }}
+        >
+          {expanded ? 'Read less' : 'Read more'}
+        </Button>
+      )}
+    </p>
+  );
+};
 
 const OrganizationSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -141,11 +169,13 @@ const OrganizationSelector: React.FC = () => {
             >
               <div className="org-card-content">
                 <div className="org-icon">
-                  <TeamOutlined style={{ fontSize: 48, color: '#8b0000' }} />
+                  <UnifiedIcon name="graduation-cap" size="2xl" color="primary" />
                 </div>
-                <h3>{org.name}</h3>
-                {org.description && (
-                  <p className="org-description">{org.description}</p>
+                <h3 className="org-name">{org.name}</h3>
+                {org.description ? (
+                  <OrganizationDescription text={org.description} />
+                ) : (
+                  <p className="org-description org-description-placeholder" />
                 )}
                 
                 <div className="org-meta">

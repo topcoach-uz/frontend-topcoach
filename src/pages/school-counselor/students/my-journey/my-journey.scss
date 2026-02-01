@@ -52,7 +52,28 @@ $crimson-50: #fef2f2;
         }
 
         .ant-tabs-nav-wrap {
+          overflow-x: auto !important;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+
+          // Scrollbar styling for horizontal scroll
+          &::-webkit-scrollbar {
+            height: 6px;
+          }
+          &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+            &:hover {
+              background: #a1a1a1;
+            }
+          }
+
           .ant-tabs-nav-list {
+            flex-wrap: nowrap;
             .ant-tabs-tab {
               padding: 16px 24px;
               font-size: 16px;
@@ -64,6 +85,7 @@ $crimson-50: #fef2f2;
               border-radius: 8px;
               margin-bottom: 0;
               background-color: white;
+              flex-shrink: 0;
 
               span {
                 display: flex;
@@ -146,6 +168,7 @@ $crimson-50: #fef2f2;
     flex: 1;
     background: #f8fafc;
     padding: 32px;
+    padding-top: calc(32px + 6px); // Slight top offset so scrollbar appears slightly lower
     overflow-y: auto;
     min-height: calc(100vh - 180px);
 

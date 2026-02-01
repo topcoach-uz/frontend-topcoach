@@ -14,7 +14,8 @@ $crimson-dark: #660000;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 120px 20px;
+    min-height: 400px;
+    padding: 24px;
     text-align: center;
 
     .ant-spin {
@@ -400,6 +401,18 @@ $crimson-dark: #660000;
 // ========================================
 // RESPONSIVE DESIGN
 // ========================================
+
+// Major Recommendations - Next Steps list (bullets closer to text, slight indent)
+.major-next-steps-list {
+  margin-top: 4px;
+  margin-bottom: 0;
+  padding-left: 1.25em;
+  margin-left: 0.5em;
+
+  li {
+    margin-bottom: 2px;
+  }
+}
 
 @media (max-width: 768px) {
   .psychometric-assessment-page {

@@ -167,35 +167,37 @@ export default function MentorCard({
           )}
         </div>
 
-        {/* Pricing based on mentor level */}
+        {/* Pricing based on mentor level - hidden for UzCombinator mentors (rate, contact for pricing) */}
         <div className={styles.sessionsSection}>
-          <CustomText
-            color={colors.colorTextSecondary}
-            fontSize={13}
-            fontWeight={500}
-            style={{ marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
-          >
-            {level === 'probono' 
-              ? t('mentors.complimentarySession') || 'Complimentary' 
-              : t('mentors.rate') || 'Rate'}
-          </CustomText>
-          <CustomText
-            color={colors.colorText}
-            fontSize={16}
-            fontWeight={600}
-          >
-            {level === 'expert' 
-              ? '$50 – $100 / session' 
-              : level === 'senior' 
-                ? '$25 – $50 / session' 
-                : level === 'junior'
-                  ? '$12.50 – $25 / session'
-                  : level === 'uzcombinator'
-                    ? t('mentors.contactForPricing') || 'Contact for pricing'
-                  : level === 'probono'
-                    ? t('mentors.freeSession') || 'Free / Pro-bono'
-                    : t('mentors.contactForPricing') || 'Contact for pricing'}
-          </CustomText>
+          {level !== 'uzcombinator' && (
+            <>
+              <CustomText
+                color={colors.colorTextSecondary}
+                fontSize={13}
+                fontWeight={500}
+                style={{ marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
+              >
+                {level === 'probono' 
+                  ? t('mentors.complimentarySession') || 'Complimentary' 
+                  : t('mentors.rate') || 'Rate'}
+              </CustomText>
+              <CustomText
+                color={colors.colorText}
+                fontSize={16}
+                fontWeight={600}
+              >
+                {level === 'expert' 
+                  ? '$50 – $100 / session' 
+                  : level === 'senior' 
+                    ? '$25 – $50 / session' 
+                    : level === 'junior'
+                      ? '$12.50 – $25 / session'
+                      : level === 'probono'
+                        ? t('mentors.freeSession') || 'Free / Pro-bono'
+                        : t('mentors.contactForPricing') || 'Contact for pricing'}
+              </CustomText>
+            </>
+          )}
           {isGiveaway && (
             <CustomText
               color={giveawaySessionsCount > 0 ? "#FF6B35" : "#999999"}

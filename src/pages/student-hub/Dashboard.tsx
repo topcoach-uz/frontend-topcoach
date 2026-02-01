@@ -54,22 +54,18 @@ export interface DashboardProps {
 }
 
 // Component to display university name - fetches from universityId if available
+// IMPORTANT: Hook must be called unconditionally (Rules of Hooks)
 const UniversityNameDisplay: React.FC<{ universityId?: string; universityName?: string }> = ({ universityId, universityName }) => {
   const { t } = useTranslation();
-  
-  if (universityId) {
-    const { data: university, isLoading } = useGetUniversityDetailQuery(universityId, { skip: !universityId });
-    
-    if (isLoading) {
-      return <InlineLoader size="small" />;
-    }
-    
-    if (university) {
-      const displayName = getTranslation(university.name);
-      return <>{displayName || universityName || t('studentHub.dashboard.unknownUniversity')}</>;
-    }
+  const { data: university, isLoading } = useGetUniversityDetailQuery(universityId || '', { skip: !universityId });
+
+  if (universityId && isLoading) {
+    return <InlineLoader size="small" />;
   }
-  
+  if (universityId && university) {
+    const displayName = getTranslation(university.name);
+    return <>{displayName || universityName || t('studentHub.dashboard.unknownUniversity')}</>;
+  }
   return <>{universityName || t('studentHub.dashboard.unknownUniversity')}</>;
 };
 
@@ -887,6 +883,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 .slice(0, 8);
 
               return recentActivities.length > 0 ? (
+                <div style={{ maxHeight: 320, overflowY: 'auto', paddingRight: 4, paddingTop: 4, paddingBottom: 4 }} className="recent-activities-list">
                 <List
                   dataSource={recentActivities}
                   renderItem={(item: any) => (
@@ -981,6 +978,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                     </List.Item>
                   )}
                 />
+                </div>
               ) : (
                 <div className="empty-state">
                   <div className="empty-icon">📁</div>

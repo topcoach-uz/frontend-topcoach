@@ -143,7 +143,9 @@
 
 .page-loader {
   animation: fadeIn 0.2s ease-in;
-  
+  // Ensure true viewport center regardless of parent layout
+  min-height: 100vh;
+
   .page-loader-content {
     display: flex;
     flex-direction: column;

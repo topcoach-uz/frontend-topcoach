@@ -1,5 +1,5 @@
 /**
- * Gate for /student-hub: redirect mentors (except oumarovna, sheraliozodov6) and
+ * Gate for /student-hub: redirect mentors (except oumarovna, sheraliozodov6, sheraliozodov03) and
  * counselors (except sheraliozodov6) to /. Always allow sheraliozodov6@gmail.com.
  *
  * Hook-order fix: useCounselorStatus (useState/useEffect) + useGetMeQuery(skip) caused
@@ -14,7 +14,7 @@ import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import StudentHubRoutes from './StudentHubRoutes';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
-const CEO_MENTOR_EMAIL = 'oumarovna@gmail.com';
+const MENTOR_EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
 
 export default function StudentHubGate() {
   const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
@@ -45,7 +45,7 @@ export default function StudentHubGate() {
     return <StudentHubRoutes />;
   }
 
-  if (isMentor && email !== CEO_MENTOR_EMAIL) {
+  if (isMentor && !MENTOR_EXCEPTION_EMAILS.includes(email || '')) {
     return <Navigate to="/" replace />;
   }
 

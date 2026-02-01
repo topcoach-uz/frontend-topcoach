@@ -758,10 +758,9 @@ $crimson-900: #7f1d1d;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
-
+  // Prevent hover transform from clipping in scroll container - use box-shadow only
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
     border-color: $primary-500;
   }
 
@@ -845,5 +844,25 @@ $crimson-900: #7f1d1d;
 
   &:last-child {
     margin-bottom: 0;
+  }
+}
+
+.recent-activities-list {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+
+    &:hover {
+      background: #555;
+    }
   }
 }

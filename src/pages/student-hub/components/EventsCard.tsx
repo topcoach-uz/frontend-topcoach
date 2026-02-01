@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Card, Tabs, Empty, Button, Badge } from 'antd';
+import { Card, Tabs, Empty, Button, Badge, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ApplicationStatusEnum } from '../../../app/api/Api';
 import useMentee from '../../../pages/home/mentee/useMentee';
@@ -75,7 +75,19 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
 
   function renderEvents(events: any[], showViewAll: boolean = false) {
     if (isLoading) {
-      return <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>;
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 200,
+          padding: 40,
+        }}>
+          <Spin size="large" />
+          <span style={{ marginTop: 16, color: '#666' }}>Loading...</span>
+        </div>
+      );
     }
 
     if (events.length === 0) {
@@ -149,7 +161,17 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
         }
       >
         {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 200,
+            padding: 40,
+          }}>
+            <Spin size="large" />
+            <span style={{ marginTop: 16, color: '#666' }}>Loading...</span>
+          </div>
         ) : allEvents.length > 0 ? (
           <div className="events-list-compact">
             {allEvents.slice(0, 2).map((item) => (

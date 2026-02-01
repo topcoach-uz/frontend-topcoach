@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, Empty, Button, Row, Col } from 'antd';
+import { Card, Button, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ArrowRightOutlined } from '@ant-design/icons';
+import AdmissionsProgramProgressCard from '../components/AdmissionsProgramProgressCard';
 import './ProgramsPage.scss';
 
 const PROGRAMS = [
@@ -62,13 +63,11 @@ const ProgramsPage: React.FC = () => {
         ))}
       </div>
 
-      <Card style={{ marginTop: 24 }}>
-        <h4 style={{ marginBottom: 12, fontWeight: 600 }}>Your Enrolled Programs</h4>
-        <Empty
-          description="No programs enrolled at the moment"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
-      </Card>
+      <AdmissionsProgramProgressCard
+        title={t('programs.enrollment.yourEnrolledPrograms') || 'Your Enrolled Programs'}
+        subtitle={t('programs.enrollment.trackJourney') || 'Track your journey through the course'}
+        showEmptyWhenNotEnrolled
+      />
     </div>
   );
 };

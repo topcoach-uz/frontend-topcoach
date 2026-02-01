@@ -1,6 +1,19 @@
 .opportunities-page {
-  // Compact empty states (match "No programs enrolled" height)
+  // Consistent height for all tab content (Scholarships, Programs, Events)
+  .ant-tabs-content-holder,
+  .ant-tabs-tabpane {
+    min-height: 240px;
+  }
+
   .opportunities-tab-content {
     padding: 24px 24px 32px;
+    min-height: 220px;
+
+    // When only Empty (no scholarships/events), center it and match height
+    &:has(> .ant-empty) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 }

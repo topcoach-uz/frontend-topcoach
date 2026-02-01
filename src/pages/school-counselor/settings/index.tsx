@@ -6,6 +6,7 @@ import {
   PhoneOutlined,
   SaveOutlined,
   CheckCircleOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
@@ -64,6 +65,8 @@ const SettingsPage: React.FC = () => {
         email: response.data.contactEmail,
         phone: response.data.contactPhone,
         address: response.data.address,
+        description: response.data.description,
+        website: response.data.website,
       });
       
       // Extract counselors from members
@@ -91,6 +94,8 @@ const SettingsPage: React.FC = () => {
           contactEmail: values.email,
           contactPhone: values.phone,
           address: values.address,
+          description: values.description,
+          website: values.website,
         },
       });
       message.success('Settings saved successfully!');
@@ -167,6 +172,26 @@ const SettingsPage: React.FC = () => {
                   rows={3}
                   placeholder="Enter organization address"
                 />
+              </Form.Item>
+
+              <Form.Item label="Description" name="description">
+                <TextArea
+                  rows={4}
+                  placeholder="Brief description of your organization or school"
+                />
+              </Form.Item>
+
+              <Form.Item
+                label="Website"
+                name="website"
+                rules={[
+                  {
+                    type: 'url',
+                    message: 'Please enter a valid URL (e.g. https://example.com)',
+                  },
+                ]}
+              >
+                <Input prefix={<GlobalOutlined />} size="large" placeholder="https://" />
               </Form.Item>
 
               <Form.Item>

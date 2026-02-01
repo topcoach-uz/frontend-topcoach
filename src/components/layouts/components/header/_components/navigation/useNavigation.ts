@@ -19,7 +19,8 @@ export default function useNavigation() {
   // Prefer getMe (same source as HomeRouter) so nav shows Home vs My Journey correctly for mentors
   const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
-  const isCEO = userProfile?.email === 'oumarovna@gmail.com';
+  const EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
+  const isCEO = EXCEPTION_EMAILS.includes(userProfile?.email || '');
   // Mentees: My Journey only (no Home). Mentors: Home only. CEO (mentor): both Home + My Journey.
   const shouldShowMyJourney = !isMentor || isCEO;
 

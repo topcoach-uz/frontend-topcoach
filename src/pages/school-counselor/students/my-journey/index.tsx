@@ -3,15 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, Button, Alert, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
+import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
 import { useGetUserByIdQuery } from 'src/app/services/users';
+import { useGetStudentProfileByUserIdQuery } from 'src/app/services/student-hub/studentProfileApi';
 import StudentHubDashboard from './components/Dashboard';
 import StudentHubProfile from './components/Profile';
 import StudentHubApplications from './components/Applications';
 import StudentHubEssays from './components/Essays';
 import StudentHubDocuments from './components/Documents';
-import StudentHubGPACalculator from './components/GPACalculator';
 import StudentHubPsychometricAssessment from './components/PsychometricAssessment';
+import StudentHubOpportunities from './components/Opportunities';
 import './my-journey.scss';
 
 const StudentMyJourneyView: React.FC = () => {
@@ -20,12 +21,18 @@ const StudentMyJourneyView: React.FC = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Fetch the student's user data to get their name
+  // Fetch the student's user data and profile (profile is fallback if user fetch fails)
   const { data: studentUser, isLoading: userLoading } = useGetUserByIdQuery(studentId || '', { 
     skip: !studentId 
   });
+  const { data: studentProfileRes } = useGetStudentProfileByUserIdQuery(studentId || '', {
+    skip: !studentId || !!studentUser?.profile?.name,
+  });
 
-  const studentName = studentUser?.profile?.name || t('Student');
+  const studentProfileData = (studentProfileRes as any)?.data || studentProfileRes;
+  const studentName = studentUser?.profile?.name 
+    || studentProfileData?.profile?.name 
+    || t('Student');
 
   if (!studentId) {
     return (
@@ -40,7 +47,9 @@ const StudentMyJourneyView: React.FC = () => {
     );
   }
 
-  if (userLoading) {
+  // Show loading only while user fetch is in progress and we don't have a fallback name yet
+  const hasName = !!(studentUser?.profile?.name || studentProfileData?.profile?.name);
+  if (userLoading && !hasName) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
         <Spin size="large" />
@@ -48,32 +57,14 @@ const StudentMyJourneyView: React.FC = () => {
     );
   }
 
-  // Tab items using the new `items` prop (fixing deprecation warning)
+  // Tab items aligned with My Journey sidebar: Dashboard, Applications, Major Match, Opportunities, Essays, Documents, My Profile
   const tabItems = [
     {
       key: 'dashboard',
       label: (
         <span>
-          <FontAwesomeIcon icon="tachometer-alt" style={{ marginRight: 8 }} />
+          <UnifiedIcon name="dashboard" size="sm" color="primary" style={{ marginRight: 8 }} />
           {t('Dashboard')}
-        </span>
-      ),
-    },
-    {
-      key: 'profile',
-      label: (
-        <span>
-          <FontAwesomeIcon icon="user" style={{ marginRight: 8 }} />
-          {t('My Profile')}
-        </span>
-      ),
-    },
-    {
-      key: 'psychometric-assessment',
-      label: (
-        <span>
-          <FontAwesomeIcon icon="chart-line" style={{ marginRight: 8 }} />
-          {t('Psychometric Test')}
         </span>
       ),
     },
@@ -81,8 +72,26 @@ const StudentMyJourneyView: React.FC = () => {
       key: 'applications',
       label: (
         <span>
-          <FontAwesomeIcon icon="building" style={{ marginRight: 8 }} />
+          <UnifiedIcon name="applications" size="sm" color="primary" style={{ marginRight: 8 }} />
           {t('Applications')}
+        </span>
+      ),
+    },
+    {
+      key: 'psychometric-assessment',
+      label: (
+        <span>
+          <UnifiedIcon name="activity" size="sm" color="primary" style={{ marginRight: 8 }} />
+          Major Match
+        </span>
+      ),
+    },
+    {
+      key: 'opportunities',
+      label: (
+        <span>
+          <UnifiedIcon name="opportunities" size="sm" color="primary" style={{ marginRight: 8 }} />
+          Opportunities
         </span>
       ),
     },
@@ -90,7 +99,7 @@ const StudentMyJourneyView: React.FC = () => {
       key: 'essays',
       label: (
         <span>
-          <FontAwesomeIcon icon="pen" style={{ marginRight: 8 }} />
+          <UnifiedIcon name="essays" size="sm" color="primary" style={{ marginRight: 8 }} />
           {t('Essays')}
         </span>
       ),
@@ -99,17 +108,17 @@ const StudentMyJourneyView: React.FC = () => {
       key: 'documents',
       label: (
         <span>
-          <FontAwesomeIcon icon="file" style={{ marginRight: 8 }} />
+          <UnifiedIcon name="documents" size="sm" color="primary" style={{ marginRight: 8 }} />
           {t('Documents')}
         </span>
       ),
     },
     {
-      key: 'gpa-calculator',
+      key: 'profile',
       label: (
         <span>
-          <FontAwesomeIcon icon="calculator" style={{ marginRight: 8 }} />
-          {t('GPA Calculator')}
+          <UnifiedIcon name="profile" size="sm" color="primary" style={{ marginRight: 8 }} />
+          {t('My Profile')}
         </span>
       ),
     },
@@ -143,12 +152,12 @@ const StudentMyJourneyView: React.FC = () => {
 
       <div className="tabs-content-wrapper">
         {activeTab === 'dashboard' && <StudentHubDashboard studentId={studentId} studentName={studentName} />}
-        {activeTab === 'profile' && <StudentHubProfile studentId={studentId} studentName={studentName} />}
         {activeTab === 'applications' && <StudentHubApplications studentId={studentId} studentName={studentName} />}
+        {activeTab === 'psychometric-assessment' && <StudentHubPsychometricAssessment studentId={studentId} studentName={studentName} />}
+        {activeTab === 'opportunities' && <StudentHubOpportunities studentId={studentId} studentName={studentName} />}
         {activeTab === 'essays' && <StudentHubEssays studentId={studentId} studentName={studentName} />}
         {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} studentName={studentName} />}
-        {activeTab === 'gpa-calculator' && <StudentHubGPACalculator studentId={studentId} studentName={studentName} />}
-        {activeTab === 'psychometric-assessment' && <StudentHubPsychometricAssessment studentId={studentId} studentName={studentName} />}
+        {activeTab === 'profile' && <StudentHubProfile studentId={studentId} studentName={studentName} />}
       </div>
     </div>
   );

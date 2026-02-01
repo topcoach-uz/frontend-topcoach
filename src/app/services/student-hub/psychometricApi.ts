@@ -162,6 +162,7 @@ export interface MajorFitScore {
 }
 
 export interface MajorExplanation {
+  majorOverview?: string; // 2-3 sentences describing what the major is
   whyFits: string;
   keyContributors: string[];
   academicFeasibility: string;
