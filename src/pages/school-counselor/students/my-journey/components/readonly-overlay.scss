@@ -38,6 +38,20 @@
     cursor: pointer !important;
   }
 
+  // Major Match: Allow Assessment History collapse to expand and "View Results" button
+  .ant-collapse,
+  .ant-collapse-item,
+  .ant-collapse-header,
+  .ant-collapse-content {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+  .ant-collapse .ant-list-item .ant-list-item-action button[type="button"]:first-child {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+  }
+
   // Essays: Allow download button (2nd button in card actions)
   .ant-card-actions button:nth-child(2) {
     pointer-events: auto !important;

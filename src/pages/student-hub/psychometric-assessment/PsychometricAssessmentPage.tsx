@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, Spin, Alert, Typography, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
+import Spinner from '../../../components/loading/Spinner';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import {
   useStartAssessmentMutation,
@@ -208,8 +209,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   if (profileLoading) {
     return (
       <div className="psychometric-assessment-loading">
-        <Spin size="large" />
-        <p>Loading...</p>
+        <Spinner size="large" tip="Loading..." />
       </div>
     );
   }

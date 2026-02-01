@@ -24,13 +24,14 @@
     text-align: center;
 
     .ant-spin {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
 
     .ant-spin-dot {
+      margin: 0 auto;
       i {
         background-color: $primary-500 !important; // Brand crimson
       }
@@ -39,8 +40,9 @@
     .ant-spin-text {
       color: $text-secondary;
       font-size: $text-sm;
-      margin-top: 12px;
+      margin: 12px auto 0;
       text-align: center;
+      display: block;
     }
   }
 }
@@ -238,14 +240,24 @@
 // ANT DESIGN SPIN + TEXT CENTERING
 // ========================================
 // Ensure Spin with tip displays spinner and text centered as a unit
+.page-loader .ant-spin,
+.unified-spinner .ant-spin,
+.psychometric-assessment-loading .ant-spin {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
 .ant-spin.ant-spin-lg .ant-spin-dot,
 .ant-spin .ant-spin-dot {
   margin: 0 auto;
 }
 .ant-spin .ant-spin-text {
-  display: block;
-  text-align: center;
-  width: 100%;
+  display: block !important;
+  text-align: center !important;
+  margin: 12px auto 0 !important;
+  width: max-content;
+  max-width: 100%;
 }
 
 // ========================================

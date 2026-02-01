@@ -75,6 +75,43 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
     }
   }, [sessionProgress, questions, isInitialized]);
 
+  const currentQuestion = questions[currentQuestionIndex];
+  // Get selectable options for keyboard shortcuts (must be before any early returns - hooks rules)
+  const currentOptions = useMemo(() => {
+    if (!currentQuestion?.questionData) return [];
+    const qType = currentQuestion.questionData.type;
+    if (qType === 'open-ended') return [];
+    if (qType === 'likert') {
+      const scale = currentQuestion.questionData.scale;
+      if (!scale) return [];
+      const defaultLabels = ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'];
+      const labels = scale.labels?.length
+        ? [...scale.labels].reverse()
+        : defaultLabels.slice(0, scale.max - scale.min + 1);
+      return labels.map((_: string, index: number) => scale.max - index);
+    }
+    if (qType === 'multiple-choice' || qType === 'forced-choice') {
+      return currentQuestion.questionData?.options || [];
+    }
+    return [];
+  }, [currentQuestion]);
+
+  // Keyboard shortcuts: F1, F2, ... (must be before early returns - hooks rules)
+  useEffect(() => {
+    if (currentOptions.length === 0 || !currentQuestion) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const match = e.key.match(/^F(\d+)$/);
+      if (!match) return;
+      const index = parseInt(match[1], 10) - 1;
+      if (index >= 0 && index < currentOptions.length) {
+        e.preventDefault();
+        handleAnswerChange(currentQuestion.id, currentOptions[index]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentQuestion?.id, currentOptions]);
+
   const handleAnswerChange = async (questionId: string, value: any) => {
     setAnswers((prev) => ({
       ...prev,
@@ -155,7 +192,6 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
   const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
   const isAnswered = currentQuestion && answers[currentQuestion?.id] !== undefined;
@@ -324,6 +360,11 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
           <div className="question-input" style={{ marginBottom: 32 }}>
             {renderQuestionInput()}
+            {currentOptions.length > 0 && (
+              <Text type="secondary" style={{ display: 'block', marginTop: 12, fontSize: 13 }}>
+                Tip: Press F1–F{currentOptions.length} to select an answer
+              </Text>
+            )}
           </div>
         </div>
 

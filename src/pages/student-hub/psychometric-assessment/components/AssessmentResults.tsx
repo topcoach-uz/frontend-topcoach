@@ -48,34 +48,41 @@ const CareerPathCard: React.FC<{
   majorName: string;
   careers: string[];
   relatedMajors?: string[];
-}> = ({ majorName, careers, relatedMajors }) => (
-  <Card size="small" style={{ marginTop: 12 }}>
-    <Title level={5} style={{ margin: '0 0 8px 0' }}>
-      🚀 Career Paths for {majorName}
-    </Title>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-      {careers.map((career, i) => (
-        <Tag key={i} color="blue">
-          {career}
-        </Tag>
-      ))}
-    </div>
-    {relatedMajors && relatedMajors.length > 0 && (
-      <>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          Related Majors:
-        </Text>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-          {relatedMajors.map((major, i) => (
-            <Tag key={i} style={{ fontSize: 11 }}>
-              {major}
+}> = ({ majorName, careers = [], relatedMajors }) => {
+  const safeCareers = Array.isArray(careers) ? careers : [];
+  const safeRelatedMajors = Array.isArray(relatedMajors) ? relatedMajors : [];
+  if (safeCareers.length === 0 && safeRelatedMajors.length === 0) return null;
+  return (
+    <Card size="small" style={{ marginTop: 12 }}>
+      <Title level={5} style={{ margin: '0 0 8px 0' }}>
+        🚀 Career Paths for {majorName}
+      </Title>
+      {safeCareers.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+          {safeCareers.map((career, i) => (
+            <Tag key={i} color="blue">
+              {typeof career === 'string' ? career : String(career)}
             </Tag>
           ))}
         </div>
-      </>
-    )}
-  </Card>
-);
+      )}
+      {safeRelatedMajors.length > 0 && (
+        <>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Related Majors:
+          </Text>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+            {safeRelatedMajors.map((major, i) => (
+              <Tag key={i} style={{ fontSize: 11 }}>
+                {typeof major === 'string' ? major : String(major)}
+              </Tag>
+            ))}
+          </div>
+        </>
+      )}
+    </Card>
+  );
+};
 
 export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   assessment,
@@ -406,13 +413,13 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                 </Paragraph>
                               )}
 
-                              {rec.explanation?.keyContributors && rec.explanation.keyContributors.length > 0 && (
+                              {Array.isArray(rec.explanation?.keyContributors) && rec.explanation.keyContributors.length > 0 && (
                                 <div>
                                   <Text strong>Key Contributors: </Text>
                                   <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                                     {rec.explanation.keyContributors.map((contributor, i) => (
                                       <Tag key={i} color="geekblue">
-                                        {contributor}
+                                        {typeof contributor === 'string' ? contributor : String(contributor)}
                                       </Tag>
                                     ))}
                                   </div>
@@ -426,12 +433,12 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                 </div>
                               )}
 
-                              {rec.explanation?.nextSteps && rec.explanation.nextSteps.length > 0 && (
+                              {Array.isArray(rec.explanation?.nextSteps) && rec.explanation.nextSteps.length > 0 && (
                                 <div style={{ marginTop: 8 }} className="major-next-steps">
                                   <Text strong>Next Steps:</Text>
                                   <ul className="major-next-steps-list">
                                     {rec.explanation.nextSteps.map((step, i) => (
-                                      <li key={i}>{step}</li>
+                                      <li key={i}>{typeof step === 'string' ? step : String(step)}</li>
                                     ))}
                                   </ul>
                                 </div>
