@@ -1,6 +1,7 @@
 .readonly-wrapper {
   position: relative;
   background: transparent;
+  overflow-y: visible;
 
   .readonly-overlay {
     position: absolute;
@@ -13,12 +14,12 @@
     background: transparent;
   }
 
-  // Disable interactive elements by default
+  // Disable interactive elements by default (exclude collapse for Major Match)
   button:not(.ant-alert-close-icon):not(.ant-tabs-tab-btn),
   input:not([readonly]):not(.ant-input-disabled),
   textarea:not([readonly]):not(.ant-input-disabled),
   select:not(.ant-select-disabled),
-  [role="button"]:not(.ant-tabs-tab):not(.ant-tabs-tab-btn),
+  [role="button"]:not(.ant-tabs-tab):not(.ant-tabs-tab-btn):not(.ant-collapse-header),
   a[href]:not(.ant-tabs-tab):not(.ant-tabs-tab-btn),
   .ant-upload,
   .ant-upload-drag {
@@ -38,7 +39,7 @@
     cursor: pointer !important;
   }
 
-  // Major Match: Allow Assessment History collapse to expand and "View Results" button
+  // Major Match: Allow Assessment History collapse to expand and "View Results" (not Delete)
   .ant-collapse,
   .ant-collapse-item,
   .ant-collapse-header,
@@ -46,7 +47,15 @@
     pointer-events: auto !important;
     opacity: 1 !important;
   }
-  .ant-collapse .ant-list-item .ant-list-item-action button[type="button"]:first-child {
+  .ant-collapse .ant-collapse-header,
+  .ant-collapse .ant-collapse-content,
+  .ant-collapse .ant-collapse-content * {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+  // Allow View Results (first button), keep Delete disabled
+  .ant-collapse .ant-list-item .ant-list-item-action > span:first-child button,
+  .assessment-start .ant-list-item .ant-list-item-action > span:first-child button {
     pointer-events: auto !important;
     opacity: 1 !important;
     cursor: pointer !important;
@@ -88,9 +97,6 @@
     opacity: 0.6 !important;
     cursor: not-allowed !important;
   }
-
-  // Allow scrolling
-  overflow-y: visible;
 
   // Ensure tab navigation still works
   .ant-tabs,
