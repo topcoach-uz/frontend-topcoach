@@ -1,0 +1,85 @@
+.wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.chat-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #8b0000;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(139, 0, 0, 0.4);
+  }
+
+  &.open {
+    background: #6d0000;
+  }
+}
+
+.prompt {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  min-width: 280px;
+  max-width: 320px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid #f0f0f0;
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    bottom: 80px;
+    right: 15px;
+  }
+}
