@@ -515,7 +515,7 @@ export default function UpcomingCard({
     color: '#fff',
     width: '100%',
     marginTop: '8px',
-    padding: '10px 16px',
+    padding: '6px 14px',
     borderRadius: 6,
     display: 'flex',
     alignItems: 'center',
@@ -523,8 +523,12 @@ export default function UpcomingCard({
     gap: 8,
     cursor: 'pointer',
     fontWeight: 500,
-    minHeight: 44,
+    minHeight: 36,
   };
+
+  // For mentors: only show "Chat with mentee" when session is booked (has a participant)
+  const showChatButton =
+    role === UserRole.Student || (role === UserRole.Mentor && participants?.length > 0);
 
   return (
     <CustomCard
@@ -630,34 +634,36 @@ export default function UpcomingCard({
               mentor?.profile?.name}
         </CustomButton>
       </div>
-      <div className={styles.chatButtonContainer}>
-        <ErrorBoundary
-          fallbackRender={() => (
+      {showChatButton && (
+        <div className={styles.chatButtonContainer}>
+          <ErrorBoundary
+            fallbackRender={() => (
+              <button
+                type="button"
+                className={styles.chatButtonRaw}
+                title="Chat"
+                style={chatButtonStyle}
+              >
+                <FiMessageCircle size={18} color="#fff" />
+                <span style={{ color: '#fff' }}>Chat</span>
+              </button>
+            )}
+          >
             <button
               type="button"
               className={styles.chatButtonRaw}
-              title="Chat"
+              onClick={handleChatClick}
+              title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
               style={chatButtonStyle}
             >
               <FiMessageCircle size={18} color="#fff" />
-              <span style={{ color: '#fff' }}>Chat</span>
+              <span style={{ color: '#fff' }}>
+                {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
+              </span>
             </button>
-          )}
-        >
-          <button
-            type="button"
-            className={styles.chatButtonRaw}
-            onClick={handleChatClick}
-            title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-            style={chatButtonStyle}
-          >
-            <FiMessageCircle size={18} color="#fff" />
-            <span style={{ color: '#fff' }}>
-              {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
-            </span>
-          </button>
-        </ErrorBoundary>
-      </div>
+          </ErrorBoundary>
+        </div>
+      )}
 
       {/* Cancel meeting */}
       <CustomModal
