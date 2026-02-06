@@ -1,8 +1,4 @@
-import { Breadcrumb, Flex } from 'antd';
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { CustomText } from 'src/components/common';
-import { themeFontWeight } from 'src/constants/theme';
-import useColors from 'src/hooks/useColors';
+import { Link, useParams } from 'react-router-dom';
 import styles from './SuccessStoriesDetail.module.scss';
 import { useTranslation } from 'react-i18next';
 import useApi from 'src/hooks/useApi';
@@ -13,9 +9,8 @@ import dayjs from 'dayjs';
 import { BlogsType } from '../index';
 
 export default function SuccessStoriesDetailPage() {
-  const colors = useColors();
   const params = useParams();
-  const { i18n, t } = useTranslation();
+  const { t } = useTranslation();
   const { id } = params;
 
   const { response: storyData } = useApi<AxiosResponse<IBlog>>(
@@ -35,25 +30,20 @@ export default function SuccessStoriesDetailPage() {
   const storyIndex = allStories?.data?.data?.findIndex((story: any) => story.id === id) ?? 0;
   
   // Get quote, title, read time, and date based on story index
-  const quotes = t('successStories.quotes', { returnObjects: true }) as string[];
   const titles = t('successStories.titles', { returnObjects: true }) as string[];
   const readTimes = [3, 4, 5, 6, 7, 8, 9, 10];
   const dateOffsets = [15, 30, 45, 60, 90, 120, 150, 180];
   
-  const quote = quotes[storyIndex % quotes.length];
   const displayTitle = titles[storyIndex % titles.length];
   const readTime = readTimes[storyIndex % readTimes.length];
   const daysAgo = dateOffsets[storyIndex % dateOffsets.length];
   const publishDate = dayjs().subtract(daysAgo, 'day');
 
   return (
-    <main>
-      <button 
-        className={styles.backButton}
-        onClick={() => window.history.back()}
-      >
+    <main className={styles.main}>
+      <Link to="/success-stories" className={styles.backButton}>
         ← Back to Stories
-      </button>
+      </Link>
       
       <div className={styles.heroSection}>
         <div className={styles.heroContent}>
@@ -71,6 +61,11 @@ export default function SuccessStoriesDetailPage() {
               {readTime} min read
             </span>
             <span className={styles.author}>
+              <img
+                src={storyData?.data.media?.[0]?.url || '/img/success-stories/success-story-1.jpg'}
+                alt=""
+                className={styles.authorAvatar}
+              />
               {storyData?.data.author}
             </span>
           </div>
@@ -79,26 +74,9 @@ export default function SuccessStoriesDetailPage() {
       
       <div className={styles.contentSection}>
         <div className={styles.contentWrapper}>
-          <div className={styles.featuredImage}>
-            <div className={styles.quoteBubble}>
-              <p className={styles.quote}>
-                "{quote}"
-              </p>
-              <div className={styles.attribution}>
-                {storyData?.data.author}
-              </div>
-            </div>
-            <div className={styles.imageContainer}>
-              <img
-                src={storyData?.data.media?.[0]?.url}
-                alt={storyData?.data.title}
-              />
-            </div>
-          </div>
-          
-          <Flex vertical gap={8}>
+          <div className={styles.articleBody}>
             <RichTextRenderer blocks={storyData?.data.content.blocks ?? []} />
-          </Flex>
+          </div>
         </div>
       </div>
     </main>

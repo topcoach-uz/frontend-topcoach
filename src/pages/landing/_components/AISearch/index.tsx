@@ -32,7 +32,7 @@ export default function LandingAISearchSection() {
   };
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} data-section="ai-search">
       <img
         className={styles.backgroundImage}
         src="/img/some-university.png"

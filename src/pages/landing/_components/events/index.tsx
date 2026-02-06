@@ -88,7 +88,7 @@ export default function LandingEventsSection() {
           className={styles.see_all_button}
           onClick={() => navigate('/events')}
           type="primary"
-          mb={96}
+          mb={48}
           ml="auto"
           mr="auto"
         >

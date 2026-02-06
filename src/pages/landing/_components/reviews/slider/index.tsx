@@ -14,6 +14,21 @@ interface CarouselSlideProps {
   id: string;
 }
 
+const QuoteIcon = () => (
+  <svg
+    className={styles.quoteIcon}
+    viewBox="0 0 64 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M0 24C0 10.745 10.745 0 24 0h8v16h-8c-4.418 0-8 3.582-8 8v8H0V24zm40 0c0-13.255 10.745-24 24-24h8v16h-8c-4.418 0-8 3.582-8 8v8H40V24z"
+      fill="currentColor"
+      opacity="0.15"
+    />
+  </svg>
+);
+
 const CarouselSlide: React.FC<CarouselSlideProps> = ({
   mainQuote,
   authorName,
@@ -24,40 +39,39 @@ const CarouselSlide: React.FC<CarouselSlideProps> = ({
   const { screenSize } = useScreenSize();
   const navigate = useNavigate();
 
-  // Default image if none is provided
   const defaultImage = '/img/success-stories/success-story-1.jpg';
 
   return (
-    <div className={styles.elementWrapper}>
-      <div className={styles.commentSide}>
+    <div className={styles.card}>
+      <div className={styles.contentSide}>
+        <QuoteIcon />
         <CustomText
           fontSize={
             screenSize > 768
               ? themeFontSize.fontSizeTitle3
               : themeFontSize.fontSizeTitle5
           }
-          fontWeight={themeFontWeight.fontWeightMedium}
+          fontWeight={themeFontWeight.fontWeightSemibold}
           color={colors.colorTextBase}
-          mb={24}
+          className={styles.quote}
         >
-          {mainQuote || 'Success story'}
+          &ldquo;{mainQuote || 'Success story'}&rdquo;
         </CustomText>
         <CustomText
           fontSize={
             screenSize > 768
-              ? themeFontSize.fontSizeTitle6
-              : themeFontSize.fontSizeTitle7
+              ? themeFontSize.fontSizeTitle7
+              : themeFontSize.fontSizeTitle8
           }
-          fontWeight={themeFontWeight.fontWeightSemibold}
-          color={colors.colorTextBase}
-          lineHeight={'28px'}
-          mb={4}
+          fontWeight={themeFontWeight.fontWeightMedium}
+          color={colors.colorTextSecondary}
+          className={styles.author}
         >
           — {authorName || 'Student'}
         </CustomText>
         <CustomRightArrow onClick={() => navigate(`/success-stories/${id}`)} />
       </div>
-      <div className={styles.imageWrapper}>
+      <div className={styles.imageSide}>
         <img
           draggable={false}
           src={imageSrc || defaultImage}

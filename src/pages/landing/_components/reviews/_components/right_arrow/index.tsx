@@ -20,7 +20,7 @@ export default function CustomRightArrow({ className, ...rest }: Props) {
       {...rest}
     >
       {t('landing.reviews.readMore')}
-      <ArrowTopRight color={colors.colorTextBase} width={32} height={32} />
+      <ArrowTopRight color={colors.colorTextBase} width={20} height={20} />
     </button>
   );
 }
