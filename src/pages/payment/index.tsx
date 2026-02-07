@@ -330,7 +330,7 @@ function PaymentPage() {
                       <div className={styles.orderSummaryRow}>
                         <Text type="secondary">Date & Time:</Text>
                         <Text>
-                          {dayjs.utc(slotStart).format('ddd, MMM D, YYYY • h:mm A')}
+                          {dayjs.utc(slotStart).local().format('ddd, MMM D, YYYY • h:mm A')}
                         </Text>
                       </div>
                     )}

@@ -75,7 +75,7 @@ export default function AvailabilitySettings() {
     });
 
     form.setFieldsValue({
-      timezone: data.timezone || 'Asia/Tashkent',
+      timezone: blocks.length > 0 ? (data.timezone || 'Asia/Tashkent') : undefined,
       blocks: blocks.length > 0 ? blocks : [],
     });
   }, [data, isLoading, form, showSaveLoading]);
@@ -228,7 +228,7 @@ export default function AvailabilitySettings() {
         form={form}
         layout="vertical"
         initialValues={{
-          timezone: 'Asia/Tashkent',
+          timezone: undefined,
           blocks: [],
         }}
       >
@@ -343,7 +343,11 @@ export default function AvailabilitySettings() {
           <label className={styles.timezoneLabel}>
             {t('mentors.availabilityTimezoneLabel')}
           </label>
-          <Form.Item name="timezone" rules={[{ required: true }]} noStyle>
+          <Form.Item
+            name="timezone"
+            rules={[{ required: true, message: t('availability.timezoneRequired', 'Please select your timezone before saving availability') }]}
+            noStyle
+          >
             <Select
               placeholder={t('availability.selectTimezone')}
               options={TIMEZONE_OPTIONS}
