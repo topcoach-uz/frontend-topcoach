@@ -307,6 +307,7 @@
   "availability.addAvailability": "Уақыт қосу",
   "availability.remove": "Жою",
   "availability.saveAvailability": "Сақтау",
+  "availability.lastSaved": "Соңғы сақталған",
   "availability.saved": "Сақталды",
   "availability.saveFailed": "Сақтау сәтсіз аяқталды",
   "mentors.bookingSuccess": "Сессия сәтті брондалды!",

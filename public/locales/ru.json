@@ -303,6 +303,7 @@
   "availability.addAvailability": "Добавить доступность",
   "availability.remove": "Удалить",
   "availability.saveAvailability": "Сохранить доступность",
+  "availability.lastSaved": "Последнее сохранение",
   "availability.saved": "Доступность сохранена",
   "availability.saveFailed": "Не удалось сохранить",
   "mentors.bookingSuccess": "Сессия успешно забронирована!",

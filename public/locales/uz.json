@@ -307,6 +307,7 @@
   "availability.addAvailability": "Vaqt qo'shish",
   "availability.remove": "O'chirish",
   "availability.saveAvailability": "Saqlash",
+  "availability.lastSaved": "Oxirgi saqlangan",
   "availability.saved": "Saqlab qolindi",
   "availability.saveFailed": "Saqlash amalga oshmadi",
   "mentors.bookingSuccess": "Sessiya muvaffaqiyatli band qilindi!",

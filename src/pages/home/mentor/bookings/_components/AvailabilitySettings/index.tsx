@@ -11,6 +11,8 @@ import { SessionTypeEnum } from 'src/app/api/Api';
 import { TIMEZONE_OPTIONS } from 'src/constants/timezones';
 import styles from './availability.module.scss';
 
+const MIN_SAVE_LOADING_MS = 600;
+
 const DAYS = [
   { value: 1, label: 'Mon', letter: 'M' },
   { value: 2, label: 'Tue', letter: 'T' },
@@ -32,41 +34,56 @@ export default function AvailabilitySettings() {
     skip: !mentorId,
   });
   const [setAvailability, { isLoading: saving }] = useSetMyAvailabilityMutation();
+  const [showSaveLoading, setShowSaveLoading] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
+  // Sync form from API data (avoid overwriting during active save)
+  useEffect(() => {
+    if (isLoading || showSaveLoading) return;
+    if (!data) return;
+
+    const slots = Array.isArray(data.slots) ? data.slots : [];
+    const defaultSlots = DAYS.map((d) => {
+      const existing = slots.find((s) => s?.dayOfWeek === d.value);
+      return {
+        dayOfWeek: d.value,
+        startTime: existing?.startTime
+          ? (() => {
+              const t = dayjs(`2000-01-01 ${existing.startTime}`);
+              return t.isValid() ? t : dayjs('2000-01-01 09:00');
+            })()
+          : dayjs('2000-01-01 09:00'),
+        endTime: existing?.endTime
+          ? (() => {
+              const t = dayjs(`2000-01-01 ${existing.endTime}`);
+              return t.isValid() ? t : dayjs('2000-01-01 17:00');
+            })()
+          : dayjs('2000-01-01 17:00'),
+        sessionDuration:
+          existing?.sessionDuration ?? SessionTypeEnum.Individual30M,
+        bufferMinutes: existing?.bufferMinutes ?? 15,
+        enabled: !!existing,
+      };
+    });
+
+    form.setFieldsValue({
+      timezone: data.timezone || 'Asia/Tashkent',
+      slots: defaultSlots,
+    });
+  }, [data, isLoading, form, showSaveLoading]);
+
+  // Minimum loading duration for balanced UX
+  useEffect(() => {
+    if (!saving) return;
+    setShowSaveLoading(true);
+  }, [saving]);
 
   useEffect(() => {
-    if (data?.slots?.length) {
-      const defaultSlots = DAYS.map((d) => {
-        const existing = data.slots.find((s) => s.dayOfWeek === d.value);
-        return {
-          dayOfWeek: d.value,
-          startTime: existing
-            ? dayjs(`2000-01-01 ${existing.startTime}`)
-            : dayjs('2000-01-01 09:00'),
-          endTime: existing
-            ? dayjs(`2000-01-01 ${existing.endTime}`)
-            : dayjs('2000-01-01 17:00'),
-          sessionDuration:
-            existing?.sessionDuration ?? SessionTypeEnum.Individual30M,
-          bufferMinutes: existing?.bufferMinutes ?? 15,
-          enabled: !!existing,
-        };
-      });
-      form.setFieldsValue({ timezone: data.timezone || 'Asia/Tashkent', slots: defaultSlots });
-    } else if (!isLoading) {
-      // New upgrade: start with all days unavailable (zero availability)
-      form.setFieldsValue({
-        timezone: 'Asia/Tashkent',
-        slots: DAYS.map((d) => ({
-          dayOfWeek: d.value,
-          startTime: dayjs('2000-01-01 09:00'),
-          endTime: dayjs('2000-01-01 17:00'),
-          sessionDuration: SessionTypeEnum.Individual30M,
-          bufferMinutes: 15,
-          enabled: false,
-        })),
-      });
+    if (!saving && showSaveLoading) {
+      const t = setTimeout(() => setShowSaveLoading(false), MIN_SAVE_LOADING_MS);
+      return () => clearTimeout(t);
     }
-  }, [data, isLoading, form]);
+  }, [saving, showSaveLoading]);
 
   const onSave = async () => {
     try {
@@ -79,21 +96,56 @@ export default function AvailabilitySettings() {
         bufferMinutes: number;
         enabled: boolean;
       }>;
-      const slots = slotsArray
-        .filter((s) => s?.enabled)
-        .map((s) => ({
-          dayOfWeek: s.dayOfWeek,
-          startTime: s.startTime.format('HH:mm'),
-          endTime: s.endTime.format('HH:mm'),
-          sessionDuration: s.sessionDuration,
-          bufferMinutes: s.bufferMinutes ?? 15,
-          isActive: true,
-        }));
 
-      await setAvailability({ timezone: values.timezone, slots }).unwrap();
+      const slots = slotsArray
+        .filter((s) => s && s.enabled)
+        .map((s) => {
+          const start = dayjs.isDayjs(s.startTime) ? s.startTime : dayjs(s.startTime, 'HH:mm');
+          const end = dayjs.isDayjs(s.endTime) ? s.endTime : dayjs(s.endTime, 'HH:mm');
+          const duration = s.sessionDuration === SessionTypeEnum.Individual60M
+            ? SessionTypeEnum.Individual60M
+            : SessionTypeEnum.Individual30M;
+          return {
+            dayOfWeek: Number(s.dayOfWeek),
+            startTime: start.isValid() ? start.format('HH:mm') : '09:00',
+            endTime: end.isValid() ? end.format('HH:mm') : '17:00',
+            sessionDuration: duration,
+            bufferMinutes: Number(s.bufferMinutes ?? 15),
+            isActive: true,
+          };
+        })
+        .filter((s) => {
+          const startM = dayjs(`2000-01-01 ${s.startTime}`, 'YYYY-MM-DD HH:mm');
+          const endM = dayjs(`2000-01-01 ${s.endTime}`, 'YYYY-MM-DD HH:mm');
+          if (!startM.isValid() || !endM.isValid()) return false;
+          if (!endM.isAfter(startM)) return false;
+          return true;
+        });
+
+      const invalidSlots = slotsArray.filter((s) => s?.enabled).length - slots.length;
+      if (invalidSlots > 0) {
+        message.warning(t('availability.invalidTimeRange', 'Some slots had invalid times (end must be after start) and were skipped.'));
+      }
+
+      await setAvailability({ timezone: values.timezone || 'Asia/Tashkent', slots }).unwrap();
+      setLastSavedAt(new Date());
       message.success(t('availability.saved'));
     } catch (err: any) {
-      message.error(err?.data?.message || t('availability.saveFailed'));
+      const status = err?.status;
+      const msg =
+        err?.data?.message ??
+        (Array.isArray(err?.data?.message) ? err.data.message.join(', ') : null) ??
+        err?.error ??
+        err?.message;
+      const displayMsg = msg || t('availability.saveFailed');
+      console.error('[Availability] Save failed:', { status, err, message: msg });
+      if (status === 404) {
+        message.error(t('availability.saveFailed404', 'Save failed: endpoint not found. Please check your connection and try again.'));
+      } else if (status === 403 || status === 401) {
+        message.error(msg || t('availability.saveFailedAuth', 'Please log in again to save availability.'));
+      } else {
+        message.error(displayMsg);
+      }
     }
   };
 
@@ -125,7 +177,14 @@ export default function AvailabilitySettings() {
     const source = slots[sourceIdx];
     if (!source?.enabled) return;
     const newSlots = slots.map((s: any, i: number) =>
-      i === sourceIdx ? s : { ...s, enabled: true, startTime: source.startTime, endTime: source.endTime, sessionDuration: source.sessionDuration }
+      i === sourceIdx ? s : {
+        ...s,
+        enabled: true,
+        startTime: source.startTime,
+        endTime: source.endTime,
+        sessionDuration: source.sessionDuration,
+        bufferMinutes: source.bufferMinutes ?? 15,
+      }
     );
     form.setFieldsValue({ slots: newSlots });
     forceUpdate((n) => n + 1);
@@ -280,14 +339,22 @@ export default function AvailabilitySettings() {
           </Form.Item>
         </div>
 
-        <Button
-          type="primary"
-          loading={saving}
-          onClick={onSave}
-          className={styles.saveBtn}
-        >
-          {t('availability.saveAvailability')}
-        </Button>
+        <div className={styles.saveRow}>
+          <Button
+            type="primary"
+            loading={showSaveLoading || saving}
+            onClick={onSave}
+            disabled={showSaveLoading || saving}
+            className={styles.saveBtn}
+          >
+            {t('availability.saveAvailability')}
+          </Button>
+          {lastSavedAt && (
+            <span className={styles.lastSaved}>
+              {t('availability.lastSaved', 'Last saved')}: {dayjs(lastSavedAt).format('MMM D, h:mm A')}
+            </span>
+          )}
+        </div>
       </Form>
     </div>
   );

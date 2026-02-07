@@ -163,6 +163,18 @@
   width: 280px;
 }
 
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .saveBtn {
   margin-top: 0;
+}
+
+.lastSaved {
+  font-size: 12px;
+  color: $colorTextSecondary;
 }
