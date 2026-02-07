@@ -264,7 +264,7 @@ export default function AvailabilitySettings() {
                             </>
                           ) : (
                             <>
-                              {dayBlocks.map(({ block, index }) => (
+                              {dayBlocks.map(({ block, index }: { block: BlockItem; index: number }) => (
                                 <div key={block.id ?? index} className={styles.blockRow}>
                                   <Form.Item name={['blocks', index, 'dayOfWeek']} hidden initialValue={day.value}>
                                     <input type="hidden" />
