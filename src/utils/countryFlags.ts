@@ -22,6 +22,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Glasgow': '🇬🇧',
   'University of Southampton': '🇬🇧',
   'University of Nottingham': '🇬🇧',
+  'Lincoln University' : '🇬🇧',
 
   // German Universities
   'Berlin School of Economics and Law': '🇩🇪',
@@ -79,6 +80,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Science and Technology of China': '🇨🇳',
   'New York University in Shanghai': '🇨🇳',
   'Duke Kunshan University': '🇨🇳',
+  'Chinese petroleum University(Xian)': '🇨🇳',
   
   // Canadian Universities
   'University of Toronto': '🇨🇦',
@@ -150,7 +152,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Debrecen': '🇭🇺',
   'Turkiye Burslari Winner': '🇹🇷',
   'Middle East Technical University': '🇹🇷',
-
+  'Gubkin Russian State University of Oil and Gas': '🇷🇺',
   
   // Additional common universities
   'University of California': '🇺🇸',
