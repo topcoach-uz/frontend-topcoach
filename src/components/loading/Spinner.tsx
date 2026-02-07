@@ -22,7 +22,7 @@ const Spinner: React.FC<SpinnerProps> = ({
   return (
     <div className={`unified-spinner ${className}`} style={style}>
       <Spin size={size} tip={tip} className="unified-spinner-inner">
-        <div className="unified-spinner-placeholder" style={{ minHeight: tip ? 80 : 40 }} />
+        <div className="unified-spinner-placeholder" style={{ minHeight: tip ? 80 : 32 }} />
       </Spin>
     </div>
   );

@@ -15,6 +15,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  width: 100%;
   
   .unified-spinner-inner {
     display: flex;
@@ -22,16 +23,19 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    width: 100%;
 
     .ant-spin {
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
+      width: 100%;
     }
 
     .ant-spin-dot {
       margin: 0 auto;
+      flex-shrink: 0;
       i {
         background-color: $primary-500 !important; // Brand crimson
       }
@@ -43,6 +47,7 @@
       margin: 12px auto 0;
       text-align: center;
       display: block;
+      width: 100%;
     }
   }
 }
@@ -170,6 +175,20 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    width: auto;
+    gap: 12px;
+
+    .unified-spinner {
+      width: auto;
+    }
+
+    .page-loader-text {
+      display: block;
+      color: $text-secondary;
+      font-size: $text-sm;
+      margin: 0;
+      text-align: center;
+    }
   }
 }
 
@@ -240,13 +259,19 @@
 // ANT DESIGN SPIN + TEXT CENTERING
 // ========================================
 // Ensure Spin with tip displays spinner and text centered as a unit
+// Fix: spinner and text must be vertically stacked and both horizontally centered
 .page-loader .ant-spin,
 .unified-spinner .ant-spin,
 .psychometric-assessment-loading .ant-spin {
-  display: inline-flex !important;
+  display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
+  width: 100%;
+}
+.page-loader .page-loader-content,
+.unified-spinner {
+  width: 100%;
 }
 .ant-spin.ant-spin-lg .ant-spin-dot,
 .ant-spin .ant-spin-dot {
@@ -256,8 +281,7 @@
   display: block !important;
   text-align: center !important;
   margin: 12px auto 0 !important;
-  width: max-content;
-  max-width: 100%;
+  width: 100%;
 }
 
 // ========================================

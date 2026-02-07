@@ -8,6 +8,7 @@ import { RtkApi } from './services/api';
 import { rtkQueryErrorLogger } from './services/api/middlewares';
 import { referralApi } from './services/referralApi';
 import { contactApi } from './services/contactApi';
+import './services/availability'; // Ensure availability endpoints are injected into RtkApi
 
 export const createStore = (
   options?: ConfigureStoreOptions['preloadedState'] | undefined

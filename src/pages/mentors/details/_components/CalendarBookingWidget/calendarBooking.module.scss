@@ -1,0 +1,281 @@
+@import '/src/styles/variables.scss';
+
+/* Card container - prevent overflow */
+.bookingCard {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Calendly-style layout - contained within card, no overflow */
+.calendlyLayout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  overflow: hidden;
+  max-width: 100%;
+  flex-wrap: wrap;
+
+  @media (max-width: 550px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* When stacked, both panels take full width */
+@media (max-width: 550px) {
+  .calendarPanel,
+  .slotsPanel {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Left: Month calendar panel */
+.calendarPanel {
+  flex: 0 0 auto;
+  min-width: 260px;
+  max-width: 100%;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+  gap: 8px;
+}
+
+.navBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $colorBorder;
+  border-radius: 6px;
+  background: #fff;
+  color: $colorTextBase;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    border-color: $colorPrimary;
+    color: $colorPrimary;
+  }
+
+  &:active {
+    background: rgba(139, 0, 0, 0.06);
+  }
+}
+
+.monthLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: $colorTextBase;
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.dayNamesRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.dayNameCell {
+  font-size: 11px;
+  font-weight: 500;
+  color: $colorTextSecondary;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendarCell {
+  aspect-ratio: 1;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: $colorTextBase;
+  cursor: default;
+  transition: all 0.15s;
+
+  &.otherMonth {
+    color: rgba(0, 0, 0, 0.25);
+  }
+
+  &.hasSlots {
+    cursor: pointer;
+    color: $colorPrimary;
+
+    &:hover {
+      background: rgba(139, 0, 0, 0.1);
+    }
+  }
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &.selected {
+    background: $colorPrimary !important;
+    color: #fff !important;
+    cursor: pointer;
+  }
+
+  &.past {
+    color: rgba(0, 0, 0, 0.25);
+    cursor: not-allowed;
+
+    &.hasSlots {
+      color: rgba(139, 0, 0, 0.4);
+    }
+  }
+}
+
+.timezoneSection {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timezoneSectionLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: $colorTextSecondary;
+}
+
+.timezoneSelect {
+  width: 100% !important;
+  min-width: 200px;
+}
+
+.timezoneHint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Right: Time slots panel - contained, Calendly-style */
+.slotsPanel {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.slotsPanelHeader {
+  font-size: 15px;
+  font-weight: 600;
+  color: $colorTextBase;
+  margin-bottom: 12px;
+}
+
+.slotsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.slotRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.slotTimeBtn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 14px;
+  font-size: 14px;
+  text-align: left;
+  border: 1px solid $colorBorder;
+  border-radius: 8px;
+  background: #fff;
+  color: $colorTextBase;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $colorPrimary;
+    background: rgba(139, 0, 0, 0.04);
+    color: $colorPrimary;
+  }
+}
+
+.confirmBtn {
+  flex-shrink: 0;
+  border-radius: 8px !important;
+}
+
+/* No slots message - centered, contained within panel */
+.noSlotsMessage {
+  padding: 20px 16px;
+  text-align: center;
+  color: $colorTextSecondary;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px dashed $colorBorder;
+}
+
+.noSlotsText {
+  margin-bottom: 16px;
+}
+
+.noSlotsRequestBtn {
+  margin-top: 0;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed $colorBorder;
+}
+
+.emptyIcon {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+/* Request session section */
+.requestSection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}

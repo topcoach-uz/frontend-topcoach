@@ -98,21 +98,25 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [comparisonMajors, setComparisonMajors] = useState<number[]>([]);
 
-  // Compute derived values
+  // Compute derived values with defensive null checks
   const derivedData = useMemo(() => {
     if (!assessment || !recommendations) return null;
 
-    const aptitudeTaken = assessment.aptitudeScores !== null && assessment.aptitudeScores !== undefined;
-    const topMajors = recommendations.recommendations.slice(0, 5);
+    const recs = Array.isArray(recommendations.recommendations) ? recommendations.recommendations : [];
+    const topMajors = recs
+      .filter((rec) => rec && rec.majorName && rec.fitBreakdown)
+      .slice(0, 5);
+
+    const aptitudeTaken = assessment.aptitudeScores != null;
     const hasSTEMMajors = topMajors.some((rec) =>
       ['Engineering', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Data Science', 'Medicine'].some(
-        (stem) => rec.majorName.includes(stem)
+        (stem) => (rec?.majorName || '').includes(stem)
       )
     );
 
     // Calculate confidence level
     let confidenceLevel: 'high' | 'medium' | 'low' = 'medium';
-    const confidenceScore = recommendations.confidenceScore || 70;
+    const confidenceScore = recommendations.confidenceScore ?? 70;
     if (confidenceScore >= 80) confidenceLevel = 'high';
     else if (confidenceScore >= 60) confidenceLevel = 'medium';
     else confidenceLevel = 'low';
@@ -313,7 +317,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                       <Col xs={12} sm={6}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>
-                            {topRecommendations[0]?.fitScore.toFixed(0)}%
+                            {(topRecommendations[0]?.fitScore ?? 0).toFixed(0)}%
                           </div>
                           <Text type="secondary">Top Match Score</Text>
                         </div>
@@ -321,7 +325,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                       <Col xs={12} sm={6}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>
-                            {recommendations.assessmentSummary.topInterests[0]?.dimension || 'N/A'}
+                            {recommendations?.assessmentSummary?.topInterests?.[0]?.dimension ?? 'N/A'}
                           </div>
                           <Text type="secondary">Top Interest</Text>
                         </div>
@@ -393,9 +397,9 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                     {rec.majorName}
                                   </Title>
                                   <Tag
-                                    color={rec.fitScore >= 80 ? 'green' : rec.fitScore >= 60 ? 'orange' : 'default'}
+                                    color={(rec.fitScore ?? 0) >= 80 ? 'green' : (rec.fitScore ?? 0) >= 60 ? 'orange' : 'default'}
                                   >
-                                    {rec.fitScore.toFixed(0)}% Match
+                                    {(rec.fitScore ?? 0).toFixed(0)}% Match
                                   </Tag>
                                   {rec.explanation?.confidence && (
                                     <Tag color="blue">{rec.explanation.confidence} Confidence</Tag>
@@ -456,90 +460,92 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                           </Col>
 
                           <Col xs={24} md={8}>
-                            <Card size="small" title="Fit Breakdown">
-                              <Space direction="vertical" style={{ width: '100%' }} size="small">
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Text>Interest</Text>
-                                    <Text strong>{rec.fitBreakdown.interestFit.toFixed(0)}%</Text>
-                                  </div>
-                                  <Progress
-                                    percent={rec.fitBreakdown.interestFit}
-                                    size="small"
-                                    strokeColor="#8b0000"
-                                    showInfo={false}
-                                  />
-                                </div>
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Text>Values</Text>
-                                    <Text strong>{rec.fitBreakdown.valuesFit.toFixed(0)}%</Text>
-                                  </div>
-                                  <Progress
-                                    percent={rec.fitBreakdown.valuesFit}
-                                    size="small"
-                                    strokeColor="#9333ea"
-                                    showInfo={false}
-                                  />
-                                </div>
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Text>Work Style</Text>
-                                    <Text strong>{rec.fitBreakdown.workStyleFit?.toFixed(0) || 0}%</Text>
-                                  </div>
-                                  <Progress
-                                    percent={rec.fitBreakdown.workStyleFit || 0}
-                                    size="small"
-                                    strokeColor="#f59e0b"
-                                    showInfo={false}
-                                  />
-                                </div>
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Text>Academic</Text>
-                                    <Text strong>{rec.fitBreakdown.academicFit.toFixed(0)}%</Text>
-                                  </div>
-                                  <Progress
-                                    percent={rec.fitBreakdown.academicFit}
-                                    size="small"
-                                    strokeColor="#10b981"
-                                    showInfo={false}
-                                  />
-                                </div>
-                                {rec.fitBreakdown.aptitudeFit !== undefined && rec.fitBreakdown.aptitudeFit > 0 && (
+                            {rec.fitBreakdown && (
+                              <Card size="small" title="Fit Breakdown">
+                                <Space direction="vertical" style={{ width: '100%' }} size="small">
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text>Aptitude</Text>
-                                      <Text strong>{rec.fitBreakdown.aptitudeFit.toFixed(0)}%</Text>
+                                      <Text>Interest</Text>
+                                      <Text strong>{(rec.fitBreakdown.interestFit ?? 0).toFixed(0)}%</Text>
                                     </div>
                                     <Progress
-                                      percent={rec.fitBreakdown.aptitudeFit}
+                                      percent={rec.fitBreakdown.interestFit ?? 0}
                                       size="small"
-                                      strokeColor="#6366f1"
+                                      strokeColor="#8b0000"
                                       showInfo={false}
                                     />
                                   </div>
-                                )}
-                                <Divider style={{ margin: '8px 0' }} />
-                                <div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <Text strong>Overall</Text>
-                                    <Text strong style={{ color: '#10b981' }}>
-                                      {rec.fitBreakdown.overallFit.toFixed(0)}%
-                                    </Text>
+                                  <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Text>Values</Text>
+                                      <Text strong>{(rec.fitBreakdown.valuesFit ?? 0).toFixed(0)}%</Text>
+                                    </div>
+                                    <Progress
+                                      percent={rec.fitBreakdown.valuesFit ?? 0}
+                                      size="small"
+                                      strokeColor="#9333ea"
+                                      showInfo={false}
+                                    />
                                   </div>
-                                  <Progress
-                                    percent={rec.fitBreakdown.overallFit}
-                                    size="small"
-                                    strokeColor={{
-                                      '0%': '#10b981',
-                                      '100%': '#059669',
-                                    }}
-                                    showInfo={false}
-                                  />
-                                </div>
-                              </Space>
-                            </Card>
+                                  <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Text>Work Style</Text>
+                                      <Text strong>{(rec.fitBreakdown.workStyleFit ?? 0).toFixed(0)}%</Text>
+                                    </div>
+                                    <Progress
+                                      percent={rec.fitBreakdown.workStyleFit ?? 0}
+                                      size="small"
+                                      strokeColor="#f59e0b"
+                                      showInfo={false}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Text>Academic</Text>
+                                      <Text strong>{(rec.fitBreakdown.academicFit ?? 0).toFixed(0)}%</Text>
+                                    </div>
+                                    <Progress
+                                      percent={rec.fitBreakdown.academicFit ?? 0}
+                                      size="small"
+                                      strokeColor="#10b981"
+                                      showInfo={false}
+                                    />
+                                  </div>
+                                  {(rec.fitBreakdown.aptitudeFit ?? 0) > 0 && (
+                                    <div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Text>Aptitude</Text>
+                                        <Text strong>{(rec.fitBreakdown.aptitudeFit ?? 0).toFixed(0)}%</Text>
+                                      </div>
+                                      <Progress
+                                        percent={rec.fitBreakdown.aptitudeFit ?? 0}
+                                        size="small"
+                                        strokeColor="#6366f1"
+                                        showInfo={false}
+                                      />
+                                    </div>
+                                  )}
+                                  <Divider style={{ margin: '8px 0' }} />
+                                  <div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Text strong>Overall</Text>
+                                      <Text strong style={{ color: '#10b981' }}>
+                                        {(rec.fitBreakdown.overallFit ?? 0).toFixed(0)}%
+                                      </Text>
+                                    </div>
+                                    <Progress
+                                      percent={rec.fitBreakdown.overallFit ?? 0}
+                                      size="small"
+                                      strokeColor={{
+                                        '0%': '#10b981',
+                                        '100%': '#059669',
+                                      }}
+                                      showInfo={false}
+                                    />
+                                  </div>
+                                </Space>
+                              </Card>
+                            )}
                           </Col>
                         </Row>
                       </Card>

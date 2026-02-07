@@ -1,0 +1,168 @@
+@import '/src/styles/variables.scss';
+
+.wrapper {
+  padding: 8px 0 24px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: $colorTextBase;
+  margin: 0 0 8px 0;
+}
+
+.titleIcon {
+  font-size: 20px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: $colorTextSecondary;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.daysList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dayRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+}
+
+.dayLetter {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5f5f5;
+  font-size: 12px;
+  font-weight: 600;
+  color: $colorTextSecondary;
+}
+
+.dayContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.unavailable {
+  font-size: 14px;
+  color: $colorTextSecondary;
+  font-style: italic;
+}
+
+.addBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed $colorBorder;
+  border-radius: 50%;
+  background: #fff;
+  color: $colorPrimary;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: $colorPrimary;
+    background: rgba(139, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.timePicker {
+  width: 120px !important;
+  min-width: 120px;
+
+  :global(.ant-picker-input input) {
+    font-size: 14px;
+  }
+}
+
+.dash {
+  color: $colorTextSecondary;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.durationSelect {
+  width: 100px;
+  min-width: 100px;
+}
+
+.dayActions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.iconBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $colorBorder;
+  border-radius: 6px;
+  background: #fff;
+  color: $colorTextSecondary;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $colorPrimary;
+    color: $colorPrimary;
+  }
+}
+
+.timezoneRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.timezoneLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: $colorTextBase;
+}
+
+.timezoneSelect {
+  width: 280px;
+}
+
+.saveBtn {
+  margin-top: 0;
+}

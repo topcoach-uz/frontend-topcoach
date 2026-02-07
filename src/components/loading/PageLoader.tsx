@@ -44,7 +44,8 @@ const PageLoader: React.FC<PageLoaderProps> = ({
       }}
     >
       <div className="page-loader-content">
-        <Spinner size="large" tip={text} />
+        <Spinner size="large" />
+        <span className="page-loader-text">{text}</span>
       </div>
     </div>
   );

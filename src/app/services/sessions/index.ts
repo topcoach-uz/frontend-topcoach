@@ -96,12 +96,21 @@ export const sessionsApi = RtkApi.injectEndpoints({
       query: (body) => ({ url: '/sessions/giveaway/cancel', method: 'POST', body }),
       invalidatesTags: ['GiveawaySessions', 'GiveawayStatus', 'GetMe'],
     }),
+    bookBySlot: build.mutation<
+      any,
+      { mentorId: string; start: string; type: string; comment?: string }
+    >({
+      query: (body) => ({ url: '/sessions/book-slot', method: 'POST', body }),
+      invalidatesTags: (result) =>
+        (result as any)?.paymentRequired ? [] : ['GetMentorDetail', 'MySessions', 'AvailableSlots'],
+    }),
   }),
 });
 
 export const {
   useGetMySessionsQuery,
   useBookSessionMutation,
+  useBookBySlotMutation,
   useCancelSessionMutation,
   useReportSessionMutation,
   useRateSessionMutation,

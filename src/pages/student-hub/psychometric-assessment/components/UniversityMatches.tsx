@@ -37,12 +37,14 @@ const generateUniversityMatches = (
   assessment: PsychometricAssessment,
   recommendations: RecommendationsResponse,
 ): UniversityMatch[] => {
-  const topMajors = recommendations.recommendations.slice(0, 3).map((r) => r.majorName);
+  const recs = Array.isArray(recommendations?.recommendations) ? recommendations.recommendations : [];
+  const topMajors = recs.slice(0, 3).map((r) => r?.majorName).filter(Boolean) as string[];
   
-  // Determine preferences from Big Five
-  const prefersStructured = assessment.bigFiveScores.conscientiousness > 60;
-  const prefersCollaborative = assessment.bigFiveScores.extraversion > 60;
-  const prefersIntellectual = assessment.bigFiveScores.openness > 70;
+  // Determine preferences from Big Five (safe access)
+  const bigFive = assessment?.bigFiveScores ?? {};
+  const prefersStructured = (bigFive.conscientiousness ?? 0) > 60;
+  const prefersCollaborative = (bigFive.extraversion ?? 0) > 60;
+  const prefersIntellectual = (bigFive.openness ?? 0) > 70;
   
   // Sample universities that would match based on profile
   const sampleUniversities: UniversityMatch[] = [

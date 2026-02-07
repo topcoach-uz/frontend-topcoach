@@ -8,7 +8,7 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 import { getLatestVideo } from 'src/utils';
 import Avatar from './_components/avatar';
 import Background from './_components/background';
-import MentorAvailableSessions from './_components/MentorAvailableSessions';
+import CalendarBookingWidget from './_components/CalendarBookingWidget';
 import MentorVideosView from './_components/MentorVideosView';
 import Overview from './_components/overview';
 import Education from './_components/education';
@@ -29,6 +29,8 @@ import { useAppDispatch } from 'src/app/store';
 import { show as showProfilePopup } from 'src/app/slices/profilePopupSlice';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import { useGetGiveawaySessionsQuery, useGetGiveawayStatusQuery, useBookGiveawaySessionMutation } from 'src/app/services/sessions';
+import { useGetPlansQuery } from 'src/app/services/mentors';
+import { PaymentPlanTypeEnum } from 'src/app/api/Api';
 
 export default function MentorDetailsPage() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -49,6 +51,7 @@ export default function MentorDetailsPage() {
   const { data: currentUser } = useGetMeQuery(undefined, {
     skip: !isAuthenticated,
   });
+  const { data: plans } = useGetPlansQuery();
   const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
     skip: !isAuthenticated,
   });
@@ -70,7 +73,6 @@ export default function MentorDetailsPage() {
   } = useGetMentorDetailQuery({
     mentorId,
   });
-
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -124,29 +126,6 @@ export default function MentorDetailsPage() {
     (giveawaySessions ? giveawaySessions.filter(session => (session.mentor as any)?.id === mentorId) : []) :
     mentorGiveawaySessions;
 
-  const handleBookPayment = () => {
-    if (!isAuthenticated) {
-      message.error('Please login to book a session');
-      return;
-    }
-
-    if (mentorData?.sessionStats.upcomingSessions.length === 0) {
-      message.error('No available sessions to book');
-      return;
-    }
-
-    // Check for required profile fields before opening booking modal (only for students)
-    if (currentUser?.profile?.role === 'Student') {
-      const missingTelegram = telegramStatus?.status !== 'connected';
-      if (missingTelegram) {
-        dispatch(showProfilePopup());
-        return;
-      }
-    }
-
-    setPaymentModalOpen(true);
-  };
-
   const handleBookGiveawaySession = (session: any) => {
     if (!isAuthenticated) {
       message.error('Please login to book a giveaway session');
@@ -198,9 +177,6 @@ export default function MentorDetailsPage() {
     window.location.href = '/';
   };
 
-  const noSessions =
-    mentorData?.sessionStats.upcomingSessions.length === 0 ? false : true;
-
   const media = mentorData?.profile?.media || [];
 
   const demoLesson = getLatestVideo(media, MEDIA_TAGS.DemoLession);
@@ -216,11 +192,6 @@ export default function MentorDetailsPage() {
     {
       title: t('breadCrumb.mentorsInfo'),
     },
-  ];
-
-  const availableSessions = [
-    { name: t('mentors.oneOnOne'), duration: 30 },
-    // { name: 'Group session', duration: 60 },
   ];
 
   if (isLoading) {
@@ -284,21 +255,30 @@ export default function MentorDetailsPage() {
               alignSelf: 'flex-start',
               marginTop: '-250px'
             }}>
-              <Statistics />
-              <MentorAvailableSessions
-                availableSessions={availableSessions}
-                handleBookPayment={handleBookPayment}
-                noSessions={noSessions}
-                mentorName={mentorData?.profile?.name || 'Mentor'}
+              <CalendarBookingWidget
                 mentorId={mentorId}
+                mentorName={mentorData?.profile?.name || 'Mentor'}
+                onPaymentRequired={(params) => {
+                  const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
+                  const plan = plans?.find((p) => p.type === planType);
+                  if (plan?.id) {
+                    const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session`;
+                    navigate(url);
+                  } else {
+                    message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
+                  }
+                }}
               />
+              <Statistics />
               <GiveawaySessions
                 giveawaySessions={allMentorGiveawaySessions}
                 onBookGiveawaySession={handleBookGiveawaySession}
                 hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
                 isAuthenticated={isAuthenticated}
               />
+              {/* Session history - temporarily hidden
               {isAuthenticated && <PackageBalance />}
+              */}
               <div style={{ paddingLeft: '2px', marginTop: '-8px' }}>
                 <Background />
               </div>
@@ -322,12 +302,19 @@ export default function MentorDetailsPage() {
         {screenSize < 1024 && (
           <div className={styles.mobile_layout}>
             {/* Booking section first */}
-            <MentorAvailableSessions
-              noSessions={noSessions}
-              availableSessions={availableSessions}
-              handleBookPayment={handleBookPayment}
-              mentorName={mentorData?.profile?.name || 'Mentor'}
+            <CalendarBookingWidget
               mentorId={mentorId}
+              mentorName={mentorData?.profile?.name || 'Mentor'}
+              onPaymentRequired={(params) => {
+                const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
+                const plan = plans?.find((p) => p.type === planType);
+                if (plan?.id) {
+                  const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session`;
+                  navigate(url);
+                } else {
+                  message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
+                }
+              }}
             />
             <GiveawaySessions
               giveawaySessions={allMentorGiveawaySessions}
@@ -335,8 +322,9 @@ export default function MentorDetailsPage() {
               hasBookedGiveaway={giveawayStatus?.hasBookedGiveaway}
               isAuthenticated={isAuthenticated}
             />
-            {/* @ts-ignore */}
+            {/* Session history - temporarily hidden
             {isAuthenticated && <PackageBalance />}
+            */}
             
             {/* About section */}
             <Overview />

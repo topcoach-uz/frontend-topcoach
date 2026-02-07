@@ -384,8 +384,8 @@ function PaymentPage() {
                     </div>
                   </Radio.Button>
 
-                  {/* Direct Card Input Option */}
-                  <Radio.Button value="card" className={styles.methodOption}>
+                  {/* Credit or Debit Card - commented out for now */}
+                  {/* <Radio.Button value="card" className={styles.methodOption}>
                     <div className={styles.methodOptionContent}>
                       <div className={styles.methodIcon}>
                         <FontAwesomeIcon icon="credit-card" style={{ fontSize: '24px' }} />
@@ -401,7 +401,7 @@ function PaymentPage() {
                         <img src="/img/mastercard.svg" alt="Mastercard" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       </div>
                     </div>
-                  </Radio.Button>
+                  </Radio.Button> */}
                 </Space>
               </Radio.Group>
 
