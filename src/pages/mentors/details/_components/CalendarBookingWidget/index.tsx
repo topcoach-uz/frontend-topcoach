@@ -24,6 +24,7 @@ interface Props {
   mentorId: string;
   mentorName?: string;
   timezone?: string;
+  mentorLevel?: string;
   onPaymentRequired?: (params: { mentorId: string; sessionId: string; start: string; end: string; type: string }) => void;
 }
 
@@ -31,6 +32,7 @@ export default function CalendarBookingWidget({
   mentorId,
   mentorName = 'Mentor',
   timezone: propTimezone,
+  mentorLevel,
   onPaymentRequired,
 }: Props) {
   const colors = useColors();
@@ -63,8 +65,13 @@ export default function CalendarBookingWidget({
   const from = displayMonth.clone().subtract(1, 'month').startOf('month').format('YYYY-MM-DD');
   const to = displayMonth.clone().add(2, 'month').endOf('month').format('YYYY-MM-DD');
 
+  // Round to 2 min to allow cache reuse while still fixing server clock skew for past-slot filtering
+  const clientNow = useMemo(
+    () => new Date(Math.floor(Date.now() / 120_000) * 120_000).toISOString(),
+    [displayMonth],
+  );
   const { data: slots, isLoading: slotsLoading } = useGetAvailableSlotsQuery(
-    { mentorId, from, to, timezone },
+    { mentorId, from, to, timezone, clientNow },
     { skip: !mentorId || !hasAvailabilityConfig }
   );
   const [bookSlot, { isLoading: booking }] = useBookBySlotMutation();
@@ -403,7 +410,9 @@ export default function CalendarBookingWidget({
         open={confirmModalOpen}
         onOk={handleConfirmBooking}
         onCancel={() => { setConfirmModalOpen(false); setPendingSlot(null); }}
-        okText={t('mentors.confirmAndPay', 'Confirm & Proceed to Payment')}
+        okText={mentorLevel?.toLowerCase() === 'probono'
+          ? t('mentors.confirm', 'Confirm')
+          : t('mentors.confirmAndPay', 'Confirm & Proceed to Payment')}
         cancelText={t('shared.modalCancel', 'Cancel')}
         okButtonProps={{ style: { backgroundColor: '#8b0000', borderColor: '#8b0000' } }}
       >

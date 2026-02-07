@@ -44,11 +44,11 @@ export const availabilityApi = RtkApi.injectEndpoints({
     }),
     getAvailableSlots: build.query<
       AvailableSlot[],
-      { mentorId: string; from: string; to: string; timezone?: string }
+      { mentorId: string; from: string; to: string; timezone?: string; clientNow?: string }
     >({
-      query: ({ mentorId, from, to, timezone }) => ({
+      query: ({ mentorId, from, to, timezone, clientNow }) => ({
         url: '/availability/slots',
-        params: { mentorId, from, to, timezone },
+        params: { mentorId, from, to, timezone, clientNow },
       }),
       providesTags: ['AvailableSlots'],
     }),

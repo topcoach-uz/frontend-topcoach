@@ -258,6 +258,7 @@ export default function MentorDetailsPage() {
               <CalendarBookingWidget
                 mentorId={mentorId}
                 mentorName={mentorData?.profile?.name || 'Mentor'}
+                mentorLevel={mentorData?.mentorProfile?.level}
                 onPaymentRequired={(params) => {
                   const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                   const plan = plans?.find((p) => p.type === planType);
@@ -305,6 +306,7 @@ export default function MentorDetailsPage() {
             <CalendarBookingWidget
               mentorId={mentorId}
               mentorName={mentorData?.profile?.name || 'Mentor'}
+              mentorLevel={mentorData?.mentorProfile?.level}
               onPaymentRequired={(params) => {
                 const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                 const plan = plans?.find((p) => p.type === planType);

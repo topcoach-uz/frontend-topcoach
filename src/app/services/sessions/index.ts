@@ -102,7 +102,7 @@ export const sessionsApi = RtkApi.injectEndpoints({
     >({
       query: (body) => ({ url: '/sessions/book-slot', method: 'POST', body }),
       invalidatesTags: (result) =>
-        (result as any)?.paymentRequired ? [] : ['GetMentorDetail', 'MySessions', 'AvailableSlots'],
+        (result as any)?.paymentRequired ? [] : ['GetMentorDetail', 'MySessions', 'AvailableSlots', 'GetMe'],
     }),
   }),
 });
