@@ -8,6 +8,7 @@ export interface MentorAvailabilitySlot {
   sessionDuration: string;
   bufferMinutes?: number;
   isActive?: boolean;
+  updatedAt?: string;
 }
 
 export interface MentorAvailabilityResponse {

@@ -35,11 +35,43 @@
   gap: 12px;
 }
 
+.daySection {
+  margin-bottom: 4px;
+}
+
 .dayRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   min-height: 44px;
+}
+
+.blockRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    margin-bottom: 4px;
+  }
+}
+
+.addBlockBtn {
+  font-size: 13px;
+  color: $colorPrimary;
+  background: none;
+  border: 1px dashed $colorBorder;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $colorPrimary;
+    background: rgba(139, 0, 0, 0.06);
+  }
 }
 
 .dayLetter {

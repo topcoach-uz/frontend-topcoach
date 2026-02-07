@@ -23,6 +23,15 @@ const DAYS = [
   { value: 0, label: 'Sun', letter: 'S' },
 ];
 
+type BlockItem = {
+  id: string;
+  dayOfWeek: number;
+  startTime: dayjs.Dayjs;
+  endTime: dayjs.Dayjs;
+  sessionDuration: string;
+  bufferMinutes: number;
+};
+
 export default function AvailabilitySettings() {
   const { t } = useTranslation();
   const getMe = useTypedSelector((state) => state.auth.profile);
@@ -42,33 +51,32 @@ export default function AvailabilitySettings() {
     if (isLoading || showSaveLoading) return;
     if (!data) return;
 
-    const slots = Array.isArray(data.slots) ? data.slots : [];
-    const defaultSlots = DAYS.map((d) => {
-      const existing = slots.find((s) => s?.dayOfWeek === d.value);
+    const apiSlots = Array.isArray(data.slots) ? data.slots : [];
+
+    // Derive last saved time from DB (slots have updatedAt)
+    const lastUpdated = apiSlots.reduce<Date | null>((max, s) => {
+      const u = (s as { updatedAt?: string })?.updatedAt;
+      if (!u) return max;
+      const d = new Date(u);
+      return !max || d > max ? d : max;
+    }, null);
+    if (lastUpdated) setLastSavedAt(lastUpdated);
+    const blocks: BlockItem[] = apiSlots.map((s, i) => {
+      const startT = s.startTime ? dayjs(`2000-01-01 ${s.startTime}`) : dayjs('2000-01-01 09:00');
+      const endT = s.endTime ? dayjs(`2000-01-01 ${s.endTime}`) : dayjs('2000-01-01 13:00');
       return {
-        dayOfWeek: d.value,
-        startTime: existing?.startTime
-          ? (() => {
-              const t = dayjs(`2000-01-01 ${existing.startTime}`);
-              return t.isValid() ? t : dayjs('2000-01-01 09:00');
-            })()
-          : dayjs('2000-01-01 09:00'),
-        endTime: existing?.endTime
-          ? (() => {
-              const t = dayjs(`2000-01-01 ${existing.endTime}`);
-              return t.isValid() ? t : dayjs('2000-01-01 17:00');
-            })()
-          : dayjs('2000-01-01 17:00'),
-        sessionDuration:
-          existing?.sessionDuration ?? SessionTypeEnum.Individual30M,
-        bufferMinutes: existing?.bufferMinutes ?? 15,
-        enabled: !!existing,
+        id: `block-${s.dayOfWeek}-${i}-${s.id ?? Date.now()}`,
+        dayOfWeek: s.dayOfWeek,
+        startTime: startT.isValid() ? startT : dayjs('2000-01-01 09:00'),
+        endTime: endT.isValid() ? endT : dayjs('2000-01-01 13:00'),
+        sessionDuration: s.sessionDuration ?? SessionTypeEnum.Individual30M,
+        bufferMinutes: 0,
       };
     });
 
     form.setFieldsValue({
       timezone: data.timezone || 'Asia/Tashkent',
-      slots: defaultSlots,
+      blocks: blocks.length > 0 ? blocks : [],
     });
   }, [data, isLoading, form, showSaveLoading]);
 
@@ -88,17 +96,10 @@ export default function AvailabilitySettings() {
   const onSave = async () => {
     try {
       const values = await form.validateFields();
-      const slotsArray = (values.slots ?? []) as Array<{
-        dayOfWeek: number;
-        startTime: dayjs.Dayjs;
-        endTime: dayjs.Dayjs;
-        sessionDuration: string;
-        bufferMinutes: number;
-        enabled: boolean;
-      }>;
+      const blocksArray = (values.blocks ?? []) as BlockItem[];
 
-      const slots = slotsArray
-        .filter((s) => s && s.enabled)
+      const slots = blocksArray
+        .filter((s) => s && s.dayOfWeek != null)
         .map((s) => {
           const start = dayjs.isDayjs(s.startTime) ? s.startTime : dayjs(s.startTime, 'HH:mm');
           const end = dayjs.isDayjs(s.endTime) ? s.endTime : dayjs(s.endTime, 'HH:mm');
@@ -108,9 +109,9 @@ export default function AvailabilitySettings() {
           return {
             dayOfWeek: Number(s.dayOfWeek),
             startTime: start.isValid() ? start.format('HH:mm') : '09:00',
-            endTime: end.isValid() ? end.format('HH:mm') : '17:00',
+            endTime: end.isValid() ? end.format('HH:mm') : '13:00',
             sessionDuration: duration,
-            bufferMinutes: Number(s.bufferMinutes ?? 15),
+            bufferMinutes: 0,
             isActive: true,
           };
         })
@@ -122,8 +123,8 @@ export default function AvailabilitySettings() {
           return true;
         });
 
-      const invalidSlots = slotsArray.filter((s) => s?.enabled).length - slots.length;
-      if (invalidSlots > 0) {
+      const invalidCount = blocksArray.length - slots.length;
+      if (invalidCount > 0) {
         message.warning(t('availability.invalidTimeRange', 'Some slots had invalid times (end must be after start) and were skipped.'));
       }
 
@@ -149,46 +150,64 @@ export default function AvailabilitySettings() {
     }
   };
 
-  const enableDay = (idx: number) => {
-    const slots = [...(form.getFieldValue('slots') || [])];
-    const current = slots[idx] || {};
-    slots[idx] = {
-      ...current,
-      dayOfWeek: current.dayOfWeek ?? DAYS[idx].value,
-      enabled: true,
-      startTime: current.startTime ?? dayjs('2000-01-01 09:00'),
-      endTime: current.endTime ?? dayjs('2000-01-01 17:00'),
-      sessionDuration: current.sessionDuration ?? SessionTypeEnum.Individual30M,
-      bufferMinutes: current.bufferMinutes ?? 15,
+  const addBlock = (dayOfWeek: number) => {
+    const blocks = [...(form.getFieldValue('blocks') || [])] as BlockItem[];
+    const dayBlocks = blocks.filter((b) => b?.dayOfWeek === dayOfWeek);
+    let startTime: dayjs.Dayjs;
+    let endTime: dayjs.Dayjs;
+    if (dayBlocks.length === 0) {
+      startTime = dayjs('2000-01-01 09:00');
+      endTime = dayjs('2000-01-01 13:00');
+    } else {
+      const lastBlock = dayBlocks[dayBlocks.length - 1];
+      const lastEnd = dayjs.isDayjs(lastBlock.endTime) ? lastBlock.endTime : dayjs(`2000-01-01 ${lastBlock.endTime}`);
+      startTime = lastEnd.add(30, 'minute');
+      endTime = startTime.add(3, 'hour');
+    }
+    blocks.push({
+      id: `block-${dayOfWeek}-${Date.now()}`,
+      dayOfWeek,
+      startTime,
+      endTime,
+      sessionDuration: SessionTypeEnum.Individual30M,
+      bufferMinutes: 0,
+    });
+    form.setFieldsValue({ blocks });
+    forceUpdate((n) => n + 1);
+  };
+
+  const removeBlock = (blockIdx: number) => {
+    const blocks = [...(form.getFieldValue('blocks') || [])];
+    blocks.splice(blockIdx, 1);
+    form.setFieldsValue({ blocks });
+    forceUpdate((n) => n + 1);
+  };
+
+  const cascadeNextBlocks = (blockIdx: number, newEndTime: dayjs.Dayjs) => {
+    const blocks = [...(form.getFieldValue('blocks') || [])] as BlockItem[];
+    const changedBlock = blocks[blockIdx];
+    if (!changedBlock) return;
+    blocks[blockIdx] = { ...changedBlock, endTime: newEndTime };
+    const dayOfWeek = changedBlock.dayOfWeek;
+    const dayBlocksWithIdx = blocks
+      .map((b, i) => ({ block: b, index: i }))
+      .filter((x) => x.block?.dayOfWeek === dayOfWeek)
+      .sort((a, b) => a.index - b.index);
+    const pos = dayBlocksWithIdx.findIndex((x) => x.index === blockIdx);
+    if (pos < 0 || pos >= dayBlocksWithIdx.length - 1) return;
+    const next = dayBlocksWithIdx[pos + 1];
+    const nextBlock = blocks[next.index] as BlockItem;
+    const nextStart = dayjs.isDayjs(nextBlock.startTime) ? nextBlock.startTime : dayjs(`2000-01-01 ${nextBlock.startTime}`);
+    const nextEnd = dayjs.isDayjs(nextBlock.endTime) ? nextBlock.endTime : dayjs(`2000-01-01 ${nextBlock.endTime}`);
+    const durationMin = nextEnd.diff(nextStart, 'minute');
+    blocks[next.index] = {
+      ...nextBlock,
+      startTime: newEndTime,
+      endTime: newEndTime.add(durationMin, 'minute'),
     };
-    form.setFieldsValue({ slots });
+    form.setFieldsValue({ blocks });
+    cascadeNextBlocks(next.index, blocks[next.index].endTime);
     forceUpdate((n) => n + 1);
-  };
-
-  const disableDay = (idx: number) => {
-    const slots = [...(form.getFieldValue('slots') || [])];
-    slots[idx] = { ...slots[idx], enabled: false };
-    form.setFieldsValue({ slots });
-    forceUpdate((n) => n + 1);
-  };
-
-  const copyToOtherDays = (sourceIdx: number) => {
-    const slots = [...(form.getFieldValue('slots') || [])];
-    const source = slots[sourceIdx];
-    if (!source?.enabled) return;
-    const newSlots = slots.map((s: any, i: number) =>
-      i === sourceIdx ? s : {
-        ...s,
-        enabled: true,
-        startTime: source.startTime,
-        endTime: source.endTime,
-        sessionDuration: source.sessionDuration,
-        bufferMinutes: source.bufferMinutes ?? 15,
-      }
-    );
-    form.setFieldsValue({ slots: newSlots });
-    forceUpdate((n) => n + 1);
-    message.success(t('availability.copiedToAllDays'));
   };
 
   if (!mentorId) return null;
@@ -210,120 +229,114 @@ export default function AvailabilitySettings() {
         layout="vertical"
         initialValues={{
           timezone: 'Asia/Tashkent',
-          slots: DAYS.map((d) => ({
-            dayOfWeek: d.value,
-            startTime: dayjs('2000-01-01 09:00'),
-            endTime: dayjs('2000-01-01 17:00'),
-            sessionDuration: SessionTypeEnum.Individual30M,
-            bufferMinutes: 15,
-            enabled: false,
-          })),
+          blocks: [],
         }}
       >
         <Form.Item noStyle shouldUpdate>
-          {() => (
-        <div className={styles.daysList}>
-          {DAYS.map((day, idx) => {
-                const slot = form.getFieldValue(['slots', idx]) || {};
-                const enabled = !!slot.enabled;
-                const startTime = slot.startTime;
-                const endTime = slot.endTime;
-                const sessionDuration = slot.sessionDuration;
-
-                return (
-                  <div key={day.value} className={styles.dayRow}>
-                    <div className={styles.dayLetter}>{day.letter}</div>
-                    <div className={styles.dayContent}>
-                      {enabled ? (
-                        <>
-                          <Form.Item
-                            name={['slots', idx, 'startTime']}
-                            noStyle
-                            rules={[{ required: true }]}
-                          >
-                            <TimePicker
-                              format="h:mm a"
-                              use12Hours
-                              className={styles.timePicker}
-                              allowClear={false}
-                            />
-                          </Form.Item>
-                          <span className={styles.dash}>–</span>
-                          <Form.Item
-                            name={['slots', idx, 'endTime']}
-                            noStyle
-                            rules={[{ required: true }]}
-                          >
-                            <TimePicker
-                              format="h:mm a"
-                              use12Hours
-                              className={styles.timePicker}
-                              allowClear={false}
-                            />
-                          </Form.Item>
-                          <Form.Item
-                            name={['slots', idx, 'sessionDuration']}
-                            noStyle
-                          >
-                            <Select
-                              options={[
-                                { label: '30 min', value: SessionTypeEnum.Individual30M },
-                                { label: '60 min', value: SessionTypeEnum.Individual60M },
-                              ]}
-                              className={styles.durationSelect}
-                            />
-                          </Form.Item>
-                          <div className={styles.dayActions}>
-                            <button
-                              type="button"
-                              className={styles.iconBtn}
-                              onClick={() => disableDay(idx)}
-                              title={t('availability.remove')}
-                            >
-                              ✕
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.iconBtn}
-                              onClick={() => copyToOtherDays(idx)}
-                              title={t('availability.copyToAllDays')}
-                            >
-                              ⊞
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <span className={styles.unavailable}>{t('availability.unavailable')}</span>
-                          <button
-                            type="button"
-                            className={styles.addBtn}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              enableDay(idx);
-                            }}
-                            title={t('availability.addAvailability')}
-                          >
-                            +
-                          </button>
-                        </>
-                      )}
+          {() => {
+            const blocks = form.getFieldValue('blocks') || [];
+            return (
+              <div className={styles.daysList}>
+                {DAYS.map((day) => {
+                  const dayBlocks = blocks
+                    .map((b: BlockItem, i: number) => ({ block: b, index: i }))
+                    .filter((x: { block: BlockItem }) => x.block?.dayOfWeek === day.value);
+                  return (
+                    <div key={day.value} className={styles.daySection}>
+                      <div className={styles.dayRow}>
+                        <div className={styles.dayLetter}>{day.letter}</div>
+                        <div className={styles.dayContent}>
+                          {dayBlocks.length === 0 ? (
+                            <>
+                              <span className={styles.unavailable}>{t('availability.unavailable')}</span>
+                              <button
+                                type="button"
+                                className={styles.addBtn}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  addBlock(day.value);
+                                }}
+                                title={t('availability.addAvailability')}
+                              >
+                                +
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {dayBlocks.map(({ block, index }) => (
+                                <div key={block.id ?? index} className={styles.blockRow}>
+                                  <Form.Item name={['blocks', index, 'dayOfWeek']} hidden initialValue={day.value}>
+                                    <input type="hidden" />
+                                  </Form.Item>
+                                  <Form.Item name={['blocks', index, 'bufferMinutes']} hidden initialValue={0}>
+                                    <input type="hidden" />
+                                  </Form.Item>
+                                  <Form.Item
+                                    name={['blocks', index, 'startTime']}
+                                    noStyle
+                                    rules={[{ required: true }]}
+                                  >
+                                    <TimePicker
+                                      format="h:mm a"
+                                      use12Hours
+                                      className={styles.timePicker}
+                                      allowClear={false}
+                                    />
+                                  </Form.Item>
+                                  <span className={styles.dash}>–</span>
+                                  <Form.Item
+                                    name={['blocks', index, 'endTime']}
+                                    noStyle
+                                    rules={[{ required: true }]}
+                                  >
+                                    <TimePicker
+                                      format="h:mm a"
+                                      use12Hours
+                                      className={styles.timePicker}
+                                      allowClear={false}
+                                      onChange={(val) => val && cascadeNextBlocks(index, val)}
+                                    />
+                                  </Form.Item>
+                                  <Form.Item name={['blocks', index, 'sessionDuration']} noStyle>
+                                    <Select
+                                      options={[
+                                        { label: '30 min', value: SessionTypeEnum.Individual30M },
+                                        { label: '60 min', value: SessionTypeEnum.Individual60M },
+                                      ]}
+                                      className={styles.durationSelect}
+                                    />
+                                  </Form.Item>
+                                  <div className={styles.dayActions}>
+                                    <button
+                                      type="button"
+                                      className={styles.iconBtn}
+                                      onClick={() => removeBlock(index)}
+                                      title={t('availability.remove')}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                className={styles.addBlockBtn}
+                                onClick={() => addBlock(day.value)}
+                                title={t('availability.addBlock', 'Add another time block')}
+                              >
+                                + {t('availability.addBlock', 'Add block')}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <Form.Item name={['slots', idx, 'dayOfWeek']} hidden>
-                      <input type="hidden" />
-                    </Form.Item>
-                    <Form.Item name={['slots', idx, 'enabled']} hidden>
-                      <input type="hidden" />
-                    </Form.Item>
-                    <Form.Item name={['slots', idx, 'bufferMinutes']} hidden>
-                      <input type="hidden" />
-                    </Form.Item>
-                  </div>
-                );
-          })}
-        </div>
-          )}
+                  );
+                })}
+              </div>
+            );
+          }}
         </Form.Item>
 
         <div className={styles.timezoneRow}>
