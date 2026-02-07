@@ -262,7 +262,7 @@ export default function MentorDetailsPage() {
                   const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                   const plan = plans?.find((p) => p.type === planType);
                   if (plan?.id) {
-                    const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}`;
+                    const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}&slotEnd=${encodeURIComponent(params.end || '')}`;
                     navigate(url);
                   } else {
                     message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
@@ -309,7 +309,7 @@ export default function MentorDetailsPage() {
                 const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                 const plan = plans?.find((p) => p.type === planType);
                 if (plan?.id) {
-                  const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}`;
+                  const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}&slotEnd=${encodeURIComponent(params.end || '')}`;
                   navigate(url);
                 } else {
                   message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));

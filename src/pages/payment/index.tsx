@@ -60,6 +60,7 @@ function PaymentPage() {
   const paymentType = searchParams.get("type") ?? "";
   const buyType = searchParams.get("buyType") ?? "";
   const slotStart = searchParams.get("slotStart") ?? "";
+  const slotEnd = searchParams.get("slotEnd") ?? "";
   
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('click');
@@ -330,7 +331,10 @@ function PaymentPage() {
                       <div className={styles.orderSummaryRow}>
                         <Text type="secondary">Date & Time:</Text>
                         <Text>
-                          {dayjs.utc(slotStart).local().format('ddd, MMM D, YYYY • h:mm A')}
+                          {dayjs.utc(slotStart).local().format('ddd, MMM D, YYYY')}
+                          {slotEnd
+                            ? ` • ${dayjs.utc(slotStart).local().format('h:mm')} – ${dayjs.utc(slotEnd).local().format('h:mm A')}`
+                            : ` • ${dayjs.utc(slotStart).local().format('h:mm A')}`}
                         </Text>
                       </div>
                     )}

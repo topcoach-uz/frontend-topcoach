@@ -24,7 +24,7 @@ interface Props {
   mentorId: string;
   mentorName?: string;
   timezone?: string;
-  onPaymentRequired?: (params: { mentorId: string; sessionId: string; start: string; type: string }) => void;
+  onPaymentRequired?: (params: { mentorId: string; sessionId: string; start: string; end: string; type: string }) => void;
 }
 
 export default function CalendarBookingWidget({
@@ -155,6 +155,7 @@ export default function CalendarBookingWidget({
             mentorId,
             sessionId,
             start: slot.start,
+            end: slot.end,
             type: slot.type,
           });
         } else {
@@ -293,7 +294,7 @@ export default function CalendarBookingWidget({
                       onClick={() => handleConfirmClick(slot)}
                       disabled={booking && bookingSlotStart === slot.start}
                     >
-                      {dayjs.utc(slot.start).tz(menteeTimezone).format('h:mm A')}
+                      {dayjs.utc(slot.start).tz(menteeTimezone).format('h:mm')} – {dayjs.utc(slot.end).tz(menteeTimezone).format('h:mm A')}
                     </button>
                     <Button
                       type="primary"
@@ -417,7 +418,7 @@ export default function CalendarBookingWidget({
             </p>
             <p style={{ marginBottom: 0 }}>
               <strong>{t('mentors.dateTime', 'Date & Time')}:</strong>{' '}
-              {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('ddd, MMM D, YYYY • h:mm A')}
+              {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('ddd, MMM D, YYYY')} • {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('h:mm')} – {dayjs.utc(pendingSlot.end).tz(menteeTimezone).format('h:mm A')}
             </p>
           </div>
         )}
