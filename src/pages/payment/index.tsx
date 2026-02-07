@@ -1,4 +1,10 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { Form, message, Card, Row, Col, Input, Select, Button, Space, Typography, Tag, Divider, Radio } from "antd";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { useForm } from "antd/es/form/Form";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +15,7 @@ import { InputFormItem } from "src/components/form";
 import styles from "./payment.module.scss";
 import useParamsHook from "src/hooks/params";
 import { themeFontSize, themeFontWeight } from "src/constants/theme";
-import { ArrowLeft, ShieldTick, Card as CardIcon, Mobile, Lock } from "iconsax-react";
+import { ArrowLeft, Card as CardIcon, Mobile, Lock } from "iconsax-react";
 import CustomSelect from "src/components/common/select";
 import { Spin } from "antd";
 import { useGetPlansQuery } from "src/app/services/mentors";
@@ -53,6 +59,7 @@ function PaymentPage() {
   const enrollmentId = searchParams.get("enrollmentId") ?? "";
   const paymentType = searchParams.get("type") ?? "";
   const buyType = searchParams.get("buyType") ?? "";
+  const slotStart = searchParams.get("slotStart") ?? "";
   
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('click');
@@ -306,28 +313,41 @@ function PaymentPage() {
           <Col xs={24} lg={10}>
             <Card className={styles.summaryCard} title="Payment Summary">
               <div className={styles.summaryContent}>
-                <div className={styles.secureBadge}>
-                  <ShieldTick size={16} />
-                  <Text strong>Secure Payment</Text>
-                </div>
+                {paymentType === 'session' && mentorDetail && (
+                  <div className={styles.orderSummary}>
+                    <Text className={styles.orderSummaryTitle}>Order Summary</Text>
+                    <div className={styles.orderSummaryRow}>
+                      <Text type="secondary">Mentor:</Text>
+                      <Text strong>{mentorDetail.profile?.name || 'Mentor'}</Text>
+                    </div>
+                    <div className={styles.orderSummaryRow}>
+                      <Text type="secondary">Session:</Text>
+                      <Text>
+                        {plans?.find((p) => p.id === planId)?.type === 'individual60m' ? '60 min' : '30 min'} mentor session
+                      </Text>
+                    </div>
+                    {slotStart && (
+                      <div className={styles.orderSummaryRow}>
+                        <Text type="secondary">Date & Time:</Text>
+                        <Text>
+                          {dayjs.utc(slotStart).format('ddd, MMM D, YYYY • h:mm A')}
+                        </Text>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className={styles.amountSection}>
-                  <div className={styles.amountDisplay}>
-                    <Text className={styles.currency}>
-                      {displayCurrency === 'UZS' ? 'UZS' : '$'}
-                    </Text>
-                    <Title level={2} className={styles.amount}>
+                  <div className={styles.totalRow}>
+                    <Text strong>Total:</Text>
+                    <Text className={styles.amount}>
+                      {displayCurrency === 'UZS' ? 'UZS ' : '$'}
                       {finalDisplayAmount.toLocaleString('en-US', { 
                         minimumFractionDigits: 2, 
                         maximumFractionDigits: 2 
                       })}
-                    </Title>
+                    </Text>
                   </div>
-                  <Text type="secondary" className={styles.paymentType}>
-                    {paymentType === 'course' ? 'Course Enrollment' : 
-                     paymentType === 'subscription' ? 'Subscription Plan' : 
-                     'Mentor Session'}
-                  </Text>
                 </div>
 
                 {/* Referral Code Section - Only for Course Payments */}
@@ -549,12 +569,6 @@ function PaymentPage() {
                 </div>
               )}
 
-              <div className={styles.securityNote}>
-                <Lock size={16} />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Your payment information is encrypted and secure
-                </Text>
-              </div>
             </Card>
           </Col>
         </Row>

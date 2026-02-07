@@ -262,7 +262,7 @@ export default function MentorDetailsPage() {
                   const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                   const plan = plans?.find((p) => p.type === planType);
                   if (plan?.id) {
-                    const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session`;
+                    const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}`;
                     navigate(url);
                   } else {
                     message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
@@ -309,7 +309,7 @@ export default function MentorDetailsPage() {
                 const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                 const plan = plans?.find((p) => p.type === planType);
                 if (plan?.id) {
-                  const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session`;
+                  const url = `/payment?mentorId=${params.mentorId}&sessionId=${params.sessionId}&planId=${plan.id}&buyType=individual&type=session&slotStart=${encodeURIComponent(params.start || '')}`;
                   navigate(url);
                 } else {
                   message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
@@ -507,16 +507,16 @@ const Fallback = () => {
   return (
     <main className={styles.main}>
       <div className={'container ' + styles.container}>
-        <Flex gap={50} vertical>
-          <Flex gap={10} align="center">
+        <Flex gap={50} vertical className={styles.skeletonFallback}>
+          <Flex gap={10} align="center" wrap="wrap" className={styles.skeletonHeader}>
             <Skeleton.Avatar
               active
-              style={{ width: 200, height: 200, borderRadius: '50%' }}
+              className={styles.skeletonAvatar}
             />
-            <Skeleton active />
+            <Skeleton active paragraph={{ rows: 3 }} className={styles.skeletonMeta} />
           </Flex>
-          <Skeleton active />
-          <Flex gap={30}>
+          <Skeleton active paragraph={{ rows: 4 }} />
+          <Flex gap={30} wrap="wrap" className={styles.skeletonVideos}>
             <Skeleton.Node active className={styles.videoFallback} />
             <Skeleton.Node active className={styles.videoFallback} />
           </Flex>

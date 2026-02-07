@@ -57,79 +57,78 @@ const AISuggestionsCard: React.FC<AISuggestionsCardProps> = ({ suggestions, load
         dataSource={sorted}
         size="small"
         renderItem={(item) => (
-          <List.Item
-            className="ai-suggestion-item"
-            actions={[
-              <Button
-                type="primary"
-                size="middle"
-                onClick={() => navigate(item.actionPath)}
+          <List.Item className="ai-suggestion-item">
+            <div className="ai-suggestion-content">
+              <div
+                className={`ai-suggestion-priority ai-suggestion-priority--${item.priority}`}
                 style={{
-                  padding: '6px 16px',
-                  height: 40,
+                  width: 32,
+                  height: 32,
                   borderRadius: 8,
-                  fontWeight: 600,
-                  backgroundColor: item.priority === 'high' ? '#8b0000' : undefined,
-                  borderColor: item.priority === 'high' ? '#8b0000' : undefined,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  background:
+                    item.priority === 'high'
+                      ? '#fff1f0'
+                      : item.priority === 'medium'
+                      ? '#fff7e6'
+                      : '#f6ffed',
                 }}
               >
-                {item.actionLabel}
-              </Button>,
-            ]}
-          >
-            <List.Item.Meta
-              avatar={
-                <div
-                  className={`ai-suggestion-priority ai-suggestion-priority--${item.priority}`}
+                <UnifiedIcon
+                  name={
+                    item.type === 'essay'
+                      ? 'edit'
+                      : item.type === 'recommendation'
+                      ? 'users'
+                      : item.type === 'mentor'
+                      ? 'users'
+                      : item.type === 'psychometric'
+                      ? 'trending-up'
+                      : item.type === 'overdue' || item.type === 'deadline'
+                      ? 'clock'
+                      : 'target'
+                  }
+                  size="sm"
+                  color={item.priority === 'high' ? 'error' : 'primary'}
+                />
+              </div>
+              <div className="ai-suggestion-text">
+                <div className="ai-suggestion-title">
+                  {item.universityId || item.universityName ? (
+                    <>
+                      <span>{item.title} — </span>
+                      <UniversityNameDisplay
+                        universityId={item.universityId}
+                        universityName={item.universityName}
+                      />
+                    </>
+                  ) : (
+                    item.title
+                  )}
+                </div>
+                <div className="ai-suggestion-desc">{item.description}</div>
+                <Button
+                  type="primary"
+                  size="middle"
+                  onClick={() => navigate(item.actionPath)}
+                  className="ai-suggestion-btn"
                   style={{
-                    width: 32,
-                    height: 32,
+                    padding: '6px 16px',
+                    height: 40,
                     borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background:
-                      item.priority === 'high'
-                        ? '#fff1f0'
-                        : item.priority === 'medium'
-                        ? '#fff7e6'
-                        : '#f6ffed',
+                    fontWeight: 600,
+                    marginTop: 12,
+                    backgroundColor: item.priority === 'high' ? '#8b0000' : undefined,
+                    borderColor: item.priority === 'high' ? '#8b0000' : undefined,
                   }}
                 >
-                  <UnifiedIcon
-                    name={
-                      item.type === 'essay'
-                        ? 'edit'
-                        : item.type === 'recommendation'
-                        ? 'users'
-                        : item.type === 'mentor'
-                        ? 'users'
-                        : item.type === 'psychometric'
-                        ? 'trending-up'
-                        : item.type === 'overdue' || item.type === 'deadline'
-                        ? 'clock'
-                        : 'target'
-                    }
-                    size="sm"
-                    color={item.priority === 'high' ? 'error' : 'primary'}
-                  />
-                </div>
-              }
-              title={
-                item.universityId || item.universityName ? (
-                  <>
-                    <span>{item.title} — </span>
-                    <UniversityNameDisplay
-                      universityId={item.universityId}
-                      universityName={item.universityName}
-                    />
-                  </>
-                ) : (
-                  item.title
-                )
-              }
-              description={item.description}
-            />
+                  {item.actionLabel}
+                </Button>
+              </div>
+            </div>
           </List.Item>
         )}
       />

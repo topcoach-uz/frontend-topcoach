@@ -21,6 +21,39 @@
     &:last-child {
       border-bottom: none;
     }
+    .ant-list-item {
+      display: block;
+    }
+  }
+  .ai-suggestion-content {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    align-items: flex-start;
+  }
+  .ai-suggestion-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .ai-suggestion-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    @media (max-width: 768px) {
+      white-space: normal;
+      word-break: break-word;
+    }
+  }
+  .ai-suggestion-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+    @media (max-width: 768px) {
+      word-break: break-word;
+    }
   }
   .ai-suggestion-priority--high {
     background: #fff1f0 !important;

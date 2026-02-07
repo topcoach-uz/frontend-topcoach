@@ -1,4 +1,4 @@
-import { Button, message, Skeleton, Select } from 'antd';
+import { Button, message, Modal, Skeleton, Select } from 'antd';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -69,6 +69,8 @@ export default function CalendarBookingWidget({
   );
   const [bookSlot, { isLoading: booking }] = useBookBySlotMutation();
   const [bookingSlotStart, setBookingSlotStart] = useState<string | null>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [pendingSlot, setPendingSlot] = useState<{ start: string; end: string; type: string } | null>(null);
 
   const isLoading = availLoading || slotsLoading;
 
@@ -123,13 +125,22 @@ export default function CalendarBookingWidget({
     return set;
   }, [slots, menteeTimezone]);
 
-  const handleBookSlot = async (slot: { start: string; end: string; type: string }) => {
+  const handleConfirmClick = (slot: { start: string; end: string; type: string }) => {
     if (!isAuthenticated) {
       message.warning('Please sign in to book a session');
       return;
     }
+    setPendingSlot(slot);
+    setConfirmModalOpen(true);
+  };
 
-    setBookingSlotStart(slot.start);
+  const handleConfirmBooking = async () => {
+    if (!pendingSlot) return;
+    setBookingSlotStart(pendingSlot.start);
+    setConfirmModalOpen(false);
+    const slot = pendingSlot;
+    setPendingSlot(null);
+
     try {
       const result = await bookSlot({
         mentorId,
@@ -279,7 +290,7 @@ export default function CalendarBookingWidget({
                     <button
                       type="button"
                       className={styles.slotTimeBtn}
-                      onClick={() => handleBookSlot(slot)}
+                      onClick={() => handleConfirmClick(slot)}
                       disabled={booking && bookingSlotStart === slot.start}
                     >
                       {dayjs.utc(slot.start).tz(menteeTimezone).format('h:mm A')}
@@ -289,7 +300,7 @@ export default function CalendarBookingWidget({
                       size="small"
                       loading={booking && bookingSlotStart === slot.start}
                       className={styles.confirmBtn}
-                      onClick={() => handleBookSlot(slot)}
+                      onClick={() => handleConfirmClick(slot)}
                     >
                       Confirm
                     </Button>
@@ -385,6 +396,32 @@ export default function CalendarBookingWidget({
         mentorName={mentorName}
         mentorId={mentorId}
       />
+
+      <Modal
+        title={t('mentors.confirmBookingTitle', 'Confirm Booking')}
+        open={confirmModalOpen}
+        onOk={handleConfirmBooking}
+        onCancel={() => { setConfirmModalOpen(false); setPendingSlot(null); }}
+        okText={t('mentors.confirmAndPay', 'Confirm & Proceed to Payment')}
+        cancelText={t('shared.modalCancel', 'Cancel')}
+        okButtonProps={{ style: { backgroundColor: '#8b0000', borderColor: '#8b0000' } }}
+      >
+        {pendingSlot && (
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ marginBottom: 12 }}>
+              <strong>{t('mentors.mentor', 'Mentor')}:</strong> {mentorName}
+            </p>
+            <p style={{ marginBottom: 12 }}>
+              <strong>{t('mentors.sessionType', 'Session')}:</strong>{' '}
+              {pendingSlot.type === 'individual60m' ? '60 min' : '30 min'} mentor session
+            </p>
+            <p style={{ marginBottom: 0 }}>
+              <strong>{t('mentors.dateTime', 'Date & Time')}:</strong>{' '}
+              {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('ddd, MMM D, YYYY • h:mm A')}
+            </p>
+          </div>
+        )}
+      </Modal>
     </CustomCard>
   );
 }

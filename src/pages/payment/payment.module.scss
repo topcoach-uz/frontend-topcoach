@@ -72,56 +72,49 @@
   }
   
   .summaryContent {
-    .secureBadge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: #10b981;
-      color: white;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 24px;
-      
-      svg {
-        color: white !important;
-      }
-    }
-    
-    .amountSection {
-      text-align: center;
-      margin-bottom: 24px;
-      
-      .amountDisplay {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 8px;
-        margin-bottom: 12px;
-        
-        .currency {
-          font-size: 20px;
-          font-weight: 600;
-          color: #6b7280;
-        }
-        
-        .amount {
-          margin: 0 !important;
-          font-size: 36px;
-          font-weight: 700;
-          color: #111827;
-          line-height: 1;
-        }
-      }
-      
-      .paymentType {
+    .orderSummary {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+
+      .orderSummaryTitle {
         display: block;
         font-size: 14px;
-        color: #6b7280;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 12px;
+      }
+
+      .orderSummaryRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 8px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .amountSection {
+      margin-bottom: 24px;
+
+      .totalRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-top: 1px solid #e5e7eb;
+
+        .amount {
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+          margin: 0 !important;
+        }
       }
     }
     
@@ -436,8 +429,6 @@
   // Payment Action Button
   .paymentAction {
     margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
     
     .submitButton {
       height: 48px;
@@ -454,25 +445,6 @@
     }
   }
   
-  // Security Note
-  .securityNote {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    
-    svg {
-      color: #10b981;
-    }
-    
-    :global(.ant-typography) {
-      margin: 0;
-      color: #6b7280;
-    }
-  }
 }
 
 // Responsive Design
