@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Space, Tag, Typography, message } from 'antd';
+import { Card, Button, Space, Tag, Typography, message, Modal } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
@@ -116,14 +116,34 @@ export default function UpcomingEventsSection({
     fetchUserRegistrations();
   }, [upcomingEvents, upcomingWorkshops]);
 
+  const AMBASSADOR_FORM_LINK = 'https://forms.gle/SB5HUieArhNnPj1Q7';
+  const isAmbassadorEvent = (title: string) =>
+    title.toLowerCase().includes('topcoach campus ambassador') ||
+    title.toLowerCase().includes('startup ambassador in your district');
+
   const handleRegister = (eventId: string, eventTitle: string, eventType: 'event' | 'workshop') => {
-    // Check if user is authenticated before opening registration modal
+    // Ambassador event: open form directly if logged in, else show login prompt
+    if (isAmbassadorEvent(eventTitle)) {
+      if (!isAuthenticated) {
+        Modal.warning({
+          title: t('events.signInRequired', 'Sign in required'),
+          content: t('events.ambassadorSignInRequired', 'You need to log in first to apply for this application.'),
+          okText: t('common.signIn', 'Sign in'),
+          onOk: () => navigate('/auth/signin'),
+        });
+        return;
+      }
+      window.open(AMBASSADOR_FORM_LINK, '_blank');
+      return;
+    }
+
+    // Other events: check auth and open registration modal
     if (!isAuthenticated) {
       message.warning(t('events.signInRequired') || 'You need to sign in first to register for workshops.');
       navigate('/auth/signin');
       return;
     }
-    
+
     setRegistrationModal({
       visible: true,
       eventId,
@@ -143,6 +163,11 @@ export default function UpcomingEventsSection({
       eventType: 'event'
     });
   };
+
+  const displayEventTitle = (title: string) =>
+    title.toLowerCase().includes('startup ambassador in your district')
+      ? 'Become a TopCoach Campus Ambassador!'
+      : title;
 
   const allUpcoming = [...upcomingEvents, ...upcomingWorkshops];
 
@@ -168,7 +193,7 @@ export default function UpcomingEventsSection({
             </div>
             <div className={styles.card_content}>
               <Title level={4} className={styles.event_title}>
-                {event.title}
+                {displayEventTitle(event.title)}
               </Title>
               
               <Space direction="vertical" size="small" className={styles.event_info}>
@@ -266,7 +291,7 @@ export default function UpcomingEventsSection({
               {/* Text content on the right */}
               <div className={styles.workshop_text_content}>
                 <Title level={4} className={styles.workshop_title}>
-                  {workshop.title}
+                  {displayEventTitle(workshop.title)}
                 </Title>
                 
                 {workshop.summary && getTranslation(workshop.summary)?.trim() && getTranslation(workshop.summary)?.trim().toLowerCase() !== 'empty' && (

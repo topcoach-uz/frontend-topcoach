@@ -68,9 +68,11 @@ export default function RegistrationModal({
     onClose();
   };
 
-  // Check if this is the "Become a Startup Ambassador in your district!" event
-  const isStartupScoutEvent = eventTitle.toLowerCase().includes('a startup ambassador in your district!');
-  const ambassadorLink = 'https://ambassador.topcoach.uz';
+  // Ambassador event - link to external form (handled in parent when logged in; this fallback if modal opens)
+  const isAmbassadorEvent =
+    eventTitle.toLowerCase().includes('topcoach campus ambassador') ||
+    eventTitle.toLowerCase().includes('startup ambassador in your district');
+  const ambassadorFormLink = 'https://forms.gle/SB5HUieArhNnPj1Q7';
 
   return (
     <Modal
@@ -92,21 +94,17 @@ export default function RegistrationModal({
       centered
     >
       <div className={styles.modal_content}>
-        {isStartupScoutEvent ? (
+        {isAmbassadorEvent ? (
           <div className={styles.ambassador_link_section}>
             <Text className={styles.ambassador_link_text}>
-              <span className={styles.link_line}>
-                Go to{' '}
-                <a 
-                  href={ambassadorLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className={styles.ambassador_link}
-                >
-                  {ambassadorLink}
-                </a>
-              </span>
-              <span className={styles.link_line}>and submit your application</span>
+              <a
+                href={ambassadorFormLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ambassador_link}
+              >
+                {t('events.ambassadorApplyLink', 'Apply now')}
+              </a>
             </Text>
           </div>
         ) : (
