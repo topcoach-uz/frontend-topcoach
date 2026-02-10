@@ -135,6 +135,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Sorbonne University': '🇫🇷',
   'École Polytechnique': '🇫🇷',
   'CentraleSupélec': '🇫🇷',
+  'HEC Paris': '🇫🇷',
   'Polytechnic University of Milan': '🇮🇹',
   'University of Bologna': '🇮🇹',
   'Sapienza University of Rome': '🇮🇹',
