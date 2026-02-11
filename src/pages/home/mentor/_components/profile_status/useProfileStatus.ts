@@ -98,10 +98,12 @@ export default function useProfileStatus() {
   return { profileChecklist, allComplete, modalOpen, handleCancel, setVideosUploaded };
 }
 
-export const GOOGLE_AUTH_SCOPES = [
-  'email',
-  'profile',
+/**
+ * Calendar scopes for the "Connect Google Calendar" flow (mentor-only).
+ * This is separate from login scopes — only requested when mentor explicitly connects their calendar.
+ */
+export const GOOGLE_CALENDAR_SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
 ];
 
-export const scopes = GOOGLE_AUTH_SCOPES.join(' ');
+export const scopes = GOOGLE_CALENDAR_SCOPES.join(' ');
