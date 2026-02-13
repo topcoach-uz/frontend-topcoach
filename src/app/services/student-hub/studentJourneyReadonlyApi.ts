@@ -114,6 +114,22 @@ export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
         method: 'GET',
       }),
     }),
+
+    // Get student mentor bookings (joined sessions)
+    getStudentJourneyMentorBookings: builder.query<{ data: any[] }, string>({
+      query: (userId) => ({
+        url: `/student-journey/${userId}/mentor-bookings`,
+        method: 'GET',
+      }),
+    }),
+
+    // Get student event applications
+    getStudentJourneyEvents: builder.query<{ data: any[] }, string>({
+      query: (userId) => ({
+        url: `/student-journey/${userId}/events`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -126,5 +142,7 @@ export const {
   useGetStudentJourneyDocumentsQuery,
   useGetStudentJourneyDocumentQuery,
   useGetStudentJourneyDashboardQuery,
+  useGetStudentJourneyMentorBookingsQuery,
+  useGetStudentJourneyEventsQuery,
 } = studentJourneyReadonlyApi;
 

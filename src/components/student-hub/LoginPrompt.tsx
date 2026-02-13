@@ -28,7 +28,7 @@ const LoginPrompt: React.FC = () => {
     },
     {
       icon: <FontAwesomeIcon icon="building" style={{ color: '#8b0000', fontSize: '24px' }} />,
-      title: 'Track Applications',
+      title: 'Track College Lists',
       description: 'Manage your college and scholarship applications with deadlines, requirements, and status tracking.'
     },
     {

@@ -1,5 +1,5 @@
 import { GlobalOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { themeFontSize } from 'src/constants/theme';
 import CustomSelect from '../common/select';
 import styles from './language_select.module.scss';
@@ -8,22 +8,7 @@ import { DefaultOptionType } from 'antd/es/select';
 
 type LanguageType = 'en' | 'uz' | 'ru' | 'kk';
 
-interface Props {
-  isInHeader?: boolean;
-}
-
-export default function LanguageSelect({ isInHeader = false }: Props) {
-  // Language handling
-  const [language, setLanguage] = useState<LanguageType>(
-    (localStorage.getItem('i18nextLng') as LanguageType) || 'en'
-  );
-  const handleLanguageChange = (language: LanguageType) => {
-    setLanguage(language);
-    i18n.changeLanguage(language);
-    window.location.reload();
-  };
-
-  const languageOptions: DefaultOptionType[] = [
+const LANGUAGE_OPTIONS: DefaultOptionType[] = [
     {
       label: 'English',
       value: 'en',
@@ -46,13 +31,28 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
     },
   ];
 
+interface Props {
+  isInHeader?: boolean;
+}
+
+export default function LanguageSelect({ isInHeader = false }: Props) {
+  // Language handling
+  const [language, setLanguage] = useState<LanguageType>(
+    (localStorage.getItem('i18nextLng') as LanguageType) || 'en'
+  );
+  const handleLanguageChange = (language: LanguageType) => {
+    setLanguage(language);
+    i18n.changeLanguage(language);
+    window.location.reload();
+  };
+
   return (
     <div className={`language-select-wrapper ${styles.languageSelectContainer}`}>
       <CustomSelect
         value={language}
         style={{ width: 40, minWidth: 40 }}
         onChange={handleLanguageChange}
-        options={languageOptions}
+        options={LANGUAGE_OPTIONS}
         variant="borderless"
         fontSize={themeFontSize.fontSizeTitle8}
         className={'languageSelect ' + styles.languageSelect}

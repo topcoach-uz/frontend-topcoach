@@ -35,6 +35,7 @@ interface UpcomingCardProps extends SessionsSchema {
   detailCheck?: boolean;
   rateCheck?: boolean;
   dropdownVisible?: boolean;
+  hideChatButton?: boolean;
 }
 
 export default function UpcomingCard({
@@ -47,6 +48,7 @@ export default function UpcomingCard({
   detailCheck = false,
   rateCheck = true,
   dropdownVisible = true,
+  hideChatButton = false,
   calendarInfo,
   comments,
   mentor,
@@ -527,8 +529,10 @@ export default function UpcomingCard({
   };
 
   // For mentors: only show "Chat with mentee" when session is booked (has a participant)
+  // Hide entirely when hideChatButton (e.g. counselor view)
   const showChatButton =
-    role === UserRole.Student || (role === UserRole.Mentor && participants?.length > 0);
+    !hideChatButton &&
+    (role === UserRole.Student || (role === UserRole.Mentor && participants?.length > 0));
 
   return (
     <CustomCard

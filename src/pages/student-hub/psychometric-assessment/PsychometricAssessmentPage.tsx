@@ -238,8 +238,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             <div className="header-content">
               <Title level={2}>Psychometric Assessment</Title>
               <Paragraph>
-                Discover your ideal major and career path through a comprehensive assessment of your interests, 
-                personality, values, and aptitudes.
+                {readOnly ? t('psychometric.counselorSubtitle') : t('psychometric.subtitle')}
               </Paragraph>
             </div>
           </div>

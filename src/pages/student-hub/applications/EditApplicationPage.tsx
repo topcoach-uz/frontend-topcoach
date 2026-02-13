@@ -364,10 +364,10 @@ const EditApplicationPage: React.FC = () => {
     return (
       <div className="edit-application-error">
         <div className="error-content">
-          <h3>Invalid Application ID</h3>
-          <p>The application ID is missing or invalid. Please go back and try again.</p>
+          <h3>{t('studentHub.applications.invalidCollegeId', 'Invalid College ID')}</h3>
+          <p>{t('studentHub.applications.invalidCollegeIdDesc', 'The college ID is missing or invalid. Please go back and try again.')}</p>
           <Button type="primary" onClick={() => navigate('/student-hub/applications')}>
-            Back to Applications
+            {t('studentHub.applications.backToCollegeLists', 'Back to College Lists')}
           </Button>
         </div>
       </div>
@@ -379,7 +379,7 @@ const EditApplicationPage: React.FC = () => {
       <div className="edit-application-loading">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading application...</p>
+          <p>{t('studentHub.applications.loadingCollegeDetails', 'Loading college details...')}</p>
         </div>
       </div>
     );
@@ -389,14 +389,14 @@ const EditApplicationPage: React.FC = () => {
     return (
       <div className="edit-application-error">
         <div className="error-content">
-          <h3>Application Not Found</h3>
+          <h3>{t('studentHub.applications.collegeNotFound', 'College Not Found')}</h3>
           <p>
             {error 
               ? `Error loading application: ${(error as { data?: { message?: string }; message?: string })?.data?.message ?? (error as { message?: string })?.message ?? 'Unknown error'}`
               : 'The application you\'re trying to edit could not be found.'}
           </p>
           <Button type="primary" onClick={() => navigate('/student-hub/applications')}>
-            Back to Applications
+            {t('studentHub.applications.backToCollegeLists', 'Back to College Lists')}
           </Button>
         </div>
       </div>
@@ -406,8 +406,8 @@ const EditApplicationPage: React.FC = () => {
   return (
     <div className="edit-application-page">
       <div className="page-header">
-        <h1 className="page-title">Edit Application</h1>
-        <p className="page-subtitle">Update your college application details</p>
+        <h1 className="page-title">{t('studentHub.applications.editCollege', 'Edit College')}</h1>
+        <p className="page-subtitle">{t('studentHub.applications.updateCollegeDetails', 'Update your college list details')}</p>
       </div>
 
       <Card className="application-form-card">
@@ -596,21 +596,9 @@ const EditApplicationPage: React.FC = () => {
                 <RequirementsChecklist
                   applicationId={id}
                   requirements={localRequirements}
-                  onUpdate={(next, meta) => {
+                  onUpdate={(next) => {
                     setLocalRequirements(next);
-                    if (id)
-                      updateCollegeApplication({
-                        id,
-                        data: {
-                          requirements: next,
-                          ...(meta && {
-                            activityEvent: {
-                              type: 'checklist_item_completed',
-                              payload: meta,
-                            },
-                          }),
-                        },
-                      });
+                    // Changes are saved only when "Save checklist" is clicked
                   }}
                 />
                 <div style={{ marginTop: 16, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
@@ -683,24 +671,72 @@ const EditApplicationPage: React.FC = () => {
                       className="custom-checklist-add-group"
                       style={{
                         display: 'flex',
+                        alignItems: 'stretch',
+                        gap: 8,
                         width: '100%',
-                        maxWidth: 360,
-                        border: '1px solid #d9d9d9',
-                        borderRadius: 6,
-                        overflow: 'hidden',
-                        background: '#fff',
+                        maxWidth: 480,
+                        flexWrap: 'wrap',
                       }}
                     >
-                      <Input
-                        placeholder="Add custom item (e.g. Portfolio, SOP draft)"
-                        value={customInput}
-                        onChange={(e) => setCustomInput(e.target.value)}
-                        onPressEnter={() => addCustomItem()}
-                        bordered={false}
-                        style={{ flex: 1, borderRadius: 0 }}
-                      />
-                      <Button type="primary" onClick={() => addCustomItem()} style={{ borderRadius: 0, flexShrink: 0 }}>
-                        Add
+                      <div
+                        style={{
+                          display: 'flex',
+                          flex: '1 1 200px',
+                          minWidth: 200,
+                          border: '1px solid #d9d9d9',
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          background: '#fff',
+                        }}
+                      >
+                        <Input
+                          placeholder="Add custom item (e.g. Portfolio, SOP draft)"
+                          value={customInput}
+                          onChange={(e) => setCustomInput(e.target.value)}
+                          onPressEnter={() => addCustomItem()}
+                          bordered={false}
+                          style={{ flex: 1, borderRadius: 0, height: 40 }}
+                        />
+                        <Button
+                          type="primary"
+                          onClick={() => addCustomItem()}
+                          style={{
+                            height: 40,
+                            borderRadius: 0,
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <Button
+                        type="primary"
+                        icon={<FontAwesomeIcon icon="save" />}
+                        onClick={async () => {
+                          try {
+                            await updateCollegeApplication({
+                              id: id!,
+                              data: { requirements: localRequirements },
+                            }).unwrap();
+                            message.success('Checklist saved successfully');
+                          } catch (err: any) {
+                            message.error(err?.data?.message || 'Failed to save checklist');
+                          }
+                        }}
+                        loading={updateLoading}
+                        style={{
+                          height: 40,
+                          borderRadius: 8,
+                          flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Save checklist
                       </Button>
                     </div>
                     {((localRequirements as any)?.custom?.items ?? []).length > 0 && (
@@ -751,7 +787,7 @@ const EditApplicationPage: React.FC = () => {
                 htmlType="submit"
                 loading={updateLoading}
               >
-                Update Application
+                {t('studentHub.applications.updateCollege', 'Update College')}
               </Button>
             </Space>
           </div>

@@ -30,12 +30,17 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isReadOnlyEssays = readOnly === true;
   if (ESSAYS_COMING_SOON) {
     return (
       <div className="essays-page">
         <div className="page-header">
-          <h1 className="page-title">{t('studentHub.essays.title')}</h1>
-          <p className="page-subtitle">{t('studentHub.essays.subtitle')}</p>
+          <h1 className="page-title">
+            {isReadOnlyEssays ? t('studentHub.essays.counselorTitle') : t('studentHub.essays.title')}
+          </h1>
+          <p className="page-subtitle">
+            {isReadOnlyEssays ? t('studentHub.essays.counselorSubtitle') : t('studentHub.essays.subtitle')}
+          </p>
         </div>
         <Card className="essays-main-card">
           <Empty
@@ -46,7 +51,9 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                   Coming Soon
                 </div>
                 <p style={{ color: '#666', margin: 0, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
-                  We&apos;re building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!
+                  {isReadOnlyEssays
+                    ? t('studentHub.essays.counselorComingSoon')
+                    : "We're building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!"}
                 </p>
               </div>
             }
@@ -697,8 +704,12 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   return (
     <div className="essays-page">
       <div className="page-header">
-        <h1 className="page-title">{t('studentHub.essays.title')}</h1>
-        <p className="page-subtitle">{t('studentHub.essays.subtitle')}</p>
+        <h1 className="page-title">
+          {isReadOnly ? t('studentHub.essays.counselorTitle') : t('studentHub.essays.title')}
+        </h1>
+        <p className="page-subtitle">
+          {isReadOnly ? t('studentHub.essays.counselorSubtitle') : t('studentHub.essays.subtitle')}
+        </p>
       </div>
 
       <Card className="essays-main-card">

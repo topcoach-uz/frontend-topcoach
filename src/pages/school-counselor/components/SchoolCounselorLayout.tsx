@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
   TeamOutlined,
-  BookOutlined,
   BarChartOutlined,
   SettingOutlined,
   MenuOutlined,
@@ -30,6 +29,7 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
     selectedOrganizationId, 
     setSelectedOrganizationId, 
     organizations, 
+    counselorOrganizations,
     loading: orgsLoading,
     isSuperAdmin,
     isCounselor,
@@ -74,11 +74,12 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
       icon: <TeamOutlined />,
       label: 'Students',
     },
-    {
-      key: '/school-counselor/courses',
-      icon: <BookOutlined />,
-      label: 'Courses',
-    },
+    // Courses - hidden for now
+    // {
+    //   key: '/school-counselor/courses',
+    //   icon: <BookOutlined />,
+    //   label: 'Courses',
+    // },
     {
       key: '/school-counselor/analytics',
       icon: <BarChartOutlined />,
@@ -151,7 +152,7 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
               )}
               {isCounselor && counselorOrganizationId && (
                 <div className="organization-name">
-                  {organizations.find((org) => org.id === counselorOrganizationId)?.name || ''}
+                  {counselorOrganizations.find((org) => org.id === counselorOrganizationId)?.name || ''}
                 </div>
               )}
             </>

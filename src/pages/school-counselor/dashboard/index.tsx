@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Progress, Spin, Alert } from 'antd';
 import {
   TeamOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
   TrophyOutlined,
-  ArrowUpOutlined,
 } from '@ant-design/icons';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
@@ -112,14 +109,6 @@ const DashboardPage: React.FC = () => {
   // Count total enrollments
   const totalEnrollments = data.filter(d => d.courseName).length;
   
-  // Count students with access (paymentStatus and status both completed) - unique students
-  const studentsWithAccessSet = new Set(
-    data
-      .filter(s => s.status === 'completed' && s.paymentStatus === 'completed')
-      .map(s => s.userId)
-  );
-  const studentsWithAccess = studentsWithAccessSet.size;
-  
   // Calculate average progress from all enrollments with access
   const enrollmentsWithProgress = data.filter(
     s => s.status === 'completed' && s.paymentStatus === 'completed' && s.progressPercentage !== null
@@ -127,8 +116,6 @@ const DashboardPage: React.FC = () => {
   const averageProgress = enrollmentsWithProgress.length > 0
     ? Math.round(enrollmentsWithProgress.reduce((sum, s) => sum + (s.progressPercentage || 0), 0) / enrollmentsWithProgress.length)
     : Math.round(analytics?.averageProgress || 0);
-  
-  const activeStudents = studentsWithAccess;
 
   // Recent enrollments for table
   const recentEnrollments = data
@@ -215,26 +202,6 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Students with Access"
-              value={studentsWithAccess}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="metric-card">
-            <Statistic
-              title="Active Students"
-              value={activeStudents}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="metric-card">
-            <Statistic
               title="Average Progress"
               value={averageProgress}
               suffix="%"
@@ -265,7 +232,7 @@ const DashboardPage: React.FC = () => {
 
       <Row gutter={[24, 24]} className="content-row">
         {/* Students Needing Attention */}
-        <Col xs={24} lg={12}>
+        <Col xs={24}>
           <Card title="Students Needing Attention" className="attention-card">
             {studentsNeedingAttention.length > 0 ? (
               studentsNeedingAttention.map((student, index) => {
@@ -300,46 +267,6 @@ const DashboardPage: React.FC = () => {
               })
             ) : (
               <div className="empty-state">All students are on track! 🎉</div>
-            )}
-          </Card>
-        </Col>
-
-        {/* Course Breakdown */}
-        <Col xs={24} lg={12}>
-          <Card title="Course Breakdown" className="courses-card">
-            {analytics?.courseNameBreakdown && analytics.courseNameBreakdown.length > 0 ? (
-              <>
-                <div style={{ marginBottom: 16, fontSize: '14px', color: '#6b7280' }}>
-                  {totalStudents} student{totalStudents !== 1 ? 's' : ''} with {totalEnrollments} enrollment{totalEnrollments !== 1 ? 's' : ''}
-                </div>
-                {analytics.courseNameBreakdown.map((item: any) => {
-                  const courseDisplay = item.courseName === 'admissions' 
-                    ? 'Admissions Program' 
-                    : item.courseName === 'sat' 
-                    ? 'SAT Prep Course' 
-                    : item.courseName?.toUpperCase() || 'N/A';
-                  const color = item.courseName === 'admissions' ? 'blue' : item.courseName === 'sat' ? 'purple' : 'default';
-                  const strokeColor = item.courseName === 'admissions' ? '#1890ff' : item.courseName === 'sat' ? '#722ed1' : '#8b0000';
-                  return (
-                    <div key={item.courseName} className="course-item">
-                      <div className="course-header">
-                        <h4>{courseDisplay}</h4>
-                        <Tag color={color}>
-                          {item.count} enrollment{item.count !== 1 ? 's' : ''}
-                        </Tag>
-                      </div>
-                      <Progress
-                        percent={totalEnrollments > 0 ? Math.round((item.count / totalEnrollments) * 100) : 0}
-                        strokeColor={strokeColor}
-                        showInfo={false}
-                        style={{ marginTop: 8 }}
-                      />
-                    </div>
-                  );
-                })}
-              </>
-            ) : (
-              <div className="empty-state">No course data available</div>
             )}
           </Card>
         </Col>

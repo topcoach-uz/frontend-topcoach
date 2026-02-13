@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { UserRole } from 'src/app/services/users/type';
 import { useGetMeQuery } from 'src/app/services/users';
+import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 
 interface INavLink {
   path?: string;
@@ -10,22 +11,31 @@ interface INavLink {
   children?: INavLink[];
 }
 
+const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
+const MENTOR_EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
+
 export default function useNavigation() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const authProfile = useTypedSelector((state) => state.auth.profile);
   const { data: getMeData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
-  // Prefer getMe (same source as HomeRouter) so nav shows Home vs My Journey correctly for mentors
+  const { data: orgsData } = useGetMyOrganizationsQuery(undefined, { skip: !isAuthenticated });
   const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
-  const EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
-  const isCEO = EXCEPTION_EMAILS.includes(userProfile?.email || '');
-  // Mentees: My Journey only (no Home). Mentors: Home only. CEO (mentor): both Home + My Journey.
-  const shouldShowMyJourney = !isMentor || isCEO;
+  const isCEO = MENTOR_EXCEPTION_EMAILS.includes(userProfile?.email || '');
+  const isSuperAdmin = userProfile?.email === SUPER_ADMIN_EMAIL;
+  const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
+  // Counselors (non-superadmin): hide My Journey. Superadmins: full access.
+  const shouldShowMyJourney =
+    isSuperAdmin || ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
+  // Mentors: Home. Counselors (non-superadmin): School Counselor as home.
+  const showHome = isMentor && !(isCounselor && !isSuperAdmin);
+  const showSchoolCounselor = isCounselor && !isSuperAdmin;
 
   const navLinks: INavLink[] = [
-    ...(isMentor ? [{ path: '/', text: t('header.home', 'Home') }] : []),
+    ...(showHome ? [{ path: '/', text: t('header.home', 'Home') }] : []),
+    ...(showSchoolCounselor ? [{ path: '/school-counselor', text: t('header.schoolCounselor', 'School Counselor') }] : []),
     ...(shouldShowMyJourney
       ? [{ path: '/student-hub', text: t('header.studentHub', 'My Journey') }]
       : []),

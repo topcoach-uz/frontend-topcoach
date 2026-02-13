@@ -98,7 +98,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const [applicationToDelete, setApplicationToDelete] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all'); // 'all', 'application', 'scholarship'
-  const [sortBy, setSortBy] = useState<string>('deadline'); // 'deadline', 'priority', 'recent'
+  const [sortBy, setSortBy] = useState<string>('deadline'); // 'deadline' = soonest, 'deadline-furthest' = furthest
   const [applicationsTab, setApplicationsTab] = useState<'applications' | 'timeline'>('applications');
   const { dashboard, isLoading, hasError } = useStudentHub();
   
@@ -169,7 +169,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     return (
       <div className="applications-error">
         <div className="error-content">
-          <h3>Error Loading Applications</h3>
+          <h3>{t('studentHub.applications.errorLoading', 'Error Loading College Lists')}</h3>
           <p>There was an error loading your applications data. Please try again.</p>
           <button onClick={() => window.location.reload()}>Retry</button>
         </div>
@@ -419,20 +419,15 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   ]
     .filter((item: any) => (typeFilter === 'all' || item.itemType === typeFilter) && (statusFilter === 'all' || (item.status || item.applicationStatus) === statusFilter))
     .sort((a: any, b: any) => {
+      const dA = new Date(a.deadline || a.applicationDeadline || 0);
+      const dB = new Date(b.deadline || b.applicationDeadline || 0);
       if (sortBy === 'deadline') {
-        const dA = new Date(a.deadline || a.applicationDeadline || 0);
-        const dB = new Date(b.deadline || b.applicationDeadline || 0);
-        return dA.getTime() - dB.getTime();
+        return dA.getTime() - dB.getTime(); // Soonest first
       }
-      if (sortBy === 'priority') return (b.priority || 0) - (a.priority || 0);
-      if (sortBy === 'health') return a.healthScore - b.healthScore; // Lowest first (fix weak ones)
-      if (sortBy === 'match') {
-        // Sort by match score (would need to calculate from recommendations)
-        return 0; // Placeholder - would calculate match score per application
+      if (sortBy === 'deadline-furthest') {
+        return dB.getTime() - dA.getTime(); // Furthest first
       }
-      const dA = new Date(a.updatedAt || a.createdAt || 0);
-      const dB = new Date(b.updatedAt || b.createdAt || 0);
-      return dB.getTime() - dA.getTime();
+      return dA.getTime() - dB.getTime(); // Default: soonest
     });
 
   const upcomingDeadlines = [
@@ -616,7 +611,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                   size="middle"
                   suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
                 >
-                  <Select.Option value="all">All Applications</Select.Option>
+                  <Select.Option value="all">{t('studentHub.applications.allLists', 'All')}</Select.Option>
                   <Select.Option value="application">Universities</Select.Option>
                   <Select.Option value="scholarship">Scholarships</Select.Option>
                 </Select>
@@ -636,19 +631,17 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                 <Select 
                   value={sortBy} 
                   onChange={setSortBy} 
-                  style={{ minWidth: 160 }}
+                  style={{ minWidth: 180 }}
                   size="middle"
                   suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
                 >
                   <Select.Option value="deadline">Deadline (Soonest)</Select.Option>
-                  <Select.Option value="priority">Priority (Highest)</Select.Option>
-                  <Select.Option value="match">Match Score</Select.Option>
-                  <Select.Option value="health">Health Score</Select.Option>
-                  <Select.Option value="recent">Recently Updated</Select.Option>
+                  <Select.Option value="deadline-furthest">Deadline (Furthest)</Select.Option>
                 </Select>
               </Space>
             )}
           </Col>
+          {!isReadOnly && (
           <Col xs={24} sm={24} md={10} lg={9} className="applications-actions-col">
             <Space size="small" wrap className="applications-actions-btns">
               {/* Add Scholarship – hidden for now
@@ -679,10 +672,11 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                   boxShadow: '0 2px 8px rgba(139, 0, 0, 0.2)',
                 }}
               >
-                Add Application
+                {t('studentHub.applications.addApplication', 'Add to List')}
               </Button>
             </Space>
           </Col>
+          )}
         </Row>
       </Card>
 
@@ -692,7 +686,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
         size="middle"
         style={{ marginBottom: 16 }}
         items={[
-          { key: 'applications', label: 'Your applications' },
+          { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
           { key: 'timeline', label: 'Timeline' },
         ]}
       />
@@ -710,14 +704,14 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               <GlobalActivityTimeline
                 applications={applicationsData.applications || []}
                 scholarships={applicationsData.scholarships || []}
-                emptyMessage="No activity yet. Add applications and complete checklist items to see your timeline."
+                emptyMessage={t('studentHub.applications.timelineEmpty', 'No activity yet. Add colleges to your list and complete checklist items to see your timeline.')}
                 onApplicationClick={(id) => navigate(`/student-hub/applications/${id}/edit`)}
               />
             </Card>
           ) : (
           <Card 
             id="applications-list" 
-            title={typeFilter === 'all' ? 'Your applications' : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
+            title={typeFilter === 'all' ? t('studentHub.applications.yourCollegeLists', 'Your college lists') : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
             className="applications-card applications-card--compact"
             style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
             styles={{ body: { padding: combinedList.length === 0 ? '24px 20px' : '16px 20px', display: 'flex', flexDirection: 'column' } }}
@@ -834,7 +828,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                               </span>
                             )}
                           </div>
-                          {!isSch && item.id && (
+                          {!isReadOnly && !isSch && item.id && (
                             <div
                               className="application-card-meta-mentor"
                               onClick={(e) => e.stopPropagation()}
@@ -878,6 +872,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                           </div>
                         )}
 
+                        {!isReadOnly && (
                         <div className="application-card-actions">
                           {!isSch && item.id && (
                             <Button
@@ -912,6 +907,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                             Delete
                           </Button>
                         </div>
+                        )}
                       </div>
                     </Card>
                   </List.Item>
@@ -949,9 +945,11 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               <div className="deadlines-empty-state">
                 <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
                 <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
+                {!isReadOnly && (
                 <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
-                  Add application
+                  {t('studentHub.applications.addApplication', 'Add to List')}
                 </Button>
+                )}
               </div>
             )}
           </Card>

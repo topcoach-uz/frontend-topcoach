@@ -47,7 +47,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // Reduced from 11 items to 6 core items
   const menuItems = [
     { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('Dashboard') },
-    { key: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('Applications') },
+    { key: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists') },
     { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: 'Major Match' },
     { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: 'Opportunities' },
     { key: '/student-hub/essays', icon: <UnifiedIcon name="essays" size="md" color="primary" />, label: t('Essays') },

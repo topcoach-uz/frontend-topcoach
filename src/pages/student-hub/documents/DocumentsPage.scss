@@ -87,14 +87,22 @@
     background: #fff;
     border: 1px solid $border-light;
     border-radius: 10px;
-    cursor: pointer;
     transition: border-color 0.2s, box-shadow 0.2s;
     &:hover {
       border-color: $primary-300;
       box-shadow: 0 2px 8px rgba(139, 0, 0, 0.08);
     }
-    &.required {
-      border-left: 3px solid $primary-500;
+  }
+
+  .documents-category-view-btn {
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    border-color: $primary-500;
+    color: $primary-500;
+    &:hover {
+      border-color: $primary-600;
+      color: $primary-600;
     }
   }
 

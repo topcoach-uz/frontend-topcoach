@@ -74,21 +74,17 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
     return '';
   };
   // State management
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedCategory, setSelectedCategory] = useState<DocumentType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [viewModalCategory, setViewModalCategory] = useState<DocumentType | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType>(DocumentType.OTHER);
   const [fileList, setFileList] = useState<any[]>([]);
 
   // API hooks - use different API based on read-only mode
   // Normal mode - fetch current user's documents
   const { data: documentsResponse, isLoading: documentsLoading, refetch: refetchDocuments } = useGetDocumentsQuery(
-    { 
-      page: 1, 
-      limit: 100,
-      documentType: selectedCategory === 'all' ? undefined : selectedCategory
-    },
+    { page: 1, limit: 100 },
     { skip: isReadOnly }
   );
   
@@ -178,7 +174,10 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
       console.log('🎯 All localStorage keys:', Object.keys(localStorage));
       console.log('🎯 All sessionStorage keys:', Object.keys(sessionStorage));
       
-      const response = await fetch(`${baseUrl}/document-management/${documentId}/download`, {
+      const downloadUrl = isReadOnly && studentId
+        ? `${baseUrl}/student-journey/${studentId}/documents/${documentId}/download`
+        : `${baseUrl}/document-management/${documentId}/download`;
+      const response = await fetch(downloadUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -269,7 +268,8 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
   };
 
   // Show loading state
-  if (documentsLoading) {
+  const isLoading = isReadOnly ? readOnlyDocumentsLoading : documentsLoading;
+  if (isLoading) {
     return (
       <div className="documents-loading">
         <Spin size="large" />
@@ -284,9 +284,11 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
       <div className="documents-page-header">
         <div className="documents-page-header-left">
           <h1 className="documents-page-title">
-            {t('studentHub.documents.title')} <span className="documents-page-count">({totalDocumentCount})</span>
+            {isReadOnly ? t('studentHub.documents.counselorTitle') : t('studentHub.documents.title')} <span className="documents-page-count">({totalDocumentCount})</span>
           </h1>
-          <p className="documents-page-subtitle">{t('studentHub.documents.subtitle')}</p>
+          <p className="documents-page-subtitle">
+            {isReadOnly ? t('studentHub.documents.counselorSubtitle') : t('studentHub.documents.subtitle')}
+          </p>
         </div>
         <div className="documents-page-header-actions">
           <Input
@@ -297,6 +299,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
             prefix={<UnifiedIcon name="search" size="sm" color="secondary" />}
             allowClear
           />
+          {!isReadOnly && (
           <Button
             type="primary"
             className="documents-upload-btn"
@@ -305,153 +308,185 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
           >
             {t('studentHub.documents.uploadDocument')}
           </Button>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - readOnly: vertically stacked list; normal: category cards with View + Add */}
       <Card className="documents-main-card">
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          size="small"
-          items={[
-            {
-              key: 'overview',
-              label: t('studentHub.documents.overview'),
-              children: (
-                <div className="documents-overview">
-                  <Row gutter={[12, 12]}>
-                    {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => {
-                      const categoryDocs = documentsByCategory[type as DocumentType] || [];
-                      const isRequired = category.required;
-                      return (
-                        <Col xs={24} sm={12} md={12} lg={8} key={type}>
-                          <div
-                            className={`documents-category-card ${isRequired ? 'required' : ''}`}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => {
-                              setSelectedCategory(type as DocumentType);
-                              setActiveTab('documents');
-                            }}
-                            onKeyDown={(e) => e.key === 'Enter' && (setSelectedCategory(type as DocumentType), setActiveTab('documents'))}
-                          >
-                            <div className="documents-category-icon">
-                              <UnifiedIcon name={(category.icon as string) || 'file-text'} size="md" color="primary" />
-                            </div>
-                            <div className="documents-category-body">
-                              <div className="documents-category-title">
-                                {getTranslatedCategoryLabel(type)}
-                                <Tag className="documents-category-count" color={isRequired ? 'blue' : 'default'}>
-                                  {categoryDocs.length}
-                                </Tag>
-                              </div>
-                              <p className="documents-category-desc">{getTranslatedCategoryDescription(type)}</p>
-                              <Button
-                                type="primary"
-                                size="small"
-                                className="documents-category-add-btn"
-                                icon={<UnifiedIcon name="plus" size="xs" color="white" />}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedDocumentType(type as DocumentType);
-                                  setUploadModalVisible(true);
-                                }}
-                              >
-                                {t('studentHub.documents.addDocument')}
-                              </Button>
-                            </div>
+        {isReadOnly ? (
+          <div className="documents-readonly-stack">
+            {filteredDocuments.length > 0 ? (
+              <List
+                dataSource={filteredDocuments}
+                renderItem={(document: StudentDocument) => {
+                  const category = DOCUMENT_CATEGORIES[document.documentType as keyof typeof DOCUMENT_CATEGORIES];
+                  return (
+                    <List.Item>
+                      <div className="documents-doc-row documents-doc-card-horizontal" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', border: '1px solid #e5e7eb', borderRadius: 12, marginBottom: 8 }}>
+                        <div className="documents-doc-icon">
+                          <UnifiedIcon name={(category?.icon as string) || 'file-text'} size="md" color="primary" />
+                        </div>
+                        <div className="documents-doc-info" style={{ flex: 1 }}>
+                          <span className="documents-doc-title" style={{ fontWeight: 600 }}>{document.fileName}</span>
+                          <div className="documents-doc-meta" style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                            <Tag>{getTranslatedCategoryLabel(document.documentType)}</Tag>
+                            <span>{formatFileSize(document.fileSize)}</span>
+                            <span>{formatDate(document.createdAt)}</span>
                           </div>
-                        </Col>
-                      );
-                    })}
-                  </Row>
-                </div>
-              )
-            },
-            {
-              key: 'documents',
-              label: t('studentHub.documents.allDocuments'),
-              children: (
-                <div className="documents-list">
-                  <div className="documents-list-toolbar">
-                    <Select
-                      value={selectedCategory}
-                      onChange={setSelectedCategory}
-                      className="documents-list-filter"
-                      placeholder={t('studentHub.documents.filterByCategory')}
-                      options={[
-                        { value: 'all', label: t('studentHub.documents.allCategories') },
-                        ...Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => ({
-                          value: type,
-                          label: getTranslatedCategoryLabel(type),
-                        })),
-                      ]}
-                    />
+                        </div>
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<UnifiedIcon name="download" size="sm" color="white" />}
+                          onClick={() => handleDownloadDocument(document.id)}
+                        >
+                          {t('studentHub.documents.download')}
+                        </Button>
+                      </div>
+                    </List.Item>
+                  );
+                }}
+              />
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('studentHub.documents.noDocuments')} />
+            )}
+          </div>
+        ) : (
+        <div className="documents-overview">
+          <Row gutter={[12, 12]}>
+            {Object.entries(DOCUMENT_CATEGORIES).map(([type, category]) => {
+              const categoryDocs = documentsByCategory[type as DocumentType] || [];
+              return (
+                <Col xs={24} sm={12} md={12} lg={8} key={type}>
+                  <div className="documents-category-card">
+                    <div className="documents-category-icon">
+                      <UnifiedIcon name={(category.icon as string) || 'file-text'} size="md" color="primary" />
+                    </div>
+                    <div className="documents-category-body">
+                      <div className="documents-category-title">
+                        {getTranslatedCategoryLabel(type)}
+                        <Tag className="documents-category-count" color="default">
+                          {categoryDocs.length}
+                        </Tag>
+                      </div>
+                      <p className="documents-category-desc">{getTranslatedCategoryDescription(type)}</p>
+                      <Space size="small" wrap>
+                        <Button
+                          size="small"
+                          className="documents-category-view-btn"
+                          icon={<UnifiedIcon name="eye" size="xs" color="primary" />}
+                          onClick={() => {
+                            setViewModalCategory(type as DocumentType);
+                            setViewModalVisible(true);
+                          }}
+                        >
+                          {t('studentHub.documents.viewDocuments', 'View')}
+                        </Button>
+                        <Button
+                          type="primary"
+                          size="small"
+                          className="documents-category-add-btn"
+                          icon={<UnifiedIcon name="plus" size="xs" color="white" />}
+                          onClick={() => {
+                            setSelectedDocumentType(type as DocumentType);
+                            setUploadModalVisible(true);
+                          }}
+                        >
+                          {t('studentHub.documents.addDocument')}
+                        </Button>
+                      </Space>
+                    </div>
                   </div>
-
-                  {filteredDocuments.length > 0 ? (
-                    <List
-                      dataSource={filteredDocuments}
-                      className="documents-list-items"
-                      renderItem={(document: StudentDocument) => {
-                        const category = DOCUMENT_CATEGORIES[document.documentType as keyof typeof DOCUMENT_CATEGORIES];
-                        return (
-                          <List.Item className="documents-list-item">
-                            <div className="documents-doc-row">
-                              <div className="documents-doc-icon">
-                                <UnifiedIcon name={(category?.icon as string) || 'file-text'} size="md" color="primary" />
-                              </div>
-                              <div className="documents-doc-info">
-                                <span className="documents-doc-title">{document.fileName}</span>
-                                <div className="documents-doc-meta">
-                                  <Tag className="documents-doc-tag">{category?.label ?? document.documentType}</Tag>
-                                  <span>{formatFileSize(document.fileSize)}</span>
-                                  <span>{formatDate(document.createdAt)}</span>
-                                </div>
-                              </div>
-                              <Space size="small" className="documents-doc-actions">
-                                <Button
-                                  type="primary"
-                                  size="small"
-                                  icon={<UnifiedIcon name="download" size="sm" color="white" />}
-                                  onClick={() => handleDownloadDocument(document.id)}
-                                  className="documents-doc-download-btn"
-                                >
-                                  {t('studentHub.documents.download')}
-                                </Button>
-                                <Button
-                                  className="btn-delete-crimson"
-                                  size="small"
-                                  icon={<UnifiedIcon name="trash-2" size="sm" color="white" />}
-                                  onClick={() => handleDeleteDocument(document.id)}
-                                  loading={deleteLoading}
-                                >
-                                  {t('studentHub.documents.delete')}
-                                </Button>
-                              </Space>
-                            </div>
-                          </List.Item>
-                        );
-                      }}
-                    />
-                  ) : (
-                    <Empty
-                      className="documents-empty"
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={t('studentHub.documents.noDocuments') || 'No documents uploaded yet'}
-                    >
-                      <Button type="primary" icon={<UnifiedIcon name="upload" size="sm" color="white" />} onClick={handleUploadDocument}>
-                        {t('studentHub.documents.uploadDocument')}
-                      </Button>
-                    </Empty>
-                  )}
-                </div>
-              )
-            }
-          ]}
-        />
+                </Col>
+              );
+            })}
+          </Row>
+        </div>
+        )}
       </Card>
+
+      {/* View Documents Modal - shows documents for selected category */}
+      <Modal
+        title={viewModalCategory ? getTranslatedCategoryLabel(viewModalCategory) : t('studentHub.documents.viewDocuments', 'View Documents')}
+        open={viewModalVisible}
+        onCancel={() => {
+          setViewModalVisible(false);
+          setViewModalCategory(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        {viewModalCategory && (
+          <div className="documents-view-modal-content">
+            {((documentsByCategory[viewModalCategory] || []) as StudentDocument[]).length > 0 ? (
+              <List
+                dataSource={(documentsByCategory[viewModalCategory] || []) as StudentDocument[]}
+                renderItem={(document: StudentDocument) => {
+                  const category = DOCUMENT_CATEGORIES[document.documentType as keyof typeof DOCUMENT_CATEGORIES];
+                  return (
+                    <List.Item>
+                      <div className="documents-doc-row">
+                        <div className="documents-doc-icon">
+                          <UnifiedIcon name={(category?.icon as string) || 'file-text'} size="md" color="primary" />
+                        </div>
+                        <div className="documents-doc-info">
+                          <span className="documents-doc-title">{document.fileName}</span>
+                          <div className="documents-doc-meta">
+                            <span>{formatFileSize(document.fileSize)}</span>
+                            <span>{formatDate(document.createdAt)}</span>
+                          </div>
+                        </div>
+                        <Space size="small">
+                          <Button
+                            type="primary"
+                            size="small"
+                            icon={<UnifiedIcon name="download" size="sm" color="white" />}
+                            onClick={() => handleDownloadDocument(document.id)}
+                          >
+                            {t('studentHub.documents.download')}
+                          </Button>
+                          {!isReadOnly && (
+                          <Button
+                            danger
+                            size="small"
+                            icon={<UnifiedIcon name="trash-2" size="sm" color="white" />}
+                            onClick={() => handleDeleteDocument(document.id)}
+                            loading={deleteLoading}
+                          >
+                            {t('studentHub.documents.delete')}
+                          </Button>
+                          )}
+                        </Space>
+                      </div>
+                    </List.Item>
+                  );
+                }}
+              />
+            ) : (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t('studentHub.documents.noDocuments') || 'No documents in this category'}
+              >
+                {!isReadOnly && (
+                <Button
+                  type="primary"
+                  icon={<UnifiedIcon name="plus" size="sm" color="white" />}
+                  onClick={() => {
+                    setViewModalVisible(false);
+                    setSelectedDocumentType(viewModalCategory);
+                    setUploadModalVisible(true);
+                    setViewModalCategory(null);
+                  }}
+                >
+                  {t('studentHub.documents.addDocument')}
+                </Button>
+                )}
+              </Empty>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* Upload Modal */}
       <Modal

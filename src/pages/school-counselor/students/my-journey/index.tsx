@@ -12,7 +12,6 @@ import StudentHubApplications from './components/Applications';
 import StudentHubEssays from './components/Essays';
 import StudentHubDocuments from './components/Documents';
 import StudentHubPsychometricAssessment from './components/PsychometricAssessment';
-import StudentHubOpportunities from './components/Opportunities';
 import './my-journey.scss';
 
 const StudentMyJourneyView: React.FC = () => {
@@ -87,15 +86,6 @@ const StudentMyJourneyView: React.FC = () => {
       ),
     },
     {
-      key: 'opportunities',
-      label: (
-        <span>
-          <UnifiedIcon name="opportunities" size="sm" color="primary" style={{ marginRight: 8 }} />
-          Opportunities
-        </span>
-      ),
-    },
-    {
       key: 'essays',
       label: (
         <span>
@@ -118,7 +108,7 @@ const StudentMyJourneyView: React.FC = () => {
       label: (
         <span>
           <UnifiedIcon name="profile" size="sm" color="primary" style={{ marginRight: 8 }} />
-          {t('My Profile')}
+          {t("Student's Profile")}
         </span>
       ),
     },
@@ -129,15 +119,14 @@ const StudentMyJourneyView: React.FC = () => {
       <div className="journey-header">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(`/school-counselor/students/${studentId}`)}
+          onClick={() => navigate('/school-counselor/students')}
           className="back-button"
           style={{ borderColor: '#8b0000', color: '#8b0000' }}
         >
-          {t('Back to Student Details')}
+          {t('Back to Students')}
         </Button>
         <h1 className="page-title">
-          {studentName}'s {t('My Journey')}
-          <span className="read-only-badge">- {t('Read Only')}</span>
+          {studentName}'s Journey
         </h1>
       </div>
 
@@ -154,7 +143,6 @@ const StudentMyJourneyView: React.FC = () => {
         {activeTab === 'dashboard' && <StudentHubDashboard studentId={studentId} studentName={studentName} />}
         {activeTab === 'applications' && <StudentHubApplications studentId={studentId} studentName={studentName} />}
         {activeTab === 'psychometric-assessment' && <StudentHubPsychometricAssessment studentId={studentId} studentName={studentName} />}
-        {activeTab === 'opportunities' && <StudentHubOpportunities studentId={studentId} studentName={studentName} />}
         {activeTab === 'essays' && <StudentHubEssays studentId={studentId} studentName={studentName} />}
         {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} studentName={studentName} />}
         {activeTab === 'profile' && <StudentHubProfile studentId={studentId} studentName={studentName} />}

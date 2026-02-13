@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ConfigProvider, Select } from 'antd';
 import { SelectProps } from 'antd/lib';
 
@@ -13,18 +14,20 @@ export default function CustomSelect({
   borderRadius = 12,
   ...rest
 }: Props) {
-  return (
-    <ConfigProvider
-      theme={{
-        token: {},
-        components: {
-          Select: {
-            fontSize: fontSize ?? 15,
-            borderRadius,
-          },
+  const theme = useMemo(
+    () => ({
+      token: {},
+      components: {
+        Select: {
+          fontSize: fontSize ?? 15,
+          borderRadius,
         },
-      }}
-    >
+      },
+    }),
+    [fontSize, borderRadius]
+  );
+  return (
+    <ConfigProvider theme={theme}>
       <Select style={{ height }} {...rest} />
     </ConfigProvider>
   );

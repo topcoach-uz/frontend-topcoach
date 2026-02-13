@@ -428,7 +428,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             title: 'Application overdue',
             description: `Submit or update your application — deadline passed.`,
             priority: 'high',
-            actionLabel: 'Open application',
+            actionLabel: t('studentHub.dashboard.openCollege', 'Open college'),
             actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
             applicationId: appId,
             universityId: uniId,
@@ -525,10 +525,10 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       out.push({
         id: 'first-app',
         type: 'application',
-        title: 'Add your first application',
-        description: 'Start tracking universities and deadlines.',
+        title: t('studentHub.dashboard.addFirstCollege', 'Add your first college to your list'),
+        description: t('studentHub.dashboard.addFirstCollegeDesc', 'Start tracking universities and deadlines.'),
         priority: 'high',
-        actionLabel: 'Add application',
+        actionLabel: t('studentHub.applications.addApplication', 'Add to List'),
         actionPath: '/student-hub/applications/new',
       });
     }

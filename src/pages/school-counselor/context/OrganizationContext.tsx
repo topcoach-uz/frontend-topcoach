@@ -7,6 +7,8 @@ interface OrganizationContextType {
   selectedOrganizationId: string | null;
   setSelectedOrganizationId: (id: string | null) => void;
   organizations: any[];
+  /** Organizations from my-organizations API (for counselors). Used for sidebar org name. */
+  counselorOrganizations: any[];
   loading: boolean;
   isSuperAdmin: boolean;
   isCounselor: boolean;
@@ -34,6 +36,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
   const [organizations, setOrganizations] = useState<any[]>([]);
+  const [counselorOrganizations, setCounselorOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCounselor, setIsCounselor] = useState(false);
   const [counselorOrganizationId, setCounselorOrganizationId] = useState<string | null>(null);
@@ -66,16 +69,19 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         // If we get organizations, user is a counselor
         if (response.data && response.data.length > 0) {
           setIsCounselor(true);
+          setCounselorOrganizations(response.data);
           const orgId = response.data[0].id; // Get first organization
           setCounselorOrganizationId(orgId);
           setSelectedOrganizationId(orgId);
         } else {
           setIsCounselor(false);
+          setCounselorOrganizations([]);
         }
       } catch (error: any) {
         // If 403 or other error, user is not a counselor
         setIsCounselor(false);
         setCounselorOrganizationId(null);
+        setCounselorOrganizations([]);
       } finally {
         setHasCheckedCounselor(true);
       }
@@ -154,6 +160,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
         selectedOrganizationId,
         setSelectedOrganizationId,
         organizations,
+        counselorOrganizations,
         loading,
         isSuperAdmin,
         isCounselor,

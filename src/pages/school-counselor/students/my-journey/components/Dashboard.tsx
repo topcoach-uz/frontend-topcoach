@@ -1,6 +1,5 @@
 import React from 'react';
-import Dashboard from 'src/pages/student-hub/Dashboard';
-import './readonly-overlay.scss';
+import CounselorDashboard from './CounselorDashboard';
 
 interface StudentHubDashboardProps {
   studentId: string;
@@ -8,18 +7,7 @@ interface StudentHubDashboardProps {
 }
 
 const StudentHubDashboard: React.FC<StudentHubDashboardProps> = ({ studentId, studentName }) => {
-  // Pass props directly to Dashboard - no context needed
-  // studentId is the userId from the URL
-  return (
-    <div className="readonly-wrapper">
-      <Dashboard 
-        readOnly={true} 
-        studentId={studentId} 
-        studentName={studentName} 
-      />
-      <div className="readonly-overlay" />
-    </div>
-  );
+  return <CounselorDashboard studentId={studentId} studentName={studentName} />;
 };
 
 export default StudentHubDashboard;

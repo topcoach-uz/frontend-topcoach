@@ -128,7 +128,7 @@ const StudentsPage: React.FC = () => {
   }, [data, statusFilter, courseFilter]);
 
   const handleViewStudent = (studentId: string) => {
-    navigate(`/school-counselor/students/${studentId}`);
+    navigate(`/school-counselor/students/${studentId}/my-journey`);
   };
 
   const exportToExcel = () => {

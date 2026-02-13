@@ -66,7 +66,7 @@ const ViewApplicationPage: React.FC = () => {
       <div className="view-application-loading">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading application details...</p>
+          <p>{t('studentHub.applications.loadingCollegeDetails', 'Loading college details...')}</p>
         </div>
       </div>
     );
@@ -79,7 +79,7 @@ const ViewApplicationPage: React.FC = () => {
           <h3>Application Not Found</h3>
           <p>The application you're looking for could not be found.</p>
           <Button type="primary" onClick={() => navigate('/student-hub/applications')}>
-            Back to Applications
+            {t('studentHub.applications.backToCollegeLists', 'Back to College Lists')}
           </Button>
         </div>
       </div>
@@ -110,13 +110,13 @@ const ViewApplicationPage: React.FC = () => {
                 icon={<FontAwesomeIcon icon="edit" />}
                 onClick={() => navigate(`/student-hub/applications/${id}/edit`)}
               >
-                Edit Application
+                {t('studentHub.applications.editCollege', 'Edit College')}
               </Button>
               <Button 
                 icon={<FontAwesomeIcon icon="arrow-left" />}
                 onClick={() => navigate('/student-hub/applications')}
               >
-                Back to Applications
+                {t('studentHub.applications.backToCollegeLists', 'Back to College Lists')}
               </Button>
             </Space>
           </div>

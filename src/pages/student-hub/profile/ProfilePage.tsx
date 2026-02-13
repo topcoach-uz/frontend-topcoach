@@ -190,9 +190,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24}>
             <div className="profile-header-content">
-              <h1 className="profile-title">{t('studentHub.profile.myStudentProfile')}</h1>
+              <h1 className="profile-title">
+                {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
+              </h1>
               <p className="profile-subtitle">
-                {t('studentHub.profile.completeProfileMessage')}
+                {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
               </p>
               <div className="profile-status">
                 <Badge

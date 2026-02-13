@@ -1,0 +1,36 @@
+.counselor-dashboard {
+  .info-card,
+  .stats-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .ant-card-head {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ant-card-head-title {
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  .stats-card {
+    .stat-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #4b5563;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      strong {
+        color: #8b0000;
+        margin-left: 4px;
+      }
+    }
+  }
+}

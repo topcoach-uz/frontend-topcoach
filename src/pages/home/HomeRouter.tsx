@@ -1,5 +1,5 @@
 /**
- * Decides what to show at / (home): MentorHome, CounselorHome, or redirect to /student-hub.
+ * Decides what to show at / (home): MentorHome, redirect counselors to /school-counselor, or redirect mentees to /student-hub.
  * Used at index route when authenticated.
  *
  * Hook-order fix: We use only a fixed set of hooks (no useGetMeQuery with skip, no
@@ -13,8 +13,7 @@ import useParamsHook from 'src/hooks/params';
 import { useTypedSelector } from 'src/app/store';
 import { PageLoader } from 'src/components/loading';
 import MentorHomePage from './mentor';
-import CounselorHome from './counselor/CounselorHome';
-import { useCounselorStatus } from 'src/hooks/useCounselorStatus';
+import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 
@@ -48,14 +47,18 @@ interface HomeRouterContentProps {
 }
 
 function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
-  const { isCounselor, isLoading: counselorLoading } = useCounselorStatus(false);
+  const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
+  const { data: orgsData, isLoading: counselorLoading } = useGetMyOrganizationsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
 
   if (counselorLoading) {
     return <PageLoader text="Loading..." />;
   }
 
   if (isCounselor && email !== SUPER_ADMIN_EMAIL) {
-    return <CounselorHome />;
+    return <Navigate to="/school-counselor" replace />;
   }
 
   if (profile?.role === 'Mentor') {

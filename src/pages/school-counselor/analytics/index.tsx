@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Select, Statistic, Progress, Table, Tag, Spin, Alert } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Tag, Spin, Alert } from 'antd';
 import {
   TeamOutlined,
-  CheckCircleOutlined,
   TrophyOutlined,
-  ArrowUpOutlined,
 } from '@ant-design/icons';
 import {
   BarChart,
@@ -17,10 +15,8 @@ import {
 } from 'recharts';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
-import type { ColumnsType } from 'antd/es/table';
 import './analytics.scss';
 
-const { Option } = Select;
 
 const AnalyticsPage: React.FC = () => {
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
@@ -101,10 +97,7 @@ const AnalyticsPage: React.FC = () => {
   // Calculate overall statistics
   const uniqueStudentIds = new Set(data.map(d => d.userId));
   const totalStudents = uniqueStudentIds.size;
-  const totalEnrollments = data.filter(d => d.courseName).length;
-  const studentsWithAccess = analytics.studentsWithAccess || 0;
   const averageProgress = analytics.averageProgress || 0;
-  const accessRate = totalStudents > 0 ? Math.round((studentsWithAccess / totalStudents) * 100) : 0;
 
   // Progress distribution based on data
   const progressDistribution = [
@@ -123,57 +116,6 @@ const AnalyticsPage: React.FC = () => {
     { 
       range: '76-100%', 
       count: data.filter((s) => s.progressPercentage !== null && s.progressPercentage > 75).length 
-    },
-  ];
-
-  // Course name breakdown
-  const courseNameBreakdown = analytics.courseNameBreakdown || [];
-
-  const courseNameColumns: ColumnsType<any> = [
-    {
-      title: 'Course',
-      dataIndex: 'courseName',
-      key: 'courseName',
-      width: 200,
-      render: (courseName: string) => {
-        const courseDisplay = courseName === 'admissions' 
-          ? 'Admissions Program' 
-          : courseName === 'sat' 
-          ? 'SAT Prep Course' 
-          : courseName?.toUpperCase() || 'N/A';
-        const color = courseName === 'admissions' ? 'blue' : courseName === 'sat' ? 'purple' : 'default';
-        return <Tag color={color}>{courseDisplay}</Tag>;
-      },
-    },
-    {
-      title: 'Enrollments',
-      dataIndex: 'count',
-      key: 'count',
-      width: 120,
-      sorter: (a, b) => a.count - b.count,
-      render: (count: number) => `${count} enrollment${count !== 1 ? 's' : ''}`,
-    },
-    {
-      title: 'Percentage',
-      key: 'percentage',
-      width: 200,
-      render: (_, record) => {
-        // Calculate percentage based on total enrollments, not total students
-        const percentage = totalEnrollments > 0 ? Math.round((record.count / totalEnrollments) * 100) : 0;
-        const strokeColor = record.courseName === 'admissions' ? '#1890ff' : record.courseName === 'sat' ? '#722ed1' : '#8b0000';
-        return (
-          <div>
-            <Progress
-              percent={percentage}
-              strokeColor={strokeColor}
-              size="small"
-              showInfo={false}
-              style={{ marginBottom: 4 }}
-            />
-            <span style={{ fontSize: 12, color: '#6b7280' }}>{percentage}%</span>
-          </div>
-        );
-      },
     },
   ];
 
@@ -213,33 +155,12 @@ const AnalyticsPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Students with Access"
-              value={studentsWithAccess}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="metric-card">
-            <Statistic
               title="Average Progress"
               value={averageProgress}
               suffix="%"
               prefix={<TrophyOutlined />}
               valueStyle={{ color: '#faad14' }}
               precision={1}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="metric-card">
-            <Statistic
-              title="Access Rate"
-              value={accessRate}
-              suffix="%"
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
@@ -357,19 +278,6 @@ const AnalyticsPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* Course Breakdown */}
-      <Card title="Course Breakdown" className="performance-card" style={{ marginBottom: 24 }}>
-        <div style={{ marginBottom: 16, fontSize: '14px', color: '#6b7280' }}>
-          {totalStudents} student{totalStudents !== 1 ? 's' : ''} with {totalEnrollments} enrollment{totalEnrollments !== 1 ? 's' : ''}
-        </div>
-        <Table
-          columns={courseNameColumns}
-          dataSource={courseNameBreakdown}
-          rowKey="courseName"
-          pagination={false}
-        />
-      </Card>
 
       {/* Additional Insights */}
       <Row gutter={[24, 24]} className="insights-row">

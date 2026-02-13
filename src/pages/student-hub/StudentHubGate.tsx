@@ -58,7 +58,7 @@ export default function StudentHubGate() {
   }
 
   if (isCounselor) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/school-counselor" replace />;
   }
 
   return <StudentHubRoutes />;

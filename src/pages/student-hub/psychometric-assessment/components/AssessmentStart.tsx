@@ -104,7 +104,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
       {/* Completed Assessments History */}
       {allAssessments && allAssessments.length > 0 && (
         <Collapse
-          defaultActiveKey={[]}
+          defaultActiveKey={['history']}
           style={{ marginBottom: 24 }}
           items={[
             {
@@ -130,6 +130,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                         >
                           View Results
                         </Button>,
+                        !readOnly && (
                         <Button
                           key="delete"
                           type="link"
@@ -139,7 +140,8 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                         >
                           Delete
                         </Button>
-                      ]}
+                        ),
+                      ].filter(Boolean)}
                     >
                       <List.Item.Meta
                         title={
@@ -175,67 +177,45 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
         />
       )}
 
-      {/* Assessment Overview with Start Button */}
-      <Card className="assessment-overview-card" style={{ marginBottom: 24 }}>
-        <Row gutter={[24, 24]} align="middle">
-          <Col xs={24} lg={18}>
-            <Title level={4} style={{ margin: 0, marginBottom: 16 }}>Assessment Overview</Title>
-            <Row gutter={[32, 16]}>
-              <Col xs={12} sm={6}>
-                <div className="overview-item">
-                  <Text type="secondary" style={{ fontSize: 12 }}>Total Questions</Text>
-                  <Title level={4} style={{ margin: 0, color: '#8b0000' }}>{totalQuestions}</Title>
-                </div>
-              </Col>
-              <Col xs={12} sm={6}>
-                <div className="overview-item">
-                  <Text type="secondary" style={{ fontSize: 12 }}>Estimated Time</Text>
-                  <Title level={4} style={{ margin: 0, color: '#8b0000' }}>{estimatedTime} min</Title>
-                </div>
-              </Col>
-              <Col xs={12} sm={6}>
-                <div className="overview-item">
-                  <Text type="secondary" style={{ fontSize: 12 }}>Assessment Type</Text>
-                  <Title level={4} style={{ margin: 0 }}>Comprehensive</Title>
-                </div>
-              </Col>
-              <Col xs={12} sm={6}>
-                <div className="overview-item">
-                  <Text type="secondary" style={{ fontSize: 12 }}>Components</Text>
-                  <Title level={4} style={{ margin: 0 }}>{includeAptitude ? 6 : 5} Sections</Title>
-                </div>
-              </Col>
-            </Row>
-          </Col>
-          <Col xs={24} lg={6}>
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleStart}
-              loading={isLoading}
-              disabled={readOnly}
-              className="start-button"
-              icon={<FontAwesomeIcon icon={activeSession?.hasActiveSession ? "redo" : "play-circle"} />}
-              block
-              style={{ height: 56, fontSize: 16, fontWeight: 600 }}
-              title={readOnly ? 'Assessment cannot be started in read-only mode' : undefined}
-            >
-              {activeSession?.hasActiveSession 
-                ? `Resume (${activeSession.answeredCount}/${activeSession.totalCount})`
-                : 'Start Assessment'}
-            </Button>
-            {activeSession?.hasActiveSession && activeSession.lastUpdated && (
-              <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
-                Last saved: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
-                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                })}
+      {/* Start button (Overview removed per counselor view requirements) */}
+      {!readOnly && (
+        <Card className="assessment-start-card" style={{ marginBottom: 24 }}>
+          <Row gutter={[24, 24]} align="middle">
+            <Col xs={24} lg={18}>
+              <Title level={4} style={{ margin: 0 }}>Ready to start?</Title>
+              <Text type="secondary">
+                {totalQuestions} questions · ~{estimatedTime} minutes
               </Text>
-            )}
-          </Col>
-        </Row>
-      </Card>
+            </Col>
+            <Col xs={24} lg={6}>
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleStart}
+                loading={isLoading}
+                className="start-button"
+                icon={<FontAwesomeIcon icon={activeSession?.hasActiveSession ? "redo" : "play-circle"} />}
+                block
+                style={{ height: 56, fontSize: 16, fontWeight: 600 }}
+              >
+                {activeSession?.hasActiveSession 
+                  ? `Resume (${activeSession.answeredCount}/${activeSession.totalCount})`
+                  : 'Start Assessment'}
+              </Button>
+              {activeSession?.hasActiveSession && activeSession.lastUpdated && (
+                <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
+                  Last saved: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                  })}
+                </Text>
+              )}
+            </Col>
+          </Row>
+        </Card>
+      )}
 
-      {/* Assessment Components (V2) */}
+      {/* Assessment Components (V2) - hidden in read-only counselor view */}
+      {!readOnly && (
       <Card className="assessment-components-card" title="Assessment Components" style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
@@ -314,8 +294,10 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           )}
         </Row>
       </Card>
+      )}
 
-      {/* Settings */}
+      {/* Settings - hidden in read-only counselor view */}
+      {!readOnly && (
       <Card className="assessment-settings-card" title="Assessment Settings">
         <Row gutter={[24, 24]}>
           {/* Language selection temporarily hidden - not working yet */}
@@ -361,6 +343,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           </Col>
         </Row>
       </Card>
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal
