@@ -72,7 +72,7 @@ export default function RegistrationModal({
   const isAmbassadorEvent =
     eventTitle.toLowerCase().includes('topcoach campus ambassador') ||
     eventTitle.toLowerCase().includes('startup ambassador in your district');
-  const ambassadorFormLink = 'https://forms.gle/SB5HUieArhNnPj1Q7';
+  const ambassadorFormLink = 'https://forms.gle/2Pas1wsbWyY8o6wu8';
 
   return (
     <Modal

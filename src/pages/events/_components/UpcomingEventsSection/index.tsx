@@ -116,7 +116,7 @@ export default function UpcomingEventsSection({
     fetchUserRegistrations();
   }, [upcomingEvents, upcomingWorkshops]);
 
-  const AMBASSADOR_FORM_LINK = 'https://forms.gle/SB5HUieArhNnPj1Q7';
+  const AMBASSADOR_FORM_LINK = 'https://forms.gle/2Pas1wsbWyY8o6wu8';
   const isAmbassadorEvent = (title: string) =>
     title.toLowerCase().includes('topcoach campus ambassador') ||
     title.toLowerCase().includes('startup ambassador in your district');
