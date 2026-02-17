@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import axios from 'axios';
-import { access_token } from 'src/constants/storage';
+import { ACCESS_TOKEN } from 'src/constants/storage';
 import { baseUrl } from '../services/api/const';
 import { store } from '../store';
 import { logout } from '../slices/authSlice';
@@ -61,50 +61,59 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const urlList = ['/auth/login', '/auth/exchange', '/auth/reset/password', '/auth/reset/password/confirm'];
+const urlList = ['/auth/login', '/auth/exchange', '/auth/reset/password', '/auth/reset/password/confirm', '/auth/verify/email'];
+
+const isAuthUrl = (url: string) =>
+  urlList.some((path) => (url || '').includes(path));
+
+// Deduplicate error toasts to prevent "infinite" stacked messages
+let lastErrorToast = '';
+let lastErrorTime = 0;
+const TOAST_DEBOUNCE_MS = 3000;
+
+const showErrorToast = (msg: string, duration?: number) => {
+  const now = Date.now();
+  if (msg === lastErrorToast && now - lastErrorTime < TOAST_DEBOUNCE_MS) return;
+  lastErrorToast = msg;
+  lastErrorTime = now;
+  message.error(msg, duration ?? 5);
+};
 
 // Response Interceptor: Handle 401 Unauthorized
 axiosInstance.interceptors.response.use(
   (response) => response, // Pass successful responses
   async (error) => {
     const originalRequest = error.config;
+    const backendMessage = error.response?.data?.message;
 
     // If 401 Unauthorized, attempt to refresh token
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !urlList.includes(originalRequest.url) // Use originalRequest.url here
+      !isAuthUrl(originalRequest?.url || '')
     ) {
       originalRequest._retry = true; // Prevent infinite loops
 
       try {
-        // Request a new access token, passing the original URL
         await refreshToken(originalRequest.url, error);
-
-        // Retry the original request after successful refresh
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, log user out (handled inside refreshToken now)
         if (
-          originalRequest.url.startsWith('/sessions') ||
-          originalRequest.url.startsWith('/camps')
+          originalRequest?.url?.startsWith('/sessions') ||
+          originalRequest?.url?.startsWith('/camps')
         ) {
           // do nothing
-        } else if (access_token) {
-          // Only show session expired message if it's not a login attempt
-          const isLoginAttempt = originalRequest.url.includes('/auth/login') || 
-                                originalRequest.url.includes('/auth/exchange') ||
-                                originalRequest.url.includes('/auth/reset/password') ||
-                                originalRequest.url.includes('/auth/reset/password/confirm');
-          
-          if (!isLoginAttempt) {
-            message.error('Your session has expired. Please log in again.');
-          }
         } else {
-          message.error(
-            'Something went wrong. Please try again later, if the issue persists contact support.',
-            10
-          );
+          const hasToken = !!localStorage.getItem(ACCESS_TOKEN) || !!getAccessToken();
+          if (hasToken) {
+            showErrorToast('Your session has expired. Please log in again.');
+          } else {
+            // Use backend message when available for user-friendly errors
+            const friendlyMsg =
+              backendMessage ||
+              'Please try again. If the issue persists, contact support.';
+            showErrorToast(friendlyMsg, 5);
+          }
         }
         return Promise.reject(refreshError);
       }

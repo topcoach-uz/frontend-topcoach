@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Form, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import { api } from 'src/app/api';
 import { login } from 'src/app/slices/authSlice';
 import { useAppDispatch } from 'src/app/store';
@@ -19,9 +18,11 @@ export default function SigninForm() {
   const { form } = useSignInForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const isUnverifiedEmail = !!error?.toLowerCase().includes('verify your email');
 
   const formItems: IFormItemType[] = [
     {
@@ -85,7 +86,8 @@ export default function SigninForm() {
         }
       })
       .catch((err: any) => {
-        setError(err?.response?.data?.message || 'An error occurred');
+        const errMsg = err?.response?.data?.message || 'An error occurred';
+        setError(errMsg);
         setLoading(false);
       })
       .finally(() => {
@@ -112,6 +114,33 @@ export default function SigninForm() {
       </CustomButton>
 
       <FormError formError={error} />
+      {isUnverifiedEmail && (
+        <CustomButton
+          type="link"
+          onClick={async () => {
+            const email = form.getFieldValue('email')?.trim();
+            if (!email) {
+              message.warning(t('signIn.emailError', 'Please enter your email'));
+              return;
+            }
+            setResending(true);
+            try {
+              await api.auth.resendEmail({ email });
+              message.success(t('signIn.resendSuccess', 'Verification email sent! Check your inbox.'));
+              setError('');
+            } catch (err: any) {
+              message.error(err?.response?.data?.message || t('signIn.resendFailed', 'Failed to resend. Try again.'));
+            } finally {
+              setResending(false);
+            }
+          }}
+          loading={resending}
+          disabled={resending}
+          style={{ padding: 0, marginTop: 4, display: 'block' }}
+        >
+          {t('signIn.resendVerification', 'Resend verification email')}
+        </CustomButton>
+      )}
 
       <CustomButton
         type="primary"

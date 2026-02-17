@@ -6,6 +6,10 @@ import { logout } from 'src/app/slices/authSlice';
 import { show } from 'src/app/slices/profilePopupSlice';
 import { store } from 'src/app/store';
 
+// Deduplicate error toasts to prevent stacked/infinite messages
+let last401ToastTime = 0;
+const TOAST_DEBOUNCE_MS = 3000;
+
 /**
  * Log a warning and show a toast!
  */
@@ -90,7 +94,11 @@ export const rtkQueryErrorLogger: Middleware =
         );
 
         if (!isLoginAttempt && originalRequestEndpoint) {
-          message.warning('Your session has expired. Please log in again.');
+          const now = Date.now();
+          if (now - last401ToastTime > TOAST_DEBOUNCE_MS) {
+            last401ToastTime = now;
+            message.warning('Your session has expired. Please log in again.');
+          }
           if (
             !originalRequestEndpoint.startsWith('/sessions') &&
             !originalRequestEndpoint.startsWith('/camps') &&
@@ -105,7 +113,9 @@ export const rtkQueryErrorLogger: Middleware =
               message.success('Refresh successful!');
             })
             .catch(() => {
-              message.error('Refresh failed. Please log in again.');
+              if (Date.now() - last401ToastTime > TOAST_DEBOUNCE_MS) {
+                message.error('Refresh failed. Please log in again.');
+              }
             });
         }
       }
