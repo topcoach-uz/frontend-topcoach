@@ -18,6 +18,27 @@
   background-color: $colorBgContainer !important;
 }
 
+.sessions_header {
+  margin-bottom: 24px;
+}
+
+.sessions_title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: $colorTextBase;
+  margin: 0 0 8px 0;
+}
+
+.sessions_subtitle {
+  font-size: 14px;
+  color: $colorTextSecondary;
+  margin: 0;
+  line-height: 1.5;
+}
+
 .main_tab_wrapper {
   display: flex;
   justify-content: space-between;

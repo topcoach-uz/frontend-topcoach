@@ -216,7 +216,6 @@ export default function AvailabilitySettings() {
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <h3 className={styles.title}>
-          <span className={styles.titleIcon}>🕐</span>
           {t('availability.weeklyHours')}
         </h3>
         <p className={styles.subtitle}>

@@ -1,5 +1,4 @@
 import { TabsProps } from 'antd';
-import { SegmentedOptions } from 'antd/es/segmented';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
@@ -11,54 +10,16 @@ import useColors from 'src/hooks/useColors';
 import UpcomingCard from '../../_components/bookings/_components/upcamingcards';
 import styles from './bookings.module.scss';
 import { useTranslation } from 'react-i18next';
-import { useScreenSize } from 'src/hooks/useScreenSize';
 dayjs.extend(utc);
-
-type MainTabType = SessionTypeEnum | 'all' | 'group_session';
 
 export default function useBookings() {
   const colors = useColors();
   const { t } = useTranslation();
-  const { screenSize } = useScreenSize();
 
-  const [mainTab, setMainTab] = useState<MainTabType>(
-    SessionTypeEnum.Individual30M
-  );
-  let mainTabOptions: SegmentedOptions<MainTabType> = [
-    {
-      label: t('homeMentor.individual30min'),
-      value: SessionTypeEnum.Individual30M,
-    },
-    {
-      label: t('homeMentor.individual60min'),
-      value: SessionTypeEnum.Individual60M,
-    },
-  ];
-
-  if (screenSize < 460) {
-    mainTabOptions = [
-      {
-        label: t('homeMentor.individual30min').slice(0, 15) + '...',
-        value: SessionTypeEnum.Individual30M,
-      },
-      {
-        label: t('homeMentor.individual60min').slice(0, 15) + '...',
-        value: SessionTypeEnum.Individual60M,
-      },
-    ];
-  }
-
-  const [activeTab, setActiveTab] = useState('2');
+  const [activeTab, setActiveTab] = useState('1');
   const handleTabsChange = (key: string) => setActiveTab(key);
 
   const [allSessions, setAllSessions] = useState<SessionsSchema[]>([]);
-  const [groupSessions, setGroupSessions] = useState<SessionsSchema[]>([]);
-  const [oneOnOneSessions, setOneOnOneSessions] = useState<SessionsSchema[]>(
-    []
-  );
-  const [oneOnOneSessionsExtented, setOneOnOneSessionsExtented] = useState<
-    SessionsSchema[]
-  >([]);
   const [aviableSessions, setAviableSessions] = useState<SessionsSchema[]>([]);
 
   // -------------------- old code --------------------
@@ -93,7 +54,7 @@ export default function useBookings() {
     return sessionDateTime.isBefore(currentDay);
   });
 
-  // formatted data update based on the response
+  // formatted data update based on the response – show all sessions in Booked/Available/Past/Canceled
   useEffect(() => {
     const updatedData = ((response as any)?.data ?? []) as SessionsSchema[];
 
@@ -103,33 +64,8 @@ export default function useBookings() {
     }));
 
     setAllSessions(formatted);
-    setOneOnOneSessions(
-      formatted.filter((s) => s.type === SessionTypeEnum.Individual30M)
-    );
-    setOneOnOneSessionsExtented(
-      formatted.filter((s) => s.type === SessionTypeEnum.Individual60M)
-    );
-    setGroupSessions(formatted.filter((s) => s.type === SessionTypeEnum.Group));
+    setAviableSessions(formatted);
   }, [response]);
-
-  // Filter sessions based on the selected mainTab
-  useEffect(() => {
-    if (mainTab === 'all') {
-      setAviableSessions(allSessions);
-    } else if (mainTab === 'group_session') {
-      setAviableSessions(groupSessions);
-    } else if (mainTab === 'individual30m') {
-      setAviableSessions(oneOnOneSessions);
-    } else {
-      setAviableSessions(oneOnOneSessionsExtented);
-    }
-  }, [
-    mainTab,
-    allSessions,
-    groupSessions,
-    oneOnOneSessions,
-    oneOnOneSessionsExtented,
-  ]);
 
   // Bookings
   const correctDateBooking = aviableSessions.filter((item) => {
@@ -280,11 +216,8 @@ export default function useBookings() {
   return {
     activeTab,
     tabItems,
-    mainTabOptions,
-    mainTab,
     isLoading,
     handleTabsChange,
-    setMainTab,
     refetch,
   };
 }
