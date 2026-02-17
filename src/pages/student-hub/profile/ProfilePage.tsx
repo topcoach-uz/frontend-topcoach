@@ -33,16 +33,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, isLoading, error, isProfileComplete, profileStatus } = useStudentProfile(hookOptions);
 
-  // Handle URL parameters for tab navigation
+  // Handle URL parameters for tab navigation (gpa-calculator not available in read-only)
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['personal', 'academic', 'activities', 'gpa-calculator' /* 'settings' */].includes(tabFromUrl)) {
+    const allowedTabs = isReadOnly ? ['personal', 'academic', 'activities'] : ['personal', 'academic', 'activities', 'gpa-calculator'];
+    if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     } else {
-      // Default to personal if no tab specified
       setActiveTab('personal');
     }
-  }, [searchParams]);
+  }, [searchParams, isReadOnly]);
 
   // Handle tab changes
   const handleTabChange = (key: string) => {
@@ -160,16 +160,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       ),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
-    {
-      key: 'gpa-calculator',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="calculator" size="sm" color="primary" />
-          <span>GPA Calculator</span>
-        </div>
-      ),
-      children: <GpaCalculatorPage />,
-    },
+    // GPA Calculator tab hidden in read-only (counselor) view
+    ...(!isReadOnly
+      ? [
+          {
+            key: 'gpa-calculator',
+            label: (
+              <div className="tab-label">
+                <UnifiedIcon name="calculator" size="sm" color="primary" />
+                <span>GPA Calculator</span>
+              </div>
+            ),
+            children: <GpaCalculatorPage />,
+          },
+        ]
+      : []),
     // Settings tab hidden for now
     // {
     //   key: 'settings',

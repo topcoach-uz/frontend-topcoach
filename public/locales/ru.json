@@ -856,6 +856,7 @@
   "studentHub.dashboard.errorDescription": "Произошла ошибка при загрузке данных панели управления. Пожалуйста, попробуйте снова.",
   "studentHub.dashboard.retry": "Повторить",
   "studentHub.dashboard.recentActivity": "Последние действия",
+  "studentHub.dashboard.activityTimeline": "Хронология активности",
   "studentHub.dashboard.noActivity": "Нет последних действий",
   "studentHub.dashboard.welcomeBack": "Добро пожаловать",
   "studentHub.dashboard.welcomeMessage": "Вы отлично продвигаетесь в ваших заявках в колледжи. Так держать!",

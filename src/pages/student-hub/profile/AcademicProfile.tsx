@@ -596,29 +596,31 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         </Card>
 
 
-        {/* Form Actions */}
-        <Card className="form-actions-card">
-          <div className="form-actions">
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={updateLoading}
-                icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
-                size="large"
-              >
-                Save Academic Profile
-              </Button>
-              <Button
-                type="default"
-                icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
-                size="large"
-              >
-                Cancel
-              </Button>
-            </Space>
-          </div>
-        </Card>
+        {/* Form Actions – hidden in read-only (counselor) view */}
+        {!isReadOnly && (
+          <Card className="form-actions-card">
+            <div className="form-actions">
+              <Space>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={updateLoading}
+                  icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
+                  size="large"
+                >
+                  Save Academic Profile
+                </Button>
+                <Button
+                  type="default"
+                  icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
+                  size="large"
+                >
+                  Cancel
+                </Button>
+              </Space>
+            </div>
+          </Card>
+        )}
       </Form>
     </div>
   );

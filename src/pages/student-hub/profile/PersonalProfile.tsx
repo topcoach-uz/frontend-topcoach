@@ -552,30 +552,32 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
           </Row>
         </Card>
 
-        {/* Form Actions */}
-        <Card className="form-actions-card">
-          <div className="form-actions">
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
-                size="large"
-              >
-                Save Personal Profile
-              </Button>
-              <Button
-                type="default"
-                onClick={() => form.resetFields()}
-                icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
-                size="large"
-              >
-                Reset
-              </Button>
-            </Space>
-          </div>
-        </Card>
+        {/* Form Actions – hidden in read-only (counselor) view */}
+        {!isReadOnly && (
+          <Card className="form-actions-card">
+            <div className="form-actions">
+              <Space>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
+                  size="large"
+                >
+                  Save Personal Profile
+                </Button>
+                <Button
+                  type="default"
+                  onClick={() => form.resetFields()}
+                  icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
+                  size="large"
+                >
+                  Reset
+                </Button>
+              </Space>
+            </div>
+          </Card>
+        )}
       </Form>
     </div>
   );

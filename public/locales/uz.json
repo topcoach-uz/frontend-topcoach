@@ -856,6 +856,7 @@
   "studentHub.dashboard.errorDescription": "Boshqaruv paneli ma'lumotlarini yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
   "studentHub.dashboard.retry": "Qayta urinish",
   "studentHub.dashboard.recentActivity": "So'nggi faoliyat",
+  "studentHub.dashboard.activityTimeline": "Faoliyat vaqti",
   "studentHub.dashboard.noActivity": "So'nggi faoliyat yo'q",
   "studentHub.dashboard.welcomeBack": "Xush kelibsiz",
   "studentHub.dashboard.welcomeMessage": "Kollej arizalaringizda ajoyib yutuqlarga erishmoqdasiz. Shunday davom eting!",

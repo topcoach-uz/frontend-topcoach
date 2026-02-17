@@ -542,7 +542,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
             {t('studentHub.applications.title')}
           </h1>
           <p style={{ fontSize: 14, color: '#666', marginTop: 4, marginBottom: 0 }}>
-            {t('studentHub.applications.subtitle')}
+            {isReadOnly ? t('studentHub.applications.counselorSubtitle', "View the student's college lists") : t('studentHub.applications.subtitle')}
           </p>
         </div>
       </div>
@@ -680,20 +680,137 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
         </Row>
       </Card>
 
-      <Tabs
-        activeKey={applicationsTab}
-        onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
-        size="middle"
-        style={{ marginBottom: 16 }}
-        items={[
-          { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
-          { key: 'timeline', label: 'Timeline' },
-        ]}
-      />
+      {/* Tabs only for non–read-only; counselor sees merged list + timeline in one view */}
+      {!isReadOnly && (
+        <Tabs
+          activeKey={applicationsTab}
+          onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
+          size="middle"
+          style={{ marginBottom: 16 }}
+          items={[
+            { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
+            { key: 'timeline', label: 'Timeline' },
+          ]}
+        />
+      )}
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} lg={16}>
-          {applicationsTab === 'timeline' ? (
+        <Col xs={24} lg={isReadOnly ? 24 : 16}>
+          {/* Counselor view: show college list and activity timeline stacked in one view */}
+          {isReadOnly ? (
+            <>
+              <Card
+                id="applications-list"
+                title={typeFilter === 'all' ? t('studentHub.applications.collegeListsLabel', 'College lists') : typeFilter === 'application' ? 'Universities' : 'Scholarships'}
+                className="applications-card applications-card--compact"
+                style={{ minHeight: combinedList.length === 0 ? 200 : undefined, marginBottom: 24 }}
+                styles={{ body: { padding: combinedList.length === 0 ? '24px 20px' : '16px 20px', display: 'flex', flexDirection: 'column' } }}
+              >
+                <List
+                  dataSource={combinedList}
+                  locale={{
+                    emptyText: (
+                      <div className="applications-empty-state">
+                        <UnifiedIcon name="file-text" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
+                        <p>No applications yet.</p>
+                      </div>
+                    ),
+                  }}
+                  renderItem={(item: any) => {
+                    const isSch = item.itemType === 'scholarship';
+                    const matchScore = recommendations?.recommendations && item.major
+                      ? (() => {
+                          const m = recommendations.recommendations.find((r: any) => r.majorName?.toLowerCase().includes((item.major || '').toLowerCase()));
+                          return m ? Math.round(m.fitScore) : null;
+                        })()
+                      : null;
+                    return (
+                      <List.Item className="application-detail-item" style={{ padding: 0, marginBottom: 12 }}>
+                        <Card
+                          className="application-card application-card--compact"
+                          style={{
+                            borderRadius: 14,
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                            background: '#fff',
+                            overflow: 'hidden',
+                            margin: 0,
+                          }}
+                        >
+                          <div className="application-card-inner">
+                            <div className="application-card-header">
+                              <div className="application-card-title-row">
+                                <span className="application-card-title">
+                                  {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
+                                </span>
+                                <Space size={6} wrap className="application-card-tags">
+                                  {matchScore && !isSch && matchScore >= 60 && (
+                                    <Tag color={matchScore >= 80 ? 'success' : 'warning'} className="application-tag">{matchScore}% Match</Tag>
+                                  )}
+                                  {!isSch && item.category && (
+                                    <Tag color={getCategoryColor(item.category)} className="application-tag">{getCategoryText(item.category)}</Tag>
+                                  )}
+                                  <Tag
+                                    color={item.status === 'accepted' ? 'success' : item.status === 'rejected' ? 'error' : item.status === 'applying' ? 'processing' : 'default'}
+                                    className="application-tag"
+                                  >
+                                    {getStatusText(item.status)}
+                                  </Tag>
+                                </Space>
+                              </div>
+                              <div className="application-card-subtitle">
+                                {!isSch && item.major && (
+                                  <span className="application-card-subtitle-major">
+                                    <UnifiedIcon name="graduation-cap" size="xs" color="#64748b" style={{ marginRight: 6 }} />
+                                    {item.major}
+                                  </span>
+                                )}
+                                {isSch && item.amount != null && (
+                                  <span className="application-card-amount">
+                                    <UnifiedIcon name="award" size="xs" color="#16a34a" style={{ marginRight: 6 }} />
+                                    ${Number(item.amount).toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="application-card-meta">
+                              <span className="application-meta-item application-meta-item--deadline">
+                                <UnifiedIcon name="calendar" size="sm" color="#0ea5e9" />
+                                {formatDate(item.deadline || item.applicationDeadline)}
+                              </span>
+                            </div>
+                            {!isSch && item.id && (
+                              <div className="application-card-requirements">
+                                <RequirementsChecklist
+                                  applicationId={item.id}
+                                  requirements={item.requirements}
+                                  onUpdate={undefined}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      </List.Item>
+                    );
+                  }}
+                />
+              </Card>
+              <Card
+                id="applications-timeline"
+                title={t('studentHub.applications.activityTimeline', 'Activity timeline')}
+                className="applications-card applications-card--compact"
+                style={{ minHeight: 200 }}
+                styles={{ body: { padding: '16px 20px' } }}
+              >
+                <GlobalActivityTimeline
+                  applications={applicationsData.applications || []}
+                  scholarships={applicationsData.scholarships || []}
+                  emptyMessage={t('studentHub.applications.timelineEmpty', 'No activity yet.')}
+                  onApplicationClick={() => {}}
+                />
+              </Card>
+            </>
+          ) : applicationsTab === 'timeline' ? (
             <Card
               id="applications-timeline"
               title="Activity timeline"
@@ -711,7 +828,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           ) : (
           <Card 
             id="applications-list" 
-            title={typeFilter === 'all' ? t('studentHub.applications.yourCollegeLists', 'Your college lists') : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
+            title={typeFilter === 'all' ? (isReadOnly ? t('studentHub.applications.collegeListsLabel', 'College lists') : t('studentHub.applications.yourCollegeLists', 'Your college lists')) : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
             className="applications-card applications-card--compact"
             style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
             styles={{ body: { padding: combinedList.length === 0 ? '24px 20px' : '16px 20px', display: 'flex', flexDirection: 'column' } }}
@@ -917,43 +1034,43 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           </Card>
           )}
         </Col>
-        <Col xs={24} lg={8}>
-          <Card 
-            title={t('studentHub.applications.upcomingDeadlines')} 
-            className="deadlines-card deadlines-card--compact"
-            style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
-            styles={{ body: { padding: upcomingDeadlines.length === 0 ? '24px 20px' : '16px 20px' } }}
-          >
-            {upcomingDeadlines.length > 0 ? (
-              <List
-                dataSource={upcomingDeadlines}
-                renderItem={(item: any) => (
-                  <List.Item className="deadline-item deadline-item--compact">
-                    <div className="deadline-content">
-                      <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
-                      {item.type === 'application' && item.major && <div className="deadline-major">{item.major}</div>}
-                      <div className="deadline-date">
-                        <UnifiedIcon name="calendar" size="xs" color="#0ea5e9" style={{ marginRight: 6, flexShrink: 0 }} />
-                        {formatDate(item.deadlineDate)}
+        {!isReadOnly && (
+          <Col xs={24} lg={8}>
+            <Card 
+              title={t('studentHub.applications.upcomingDeadlines')} 
+              className="deadlines-card deadlines-card--compact"
+              style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
+              styles={{ body: { padding: upcomingDeadlines.length === 0 ? '24px 20px' : '16px 20px' } }}
+            >
+              {upcomingDeadlines.length > 0 ? (
+                <List
+                  dataSource={upcomingDeadlines}
+                  renderItem={(item: any) => (
+                    <List.Item className="deadline-item deadline-item--compact">
+                      <div className="deadline-content">
+                        <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
+                        {item.type === 'application' && item.major && <div className="deadline-major">{item.major}</div>}
+                        <div className="deadline-date">
+                          <UnifiedIcon name="calendar" size="xs" color="#0ea5e9" style={{ marginRight: 6, flexShrink: 0 }} />
+                          {formatDate(item.deadlineDate)}
+                        </div>
                       </div>
-                    </div>
-                    <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <div className="deadlines-empty-state">
-                <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
-                <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
-                {!isReadOnly && (
-                <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
-                  {t('studentHub.applications.addApplication', 'Add to List')}
-                </Button>
-                )}
-              </div>
-            )}
-          </Card>
-        </Col>
+                      <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <div className="deadlines-empty-state">
+                  <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
+                  <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
+                  <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
+                    {t('studentHub.applications.addApplication', 'Add to List')}
+                  </Button>
+                </div>
+              )}
+            </Card>
+          </Col>
+        )}
       </Row>
 
       <Modal

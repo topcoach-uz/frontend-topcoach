@@ -117,20 +117,24 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         <Input placeholder="e.g., 2 years" />
                       </Form.Item>
                     </Col>
-                    <Col span={4}>
-                      <Form.Item label=" ">
-                        <Button type="link" danger onClick={() => remove(name)}>
-                          Remove
-                        </Button>
-                      </Form.Item>
-                    </Col>
+                    {!isReadOnly && (
+                      <Col span={4}>
+                        <Form.Item label=" ">
+                          <Button type="link" danger onClick={() => remove(name)}>
+                            Remove
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    )}
                   </Row>
                 ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                    Add Activity
-                  </Button>
-                </Form.Item>
+                {!isReadOnly && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
+                      Add Activity
+                    </Button>
+                  </Form.Item>
+                )}
               </>
             )}
           </Form.List>
@@ -171,20 +175,24 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         <Input placeholder="e.g., 1 year" />
                       </Form.Item>
                     </Col>
-                    <Col span={2}>
-                      <Form.Item label=" ">
-                        <Button type="link" danger onClick={() => remove(name)}>
-                          Remove
-                        </Button>
-                      </Form.Item>
-                    </Col>
+                    {!isReadOnly && (
+                      <Col span={2}>
+                        <Form.Item label=" ">
+                          <Button type="link" danger onClick={() => remove(name)}>
+                            Remove
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    )}
                   </Row>
                 ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                    Add Leadership Role
-                  </Button>
-                </Form.Item>
+                {!isReadOnly && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
+                      Add Leadership Role
+                    </Button>
+                  </Form.Item>
+                )}
               </>
             )}
           </Form.List>
@@ -225,36 +233,42 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         <Input placeholder="e.g., National Merit Corporation" />
                       </Form.Item>
                     </Col>
-                    <Col span={2}>
-                      <Form.Item label=" ">
-                        <Button type="link" danger onClick={() => remove(name)}>
-                          Remove
-                        </Button>
-                      </Form.Item>
-                    </Col>
+                    {!isReadOnly && (
+                      <Col span={2}>
+                        <Form.Item label=" ">
+                          <Button type="link" danger onClick={() => remove(name)}>
+                            Remove
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    )}
                   </Row>
                 ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                    Add Award
-                  </Button>
-                </Form.Item>
+                {!isReadOnly && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
+                      Add Award
+                    </Button>
+                  </Form.Item>
+                )}
               </>
             )}
           </Form.List>
         </Card>
 
-        {/* Save Button */}
-        <Card className="save-section">
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading} size="large">
-              Save Activities Profile
-            </Button>
-            <Button size="large" onClick={() => form.resetFields()}>
-              Reset
-            </Button>
-          </Space>
-        </Card>
+        {/* Save/Reset – hidden in read-only (counselor) view */}
+        {!isReadOnly && (
+          <Card className="save-section">
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading} size="large">
+                Save Activities Profile
+              </Button>
+              <Button size="large" onClick={() => form.resetFields()}>
+                Reset
+              </Button>
+            </Space>
+          </Card>
+        )}
       </Form>
     </div>
   );
