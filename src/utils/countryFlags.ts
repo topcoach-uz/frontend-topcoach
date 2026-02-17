@@ -153,6 +153,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Debrecen': '🇭🇺',
   'Turkiye Burslari Winner': '🇹🇷',
   'Middle East Technical University': '🇹🇷',
+  'Ankara University': '🇹🇷',
   'Gubkin Russian State University of Oil and Gas': '🇷🇺',
   
   // Additional common universities
@@ -180,6 +181,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Gettysburg College': '🇺🇸',
   'New York Institute of Technology' : '🇺🇸',
   'University of Illinois Urbana-Champaign' : '🇺🇸',
+  'Minerva University' : '🇺🇸',
   
   // Default fallback
   'default': '🌍'
