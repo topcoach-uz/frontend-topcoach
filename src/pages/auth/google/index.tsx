@@ -29,6 +29,7 @@ export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const { searchParams } = useParamsHook();
+  const shortCode = searchParams.get('c') || '';
   const exchangeToken = searchParams.get('exchangeToken') || '';
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
   const dispatch = useAppDispatch();
@@ -68,21 +69,25 @@ export default function GoogleAuthenticationPage() {
   };
 
   useEffect(() => {
-    if (!exchangeToken) return;
-    
-    api.auth
-      .exchangeTokens({ code: exchangeToken })
-      .then((res) => {
+    const code = shortCode || exchangeToken;
+    if (!code) return;
+
+    const exchange = shortCode
+      ? api.instance.post<{ access: string; refresh: string }>('/auth/google/exchange-by-code', { code: shortCode })
+      : api.auth.exchangeTokens({ code: exchangeToken });
+
+    exchange
+      .then((res: any) => {
+        const data = res.data;
         setExchangeSuccess(true);
-        localStorage.setItem(ACCESS_TOKEN, res.data.access);
-        localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-        api.instance.defaults.headers['Authorization'] =
-          `Bearer ${res.data.access}`;
+        localStorage.setItem(ACCESS_TOKEN, data.access);
+        localStorage.setItem(REFRESH_TOKEN, data.refresh);
+        api.instance.defaults.headers['Authorization'] = `Bearer ${data.access}`;
       })
-      .catch((err) => {
-        message.error(err.response.data.message, 10);
+      .catch((err: any) => {
+        message.error(err?.response?.data?.message ?? 'Login failed', 10);
       });
-  }, [exchangeToken]);
+  }, [shortCode, exchangeToken]);
 
   const handleSubmit = async () => {
     if (selected === UserRole.Mentor) {
