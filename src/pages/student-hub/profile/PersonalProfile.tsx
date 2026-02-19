@@ -448,20 +448,20 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* Study Abroad Goals Section */}
-        <Card title="Study Abroad Goals" className="section-card">
+        <Card title={t('studentHub.profile.studyAbroadGoals', 'Study Abroad Goals')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24}>
               <Form.Item name="studyAbroadInterest" valuePropName="checked">
-                <Checkbox>I am interested in studying abroad</Checkbox>
+                <Checkbox>{t('studentHub.profile.interestedInStudyingAbroad', 'I am interested in studying abroad')}</Checkbox>
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="targetCountries"
-                label="Target Countries"
-                tooltip="Countries you're most interested in"
+                label={t('studentHub.profile.targetCountries', 'Target Countries')}
+                tooltip={t('studentHub.profile.targetCountriesTooltip', "Countries you're most interested in")}
               >
-                <Select mode="multiple" placeholder="Select countries" className="form-select">
+                <Select mode="multiple" placeholder={t('studentHub.profile.selectCountries', 'Select countries')} className="form-select">
                   {countryOptions.map(option => (
                     <Option key={option.value} value={option.value}>{option.label}</Option>
                   ))}
@@ -469,13 +469,13 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
-              <Form.Item name="durationPreference" label="Duration Preference">
+              <Form.Item name="durationPreference" label={t('studentHub.profile.durationPreference', 'Duration Preference')}>
                 <Select className="form-select">
-                  <Option value="semester">Semester</Option>
-                  <Option value="year">One Year</Option>
-                  <Option value="full-degree">Full Degree</Option>
-                  <Option value="summer">Summer</Option>
-                  <Option value="flexible">Flexible</Option>
+                  <Option value="semester">{t('studentHub.profile.semester', 'Semester')}</Option>
+                  <Option value="year">{t('studentHub.profile.oneYear', 'One Year')}</Option>
+                  <Option value="full-degree">{t('studentHub.profile.fullDegree', 'Full Degree')}</Option>
+                  <Option value="summer">{t('studentHub.profile.summer', 'Summer')}</Option>
+                  <Option value="flexible">{t('studentHub.profile.flexible', 'Flexible')}</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -483,15 +483,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* Values & Goals Section */}
-        <Card title="Values & Motivations" className="section-card">
+        <Card title={t('studentHub.profile.valuesMotivations', 'Values & Motivations')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24}>
               <Form.Item
                 name="valuesAndMotivations"
-                label="What motivates you?"
-                tooltip="Select values and motivations that drive you"
+                label={t('studentHub.profile.whatMotivatesYou', 'What motivates you?')}
+                tooltip={t('studentHub.profile.valuesMotivationsTooltip', 'Select values and motivations that drive you')}
               >
-                <Select mode="multiple" placeholder="Select values" className="form-select">
+                <Select mode="multiple" placeholder={t('studentHub.profile.selectValues', 'Select values')} className="form-select">
                   {valuesOptions.map(value => (
                     <Option key={value} value={value}>{value}</Option>
                   ))}
@@ -502,15 +502,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* University Preferences Section */}
-        <Card title="University Preferences" className="section-card">
+        <Card title={t('studentHub.profile.universityPreferences', 'University Preferences')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24}>
               <Form.Item
                 name="universityPreferences"
-                label="Preferred University Characteristics"
-                tooltip="What type of university environment appeals to you?"
+                label={t('studentHub.profile.preferredUniversityCharacteristics', 'Preferred University Characteristics')}
+                tooltip={t('studentHub.profile.universityPreferencesTooltip', 'What type of university environment appeals to you?')}
               >
-                <Select mode="multiple" placeholder="Select preferences" className="form-select">
+                <Select mode="multiple" placeholder={t('studentHub.profile.selectPreferences', 'Select preferences')} className="form-select">
                   {universityPrefOptions.map(pref => (
                     <Option key={pref} value={pref}>{pref}</Option>
                   ))}
@@ -521,15 +521,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* Work Style Section */}
-        <Card title="Work Style & Career Preferences" className="section-card">
+        <Card title={t('studentHub.profile.workStyleCareerPreferences', 'Work Style & Career Preferences')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24}>
               <Form.Item
                 name="workStylePreferences"
-                label="Preferred Work Environment"
-                tooltip="What type of work environment do you thrive in?"
+                label={t('studentHub.profile.preferredWorkEnvironment', 'Preferred Work Environment')}
+                tooltip={t('studentHub.profile.workEnvironmentTooltip', 'What type of work environment do you thrive in?')}
               >
-                <Select mode="multiple" placeholder="Select preferences" className="form-select">
+                <Select mode="multiple" placeholder={t('studentHub.profile.selectPreferences', 'Select preferences')} className="form-select">
                   {workStyleOptions.map(style => (
                     <Option key={style} value={style}>{style}</Option>
                   ))}
@@ -539,10 +539,10 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
             <Col xs={24}>
               <Form.Item
                 name="problemSolvingApproach"
-                label="Problem-Solving Approach"
-                tooltip="How do you typically approach problems?"
+                label={t('studentHub.profile.problemSolvingApproach', 'Problem-Solving Approach')}
+                tooltip={t('studentHub.profile.problemSolvingTooltip', 'How do you typically approach problems?')}
               >
-                <Select mode="multiple" placeholder="Select approaches" className="form-select">
+                <Select mode="multiple" placeholder={t('studentHub.profile.selectApproaches', 'Select approaches')} className="form-select">
                   {problemSolvingOptions.map(approach => (
                     <Option key={approach} value={approach}>{approach}</Option>
                   ))}
@@ -564,7 +564,7 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
                   icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
                   size="large"
                 >
-                  Save Personal Profile
+                  {t('studentHub.profile.savePersonalProfile', 'Save Personal Profile')}
                 </Button>
                 <Button
                   type="default"
@@ -572,7 +572,7 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
                   icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
                   size="large"
                 >
-                  Reset
+                  {t('common.reset', 'Reset')}
                 </Button>
               </Space>
             </div>

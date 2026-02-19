@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Spin, Empty, Button, Tag } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { TeamOutlined, PlusOutlined, ArrowRightOutlined, UserOutlined, CalendarOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
 
@@ -29,6 +30,7 @@ interface OrganizationWithDetails {
 }
 
 const OrganizationDescription: React.FC<{ text: string }> = ({ text }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const needsTruncate = text.length > DESCRIPTION_PREVIEW_LENGTH;
   const displayText = expanded || !needsTruncate ? text : `${text.slice(0, DESCRIPTION_PREVIEW_LENGTH).trim()}...`;
@@ -46,7 +48,7 @@ const OrganizationDescription: React.FC<{ text: string }> = ({ text }) => {
             setExpanded(!expanded);
           }}
         >
-          {expanded ? 'Read less' : 'Read more'}
+          {expanded ? t('schoolCounselor.organizationSelector.readLess', 'Read less') : t('schoolCounselor.organizationSelector.readMore', 'Read more')}
         </Button>
       )}
     </p>
@@ -54,6 +56,7 @@ const OrganizationDescription: React.FC<{ text: string }> = ({ text }) => {
 };
 
 const OrganizationSelector: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { organizations, loading, setSelectedOrganizationId } = useOrganization();
   const [fetching, setFetching] = useState(false);
@@ -114,7 +117,7 @@ const OrganizationSelector: React.FC = () => {
         textAlign: 'center',
       }}>
         <Spin size="large" />
-        <div>Loading organizations...</div>
+        <div>{t('schoolCounselor.organizationSelector.loading', 'Loading organizations...')}</div>
       </div>
     );
   }
@@ -127,9 +130,9 @@ const OrganizationSelector: React.FC = () => {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div>
-                <p style={{ fontSize: '18px', marginBottom: 8 }}>No Organizations Found</p>
+                <p style={{ fontSize: '18px', marginBottom: 8 }}>{t('schoolCounselor.organizationSelector.noOrganizations', 'No Organizations Found')}</p>
                 <p style={{ color: '#666', marginBottom: 24 }}>
-                  You need to create an organization first before you can view School Counselor dashboards.
+                  {t('schoolCounselor.organizationSelector.noOrganizationsDesc', 'You need to create an organization first before you can view School Counselor dashboards.')}
                 </p>
                 <Button
                   type="primary"
@@ -137,7 +140,7 @@ const OrganizationSelector: React.FC = () => {
                   onClick={() => navigate('/topcoach-management?tab=organizations')}
                   size="large"
                 >
-                  Create Organization
+                  {t('schoolCounselor.organizationSelector.createOrganization', 'Create Organization')}
                 </Button>
               </div>
             }
@@ -150,8 +153,8 @@ const OrganizationSelector: React.FC = () => {
   return (
     <div className="organization-selector">
       <div className="selector-header">
-        <h1>Select Organization</h1>
-        <p className="page-subtitle">Choose an organization to view its School Counselor dashboard</p>
+        <h1>{t('schoolCounselor.organizationSelector.title', 'Select Organization')}</h1>
+        <p className="page-subtitle">{t('schoolCounselor.organizationSelector.subtitle', 'Choose an organization to view its School Counselor dashboard')}</p>
       </div>
 
       <Row gutter={[24, 24]}>
@@ -171,7 +174,7 @@ const OrganizationSelector: React.FC = () => {
                   }}
                   className="view-dashboard-btn"
                 >
-                  View Dashboard
+                  {t('schoolCounselor.organizationSelector.viewDashboard', 'View Dashboard')}
                 </Button>
               ]}
             >
@@ -190,14 +193,14 @@ const OrganizationSelector: React.FC = () => {
                   {org.createdAt && (
                     <div className="org-meta-item">
                       <CalendarOutlined className="org-meta-icon" />
-                      <span>Created {dayjs(org.createdAt).format('MMM D, YYYY')}</span>
+                      <span>{t('schoolCounselor.organizationSelector.created', 'Created')} {dayjs(org.createdAt).format('MMM D, YYYY')}</span>
                     </div>
                   )}
                   
                   {org.memberCount !== undefined && (
                     <div className="org-meta-item">
                       <TeamOutlined className="org-meta-icon" />
-                      <span>{org.memberCount} {org.memberCount === 1 ? 'member' : 'members'}</span>
+                      <span>{org.memberCount} {org.memberCount === 1 ? t('schoolCounselor.organizationSelector.member', 'member') : t('schoolCounselor.organizationSelector.members', 'members')}</span>
                     </div>
                   )}
                   
@@ -206,7 +209,7 @@ const OrganizationSelector: React.FC = () => {
                       <UserOutlined className="org-meta-icon" />
                       <div className="counselors-list">
                         <span className="counselors-label">
-                          Counselor{org.counselors.length > 1 ? 's' : ''}:
+                          {org.counselors.length > 1 ? t('schoolCounselor.organizationSelector.counselors', 'Counselors') : t('schoolCounselor.organizationSelector.counselor', 'Counselor')}:
                         </span>
                         <div className="counselors-tags">
                           {org.counselors.map((counselor, idx) => (

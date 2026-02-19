@@ -81,7 +81,7 @@ const StudentMyJourneyView: React.FC = () => {
       label: (
         <span>
           <UnifiedIcon name="activity" size="sm" color="primary" style={{ marginRight: 8 }} />
-          Major Match
+          {t('studentHub.psychometric.majorMatch', 'Major Match')}
         </span>
       ),
     },

@@ -83,7 +83,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
         className="activities-form"
       >
         {/* Extracurricular Activities */}
-        <Card title="Extracurricular Activities" className="section-card">
+        <Card title={t('studentHub.profile.extracurricularActivities', 'Extracurricular Activities')} className="section-card">
           <Form.List name="extracurricularActivities">
             {(fields, { add, remove }) => (
               <>
@@ -103,7 +103,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'position']}
-                        label="Position/Role"
+                        label={t('studentHub.profile.positionRole', 'Position/Role')}
                       >
                         <Input placeholder="e.g., Captain" />
                       </Form.Item>
@@ -112,7 +112,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'duration']}
-                        label="Duration"
+                        label={t('studentHub.profile.duration', 'Duration')}
                       >
                         <Input placeholder="e.g., 2 years" />
                       </Form.Item>
@@ -121,7 +121,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Col span={4}>
                         <Form.Item label=" ">
                           <Button type="link" danger onClick={() => remove(name)}>
-                            Remove
+                            {t('common.remove', 'Remove')}
                           </Button>
                         </Form.Item>
                       </Col>
@@ -131,7 +131,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                 {!isReadOnly && (
                   <Form.Item>
                     <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      Add Activity
+                      {t('studentHub.profile.addActivity', 'Add Activity')}
                     </Button>
                   </Form.Item>
                 )}
@@ -141,7 +141,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
         </Card>
 
         {/* Leadership Roles */}
-        <Card title="Leadership Roles" className="section-card">
+        <Card title={t('studentHub.profile.leadershipRoles', 'Leadership Roles')} className="section-card">
           <Form.List name="leadershipRoles">
             {(fields, { add, remove }) => (
               <>
@@ -151,8 +151,8 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'role']}
-                        label="Leadership Role"
-                        rules={[{ required: true, message: 'Please enter leadership role' }]}
+                        label={t('studentHub.profile.leadershipRole', 'Leadership Role')}
+                        rules={[{ required: true, message: t('studentHub.profile.pleaseEnterLeadershipRole', 'Please enter leadership role') }]}
                       >
                         <Input placeholder="e.g., Student Council President" />
                       </Form.Item>
@@ -161,7 +161,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'organization']}
-                        label="Organization"
+                        label={t('studentHub.profile.organization', 'Organization')}
                       >
                         <Input placeholder="e.g., High School Student Council" />
                       </Form.Item>
@@ -170,7 +170,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'duration']}
-                        label="Duration"
+                        label={t('studentHub.profile.duration', 'Duration')}
                       >
                         <Input placeholder="e.g., 1 year" />
                       </Form.Item>
@@ -179,7 +179,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Col span={2}>
                         <Form.Item label=" ">
                           <Button type="link" danger onClick={() => remove(name)}>
-                            Remove
+                            {t('common.remove', 'Remove')}
                           </Button>
                         </Form.Item>
                       </Col>
@@ -189,7 +189,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                 {!isReadOnly && (
                   <Form.Item>
                     <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      Add Leadership Role
+                      {t('studentHub.profile.addLeadershipRole', 'Add Leadership Role')}
                     </Button>
                   </Form.Item>
                 )}
@@ -199,7 +199,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
         </Card>
 
         {/* Awards & Achievements */}
-        <Card title="Awards & Achievements" className="section-card">
+        <Card title={t('studentHub.profile.awardsAchievements', 'Awards & Achievements')} className="section-card">
           <Form.List name="awards">
             {(fields, { add, remove }) => (
               <>
@@ -209,8 +209,8 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'name']}
-                        label="Award Name"
-                        rules={[{ required: true, message: 'Please enter award name' }]}
+                        label={t('studentHub.profile.awardName', 'Award Name')}
+                        rules={[{ required: true, message: t('studentHub.profile.pleaseEnterAwardName', 'Please enter award name') }]}
                       >
                         <Input placeholder="e.g., National Merit Scholar" />
                       </Form.Item>
@@ -219,7 +219,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'year']}
-                        label="Year"
+                        label={t('studentHub.profile.year', 'Year')}
                       >
                         <Input placeholder="e.g., 2024" />
                       </Form.Item>
@@ -228,7 +228,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Form.Item
                         {...restField}
                         name={[name, 'organization']}
-                        label="Awarding Organization"
+                        label={t('studentHub.profile.awardingOrganization', 'Awarding Organization')}
                       >
                         <Input placeholder="e.g., National Merit Corporation" />
                       </Form.Item>
@@ -237,7 +237,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                       <Col span={2}>
                         <Form.Item label=" ">
                           <Button type="link" danger onClick={() => remove(name)}>
-                            Remove
+                            {t('common.remove', 'Remove')}
                           </Button>
                         </Form.Item>
                       </Col>
@@ -247,7 +247,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                 {!isReadOnly && (
                   <Form.Item>
                     <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      Add Award
+                      {t('studentHub.profile.addAward', 'Add Award')}
                     </Button>
                   </Form.Item>
                 )}
@@ -261,10 +261,10 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
           <Card className="save-section">
             <Space>
               <Button type="primary" htmlType="submit" loading={loading} size="large">
-                Save Activities Profile
+                {t('studentHub.profile.saveActivitiesProfile', 'Save Activities Profile')}
               </Button>
               <Button size="large" onClick={() => form.resetFields()}>
-                Reset
+                {t('common.reset', 'Reset')}
               </Button>
             </Space>
           </Card>

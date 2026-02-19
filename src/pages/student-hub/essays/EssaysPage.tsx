@@ -48,12 +48,12 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
             description={
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 8 }}>
-                  Coming Soon
+                  {t('studentHub.essays.comingSoon', 'Coming Soon')}
                 </div>
                 <p style={{ color: '#666', margin: 0, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
                   {isReadOnlyEssays
                     ? t('studentHub.essays.counselorComingSoon')
-                    : "We're building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!"}
+                    : t('studentHub.essays.comingSoonDescription', "We're building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!")}
                 </p>
               </div>
             }

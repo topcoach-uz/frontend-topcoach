@@ -47,10 +47,10 @@ export default function MentorHome() {
             style={{ width: '100%', maxWidth: '100%', boxShadow: 'none', border: 'none', borderWidth: 0 }}
           >
             <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={4}>
-              Admin Dashboard
+              {t('studentHub.dashboard.adminDashboard', 'Admin Dashboard')}
             </CustomText>
             <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
-              Quick Access
+              {t('studentHub.dashboard.quickAccess', 'QUICK ACCESS')}
             </CustomText>
             <Space size="small" wrap>
               <CustomButton
@@ -66,7 +66,7 @@ export default function MentorHome() {
                   minHeight: '40px',
                 }}
               >
-                School Counselor Dashboard
+                {t('studentHub.dashboard.schoolCounselorDashboard', 'School Counselor Dashboard')}
               </CustomButton>
               <CustomButton
                 size="small"
@@ -81,7 +81,7 @@ export default function MentorHome() {
                   minHeight: '40px',
                 }}
               >
-                TopCoach Management
+                {t('studentHub.dashboard.topcoachManagement', 'TopCoach Management')}
               </CustomButton>
               <CustomButton
                 size="small"
@@ -96,7 +96,7 @@ export default function MentorHome() {
                   minHeight: '40px',
                 }}
               >
-                Course Content Management
+                {t('studentHub.dashboard.courseContentManagement', 'Course Content Management')}
               </CustomButton>
             </Space>
           </CustomCard>

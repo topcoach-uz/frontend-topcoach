@@ -561,13 +561,13 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <UnifiedIcon name="layers" size="sm" color="primary" />
-            <span style={{ fontSize: 14, color: '#666' }}>Total:</span>
+            <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.total', 'Total')}:</span>
             <span style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>{totalApps}</span>
           </div>
           <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <UnifiedIcon name="check-circle" size="sm" color="success" />
-            <span style={{ fontSize: 14, color: '#666' }}>Submitted:</span>
+            <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.submitted', 'Submitted')}:</span>
             <span style={{ fontSize: 16, fontWeight: 600, color: '#22c55e' }}>{applicationsData.overview.submitted}</span>
           </div>
           {averageMatchScore && (
@@ -575,7 +575,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <UnifiedIcon name="target" size="sm" color="primary" />
-                <span style={{ fontSize: 14, color: '#666' }}>Avg Match:</span>
+                <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.avgMatch', 'Avg Match')}:</span>
                 <span style={{ fontSize: 16, fontWeight: 600, color: averageMatchScore >= 70 ? '#22c55e' : averageMatchScore >= 50 ? '#f59e0b' : '#666' }}>
                   {averageMatchScore}%
                 </span>
@@ -622,11 +622,11 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                   size="middle"
                   suffixIcon={<UnifiedIcon name="filter" size="sm" color="secondary" />}
                 >
-                  <Select.Option value="all">All Status</Select.Option>
-                  <Select.Option value="in_progress">In Progress</Select.Option>
-                  <Select.Option value="submitted">Submitted</Select.Option>
-                  <Select.Option value="accepted">Accepted</Select.Option>
-                  <Select.Option value="rejected">Rejected</Select.Option>
+                  <Select.Option value="all">{t('studentHub.applications.allStatus', 'All Status')}</Select.Option>
+                  <Select.Option value="in_progress">{t('studentHub.applications.status.inProgress', 'In Progress')}</Select.Option>
+                  <Select.Option value="submitted">{t('studentHub.applications.status.submitted', 'Submitted')}</Select.Option>
+                  <Select.Option value="accepted">{t('studentHub.applications.status.accepted', 'Accepted')}</Select.Option>
+                  <Select.Option value="rejected">{t('studentHub.applications.status.rejected', 'Rejected')}</Select.Option>
                 </Select>
                 <Select 
                   value={sortBy} 
@@ -635,8 +635,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                   size="middle"
                   suffixIcon={<UnifiedIcon name="arrow-up-down" size="sm" color="secondary" />}
                 >
-                  <Select.Option value="deadline">Deadline (Soonest)</Select.Option>
-                  <Select.Option value="deadline-furthest">Deadline (Furthest)</Select.Option>
+                  <Select.Option value="deadline">{t('studentHub.applications.deadlineSoonest', 'Deadline (Soonest)')}</Select.Option>
+                  <Select.Option value="deadline-furthest">{t('studentHub.applications.deadlineFurthest', 'Deadline (Furthest)')}</Select.Option>
                 </Select>
               </Space>
             )}
@@ -689,7 +689,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           style={{ marginBottom: 16 }}
           items={[
             { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
-            { key: 'timeline', label: 'Timeline' },
+            { key: 'timeline', label: t('studentHub.applications.timeline', 'Timeline') },
           ]}
         />
       )}
@@ -813,7 +813,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           ) : applicationsTab === 'timeline' ? (
             <Card
               id="applications-timeline"
-              title="Activity timeline"
+              title={t('studentHub.applications.activityTimeline', 'Activity timeline')}
               className="applications-card applications-card--compact"
               style={{ minHeight: 200 }}
               styles={{ body: { padding: '16px 20px' } }}
@@ -828,7 +828,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           ) : (
           <Card 
             id="applications-list" 
-            title={typeFilter === 'all' ? (isReadOnly ? t('studentHub.applications.collegeListsLabel', 'College lists') : t('studentHub.applications.yourCollegeLists', 'Your college lists')) : typeFilter === 'application' ? 'Universities' : 'Scholarships'} 
+            title={typeFilter === 'all' ? (isReadOnly ? t('studentHub.applications.collegeListsLabel', 'College lists') : t('studentHub.applications.yourCollegeLists', 'Your college lists')) : typeFilter === 'application' ? t('studentHub.applications.universities', 'Universities') : t('studentHub.applications.scholarships', 'Scholarships')} 
             className="applications-card applications-card--compact"
             style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
             styles={{ body: { padding: combinedList.length === 0 ? '24px 20px' : '16px 20px', display: 'flex', flexDirection: 'column' } }}

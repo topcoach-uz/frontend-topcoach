@@ -161,7 +161,7 @@ export default function AdmissionsProgramProgressCard({
           {hasAdmissions &&
             renderCourseBlock(
               'admissions',
-              'Admissions Program',
+              t('studentHub.dashboard.admissionsProgram', 'Admissions Program'),
               admissionsProgress?.completedLessons ?? 0,
               admissionsTotalLessons,
               admissionsTotalLessons > 0

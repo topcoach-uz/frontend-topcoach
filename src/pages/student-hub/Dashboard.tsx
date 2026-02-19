@@ -425,8 +425,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           out.push({
             id: `overdue-${appId}`,
             type: 'overdue',
-            title: 'Application overdue',
-            description: `Submit or update your application — deadline passed.`,
+            title: t('studentHub.dashboard.applicationOverdue', 'Application overdue'),
+            description: t('studentHub.dashboard.applicationOverdueDesc', 'Submit or update your application — deadline passed.'),
             priority: 'high',
             actionLabel: t('studentHub.dashboard.openCollege', 'Open college'),
             actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
@@ -543,7 +543,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       {/* Welcome Brief - Clean, Minimal */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
-          Hi, {userName}! 👋
+          {t('studentHub.dashboard.greeting', 'Hi, {{userName}}! 👋', { userName })}
           </h1>
         <p style={{ fontSize: 16, color: '#666', marginTop: 8, marginBottom: 0 }}>
           {t('studentHub.dashboard.welcomeMessage') || 'Let\'s make progress on your college journey today.'}
@@ -628,17 +628,17 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       {/* Super Admin Quick Access — sheraliozodov6@gmail.com only */}
       {isSuperAdminAccount && (
         <Card size="small" style={{ marginBottom: 24, borderColor: '#8b0000', borderWidth: 2, borderRadius: 12 }}>
-          <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>Admin Dashboard</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quick Access</div>
+          <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{t('studentHub.dashboard.adminDashboard', 'Admin Dashboard')}</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('studentHub.dashboard.quickAccess', 'QUICK ACCESS')}</div>
           <Space size="small" wrap>
             <Button size="middle" onClick={() => navigate('/school-counselor')} icon={<DashboardOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
-              School Counselor Dashboard
+              {t('studentHub.dashboard.schoolCounselorDashboard', 'School Counselor Dashboard')}
             </Button>
             <Button size="middle" onClick={() => navigate('/topcoach-management')} icon={<SettingOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
-              TopCoach Management
+              {t('studentHub.dashboard.topcoachManagement', 'TopCoach Management')}
             </Button>
             <Button size="middle" onClick={() => navigate('/course-admin/courses/modules')} icon={<BookOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
-              Course Content Management
+              {t('studentHub.dashboard.courseContentManagement', 'Course Content Management')}
             </Button>
           </Space>
         </Card>
@@ -871,7 +871,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                   return {
                     ...assessment,
                     type: 'psychometric',
-                    activityType: isCompleted ? 'Psychometric test completed' : 'Psychometric test started',
+                    activityType: isCompleted ? t('studentHub.dashboard.psychometricTestCompleted', 'Psychometric test completed') : t('studentHub.dashboard.psychometricTestStarted', 'Psychometric test started'),
                     title: null,
                     subtitle: isCompleted ? formatDate(completedAt) : (t('studentHub.dashboard.inProgress') || 'In progress'),
                     timestamp: completedAt || assessment?.createdAt || assessment?.updatedAt,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Descriptions, Tag, message, Row, Col, Spin, Alert } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
   UserOutlined,
   MailOutlined,
@@ -15,6 +16,7 @@ import './settings.scss';
 const { TextArea } = Input;
 
 const SettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -98,11 +100,11 @@ const SettingsPage: React.FC = () => {
           website: values.website,
         },
       });
-      message.success('Settings saved successfully!');
+      message.success(t('schoolCounselor.settings.saveSuccess', 'Settings saved successfully!'));
       fetchOrganization(); // Refresh data
     } catch (error: any) {
       console.error('Error updating organization:', error);
-      message.error(error.response?.data?.message || 'Failed to save settings');
+      message.error(error.response?.data?.message || t('schoolCounselor.settings.saveFailed', 'Failed to save settings'));
     } finally {
       setLoading(false);
     }
@@ -121,7 +123,7 @@ const SettingsPage: React.FC = () => {
         textAlign: 'center',
       }}>
         <Spin size="large" />
-        <div>Loading organization settings...</div>
+        <div>{t('schoolCounselor.settings.loading', 'Loading organization settings...')}</div>
       </div>
     );
   }
@@ -129,8 +131,8 @@ const SettingsPage: React.FC = () => {
   if (!organization) {
     return (
       <Alert
-        message="No Organization Found"
-        description="Please select an organization to view settings."
+        message={t('schoolCounselor.settings.noOrganization', 'No Organization Found')}
+        description={t('schoolCounselor.settings.noOrganizationDesc', 'Please select an organization to view settings.')}
         type="warning"
         showIcon
       />
@@ -140,63 +142,63 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="school-counselor-settings">
       <div className="settings-header">
-        <h1>Settings</h1>
-        <p className="page-subtitle">Manage your organization profile and preferences</p>
+        <h1>{t('schoolCounselor.settings.title', 'Settings')}</h1>
+        <p className="page-subtitle">{t('schoolCounselor.settings.subtitle', 'Manage your organization profile and preferences')}</p>
       </div>
 
       <Row gutter={[24, 24]}>
         {/* Organization Profile */}
         <Col xs={24} lg={16}>
-          <Card title="Organization Profile" className="settings-card">
+          <Card title={t('schoolCounselor.settings.organizationProfile', 'Organization Profile')} className="settings-card">
             <Form
               form={form}
               layout="vertical"
               onFinish={handleSave}
             >
               <Form.Item
-                label="Organization Name"
+                label={t('schoolCounselor.settings.organizationName', 'Organization Name')}
                 name="name"
-                rules={[{ required: true, message: 'Please enter organization name' }]}
+                rules={[{ required: true, message: t('schoolCounselor.settings.pleaseEnterOrgName', 'Please enter organization name') }]}
               >
                 <Input prefix={<UserOutlined />} size="large" />
               </Form.Item>
 
               <Form.Item
-                label="Email"
+                label={t('schoolCounselor.settings.email', 'Email')}
                 name="email"
                 rules={[
-                  { required: true, message: 'Please enter email' },
-                  { type: 'email', message: 'Please enter a valid email' },
+                  { required: true, message: t('schoolCounselor.settings.pleaseEnterEmail', 'Please enter email') },
+                  { type: 'email', message: t('schoolCounselor.settings.pleaseEnterValidEmail', 'Please enter a valid email') },
                 ]}
               >
                 <Input prefix={<MailOutlined />} size="large" />
               </Form.Item>
 
-              <Form.Item label="Phone" name="phone">
+              <Form.Item label={t('schoolCounselor.settings.phone', 'Phone')} name="phone">
                 <Input prefix={<PhoneOutlined />} size="large" />
               </Form.Item>
 
-              <Form.Item label="Address" name="address">
+              <Form.Item label={t('schoolCounselor.settings.address', 'Address')} name="address">
                 <TextArea
                   rows={3}
-                  placeholder="Enter organization address"
+                  placeholder={t('schoolCounselor.settings.enterOrgAddress', 'Enter organization address')}
                 />
               </Form.Item>
 
-              <Form.Item label="Description" name="description">
+              <Form.Item label={t('schoolCounselor.settings.description', 'Description')} name="description">
                 <TextArea
                   rows={4}
-                  placeholder="Brief description of your organization or school"
+                  placeholder={t('schoolCounselor.settings.orgDescriptionPlaceholder', 'Brief description of your organization or school')}
                 />
               </Form.Item>
 
               <Form.Item
-                label="Website"
+                label={t('schoolCounselor.settings.website', 'Website')}
                 name="website"
                 rules={[
                   {
                     type: 'url',
-                    message: 'Please enter a valid URL (e.g. https://example.com)',
+                    message: t('schoolCounselor.settings.pleaseEnterValidUrl', 'Please enter a valid URL (e.g. https://example.com)'),
                   },
                 ]}
               >
@@ -212,7 +214,7 @@ const SettingsPage: React.FC = () => {
                   loading={loading}
                   style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
                 >
-                  Save Changes
+                  {t('schoolCounselor.settings.saveChanges', 'Save Changes')}
                 </Button>
               </Form.Item>
             </Form>
@@ -221,37 +223,37 @@ const SettingsPage: React.FC = () => {
 
         {/* Subscription & Account Info */}
         <Col xs={24} lg={8}>
-          <Card title="Subscription" className="settings-card">
+          <Card title={t('schoolCounselor.settings.subscription', 'Subscription')} className="settings-card">
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Total Students">
+              <Descriptions.Item label={t('schoolCounselor.settings.totalStudents', 'Total Students')}>
                 {analytics?.totalStudents || 0}
               </Descriptions.Item>
-              <Descriptions.Item label="Students with Access">
+              <Descriptions.Item label={t('schoolCounselor.settings.studentsWithAccess', 'Students with Access')}>
                 {analytics?.studentsWithAccess || 0}
               </Descriptions.Item>
-              <Descriptions.Item label="Active Students">
+              <Descriptions.Item label={t('schoolCounselor.settings.activeStudents', 'Active Students')}>
                 {analytics?.totalStudents || 0}
               </Descriptions.Item>
             </Descriptions>
           </Card>
 
-          <Card title="Account Information" className="settings-card" style={{ marginTop: 24 }}>
+          <Card title={t('schoolCounselor.settings.accountInformation', 'Account Information')} className="settings-card" style={{ marginTop: 24 }}>
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Organization ID">
+              <Descriptions.Item label={t('schoolCounselor.settings.organizationId', 'Organization ID')}>
                 {organization.id}
               </Descriptions.Item>
-              <Descriptions.Item label="Account Status">
+              <Descriptions.Item label={t('schoolCounselor.settings.accountStatus', 'Account Status')}>
                 <Tag color="green" icon={<CheckCircleOutlined />}>
-                  Active
+                  {t('common.active', 'Active')}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Created">
+              <Descriptions.Item label={t('schoolCounselor.settings.created', 'Created')}>
                 {new Date(organization.createdAt).toLocaleDateString()}
               </Descriptions.Item>
             </Descriptions>
           </Card>
 
-          <Card title="Counselors" className="settings-card" style={{ marginTop: 24 }}>
+          <Card title={t('schoolCounselor.settings.counselors', 'Counselors')} className="settings-card" style={{ marginTop: 24 }}>
             {counselors.length > 0 ? (
               <div>
                 {counselors.map((counselor, index) => (
@@ -266,15 +268,15 @@ const SettingsPage: React.FC = () => {
                     }}
                   >
                     <div style={{ fontWeight: 600, marginBottom: '4px' }}>
-                      {counselor.userName || 'Unknown User'}
+                      {counselor.userName || t('common.unknownUser', 'Unknown User')}
                     </div>
                     <div style={{ fontSize: '14px', color: '#666' }}>
-                      {counselor.userEmail || 'No email'}
+                      {counselor.userEmail || t('common.noEmail', 'No email')}
                     </div>
                     {counselor.telegramStatus && (
                       <div style={{ marginTop: '4px' }}>
                         <Tag color={counselor.telegramStatus === 'connected' ? 'green' : 'default'}>
-                          Telegram: {counselor.telegramStatus}
+                          {t('schoolCounselor.settings.telegramConnected', 'Telegram: connected')}
                         </Tag>
                       </div>
                     )}
@@ -283,7 +285,7 @@ const SettingsPage: React.FC = () => {
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
-                No counselors assigned
+                {t('schoolCounselor.settings.noCounselorsAssigned', 'No counselors assigned')}
               </div>
             )}
           </Card>

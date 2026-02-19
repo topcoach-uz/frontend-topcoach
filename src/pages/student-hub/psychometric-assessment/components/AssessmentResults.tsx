@@ -149,8 +149,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
           </Title>
           <Text type="secondary" style={{ display: 'block' }}>
             {isGeneratingResults 
-              ? 'Our AI is generating personalized insights and recommendations' 
-              : 'Fetching your assessment data and recommendations'}
+              ? t('studentHub.psychometric.results.generatingInsights', 'Our AI is generating personalized insights and recommendations')
+              : t('studentHub.psychometric.results.fetchingData', 'Fetching your assessment data and recommendations')}
           </Text>
         </div>
       </div>
@@ -161,8 +161,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
     return (
       <Card>
         <Alert
-          message="No Results Available"
-          description="Assessment results are not available. Please complete an assessment first."
+          message={t('studentHub.psychometric.results.noResultsAvailable', 'No Results Available')}
+          description={t('studentHub.psychometric.results.noResultsDescription', 'Assessment results are not available. Please complete an assessment first.')}
           type="warning"
           showIcon
         />
@@ -186,12 +186,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24} md={16}>
             <Title level={2} style={{ color: 'white', margin: 0 }}>
-              🎉 Your Assessment Complete!
+              🎉 {t('studentHub.psychometric.results.assessmentComplete', 'Your Assessment Complete!')}
             </Title>
-            <Paragraph style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, margin: '8px 0 0 0' }}>
-              Based on {assessment.assessmentMetadata?.questionCount || 0} questions answered in{' '}
-              {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} minutes
-            </Paragraph>
           </Col>
           <Col xs={24} md={8}>
             <div
@@ -202,7 +198,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                 textAlign: 'center',
               }}
             >
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>YOUR RIASEC CODE</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{t('studentHub.psychometric.results.yourRiasecCode', 'YOUR RIASEC CODE')}</Text>
               <div
                 style={{
                   fontSize: 32,
@@ -223,11 +219,11 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         type="info"
         showIcon
         style={{ marginBottom: 24 }}
-        message="What does my RIASEC code mean?"
+        message={t('studentHub.psychometric.results.whatDoesRiasecMean', 'What does my RIASEC code mean?')}
         description={
           <div>
             <Paragraph style={{ margin: '0 0 12px 0', fontSize: 14 }}>
-              Your code <strong>{assessment.riasecCode}</strong> shows your top three interest types. RIASEC helps you explore majors and careers that fit you — especially useful when you're deciding what to study (e.g. in high school or before university).
+              {t('studentHub.psychometric.results.riasecExplanation', 'Your code {{code}} shows your top three interest types. RIASEC helps you explore majors and careers that fit you — especially useful when you\'re deciding what to study (e.g. in high school or before university).', { code: assessment.riasecCode })}
             </Paragraph>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px' }}>
               {(assessment.riasecCode || '')
@@ -260,7 +256,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             label: (
               <span>
                 <UnifiedIcon name="compass" size="sm" color="primary" style={{ marginRight: 8 }} />
-                Overview
+                {t('studentHub.psychometric.results.overview', 'Overview')}
               </span>
             ),
             children: (
@@ -304,14 +300,14 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                 {/* Quick Summary */}
                 <Col xs={24}>
                   <Card>
-                    <Title level={4}>📊 Quick Summary</Title>
+                    <Title level={4}>📊 {t('studentHub.psychometric.results.quickSummary', 'Quick Summary')}</Title>
                     <Row gutter={[16, 16]}>
                       <Col xs={12} sm={6}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#8b0000' }}>
                             {topRecommendations.length}
                           </div>
-                          <Text type="secondary">Major Matches</Text>
+                          <Text type="secondary">{t('studentHub.psychometric.results.majorMatches', 'Major Matches')}</Text>
                         </div>
                       </Col>
                       <Col xs={12} sm={6}>
@@ -319,23 +315,23 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>
                             {(topRecommendations[0]?.fitScore ?? 0).toFixed(0)}%
                           </div>
-                          <Text type="secondary">Top Match Score</Text>
+                          <Text type="secondary">{t('studentHub.psychometric.results.topMatchScore', 'Top Match Score')}</Text>
                         </div>
                       </Col>
                       <Col xs={12} sm={6}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#6366f1' }}>
-                            {recommendations?.assessmentSummary?.topInterests?.[0]?.dimension ?? 'N/A'}
+                            {recommendations?.assessmentSummary?.topInterests?.[0]?.dimension ?? t('common.notAvailable', 'N/A')}
                           </div>
-                          <Text type="secondary">Top Interest</Text>
+                          <Text type="secondary">{t('studentHub.psychometric.results.topInterest', 'Top Interest')}</Text>
                         </div>
                       </Col>
                       <Col xs={12} sm={6}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e0b' }}>
-                            {derivedData.aptitudeTaken ? 'Complete' : 'Partial'}
+                            {derivedData.aptitudeTaken ? t('common.complete', 'Complete') : t('studentHub.psychometric.results.partial', 'Partial')}
                           </div>
-                          <Text type="secondary">Assessment</Text>
+                          <Text type="secondary">{t('studentHub.psychometric.assessment', 'Assessment')}</Text>
                         </div>
                       </Col>
                     </Row>
@@ -349,7 +345,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             label: (
               <span>
                 <UnifiedIcon name="star" size="sm" color="primary" style={{ marginRight: 8 }} />
-                Major Recommendations
+                {t('studentHub.psychometric.results.majorRecommendations', 'Major Recommendations')}
               </span>
             ),
             children: (
@@ -361,7 +357,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                     style={{ marginBottom: 16 }}
                     onClick={() => setShowComparisonModal(true)}
                   >
-                    Compare {comparisonMajors.length} Majors
+                    {t('studentHub.psychometric.results.compareMajors', 'Compare {{count}} Majors', { count: comparisonMajors.length })}
                   </Button>
                 )}
 
@@ -399,10 +395,10 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   <Tag
                                     color={(rec.fitScore ?? 0) >= 80 ? 'green' : (rec.fitScore ?? 0) >= 60 ? 'orange' : 'default'}
                                   >
-                                    {(rec.fitScore ?? 0).toFixed(0)}% Match
+                                    {(rec.fitScore ?? 0).toFixed(0)}% {t('studentHub.psychometric.results.match', 'Match')}
                                   </Tag>
                                   {rec.explanation?.confidence && (
-                                    <Tag color="blue">{rec.explanation.confidence} Confidence</Tag>
+                                    <Tag color="blue">{rec.explanation.confidence} {t('studentHub.psychometric.results.confidence', 'Confidence')}</Tag>
                                   )}
                                 </div>
                               </div>
@@ -419,7 +415,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
                               {Array.isArray(rec.explanation?.keyContributors) && rec.explanation.keyContributors.length > 0 && (
                                 <div>
-                                  <Text strong>Key Contributors: </Text>
+                                  <Text strong>{t('studentHub.psychometric.results.keyContributors', 'Key Contributors:')} </Text>
                                   <div style={{ marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                                     {rec.explanation.keyContributors.map((contributor, i) => (
                                       <Tag key={i} color="geekblue">
@@ -432,14 +428,14 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
                               {rec.explanation?.academicFeasibility && (
                                 <div style={{ marginTop: 8 }}>
-                                  <Text strong>Academic Feasibility: </Text>
+                                  <Text strong>{t('studentHub.psychometric.results.academicFeasibility', 'Academic Feasibility:')} </Text>
                                   <Text>{rec.explanation.academicFeasibility}</Text>
                                 </div>
                               )}
 
                               {Array.isArray(rec.explanation?.nextSteps) && rec.explanation.nextSteps.length > 0 && (
                                 <div style={{ marginTop: 8 }} className="major-next-steps">
-                                  <Text strong>Next Steps:</Text>
+                                  <Text strong>{t('studentHub.psychometric.results.nextSteps', 'Next Steps:')}</Text>
                                   <ul className="major-next-steps-list">
                                     {rec.explanation.nextSteps.map((step, i) => (
                                       <li key={i}>{typeof step === 'string' ? step : String(step)}</li>
@@ -461,11 +457,11 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
                           <Col xs={24} md={8}>
                             {rec.fitBreakdown && (
-                              <Card size="small" title="Fit Breakdown">
+                              <Card size="small" title={t('studentHub.psychometric.results.fitBreakdown', 'Fit Breakdown')}>
                                 <Space direction="vertical" style={{ width: '100%' }} size="small">
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text>Interest</Text>
+                                      <Text>{t('studentHub.psychometric.results.interest', 'Interest')}</Text>
                                       <Text strong>{(rec.fitBreakdown.interestFit ?? 0).toFixed(0)}%</Text>
                                     </div>
                                     <Progress
@@ -477,7 +473,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   </div>
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text>Values</Text>
+                                      <Text>{t('studentHub.psychometric.results.values', 'Values')}</Text>
                                       <Text strong>{(rec.fitBreakdown.valuesFit ?? 0).toFixed(0)}%</Text>
                                     </div>
                                     <Progress
@@ -489,7 +485,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   </div>
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text>Work Style</Text>
+                                      <Text>{t('studentHub.psychometric.results.workStyle', 'Work Style')}</Text>
                                       <Text strong>{(rec.fitBreakdown.workStyleFit ?? 0).toFixed(0)}%</Text>
                                     </div>
                                     <Progress
@@ -501,7 +497,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   </div>
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text>Academic</Text>
+                                      <Text>{t('studentHub.psychometric.results.academic', 'Academic')}</Text>
                                       <Text strong>{(rec.fitBreakdown.academicFit ?? 0).toFixed(0)}%</Text>
                                     </div>
                                     <Progress
@@ -514,7 +510,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   {(rec.fitBreakdown.aptitudeFit ?? 0) > 0 && (
                                     <div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Text>Aptitude</Text>
+                                        <Text>{t('studentHub.psychometric.results.aptitude', 'Aptitude')}</Text>
                                         <Text strong>{(rec.fitBreakdown.aptitudeFit ?? 0).toFixed(0)}%</Text>
                                       </div>
                                       <Progress
@@ -528,7 +524,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
                                   <Divider style={{ margin: '8px 0' }} />
                                   <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Text strong>Overall</Text>
+                                      <Text strong>{t('studentHub.psychometric.results.overall', 'Overall')}</Text>
                                       <Text strong style={{ color: '#10b981' }}>
                                         {(rec.fitBreakdown.overallFit ?? 0).toFixed(0)}%
                                       </Text>
@@ -560,7 +556,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
             label: (
               <span>
                 <UnifiedIcon name="globe" size="sm" color="primary" style={{ marginRight: 8 }} />
-                University Matches
+                {t('studentHub.psychometric.results.universityMatches', 'University Matches')}
               </span>
             ),
             children: (
@@ -579,7 +575,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
           <Button type="primary" size="large" onClick={onRetake}>
             <FontAwesomeIcon icon="redo" style={{ marginRight: 8 }} />
-            Retake Assessment
+            {t('psychometric.retakeAssessment', 'Retake Assessment')}
           </Button>
           {/* PDF Export temporarily hidden */}
           {/* <PdfExport assessment={assessment} recommendations={recommendations} /> */}

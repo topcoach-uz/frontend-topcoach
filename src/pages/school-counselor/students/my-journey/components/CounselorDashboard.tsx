@@ -157,7 +157,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
         const courseName = a.courseName || '';
         label = (
           <>
-            <Text strong>Enrolled in </Text>
+            <Text strong>{t('schoolCounselor.dashboard.enrolledIn', 'Enrolled in')} </Text>
             <Text strong>{courseName}</Text>
           </>
         );
@@ -167,7 +167,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
           const [, percent, courseName] = match;
           label = (
             <>
-              <Text>Reached {percent}% progress in </Text>
+              <Text>{t('schoolCounselor.dashboard.reachedProgress', 'Reached {{percent}}% progress in', { percent })} </Text>
               <Text strong>{courseName}</Text>
             </>
           );
@@ -200,7 +200,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
         type: 'application-created',
         label: (
           <>
-            <Text strong>Added </Text>
+            <Text strong>{t('schoolCounselor.dashboard.added', 'Added')} </Text>
             <Text strong><UniversityNameDisplay universityId={app.universityId} universityName={app.universityName} /></Text>
           </>
         ),
@@ -242,8 +242,8 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
         type: 'scholarship-created',
         label: (
           <>
-            <Text strong>Added scholarship: </Text>
-            <Text strong>{sch.scholarshipName || 'Scholarship'}</Text>
+            <Text strong>{t('schoolCounselor.dashboard.addedScholarship', 'Added scholarship')}: </Text>
+            <Text strong>{sch.scholarshipName || t('common.scholarship', 'Scholarship')}</Text>
           </>
         ),
         dot: <UnifiedIcon name="plus-circle" size="sm" color="success" />,
@@ -264,7 +264,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
   }
 
   if (!student) {
-    return <div style={{ padding: 24 }}>Student data not found.</div>;
+    return <div style={{ padding: 24 }}>{t('schoolCounselor.dashboard.studentNotFound', 'Student data not found.')}</div>;
   }
 
   const lastActivity = userDetails?.updatedAt || student.updatedAt || student.enrolledAt;
@@ -289,42 +289,42 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
     <div className="counselor-dashboard">
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={8}>
-          <Card title="Student Information" className="info-card">
+          <Card title={t('schoolCounselor.dashboard.studentInformation', 'Student Information')} className="info-card">
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Email">
+              <Descriptions.Item label={t('common.email', 'Email')}>
                 <Space><MailOutlined />{student.userEmail}</Space>
               </Descriptions.Item>
               {student.telegramPhoneNumber && (
-                <Descriptions.Item label="Phone">
+                <Descriptions.Item label={t('common.phone', 'Phone')}>
                   <Space><PhoneOutlined />{student.telegramPhoneNumber}</Space>
                 </Descriptions.Item>
               )}
               {student.enrolledAt && (
-                <Descriptions.Item label="Enrollment Date">
+                <Descriptions.Item label={t('schoolCounselor.dashboard.enrollmentDate', 'Enrollment Date')}>
                   <Space><CalendarOutlined />{formatDate(student.enrolledAt)}</Space>
                 </Descriptions.Item>
               )}
-              <Descriptions.Item label="Last Activity">{formatDateTime(lastActivity)}</Descriptions.Item>
-              <Descriptions.Item label="Overall Progress">
+              <Descriptions.Item label={t('schoolCounselor.dashboard.lastActivity', 'Last Activity')}>{formatDateTime(lastActivity)}</Descriptions.Item>
+              <Descriptions.Item label={t('schoolCounselor.dashboard.overallProgress', 'Overall Progress')}>
                 <Progress percent={Math.round(student.progressPercentage || 0)} strokeColor="#8b0000" />
               </Descriptions.Item>
             </Descriptions>
           </Card>
 
-          <Card title="Enrolled Courses" style={{ marginTop: 24 }}>
+          <Card title={t('schoolCounselor.dashboard.enrolledCourses', 'Enrolled Courses')} style={{ marginTop: 24 }}>
             {courses.length > 0 ? (
               courses.map((c: any, i: number) => (
                 <div key={i} style={{ marginBottom: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <strong>{c.courseName}</strong>
-                    <Tag color={c.status === 'completed' ? 'green' : 'blue'}>{c.status === 'completed' ? 'Completed' : 'In-Progress'}</Tag>
+                    <Tag color={c.status === 'completed' ? 'green' : 'blue'}>{c.status === 'completed' ? t('common.completed', 'Completed') : t('common.inProgress', 'In-Progress')}</Tag>
                   </div>
-                  <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Enrolled {formatDate(c.enrolledDate)}</div>
+                  <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>{t('schoolCounselor.dashboard.enrolled', 'Enrolled')} {formatDate(c.enrolledDate)}</div>
                   <Progress percent={c.progress} size="small" />
                 </div>
               ))
             ) : (
-              <Empty description="No courses enrolled" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              <Empty description={t('schoolCounselor.dashboard.noCoursesEnrolled', 'No courses enrolled')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
             )}
           </Card>
 
@@ -333,7 +333,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
         <Col xs={24} lg={16}>
           <Row gutter={[24, 24]}>
             <Col xs={24}>
-              <Card title="Mentor bookings">
+              <Card title={t('schoolCounselor.dashboard.mentorBookings', 'Mentor bookings')}>
                 <StudentDataBookingsCard studentUserId={studentId} />
               </Card>
             </Col>
@@ -356,7 +356,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
                     }))}
                   />
                 ) : (
-                  <Empty description="No activity yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  <Empty description={t('schoolCounselor.dashboard.noActivity', 'No activity yet')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 )}
               </Card>
             </Col>

@@ -199,7 +199,7 @@ const EditApplicationPage: React.FC = () => {
         
         options.push({
           value: '__OTHER__',
-          label: 'Other (Type manually)',
+          label: t('studentHub.applications.otherTypeManually', 'Other (Type manually)'),
           id: '',
         });
         
@@ -222,10 +222,10 @@ const EditApplicationPage: React.FC = () => {
         label: getTranslation(major.name) || '',
       }));
       
-      majors.push({ value: '__OTHER__', label: 'Other (Type manually)' });
+      majors.push({ value: '__OTHER__', label: t('studentHub.applications.otherTypeManually', 'Other (Type manually)') });
       setMajorOptions(majors);
     } else {
-      setMajorOptions([{ value: '__OTHER__', label: 'Other (Type manually)' }]);
+      setMajorOptions([{ value: '__OTHER__', label: t('studentHub.applications.otherTypeManually', 'Other (Type manually)') }]);
     }
   }, [universityDetail]);
 
@@ -422,7 +422,7 @@ const EditApplicationPage: React.FC = () => {
               {!isOtherUniversity ? (
                 <Form.Item
                   name="university"
-                  label="University"
+                  label={t('studentHub.applications.university', 'University')}
                   rules={[{ required: true, message: 'Please search and select a university' }]}
                 >
                   <UniversityAutoComplete
@@ -436,7 +436,7 @@ const EditApplicationPage: React.FC = () => {
               ) : (
                 <Form.Item
                   name="university"
-                  label="University"
+                  label={t('studentHub.applications.university', 'University')}
                   rules={[{ required: true, message: 'Please enter the university name' }]}
                 >
                   <Input
@@ -467,17 +467,17 @@ const EditApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="major"
-                label="Intended Major"
-                rules={[{ required: true, message: 'Please enter or select your intended major' }]}
+                label={t('studentHub.applications.intendedMajor', 'Intended Major')}
+                rules={[{ required: true, message: t('studentHub.applications.enterOrSelectMajor', 'Please enter or select your intended major') }]}
               >
                 {isOtherUniversity ? (
                   <Input
-                    placeholder="Type your intended major"
+                    placeholder={t('studentHub.applications.typeIntendedMajor', 'Type your intended major')}
                     size="large"
                   />
                 ) : (
                   <Select
-                    placeholder={selectedUniversityId ? "Select a major" : "Select a university first"}
+                    placeholder={selectedUniversityId ? t('studentHub.applications.selectMajor', 'Select a major') : t('studentHub.applications.selectUniversityFirst', 'Select a university first')}
                     size="large"
                     disabled={!selectedUniversityId || majorOptions.length === 0}
                     showSearch
@@ -501,26 +501,26 @@ const EditApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="applicationType"
-                label="Application Type"
-                rules={[{ required: true, message: 'Please select application type' }]}
+                label={t('studentHub.applications.applicationType', 'Application Type')}
+                rules={[{ required: true, message: t('studentHub.applications.selectApplicationType', 'Please select application type') }]}
               >
-                <Select placeholder="Select type" size="large">
-                  <Option value="common-app">Common Application</Option>
-                  <Option value="coalition">Coalition Application</Option>
-                  <Option value="direct">Direct Application</Option>
-                  <Option value="ucas">UCAS Application</Option>
-                  <Option value="other">Other</Option>
+                <Select placeholder={t('studentHub.applications.selectType', 'Select type')} size="large">
+                  <Option value="common-app">{t('studentHub.applications.applicationType.common_app', 'Common Application')}</Option>
+                  <Option value="coalition">{t('studentHub.applications.applicationType.coalition', 'Coalition Application')}</Option>
+                  <Option value="direct">{t('studentHub.applications.applicationType.direct', 'Direct Application')}</Option>
+                  <Option value="ucas">{t('studentHub.applications.applicationType.ucas', 'UCAS Application')}</Option>
+                  <Option value="other">{t('studentHub.applications.applicationType.other', 'Other')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
                 name="deadline"
-                label="Application Deadline"
-                rules={[{ required: true, message: 'Please select deadline' }]}
+                label={t('studentHub.applications.applicationDeadline', 'Application Deadline')}
+                rules={[{ required: true, message: t('studentHub.applications.selectDeadline', 'Please select deadline') }]}
               >
                 <DatePicker
-                  placeholder="Select deadline"
+                  placeholder={t('studentHub.applications.selectDeadline', 'Select deadline')}
                   size="large"
                   style={{ width: '100%' }}
                 />
@@ -532,30 +532,30 @@ const EditApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="priority"
-                label="Priority Level"
-                rules={[{ required: true, message: 'Please select priority' }]}
+                label={t('studentHub.applications.priorityLevel', 'Priority Level')}
+                rules={[{ required: true, message: t('studentHub.applications.selectPriority', 'Please select priority') }]}
               >
-                <Select placeholder="Select priority" size="large">
-                  <Option value={8}>High Priority</Option>
-                  <Option value={5}>Medium Priority</Option>
-                  <Option value={2}>Low Priority</Option>
+                <Select placeholder={t('studentHub.applications.selectPriority', 'Select priority')} size="large">
+                  <Option value={8}>{t('studentHub.applications.highPriority', 'High Priority')}</Option>
+                  <Option value={5}>{t('studentHub.applications.mediumPriority', 'Medium Priority')}</Option>
+                  <Option value={2}>{t('studentHub.applications.lowPriority', 'Low Priority')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
                 name="status"
-                label="Status"
-                rules={[{ required: true, message: 'Please select status' }]}
+                label={t('studentHub.applications.status', 'Status')}
+                rules={[{ required: true, message: t('studentHub.applications.selectStatus', 'Please select status') }]}
               >
-                <Select placeholder="Select status" size="large">
-                  <Option value="researching">Researching</Option>
-                  <Option value="applying">Applying</Option>
-                  <Option value="submitted">Submitted</Option>
-                  <Option value="under_review">Under Review</Option>
-                  <Option value="accepted">Accepted</Option>
-                  <Option value="rejected">Rejected</Option>
-                  <Option value="waitlisted">Waitlisted</Option>
+                <Select placeholder={t('studentHub.applications.selectStatus', 'Select status')} size="large">
+                  <Option value="researching">{t('studentHub.applications.status.researching', 'Researching')}</Option>
+                  <Option value="applying">{t('studentHub.applications.status.applying', 'Applying')}</Option>
+                  <Option value="submitted">{t('studentHub.applications.status.submitted', 'Submitted')}</Option>
+                  <Option value="under_review">{t('studentHub.applications.status.under_review', 'Under Review')}</Option>
+                  <Option value="accepted">{t('studentHub.applications.status.accepted', 'Accepted')}</Option>
+                  <Option value="rejected">{t('studentHub.applications.status.rejected', 'Rejected')}</Option>
+                  <Option value="waitlisted">{t('studentHub.applications.status.waitlisted', 'Waitlisted')}</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -565,13 +565,13 @@ const EditApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="category"
-                label="Category"
-                rules={[{ required: true, message: 'Please select category' }]}
+                label={t('studentHub.applications.category', 'Category')}
+                rules={[{ required: true, message: t('studentHub.applications.selectCategory', 'Please select category') }]}
               >
-                <Select placeholder="Select category" size="large">
-                  <Option value="reach">Reach</Option>
-                  <Option value="target">Target</Option>
-                  <Option value="safety">Safety</Option>
+                <Select placeholder={t('studentHub.applications.selectCategory', 'Select category')} size="large">
+                  <Option value="reach">{t('studentHub.applications.category.reach', 'Reach')}</Option>
+                  <Option value="target">{t('studentHub.applications.category.target', 'Target')}</Option>
+                  <Option value="safety">{t('studentHub.applications.category.safety', 'Safety')}</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -579,19 +579,19 @@ const EditApplicationPage: React.FC = () => {
 
           <Form.Item
             name="whyThisSchool"
-            label="Why this school"
+            label={t('studentHub.applications.whyThisSchool', 'Why this school')}
           >
             <TextArea
-              placeholder="Goals, fit, or why you're applying (optional)"
+              placeholder={t('studentHub.applications.whyThisSchoolPlaceholder', "Goals, fit, or why you're applying (optional)")}
               rows={3}
             />
           </Form.Item>
 
           {id && (
             <div className="requirements-section" style={{ marginTop: 24 }}>
-              <Card size="small" title="Requirements & checklist" style={{ marginBottom: 16 }}>
+              <Card size="small" title={t('studentHub.applications.requirementsChecklist', 'Requirements & checklist')} style={{ marginBottom: 16 }}>
                 <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                  Add checklist items (essays, recommendations, transcripts, etc.) and track progress. Mark items complete as you go.
+                  {t('studentHub.applications.requirementsChecklistDesc', 'Add checklist items (essays, recommendations, transcripts, etc.) and track progress. Mark items complete as you go.')}
                 </Text>
                 <RequirementsChecklist
                   applicationId={id}
@@ -602,10 +602,10 @@ const EditApplicationPage: React.FC = () => {
                   }}
                 />
                 <div style={{ marginTop: 16, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>Set up requirements</Text>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('studentHub.applications.setupRequirements', 'Set up requirements')}</Text>
                   <Space wrap size="middle">
                     <span>
-                      <Text type="secondary" style={{ marginRight: 6 }}>Essays</Text>
+                      <Text type="secondary" style={{ marginRight: 6 }}>{t('studentHub.applications.essays', 'Essays')}</Text>
                       <InputNumber
                         min={0}
                         max={20}
@@ -618,7 +618,7 @@ const EditApplicationPage: React.FC = () => {
                             essays: {
                               ...prev,
                               required: v,
-                              prompts: Array(v).fill(null).map((_, i) => prev.prompts?.[i] || `Essay ${i + 1}`),
+                              prompts: Array(v).fill(null).map((_, i) => prev.prompts?.[i] || t('studentHub.applications.essayNumber', 'Essay {{number}}', { number: i + 1 })),
                             },
                           });
                         }}
@@ -626,7 +626,7 @@ const EditApplicationPage: React.FC = () => {
                       />
                     </span>
                     <span>
-                      <Text type="secondary" style={{ marginRight: 6 }}>Recommendations</Text>
+                      <Text type="secondary" style={{ marginRight: 6 }}>{t('studentHub.applications.recommendations', 'Recommendations')}</Text>
                       <InputNumber
                         min={0}
                         max={10}
@@ -651,22 +651,22 @@ const EditApplicationPage: React.FC = () => {
                         setLocalRequirements(next);
                       }}
                     >
-                      Transcript
+                      {t('studentHub.applications.transcript', 'Transcript')}
                     </Checkbox>
                     <Checkbox
                       checked={!!(localRequirements?.testScores as any)?.status}
                       onChange={(e) => {
                         const next = { ...localRequirements };
-                        if (e.target.checked) (next as any).testScores = { status: 'pending', required: ['SAT/ACT'], submitted: [] };
+                        if (e.target.checked) (next as any).testScores = { status: 'pending', required: [t('studentHub.applications.satAct', 'SAT/ACT')], submitted: [] };
                         else delete (next as any).testScores;
                         setLocalRequirements(next);
                       }}
                     >
-                      Test scores
+                      {t('studentHub.applications.testScores', 'Test scores')}
                     </Checkbox>
                   </Space>
                   <div style={{ marginTop: 12 }}>
-                    <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>Custom</Text>
+                    <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>{t('studentHub.applications.custom', 'Custom')}</Text>
                     <div
                       className="custom-checklist-add-group"
                       style={{
@@ -690,7 +690,7 @@ const EditApplicationPage: React.FC = () => {
                         }}
                       >
                         <Input
-                          placeholder="Add custom item (e.g. Portfolio, SOP draft)"
+                          placeholder={t('studentHub.applications.addCustomItemPlaceholder', 'Add custom item (e.g. Portfolio, SOP draft)')}
                           value={customInput}
                           onChange={(e) => setCustomInput(e.target.value)}
                           onPressEnter={() => addCustomItem()}
@@ -709,7 +709,7 @@ const EditApplicationPage: React.FC = () => {
                             justifyContent: 'center',
                           }}
                         >
-                          Add
+                          {t('common.add', 'Add')}
                         </Button>
                       </div>
                       <Button
@@ -721,9 +721,9 @@ const EditApplicationPage: React.FC = () => {
                               id: id!,
                               data: { requirements: localRequirements },
                             }).unwrap();
-                            message.success('Checklist saved successfully');
+                            message.success(t('studentHub.applications.checklistSavedSuccess', 'Checklist saved successfully'));
                           } catch (err: any) {
-                            message.error(err?.data?.message || 'Failed to save checklist');
+                            message.error(err?.data?.message || t('studentHub.applications.checklistSaveFailed', 'Failed to save checklist'));
                           }
                         }}
                         loading={updateLoading}
@@ -736,7 +736,7 @@ const EditApplicationPage: React.FC = () => {
                           fontWeight: 600,
                         }}
                       >
-                        Save checklist
+                        {t('studentHub.applications.saveChecklist', 'Save checklist')}
                       </Button>
                     </div>
                     {((localRequirements as any)?.custom?.items ?? []).length > 0 && (
@@ -750,7 +750,7 @@ const EditApplicationPage: React.FC = () => {
                               danger
                               onClick={() => removeCustomItem(c.id)}
                             >
-                              Remove
+                              {t('common.remove', 'Remove')}
                             </Button>
                           </div>
                         ))}
@@ -760,11 +760,11 @@ const EditApplicationPage: React.FC = () => {
                 </div>
               </Card>
 
-              <Card size="small" title="Activity" style={{ marginBottom: 16 }}>
+              <Card size="small" title={t('studentHub.applications.activity', 'Activity')} style={{ marginBottom: 16 }}>
                 <ApplicationTimeline
                   createdAt={application?.createdAt ?? ''}
                   activity={application?.activity}
-                  emptyMessage="Complete checklist items or update status to see activity here."
+                  emptyMessage={t('studentHub.applications.activityEmptyMessage', 'Complete checklist items or update status to see activity here.')}
                 />
               </Card>
             </div>
@@ -778,7 +778,7 @@ const EditApplicationPage: React.FC = () => {
                 size="large"
                 onClick={handleCancel}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </Button>
               <Button
                 type="primary"

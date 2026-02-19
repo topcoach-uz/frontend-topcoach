@@ -184,25 +184,25 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         className="academic-form"
       >
         {/* Test Scores Section */}
-        <Card title="Standardized Test Scores" className="section-card">
+        <Card title={t('studentHub.profile.standardizedTestScores', 'Standardized Test Scores')} className="section-card">
           <Row gutter={[24, 24]}>
             {/* SAT Scores */}
             <Col xs={24} lg={12}>
               <div className="test-section">
                 <h4 className="test-title">
                   <FontAwesomeIcon icon={ACADEMIC_ICONS.SAT} />
-                  SAT Scores
+                  {t('studentHub.profile.satScores', 'SAT Scores')}
                 </h4>
                 <Row gutter={[16, 16]}>
                   <Col xs={12}>
                     <Form.Item
                       name="satMath"
-                      label="Math Section"
+                      label={t('studentHub.profile.mathSection', 'Math Section')}
                     >
                       <InputNumber
                         min={200}
                         max={800}
-                        placeholder="Math Score"
+                        placeholder={t('studentHub.profile.mathSection', 'Math Section')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -210,12 +210,12 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   <Col xs={12}>
                     <Form.Item
                       name="satReading"
-                      label="Reading & Writing"
+                      label={t('studentHub.profile.readingWriting', 'Reading & Writing')}
                     >
                       <InputNumber
                         min={200}
                         max={800}
-                        placeholder="Reading Score"
+                        placeholder={t('studentHub.profile.reading', 'Reading')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -223,7 +223,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   <Col xs={24}>
                     <Form.Item
                       name="satTotal"
-                      label="Total Score"
+                      label={t('studentHub.profile.totalScore', 'Total Score')}
                     >
                       <InputNumber
                         min={400}
@@ -243,18 +243,18 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <div className="test-section">
                 <h4 className="test-title">
                   <FontAwesomeIcon icon={ACADEMIC_ICONS.ACT} />
-                  ACT Scores
+                  {t('studentHub.profile.actScores', 'ACT Scores')}
                 </h4>
                 <Row gutter={[16, 16]}>
                   <Col xs={12}>
                     <Form.Item
                       name="actComposite"
-                      label="Composite Score"
+                      label={t('studentHub.profile.compositeScore', 'Composite Score')}
                     >
                       <InputNumber
                         min={1}
                         max={36}
-                        placeholder="Composite"
+                        placeholder={t('studentHub.profile.compositeScore', 'Composite Score')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -262,12 +262,12 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   <Col xs={12}>
                     <Form.Item
                       name="actMath"
-                      label="Math"
+                      label={t('studentHub.profile.math', 'Math')}
                     >
                       <InputNumber
                         min={1}
                         max={36}
-                        placeholder="Math"
+                        placeholder={t('studentHub.profile.math', 'Math')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -275,12 +275,12 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   <Col xs={12}>
                     <Form.Item
                       name="actReading"
-                      label="Reading"
+                      label={t('studentHub.profile.reading', 'Reading')}
                     >
                       <InputNumber
                         min={1}
                         max={36}
-                        placeholder="Reading"
+                        placeholder={t('studentHub.profile.reading', 'Reading')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -288,12 +288,12 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   <Col xs={12}>
                     <Form.Item
                       name="actScience"
-                      label="Science"
+                      label={t('studentHub.profile.science', 'Science')}
                     >
                       <InputNumber
                         min={1}
                         max={36}
-                        placeholder="Science"
+                        placeholder={t('studentHub.profile.science', 'Science')}
                         className="score-input"
                       />
                     </Form.Item>
@@ -305,30 +305,30 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* English Proficiency Section */}
-        <Card title="English Proficiency Tests" className="section-card">
+        <Card title={t('studentHub.profile.englishProficiencyTests', 'English Proficiency Tests')} className="section-card">
           <Row gutter={[24, 24]}>
             {/* IELTS */}
             <Col xs={24} lg={8}>
               <div className="test-section">
                 <h4 className="test-title">
                   <FontAwesomeIcon icon={ACADEMIC_ICONS.IELTS} />
-                  IELTS
+                  {t('studentHub.profile.ielts', 'IELTS')}
                 </h4>
                 <Form.Item
                   name="ieltsOverall"
-                  label="Overall Band Score"
+                  label={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
                 >
                   <InputNumber
                     min={0}
                     max={9}
                     step={0.5}
-                    placeholder="Overall"
+                    placeholder={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
                     className="score-input"
                   />
                 </Form.Item>
                 <Row gutter={[8, 8]}>
                   <Col xs={12}>
-                    <Form.Item name="ieltsListening" label="Listening">
+                    <Form.Item name="ieltsListening" label={t('studentHub.profile.listening', 'Listening')}>
                       <InputNumber
                         min={0}
                         max={9}
@@ -339,7 +339,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="ieltsReading" label="Reading">
+                    <Form.Item name="ieltsReading" label={t('studentHub.profile.reading', 'Reading')}>
                       <InputNumber
                         min={0}
                         max={9}
@@ -350,7 +350,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="ieltsWriting" label="Writing">
+                    <Form.Item name="ieltsWriting" label={t('studentHub.profile.writing', 'Writing')}>
                       <InputNumber
                         min={0}
                         max={9}
@@ -361,7 +361,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="ieltsSpeaking" label="Speaking">
+                    <Form.Item name="ieltsSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
                       <InputNumber
                         min={0}
                         max={9}
@@ -380,22 +380,22 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <div className="test-section">
                 <h4 className="test-title">
                   <FontAwesomeIcon icon={ACADEMIC_ICONS.TOEFL} />
-                  TOEFL
+                  {t('studentHub.profile.toefl', 'TOEFL')}
                 </h4>
                 <Form.Item
                   name="toeflTotal"
-                  label="Total Score"
+                  label={t('studentHub.profile.totalScore', 'Total Score')}
                 >
                   <InputNumber
                     min={0}
                     max={120}
-                    placeholder="Total"
+                    placeholder={t('studentHub.profile.totalScore', 'Total Score')}
                     className="score-input"
                   />
                 </Form.Item>
                 <Row gutter={[8, 8]}>
                   <Col xs={12}>
-                    <Form.Item name="toeflReading" label="Reading">
+                    <Form.Item name="toeflReading" label={t('studentHub.profile.reading', 'Reading')}>
                       <InputNumber
                         min={0}
                         max={30}
@@ -405,7 +405,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="toeflListening" label="Listening">
+                    <Form.Item name="toeflListening" label={t('studentHub.profile.listening', 'Listening')}>
                       <InputNumber
                         min={0}
                         max={30}
@@ -415,7 +415,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="toeflSpeaking" label="Speaking">
+                    <Form.Item name="toeflSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
                       <InputNumber
                         min={0}
                         max={30}
@@ -425,7 +425,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                     </Form.Item>
                   </Col>
                   <Col xs={12}>
-                    <Form.Item name="toeflWriting" label="Writing">
+                    <Form.Item name="toeflWriting" label={t('studentHub.profile.writing', 'Writing')}>
                       <InputNumber
                         min={0}
                         max={30}
@@ -443,16 +443,16 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <div className="test-section">
                 <h4 className="test-title">
                   <FontAwesomeIcon icon="language" />
-                  Duolingo
+                  {t('studentHub.profile.duolingo', 'Duolingo')}
                 </h4>
                 <Form.Item
                   name="duolingoScore"
-                  label="Overall Score"
+                  label={t('studentHub.profile.overallScore', 'Overall Score')}
                 >
                   <InputNumber
                     min={10}
                     max={160}
-                    placeholder="Score"
+                    placeholder={t('studentHub.profile.overallScore', 'Overall Score')}
                     className="score-input"
                   />
                 </Form.Item>
@@ -462,19 +462,19 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* GPA Information Section */}
-        <Card title="GPA Information" className="section-card">
+        <Card title={t('studentHub.profile.gpaInformation', 'GPA Information')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={12}>
               <Form.Item
                 name="gpaUnweighted"
-                label="Unweighted GPA"
-                rules={[{ required: true, message: 'Please enter your unweighted GPA' }]}
+                label={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
               >
                 <InputNumber
                   min={0}
                   max={4}
                   step={0.01}
-                  placeholder="Unweighted GPA"
+                  placeholder={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
                   className="gpa-input"
                 />
               </Form.Item>
@@ -482,13 +482,13 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={12}>
               <Form.Item
                 name="gpaWeighted"
-                label="Weighted GPA"
+                label={t('studentHub.profile.weightedGpa', 'Weighted GPA')}
               >
                 <InputNumber
                   min={0}
                   max={5}
                   step={0.01}
-                  placeholder="Weighted GPA"
+                  placeholder={t('studentHub.profile.weightedGpa', 'Weighted GPA')}
                   className="gpa-input"
                 />
               </Form.Item>
@@ -496,9 +496,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={12}>
               <Form.Item
                 name="gpaScale"
-                label="GPA Scale"
+                label={t('studentHub.profile.gpaScale', 'GPA Scale')}
               >
-                <Select placeholder="Select GPA scale" className="gpa-select">
+                <Select placeholder={t('studentHub.profile.selectGpaScale', 'Select GPA scale')} className="gpa-select">
                   <Option value={4.0}>4.0 Scale</Option>
                   <Option value={5.0}>5.0 Scale</Option>
                   <Option value={100}>100 Point Scale</Option>
@@ -509,13 +509,13 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={12}>
               <Form.Item
                 name="gpaCumulative"
-                label="Cumulative GPA"
+                label={t('studentHub.profile.cumulativeGpa', 'Cumulative GPA')}
               >
                 <InputNumber
                   min={0}
                   max={5}
                   step={0.01}
-                  placeholder="Cumulative GPA"
+                  placeholder={t('studentHub.profile.cumulativeGpa', 'Cumulative GPA')}
                   className="gpa-input"
                 />
               </Form.Item>
@@ -524,15 +524,15 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         </Card>
 
         {/* Academic Details Section */}
-        <Card title="Academic Details" className="section-card">
+        <Card title={t('studentHub.profile.academicDetails', 'Academic Details')} className="section-card">
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={12}>
               <Form.Item
                 name="curriculum"
-                label="School Curriculum *"
-                rules={[{ required: true, message: 'Please select your school curriculum' }]}
+                label={t('studentHub.profile.schoolCurriculum', 'School Curriculum *')}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectCurriculum', 'Please select your school curriculum') }]}
               >
-                <Select placeholder="Select curriculum" className="curriculum-select">
+                <Select placeholder={t('studentHub.profile.selectCurriculum', 'Select curriculum')} className="curriculum-select">
                   {curriculumOptions.map(option => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
@@ -544,8 +544,8 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={12}>
               <Form.Item
                 name="graduationYear"
-                label="Graduation Year *"
-                rules={[{ required: true, message: 'Please select your graduation year' }]}
+                label={t('studentHub.profile.graduationYear', 'Graduation Year *')}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectGraduationYear', 'Please select your graduation year') }]}
               >
                 <Select placeholder="Select graduation year" className="graduation-select">
                   {graduationYearOptions.map(option => (
@@ -559,36 +559,36 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={8}>
               <Form.Item
                 name="gapYear"
-                label="Gap Year"
+                label={t('studentHub.profile.gapYear', 'Gap Year')}
                 valuePropName="checked"
               >
-                <Select placeholder="Planning a gap year?" className="gap-year-select">
-                  <Option value={false}>No</Option>
-                  <Option value={true}>Yes</Option>
+                <Select placeholder={t('studentHub.profile.planningGapYear', 'Planning a gap year?')} className="gap-year-select">
+                  <Option value={false}>{t('common.no', 'No')}</Option>
+                  <Option value={true}>{t('common.yes', 'Yes')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} lg={8}>
               <Form.Item
                 name="firstGeneration"
-                label="First-Generation Student"
+                label={t('studentHub.profile.firstGenerationStudent', 'First-Generation Student')}
                 valuePropName="checked"
               >
-                <Select placeholder="First-generation student?" className="first-gen-select">
-                  <Option value={false}>No</Option>
-                  <Option value={true}>Yes</Option>
+                <Select placeholder={t('studentHub.profile.firstGenerationStudentQuestion', 'First-generation student?')} className="first-gen-select">
+                  <Option value={false}>{t('common.no', 'No')}</Option>
+                  <Option value={true}>{t('common.yes', 'Yes')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} lg={8}>
               <Form.Item
                 name="financialAid"
-                label="Financial Aid Needed"
+                label={t('studentHub.profile.financialAidNeeded', 'Financial Aid Needed')}
                 valuePropName="checked"
               >
-                <Select placeholder="Need financial aid?" className="financial-aid-select">
-                  <Option value={false}>No</Option>
-                  <Option value={true}>Yes</Option>
+                <Select placeholder={t('studentHub.profile.needFinancialAid', 'Need financial aid?')} className="financial-aid-select">
+                  <Option value={false}>{t('common.no', 'No')}</Option>
+                  <Option value={true}>{t('common.yes', 'Yes')}</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -608,14 +608,14 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   icon={<FontAwesomeIcon icon={ACTION_ICONS.SAVE} />}
                   size="large"
                 >
-                  Save Academic Profile
+                  {t('studentHub.profile.saveAcademicProfile', 'Save Academic Profile')}
                 </Button>
                 <Button
                   type="default"
                   icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
                   size="large"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </Button>
               </Space>
             </div>

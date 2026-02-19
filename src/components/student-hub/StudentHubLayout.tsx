@@ -46,10 +46,10 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // Compact Navigation Structure (Phase 2 - SaaS Optimized)
   // Reduced from 11 items to 6 core items
   const menuItems = [
-    { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('Dashboard') },
-    { key: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists') },
-    { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: 'Major Match' },
-    { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: 'Opportunities' },
+    { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('studentHub.nav.dashboard', 'Dashboard') },
+    { key: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists', 'College Lists') },
+    { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: t('studentHub.psychometric.majorMatch', 'Major Match') },
+    { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: t('studentHub.nav.opportunities', 'Opportunities') },
     { key: '/student-hub/essays', icon: <UnifiedIcon name="essays" size="md" color="primary" />, label: t('Essays') },
     { key: '/student-hub/documents', icon: <UnifiedIcon name="documents" size="md" color="primary" />, label: t('Documents') },
     { key: '/student-hub/profile', icon: <UnifiedIcon name="profile" size="md" color="primary" />, label: t('My Profile') },
@@ -93,7 +93,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 onClick={() => setMobileDrawerVisible(true)}
                 className="mobile-menu-trigger"
               />
-              <h1 className="mobile-title">My Journey</h1>
+              <h1 className="mobile-title">{t('studentHub.nav.myJourney', 'My Journey')}</h1>
             </div>
           </Header>
         )}
@@ -111,7 +111,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           <div className="sidebar-header">
             {!collapsed && (
               <div className="logo">
-                <span className="logo-text">My Journey</span>
+                <span className="logo-text">{t('studentHub.nav.myJourney', 'My Journey')}</span>
               </div>
             )}
             <Button
@@ -157,7 +157,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           closable={false}
         >
           <div className="mobile-drawer-header">
-            <span className="mobile-drawer-title">My Journey</span>
+            <span className="mobile-drawer-title">{t('studentHub.nav.myJourney', 'My Journey')}</span>
             <Button
               type="text"
               icon={<FontAwesomeIcon icon="times" />}
@@ -196,7 +196,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               onClick={() => setMobileDrawerVisible(true)}
               className="mobile-menu-trigger"
             />
-            <h1 className="mobile-title">My Journey</h1>
+            <h1 className="mobile-title">{t('studentHub.nav.myJourney', 'My Journey')}</h1>
           </div>
         </Header>
       )}
@@ -214,7 +214,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         <div className="sidebar-header">
           {!collapsed && (
             <div className="logo">
-              <span className="logo-text">My Journey</span>
+              <span className="logo-text">{t('studentHub.nav.myJourney', 'My Journey')}</span>
             </div>
           )}
           <Button
@@ -260,7 +260,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         closable={false}
       >
         <div className="mobile-drawer-header">
-          <span className="mobile-drawer-title">My Journay</span>
+          <span className="mobile-drawer-title">{t('studentHub.nav.myJourney', 'My Journey')}</span>
           <Button
             type="text"
             icon={<FontAwesomeIcon icon="times" />}

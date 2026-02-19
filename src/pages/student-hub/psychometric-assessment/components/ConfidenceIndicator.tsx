@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Typography, Progress, Tag, Button, Tooltip, Alert } from 'antd';
+import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 
@@ -62,6 +63,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
   onBoostAccuracy,
   language = 'en',
 }) => {
+  const { t } = useTranslation();
   const config = CONFIDENCE_CONFIG[confidenceLevel];
   const showBoostCTA = !aptitudeTaken && hasSTEMMajors && confidenceLevel !== 'high';
 
@@ -107,7 +109,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
       {/* Confidence breakdown */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Text>Result Reliability</Text>
+          <Text>{t('studentHub.psychometric.results.resultReliability', 'Result Reliability')}</Text>
           <Text strong style={{ color: config.color }}>
             {confidenceScore.toFixed(0)}%
           </Text>
@@ -124,9 +126,9 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
       {academicConfidenceScore !== undefined && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <Text>Academic Readiness</Text>
+            <Text>{t('studentHub.psychometric.results.academicReadiness', 'Academic Readiness')}</Text>
             <Text strong>
-              {academicConfidenceScore >= 0.75 ? 'High' : academicConfidenceScore >= 0.5 ? 'Medium' : 'Low'}
+              {academicConfidenceScore >= 0.75 ? t('common.high', 'High') : academicConfidenceScore >= 0.5 ? t('studentHub.psychometric.results.mediumConfidence', 'Medium') : t('common.low', 'Low')}
             </Text>
           </div>
           <Progress
@@ -159,17 +161,17 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
             style={{ color: aptitudeTaken ? '#10b981' : '#f59e0b' }}
           />
           <Text>
-            Aptitude Test:{' '}
+            {t('studentHub.psychometric.results.aptitudeTest', 'Aptitude Test:')}{' '}
             <Text strong style={{ color: aptitudeTaken ? '#10b981' : '#f59e0b' }}>
-              {aptitudeTaken ? 'Completed' : 'Not Taken'}
+              {aptitudeTaken ? t('studentHub.psychometric.results.completed', 'Completed') : t('studentHub.psychometric.results.notTaken', 'Not Taken')}
             </Text>
           </Text>
         </div>
         {!aptitudeTaken && (
           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
             {hasSTEMMajors
-              ? 'Recommended for STEM major recommendations'
-              : 'Optional - can improve accuracy for some majors'}
+              ? t('studentHub.psychometric.results.recommendedForStem', 'Recommended for STEM major recommendations')
+              : t('studentHub.psychometric.results.optionalCanImprove', 'Optional - can improve accuracy for some majors')}
           </Text>
         )}
       </div>
@@ -179,7 +181,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
         <Alert
           type="warning"
           showIcon
-          message="Areas to Consider"
+          message={t('studentHub.psychometric.results.areasToConsider', 'Areas to Consider')}
           description={
             <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
               {riskFlags.map((flag, index) => (
@@ -204,10 +206,10 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
           }}
         >
           <Title level={5} style={{ color: 'white', margin: '0 0 8px 0' }}>
-            🎯 Boost Your Accuracy
+            {t('studentHub.psychometric.results.boostYourAccuracy', '🎯 Boost Your Accuracy')}
           </Title>
           <Paragraph style={{ color: 'rgba(255,255,255,0.9)', margin: '0 0 12px 0' }}>
-            Your top matches include STEM majors. Take the aptitude test (+10-15 min) for more accurate recommendations.
+            {t('studentHub.psychometric.results.stemMajorsMessage', 'Your top matches include STEM majors. Take the aptitude test (+10-15 min) for more accurate recommendations.')}
           </Paragraph>
           <Button
             type="default"
@@ -221,7 +223,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
             }}
           >
             <FontAwesomeIcon icon="bolt" style={{ marginRight: 8 }} />
-            Take Aptitude Test
+            {t('studentHub.psychometric.results.takeAptitudeTest', 'Take Aptitude Test')}
           </Button>
         </div>
       )}
@@ -231,12 +233,12 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
         <Tooltip
           title={
             <div>
-              <p><strong>What affects confidence:</strong></p>
+              <p><strong>{t('studentHub.psychometric.results.whatAffectsConfidence', 'What affects confidence:')}</strong></p>
               <ul style={{ margin: 0, paddingLeft: 16 }}>
-                <li>Consistent answers across similar questions</li>
-                <li>Complete academic profile</li>
-                <li>Aptitude test results (for STEM)</li>
-                <li>Alignment between interests and stated goals</li>
+                <li>{t('studentHub.psychometric.results.consistentAnswers', 'Consistent answers across similar questions')}</li>
+                <li>{t('studentHub.psychometric.results.completeAcademicProfile', 'Complete academic profile')}</li>
+                <li>{t('studentHub.psychometric.results.aptitudeTestResults', 'Aptitude test results (for STEM)')}</li>
+                <li>{t('studentHub.psychometric.results.alignmentBetweenInterests', 'Alignment between interests and stated goals')}</li>
               </ul>
             </div>
           }
@@ -246,7 +248,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
             style={{ cursor: 'pointer', textDecoration: 'underline' }}
           >
             <FontAwesomeIcon icon="info-circle" style={{ marginRight: 4 }} />
-            How is confidence calculated?
+            {t('studentHub.psychometric.results.howIsConfidenceCalculated', 'How is confidence calculated?')}
           </Text>
         </Tooltip>
       </div>

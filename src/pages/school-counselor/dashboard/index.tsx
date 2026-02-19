@@ -4,6 +4,7 @@ import {
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
 import type { ColumnsType } from 'antd/es/table';
@@ -29,6 +30,7 @@ interface DashboardData {
 }
 
 const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData[]>([]);
@@ -86,7 +88,7 @@ const DashboardPage: React.FC = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px 0' }}>
         <Spin size="large" />
-        <div style={{ marginTop: 16 }}>Loading dashboard...</div>
+        <div style={{ marginTop: 16 }}>{t('schoolCounselor.dashboard.loading', 'Loading dashboard...')}</div>
       </div>
     );
   }
@@ -94,8 +96,8 @@ const DashboardPage: React.FC = () => {
   if (!isSuperAdmin && !isCounselor) {
     return (
       <Alert
-        message="Access Denied"
-        description="You need to be a counselor or SuperAdmin to access this page."
+        message={t('schoolCounselor.dashboard.accessDenied', 'Access Denied')}
+        description={t('schoolCounselor.dashboard.accessDeniedDesc', 'You need to be a counselor or SuperAdmin to access this page.')}
         type="error"
         showIcon
       />
@@ -109,13 +111,8 @@ const DashboardPage: React.FC = () => {
   // Count total enrollments
   const totalEnrollments = data.filter(d => d.courseName).length;
   
-  // Calculate average progress from all enrollments with access
-  const enrollmentsWithProgress = data.filter(
-    s => s.status === 'completed' && s.paymentStatus === 'completed' && s.progressPercentage !== null
-  );
-  const averageProgress = enrollmentsWithProgress.length > 0
-    ? Math.round(enrollmentsWithProgress.reduce((sum, s) => sum + (s.progressPercentage || 0), 0) / enrollmentsWithProgress.length)
-    : Math.round(analytics?.averageProgress || 0);
+  // Use average progress from backend analytics to ensure consistency
+  const averageProgress = analytics?.averageProgress || 0;
 
   // Recent enrollments for table
   const recentEnrollments = data
@@ -133,7 +130,7 @@ const DashboardPage: React.FC = () => {
 
   const enrollmentColumns: ColumnsType<any> = [
     {
-      title: 'Student',
+      title: t('schoolCounselor.dashboard.student', 'Student'),
       dataIndex: 'student',
       key: 'student',
       render: (text, record) => (
@@ -144,29 +141,28 @@ const DashboardPage: React.FC = () => {
       ),
     },
     {
-      title: 'Course',
+      title: t('schoolCounselor.dashboard.course', 'Course'),
       dataIndex: 'course',
       key: 'course',
       render: (course: string) => {
-        if (!course) return 'N/A';
-        // Map course names to display names
+        if (!course) return t('common.notAvailable', 'N/A');
         const courseDisplay = course.toLowerCase() === 'admissions' 
-          ? 'Admissions Program' 
+          ? t('schoolCounselor.dashboard.admissionsProgram', 'Admissions Program')
           : course.toLowerCase() === 'sat' 
-          ? 'SAT Prep Course' 
+          ? t('schoolCounselor.dashboard.satPrepCourse', 'SAT Prep Course')
           : course.toUpperCase();
         const color = course.toLowerCase() === 'admissions' ? 'blue' : course.toLowerCase() === 'sat' ? 'purple' : 'default';
         return <Tag color={color}>{courseDisplay}</Tag>;
       },
     },
     {
-      title: 'Enrolled At',
+      title: t('schoolCounselor.dashboard.enrolledAt', 'Enrolled At'),
       dataIndex: 'enrolledAt',
       key: 'enrolledAt',
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Progress',
+      title: t('schoolCounselor.dashboard.progress', 'Progress'),
       dataIndex: 'progress',
       key: 'progress',
       render: (progress: number) => (
@@ -183,8 +179,8 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="school-counselor-dashboard">
       <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p className="dashboard-subtitle">Welcome back! Here's what's happening with your students.</p>
+        <h1>{t('schoolCounselor.dashboard.title', 'Dashboard')}</h1>
+        <p className="dashboard-subtitle">{t('schoolCounselor.dashboard.subtitle', 'Welcome back! Here\'s what\'s happening with your students.')}</p>
       </div>
 
       {/* Key Metrics */}
@@ -192,7 +188,7 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Total Students"
+              title={t('schoolCounselor.dashboard.totalStudents', 'Total Students')}
               value={totalStudents}
               prefix={<TeamOutlined />}
               valueStyle={{ color: '#8b0000' }}
@@ -202,12 +198,12 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Average Progress"
+              title={t('schoolCounselor.dashboard.averageProgress', 'Average Progress')}
               value={averageProgress}
               suffix="%"
               prefix={<TrophyOutlined />}
               valueStyle={{ color: '#faad14' }}
-              precision={0}
+              precision={1}
             />
           </Card>
         </Col>
@@ -217,7 +213,7 @@ const DashboardPage: React.FC = () => {
         {/* Recent Enrollments */}
         <Col xs={24}>
           <Card
-            title="Recent Enrollments"
+            title={t('schoolCounselor.dashboard.recentEnrollments', 'Recent Enrollments')}
             className="activity-card"
           >
             <Table
@@ -233,14 +229,14 @@ const DashboardPage: React.FC = () => {
       <Row gutter={[24, 24]} className="content-row">
         {/* Students Needing Attention */}
         <Col xs={24}>
-          <Card title="Students Needing Attention" className="attention-card">
+          <Card title={t('schoolCounselor.dashboard.studentsNeedingAttention', 'Students Needing Attention')} className="attention-card">
             {studentsNeedingAttention.length > 0 ? (
               studentsNeedingAttention.map((student, index) => {
                 const courseDisplay = student.courseName === 'admissions' 
-                  ? 'Admissions Program' 
+                  ? t('schoolCounselor.dashboard.admissionsProgram', 'Admissions Program')
                   : student.courseName === 'sat' 
-                  ? 'SAT Prep Course' 
-                  : student.courseName?.toUpperCase() || 'N/A';
+                  ? t('schoolCounselor.dashboard.satPrepCourse', 'SAT Prep Course')
+                  : student.courseName?.toUpperCase() || t('common.notAvailable', 'N/A');
                 return (
                   <div key={`${student.userId}-${student.courseName}-${index}`} className="student-item">
                     <div className="student-info">
@@ -266,7 +262,7 @@ const DashboardPage: React.FC = () => {
                 );
               })
             ) : (
-              <div className="empty-state">All students are on track! 🎉</div>
+              <div className="empty-state">{t('schoolCounselor.dashboard.allStudentsOnTrack', 'All students are on track! 🎉')}</div>
             )}
           </Card>
         </Col>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Dropdown } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -20,6 +21,7 @@ interface SchoolCounselorLayoutProps {
 }
 
 const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -67,12 +69,12 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
     {
       key: '/school-counselor',
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      label: t('schoolCounselor.menu.dashboard', 'Dashboard'),
     },
     {
       key: '/school-counselor/students',
       icon: <TeamOutlined />,
-      label: 'Students',
+      label: t('schoolCounselor.menu.students', 'Students'),
     },
     // Courses - hidden for now
     // {
@@ -83,12 +85,12 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
     {
       key: '/school-counselor/analytics',
       icon: <BarChartOutlined />,
-      label: 'Analytics',
+      label: t('schoolCounselor.menu.analytics', 'Analytics'),
     },
     {
       key: '/school-counselor/settings',
       icon: <SettingOutlined />,
-      label: 'Settings',
+      label: t('schoolCounselor.menu.settings', 'Settings'),
     },
   ];
 

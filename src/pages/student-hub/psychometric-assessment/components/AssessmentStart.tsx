@@ -112,14 +112,14 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               label: (
                 <span>
                   <FontAwesomeIcon icon="history" style={{ marginRight: 8 }} />
-                  Assessment History ({allAssessments.length})
+                  {t('studentHub.psychometric.assessmentHistory', 'Assessment History')} ({allAssessments.length})
                 </span>
               ),
               children: (
                 <List
                   dataSource={allAssessments}
                   loading={assessmentsLoading}
-                  locale={{ emptyText: <Empty description="No completed assessments yet" /> }}
+                  locale={{ emptyText: <Empty description={t('studentHub.psychometric.noCompletedAssessments', 'No completed assessments yet')} /> }}
                   renderItem={(assessment) => (
                     <List.Item
                       actions={[
@@ -128,7 +128,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                           type="link" 
                           onClick={() => onViewExisting(assessment.id)}
                         >
-                          View Results
+                          {t('studentHub.psychometric.viewResults', 'View Results')}
                         </Button>,
                         !readOnly && (
                         <Button
@@ -138,7 +138,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                           icon={<UnifiedIcon name="trash-2" size="sm" color="primary" />}
                           onClick={() => handleDeleteClick(assessment.id)}
                         >
-                          Delete
+                          {t('common.delete', 'Delete')}
                         </Button>
                         ),
                       ].filter(Boolean)}
@@ -146,24 +146,24 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                       <List.Item.Meta
                         title={
                           <Space>
-                            <Text strong>Assessment #{allAssessments.indexOf(assessment) + 1}</Text>
+                            <Text strong>{t('studentHub.psychometric.assessment', 'Assessment')} #{allAssessments.indexOf(assessment) + 1}</Text>
                             <Badge 
                               color={assessment.aptitudeScores ? 'green' : 'blue'} 
-                              text={assessment.aptitudeScores ? 'With Aptitude' : 'Core Only'}
+                              text={assessment.aptitudeScores ? t('studentHub.psychometric.withAptitude', 'With Aptitude') : t('studentHub.psychometric.coreOnly', 'Core Only')}
                             />
                           </Space>
                         }
                         description={
                           <Space direction="vertical" size={4}>
                             <Text type="secondary">
-                              Completed: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
+                              {t('studentHub.psychometric.completed', 'Completed')}: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
                             </Text>
                             <Text type="secondary">
-                              RIASEC Code: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
+                              {t('studentHub.psychometric.riasecCode', 'RIASEC Code')}: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
                               {' • '}
-                              Questions: {assessment.assessmentMetadata?.questionCount || 'N/A'}
+                              {t('studentHub.psychometric.questions', 'Questions')}: {assessment.assessmentMetadata?.questionCount || t('common.notAvailable', 'N/A')}
                               {' • '}
-                              Time: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} min
+                              {t('studentHub.psychometric.time', 'Time')}: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} {t('common.minutes', 'min')}
                             </Text>
                           </Space>
                         }
@@ -182,9 +182,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
         <Card className="assessment-start-card" style={{ marginBottom: 24 }}>
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} lg={18}>
-              <Title level={4} style={{ margin: 0 }}>Ready to start?</Title>
+              <Title level={4} style={{ margin: 0 }}>{t('studentHub.psychometric.readyToStart', 'Ready to start?')}</Title>
               <Text type="secondary">
-                {totalQuestions} questions · ~{estimatedTime} minutes
+                {totalQuestions} {t('studentHub.psychometric.questions', 'questions')} · ~{estimatedTime} {t('common.minutes', 'minutes')}
               </Text>
             </Col>
             <Col xs={24} lg={6}>
@@ -199,12 +199,12 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                 style={{ height: 56, fontSize: 16, fontWeight: 600 }}
               >
                 {activeSession?.hasActiveSession 
-                  ? `Resume (${activeSession.answeredCount}/${activeSession.totalCount})`
-                  : 'Start Assessment'}
+                  ? t('studentHub.psychometric.resume', 'Resume ({{answered}}/{{total}})', { answered: activeSession.answeredCount, total: activeSession.totalCount })
+                  : t('studentHub.psychometric.startAssessment', 'Start Assessment')}
               </Button>
               {activeSession?.hasActiveSession && activeSession.lastUpdated && (
                 <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
-                  Last saved: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
+                  {t('studentHub.psychometric.lastSaved', 'Last saved')}: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
                     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                   })}
                 </Text>
@@ -216,15 +216,15 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
       {/* Assessment Components (V2) - hidden in read-only counselor view */}
       {!readOnly && (
-      <Card className="assessment-components-card" title="Assessment Components" style={{ marginBottom: 24 }}>
+      <Card className="assessment-components-card" title={t('studentHub.psychometric.assessmentComponents', 'Assessment Components')} style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <div className="component-item">
               <FontAwesomeIcon icon="compass" className="component-icon" />
               <div className="component-content">
-                <Text strong>Interest Inventory (RIASEC)</Text>
+                <Text strong>{t('studentHub.psychometric.interestInventory', 'Interest Inventory (RIASEC)')}</Text>
                 <Text type="secondary" className="component-description">
-                  12 choice pairs to identify your career interests
+                  {t('studentHub.psychometric.interestInventoryDesc', '12 choice pairs to identify your career interests')}
                 </Text>
               </div>
               <Badge count={12} className="component-badge" />
@@ -234,9 +234,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             <div className="component-item">
               <FontAwesomeIcon icon="brain" className="component-icon" />
               <div className="component-content">
-                <Text strong>Personality Profile (Big Five)</Text>
+                <Text strong>{t('studentHub.psychometric.personalityProfile', 'Personality Profile (Big Five)')}</Text>
                 <Text type="secondary" className="component-description">
-                  20 questions to understand your personality traits
+                  {t('studentHub.psychometric.personalityProfileDesc', '20 questions to understand your personality traits')}
                 </Text>
               </div>
               <Badge count={20} className="component-badge" />
@@ -246,9 +246,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             <div className="component-item">
               <FontAwesomeIcon icon="star" className="component-icon" />
               <div className="component-content">
-                <Text strong>Values Assessment</Text>
+                <Text strong>{t('studentHub.psychometric.valuesAssessment', 'Values Assessment')}</Text>
                 <Text type="secondary" className="component-description">
-                  10 questions about what matters most to you
+                  {t('studentHub.psychometric.valuesAssessmentDesc', '10 questions about what matters most to you')}
                 </Text>
               </div>
               <Badge count={10} className="component-badge" />
@@ -258,9 +258,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             <div className="component-item">
               <FontAwesomeIcon icon="lightbulb" className="component-icon" />
               <div className="component-content">
-                <Text strong>Real-Life Scenarios (SJT)</Text>
+                <Text strong>{t('studentHub.psychometric.realLifeScenarios', 'Real-Life Scenarios (SJT)')}</Text>
                 <Text type="secondary" className="component-description">
-                  4 situational judgment questions
+                  {t('studentHub.psychometric.realLifeScenariosDesc', '4 situational judgment questions')}
                 </Text>
               </div>
               <Badge count={4} className="component-badge" />
@@ -270,9 +270,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             <div className="component-item">
               <FontAwesomeIcon icon="edit" className="component-icon" />
               <div className="component-content">
-                <Text strong>Open-Ended Questions</Text>
+                <Text strong>{t('studentHub.psychometric.openEndedQuestions', 'Open-Ended Questions')}</Text>
                 <Text type="secondary" className="component-description">
-                  2 questions for AI-powered personalization
+                  {t('studentHub.psychometric.openEndedQuestionsDesc', '2 questions for AI-powered personalization')}
                 </Text>
               </div>
               <Badge count={2} className="component-badge" />
@@ -283,9 +283,9 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
               <div className="component-item component-item-highlight">
                 <FontAwesomeIcon icon="flask" className="component-icon" />
                 <div className="component-content">
-                  <Text strong>Aptitude Tests</Text>
+                  <Text strong>{t('studentHub.psychometric.aptitudeTests', 'Aptitude Tests')}</Text>
                   <Text type="secondary" className="component-description">
-                    12 questions to assess cognitive abilities
+                    {t('studentHub.psychometric.aptitudeTestsDesc', '12 questions to assess cognitive abilities')}
                   </Text>
                 </div>
                 <Badge count={12} className="component-badge" />
@@ -298,7 +298,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
       {/* Settings - hidden in read-only counselor view */}
       {!readOnly && (
-      <Card className="assessment-settings-card" title="Assessment Settings">
+      <Card className="assessment-settings-card" title={t('studentHub.psychometric.assessmentSettings', 'Assessment Settings')}>
         <Row gutter={[24, 24]}>
           {/* Language selection temporarily hidden - not working yet */}
           {/* <Col xs={24} md={12}>
@@ -321,22 +321,22 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
           <Col xs={24} md={24}>
             <div className="setting-group">
-              <Text strong className="setting-label">Include Aptitude Tests</Text>
+              <Text strong className="setting-label">{t('studentHub.psychometric.includeAptitudeTests', 'Include Aptitude Tests')}</Text>
               <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
-                Get deeper insights with cognitive ability assessment (+12 questions)
+                {t('studentHub.psychometric.includeAptitudeTestsDesc', 'Get deeper insights with cognitive ability assessment (+12 questions)')}
               </Paragraph>
               <Radio.Group
                 value={includeAptitude}
                 onChange={(e) => setIncludeAptitude(e.target.value)}
                 size="large"
               >
-                <Radio.Button value={true}>Yes, Include</Radio.Button>
-                <Radio.Button value={false}>No, Skip</Radio.Button>
+                <Radio.Button value={true}>{t('studentHub.psychometric.yesInclude', 'Yes, Include')}</Radio.Button>
+                <Radio.Button value={false}>{t('studentHub.psychometric.noSkip', 'No, Skip')}</Radio.Button>
               </Radio.Group>
               <div className="aptitude-hint" style={{ marginTop: 8 }}>
                 <FontAwesomeIcon icon="lightbulb" style={{ marginRight: 6, color: '#f59e0b' }} />
                 <Text type="secondary" style={{ fontSize: 13 }}>
-                  Recommended for STEM majors
+                  {t('studentHub.psychometric.recommendedForStem', 'Recommended for STEM majors')}
                 </Text>
               </div>
             </div>
@@ -347,18 +347,18 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
       {/* Delete Confirmation Modal */}
       <Modal
-        title="Delete Assessment"
+        title={t('studentHub.psychometric.deleteAssessment', 'Delete Assessment')}
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
         confirmLoading={isDeleting}
-        okText="Delete"
+        okText={t('common.delete', 'Delete')}
         okButtonProps={{ danger: true }}
-        cancelText="Cancel"
+        cancelText={t('common.cancel', 'Cancel')}
       >
-        <p>Are you sure you want to delete this assessment? This action cannot be undone.</p>
+        <p>{t('studentHub.psychometric.deleteConfirm', 'Are you sure you want to delete this assessment? This action cannot be undone.')}</p>
         <p style={{ color: '#ff4d4f', fontWeight: 500 }}>
-          All assessment data, scores, and recommendations will be permanently removed.
+          {t('studentHub.psychometric.deleteWarning', 'All assessment data, scores, and recommendations will be permanently removed.')}
         </p>
       </Modal>
     </div>

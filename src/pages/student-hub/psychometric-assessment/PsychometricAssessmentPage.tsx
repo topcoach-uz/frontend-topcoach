@@ -236,9 +236,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         <Card className="assessment-header-card">
           <div className="assessment-header">
             <div className="header-content">
-              <Title level={2}>Psychometric Assessment</Title>
+              <Title level={2}>{t('studentHub.psychometric.title', 'Psychometric Assessment')}</Title>
               <Paragraph>
-                {readOnly ? t('psychometric.counselorSubtitle') : t('psychometric.subtitle')}
+                {readOnly ? t('studentHub.psychometric.counselorSubtitle', 'View the student\'s assessment results and major recommendations.') : t('studentHub.psychometric.subtitle', 'Comprehensive assessment of interests, personality, values, and aptitudes to discover your ideal major and career path.')}
               </Paragraph>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Progress, Tag, Spin, Alert } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
   TeamOutlined,
   TrophyOutlined,
@@ -19,6 +20,7 @@ import './analytics.scss';
 
 
 const AnalyticsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<any>(null);
@@ -74,7 +76,7 @@ const AnalyticsPage: React.FC = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px 0' }}>
         <Spin size="large" />
-        <div style={{ marginTop: 16 }}>Loading analytics...</div>
+        <div style={{ marginTop: 16 }}>{t('schoolCounselor.analytics.loading', 'Loading analytics...')}</div>
       </div>
     );
   }
@@ -82,8 +84,8 @@ const AnalyticsPage: React.FC = () => {
   if (!isSuperAdmin && !isCounselor) {
     return (
       <Alert
-        message="Access Denied"
-        description="You need to be a counselor or SuperAdmin to access this page."
+        message={t('schoolCounselor.analytics.accessDenied', 'Access Denied')}
+        description={t('schoolCounselor.analytics.accessDeniedDesc', 'You need to be a counselor or SuperAdmin to access this page.')}
         type="error"
         showIcon
       />
@@ -91,7 +93,7 @@ const AnalyticsPage: React.FC = () => {
   }
 
   if (!analytics) {
-    return <Alert message="No analytics data available" type="info" />;
+    return <Alert message={t('schoolCounselor.analytics.noData', 'No analytics data available')} type="info" />;
   }
 
   // Calculate overall statistics
@@ -135,8 +137,8 @@ const AnalyticsPage: React.FC = () => {
     <div className="school-counselor-analytics">
       <div className="analytics-header">
         <div>
-          <h1>Analytics & Reports</h1>
-          <p className="page-subtitle">Track performance metrics and student engagement</p>
+          <h1>{t('schoolCounselor.analytics.title', 'Analytics & Reports')}</h1>
+          <p className="page-subtitle">{t('schoolCounselor.analytics.subtitle', 'Track performance metrics and student engagement')}</p>
         </div>
       </div>
 
@@ -145,7 +147,7 @@ const AnalyticsPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Total Students"
+              title={t('schoolCounselor.analytics.totalStudents', 'Total Students')}
               value={totalStudents}
               prefix={<TeamOutlined />}
               valueStyle={{ color: '#8b0000' }}
@@ -155,7 +157,7 @@ const AnalyticsPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="metric-card">
             <Statistic
-              title="Average Progress"
+              title={t('schoolCounselor.analytics.averageProgress', 'Average Progress')}
               value={averageProgress}
               suffix="%"
               prefix={<TrophyOutlined />}
@@ -169,7 +171,7 @@ const AnalyticsPage: React.FC = () => {
       <Row gutter={[24, 24]} className="charts-row">
         {/* Enrollment Trends */}
         <Col xs={24} lg={12}>
-          <Card title="Enrollment Trends" className="chart-card">
+          <Card title={t('schoolCounselor.analytics.enrollmentTrends', 'Enrollment Trends')} className="chart-card">
             {analytics.enrollmentTrends && analytics.enrollmentTrends.length > 0 ? (
               <div className="enrollment-chart-container">
                 <ResponsiveContainer width="100%" height={320}>
@@ -232,7 +234,7 @@ const AnalyticsPage: React.FC = () => {
                       }}
                       formatter={(value: any) => [
                         <span style={{ color: '#8b0000', fontWeight: 600 }}>{value}</span>,
-                        'Enrollments'
+                        t('schoolCounselor.analytics.enrollments', 'Enrollments')
                       ]}
                       cursor={{ fill: 'rgba(139, 0, 0, 0.1)' }}
                     />
@@ -251,7 +253,7 @@ const AnalyticsPage: React.FC = () => {
             ) : (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>📊</div>
-                <div style={{ fontSize: '14px', fontWeight: 500 }}>No enrollment data available</div>
+                <div style={{ fontSize: '14px', fontWeight: 500 }}>{t('schoolCounselor.analytics.noEnrollmentData', 'No enrollment data available')}</div>
               </div>
             )}
           </Card>
@@ -259,13 +261,13 @@ const AnalyticsPage: React.FC = () => {
 
         {/* Progress Distribution */}
         <Col xs={24} lg={12}>
-          <Card title="Student Progress Distribution" className="chart-card">
+          <Card title={t('schoolCounselor.analytics.studentProgressDistribution', 'Student Progress Distribution')} className="chart-card">
             <div className="progress-distribution">
               {progressDistribution.map((item, index) => (
                 <div key={index} className="distribution-item">
                   <div className="dist-header">
                     <span className="dist-range">{item.range}</span>
-                    <span className="dist-count">{item.count} students</span>
+                    <span className="dist-count">{item.count} {t('schoolCounselor.analytics.students', 'students')}</span>
                   </div>
                   <Progress
                     percent={totalStudents > 0 ? Math.round((item.count / totalStudents) * 100) : 0}
@@ -282,15 +284,15 @@ const AnalyticsPage: React.FC = () => {
       {/* Additional Insights */}
       <Row gutter={[24, 24]} className="insights-row">
         <Col xs={24} lg={12}>
-          <Card title="Top Performers" className="insight-card">
+          <Card title={t('schoolCounselor.analytics.topPerformers', 'Top Performers')} className="insight-card">
             <div className="top-performers">
               {topPerformers.length > 0 ? (
                 topPerformers.map((student, index) => {
                   const courseDisplay = student.courseName === 'admissions' 
-                    ? 'Admissions Program' 
+                    ? t('schoolCounselor.dashboard.admissionsProgram', 'Admissions Program')
                     : student.courseName === 'sat' 
-                    ? 'SAT Prep Course' 
-                    : student.courseName?.toUpperCase() || 'N/A';
+                    ? t('schoolCounselor.dashboard.satPrepCourse', 'SAT Prep Course')
+                    : student.courseName?.toUpperCase() || t('common.notAvailable', 'N/A');
                   return (
                     <div key={`${student.userId}-${student.courseName}-${index}`} className="performer-item">
                       <div className="performer-info">
@@ -314,21 +316,21 @@ const AnalyticsPage: React.FC = () => {
                   );
                 })
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No top performers yet</div>
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>{t('schoolCounselor.analytics.noTopPerformers', 'No top performers yet')}</div>
               )}
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Needs Attention" className="insight-card">
+          <Card title={t('schoolCounselor.analytics.needsAttention', 'Needs Attention')} className="insight-card">
             <div className="needs-attention">
               {needsAttention.length > 0 ? (
                 needsAttention.map((student, index) => {
                   const courseDisplay = student.courseName === 'admissions' 
-                    ? 'Admissions Program' 
+                    ? t('schoolCounselor.dashboard.admissionsProgram', 'Admissions Program')
                     : student.courseName === 'sat' 
-                    ? 'SAT Prep Course' 
-                    : student.courseName?.toUpperCase() || 'N/A';
+                    ? t('schoolCounselor.dashboard.satPrepCourse', 'SAT Prep Course')
+                    : student.courseName?.toUpperCase() || t('common.notAvailable', 'N/A');
                   return (
                     <div key={`${student.userId}-${student.courseName}-${index}`} className="attention-item">
                       <div className="attention-info">
@@ -352,7 +354,7 @@ const AnalyticsPage: React.FC = () => {
                   );
                 })
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>All students are on track! 🎉</div>
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>{t('schoolCounselor.dashboard.allStudentsOnTrack', 'All students are on track! 🎉')}</div>
               )}
             </div>
           </Card>

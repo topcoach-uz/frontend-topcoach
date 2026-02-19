@@ -160,7 +160,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
         items.push({
           id: `essay-${i}`,
           type: 'essay',
-          name: prompts[i] || `Essay ${i + 1}`,
+          name: prompts[i] || t('studentHub.applications.essayNumber', 'Essay {{number}}', { number: i + 1 }),
           required: true,
           status: i < completed ? 'completed' : 'not_started',
         });
@@ -174,7 +174,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
         items.push({
           id: `recommendation-${i}`,
           type: 'recommendation',
-          name: `Recommendation Letter ${i + 1}`,
+          name: t('studentHub.applications.recommendationLetterNumber', 'Recommendation Letter {{number}}', { number: i + 1 }),
           required: true,
           status: i < submitted ? 'completed' : i < requested ? 'in_progress' : 'not_started',
         });
@@ -186,7 +186,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
       items.push({
         id: 'transcript',
         type: 'document',
-        name: 'Official Transcripts',
+        name: t('studentHub.applications.officialTranscripts', 'Official Transcripts'),
         required: true,
         status: requirements.transcripts.status === 'received' ? 'completed' : 
                 requirements.transcripts.status === 'sent' ? 'in_progress' : 'not_started',
@@ -212,7 +212,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
       items.push({
         id: 'interview',
         type: 'interview',
-        name: `Interview${requirements.interviews.type ? ` (${requirements.interviews.type})` : ''}`,
+        name: t('studentHub.applications.interview', 'Interview') + (requirements.interviews.type ? ` (${requirements.interviews.type})` : ''),
         required: true,
         status: requirements.interviews.completed ? 'completed' :
                 requirements.interviews.scheduled ? 'in_progress' : 'not_started',
@@ -227,7 +227,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
         items.push({
           id: `supplement-${i}`,
           type: 'essay',
-          name: prompts[i] || `Supplement ${i + 1}`,
+          name: prompts[i] || t('studentHub.applications.supplementNumber', 'Supplement {{number}}', { number: i + 1 }),
           required: true,
           status: i < completed ? 'completed' : 'not_started',
         });
@@ -241,7 +241,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
         items.push({
           id: c.id || `custom-${i}`,
           type: 'other',
-          name: c.title || `Custom ${i + 1}`,
+          name: c.title || t('studentHub.applications.customNumber', 'Custom {{number}}', { number: i + 1 }),
           required: true,
           status: c.completed ? 'completed' : 'not_started',
         });
@@ -272,13 +272,13 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
   const getStatusText = (status: RequirementItem['status']) => {
     switch (status) {
       case 'completed':
-        return 'Complete';
+        return t('studentHub.applications.status.complete', 'Complete');
       case 'in_progress':
-        return 'In Progress';
+        return t('studentHub.applications.status.inProgress', 'In Progress');
       case 'overdue':
-        return 'Overdue';
+        return t('studentHub.applications.status.overdue', 'Overdue');
       default:
-        return 'Not Started';
+        return t('studentHub.applications.status.notStarted', 'Not Started');
     }
   };
 
@@ -324,7 +324,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
   if (totalItems === 0 && !headerOnly) {
     return (
       <div style={{ padding: '4px 0', color: '#94a3b8', fontSize: '12px' }}>
-        <Text type="secondary">No requirements tracked yet. Add them in the edit page.</Text>
+        <Text type="secondary">{t('studentHub.applications.noRequirementsTracked', 'No requirements tracked yet. Add them in the edit page.')}</Text>
       </div>
     );
   }
@@ -402,7 +402,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
                       onClick={(e) => e.stopPropagation()}
                       style={{ fontSize: 12, whiteSpace: 'nowrap' }}
                     >
-                      Open in Essays Hub →
+                      {t('studentHub.applications.openInEssaysHub', 'Open in Essays Hub')} →
                     </Link>
                   )}
                   {(item.type === 'document' || item.type === 'recommendation') && (
@@ -411,7 +411,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
                       onClick={(e) => e.stopPropagation()}
                       style={{ fontSize: 12, whiteSpace: 'nowrap' }}
                     >
-                      Open in Documents →
+                      {t('studentHub.applications.openInDocuments', 'Open in Documents')} →
                     </Link>
                   )}
                 </Space>
@@ -425,7 +425,7 @@ const RequirementsChecklist: React.FC<RequirementsChecklistProps> = ({
                 size="small"
                 onClick={() => navigate(`/student-hub/applications/${applicationId}/edit`)}
               >
-                Update Requirements
+                {t('studentHub.applications.updateRequirements', 'Update Requirements')}
               </Button>
             </div>
           )}

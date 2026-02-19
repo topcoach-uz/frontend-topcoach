@@ -168,7 +168,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
             label: (
               <div className="tab-label">
                 <UnifiedIcon name="calculator" size="sm" color="primary" />
-                <span>GPA Calculator</span>
+                <span>{t('studentHub.profile.gpaCalculator', 'GPA Calculator')}</span>
               </div>
             ),
             children: <GpaCalculatorPage />,

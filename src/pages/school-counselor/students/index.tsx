@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Input, Select, Table, Tag, Button, Space, Progress, Spin, Alert, Dropdown, MenuProps } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   SearchOutlined,
@@ -40,6 +41,7 @@ interface StudentData {
 }
 
 const StudentsPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { selectedOrganizationId, isSuperAdmin, isCounselor } = useOrganization();
   const [loading, setLoading] = useState(false);
@@ -241,7 +243,7 @@ const StudentsPage: React.FC = () => {
 
   const columns: ColumnsType<StudentData> = [
     {
-      title: 'Student',
+      title: t('schoolCounselor.students.student', 'Student'),
       key: 'student',
       width: 250,
       render: (_, record) => {
@@ -264,7 +266,7 @@ const StudentsPage: React.FC = () => {
       },
     },
     {
-      title: 'Telegram Status',
+      title: t('schoolCounselor.students.telegramStatus', 'Telegram Status'),
       dataIndex: 'telegramStatus',
       key: 'telegramStatus',
       width: 150,
@@ -281,14 +283,14 @@ const StudentsPage: React.FC = () => {
       onFilter: (value, record) => record.telegramStatus === value,
     },
     {
-      title: 'Phone Number',
+      title: t('schoolCounselor.students.phoneNumber', 'Phone Number'),
       dataIndex: 'telegramPhoneNumber',
       key: 'telegramPhoneNumber',
       width: 150,
       render: (phone: string | null) => phone || 'N/A',
     },
     {
-      title: 'Course',
+      title: t('schoolCounselor.students.course', 'Course'),
       dataIndex: 'courseName',
       key: 'courseName',
       width: 150,
@@ -312,7 +314,7 @@ const StudentsPage: React.FC = () => {
       onFilter: (value, record) => (record.courseName || record.courseType) === value,
     },
     {
-      title: 'Progress',
+      title: t('schoolCounselor.students.progress', 'Progress'),
       key: 'progress',
       width: 180,
       render: (_, record) => {
@@ -336,7 +338,7 @@ const StudentsPage: React.FC = () => {
       sorter: true,
     },
     {
-      title: 'Enrolled At',
+      title: t('schoolCounselor.students.enrolledAt', 'Enrolled At'),
       dataIndex: 'enrolledAt',
       key: 'enrolledAt',
       width: 150,
@@ -344,7 +346,7 @@ const StudentsPage: React.FC = () => {
       sorter: true,
     },
     {
-      title: 'Actions',
+      title: t('schoolCounselor.students.actions', 'Actions'),
       key: 'actions',
       width: 120,
       fixed: 'right',
@@ -390,12 +392,12 @@ const StudentsPage: React.FC = () => {
     <div className="school-counselor-students">
       <div className="students-header">
         <div>
-          <h1>Students</h1>
-          <p className="page-subtitle">Manage and track your students' progress</p>
+          <h1>{t('schoolCounselor.students.title', 'Students')}</h1>
+          <p className="page-subtitle">{t('schoolCounselor.students.subtitle', 'Manage and track your students\' progress')}</p>
         </div>
         <Space>
           <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
-            <Button icon={<ExportOutlined />}>Export</Button>
+            <Button icon={<ExportOutlined />}>{t('schoolCounselor.students.export', 'Export')}</Button>
           </Dropdown>
         </Space>
       </div>
@@ -404,7 +406,7 @@ const StudentsPage: React.FC = () => {
       <Card className="filters-card">
         <Space size="large" wrap>
           <Search
-            placeholder="Search students by name or email"
+            placeholder={t('schoolCounselor.students.searchPlaceholder', 'Search students by name or email')}
             allowClear
             enterButton={<SearchOutlined />}
             size="large"
@@ -414,26 +416,26 @@ const StudentsPage: React.FC = () => {
             onSearch={handleSearch}
           />
           <Select
-            placeholder="Filter by Status"
+            placeholder={t('schoolCounselor.students.filterByStatus', 'Filter by Status')}
             style={{ width: 150 }}
             value={statusFilter}
             onChange={setStatusFilter}
             suffixIcon={<FilterOutlined />}
           >
-            <Option value="all">All Status</Option>
-            <Option value="active">Active</Option>
-            <Option value="inactive">Inactive</Option>
-            <Option value="completed">Completed</Option>
-            <Option value="pending">Pending</Option>
+            <Option value="all">{t('schoolCounselor.students.allStatus', 'All Status')}</Option>
+            <Option value="active">{t('schoolCounselor.students.active', 'Active')}</Option>
+            <Option value="inactive">{t('schoolCounselor.students.inactive', 'Inactive')}</Option>
+            <Option value="completed">{t('schoolCounselor.students.completed', 'Completed')}</Option>
+            <Option value="pending">{t('schoolCounselor.students.pending', 'Pending')}</Option>
           </Select>
           <Select
-            placeholder="Filter by Course"
+            placeholder={t('schoolCounselor.students.filterByCourse', 'Filter by Course')}
             style={{ width: 200 }}
             value={courseFilter}
             onChange={setCourseFilter}
             suffixIcon={<FilterOutlined />}
           >
-            <Option value="all">All Courses</Option>
+            <Option value="all">{t('schoolCounselor.students.allCourses', 'All Courses')}</Option>
             {allCourses.map((course) => {
               const displayName = course === 'admissions' 
                 ? 'Admissions Program' 
@@ -448,7 +450,7 @@ const StudentsPage: React.FC = () => {
             })}
           </Select>
           <div className="results-count">
-            Showing {filteredStudents.length} of {data.length} students
+            {t('schoolCounselor.students.showing', 'Showing {{current}} of {{total}} students', { current: filteredStudents.length, total: data.length })}
           </div>
         </Space>
       </Card>
@@ -463,7 +465,7 @@ const StudentsPage: React.FC = () => {
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
-              showTotal: (total) => `Total ${total} students`,
+              showTotal: (total) => t('schoolCounselor.students.totalStudents', 'Total {{total}} students', { total }),
               position: ['bottomRight'],
             }}
             scroll={{ x: 1400 }}
