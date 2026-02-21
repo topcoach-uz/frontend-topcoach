@@ -831,7 +831,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 ...applicationsData.map((app: any) => ({
                   ...app,
                   type: 'application',
-                  activityType: 'Application added',
+                  activityType: t('studentHub.dashboard.applicationAdded'),
                   title: null,
                   subtitle: `${app?.major || t('studentHub.applications.notSpecified')} • ${app?.applicationType || 'application'}`,
                   timestamp: app?.createdAt || app?.updatedAt,
@@ -840,7 +840,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 ...scholarshipsData.map((scholarship: any) => ({
                   ...scholarship,
                   type: 'scholarship',
-                  activityType: 'Scholarship added',
+                  activityType: t('studentHub.dashboard.scholarshipAdded'),
                   title: scholarship?.scholarshipName || t('studentHub.dashboard.unknownScholarship'),
                   subtitle: `${scholarship?.organization || t('studentHub.applications.unknownOrganization')}`,
                   timestamp: scholarship?.createdAt || scholarship?.updatedAt,
@@ -850,7 +850,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 ...essaysData.map((essay: any) => ({
                   ...essay,
                   type: 'essay',
-                  activityType: 'Essay uploaded',
+                  activityType: t('studentHub.dashboard.essayUploaded'),
                   title: essay?.title || t('studentHub.dashboard.untitledEssay'),
                   subtitle: essay?.essayType || t('studentHub.profile.status.unknown'),
                   timestamp: essay?.createdAt || essay?.updatedAt,
@@ -859,7 +859,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 ...documentsData.map((document: any) => ({
                   ...document,
                   type: 'document',
-                  activityType: 'Document uploaded',
+                  activityType: t('studentHub.dashboard.documentUploaded'),
                   title: document?.fileName || t('studentHub.dashboard.untitledDocument'),
                   subtitle: document?.documentType || t('studentHub.profile.status.unknown'),
                   timestamp: document?.createdAt || document?.updatedAt,

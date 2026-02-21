@@ -150,8 +150,8 @@ $crimson-900: #7f1d1d;
             width: 18px;
             height: 18px;
             display: flex !important;
-            color: #8b0000 !important;
-            fill: #8b0000 !important;
+            color: #fff !important;
+            fill: #fff !important;
             align-items: center;
             justify-content: center;
 
@@ -162,7 +162,7 @@ $crimson-900: #7f1d1d;
               width: 20px !important;
               height: 20px !important;
               font-size: 18px !important;
-              color: #8b0000 !important;
+              color: #fff !important;
             }
           }
 
@@ -187,7 +187,7 @@ $crimson-900: #7f1d1d;
               display: flex !important;
               align-items: center;
               justify-content: center;
-              color: #8b0000 !important;
+              color: #fff !important;
             }
           }
         }
@@ -760,13 +760,13 @@ $crimson-900: #7f1d1d;
     width: 20px !important;
     height: 20px !important;
     font-size: 18px !important;
-    color: #8b0000 !important;
+    color: #fff !important;
     text-align: center !important;
     line-height: 20px !important;
   }
 }
 
-// Additional aggressive overrides for collapsed sidebar
+// Additional aggressive overrides for collapsed sidebar - white icons so always visible on crimson
 .ant-layout-sider-collapsed {
   .ant-menu-inline-collapsed {
     .ant-menu-item {
@@ -787,7 +787,7 @@ $crimson-900: #7f1d1d;
           width: 20px !important;
           height: 20px !important;
           font-size: 18px !important;
-          color: #8b0000 !important;
+          color: #fff !important;
           text-align: center !important;
           line-height: 20px !important;
         }
@@ -803,7 +803,7 @@ $crimson-900: #7f1d1d;
           width: 20px !important;
           height: 20px !important;
           font-size: 18px !important;
-          color: #8b0000 !important;
+          color: #fff !important;
           text-align: center !important;
           line-height: 20px !important;
         }
@@ -830,13 +830,13 @@ $crimson-900: #7f1d1d;
     width: 20px !important;
     height: 20px !important;
     font-size: 18px !important;
-    color: #8b0000 !important;
+    color: #fff !important;
     text-align: center !important;
     line-height: 20px !important;
   }
 }
 
-// Ultra-specific overrides for custom menu
+// Ultra-specific overrides for custom menu (collapsed) - white icons for visibility on crimson
 .custom-menu.ant-menu-inline-collapsed {
   .ant-menu-item {
     .ant-menu-item-icon {
@@ -856,7 +856,7 @@ $crimson-900: #7f1d1d;
         width: 20px !important;
         height: 20px !important;
         font-size: 18px !important;
-        color: #8b0000 !important;
+        color: #fff !important;
         text-align: center !important;
         line-height: 20px !important;
       }
@@ -872,7 +872,7 @@ $crimson-900: #7f1d1d;
         width: 20px !important;
         height: 20px !important;
         font-size: 18px !important;
-        color: #8b0000 !important;
+        color: #fff !important;
         text-align: center !important;
         line-height: 20px !important;
       }
@@ -908,6 +908,19 @@ $crimson-900: #7f1d1d;
       background-color: $crimson-primary;
       box-shadow: 0 4px 12px rgba(139, 0, 0, 0.15);
 
+      // Force ALL icon content to white (UnifiedIcon renders svg/span without .menu-icon)
+      color: white !important;
+      &,
+      *,
+      svg,
+      svg path,
+      svg g,
+      span {
+        color: white !important;
+        fill: white !important;
+        stroke: white !important;
+      }
+
       .menu-icon {
         color: white !important;
         display: flex !important;
@@ -921,12 +934,21 @@ $crimson-900: #7f1d1d;
       color: white !important;
     }
 
-    // Force icon color to white when selected in collapsed menu
+    // Force icon color to white when selected in collapsed menu (any child)
     &.selected {
       .menu-icon,
-      .menu-icon svg {
+      .menu-icon svg,
+      > *,
+      > * svg,
+      > * path,
+      > * g {
         color: white !important;
         fill: white !important;
+        stroke: white !important;
+      }
+      // Override inline color from UnifiedIcon/react-icons
+      > *[style*="color"] {
+        color: white !important;
       }
     }
 
@@ -1112,7 +1134,7 @@ $crimson-900: #7f1d1d;
             display: none !important;
           }
           
-          // Ensure clean icon display
+          // Ensure clean icon display - white when collapsed so visible on crimson
           .ant-menu-item-icon {
             margin: 0 !important;
             font-size: 18px !important;
@@ -1121,7 +1143,7 @@ $crimson-900: #7f1d1d;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            color: #8b0000 !important;
+            color: #fff !important;
           }
         }
       }

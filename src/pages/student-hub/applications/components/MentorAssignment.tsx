@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Select, Avatar, Button, Space, Typography, Popover, message } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGetMentorsQuery } from '../../../../app/services/mentors';
 import { useUpdateCollegeApplicationMutation } from '../../../../app/services/student-hub/applicationTrackingApi';
 import type { MentorsResponseDto } from '../../../../app/api/Api';
@@ -21,6 +22,7 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
   mentorId,
   onUpdate,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [updateApplication] = useUpdateCollegeApplicationMutation();
   const { data: mentors, isLoading: mentorsLoading } = useGetMentorsQuery();
@@ -71,10 +73,10 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
 
   const popoverContent = (
     <div className="mentor-assignment-popover">
-      <div className="mentor-assignment-popover-title">Assign Mentor</div>
+      <div className="mentor-assignment-popover-title">{t('studentHub.applications.assignMentor')}</div>
       <Select
         className="mentor-assignment-select"
-        placeholder="Search and select a mentor"
+        placeholder={t('studentHub.applications.searchAndSelectMentor')}
         showSearch
         value={mentorId || undefined}
         onChange={(v) => handleAssignMentor(v)}
@@ -100,10 +102,10 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
       {assignedMentor && (
         <div className="mentor-assignment-actions">
           <Button type="primary" block onClick={handleRequestReview} size="small" style={{ marginBottom: 8 }}>
-            Request Review
+            {t('studentHub.applications.requestReview')}
           </Button>
           <Button type="link" size="small" block onClick={handleUnassign} style={{ padding: 0, color: '#64748b' }}>
-            Unassign
+            {t('studentHub.applications.unassign')}
           </Button>
         </div>
       )}
@@ -130,7 +132,7 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
               <Space size={8} style={{ flex: 1, minWidth: 0 }}>
                 <Avatar size="small" src={assignedMentorAvatar} style={{ flexShrink: 0 }} />
                 <div className="mentor-trigger-info">
-                  <span className="mentor-trigger-name">{assignedMentor.profile?.name || 'Mentor'}</span>
+                  <span className="mentor-trigger-name">{assignedMentor.profile?.name || t('studentHub.applications.mentor')}</span>
                   {(assignedMentor.mentorProfile?.title || assignedMentor.mentorProfile?.university) && (
                     <span className="mentor-trigger-subtitle">
                       {assignedMentor.mentorProfile?.title || assignedMentor.mentorProfile?.university}
@@ -142,13 +144,13 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
                 type="button"
                 className="mentor-assignment-unassign-x"
                 onClick={handleUnassign}
-                aria-label="Unassign mentor"
+                aria-label={t('studentHub.applications.unassignMentorAria')}
               >
                 <CloseOutlined />
               </button>
             </>
           ) : (
-            <Text type="secondary" style={{ fontSize: 13 }}>Assign Mentor</Text>
+            <Text type="secondary" style={{ fontSize: 13 }}>{t('studentHub.applications.assignMentor')}</Text>
           )}
         </div>
       </Popover>

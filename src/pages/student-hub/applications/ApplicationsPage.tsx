@@ -1007,7 +1007,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                                 }
                               }}
                             >
-                              Edit
+                              {t('studentHub.applications.edit')}
                             </Button>
                           )}
                           <Button
@@ -1021,7 +1021,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                               isSch ? handleDeleteScholarship(item) : handleDeleteApplication(item);
                             }}
                           >
-                            Delete
+                            {t('studentHub.applications.delete')}
                           </Button>
                         </div>
                         )}

@@ -124,16 +124,22 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
           {collapsed ? (
             <div className="collapsed-menu">
-              {formattedMenuItems.map((item) => (
-                <div
-                  key={item.key}
-                  className={`collapsed-menu-item ${getSelectedKeys().includes(item.key) ? 'selected' : ''}`}
-                  onClick={() => handleMenuClick({ key: item.key })}
-                  title={item.label}
-                >
-                  {item.icon}
-                </div>
-              ))}
+              {formattedMenuItems.map((item) => {
+                const isSelected = getSelectedKeys().includes(item.key);
+                const icon = isSelected && React.isValidElement(item.icon)
+                  ? React.cloneElement(item.icon as React.ReactElement<{ color?: string }>, { color: 'white' })
+                  : item.icon;
+                return (
+                  <div
+                    key={item.key}
+                    className={`collapsed-menu-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => handleMenuClick({ key: item.key })}
+                    title={item.label}
+                  >
+                    {icon}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <Menu
@@ -227,16 +233,22 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
         {collapsed ? (
           <div className="collapsed-menu">
-            {formattedMenuItems.map((item) => (
-              <div
-                key={item.key}
-                className={`collapsed-menu-item ${getSelectedKeys().includes(item.key) ? 'selected' : ''}`}
-                onClick={() => handleMenuClick({ key: item.key })}
-                title={item.label}
-              >
-                {item.icon}
-              </div>
-            ))}
+            {formattedMenuItems.map((item) => {
+              const isSelected = getSelectedKeys().includes(item.key);
+              const icon = isSelected && React.isValidElement(item.icon)
+                ? React.cloneElement(item.icon as React.ReactElement<{ color?: string }>, { color: 'white' })
+                : item.icon;
+              return (
+                <div
+                  key={item.key}
+                  className={`collapsed-menu-item ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleMenuClick({ key: item.key })}
+                  title={item.label}
+                >
+                  {icon}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <Menu
