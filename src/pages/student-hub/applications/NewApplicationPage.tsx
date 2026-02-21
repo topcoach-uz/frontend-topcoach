@@ -339,8 +339,8 @@ const NewApplicationPage: React.FC = () => {
   return (
     <div className="new-application-page">
       <div className="page-header">
-        <h1 className="page-title">Add New Application</h1>
-        <p className="page-subtitle">Create a new college application</p>
+        <h1 className="page-title">{t('studentHub.applications.newApplication.title')}</h1>
+        <p className="page-subtitle">{t('studentHub.applications.newApplication.subtitle')}</p>
       </div>
 
       <Card className="application-form-card">
@@ -355,8 +355,8 @@ const NewApplicationPage: React.FC = () => {
               {!isOtherUniversity ? (
                 <Form.Item
                   name="university"
-                  label="University"
-                  rules={[{ required: true, message: 'Please search and select a university' }]}
+                  label={t('studentHub.applications.university')}
+                  rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseSelectUniversity') }]}
                 >
                     <div style={{ position: 'relative' }}>
                       <AutoComplete
@@ -364,11 +364,11 @@ const NewApplicationPage: React.FC = () => {
                         onSearch={handleUniversitySearch}
                         onSelect={handleUniversitySelect}
                         onFocus={handleUniversityFocus}
-                        placeholder="Search for a university (e.g., Harvard, MIT, Stanford)"
+                        placeholder={t('studentHub.applications.newApplication.searchUniversityPlaceholder')}
                         size="large"
                         filterOption={false}
                         defaultActiveFirstOption={false}
-                        notFoundContent={searchLoading ? 'Searching...' : 'No universities found'}
+                        notFoundContent={searchLoading ? t('studentHub.applications.newApplication.searching') : t('studentHub.applications.newApplication.noUniversitiesFound')}
                         style={{ width: '100%' }}
                       />
                       {searchLoading && (
@@ -380,7 +380,7 @@ const NewApplicationPage: React.FC = () => {
                           color: '#999',
                           fontSize: '12px'
                         }}>
-                          Loading...
+                          {t('studentHub.applications.newApplication.loading')}
                         </span>
                       )}
                     </div>
@@ -388,11 +388,11 @@ const NewApplicationPage: React.FC = () => {
               ) : (
                 <Form.Item
                   name="university"
-                  label="University"
-                  rules={[{ required: true, message: 'Please enter the university name' }]}
+                  label={t('studentHub.applications.university')}
+                  rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseEnterUniversityName') }]}
                 >
                   <Input
-                    placeholder="Type the university name"
+                    placeholder={t('studentHub.applications.newApplication.typeUniversityName')}
                     size="large"
                     onChange={(e) => {
                       form.setFieldsValue({ university: e.target.value });
@@ -406,7 +406,7 @@ const NewApplicationPage: React.FC = () => {
                           handleUniversityFocus();
                         }}
                       >
-                        Back to list
+                        {t('studentHub.applications.newApplication.backToList')}
                       </Button>
                     }
                   />
@@ -419,17 +419,17 @@ const NewApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="major"
-                label="Intended Major"
-                rules={[{ required: true, message: 'Please enter or select your intended major' }]}
+                label={t('studentHub.applications.newApplication.intendedMajor')}
+                rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseEnterMajor') }]}
               >
                 {isOtherUniversity ? (
                   <Input
-                    placeholder="Type your intended major"
+                    placeholder={t('studentHub.applications.newApplication.typeIntendedMajor')}
                     size="large"
                   />
                 ) : (
                   <Select
-                    placeholder={selectedUniversityId ? "Select a major" : "Select a university first"}
+                    placeholder={selectedUniversityId ? t('studentHub.applications.newApplication.selectMajor') : t('studentHub.applications.newApplication.selectUniversityFirst')}
                     size="large"
                     disabled={!selectedUniversityId || majorOptions.length === 0}
                     showSearch
@@ -453,26 +453,26 @@ const NewApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="applicationType"
-                label="Application Type"
-                rules={[{ required: true, message: 'Please select application type' }]}
+                label={t('studentHub.applications.newApplication.applicationType')}
+                rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseSelectType') }]}
               >
-                <Select placeholder="Select type" size="large">
-                  <Option value="common-app">Common Application</Option>
-                  <Option value="coalition">Coalition Application</Option>
-                  <Option value="direct">Direct Application</Option>
-                  <Option value="ucas">UCAS Application</Option>
-                  <Option value="other">Other</Option>
+                <Select placeholder={t('studentHub.applications.newApplication.selectType')} size="large">
+                  <Option value="common-app">{t('studentHub.applications.applicationType.common_app')}</Option>
+                  <Option value="coalition">{t('studentHub.applications.applicationType.coalition')}</Option>
+                  <Option value="direct">{t('studentHub.applications.applicationType.direct')}</Option>
+                  <Option value="ucas">{t('studentHub.applications.applicationType.ucas')}</Option>
+                  <Option value="other">{t('studentHub.applications.applicationType.other')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
                 name="deadline"
-                label="Application Deadline"
-                rules={[{ required: true, message: 'Please select deadline' }]}
+                label={t('studentHub.applications.newApplication.deadline')}
+                rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseSelectDeadline') }]}
               >
                 <DatePicker
-                  placeholder="Select deadline"
+                  placeholder={t('studentHub.applications.newApplication.selectDeadline')}
                   size="large"
                   style={{ width: '100%' }}
                 />
@@ -484,30 +484,30 @@ const NewApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="priority"
-                label="Priority Level"
-                rules={[{ required: true, message: 'Please select priority' }]}
+                label={t('studentHub.applications.newApplication.priorityLevel')}
+                rules={[{ required: true, message: t('studentHub.applications.newApplication.pleaseSelectPriority') }]}
               >
-                <Select placeholder="Select priority" size="large">
-                  <Option value={8}>High Priority</Option>
-                  <Option value={5}>Medium Priority</Option>
-                  <Option value={2}>Low Priority</Option>
+                <Select placeholder={t('studentHub.applications.newApplication.selectPriority')} size="large">
+                  <Option value={8}>{t('studentHub.applications.newApplication.highPriority')}</Option>
+                  <Option value={5}>{t('studentHub.applications.newApplication.mediumPriority')}</Option>
+                  <Option value={2}>{t('studentHub.applications.newApplication.lowPriority')}</Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
                 name="status"
-                label="Status"
+                label={t('studentHub.applications.newApplication.status')}
                 initialValue="researching"
               >
-                <Select placeholder="Select status" size="large">
-                  <Option value="researching">Researching</Option>
-                  <Option value="applying">Applying</Option>
-                  <Option value="submitted">Submitted</Option>
-                  <Option value="under_review">Under Review</Option>
-                  <Option value="accepted">Accepted</Option>
-                  <Option value="rejected">Rejected</Option>
-                  <Option value="waitlisted">Waitlisted</Option>
+                <Select placeholder={t('studentHub.applications.newApplication.status')} size="large">
+                  <Option value="researching">{t('studentHub.applications.status.researching')}</Option>
+                  <Option value="applying">{t('studentHub.applications.status.applying')}</Option>
+                  <Option value="submitted">{t('studentHub.applications.status.submitted')}</Option>
+                  <Option value="under_review">{t('studentHub.applications.status.under_review')}</Option>
+                  <Option value="accepted">{t('studentHub.applications.status.accepted')}</Option>
+                  <Option value="rejected">{t('studentHub.applications.status.rejected')}</Option>
+                  <Option value="waitlisted">{t('studentHub.applications.status.waitlisted')}</Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -515,23 +515,23 @@ const NewApplicationPage: React.FC = () => {
 
           <Form.Item
             name="whyThisSchool"
-            label="Why this school"
+            label={t('studentHub.applications.newApplication.whyThisSchool')}
           >
             <TextArea
-              placeholder="Goals, fit, or why you're applying (optional)"
+              placeholder={t('studentHub.applications.newApplication.whyThisSchoolPlaceholder')}
               rows={3}
             />
           </Form.Item>
 
           <div style={{ marginTop: 24 }}>
-            <Card size="small" title="Set up requirements" style={{ marginBottom: 16 }}>
+            <Card size="small" title={t('studentHub.applications.newApplication.setUpRequirements')} style={{ marginBottom: 16 }}>
               <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                Add checklist items (essays, recommendations, transcripts, etc.) now. You can track progress after creating the application.
+                {t('studentHub.applications.newApplication.setUpRequirementsHint')}
               </Text>
               <div style={{ padding: 12, background: '#f8fafc', borderRadius: 8 }}>
                 <Space wrap size="middle">
                   <span>
-                    <Text type="secondary" style={{ marginRight: 6 }}>Essays</Text>
+                    <Text type="secondary" style={{ marginRight: 6 }}>{t('studentHub.applications.newApplication.essays')}</Text>
                     <InputNumber
                       min={0}
                       max={20}
@@ -552,7 +552,7 @@ const NewApplicationPage: React.FC = () => {
                     />
                   </span>
                   <span>
-                    <Text type="secondary" style={{ marginRight: 6 }}>Recommendations</Text>
+                    <Text type="secondary" style={{ marginRight: 6 }}>{t('studentHub.applications.newApplication.recommendations')}</Text>
                     <InputNumber
                       min={0}
                       max={10}
@@ -577,7 +577,7 @@ const NewApplicationPage: React.FC = () => {
                       setLocalRequirements(next);
                     }}
                   >
-                    Transcript
+                    {t('studentHub.applications.newApplication.transcript')}
                   </Checkbox>
                   <Checkbox
                     checked={!!(localRequirements?.testScores as any)?.status}
@@ -588,11 +588,11 @@ const NewApplicationPage: React.FC = () => {
                       setLocalRequirements(next);
                     }}
                   >
-                    Test scores
+                    {t('studentHub.applications.newApplication.testScores')}
                   </Checkbox>
                 </Space>
                 <div style={{ marginTop: 12 }}>
-                  <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>Custom</Text>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: 6 }}>{t('studentHub.applications.newApplication.custom')}</Text>
                   <div
                     className="custom-checklist-add-group"
                     style={{
@@ -606,7 +606,7 @@ const NewApplicationPage: React.FC = () => {
                     }}
                   >
                     <Input
-                      placeholder="Add custom item (e.g. Portfolio, SOP draft)"
+                      placeholder={t('studentHub.applications.newApplication.customPlaceholder')}
                       value={customInput}
                       onChange={(e) => setCustomInput(e.target.value)}
                       onPressEnter={() => addCustomItem()}
@@ -614,7 +614,7 @@ const NewApplicationPage: React.FC = () => {
                       style={{ flex: 1, borderRadius: 0 }}
                     />
                     <Button type="primary" onClick={() => addCustomItem()} style={{ borderRadius: 0, flexShrink: 0 }}>
-                      Add
+                      {t('studentHub.applications.newApplication.add')}
                     </Button>
                   </div>
                   {((localRequirements as any)?.custom?.items ?? []).length > 0 && (
@@ -623,7 +623,7 @@ const NewApplicationPage: React.FC = () => {
                         <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                           <Text>{c.title}</Text>
                           <Button type="text" size="small" danger onClick={() => removeCustomItem(c.id)}>
-                            Remove
+                            {t('studentHub.applications.newApplication.remove')}
                           </Button>
                         </div>
                       ))}
@@ -642,7 +642,7 @@ const NewApplicationPage: React.FC = () => {
                 size="large"
                 onClick={handleCancel}
               >
-                Cancel
+                {t('studentHub.applications.newApplication.cancel')}
               </Button>
               <Button
                 type="primary"
@@ -651,7 +651,7 @@ const NewApplicationPage: React.FC = () => {
                 htmlType="submit"
                 loading={isLoading}
               >
-                Create Application
+                {t('studentHub.applications.newApplication.createApplication')}
               </Button>
             </Space>
           </div>
