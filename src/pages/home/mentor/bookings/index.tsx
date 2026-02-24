@@ -14,7 +14,12 @@ dayjs.extend(customParseFormat);
 
 type ViewMode = 'availability' | 'sessions';
 
-export default function BookingsSection() {
+interface BookingsSectionProps {
+  /** When true, do not wrap in container — card is full width of parent (e.g. to align with profile cards above). */
+  skipContainer?: boolean;
+}
+
+export default function BookingsSection({ skipContainer }: BookingsSectionProps = {}) {
   const { activeTab, tabItems, handleTabsChange } = useBookings();
   const colors = useColors();
   const { t } = useTranslation();
@@ -55,25 +60,31 @@ export default function BookingsSection() {
     },
   ];
 
+  const card = (
+    <CustomCard
+      className={styles.card_wrapper}
+      bgColor={colors.colorBgContainer}
+      padding={24}
+      borderRadius={24}
+      mb={24}
+      shadowed={false}
+      style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)' }}
+    >
+      <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={15}>
+        {t('homeMentor.availabilitySessionsTitle', 'Availability & Sessions')}
+      </CustomText>
+      <CustomTabs
+        activeKey={viewMode}
+        items={tabItemsWithViewMode}
+        onChange={(key) => setViewMode(key as ViewMode)}
+      />
+    </CustomCard>
+  );
+
+  if (skipContainer) return card;
   return (
     <div className={'container ' + styles.bookings}>
-      <CustomCard
-        className={styles.card_wrapper}
-        bgColor={colors.colorBgContainer}
-        padding={24}
-        borderRadius={24}
-        mb={24}
-        shadowed
-      >
-        <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={15}>
-          {t('homeMentor.availabilitySessionsTitle', 'Availability & Sessions')}
-        </CustomText>
-        <CustomTabs
-          activeKey={viewMode}
-          items={tabItemsWithViewMode}
-          onChange={(key) => setViewMode(key as ViewMode)}
-        />
-      </CustomCard>
+      {card}
     </div>
   );
 }

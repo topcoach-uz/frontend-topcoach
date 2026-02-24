@@ -16,6 +16,8 @@ interface ChatModalProps {
   onClose: () => void;
   onConversationChange?: (conversationId: string) => void;
   onThreadChange?: (threadId: string) => void;
+  /** When true, open directly to conversation-level messages (no thread), e.g. "Full Support" chat. Skips thread list. */
+  openToGeneralConversation?: boolean;
 }
 
 const ChatModal: React.FC<ChatModalProps> = ({
@@ -25,6 +27,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   onClose,
   onConversationChange,
   onThreadChange,
+  openToGeneralConversation = false,
 }) => {
   const { screenSize } = useScreenSize();
   const isMobile = screenSize < 768;
@@ -70,9 +73,11 @@ const ChatModal: React.FC<ChatModalProps> = ({
       )}
       <div className={styles.headerInfo}>
         <div className={styles.headerName}>{userName}</div>
-        {threadId && (
+        {threadId ? (
           <div className={styles.headerSubtitle}>Session Thread</div>
-        )}
+        ) : openToGeneralConversation ? (
+          <div className={styles.headerSubtitle}>Full Support</div>
+        ) : null}
       </div>
     </div>
   ) : (
@@ -95,7 +100,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
         />
       ) : (
         <>
-          {!threadId ? (
+          {openToGeneralConversation ? (
+            <>
+              <MessageList conversationId={conversationId} />
+              <ChatInput conversationId={conversationId} />
+            </>
+          ) : !threadId ? (
             <ThreadSelector
               conversationId={conversationId}
               onThreadSelect={(selectedThreadId) => {
@@ -136,12 +146,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const modalBodyHeight = !conversationId 
     ? '70vh'
-    : threadId 
+    : (threadId || openToGeneralConversation)
     ? '70vh' 
     : getThreadSelectorHeight();
   const modalBodyMaxHeight = !conversationId
     ? '700px'
-    : threadId 
+    : (threadId || openToGeneralConversation)
     ? '700px' 
     : threadsCount <= 3 ? '300px' : '500px';
 

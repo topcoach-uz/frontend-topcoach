@@ -539,13 +539,13 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   const aiSuggestions = calculateAISuggestions();
 
   return (
-    <div className="student-hub-dashboard">
+    <div className="student-hub-dashboard student-hub-page">
       {/* Welcome Brief - Clean, Minimal */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
+        <h1 className="student-hub-page-title">
           {t('studentHub.dashboard.greeting', 'Hi, {{userName}}! 👋', { userName })}
-          </h1>
-        <p style={{ fontSize: 16, color: '#666', marginTop: 8, marginBottom: 0 }}>
+        </h1>
+        <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
           {t('studentHub.dashboard.welcomeMessage') || 'Let\'s make progress on your college journey today.'}
         </p>
       </div>

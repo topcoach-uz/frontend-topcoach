@@ -40,6 +40,8 @@ import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
+import { useGetAdminStudentsQuery, useAdminEnrollMutation, useAdminUnenrollMutation } from 'src/app/services/fullSupportApi';
+import useColors from 'src/hooks/useColors';
 import type { ColumnsType } from 'antd/es/table';
 import './index.scss';
 
@@ -53,7 +55,7 @@ interface DashboardData {
   telegramPhoneNumber: string | null;
   telegramStatus: string | null;
   courseType: string | null;
-  courseName?: 'admissions' | 'sat';
+  courseName?: 'admissions' | 'sat' | 'full_support';
   amount: number | null;
   paymentStatus: string | null;
   status: string | null;
@@ -90,12 +92,18 @@ const ProgramDashboard: React.FC = () => {
   const [grantAccessModalVisible, setGrantAccessModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ id: string | null; userId: string; userName: string } | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
-  const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat'>('admissions');
+  const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat' | 'full_support'>('admissions');
   const [activeTab, setActiveTab] = useState('users');
-  const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat'>('all');
+  const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat' | 'full_support'>('all');
+  const { data: fullSupportStudentsData, isLoading: fullSupportStudentsLoading } = useGetAdminStudentsQuery(undefined, { skip: activeTab !== 'full_support' });
+  const fullSupportEnrolledUsers = fullSupportStudentsData?.data ?? [];
+  const [adminEnroll, { isLoading: adminEnrollLoading }] = useAdminEnrollMutation();
+  const [adminUnenroll, { isLoading: adminUnenrollLoading }] = useAdminUnenrollMutation();
+  const [removeFullSupportStudent, setRemoveFullSupportStudent] = useState<{ id: string; name: string } | null>(null);
+  const colors = useColors();
+  const primaryRed = colors?.colorPrimary ?? '#8b0000';
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [analyticsTab, setAnalyticsTab] = useState<'admissions' | 'sat'>('admissions');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
@@ -142,8 +150,9 @@ const ProgramDashboard: React.FC = () => {
         secure: true,
       });
       
-      const responseData = response.data || [];
-      console.log('[TopCoach Management] Dashboard data received:', responseData.length, 'items');
+      const raw = response?.data;
+      const responseData = Array.isArray(raw) ? raw : (raw?.data != null && Array.isArray(raw.data) ? raw.data : []);
+      console.log('[TopCoach Management] Dashboard data received:', responseData.length, 'items', courseFilter !== 'all' ? `(filter: ${courseFilter})` : '');
       setData(responseData);
       setTotal(responseData.length); // Set total for pagination
     } catch (error: any) {
@@ -169,7 +178,7 @@ const ProgramDashboard: React.FC = () => {
     }
   };
 
-  const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string, courseName?: 'admissions' | 'sat') => {
+  const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string, courseName?: 'admissions' | 'sat' | 'full_support') => {
     setSelectedUser({ id: enrollmentId, userId, userName: userName || 'this student' });
     setSelectedPlan('standard'); // Reset to default
     setSelectedCourseName(courseName || 'admissions');
@@ -178,6 +187,19 @@ const ProgramDashboard: React.FC = () => {
 
   const handleConfirmGrantAccess = async () => {
     if (!selectedUser) return;
+
+    if (selectedCourseName === 'full_support') {
+      try {
+        await adminEnroll({ userId: selectedUser.userId }).unwrap();
+        message.success(`${selectedUser.userName} enrolled in Full Support.`);
+        setGrantAccessModalVisible(false);
+        setSelectedUser(null);
+        fetchData();
+      } catch (err: any) {
+        message.error(err?.data?.message ?? 'Failed to enroll in Full Support.');
+      }
+      return;
+    }
 
     try {
       // Build query params
@@ -277,9 +299,9 @@ const ProgramDashboard: React.FC = () => {
 
   useEffect(() => {
     if (activeTab === 'analytics') {
-      fetchAnalytics(analyticsTab);
+      fetchAnalytics(); // fetch all analytics (no course filter)
     }
-  }, [activeTab, analyticsTab]);
+  }, [activeTab]);
 
   const fetchOrganizations = async (bypassCache = false) => {
     setOrganizationsLoading(true);
@@ -725,22 +747,8 @@ const ProgramDashboard: React.FC = () => {
       return <Alert message="No analytics data available" type="info" />;
     }
 
-    const courseTabs = [
-      { key: 'admissions', label: 'Admissions Program' },
-      { key: 'sat', label: 'SAT Prep Course' },
-    ];
-
     return (
       <div>
-        <Tabs
-          activeKey={analyticsTab}
-          onChange={(key) => setAnalyticsTab(key as 'admissions' | 'sat')}
-          items={courseTabs.map(tab => ({
-            key: tab.key,
-            label: tab.label,
-          }))}
-          style={{ marginBottom: 24 }}
-        />
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12} md={6}>
             <Card>
@@ -921,31 +929,27 @@ const ProgramDashboard: React.FC = () => {
               </Space>
             </Card>
           </Col>
-          {analyticsTab === 'admissions' && (
+          {analyticsData.courseTypeBreakdown && analyticsData.courseTypeBreakdown.length > 0 && (
             <Col xs={24} lg={12}>
               <Card title="Course Type" loading={analyticsLoading}>
                 <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                  {analyticsData.courseTypeBreakdown && analyticsData.courseTypeBreakdown.length > 0 ? (
-                    analyticsData.courseTypeBreakdown.map((item: any, index: number) => (
-                      <div 
-                        key={index} 
-                        style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center',
-                          padding: '12px 0',
-                          borderBottom: index < analyticsData.courseTypeBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
-                        }}
-                      >
-                        <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                          {item.courseType?.toUpperCase()}
-                        </Tag>
-                        <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No data available</div>
-                  )}
+                  {analyticsData.courseTypeBreakdown.map((item: any, index: number) => (
+                    <div 
+                      key={index} 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        padding: '12px 0',
+                        borderBottom: index < analyticsData.courseTypeBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
+                      }}
+                    >
+                      <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'} style={{ fontSize: '14px', padding: '4px 12px' }}>
+                        {item.courseType?.toUpperCase()}
+                      </Tag>
+                      <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
+                    </div>
+                  ))}
                 </Space>
               </Card>
             </Col>
@@ -1038,9 +1042,12 @@ const ProgramDashboard: React.FC = () => {
       key: 'courseName',
       sorter: true,
       width: 120,
-      render: (courseName: 'admissions' | 'sat' | undefined, record: DashboardData) => {
+      render: (courseName: 'admissions' | 'sat' | 'full_support' | undefined, record: DashboardData) => {
         if (!courseName) {
           return <span style={{ color: '#999' }}>N/A</span>;
+        }
+        if (courseName === 'full_support') {
+          return <Tag color="green">Full Support</Tag>;
         }
         return (
           <Tag color={courseName === 'sat' ? 'purple' : 'blue'}>
@@ -1056,8 +1063,7 @@ const ProgramDashboard: React.FC = () => {
       sorter: true,
       width: 120,
       render: (type: string | null, record: DashboardData) => {
-        // For SAT, don't show courseType (it's always standard)
-        if (record.courseName === 'sat') {
+        if (record.courseName === 'sat' || record.courseName === 'full_support') {
           return <span style={{ color: '#999' }}>N/A</span>;
         }
         return type ? (
@@ -1166,30 +1172,38 @@ const ProgramDashboard: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 150,
+      width: 220,
       fixed: 'right',
       render: (_: any, record: DashboardData) => {
-        // Check if access is already granted (both payment and status must be completed)
         const hasAccess = record.paymentStatus === 'completed' && record.status === 'completed';
-        // Check if telegram is connected
         const isTelegramConnected = record.telegramStatus === 'connected';
-        
         return (
-          <Space>
-            {!hasAccess ? (
+          <Space direction="vertical" size={4}>
+            <Space>
+              {!hasAccess ? (
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckCircleOutlined />}
+                  onClick={() => handleGrantAccess(record.id, record.userId, record.userName, record.courseName)}
+                  disabled={!isTelegramConnected}
+                  title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
+                >
+                  Grant Access
+                </Button>
+              ) : (
+                <Tag color="green">Access Granted</Tag>
+              )}
               <Button
-                type="primary"
+                type="link"
                 size="small"
-                icon={<CheckCircleOutlined />}
-                onClick={() => handleGrantAccess(record.id, record.userId, record.userName, record.courseName)}
+                onClick={() => handleGrantAccess(null, record.userId, record.userName, undefined)}
                 disabled={!isTelegramConnected}
-                title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
+                title={!isTelegramConnected ? 'User must have Telegram connected' : 'Grant access to another program'}
               >
-                Grant Access
+                Add program
               </Button>
-            ) : (
-              <Tag color="green">Access Granted</Tag>
-            )}
+            </Space>
           </Space>
         );
       },
@@ -1280,6 +1294,7 @@ const ProgramDashboard: React.FC = () => {
                         <Select.Option value="all">All Courses</Select.Option>
                         <Select.Option value="admissions">Admissions Program</Select.Option>
                         <Select.Option value="sat">SAT Prep Course</Select.Option>
+                        <Select.Option value="full_support">Full Support</Select.Option>
                       </Select>
                     </Space>
                   </Space>
@@ -1290,13 +1305,13 @@ const ProgramDashboard: React.FC = () => {
                     <Table
                       columns={columns}
                       dataSource={data}
-                      rowKey={(record) => record.userId}
+                      rowKey={(record) => `${record.userId}-${record.courseName ?? 'none'}-${record.id ?? ''}`}
                       scroll={{ x: 2000 }}
                       pagination={{
                         current: currentPage,
                         pageSize: pageSize,
                         total: total,
-                        showTotal: (total) => `Total ${total} users`,
+                        showTotal: (total) => `Total ${total} rows`,
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '50', '100'],
                         onChange: (page, size) => {
@@ -1321,8 +1336,78 @@ const ProgramDashboard: React.FC = () => {
             label: 'Organizations',
             children: renderOrganizationsTab(),
           },
+          {
+            key: 'full_support',
+            label: 'Full Support',
+            children: (
+              <Card style={{ marginTop: 16 }}>
+                <p style={{ marginBottom: 16, color: '#666' }}>
+                  Users enrolled in the Full Support Mentorship Program. Enroll students from <strong>Users &amp; Enrollments</strong> by choosing &quot;Full Support Mentorship Program&quot; in the Grant Access modal.
+                </p>
+                <Table
+                  dataSource={fullSupportEnrolledUsers}
+                  rowKey="id"
+                  pagination={{ pageSize: 20 }}
+                  loading={fullSupportStudentsLoading}
+                  columns={[
+                    { title: 'Name', dataIndex: 'name', key: 'name', width: 200 },
+                    { title: 'Assigned Mentor', dataIndex: 'mentorName', key: 'mentorName', width: 180, render: (v: string | null) => v ?? <span style={{ color: '#999' }}>Unassigned</span> },
+                    { title: 'Sessions', dataIndex: 'sessions', key: 'sessions', width: 100 },
+                    { title: 'Tasks', dataIndex: 'tasks', key: 'tasks', width: 80 },
+                    { title: 'Status', dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={s === 'Active' ? 'green' : 'default'}>{s}</Tag> },
+                    {
+                      title: 'Actions',
+                      key: 'actions',
+                      width: 120,
+                      render: (_: unknown, record: { id: string; name: string }) => (
+                        <Button
+                          type="link"
+                          danger
+                          size="small"
+                          onClick={() => setRemoveFullSupportStudent({ id: record.id, name: record.name })}
+                        >
+                          Remove from Full Support
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
+              </Card>
+            ),
+          },
         ]}
       />
+
+      <Modal
+        title="Remove from Full Support"
+        open={!!removeFullSupportStudent}
+        onCancel={() => setRemoveFullSupportStudent(null)}
+        footer={[
+          <Button key="cancel" onClick={() => setRemoveFullSupportStudent(null)}>Cancel</Button>,
+          <Button
+            key="remove"
+            type="primary"
+            loading={adminUnenrollLoading}
+            style={{ backgroundColor: primaryRed, borderColor: primaryRed }}
+            onClick={() => {
+              if (!removeFullSupportStudent) return;
+              adminUnenroll(removeFullSupportStudent.id)
+                .unwrap()
+                .then(() => {
+                  message.success(`${removeFullSupportStudent.name} has been removed from Full Support.`);
+                  setRemoveFullSupportStudent(null);
+                })
+                .catch(() => message.error('Failed to remove from Full Support.'));
+            }}
+          >
+            Remove
+          </Button>,
+        ]}
+      >
+        {removeFullSupportStudent && (
+          <p style={{ marginBottom: 0 }}>Remove {removeFullSupportStudent.name}? They will lose access.</p>
+        )}
+      </Modal>
 
       <Modal
         title="Grant Access"
@@ -1334,7 +1419,7 @@ const ProgramDashboard: React.FC = () => {
         }}
         okText="Grant Access"
         cancelText="Cancel"
-        okButtonProps={{ type: 'primary' }}
+        okButtonProps={{ type: 'primary', loading: adminEnrollLoading }}
       >
         {selectedUser && (
           <div>
@@ -1342,11 +1427,13 @@ const ProgramDashboard: React.FC = () => {
               Are you sure you want to grant access to <strong>{selectedUser.userName}</strong>?
             </p>
             <p style={{ marginBottom: 16 }}>
-              {selectedUser.id 
-                ? `This will update the existing ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
-                : `This will create a new ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
+              {selectedCourseName === 'full_support'
+                ? `This will enroll ${selectedUser.userName} in the Full Support Mentorship Program.`
+                : selectedUser.id 
+                  ? `This will update the existing ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
+                  : `This will create a new ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
               }
-              {selectedUser.id && (
+              {selectedUser.id && selectedCourseName !== 'full_support' && (
                 <span style={{ display: 'block', marginTop: 8, color: '#666', fontSize: '13px' }}>
                   Note: If the user already has access to {selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'}, this will update that enrollment. 
                   If they have access to the other course, a separate enrollment will be created for this course.
@@ -1368,8 +1455,16 @@ const ProgramDashboard: React.FC = () => {
               >
                 <Radio value="admissions">Admissions Program</Radio>
                 <Radio value="sat">SAT Prep Course</Radio>
+                <Radio value="full_support">Full Support Mentorship Program</Radio>
               </Radio.Group>
             </div>
+            {selectedCourseName === 'full_support' && (
+              <div style={{ padding: '8px 12px', background: '#f0f9ff', borderRadius: 4, marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#666' }}>
+                  Enrolls the student in the Full Support program. They will get access to the mentee dashboard, session tracking, and task assignments.
+                </span>
+              </div>
+            )}
             {selectedCourseName === 'admissions' && (
             <div>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>

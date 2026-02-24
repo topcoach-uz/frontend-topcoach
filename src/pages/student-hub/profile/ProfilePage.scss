@@ -16,6 +16,17 @@
 
 .student-profile-page {
   position: relative; // Ensure loading overlay positions correctly
+
+  // Header content (used with or without card for consistent My Journey content start)
+  .profile-header-content {
+    .profile-status {
+      display: flex;
+      align-items: center;
+      gap: $space-4;
+      margin-top: 8px;
+    }
+  }
+
   .profile-header-card {
     border-radius: $radius-xl;
     box-shadow: $shadow-sm;

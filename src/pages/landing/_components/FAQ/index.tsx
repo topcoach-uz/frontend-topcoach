@@ -37,7 +37,7 @@ export default function FaqSection() {
               : themeFontSize.fontSizeTitle8
           }
           lineHeight={1.4}
-          mb={96}
+          mb={40}
           color={colors.colorTextDescription}
         >
           {t('landing.faqText')}

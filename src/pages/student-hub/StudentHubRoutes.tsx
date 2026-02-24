@@ -15,6 +15,7 @@ import ProgramsPage from './programs/ProgramsPage';
 import SettingsPage from './settings/SettingsPage';
 import TimelinePage from './timeline/TimelinePage';
 import UniversityMatcherPage from './university-matcher/UniversityMatcherPage';
+import FullSupportStudentPage from './full-support/FullSupportStudentPage';
 // TODO: Implement notifications page later
 // import NotificationsPage from './notifications/NotificationsPage';
 
@@ -44,6 +45,8 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/programs/*" element={<ProgramsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/*" element={<SettingsPage />} />
+          <Route path="/full-support" element={<FullSupportStudentPage />} />
+          <Route path="/full-support/*" element={<FullSupportStudentPage />} />
           {/* Redirects for merged pages */}
           <Route path="/timeline" element={<Navigate to="/student-hub/applications?tab=timeline" replace />} />
           <Route path="/timeline/*" element={<Navigate to="/student-hub/applications?tab=timeline" replace />} />

@@ -535,13 +535,11 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const strategyRec = getStrategyRecommendation();
 
   return (
-    <div className="applications-page">
+    <div className="applications-page student-hub-page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
-            {t('studentHub.applications.title')}
-          </h1>
-          <p style={{ fontSize: 14, color: '#666', marginTop: 4, marginBottom: 0 }}>
+          <h1 className="student-hub-page-title">{t('studentHub.applications.title')}</h1>
+          <p className="student-hub-page-subtitle" style={{ marginTop: 4 }}>
             {isReadOnly ? t('studentHub.applications.counselorSubtitle', "View the student's college lists") : t('studentHub.applications.subtitle')}
           </p>
         </div>

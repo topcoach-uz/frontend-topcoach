@@ -279,14 +279,14 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
   }
 
   return (
-    <div className="documents-page">
+    <div className="documents-page student-hub-page">
       {/* Compact Header */}
       <div className="documents-page-header">
         <div className="documents-page-header-left">
-          <h1 className="documents-page-title">
+          <h1 className="documents-page-title student-hub-page-title">
             {isReadOnly ? t('studentHub.documents.counselorTitle') : t('studentHub.documents.title')} <span className="documents-page-count">({totalDocumentCount})</span>
           </h1>
-          <p className="documents-page-subtitle">
+          <p className="documents-page-subtitle student-hub-page-subtitle">
             {isReadOnly ? t('studentHub.documents.counselorSubtitle') : t('studentHub.documents.subtitle')}
           </p>
         </div>

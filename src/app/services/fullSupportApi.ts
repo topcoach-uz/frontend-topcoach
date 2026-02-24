@@ -1,0 +1,587 @@
+import { RtkApi } from './api';
+
+export type FullSupportEnrollmentMe = { enrolled: boolean; mentorName?: string; mentorId?: string };
+
+export type AdminStudentRow = {
+  id: string;
+  name: string;
+  mentorId: string | null;
+  mentorName: string | null;
+  sessions: string;
+  tasks: string;
+  status: string;
+};
+
+export type AdminMentorRow = {
+  id: string;
+  name: string;
+  specialization: string;
+  studentCount: number;
+  students: string[];
+};
+
+export type MentorRosterStudent = {
+  id: string;
+  name: string;
+  initials: string;
+  used: number;
+  allocated: number;
+  sessionsCount: number;
+};
+
+export type SessionLogDto = {
+  id: string;
+  dateTime: string;
+  duration: string;
+  description: string;
+  done: boolean;
+};
+
+export type TaskDto = {
+  id: string;
+  task: string;
+  student?: string;
+  studentUserId: string;
+  deadline: string;
+  hasFeedback: boolean;
+  feedback?: string;
+  submissionText?: string;
+  submissionFileUrls?: { fileName: string; url: string }[];
+};
+
+export type MilestoneDto = {
+  id: string;
+  label: string;
+  date: string | null;
+  done: boolean;
+};
+
+export type PipelineDto = {
+  id: string;
+  studentUserId: string;
+  student?: string;
+  program: string;
+  stage: string;
+  status: string;
+  aid: boolean;
+  deadline: string | null;
+};
+
+export type CurriculumWatchlistItemDto = {
+  key: string;
+  label: string;
+  percent: number;
+  target: string | null;
+};
+
+export type WeeklyReportData = {
+  studentName: string;
+  sessions: SessionLogDto[];
+  usedHours: number;
+  allocatedHours: number;
+  curriculumWatchlist: CurriculumWatchlistItemDto[];
+  tasks: TaskDto[];
+  milestones: MilestoneDto[];
+  pipeline: PipelineDto[];
+};
+
+export type AdminInteractionDto = {
+  id: string;
+  type: 'Session' | 'Task Assigned' | 'Task Review' | 'Milestone' | 'Milestone Added';
+  student: string;
+  mentor: string;
+  description: string;
+  date: string;
+};
+
+export const fullSupportApi = RtkApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getEnrollmentMe: builder.query<{ data: FullSupportEnrollmentMe }, void>({
+      query: () => ({
+        url: '/full-support/enrollment/me',
+        method: 'GET',
+      }),
+      transformResponse: (response: unknown): { data: FullSupportEnrollmentMe } => {
+        const raw = response && typeof response === 'object' && 'data' in (response as object)
+          ? (response as { data: unknown }).data
+          : response;
+        const data = raw && typeof raw === 'object' && raw !== null && 'enrolled' in (raw as object)
+          ? (raw as FullSupportEnrollmentMe)
+          : { enrolled: false };
+        return { data };
+      },
+      providesTags: ['FullSupportEnrollment'],
+    }),
+    enroll: builder.mutation<{ data: unknown; success: boolean }, void>({
+      query: () => ({
+        url: '/full-support/enrollment',
+        method: 'POST',
+      }),
+      invalidatesTags: ['FullSupportEnrollment'],
+    }),
+    adminEnroll: builder.mutation<{ data: unknown; success: boolean }, { userId: string }>({
+      query: (body) => ({
+        url: '/full-support/admin/enroll',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FullSupportAdmin'],
+    }),
+    getAdminStats: builder.query<
+      { data: { totalStudents: number; sessionsConducted: number; tasksCompleted: number; applicationsSubmitted: number } },
+      void
+    >({
+      query: () => ({ url: '/full-support/admin/stats', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        const data =
+          raw && typeof raw === 'object' && raw !== null
+            ? {
+                totalStudents: Number((raw as { totalStudents?: number }).totalStudents) || 0,
+                sessionsConducted: Number((raw as { sessionsConducted?: number }).sessionsConducted) || 0,
+                tasksCompleted: Number((raw as { tasksCompleted?: number }).tasksCompleted) || 0,
+                applicationsSubmitted: Number((raw as { applicationsSubmitted?: number }).applicationsSubmitted) || 0,
+              }
+            : { totalStudents: 0, sessionsConducted: 0, tasksCompleted: 0, applicationsSubmitted: 0 };
+        return { data };
+      },
+      providesTags: ['FullSupportAdmin'],
+    }),
+    getAdminStudents: builder.query<{ data: AdminStudentRow[] }, void>({
+      query: () => ({ url: '/full-support/admin/students', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportAdmin'],
+    }),
+    getAdminMentorAssignments: builder.query<
+      { data: Record<string, { studentCount: number; students: string[] }> },
+      void
+    >({
+      query: () => ({ url: '/full-support/admin/mentor-assignments', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: raw && typeof raw === 'object' && raw !== null ? (raw as Record<string, { studentCount: number; students: string[] }>) : {} };
+      },
+      providesTags: ['FullSupportAdmin'],
+    }),
+    getAdminMentors: builder.query<{ data: AdminMentorRow[] }, void>({
+      query: () => ({ url: '/full-support/admin/mentors', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportAdmin'],
+    }),
+    assignMentor: builder.mutation<
+      { data: unknown; success: boolean },
+      { studentUserId: string; mentorUserId: string }
+    >({
+      query: (body) => ({
+        url: '/full-support/admin/assign',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FullSupportAdmin'],
+    }),
+    unassignMentor: builder.mutation<{ success: boolean }, string>({
+      query: (studentUserId) => ({
+        url: `/full-support/admin/assign/${studentUserId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['FullSupportAdmin'],
+    }),
+    adminUnenroll: builder.mutation<{ success: boolean }, string>({
+      query: (userId) => ({
+        url: '/full-support/admin/unenroll',
+        method: 'POST',
+        body: { userId },
+      }),
+      invalidatesTags: ['FullSupportAdmin'],
+    }),
+    getMentorRoster: builder.query<{ data: MentorRosterStudent[] }, void>({
+      query: () => ({ url: '/full-support/mentor/students', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMentorRoster'],
+    }),
+    getMentorSessions: builder.query<{ data: SessionLogDto[] }, string | null>({
+      query: (studentUserId) => ({
+        url: studentUserId ? `/full-support/mentor/sessions?studentUserId=${encodeURIComponent(studentUserId)}` : '/full-support/mentor/sessions',
+        method: 'GET',
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: (_res, _err, studentUserId) =>
+        studentUserId ? [{ type: 'FullSupportMentorSessions' as const, id: studentUserId }] : ['FullSupportMentorSessions'],
+    }),
+    createMentorSession: builder.mutation<
+      { data: unknown; success: boolean },
+      { studentUserId: string; dateTime: string; duration?: string; description?: string; done?: boolean }
+    >({
+      query: (body) => ({
+        url: '/full-support/mentor/sessions',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+    }),
+    updateMentorSession: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; done: boolean }
+    >({
+      query: ({ id, done }) => ({
+        url: `/full-support/mentor/sessions/${id}`,
+        method: 'PATCH',
+        body: { done },
+      }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+    }),
+    deleteMentorSession: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/full-support/mentor/sessions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+    }),
+    getMentorTasks: builder.query<{ data: TaskDto[] }, void>({
+      query: () => ({ url: '/full-support/mentor/tasks', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMentorTasks'],
+    }),
+    createMentorTask: builder.mutation<
+      { data: unknown; success: boolean },
+      { studentUserId: string; task: string; deadline: string; description?: string }
+    >({
+      query: (body) => ({
+        url: '/full-support/mentor/tasks',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FullSupportMentorTasks'],
+    }),
+    updateMentorTaskFeedback: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; feedback: string }
+    >({
+      query: ({ id, feedback }) => ({
+        url: `/full-support/mentor/tasks/${id}`,
+        method: 'PATCH',
+        body: { feedback },
+      }),
+      invalidatesTags: ['FullSupportMentorTasks'],
+    }),
+    deleteMentorTask: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/full-support/mentor/tasks/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['FullSupportMentorTasks'],
+    }),
+    getMenteeTasks: builder.query<{ data: TaskDto[] }, void>({
+      query: () => ({ url: '/full-support/mentee/tasks', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteeTasks'],
+    }),
+    getMenteeSessions: builder.query<
+      { data: { sessions: SessionLogDto[]; usedHours: number; allocatedHours: number } },
+      void
+    >({
+      query: () => ({ url: '/full-support/mentee/sessions', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        const obj = raw && typeof raw === 'object' ? (raw as { sessions?: unknown; usedHours?: number; allocatedHours?: number }) : {};
+        return {
+          data: {
+            sessions: Array.isArray(obj.sessions) ? (obj.sessions as SessionLogDto[]) : [],
+            usedHours: typeof obj.usedHours === 'number' ? obj.usedHours : 0,
+            allocatedHours: typeof obj.allocatedHours === 'number' ? obj.allocatedHours : 6,
+          },
+        };
+      },
+      providesTags: ['FullSupportMentorSessions'],
+    }),
+    uploadTaskSubmissionFile: builder.mutation<
+      { data: { fileName: string; url: string }; success: boolean },
+      { taskId: string; file: File }
+    >({
+      query: ({ taskId, file }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: `/full-support/mentee/tasks/${taskId}/submission-files`,
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['FullSupportMenteeTasks'],
+    }),
+    submitMenteeTask: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; submissionText: string; submissionFileUrls?: { fileName: string; url: string }[] }
+    >({
+      query: ({ id, submissionText, submissionFileUrls }) => ({
+        url: `/full-support/mentee/tasks/${id}`,
+        method: 'PATCH',
+        body: { submissionText, submissionFileUrls },
+      }),
+      invalidatesTags: ['FullSupportMenteeTasks'],
+    }),
+    getMentorMilestones: builder.query<{ data: MilestoneDto[] }, string>({
+      query: (studentUserId) => ({
+        url: `/full-support/mentor/milestones?studentUserId=${encodeURIComponent(studentUserId)}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportMentorMilestones' as const, id: studentUserId }],
+    }),
+    createMentorMilestone: builder.mutation<
+      { data: unknown; success: boolean },
+      { studentUserId: string; label: string; date?: string | null }
+    >({
+      query: (body) => ({
+        url: '/full-support/mentor/milestones',
+        method: 'POST',
+        body: { ...body, date: body.date ?? null },
+      }),
+      invalidatesTags: ['FullSupportMentorMilestones', 'FullSupportMenteeMilestones'],
+    }),
+    updateMentorMilestone: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; done: boolean }
+    >({
+      query: ({ id, done }) => ({
+        url: `/full-support/mentor/milestones/${id}`,
+        method: 'PATCH',
+        body: { done },
+      }),
+      invalidatesTags: ['FullSupportMentorMilestones', 'FullSupportMenteeMilestones'],
+    }),
+    deleteMentorMilestone: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/full-support/mentor/milestones/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['FullSupportMentorMilestones', 'FullSupportMenteeMilestones'],
+    }),
+    getMenteeMilestones: builder.query<{ data: MilestoneDto[] }, void>({
+      query: () => ({ url: '/full-support/mentee/milestones', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteeMilestones'],
+    }),
+    getMentorPipeline: builder.query<{ data: PipelineDto[] }, void>({
+      query: () => ({ url: '/full-support/mentor/pipeline', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMentorPipeline'],
+    }),
+    createMentorPipelineRow: builder.mutation<
+      { data: unknown; success: boolean },
+      { studentUserId: string; program: string; stage?: string; status?: string; aid?: boolean; deadline?: string | null }
+    >({
+      query: (body) => ({
+        url: '/full-support/mentor/pipeline',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['FullSupportMentorPipeline', 'FullSupportMenteePipeline'],
+    }),
+    updateMentorPipelineRow: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; program?: string; stage?: string; status?: string; aid?: boolean; deadline?: string | null }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/full-support/mentor/pipeline/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['FullSupportMentorPipeline', 'FullSupportMenteePipeline'],
+    }),
+    deleteMentorPipelineRow: builder.mutation<{ success: boolean }, string>({
+      query: (id) => ({
+        url: `/full-support/mentor/pipeline/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['FullSupportMentorPipeline', 'FullSupportMenteePipeline'],
+    }),
+    getMenteePipeline: builder.query<{ data: PipelineDto[] }, void>({
+      query: () => ({ url: '/full-support/mentee/pipeline', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteePipeline'],
+    }),
+    getMenteeCurriculumProgress: builder.query<{ data: CurriculumWatchlistItemDto[] }, void>({
+      query: () => ({ url: '/full-support/mentee/curriculum-progress', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportCurriculumProgress'],
+    }),
+    getMentorCurriculumProgress: builder.query<{ data: CurriculumWatchlistItemDto[] }, string>({
+      query: (studentUserId) => ({
+        url: '/full-support/mentor/curriculum-progress',
+        method: 'GET',
+        params: { studentUserId },
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportCurriculumProgress' as const, id: studentUserId }],
+    }),
+    getAdminCurriculumProgress: builder.query<{ data: CurriculumWatchlistItemDto[] }, string>({
+      query: (studentUserId) => ({ url: '/full-support/admin/curriculum-progress', method: 'GET', params: { studentUserId } }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportCurriculumProgress'],
+    }),
+    getAdminStudentSessions: builder.query<
+      { data: { sessions: SessionLogDto[]; usedHours: number; allocatedHours: number } },
+      string
+    >({
+      query: (studentUserId) => ({ url: '/full-support/admin/student/sessions', method: 'GET', params: { studentUserId } }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        const obj = raw && typeof raw === 'object' ? (raw as { sessions?: unknown; usedHours?: number; allocatedHours?: number }) : {};
+        return {
+          data: {
+            sessions: Array.isArray(obj.sessions) ? (obj.sessions as SessionLogDto[]) : [],
+            usedHours: typeof obj.usedHours === 'number' ? obj.usedHours : 0,
+            allocatedHours: typeof obj.allocatedHours === 'number' ? obj.allocatedHours : 6,
+          },
+        };
+      },
+      providesTags: ['FullSupportMentorSessions'],
+    }),
+    getAdminStudentTasks: builder.query<{ data: TaskDto[] }, string>({
+      query: (studentUserId) => ({ url: '/full-support/admin/student/tasks', method: 'GET', params: { studentUserId } }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteeTasks'],
+    }),
+    getAdminStudentMilestones: builder.query<{ data: MilestoneDto[] }, string>({
+      query: (studentUserId) => ({ url: '/full-support/admin/student/milestones', method: 'GET', params: { studentUserId } }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMentorMilestones'],
+    }),
+    getAdminStudentPipeline: builder.query<{ data: PipelineDto[] }, string>({
+      query: (studentUserId) => ({ url: '/full-support/admin/student/pipeline', method: 'GET', params: { studentUserId } }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteePipeline'],
+    }),
+    getAdminRecentInteractions: builder.query<{ data: AdminInteractionDto[] }, number | void>({
+      query: (limit) => ({
+        url: '/full-support/admin/recent-interactions',
+        method: 'GET',
+        ...(limit != null && limit > 0 ? { params: { limit } } : {}),
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMentorSessions', 'FullSupportMentorTasks', 'FullSupportMentorMilestones'],
+    }),
+    getWeeklyReport: builder.query<{ data: WeeklyReportData }, string | void>({
+      query: (menteeId) => ({
+        url: '/full-support/weekly-report',
+        method: 'GET',
+        ...(menteeId ? { params: { menteeId } } : {}),
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        const d = raw && typeof raw === 'object' && raw !== null ? (raw as WeeklyReportData) : null;
+        if (!d) return { data: null as unknown as WeeklyReportData };
+        return {
+          data: {
+            studentName: d.studentName ?? 'Student',
+            sessions: Array.isArray(d.sessions) ? d.sessions : [],
+            usedHours: typeof d.usedHours === 'number' ? d.usedHours : 0,
+            allocatedHours: typeof d.allocatedHours === 'number' ? d.allocatedHours : 0,
+            curriculumWatchlist: Array.isArray(d.curriculumWatchlist) ? d.curriculumWatchlist : [],
+            tasks: Array.isArray(d.tasks) ? d.tasks : [],
+            milestones: Array.isArray(d.milestones) ? d.milestones : [],
+            pipeline: Array.isArray(d.pipeline) ? d.pipeline : [],
+          },
+        };
+      },
+    }),
+  }),
+});
+
+export const {
+  useGetEnrollmentMeQuery,
+  useEnrollMutation,
+  useAdminEnrollMutation,
+  useGetAdminStatsQuery,
+  useGetAdminMentorAssignmentsQuery,
+  useGetAdminStudentsQuery,
+  useGetAdminMentorsQuery,
+  useAssignMentorMutation,
+  useUnassignMentorMutation,
+  useAdminUnenrollMutation,
+  useGetMentorRosterQuery,
+  useGetMentorSessionsQuery,
+  useCreateMentorSessionMutation,
+  useUpdateMentorSessionMutation,
+  useDeleteMentorSessionMutation,
+  useGetMentorTasksQuery,
+  useCreateMentorTaskMutation,
+  useUpdateMentorTaskFeedbackMutation,
+  useDeleteMentorTaskMutation,
+  useGetMenteeTasksQuery,
+  useUploadTaskSubmissionFileMutation,
+  useSubmitMenteeTaskMutation,
+  useGetMenteeSessionsQuery,
+  useGetMentorMilestonesQuery,
+  useCreateMentorMilestoneMutation,
+  useUpdateMentorMilestoneMutation,
+  useDeleteMentorMilestoneMutation,
+  useGetMenteeMilestonesQuery,
+  useGetMentorPipelineQuery,
+  useCreateMentorPipelineRowMutation,
+  useUpdateMentorPipelineRowMutation,
+  useDeleteMentorPipelineRowMutation,
+  useGetMenteePipelineQuery,
+  useGetMenteeCurriculumProgressQuery,
+  useGetMentorCurriculumProgressQuery,
+  useGetAdminCurriculumProgressQuery,
+  useGetAdminStudentSessionsQuery,
+  useGetAdminStudentTasksQuery,
+  useGetAdminStudentMilestonesQuery,
+  useGetAdminStudentPipelineQuery,
+  useGetAdminRecentInteractionsQuery,
+  useGetWeeklyReportQuery,
+  useLazyGetWeeklyReportQuery,
+} = fullSupportApi;

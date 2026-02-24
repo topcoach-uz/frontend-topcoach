@@ -99,6 +99,8 @@ const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
+const FullSupportAdminDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportAdminDashboard"));
+const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
@@ -119,6 +121,7 @@ function RouterProvider() {
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
   const isSuperAdminOrOwner = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
+  const isMentor = currentUser?.profile?.role === 'Mentor';
 
   return (
     <CustomRouter history={customHistory}>
@@ -224,6 +227,42 @@ function RouterProvider() {
                     <Navigate to="/auth/signin" replace />
                   )
                 } 
+              />
+              <Route
+                path="/full-support/admin"
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isSuperAdminOrOwner ? (
+                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                      <FullSupportAdminDashboardLazy />
+                    </Suspense>
+                  ) : (
+                    <Navigate to="/auth/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="/full-support/mentor"
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isMentor || isSuperAdminOrOwner ? (
+                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                      <FullSupportMentorDashboardLazy />
+                    </Suspense>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
               />
               <Route
                 path="/events/undergraduate"

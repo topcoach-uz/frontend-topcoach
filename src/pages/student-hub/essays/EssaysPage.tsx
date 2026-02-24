@@ -33,12 +33,12 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   const isReadOnlyEssays = readOnly === true;
   if (ESSAYS_COMING_SOON) {
     return (
-      <div className="essays-page">
+      <div className="essays-page student-hub-page">
         <div className="page-header">
-          <h1 className="page-title">
+          <h1 className="page-title student-hub-page-title">
             {isReadOnlyEssays ? t('studentHub.essays.counselorTitle') : t('studentHub.essays.title')}
           </h1>
-          <p className="page-subtitle">
+          <p className="page-subtitle student-hub-page-subtitle">
             {isReadOnlyEssays ? t('studentHub.essays.counselorSubtitle') : t('studentHub.essays.subtitle')}
           </p>
         </div>
@@ -702,12 +702,12 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   ];
 
   return (
-    <div className="essays-page">
+    <div className="essays-page student-hub-page">
       <div className="page-header">
-        <h1 className="page-title">
+        <h1 className="page-title student-hub-page-title">
           {isReadOnly ? t('studentHub.essays.counselorTitle') : t('studentHub.essays.title')}
         </h1>
-        <p className="page-subtitle">
+        <p className="page-subtitle student-hub-page-subtitle">
           {isReadOnly ? t('studentHub.essays.counselorSubtitle') : t('studentHub.essays.subtitle')}
         </p>
       </div>

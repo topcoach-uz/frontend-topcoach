@@ -30,9 +30,13 @@ export default function HeroSection() {
   const navigate = useNavigate();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
 
-  const scrollToHowItWorks = () => {
-    const section = document.querySelector('[data-section="ai-search"]');
-    section?.scrollIntoView({ behavior: 'smooth' });
+  const handleTakeFreeAssessment = () => {
+    if (isAuthenticated) {
+      navigate('/student-hub/psychometric-assessment');
+    } else {
+      localStorage.setItem('redirectAfterLogin', '/student-hub/psychometric-assessment');
+      navigate('/auth/signin');
+    }
   };
 
   return (
@@ -58,14 +62,14 @@ export default function HeroSection() {
                 className={styles.btn_primary}
                 onClick={() => navigate(isAuthenticated ? '/' : '/auth/signup')}
               >
-                {isAuthenticated ? t('landing.goToDashboard') : t('landing.startNow')}
+                {isAuthenticated ? t('landing.goToDashboard') : t('landing.startNow')} →
               </button>
               <button
                 type="button"
                 className={styles.btn_secondary}
-                onClick={scrollToHowItWorks}
+                onClick={handleTakeFreeAssessment}
               >
-                {t('landing.seeHowItWorks')}
+                {t('landing.careerAssessment.cta', 'Take Free Assessment')}
               </button>
             </div>
           </div>

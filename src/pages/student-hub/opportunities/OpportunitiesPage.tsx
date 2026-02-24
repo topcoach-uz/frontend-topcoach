@@ -59,12 +59,10 @@ const OpportunitiesPage: React.FC = () => {
   ];
 
   return (
-    <div className="opportunities-page">
+    <div className="opportunities-page student-hub-page">
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 600, margin: 0, color: '#1a1a1a' }}>
-          {t('studentHub.opportunities.title', 'Opportunities')}
-        </h1>
-        <p style={{ fontSize: 16, color: '#666', marginTop: 8, marginBottom: 0 }}>
+        <h1 className="student-hub-page-title">{t('studentHub.opportunities.title', 'Opportunities')}</h1>
+        <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
           {t('studentHub.opportunities.subtitle', 'Discover scholarships, programs, and events to enhance your college journey')}
         </p>
       </div>

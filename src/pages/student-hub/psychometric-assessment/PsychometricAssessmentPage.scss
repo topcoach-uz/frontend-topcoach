@@ -9,6 +9,10 @@ $crimson-dark: #660000;
   padding: $space-6;
   width: 100%;
 
+  &.student-hub-page {
+    padding: 0;
+  }
+
   .psychometric-assessment-loading {
     display: flex;
     flex-direction: column;

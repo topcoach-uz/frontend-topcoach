@@ -4,6 +4,7 @@ import LandingAISearch from './_components/AISearch';
 import LandingEventsSection from './_components/events';
 import ReviewsSection from './_components/reviews';
 import MentorsSectionLanding from './_components/mentors';
+import CareerAssessmentSection from './_components/CareerAssessmentSection';
 import FaqSection from './_components/FAQ';
 import styles from './landing.module.scss';
 import { useLayoutEffect } from 'react';
@@ -165,10 +166,13 @@ export default function LandingPage() {
       <HeroSection />
       <LandingAISearch />
       <LandingEventsSection />
-      <ReviewsSection />
-      <MentorsSectionLanding />
+      {/* Words of praise from our students - commented out for now */}
+      {/* <ReviewsSection /> */}
+      {/* Be among the top mentors! - commented out for now */}
+      {/* <MentorsSectionLanding /> */}
       {/* Temporarily hidden - rethinking subscription plans */}
       {/* <SubscriptionPlans /> */}
+      <CareerAssessmentSection />
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}

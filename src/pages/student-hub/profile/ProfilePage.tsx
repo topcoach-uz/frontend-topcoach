@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Progress, Button, Row, Col, Statistic, Badge, Alert } from 'antd';
+import { Card, Tabs, Progress, Button, Statistic, Badge, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -189,32 +189,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   ];
 
   return (
-    <div className="student-profile-page">
-      {/* Profile Header */}
-      <Card className="profile-header-card">
-        <Row gutter={[24, 24]} align="middle">
-          <Col xs={24}>
-            <div className="profile-header-content">
-              <h1 className="profile-title">
-                {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
-              </h1>
-              <p className="profile-subtitle">
-                {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
-              </p>
-              <div className="profile-status">
-                <Badge
-                  status={getStatusColor(profileData.status)}
-                  text={getStatusText(profileData.status)}
-                />
-                {/* <span className="last-updated">
-                  Last updated: {profileData.lastUpdated}
-                </span> */}
-              </div>
-            </div>
-          </Col>
-        </Row>
-      </Card>
-
+    <div className="student-profile-page student-hub-page">
+      {/* Profile Header - same content start as other My Journey pages */}
+      <div style={{ marginBottom: 24 }}>
+        <div className="profile-header-content">
+          <h1 className="profile-title student-hub-page-title">
+            {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
+          </h1>
+          <p className="profile-subtitle student-hub-page-subtitle" style={{ marginTop: 8 }}>
+            {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
+          </p>
+          <div className="profile-status">
+            <Badge
+              status={getStatusColor(profileData.status)}
+              text={getStatusText(profileData.status)}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Profile Tabs */}
       <Card className="profile-tabs-card">

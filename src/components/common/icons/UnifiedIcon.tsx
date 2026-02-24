@@ -146,6 +146,8 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   comments: FaIcons.FaComments,
   'code-branch': FaIcons.FaCodeBranch,
   users: FaIcons.FaUsers,
+  'full-support': FiIcons.FiUsers,
+  'users-outline': FiIcons.FiUsers,
   magic: FaIcons.FaMagic,
   microscope: FaIcons.FaMicroscope,
   lightbulb: FaIcons.FaLightbulb,

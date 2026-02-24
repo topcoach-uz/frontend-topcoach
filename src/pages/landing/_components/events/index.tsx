@@ -34,7 +34,7 @@ export default function LandingEventsSection() {
     <section>
       <div className={'container ' + styles.container}>
         <CustomText
-          fontSize={screenSize < 768 ? 32 : themeFontSize.fontSizeTitle2}
+          fontSize={screenSize > 768 ? 36 : themeFontSize.fontSizeTitle4}
           fontWeight={themeFontWeight.fontWeightSemibold}
           color={colors.colorTextBase}
           mt={96}
@@ -64,8 +64,8 @@ export default function LandingEventsSection() {
               </div>{' '}
               <CustomText
                 fontSize={themeFontSize.fontSizeTitle8}
-                fontWeight={themeFontWeight.fontWeightSemibold}
-                color={colors.colorSecondary}
+                fontWeight={themeFontWeight.fontWeightRegular}
+                color={colors.colorTextBase ?? '#1a1a1a'}
                 mt={20}
                 mb={8}
               >
@@ -73,7 +73,7 @@ export default function LandingEventsSection() {
               </CustomText>
               <div className={styles.name_button_wrapper}>
                 <CustomText
-                  fontSize={themeFontSize.fontSizeTitle4}
+                  fontSize={themeFontSize.fontSizeTitle5}
                   fontWeight={themeFontWeight.fontWeightSemibold}
                   color={colors.colorTextBase}
                 >

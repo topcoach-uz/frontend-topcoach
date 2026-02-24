@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, Button, Spin, Alert, Typography, message } from 'antd';
+import { Card, Button, Spin, Alert, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import Spinner from '../../../components/loading/Spinner';
@@ -17,8 +17,6 @@ import { AssessmentStart } from './components/AssessmentStart';
 import { AssessmentQuestions } from './components/AssessmentQuestions';
 import { AssessmentResults } from './components/AssessmentResults';
 import './PsychometricAssessmentPage.scss';
-
-const { Title, Paragraph } = Typography;
 
 export interface PsychometricAssessmentPageProps {
   readOnly?: boolean;
@@ -230,19 +228,15 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   }
 
   return (
-    <div className="psychometric-assessment-page">
+    <div className="psychometric-assessment-page student-hub-page">
       {/* Header - only show on start step, NOT on results */}
       {currentStep === 'start' && (
-        <Card className="assessment-header-card">
-          <div className="assessment-header">
-            <div className="header-content">
-              <Title level={2}>{t('studentHub.psychometric.title', 'Psychometric Assessment')}</Title>
-              <Paragraph>
-                {readOnly ? t('studentHub.psychometric.counselorSubtitle', 'View the student\'s assessment results and major recommendations.') : t('studentHub.psychometric.subtitle', 'Comprehensive assessment of interests, personality, values, and aptitudes to discover your ideal major and career path.')}
-              </Paragraph>
-            </div>
-          </div>
-        </Card>
+        <div style={{ marginBottom: 24 }}>
+          <h1 className="student-hub-page-title">{t('studentHub.psychometric.title', 'Psychometric Assessment')}</h1>
+          <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
+            {readOnly ? t('studentHub.psychometric.counselorSubtitle', 'View the student\'s assessment results and major recommendations.') : t('studentHub.psychometric.subtitle', 'Comprehensive assessment of interests, personality, values, and aptitudes to discover your ideal major and career path.')}
+          </p>
+        </div>
       )}
 
       <div className="assessment-content">

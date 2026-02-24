@@ -41,11 +41,7 @@ export default function LandingAISearchSection() {
       <div className={'container ' + styles.container}>
         <div className={styles.action}>
           <CustomText
-            fontSize={
-              screenSize > 768
-                ? themeFontSize.fontSizeTitle2
-                : themeFontSize.fontSizeTitle5
-            }
+            fontSize={screenSize > 768 ? 36 : themeFontSize.fontSizeTitle4}
             fontWeight={themeFontWeight.fontWeightSemibold}
             lineHeight={1.25}
             color={colors.colorTextLight}

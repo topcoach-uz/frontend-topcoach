@@ -431,10 +431,11 @@ $crimson-900: #7f1d1d;
             font-size: 18px;
           }
 
-          // Target FontAwesome SVG elements specifically
+          // Unselected: outline icons only (stroke, no fill) - same in both sidebar views
           svg {
             color: $crimson-primary;
-            fill: $crimson-primary;
+            fill: none !important;
+            stroke: $crimson-primary;
             transition: all 0.2s ease;
           }
         }
@@ -604,6 +605,40 @@ $crimson-900: #7f1d1d;
       overflow-y: auto;
       flex: 1;
     }
+
+    // Shared page layout: content starts from left, extends with page (all 8 My Journey pages)
+    // Force same content start on all 8 sidebar pages - no extra padding
+    .student-hub-page {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0 !important;
+    }
+
+    // When page header is a Card (Full Support, Profile, Major Match), no white box - transparent so title aligns with page
+    .student-hub-page .student-hub-page-header-card.ant-card {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .student-hub-page .student-hub-page-header-card.ant-card .ant-card-body {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      background: transparent !important;
+    }
+
+    // Consistent title and subtitle - same alignment and style on all 8 pages
+    .student-hub-page .student-hub-page-title {
+      font-size: 28px !important;
+      font-weight: 600 !important;
+      margin: 0 0 8px 0 !important;
+      color: #1a1a1a !important;
+    }
+    .student-hub-page .student-hub-page-subtitle {
+      font-size: 14px !important;
+      color: #666 !important;
+      margin: 0 !important;
+    }
   }
 
   .mobile-drawer {
@@ -659,6 +694,12 @@ $crimson-900: #7f1d1d;
           color: $crimson-primary;
           font-size: $text-xl;
         }
+
+        // Unselected: outline icons only (same as desktop sidebar)
+        &:not(.ant-menu-item-selected) .ant-menu-item-icon svg {
+          fill: none !important;
+          stroke: $crimson-primary;
+        }
       }
     }
   }
@@ -675,7 +716,25 @@ $crimson-900: #7f1d1d;
   justify-content: center;
 }
 
-// Global override for selected menu items - force icons to white
+// Unselected menu items: outline icons only (all 8 pages) - BOTH desktop sidebar AND mobile drawer
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg,
+.student-hub-layout .sidebar-menu .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg,
+.student-hub-layout .mobile-menu .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg {
+  fill: none !important;
+  stroke: $crimson-primary !important;
+}
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg path,
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg line,
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg circle,
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg polyline,
+.student-hub-layout .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg polygon,
+.student-hub-layout .sidebar-menu .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg path,
+.student-hub-layout .mobile-menu .ant-menu-item:not(.ant-menu-item-selected) .ant-menu-item-icon svg path {
+  fill: none !important;
+  stroke: $crimson-primary !important;
+}
+
+// Global override for selected menu items - force icons to white (filled)
 .ant-menu-item-selected .ant-menu-item-icon,
 .ant-menu-item-selected .ant-menu-item-icon .menu-icon,
 .ant-menu-item-selected .ant-menu-item-icon svg,
@@ -962,6 +1021,12 @@ $crimson-900: #7f1d1d;
       height: 20px;
     }
 
+    // Unselected: outline icons only (same as expanded sidebar and mobile)
+    &:not(.selected) svg {
+      fill: none !important;
+      stroke: $crimson-primary;
+    }
+
     // Tooltip on hover
     &::after {
       content: attr(title);
@@ -1246,13 +1311,19 @@ $crimson-900: #7f1d1d;
         height: 20px !important;
         display: flex !important;
         color: #8b0000 !important;
-        fill: #8b0000 !important;
         align-items: center !important;
         justify-content: center !important;
         
         .menu-icon {
           color: #8b0000 !important;
         }
+      }
+      
+      // Unselected: outline icons only (no fill)
+      &:not(.ant-menu-item-selected) .ant-menu-item-icon svg,
+      &:not(.ant-menu-item-selected) .ant-menu-item-icon svg path {
+        fill: none !important;
+        stroke: #8b0000 !important;
       }
       
       .ant-menu-title-content {
