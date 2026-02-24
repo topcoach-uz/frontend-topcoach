@@ -182,7 +182,7 @@ export function generateWeeklyReportPdf(data: WeeklyReportData): void {
   }
 
   // Footer on all pages
-  const totalPages = doc.getNumberOfPages();
+  const totalPages = (doc as any).internal.getNumberOfPages();
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
     doc.setFontSize(8);
