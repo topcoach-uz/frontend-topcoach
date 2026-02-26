@@ -104,6 +104,7 @@ const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
+const FullSupportLeadsPageLazy = lazy(() => import("src/pages/full-support-leads"));
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -130,6 +131,16 @@ function RouterProvider() {
         <Route element={<RootLayout />}>
           {/* Help */}
           <Route path="/help" element={<HelpPageLazy />} />
+
+          {/* Full Support Leads – static lead-gen page (no nav, no buttons/links) */}
+          <Route
+            path="/full-support-leads"
+            element={
+              <Suspense fallback={<Loader height="100vh" />}>
+                <FullSupportLeadsPageLazy />
+              </Suspense>
+            }
+          />
 
           {/* Main Layout */}
           <Route element={<MainLayout />}>

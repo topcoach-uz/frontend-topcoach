@@ -1,0 +1,589 @@
+// ─── Design tokens ───────────────────────────────────────────────
+$brand:       #8b0000;
+$brandDeep:   #5a0000;
+$brandLight:  #fef2f2;
+$brandMid:    #b91c1c;
+
+$amber:       #d97706;
+$amberLight:  #fffbeb;
+$amberBorder: #fde68a;
+
+$blue:        #1d4ed8;
+$blueLight:   #eff6ff;
+$blueBorder:  #bfdbfe;
+
+$text:        #111827;
+$textSub:     #374151;
+$textMuted:   #6b7280;
+
+$bg:          #f9fafb;
+$white:       #ffffff;
+$borderLight: #e5e7eb;
+$borderMid:   #d1d5db;
+
+$r-sm:  8px;
+$r-md:  12px;
+$r-lg:  16px;
+$r-xl:  20px;
+$r-2xl: 24px;
+
+$shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+$shadow-md:  0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+$shadow-lg:  0 10px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.05);
+
+// ─── Page wrapper ────────────────────────────────────────────────
+.page {
+  min-height: 100vh;
+  background: $bg;
+  font-family: inherit;
+}
+
+// Shared inner container
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  @media (min-width: 768px) { padding: 0 32px; }
+  @media (min-width: 1280px) { padding: 0 40px; }
+}
+
+// ─── Hero (light red gradient with white — header distinct from image) ───
+.hero {
+  background: linear-gradient(160deg, #fff 0%, $brandLight 20%, #fee2e2 50%, #fecaca 85%, #fca5a5 100%);
+  padding: 56px 20px 64px;
+
+  @media (min-width: 768px) { padding: 72px 32px 80px; }
+  @media (min-width: 1280px) { padding: 80px 40px 96px; }
+}
+
+.heroInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  align-items: center;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 380px;
+    gap: 64px;
+  }
+  @media (min-width: 1200px) {
+    grid-template-columns: 1fr 440px;
+  }
+}
+
+.heroLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(185, 28, 28, 0.12);
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  color: $brand;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 100px;
+  width: fit-content;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fca5a5;
+  }
+}
+
+.heroTitle {
+  font-size: clamp(1.7rem, 4.5vw, 2.75rem);
+  font-weight: 800;
+  color: $text;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.heroAccent {
+  color: $brand;
+  position: relative;
+}
+
+.heroSubtitle {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: $textSub;
+  line-height: 1.65;
+  margin: 0;
+  max-width: 540px;
+}
+
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $brand;
+  color: $white;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 28px;
+  border-radius: $r-md;
+  text-decoration: none;
+  width: fit-content;
+  box-shadow: 0 4px 20px rgba(139, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  svg { transition: transform 0.15s ease; }
+
+  &:hover {
+    background: $brandDeep;
+    color: $white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+
+    svg { transform: translateX(3px); }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Image placeholder inside hero
+.heroImageWrap {
+  width: 100%;
+
+  @media (min-width: 900px) {
+    width: 100%;
+  }
+}
+
+.heroImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: $r-xl;
+  object-fit: cover;
+
+  @media (min-width: 768px) {
+    max-height: 360px;
+    object-fit: cover;
+  }
+}
+
+.heroImagePlaceholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: $r-xl;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px dashed rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.heroImageLabel {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.02em;
+}
+
+// ─── Section labels ───────────────────────────────────────────────
+.sectionLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $brand;
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  color: $text;
+  letter-spacing: -0.025em;
+  margin: 0 0 40px;
+  line-height: 1.2;
+}
+
+// ─── Phases ───────────────────────────────────────────────────────
+.phasesSection {
+  padding: 72px 0 80px;
+
+  @media (min-width: 768px) { padding: 80px 0 96px; }
+}
+
+.phasesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.phaseCard {
+  background: $white;
+  border-radius: $r-xl;
+  padding: 28px;
+  box-shadow: $shadow-md;
+  border: 1px solid $borderLight;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: $shadow-lg;
+  }
+
+  @media (min-width: 768px) { padding: 32px; }
+}
+
+// Phase top row: number badge + timeline tag
+.phaseTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.phaseNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.phaseTimeline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+}
+
+// Color variants
+.phase_red {
+  border-top: 3px solid $brand;
+
+  .phaseNumber {
+    background: $brandLight;
+    color: $brand;
+  }
+
+  .phaseTimeline {
+    background: $brandLight;
+    color: $brand;
+  }
+
+  .checkIcon { color: $brand; }
+}
+
+.phase_amber {
+  border-top: 3px solid $amber;
+
+  .phaseNumber {
+    background: $amberLight;
+    color: $amber;
+  }
+
+  .phaseTimeline {
+    background: $amberLight;
+    color: $amber;
+  }
+
+  .checkIcon { color: $amber; }
+}
+
+.phase_dark {
+  border-top: 3px solid $text;
+
+  .phaseNumber {
+    background: #f3f4f6;
+    color: $text;
+  }
+
+  .phaseTimeline {
+    background: #f3f4f6;
+    color: $textSub;
+  }
+
+  .checkIcon { color: $text; }
+}
+
+.phaseTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.phaseList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  li {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: $textSub;
+    line-height: 1.55;
+  }
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.phaseNote {
+  margin: 0;
+  font-size: 0.82rem;
+  color: $textMuted;
+  line-height: 1.5;
+  padding: 12px 14px;
+  background: #f9fafb;
+  border-radius: $r-sm;
+  border-left: 3px solid $amber;
+  font-style: italic;
+}
+
+// ─── Info Grid ────────────────────────────────────────────────────
+.infoSection {
+  padding: 0 0 80px;
+
+  @media (min-width: 768px) { padding: 0 0 96px; }
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.infoCard {
+  background: $white;
+  border-radius: $r-xl;
+  padding: 28px;
+  border: 1px solid $borderLight;
+  box-shadow: $shadow-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: 768px) { padding: 32px; }
+}
+
+.infoCardWarning {
+  background: $amberLight;
+  border-color: $amberBorder;
+}
+
+.infoCardDark {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #b91c1c 100%);
+  border-color: transparent;
+}
+
+.infoCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.infoIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: $r-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  :global(.anticon) {
+    font-size: 18px;
+  }
+}
+
+.infoIconRed   { background: $brandLight;  color: $brand; }
+.infoIconBlue  { background: $blueLight;   color: $blue; }
+.infoIconAmber { background: $amberLight;  color: $amber; border: 1px solid $amberBorder; }
+.infoIconWhite { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9); }
+
+.infoCardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.infoCardTitleLight { color: $white; }
+
+.infoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: $textSub;
+    line-height: 1.5;
+
+    span[aria-hidden] {
+      color: $brand;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+  }
+}
+
+.infoCardBody {
+  font-size: 0.9rem;
+  color: $textSub;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.infoCardBodyLight {
+  color: rgba(255,255,255,0.78);
+}
+
+// ─── Telegram button ──────────────────────────────────────────────
+.telegramBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #0ea5e9;
+  color: $white;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 12px 20px;
+  border-radius: $r-md;
+  text-decoration: none;
+  width: 100%;
+  transition: background 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    background: #0284c7;
+    color: $white;
+    transform: translateY(-1px);
+  }
+}
+
+.telegramBtnIcon {
+  display: inline-flex;
+  color: $white;
+
+  svg { width: 20px; height: 20px; }
+}
+
+// ─── CTA section ──────────────────────────────────────────────────
+.ctaSection {
+  padding: 0 0 80px;
+}
+
+.ctaBox {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #b91c1c 100%);
+  border-radius: $r-2xl;
+  padding: 56px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 16px 48px rgba(139,0,0,0.25);
+
+  @media (min-width: 768px) { padding: 72px 48px; }
+}
+
+.ctaEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fca5a5;
+  margin: 0;
+}
+
+.ctaTitle {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+  color: $white;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ctaBody {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.78);
+  margin: 0;
+  max-width: 400px;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $white;
+  color: $brand;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 32px;
+  border-radius: $r-md;
+  text-decoration: none;
+  margin-top: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  svg { transition: transform 0.15s ease; }
+
+  &:hover {
+    background: #fff5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+    color: $brand;
+
+    svg { transform: translateX(3px); }
+  }
+}
