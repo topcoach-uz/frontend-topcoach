@@ -118,12 +118,20 @@ export default function EventsPage() {
     });
   }, [workshops, now, matchesFilter]);
 
-  // Group events by playlist (same logic as YouTubeSection)
+  // Group events by playlist; dedupe by event id (same workshop can appear in both camps + workshops APIs)
   const playlists = useMemo((): PlaylistGroup[] => {
     const combined = [...allEventsData, ...allWorkshopsData];
+    const seenIds = new Set<string>();
+    const deduped = combined.filter((e: any) => {
+      if (!e.id) return true;
+      if (seenIds.has(e.id)) return false;
+      seenIds.add(e.id);
+      return true;
+    });
+
     const playlistsMap = new Map<string, { name: string; events: Event[] }>();
 
-    combined.forEach((event: any) => {
+    deduped.forEach((event: any) => {
       if (!event.youtubeVideoType || event.youtubeVideoType === 'none') return;
       if (event.youtubeVideoType === 'existing_playlist' && event.youtubePlaylistId) {
         const pid = event.youtubePlaylistId;
@@ -133,13 +141,15 @@ export default function EventsPage() {
             events: [],
           });
         }
-        playlistsMap.get(pid)!.events.push(event);
+        const list = playlistsMap.get(pid)!;
+        if (!list.events.some((e: any) => e.id === event.id)) list.events.push(event);
       } else if (event.youtubeVideoType === 'new_playlist' && event.youtubePlaylistName) {
         const key = `new_${event.youtubePlaylistName}`;
         if (!playlistsMap.has(key)) {
           playlistsMap.set(key, { name: event.youtubePlaylistName, events: [] });
         }
-        playlistsMap.get(key)!.events.push(event);
+        const list = playlistsMap.get(key)!;
+        if (!list.events.some((e: any) => e.id === event.id)) list.events.push(event);
       }
     });
 
@@ -231,14 +241,15 @@ export default function EventsPage() {
                 const img = firstEvent?.media
                   ? getLatestCreatedImg(firstEvent.media as MediaSchema[], MEDIA_TAGS.General) || ''
                   : '';
+                const displayName = playlist.name.startsWith('new_') ? playlist.name.replace(/^new_/, '') : playlist.name;
                 return (
                   <PlaylistCard
                     key={playlist.id}
                     playlistId={playlist.id}
-                    playlistName={playlist.name}
+                    playlistName={displayName}
                     img={img}
                     videoCount={playlist.events.length}
-                    onClick={() => setSelectedPlaylist({ id: playlist.id, name: playlist.name })}
+                    onClick={() => setSelectedPlaylist({ id: playlist.id, name: displayName })}
                   />
                 );
               })}

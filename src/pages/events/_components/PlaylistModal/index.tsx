@@ -35,12 +35,14 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     setLoading(true);
     setError(null);
     try {
+      const encodedId = encodeURIComponent(playlistId);
       const response = await api.request({
-        path: `/camps/youtube/playlist/${playlistId}/videos`,
+        path: `/camps/youtube/playlist/${encodedId}/videos`,
         method: 'GET',
       });
-      // The API returns events in the playlist
-      setEvents(Array.isArray(response.data) ? response.data : []);
+      const raw = response?.data;
+      const list = Array.isArray(raw) ? raw : (raw && Array.isArray((raw as any).data) ? (raw as any).data : []);
+      setEvents(list);
     } catch (err: any) {
       console.error('Error fetching playlist events:', err);
       setError(err.message || 'Failed to load playlist events');
