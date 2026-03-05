@@ -52,25 +52,27 @@ export default function EventsDetailsPage() {
             description={formatDateRange(event?.startDate, event?.endDate)}
             centered={false}
           />
-        </Flex>{' '}
+        </Flex>
         <>
-          <EventsDetailCarousel media={event?.media} />{' '}
-          {/* Render event content blocks */}
+          {event?.youtubeVideoId && (!event?.startDate || !event?.endDate) ? (
+            <div className={styles.videoWrapper}>
+              <iframe
+                width="100%"
+                height="315"
+                src={`https://www.youtube.com/embed/${event.youtubeVideoId}`}
+                title="YouTube video player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                className={styles.video}
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <EventsDetailCarousel media={event?.media} />
+          )}
           {event?.content?.blocks && (
             <RichTextRenderer blocks={event.content.blocks} id={event.id} />
           )}
-          {/* {videoLink && (
-            <iframe
-              width="560"
-              height="315"
-              src={videoLink}
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              className={styles.video}
-              allowFullScreen
-            ></iframe>
-          )} */}
         </>
       </div>
     </main>

@@ -10,9 +10,9 @@ interface WorkshopCardProps {
   id: string;
   title: string;
   summary: string;
-  startDate: string;
-  endDate: string;
-  deadline: string; // Using deadline instead of registrationDeadline
+  startDate?: string | null;
+  endDate?: string | null;
+  deadline?: string | null; // Using deadline instead of registrationDeadline
   maxParticipants?: number;
   currentParticipants?: number;
   img?: string;
@@ -34,8 +34,9 @@ export default function WorkshopCard({
   const { t } = useTranslation();
   
   const now = new Date();
-  const deadlineDate = new Date(deadline);
-  const isRegistrationOpen = deadlineDate > now && (currentParticipants || 0) < (maxParticipants || 0);
+  const hasDeadline = deadline && dayjs(deadline).isValid();
+  const deadlineDate = hasDeadline ? new Date(deadline) : null;
+  const isRegistrationOpen = (!hasDeadline || (deadlineDate && deadlineDate > now)) && (currentParticipants || 0) < (maxParticipants || 0);
   
   const participationPercentage = maxParticipants ? ((currentParticipants || 0) / maxParticipants) * 100 : 0;
 
@@ -82,7 +83,7 @@ export default function WorkshopCard({
           <div className={styles.info_item}>
             <ClockCircleOutlined className={styles.info_icon} />
             <span>
-              {t('events.registrationDeadline')}: {deadline ? dayjs(deadline).format('MMMM Do, YYYY [at] h:mm A') : 'TBA'}
+              {t('events.registrationDeadline')}: {hasDeadline ? dayjs(deadline).format('MMMM Do, YYYY [at] h:mm A') : 'TBA'}
             </span>
           </div>
 

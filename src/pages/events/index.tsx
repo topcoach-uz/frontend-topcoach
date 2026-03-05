@@ -93,15 +93,17 @@ export default function EventsPage() {
   // Get upcoming events and workshops (for the upcoming section)
   const upcomingEvents = useMemo(() => {
     return regularEvents.filter((event: Event) => {
+      if (!event.startDate) return false;
       const startDate = new Date(event.startDate);
-      return startDate > now && matchesFilter(event);
+      return !Number.isNaN(startDate.getTime()) && startDate > now && matchesFilter(event);
     });
   }, [regularEvents, now, matchesFilter]);
 
   const upcomingWorkshops = useMemo(() => {
     return workshops.filter((workshop: any) => {
+      if (!workshop.startDate) return false;
       const startDate = new Date(workshop.startDate);
-      return startDate > now && matchesFilter(workshop);
+      return !Number.isNaN(startDate.getTime()) && startDate > now && matchesFilter(workshop);
     });
   }, [workshops, now, matchesFilter]);
 
@@ -110,30 +112,32 @@ export default function EventsPage() {
   // For events: check if endDate has passed
   const pastItems = useMemo(() => {
     const pastEvents = regularEvents.filter((event: Event) => {
+      if (!event.endDate) return false;
       const endDate = new Date(event.endDate);
-      return endDate < now && matchesFilter(event);
+      return !Number.isNaN(endDate.getTime()) && endDate < now && matchesFilter(event);
     });
 
     const pastWorkshops = workshops.filter((workshop: any) => {
-      // Check if deadline has passed, or if no deadline, check endDate
-      let isPast = false;
+      // No dates = recorded workshop, include in past so it shows with "Recorded · Watch anytime"
+      if (!workshop.deadline && !workshop.endDate) return matchesFilter(workshop);
       if (workshop.deadline) {
         const deadline = new Date(workshop.deadline);
-        isPast = deadline < now;
-      } else {
-        const endDate = new Date(workshop.endDate);
-        isPast = endDate < now;
+        if (!Number.isNaN(deadline.getTime())) return deadline < now && matchesFilter(workshop);
       }
-      return isPast && matchesFilter(workshop);
+      if (workshop.endDate) {
+        const endDate = new Date(workshop.endDate);
+        return !Number.isNaN(endDate.getTime()) && endDate < now && matchesFilter(workshop);
+      }
+      return false;
     });
 
     const allPastItems = [...pastEvents, ...pastWorkshops];
 
-    // Sort by endDate or deadline (most recent first)
+    // Sort by endDate or deadline (most recent first); items with no date go last
     allPastItems.sort((a: any, b: any) => {
-      const dateA = a.deadline ? new Date(a.deadline) : new Date(a.endDate);
-      const dateB = b.deadline ? new Date(b.deadline) : new Date(b.endDate);
-      return dateB.getTime() - dateA.getTime();
+      const tsA = a.deadline ? new Date(a.deadline).getTime() : (a.endDate ? new Date(a.endDate).getTime() : 0);
+      const tsB = b.deadline ? new Date(b.deadline).getTime() : (b.endDate ? new Date(b.endDate).getTime() : 0);
+      return tsB - tsA;
     });
 
     return allPastItems;

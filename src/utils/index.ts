@@ -230,9 +230,15 @@ export const isProduction = () => {
   );
 };
 
-export const formatDateRange = (startDate: string, endDate: string) => {
+export const formatDateRange = (startDate?: string | null, endDate?: string | null): string => {
+  if (!startDate || !endDate) {
+    return 'Recorded · Watch anytime';
+  }
   const start = dayjs(startDate);
   const end = dayjs(endDate);
+  if (!start.isValid() || !end.isValid()) {
+    return 'Recorded · Watch anytime';
+  }
 
   // If same day, show date and time range
   if (start.isSame(end, 'day')) {
