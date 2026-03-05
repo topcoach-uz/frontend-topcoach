@@ -258,3 +258,18 @@ export const formatDateRange = (startDate?: string | null, endDate?: string | nu
   // If different years, show full dates with times
   return `${start.format('MMMM Do, YYYY')} at ${start.format('h:mm A')} - ${end.format('MMMM Do, YYYY')} at ${end.format('h:mm A')}`;
 };
+
+/**
+ * Extract YouTube video ID from a URL string.
+ * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+ */
+export const getYoutubeVideoIdFromUrl = (url: string | null | undefined): string | null => {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  // youtu.be/VIDEO_ID
+  const shortMatch = trimmed.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\?|$)/);
+  if (shortMatch) return shortMatch[1];
+  // youtube.com/watch?v=VIDEO_ID or embed/VIDEO_ID
+  const longMatch = trimmed.match(/(?:v=|\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return longMatch ? longMatch[1] : null;
+};

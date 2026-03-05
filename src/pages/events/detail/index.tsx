@@ -6,8 +6,26 @@ import EventsDetailCarousel from './_components/carousel';
 import styles from './eventsDetail.module.scss';
 import useApi from 'src/hooks/useApi';
 import { api } from 'src/app/api';
-import { formatDateRange } from 'src/utils';
+import { formatDateRange, getYoutubeVideoIdFromUrl } from 'src/utils';
 import RichTextRenderer from 'src/pages/universities/_components/detail/richText';
+import { getTranslation } from 'src/lib/i18n/translationUtils';
+
+/** Get YouTube video ID from event: either youtubeVideoId or from first location's URL/address */
+function getEventYoutubeVideoId(event: any): string | null {
+  if (event?.youtubeVideoId) return event.youtubeVideoId;
+  const locations = event?.locations;
+  if (!Array.isArray(locations)) return null;
+  for (const loc of locations) {
+    if (!loc) continue;
+    const url = typeof loc.url === 'string' ? loc.url : null;
+    const idFromUrl = getYoutubeVideoIdFromUrl(url);
+    if (idFromUrl) return idFromUrl;
+    const address = getTranslation(loc.address);
+    const idFromAddress = getYoutubeVideoIdFromUrl(address);
+    if (idFromAddress) return idFromAddress;
+  }
+  return null;
+}
 
 export default function EventsDetailsPage() {
   const { screenSize } = useScreenSize();
@@ -17,6 +35,8 @@ export default function EventsDetailsPage() {
     api.camps.campsDetail(eventId)    
   );
   const event = eventData?.data;
+  const isRecorded = !event?.startDate || !event?.endDate;
+  const youtubeVideoId = event ? getEventYoutubeVideoId(event) : null;
 
   if (isLoading) {
     return (
@@ -54,12 +74,12 @@ export default function EventsDetailsPage() {
           />
         </Flex>
         <>
-          {event?.youtubeVideoId && (!event?.startDate || !event?.endDate) ? (
+          {isRecorded && youtubeVideoId ? (
             <div className={styles.videoWrapper}>
               <iframe
                 width="100%"
                 height="315"
-                src={`https://www.youtube.com/embed/${event.youtubeVideoId}`}
+                src={`https://www.youtube.com/embed/${youtubeVideoId}`}
                 title="YouTube video player"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
