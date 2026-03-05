@@ -33,9 +33,13 @@ interface PlaylistGroup {
 }
 
 export default function EventsPage() {
-  const { response: eventsData, isLoading: eventsLoading } = useApi(() => api.camps.campsList());
-  const { response: workshopsData, isLoading: workshopsLoading } = useApi(() => api.camps.getActiveWorkshops());
+  const { response: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useApi(() => api.camps.campsList());
+  const { response: workshopsData, isLoading: workshopsLoading, refetch: refetchWorkshops } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
+  const refetchAll = useCallback(() => {
+    refetchEvents();
+    refetchWorkshops();
+  }, [refetchEvents, refetchWorkshops]);
   const [selectedType, setSelectedType] = useState<string>('all');
   
   const isLoading = eventsLoading || workshopsLoading;
@@ -118,7 +122,7 @@ export default function EventsPage() {
     });
   }, [workshops, now, matchesFilter]);
 
-  // Group events by playlist; dedupe by event id (same workshop can appear in both camps + workshops APIs)
+  // Group events by playlist; dedupe by event id. For new_playlist use canonical key so "Erasmus Scholarship" and "Erasmus Scholarships" merge.
   const playlists = useMemo((): PlaylistGroup[] => {
     const combined = [...allEventsData, ...allWorkshopsData];
     const seenIds = new Set<string>();
@@ -131,25 +135,39 @@ export default function EventsPage() {
 
     const playlistsMap = new Map<string, { name: string; events: Event[] }>();
 
+    function normalizePlaylistName(raw: string): string {
+      return (raw || '').replace(/^new_/, '').trim();
+    }
+
+    function canonicalNewPlaylistKey(rawName: string): string {
+      const n = normalizePlaylistName(rawName).toLowerCase();
+      const base = n.replace(/s$/, '') || n;
+      return `new_${base}`;
+    }
+
     deduped.forEach((event: any) => {
       if (!event.youtubeVideoType || event.youtubeVideoType === 'none') return;
       if (event.youtubeVideoType === 'existing_playlist' && event.youtubePlaylistId) {
         const pid = event.youtubePlaylistId;
         if (!playlistsMap.has(pid)) {
           playlistsMap.set(pid, {
-            name: event.youtubePlaylistName || `Playlist ${pid}`,
+            name: normalizePlaylistName(event.youtubePlaylistName) || `Playlist ${pid}`,
             events: [],
           });
         }
         const list = playlistsMap.get(pid)!;
         if (!list.events.some((e: any) => e.id === event.id)) list.events.push(event);
       } else if (event.youtubeVideoType === 'new_playlist' && event.youtubePlaylistName) {
-        const key = `new_${event.youtubePlaylistName}`;
+        const key = canonicalNewPlaylistKey(event.youtubePlaylistName);
+        const normalizedName = normalizePlaylistName(event.youtubePlaylistName);
         if (!playlistsMap.has(key)) {
-          playlistsMap.set(key, { name: event.youtubePlaylistName, events: [] });
+          playlistsMap.set(key, { name: normalizedName, events: [] });
         }
         const list = playlistsMap.get(key)!;
-        if (!list.events.some((e: any) => e.id === event.id)) list.events.push(event);
+        if (!list.events.some((e: any) => e.id === event.id)) {
+          list.events.push(event);
+          if (normalizedName.length > list.name.length) list.name = normalizedName;
+        }
       }
     });
 
@@ -241,15 +259,14 @@ export default function EventsPage() {
                 const img = firstEvent?.media
                   ? getLatestCreatedImg(firstEvent.media as MediaSchema[], MEDIA_TAGS.General) || ''
                   : '';
-                const displayName = playlist.name.startsWith('new_') ? playlist.name.replace(/^new_/, '') : playlist.name;
                 return (
                   <PlaylistCard
                     key={playlist.id}
                     playlistId={playlist.id}
-                    playlistName={displayName}
+                    playlistName={playlist.name}
                     img={img}
                     videoCount={playlist.events.length}
-                    onClick={() => setSelectedPlaylist({ id: playlist.id, name: displayName })}
+                    onClick={() => setSelectedPlaylist({ id: playlist.id, name: playlist.name })}
                   />
                 );
               })}
@@ -280,6 +297,10 @@ export default function EventsPage() {
                 playlistId={selectedPlaylist.id}
                 playlistName={selectedPlaylist.name}
                 onClose={() => setSelectedPlaylist(null)}
+                onRenamed={(newName: string) => {
+                  setSelectedPlaylist((p) => (p ? { ...p, name: newName } : null));
+                  refetchAll();
+                }}
               />
             )}
           </>
