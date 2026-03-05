@@ -9,11 +9,13 @@ import EventCard from '../card';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 
-interface PlaylistModalProps {
+export interface PlaylistModalProps {
   visible: boolean;
   playlistId: string;
   playlistName: string;
   onClose: () => void;
+  /** When true, show rename (edit) and delete buttons (e.g. for superadmin only) */
+  canManagePlaylist?: boolean;
   onRenamed?: (newName: string) => void;
   onDeleted?: () => void;
 }
@@ -23,9 +25,11 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   playlistId,
   playlistName,
   onClose,
+  canManagePlaylist,
   onRenamed,
   onDeleted,
 }) => {
+  const showRenameDelete = canManagePlaylist && (onRenamed != null || onDeleted != null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [events, setEvents] = useState<EventsSchema[]>([]);
@@ -127,10 +131,10 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   ) : (
     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {playlistName}
-      {onRenamed && (
+      {showRenameDelete && onRenamed && (
         <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsEditingName(true)} title={t('events.editPlaylistName')} />
       )}
-      {onDeleted && (
+      {showRenameDelete && onDeleted && (
         <Popconfirm
           title="Delete this playlist?"
           description="Events will be ungrouped but not deleted."

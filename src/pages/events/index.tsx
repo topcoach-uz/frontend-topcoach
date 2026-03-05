@@ -3,6 +3,8 @@ import { Spin } from 'antd';
 import { api } from 'src/app/api';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import useApi from 'src/hooks/useApi';
+import { useTypedSelector } from 'src/app/store';
+import { useGetMeQuery } from 'src/app/services/users';
 import EventCard from './_components/card';
 import PlaylistCard from './_components/PlaylistCard';
 import PlaylistModal from './_components/PlaylistModal';
@@ -12,6 +14,8 @@ import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
 import CustomSelect from 'src/components/common/select';
+
+const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 
 interface Event {
   id: string;
@@ -36,6 +40,11 @@ export default function EventsPage() {
   const { response: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useApi(() => api.camps.campsList());
   const { response: workshopsData, isLoading: workshopsLoading, refetch: refetchWorkshops } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
+  const authProfile = useTypedSelector((state) => state.auth.profile);
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data: getMeData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  const currentUser = getMeData ?? authProfile;
+  const isSuperAdmin = (currentUser?.email ?? (authProfile as any)?.email) === SUPER_ADMIN_EMAIL;
   const refetchAll = useCallback(() => {
     refetchEvents();
     refetchWorkshops();
@@ -282,14 +291,15 @@ export default function EventsPage() {
                 playlistId={selectedPlaylist.id}
                 playlistName={selectedPlaylist.name}
                 onClose={() => setSelectedPlaylist(null)}
-                onRenamed={(newName: string) => {
+                canManagePlaylist={isSuperAdmin}
+                onRenamed={isSuperAdmin ? (newName: string) => {
                   setSelectedPlaylist((p) => (p ? { ...p, name: newName } : null));
                   refetchAll();
-                }}
-                onDeleted={() => {
+                } : undefined}
+                onDeleted={isSuperAdmin ? () => {
                   setSelectedPlaylist(null);
                   refetchAll();
-                }}
+                } : undefined}
               />
             )}
           </>
