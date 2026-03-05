@@ -98,7 +98,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
             const eventMedia = ((event as any).media || []) as MediaSchema[];
             
             const hasValidStart = event.startDate && !Number.isNaN(new Date(event.startDate).getTime());
-            const isUpcoming = hasValidStart && new Date(event.startDate) > new Date();
+            const isUpcoming = !!(hasValidStart && new Date(event.startDate) > new Date());
             return (
               <div key={event.id} onClick={() => handleEventClick(event.id)} style={{ cursor: 'pointer' }}>
                 <EventCard
