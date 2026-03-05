@@ -26,11 +26,12 @@ export default function MentorsSectionLanding() {
         },
       }}
     >
-      <section>
+      <section className={styles.section}>
         <div className={'container ' + styles.container}>
+          <div className={styles.cardWrapper}>
           <CustomCard
             bgColor={themeColors.light.colorSecondaryActive}
-            mb={80}
+            mb={0}
             padding={0}
             className={styles.mentors}
           >
@@ -68,10 +69,8 @@ export default function MentorsSectionLanding() {
                 {t('landing.becomeMentorButton')} <RightArrowSvg />
               </CustomButton>
             </div>
-            <div className={styles.img}>
-              <img src={'/img/mentor.png'} alt="Img error" loading="lazy" />
-            </div>
           </CustomCard>
+          </div>
         </div>
       </section>
     </ConfigProvider>

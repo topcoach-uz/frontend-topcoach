@@ -680,16 +680,16 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
 
       {/* Tabs only for non–read-only; counselor sees merged list + timeline in one view */}
       {!isReadOnly && (
-        <Tabs
-          activeKey={applicationsTab}
-          onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
-          size="middle"
-          style={{ marginBottom: 16 }}
-          items={[
-            { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
+      <Tabs
+        activeKey={applicationsTab}
+        onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
+        size="middle"
+        style={{ marginBottom: 16 }}
+        items={[
+          { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
             { key: 'timeline', label: t('studentHub.applications.timeline', 'Timeline') },
-          ]}
-        />
+        ]}
+      />
       )}
 
       <Row gutter={[24, 24]}>
@@ -793,8 +793,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                   }}
                 />
               </Card>
-              <Card
-                id="applications-timeline"
+            <Card
+              id="applications-timeline"
                 title={t('studentHub.applications.activityTimeline', 'Activity timeline')}
                 className="applications-card applications-card--compact"
                 style={{ minHeight: 200 }}
@@ -1033,41 +1033,41 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           )}
         </Col>
         {!isReadOnly && (
-          <Col xs={24} lg={8}>
-            <Card 
-              title={t('studentHub.applications.upcomingDeadlines')} 
-              className="deadlines-card deadlines-card--compact"
-              style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
-              styles={{ body: { padding: upcomingDeadlines.length === 0 ? '24px 20px' : '16px 20px' } }}
-            >
-              {upcomingDeadlines.length > 0 ? (
-                <List
-                  dataSource={upcomingDeadlines}
-                  renderItem={(item: any) => (
-                    <List.Item className="deadline-item deadline-item--compact">
-                      <div className="deadline-content">
-                        <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
-                        {item.type === 'application' && item.major && <div className="deadline-major">{item.major}</div>}
-                        <div className="deadline-date">
-                          <UnifiedIcon name="calendar" size="xs" color="#0ea5e9" style={{ marginRight: 6, flexShrink: 0 }} />
-                          {formatDate(item.deadlineDate)}
-                        </div>
+        <Col xs={24} lg={8}>
+          <Card 
+            title={t('studentHub.applications.upcomingDeadlines')} 
+            className="deadlines-card deadlines-card--compact"
+            style={{ minHeight: combinedList.length === 0 ? 200 : undefined }}
+            styles={{ body: { padding: upcomingDeadlines.length === 0 ? '24px 20px' : '16px 20px' } }}
+          >
+            {upcomingDeadlines.length > 0 ? (
+              <List
+                dataSource={upcomingDeadlines}
+                renderItem={(item: any) => (
+                  <List.Item className="deadline-item deadline-item--compact">
+                    <div className="deadline-content">
+                      <div className="deadline-title">{item.type === 'scholarship' ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}</div>
+                      {item.type === 'application' && item.major && <div className="deadline-major">{item.major}</div>}
+                      <div className="deadline-date">
+                        <UnifiedIcon name="calendar" size="xs" color="#0ea5e9" style={{ marginRight: 6, flexShrink: 0 }} />
+                        {formatDate(item.deadlineDate)}
                       </div>
-                      <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                <div className="deadlines-empty-state">
-                  <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
-                  <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
-                  <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
-                    {t('studentHub.applications.addApplication', 'Add to List')}
-                  </Button>
-                </div>
-              )}
-            </Card>
-          </Col>
+                    </div>
+                    <Tag color={item.type === 'scholarship' ? 'blue' : getCategoryColor(item.category)}>{item.type === 'scholarship' ? 'Scholarship' : 'University'}</Tag>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <div className="deadlines-empty-state">
+                <UnifiedIcon name="calendar" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />
+                <p>{t('studentHub.dashboard.noUpcomingDeadlines') || 'No upcoming deadlines'}</p>
+                <Button type="link" onClick={handleNewApplication} style={{ padding: 0 }}>
+                  {t('studentHub.applications.addApplication', 'Add to List')}
+                </Button>
+              </div>
+            )}
+          </Card>
+        </Col>
         )}
       </Row>
 

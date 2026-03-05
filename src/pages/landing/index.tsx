@@ -6,11 +6,13 @@ import ReviewsSection from './_components/reviews';
 import MentorsSectionLanding from './_components/mentors';
 import CareerAssessmentSection from './_components/CareerAssessmentSection';
 import FaqSection from './_components/FAQ';
+import WhatWeOfferSection from './_components/WhatWeOfferSection';
+import HowItWorksSection from './_components/HowItWorksSection';
 import styles from './landing.module.scss';
 import { useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
-import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
+import LandingPricing from './_components/LandingPricing';
 import LeadCapturePopup from 'src/components/lead-capture/LeadCapturePopup';
 import { useScrollTrigger } from 'src/hooks/useScrollTrigger';
 import { useTypedSelector } from 'src/app/store';
@@ -164,15 +166,21 @@ export default function LandingPage() {
   return (
     <main className={styles.main}>
       <HeroSection />
-      <LandingAISearch />
+      {/* Search section temporarily hidden while we redesign the CTA */}
+      {/* <LandingAISearch /> */}
+
+      {/* Marketing sections */}
+      <WhatWeOfferSection />
+      <HowItWorksSection />
       <LandingEventsSection />
-      {/* Words of praise from our students - commented out for now */}
-      {/* <ReviewsSection /> */}
-      {/* Be among the top mentors! - commented out for now */}
-      {/* <MentorsSectionLanding /> */}
-      {/* Temporarily hidden - rethinking subscription plans */}
-      {/* <SubscriptionPlans /> */}
+      <MentorsSectionLanding />
+
+      {/* Existing content sections */}
+      {/* <ReviewsSection />  // keep hidden for now */}
       <CareerAssessmentSection />
+
+      {/* Pricing towards the bottom of the page */}
+      <LandingPricing />
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}
