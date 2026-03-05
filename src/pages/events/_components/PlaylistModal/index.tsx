@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Empty, Input, Modal, Spin } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Button, Empty, Input, Modal, Popconfirm, Spin } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
@@ -15,6 +15,7 @@ interface PlaylistModalProps {
   playlistName: string;
   onClose: () => void;
   onRenamed?: (newName: string) => void;
+  onDeleted?: () => void;
 }
 
 const PlaylistModal: React.FC<PlaylistModalProps> = ({
@@ -23,6 +24,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   playlistName,
   onClose,
   onRenamed,
+  onDeleted,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -47,7 +49,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const encodedId = encodeURIComponent(playlistId);
+      const encodedId = encodeURIComponent(playlistName);
       const response = await api.request({
         path: `/camps/youtube/playlist/${encodedId}/videos`,
         method: 'GET',
@@ -77,7 +79,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
     setSavingName(true);
     try {
-      const encodedId = encodeURIComponent(playlistId);
+      const encodedId = encodeURIComponent(playlistName);
       await api.request({
         path: `/camps/youtube/playlist/${encodedId}`,
         method: 'PATCH',
@@ -89,6 +91,20 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       console.error('Failed to update playlist name:', err);
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const encodedId = encodeURIComponent(playlistName);
+      await api.request({
+        path: `/camps/youtube/playlist/${encodedId}`,
+        method: 'DELETE',
+      });
+      onDeleted?.();
+      onClose();
+    } catch (err: any) {
+      console.error('Failed to delete playlist:', err);
     }
   };
 
@@ -113,6 +129,17 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       {playlistName}
       {onRenamed && (
         <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsEditingName(true)} title={t('events.editPlaylistName')} />
+      )}
+      {onDeleted && (
+        <Popconfirm
+          title="Delete this playlist?"
+          description="Events will be ungrouped but not deleted."
+          onConfirm={handleDelete}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete playlist" />
+        </Popconfirm>
       )}
     </span>
   );
@@ -154,11 +181,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
             const eventTitle = typeof event.title === 'string' 
               ? event.title 
               : (event.title as any)?.en || 'Untitled';
-            
-            // Handle media - EventsSchema type says string[] but API actually returns MediaSchema[]
-            // Cast to MediaSchema[] to match what getLatestCreatedImg expects
             const eventMedia = ((event as any).media || []) as MediaSchema[];
-            
             const hasValidStart = event.startDate && !Number.isNaN(new Date(event.startDate).getTime());
             const isUpcoming = !!(hasValidStart && new Date(event.startDate) > new Date());
             return (

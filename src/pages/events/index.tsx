@@ -122,7 +122,7 @@ export default function EventsPage() {
     });
   }, [workshops, now, matchesFilter]);
 
-  // Group events by playlist; dedupe by event id. For new_playlist use canonical key so "Erasmus Scholarship" and "Erasmus Scholarships" merge.
+  // Group events by playlist name. Both new_playlist and existing_playlist are unified by extracted name.
   const playlists = useMemo((): PlaylistGroup[] => {
     const combined = [...allEventsData, ...allWorkshopsData];
     const seenIds = new Set<string>();
@@ -133,41 +133,26 @@ export default function EventsPage() {
       return true;
     });
 
+    function extractPlaylistName(event: any): string | null {
+      if (!event.youtubeVideoType || event.youtubeVideoType === 'none') return null;
+      const raw = event.youtubePlaylistName || event.youtubePlaylistId || '';
+      const name = raw.replace(/^new_/, '').trim();
+      return name || null;
+    }
+
     const playlistsMap = new Map<string, { name: string; events: Event[] }>();
 
-    function normalizePlaylistName(raw: string): string {
-      return (raw || '').replace(/^new_/, '').trim();
-    }
-
-    function canonicalNewPlaylistKey(rawName: string): string {
-      const n = normalizePlaylistName(rawName).toLowerCase();
-      const base = n.replace(/s$/, '') || n;
-      return `new_${base}`;
-    }
-
     deduped.forEach((event: any) => {
-      if (!event.youtubeVideoType || event.youtubeVideoType === 'none') return;
-      if (event.youtubeVideoType === 'existing_playlist' && event.youtubePlaylistId) {
-        const pid = event.youtubePlaylistId;
-        if (!playlistsMap.has(pid)) {
-          playlistsMap.set(pid, {
-            name: normalizePlaylistName(event.youtubePlaylistName) || `Playlist ${pid}`,
-            events: [],
-          });
-        }
-        const list = playlistsMap.get(pid)!;
-        if (!list.events.some((e: any) => e.id === event.id)) list.events.push(event);
-      } else if (event.youtubeVideoType === 'new_playlist' && event.youtubePlaylistName) {
-        const key = canonicalNewPlaylistKey(event.youtubePlaylistName);
-        const normalizedName = normalizePlaylistName(event.youtubePlaylistName);
-        if (!playlistsMap.has(key)) {
-          playlistsMap.set(key, { name: normalizedName, events: [] });
-        }
-        const list = playlistsMap.get(key)!;
-        if (!list.events.some((e: any) => e.id === event.id)) {
-          list.events.push(event);
-          if (normalizedName.length > list.name.length) list.name = normalizedName;
-        }
+      const name = extractPlaylistName(event);
+      if (!name) return;
+      const key = name.toLowerCase();
+      if (!playlistsMap.has(key)) {
+        playlistsMap.set(key, { name, events: [] });
+      }
+      const list = playlistsMap.get(key)!;
+      if (!list.events.some((e: any) => e.id === event.id)) {
+        list.events.push(event);
+        if (name.length > list.name.length) list.name = name;
       }
     });
 
@@ -299,6 +284,10 @@ export default function EventsPage() {
                 onClose={() => setSelectedPlaylist(null)}
                 onRenamed={(newName: string) => {
                   setSelectedPlaylist((p) => (p ? { ...p, name: newName } : null));
+                  refetchAll();
+                }}
+                onDeleted={() => {
+                  setSelectedPlaylist(null);
                   refetchAll();
                 }}
               />
