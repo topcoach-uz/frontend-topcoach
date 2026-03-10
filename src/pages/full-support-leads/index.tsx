@@ -1,9 +1,7 @@
 import styles from './full-support-leads.module.scss';
-import { TelegramSvg } from 'src/assets/svg';
-import { TrophyOutlined, TeamOutlined, WarningOutlined, DollarOutlined } from '@ant-design/icons';
+import { TrophyOutlined, TeamOutlined, WarningOutlined } from '@ant-design/icons';
 
 const APPLY_FORM_URL = 'https://forms.gle/1cf3CShA4P8HQeFo8';
-const TELEGRAM_MANAGER_URL = 'https://t.me/TopCoach_manager';
 
 const phases = [
   {
@@ -174,28 +172,6 @@ export default function FullSupportLeadsPage() {
               <p className={styles.infoCardBody}>
                 This program is <strong>selective</strong>. Submitting the form does not guarantee acceptance. All applications are carefully reviewed by our admissions team.
               </p>
-            </div>
-
-            {/* Program Fee */}
-            <div className={`${styles.infoCard} ${styles.infoCardDark}`}>
-              <div className={styles.infoCardHeader}>
-                <div className={`${styles.infoIcon} ${styles.infoIconWhite}`}>
-                  <DollarOutlined />
-                </div>
-                <h3 className={`${styles.infoCardTitle} ${styles.infoCardTitleLight}`}>Program Fee</h3>
-              </div>
-              <p className={`${styles.infoCardBody} ${styles.infoCardBodyLight}`}>
-                This program is <strong>selective</strong>. Once you are accepted, we will reach out with personalized fee details.
-              </p>
-              <a
-                href={TELEGRAM_MANAGER_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.telegramBtn}
-              >
-                <span className={styles.telegramBtnIcon}><TelegramSvg /></span>
-                Contact TopCoach Manager
-              </a>
             </div>
 
           </div>
