@@ -537,6 +537,46 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         };
       },
     }),
+    getScholarhubSsoLink: builder.query<{ data: { redirectUrl?: string; token?: string; frontendUrl?: string } }, void>({
+      query: () => ({ url: '/full-support/scholarhub/sso-link', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : {};
+        return { data: (raw && typeof raw === 'object' && raw !== null ? raw : {}) as { redirectUrl?: string; token?: string; frontendUrl?: string } };
+      },
+    }),
+    getScholarhubLessonProgress: builder.query<{ data: unknown }, { studentUserId: string; courseId: string }>({
+      query: ({ studentUserId, courseId }) => ({
+        url: '/full-support/scholarhub/progress/lesson',
+        method: 'GET',
+        params: { studentUserId, courseId },
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : {};
+        return { data: raw ?? {} };
+      },
+    }),
+    getScholarhubLessonProgressAdmin: builder.query<{ data: unknown }, { scholarhubUserId: string; courseId: string }>({
+      query: ({ scholarhubUserId, courseId }) => ({
+        url: '/full-support/scholarhub/progress/lesson-admin',
+        method: 'GET',
+        params: { scholarhubUserId, courseId },
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : {};
+        return { data: raw ?? {} };
+      },
+    }),
+    getScholarhubCourseProgress: builder.query<{ data: unknown }, { page?: number; perPage?: number } | void>({
+      query: (params) => ({
+        url: '/full-support/scholarhub/progress/course',
+        method: 'GET',
+        params: params ?? {},
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : {};
+        return { data: raw ?? {} };
+      },
+    }),
   }),
 });
 
@@ -584,4 +624,9 @@ export const {
   useGetAdminRecentInteractionsQuery,
   useGetWeeklyReportQuery,
   useLazyGetWeeklyReportQuery,
+  useLazyGetScholarhubSsoLinkQuery,
+  useGetScholarhubLessonProgressQuery,
+  useGetScholarhubLessonProgressAdminQuery,
+  useLazyGetScholarhubLessonProgressAdminQuery,
+  useGetScholarhubCourseProgressQuery,
 } = fullSupportApi;

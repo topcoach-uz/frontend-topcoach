@@ -1,19 +1,32 @@
 .ai-suggestions-card {
-  .ant-card-head {
-    border-bottom: 1px solid #f0f0f0;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  background: #fff;
+
+  &.ant-collapse {
+    border: 1px solid #f0f0f0;
+  }
+  .ant-collapse-item {
+    border: none !important;
+  }
+  .ant-collapse-header {
+    align-items: center;
+    padding: 16px 24px !important;
+  }
+  .ant-collapse-content {
+    border-top: 1px solid #f0f0f0;
+  }
+  .ant-collapse-content-box {
+    padding: 16px 24px 24px !important;
   }
   .ai-suggestions-card-title {
     display: inline-flex;
     align-items: center;
   }
   .ai-suggestions-card-title-text {
-    color: #8b0000;
+    color: inherit;
     font-weight: 600;
-  }
-  &.ai-suggestions-card--crimson {
-    border: 2px solid #8b0000;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   .ai-suggestion-item {
     padding: 12px 0;

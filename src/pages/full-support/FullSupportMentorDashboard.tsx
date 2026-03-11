@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Tag, Progress, Modal, Form, Input, Select, DatePicker, Switch, Space, message } from 'antd';
-import { UserOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined, GlobalOutlined, EditOutlined, EyeOutlined, DeleteOutlined, DownloadOutlined, CalendarOutlined, MessageOutlined, ScheduleOutlined, BarChartOutlined } from '@ant-design/icons';
+import { UserOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined, GlobalOutlined, EditOutlined, EyeOutlined, DeleteOutlined, DownloadOutlined, CalendarOutlined, MessageOutlined, ScheduleOutlined, BarChartOutlined, RocketOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useColors from 'src/hooks/useColors';
 import { useTypedSelector } from 'src/app/store';
 import ChatModal from 'src/components/chat/ChatModal';
@@ -65,6 +66,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function FullSupportMentorDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const colors = useColors();
   const primary = colors?.colorPrimary ?? '#8b0000';
@@ -291,8 +293,20 @@ export default function FullSupportMentorDashboard() {
   return (
     <div className="full-support-page full-support-mentor">
       <Card className="full-support-header full-support-card">
-        <h1 style={{ color: primary }}>Mentor Management</h1>
-        <p>Admissions & Portfolio Supervision — Monitor student progress, log sessions, and track milestones.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <h1 style={{ color: primary }}>Mentor Management</h1>
+            <p style={{ marginBottom: 0 }}>Admissions & Portfolio Supervision — Monitor student progress, log sessions, and track milestones.</p>
+          </div>
+          <Button
+            type="primary"
+            icon={<RocketOutlined />}
+            onClick={() => navigate('/full-support/mentor/sat-progress')}
+            style={{ backgroundColor: primary, borderColor: primary }}
+          >
+            {t('fullSupport.satProgressButton', 'SAT progress')}
+          </Button>
+        </div>
       </Card>
 
       <Card

@@ -101,6 +101,7 @@ const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
 const FullSupportAdminDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportAdminDashboard"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
+const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
@@ -269,6 +270,24 @@ function RouterProvider() {
                   ) : isMentor || isSuperAdminOrOwner ? (
                     <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
                       <FullSupportMentorDashboardLazy />
+                    </Suspense>
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+              <Route
+                path="/full-support/mentor/sat-progress"
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isMentor || isSuperAdminOrOwner ? (
+                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                      <FullSupportMentorSatProgressPageLazy />
                     </Suspense>
                   ) : (
                     <Navigate to="/" replace />

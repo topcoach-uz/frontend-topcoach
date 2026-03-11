@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useState } from 'react';
+import { Alert, Button } from 'antd';
 import { CustomCard } from 'src/components/cards';
 import { CustomTabs, CustomText } from 'src/components/common';
 import useColors from 'src/hooks/useColors';
@@ -9,6 +10,8 @@ import useBookings from './useBookings';
 import { useTranslation } from 'react-i18next';
 import AvailabilitySettings from './_components/AvailabilitySettings';
 import type { TabsProps } from 'antd';
+import { useTypedSelector } from 'src/app/store';
+import { useConnectGoogleCalendar } from '../_components/useConnectGoogleCalendar';
 
 dayjs.extend(customParseFormat);
 
@@ -24,6 +27,12 @@ export default function BookingsSection({ skipContainer }: BookingsSectionProps 
   const colors = useColors();
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('availability');
+  const profile = useTypedSelector((state) => state.auth.profile);
+  // Show when mentor has Google connected but hasn't reconnected since we added calendar.readonly (or field missing = show to be safe)
+  const needsReconnect =
+    !!profile?.hasGoogleCredentials &&
+    (profile?.needsGoogleCalendarReconnect === true || profile?.needsGoogleCalendarReconnect === undefined);
+  const { connectCalendar, isConnecting } = useConnectGoogleCalendar();
 
   const tabItemsWithViewMode: TabsProps['items'] = [
     {
@@ -70,6 +79,23 @@ export default function BookingsSection({ skipContainer }: BookingsSectionProps 
       shadowed={false}
       style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)' }}
     >
+      {needsReconnect && (
+        <Alert
+          type="warning"
+          showIcon
+          message={t('homeMentor.reconnectGoogleCalendarTitle', 'Reconnect Google Calendar')}
+          description={t(
+            'homeMentor.reconnectGoogleCalendarDescription',
+            'Your other calendar events (e.g. meetings) are not yet hidden from your bookable slots. Reconnect once so we can sync your availability and avoid double-bookings.'
+          )}
+          action={
+            <Button type="primary" size="small" loading={isConnecting} onClick={() => connectCalendar()}>
+              {t('homeMentor.reconnectGoogleCalendarButton', 'Reconnect')}
+            </Button>
+          }
+          style={{ marginBottom: 20 }}
+        />
+      )}
       <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={15}>
         {t('homeMentor.availabilitySessionsTitle', 'Availability & Sessions')}
       </CustomText>

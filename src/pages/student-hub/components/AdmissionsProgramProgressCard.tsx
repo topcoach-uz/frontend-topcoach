@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, Progress, Button, Spin, Empty } from 'antd';
+import { Card, Progress, Button, Spin, Empty, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayCircleOutlined } from '@ant-design/icons';
@@ -15,6 +15,7 @@ import {
   useGetUserProgressQuery,
   useGetCourseStructureQuery,
 } from '../../../app/services/courses';
+import { useGetEnrollmentMeQuery, useLazyGetScholarhubSsoLinkQuery } from '../../../app/services/fullSupportApi';
 import './AdmissionsProgramProgressCard.scss';
 
 interface AdmissionsProgramProgressCardProps {
@@ -45,6 +46,8 @@ export default function AdmissionsProgramProgressCard({
     { skip: !!skip }
   );
   const { data: satEnrollment } = useGetEnrollmentStatusQuery('sat', { skip: !!skip });
+  const { data: enrollmentMe } = useGetEnrollmentMeQuery(undefined, { skip: !!skip });
+  const [fetchSsoLink] = useLazyGetScholarhubSsoLinkQuery();
 
   const { data: admissionsProgress, isLoading: progressLoading } = useGetUserProgressQuery(
     'admissions',
@@ -78,7 +81,9 @@ export default function AdmissionsProgramProgressCard({
 
   const satTotalLessons = satProgress?.totalLessons ?? 0;
   const hasAdmissions = admissionsEnrollment?.isEnrolled && admissionsEnrollment?.canAccessLearning;
-  const hasSat = satEnrollment?.isEnrolled && satEnrollment?.canAccessLearning;
+  const hasSatCourse = satEnrollment?.isEnrolled && satEnrollment?.canAccessLearning;
+  const hasSatFromFullSupport = enrollmentMe?.data?.enrolled === true;
+  const hasSat = hasSatCourse || hasSatFromFullSupport;
 
   const isLoading = enrollmentLoading || (hasAdmissions && progressLoading);
   if (isLoading && !hasAdmissions && !hasSat) {
@@ -88,12 +93,36 @@ export default function AdmissionsProgramProgressCard({
     return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
   }
 
+  const handleSatContinueLearning = async () => {
+    try {
+      const res = await fetchSsoLink(undefined).unwrap();
+      const d = res?.data;
+      if (d?.redirectUrl) {
+        window.open(d.redirectUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (d?.frontendUrl && d?.token) {
+        const url = `${String(d.frontendUrl).replace(/\/$/, '')}?token=${encodeURIComponent(d.token)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (d?.frontendUrl) {
+        window.open(d.frontendUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      message.info(t('fullSupport.satPrepLinkUnavailable', 'SAT prep link is not configured. Please try again later.'));
+    } catch {
+      message.error(t('fullSupport.satPrepLinkError', 'Could not open SAT prep.'));
+    }
+  };
+
   const renderCourseBlock = (
     courseName: 'admissions' | 'sat',
     title: string,
     completed: number,
     total: number,
-    progressPercent: number
+    progressPercent: number,
+    continueLearningClick?: () => void
   ) => (
     <div key={courseName} className="admissions-progress-course">
       <div className="admissions-progress-course-header">
@@ -132,7 +161,7 @@ export default function AdmissionsProgramProgressCard({
         type="primary"
         size="middle"
         icon={<PlayCircleOutlined />}
-        onClick={() => navigate(`/learning?course=${courseName}`)}
+        onClick={continueLearningClick ?? (() => navigate(`/learning?course=${courseName}`))}
         className="admissions-progress-btn"
       >
         {t('programs.enrollment.continueLearning')}
@@ -173,12 +202,13 @@ export default function AdmissionsProgramProgressCard({
           {hasSat &&
             renderCourseBlock(
               'sat',
-              'SAT Prep Course',
-              satProgress?.completedLessons ?? 0,
-              satTotalLessons,
-              satTotalLessons > 0
+              t('studentHub.dashboard.satPrepCourse', 'SAT Prep Course'),
+              hasSatCourse ? (satProgress?.completedLessons ?? 0) : 0,
+              hasSatCourse ? satTotalLessons : 0,
+              hasSatCourse && satTotalLessons > 0
                 ? Math.round(((satProgress?.completedLessons ?? 0) / satTotalLessons) * 100)
-                : 0
+                : 0,
+              hasSatFromFullSupport && !hasSatCourse ? handleSatContinueLearning : undefined
             )}
         </div>
       )}

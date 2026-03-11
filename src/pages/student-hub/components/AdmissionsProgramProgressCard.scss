@@ -39,11 +39,14 @@
 
   .admissions-progress-courses {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 20px;
   }
 
   .admissions-progress-course {
+    flex: 1;
+    min-width: 280px;
     padding: 16px;
     background: #fafafa;
     border-radius: 8px;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Tag, Alert, Row, Col, Statistic, Modal, Progress, message } from 'antd';
-import { UserOutlined, ClockCircleOutlined, FileTextOutlined, AimOutlined, TeamOutlined, SolutionOutlined, ScheduleOutlined, BarChartOutlined, CheckCircleOutlined, GlobalOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { UserOutlined, ClockCircleOutlined, FileTextOutlined, AimOutlined, TeamOutlined, SolutionOutlined, ScheduleOutlined, BarChartOutlined, CheckCircleOutlined, GlobalOutlined, HistoryOutlined, RocketOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useColors from 'src/hooks/useColors';
 import dayjs from 'src/lib/dayjs';
@@ -17,12 +18,14 @@ import {
   useGetAdminStudentMilestonesQuery,
   useGetAdminStudentPipelineQuery,
   useLazyGetWeeklyReportQuery,
+  useGetScholarhubCourseProgressQuery,
   type AdminStudentRow,
   type AdminMentorRow,
   type TaskDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
+import { SatProgressAdminTable } from 'src/utils/satProgressAdminTable';
 import './full-support.scss';
 
 function getTaskStatus(r: TaskDto): string {
@@ -43,6 +46,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function FullSupportAdminDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const colors = useColors();
   const primary = colors?.colorPrimary ?? '#8b0000';
@@ -90,6 +94,8 @@ export default function FullSupportAdminDashboard() {
   const [fetchWeeklyReport, { isLoading: weeklyReportDownloading }] = useLazyGetWeeklyReportQuery();
   const { data: interactionsData } = useGetAdminRecentInteractionsQuery(50);
   const adminInteractions = interactionsData?.data ?? [];
+  const { data: satCourseData, isLoading: satCourseLoading } = useGetScholarhubCourseProgressQuery({ page: 1, perPage: 50 });
+  const satCoursePayload = satCourseData?.data;
 
   const handleUnassign = (studentUserId: string) => {
     unassignMentor(studentUserId);
@@ -220,6 +226,22 @@ export default function FullSupportAdminDashboard() {
             </div>
           </div>
         ))
+        )}
+      </Card>
+
+      <Card title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satProgressAllStudents', 'SAT progress (all students)')}</>} style={{ marginTop: 24 }} className="full-support-card">
+        <p style={{ color: '#666', marginBottom: 16 }}>{t('fullSupport.satProgressAllStudentsDesc', 'Course-level SAT progress from ScholarHub. Data is synced when students are enrolled in Full Support.')}</p>
+        {satCourseLoading ? (
+          <div style={{ padding: 24, textAlign: 'center' }}>{t('fullSupport.satProgressLoading', 'Loading SAT progress…')}</div>
+        ) : satCoursePayload != null && typeof satCoursePayload === 'object' && Object.keys(satCoursePayload as object).length > 0 ? (
+          <SatProgressAdminTable
+            payload={satCoursePayload}
+            emptyText={t('fullSupport.satProgressEmptyRecords', 'No student progress records yet.')}
+            viewRawLabel={t('fullSupport.satViewRawResponse', 'View raw response')}
+            pageSummary={(current, last, total) => t('fullSupport.satPageSummary', { current, last, total })}
+          />
+        ) : (
+          <Alert type="info" message={t('fullSupport.satProgressNoData', 'No SAT progress data yet')} description={t('fullSupport.satProgressNoDataDesc', 'Ensure ScholarHub env vars are set and at least one Full Support student has been enrolled to sync with ScholarHub.')} />
         )}
       </Card>
 

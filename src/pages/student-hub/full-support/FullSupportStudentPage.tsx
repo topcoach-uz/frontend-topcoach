@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Card, Button, Alert, Table, Tag, Progress, Modal, Input, Upload, Spin, message } from 'antd';
-import { CheckCircleOutlined, ScheduleOutlined, FileTextOutlined, GlobalOutlined, EyeOutlined, UploadOutlined, BarChartOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ScheduleOutlined, FileTextOutlined, GlobalOutlined, EyeOutlined, UploadOutlined, BarChartOutlined, RocketOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
 import useColors from 'src/hooks/useColors';
 import { useTypedSelector } from 'src/app/store';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
-import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeCurriculumProgressQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, type TaskDto } from 'src/app/services/fullSupportApi';
+import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeCurriculumProgressQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useLazyGetScholarhubSsoLinkQuery, type TaskDto } from 'src/app/services/fullSupportApi';
 import dayjs from 'src/lib/dayjs';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import '../../full-support/full-support.scss';
@@ -63,6 +63,7 @@ export default function FullSupportStudentPage() {
   const usedHours = sessionsData?.data?.usedHours ?? 0;
   const allocatedHours = sessionsData?.data?.allocatedHours ?? 0;
   const [fetchWeeklyReport, { isLoading: weeklyReportLoading }] = useLazyGetWeeklyReportQuery();
+  const [fetchSsoLink, { isLoading: ssoLinkLoading }] = useLazyGetScholarhubSsoLinkQuery();
 
   const taskColumns = [
     { title: 'TASK', dataIndex: 'task', key: 'task', width: 200 },
@@ -251,6 +252,46 @@ export default function FullSupportStudentPage() {
           )}
         </Card>
       </div>
+
+      <Card
+        title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
+        className="full-support-card"
+        style={{ marginTop: 24 }}
+      >
+        <p style={{ color: '#666', fontSize: 13, marginBottom: 16 }}>
+          {t('fullSupport.satPrepDesc', 'As part of Full Support you have access to ScholarHub SAT preparation. Practice and track your progress in one place.')}
+        </p>
+        <Button
+          type="primary"
+          loading={ssoLinkLoading}
+          icon={<RocketOutlined />}
+          onClick={async () => {
+            try {
+              const res = await fetchSsoLink(undefined).unwrap();
+              const d = res?.data;
+              if (d?.redirectUrl) {
+                window.open(d.redirectUrl, '_blank', 'noopener,noreferrer');
+                return;
+              }
+              if (d?.frontendUrl && d?.token) {
+                const url = `${d.frontendUrl.replace(/\/$/, '')}?token=${encodeURIComponent(d.token)}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+                return;
+              }
+              if (d?.frontendUrl) {
+                window.open(d.frontendUrl, '_blank', 'noopener,noreferrer');
+                return;
+              }
+              message.info(t('fullSupport.satPrepLinkUnavailable', 'SAT prep link is not configured. Please try again later.'));
+            } catch {
+              message.error(t('fullSupport.satPrepLinkError', 'Could not open SAT prep.'));
+            }
+          }}
+          style={{ backgroundColor: primary, borderColor: primary }}
+        >
+          {t('fullSupport.goToSatPrep', 'Go to SAT prep')}
+        </Button>
+      </Card>
 
       <Card
         title={

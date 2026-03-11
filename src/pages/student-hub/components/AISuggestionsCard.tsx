@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Card, List, Button, Typography } from 'antd';
+import { Collapse, List, Button, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -39,100 +39,110 @@ const AISuggestionsCard: React.FC<AISuggestionsCardProps> = ({ suggestions, load
     (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
   );
 
+  const header = (
+    <span className="ai-suggestions-card-title">
+      <UnifiedIcon name="lightbulb" size="md" color="primary" style={{ marginRight: 8, flexShrink: 0 }} />
+      <span className="ai-suggestions-card-title-text">{t('studentHub.dashboard.aiPoweredSuggestions', 'AI-powered suggestions')}</span>
+      <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
+        {t('studentHub.dashboard.basedOnGoalsProgress', 'Based on your goals & progress')}
+      </Typography.Text>
+    </span>
+  );
+
   return (
-    <Card
-      className="ai-suggestions-card ai-suggestions-card--crimson"
-      title={
-        <span className="ai-suggestions-card-title">
-          <UnifiedIcon name="target" size="md" color="primary" style={{ marginRight: 8, flexShrink: 0 }} />
-          <span className="ai-suggestions-card-title-text">{t('studentHub.dashboard.aiPoweredSuggestions', 'AI-powered suggestions')}</span>
-          <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
-            {t('studentHub.dashboard.basedOnGoalsProgress', 'Based on your goals & progress')}
-          </Typography.Text>
-        </span>
-      }
-    >
-      <List
-        loading={loading}
-        dataSource={sorted}
-        size="small"
-        renderItem={(item) => (
-          <List.Item className="ai-suggestion-item">
-            <div className="ai-suggestion-content">
-              <div
-                className={`ai-suggestion-priority ai-suggestion-priority--${item.priority}`}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  background:
-                    item.priority === 'high'
-                      ? '#fff1f0'
-                      : item.priority === 'medium'
-                      ? '#fff7e6'
-                      : '#f6ffed',
-                }}
-              >
-                <UnifiedIcon
-                  name={
-                    item.type === 'essay'
-                      ? 'edit'
-                      : item.type === 'recommendation'
-                      ? 'users'
-                      : item.type === 'mentor'
-                      ? 'users'
-                      : item.type === 'psychometric'
-                      ? 'trending-up'
-                      : item.type === 'overdue' || item.type === 'deadline'
-                      ? 'clock'
-                      : 'target'
-                  }
-                  size="sm"
-                  color={item.priority === 'high' ? 'error' : 'primary'}
-                />
-              </div>
-              <div className="ai-suggestion-text">
-                <div className="ai-suggestion-title">
-                  {item.universityId || item.universityName ? (
-                    <>
-                      <span>{item.title} — </span>
-                      <UniversityNameDisplay
-                        universityId={item.universityId}
-                        universityName={item.universityName}
+    <Collapse
+      defaultActiveKey={[]}
+      expandIconPosition="end"
+      className="ai-suggestions-card"
+      items={[
+        {
+          key: 'suggestions',
+          label: header,
+          children: (
+            <List
+              loading={loading}
+              dataSource={sorted}
+              size="small"
+              renderItem={(item) => (
+                <List.Item className="ai-suggestion-item">
+                  <div className="ai-suggestion-content">
+                    <div
+                      className={`ai-suggestion-priority ai-suggestion-priority--${item.priority}`}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        background:
+                          item.priority === 'high'
+                            ? '#fff1f0'
+                            : item.priority === 'medium'
+                            ? '#fff7e6'
+                            : '#f6ffed',
+                      }}
+                    >
+                      <UnifiedIcon
+                        name={
+                          item.type === 'essay'
+                            ? 'edit'
+                            : item.type === 'recommendation'
+                            ? 'users'
+                            : item.type === 'mentor'
+                            ? 'users'
+                            : item.type === 'psychometric'
+                            ? 'trending-up'
+                            : item.type === 'overdue' || item.type === 'deadline'
+                            ? 'clock'
+                            : 'lightbulb'
+                        }
+                        size="sm"
+                        color={item.priority === 'high' ? 'error' : 'primary'}
                       />
-                    </>
-                  ) : (
-                    item.title
-                  )}
-                </div>
-                <div className="ai-suggestion-desc">{item.description}</div>
-                <Button
-                  type="primary"
-                  size="middle"
-                  onClick={() => navigate(item.actionPath)}
-                  className="ai-suggestion-btn"
-                  style={{
-                    padding: '6px 16px',
-                    height: 40,
-                    borderRadius: 8,
-                    fontWeight: 600,
-                    marginTop: 12,
-                    backgroundColor: item.priority === 'high' ? '#8b0000' : undefined,
-                    borderColor: item.priority === 'high' ? '#8b0000' : undefined,
-                  }}
-                >
-                  {item.actionLabel}
-                </Button>
-              </div>
-            </div>
-          </List.Item>
-        )}
-      />
-    </Card>
+                    </div>
+                    <div className="ai-suggestion-text">
+                      <div className="ai-suggestion-title">
+                        {item.universityId || item.universityName ? (
+                          <>
+                            <span>{item.title} — </span>
+                            <UniversityNameDisplay
+                              universityId={item.universityId}
+                              universityName={item.universityName}
+                            />
+                          </>
+                        ) : (
+                          item.title
+                        )}
+                      </div>
+                      <div className="ai-suggestion-desc">{item.description}</div>
+                      <Button
+                        type="primary"
+                        size="middle"
+                        onClick={() => navigate(item.actionPath)}
+                        className="ai-suggestion-btn"
+                        style={{
+                          padding: '6px 16px',
+                          height: 40,
+                          borderRadius: 8,
+                          fontWeight: 600,
+                          marginTop: 12,
+                          backgroundColor: item.priority === 'high' ? '#8b0000' : undefined,
+                          borderColor: item.priority === 'high' ? '#8b0000' : undefined,
+                        }}
+                      >
+                        {item.actionLabel}
+                      </Button>
+                    </div>
+                  </div>
+                </List.Item>
+              )}
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 

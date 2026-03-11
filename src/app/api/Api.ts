@@ -728,6 +728,8 @@ export interface GetMeResDto {
   billingCards: BillingCardsSchema[];
   selectedUniversities: UniversitiesSchema[];
   hasGoogleCredentials: boolean;
+  /** Mentor should reconnect Google Calendar so external events are hidden from bookable slots. */
+  needsGoogleCalendarReconnect?: boolean;
 }
 
 export interface CheckEmailDto {
