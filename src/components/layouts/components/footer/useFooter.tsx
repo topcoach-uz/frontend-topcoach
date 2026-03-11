@@ -48,7 +48,7 @@ export default function useFooter() {
         t('footer.facebook'),
       ],
       links: [
-        'https://t.me/Top100_Uni',
+        'https://t.me/TopCoach_com',
         'https://youtube.com/@top100uni?si=VcJXZa3zWttqsZUo',
         'https://www.instagram.com/topcoach__/',
         'https://www.linkedin.com/company/topcoachuz/posts/?feedView=all',
