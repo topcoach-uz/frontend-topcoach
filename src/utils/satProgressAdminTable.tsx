@@ -338,8 +338,10 @@ function parseLessonProgress(data: unknown): {
   const modMap = new Map<number, { name: string; subMap: Map<number, { name: string; lessons: LessonItem[] }>; lessons: LessonItem[] }>();
   for (const item of arr) {
     const lesson = toLessonItem(item);
-    const modId = typeof item.section_id === 'number' ? item.section_id : typeof (item.lesson as Record<string, unknown>)?.section_id === 'number' ? (item.lesson as Record<string, unknown>).section_id : 0;
-    const subId = typeof item.submodule_id === 'number' ? item.submodule_id : typeof (item.lesson as Record<string, unknown>)?.submodule_id === 'number' ? (item.lesson as Record<string, unknown>).submodule_id : 0;
+    const rawModId = typeof item.section_id === 'number' ? item.section_id : (item.lesson as Record<string, unknown>)?.section_id;
+    const rawSubId = typeof item.submodule_id === 'number' ? item.submodule_id : (item.lesson as Record<string, unknown>)?.submodule_id;
+    const modId = typeof rawModId === 'number' ? rawModId : 0;
+    const subId = typeof rawSubId === 'number' ? rawSubId : 0;
     const section = (item.section as Record<string, unknown>) ?? ((item.lesson as Record<string, unknown>)?.section as Record<string, unknown>);
     const submodule = (item.submodule as Record<string, unknown>) ?? ((item.lesson as Record<string, unknown>)?.submodule as Record<string, unknown>);
     const modName = String(section?.name ?? section?.title ?? `Module ${modId}`).trim() || `Module ${modId}`;
@@ -403,13 +405,13 @@ export function SatProgressAdminTable({
   const handleExpand = async (expanded: boolean, record: SatProgressRow) => {
     const key = `${record.userId}-${record.courseId}`;
     if (expanded && !lessonCache[key]) {
-      setLessonCache((c) => ({ ...c, [key]: { loading: true } }));
+      setLessonCache((c) => ({ ...c, [key]: { data: undefined, loading: true } }));
       try {
         const res = await fetchLessonProgress({ scholarhubUserId: String(record.userId), courseId: String(record.courseId) }).unwrap();
         const { total: parsedTotal } = parseLessonProgress(res?.data);
         const completed = record.lessonsCompleted ?? 0;
         const total = Math.max(parsedTotal, completed) || parsedTotal || null;
-        setLessonCache((c) => ({ ...c, [key]: { data: res?.data, total } }));
+        setLessonCache((c) => ({ ...c, [key]: { data: res?.data, total: total ?? undefined } }));
       } catch {
         setLessonCache((c) => ({ ...c, [key]: { data: null } }));
       }

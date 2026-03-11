@@ -43,8 +43,9 @@ export function useConnectGoogleCalendar() {
           }
         });
     },
-    onError: (error) => {
-      message.error(error?.message || 'Google sign-in was cancelled');
+    onError: (error: unknown) => {
+      const err = error as { message?: string; error_description?: string };
+      message.error(err?.message ?? err?.error_description ?? 'Google sign-in was cancelled');
     },
   });
 
