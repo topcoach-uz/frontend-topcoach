@@ -146,6 +146,7 @@ export default function MentorsPage() {
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
                   isGiveaway={giveawayMentorIds.includes(mentor.id)}
                   giveawaySessionsCount={giveawaySessionsCount}
+                  email={mentor.email}
                 />
               );
             })}

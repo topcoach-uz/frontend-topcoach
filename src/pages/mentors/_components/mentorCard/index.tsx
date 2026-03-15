@@ -10,6 +10,12 @@ import { Skeleton } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { getUniversityFlag } from 'src/utils/countryFlags';
 
+/** Temporary: Master Program mentors (today-only override for tag and rate). Revert later. */
+const MASTER_PROGRAM_MENTOR_EMAILS = [
+  'ahmadullayevarabboy@gmail.com',
+  'mamadjanovjamshidbek@gmail.com',
+];
+
 interface MentorCardProps {
   id: string;
   imgSrc: string;
@@ -23,6 +29,7 @@ interface MentorCardProps {
   availableSessions?: number;
   isGiveaway?: boolean;
   giveawaySessionsCount?: number;
+  email?: string;
 }
 
 export default function MentorCard({
@@ -38,9 +45,11 @@ export default function MentorCard({
   availableSessions = 0,
   isGiveaway = false,
   giveawaySessionsCount = 0,
+  email,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
+  const isMasterProgramMentor = Boolean(email && MASTER_PROGRAM_MENTOR_EMAILS.includes(email.toLowerCase()));
 
   const handleCardClick = () => {
     navigate(`/mentors/${id}`);
@@ -80,27 +89,29 @@ export default function MentorCard({
         {/* Coach level badge */}
         <CustomCard
           bgColor={
-            level === 'expert'
-              ? '#FF8C42' // Vibrant orange for expert
-              : level === 'senior'
-                ? '#4A90E2' // Professional blue for senior
-                : level === 'junior'
-                  ? '#7ED321' // Fresh green for junior
-                  : level === 'uzcombinator'
-                    ? '#8B5CF6' // Purple for UzCombinator
-                    : '#F4D03F' // Yellowish for probono
+            isMasterProgramMentor
+              ? '#0D9488' // Teal for Master Program (distinct from UzCombinator purple)
+              : level === 'expert'
+                ? '#FF8C42' // Vibrant orange for expert
+                : level === 'senior'
+                  ? '#4A90E2' // Professional blue for senior
+                  : level === 'junior'
+                    ? '#7ED321' // Fresh green for junior
+                    : level === 'uzcombinator'
+                      ? '#8B5CF6' // Purple for UzCombinator
+                      : '#F4D03F' // Yellowish for probono
           }
           className={styles.coach}
         >
           <CustomText
             fontSize={12}
             fontWeight={500}
-            color={level === 'probono' ? "#333333" : "#ffffff"}
+            color={isMasterProgramMentor ? '#ffffff' : level === 'probono' ? '#333333' : '#ffffff'}
             style={{ 
               letterSpacing: '0.2px'
             }}
           >
-            {level === 'uzcombinator' ? 'UzCombinator' : level} Coach
+            {isMasterProgramMentor ? 'Master Program Mentor' : level === 'uzcombinator' ? 'UzCombinator' : level} Coach
           </CustomText>
         </CustomCard>
 
@@ -177,24 +188,29 @@ export default function MentorCard({
                 fontWeight={500}
                 style={{ marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
               >
-                {level === 'probono' 
-                  ? t('mentors.complimentarySession') || 'Complimentary' 
-                  : t('mentors.rate') || 'Rate'}
+                {isMasterProgramMentor
+                  ? 'Master Program'
+                  : level === 'probono'
+                    ? t('mentors.complimentarySession') || 'Complimentary'
+                    : t('mentors.rate') || 'Rate'}
               </CustomText>
               <CustomText
                 color={colors.colorText}
-                fontSize={16}
+                fontSize={isMasterProgramMentor ? 14 : 16}
                 fontWeight={600}
+                style={isMasterProgramMentor ? { lineHeight: 1.35 } : undefined}
               >
-                {level === 'expert' 
-                  ? '$50 – $100 / session' 
-                  : level === 'senior' 
-                    ? '$25 – $50 / session' 
-                    : level === 'junior'
-                      ? '$12.50 – $25 / session'
-                      : level === 'probono'
-                        ? t('mentors.freeSession') || 'Free / Pro-bono'
-                        : t('mentors.contactForPricing') || 'Contact for pricing'}
+                {isMasterProgramMentor
+                  ? "Currently mentoring in Master's program."
+                  : level === 'expert'
+                    ? '$50 – $100 / session'
+                    : level === 'senior'
+                      ? '$25 – $50 / session'
+                      : level === 'junior'
+                        ? '$12.50 – $25 / session'
+                        : level === 'probono'
+                          ? t('mentors.freeSession') || 'Free / Pro-bono'
+                          : t('mentors.contactForPricing') || 'Contact for pricing'}
               </CustomText>
             </>
           )}

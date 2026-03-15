@@ -91,6 +91,7 @@ export default function SimilarMentors() {
                   university={(mentor as any).displayUniversity || mentor?.mentorProfile?.university || ''}
                   level={mentor.mentorProfile?.level}
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
+                  email={mentor.email}
                 />
               </div>
             );
