@@ -19,6 +19,10 @@ import styles from './learningProgram.module.scss';
 export default function LearningProgramSection() {
   const colors = useColors();
   const navigate = useNavigate();
+
+  // Needed before using `skip: !isAuthenticated` in any query hook below
+  const user = useTypedSelector((state) => state.auth.profile);
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   
   // Fetch enrollments for both courses
   const { data: admissionsEnrollment } = useGetEnrollmentStatusQuery('admissions');
@@ -54,9 +58,6 @@ export default function LearningProgramSection() {
   const userProgress = admissionsProgress;
   const courseStructure = admissionsStructure;
   
-  // Check if user is SuperAdmin or Counselor
-  const user = useTypedSelector((state) => state.auth.profile);
-  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const { data: userData } = useGetMeQuery(undefined, {
     skip: !isAuthenticated,
   });
