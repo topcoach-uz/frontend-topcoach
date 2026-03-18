@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
 import styles from './whatWeOffer.module.scss';
 
-/** Each card can use a Font Awesome icon (icon: string) and/or an image (image: string URL). If image is set, it is shown; otherwise the FA icon is shown. */
+/**
+ * Cards used to render icons/images next to the label.
+ * UX request: show labels only (no icons/images).
+ */
 const cards = [
   {
     id: 'mentorship',
@@ -108,18 +110,7 @@ export default function WhatWeOfferSection() {
                   className={`${styles.card} ${i === activeIndex ? styles.cardVisible : ''}`}
                   data-card={c.id}
                 >
-                  <span className={styles.cardLabel}>
-                    {c.image ? (
-                      <span className={styles.cardIcon}>
-                        <img src={c.image} alt="" className={styles.cardIconImg} />
-                      </span>
-                    ) : (
-                      <span className={styles.cardIcon}>
-                        <FontAwesomeIcon icon={c.icon} size="lg" style={{ fontSize: '1rem' }} />
-                      </span>
-                    )}
-                    {c.label}
-                  </span>
+                  <span className={styles.cardLabel}>{c.label}</span>
                   <h3 className={styles.cardTitle}>{c.title}</h3>
                   <p className={styles.cardDescription}>{c.description}</p>
                   {c.universities && (
