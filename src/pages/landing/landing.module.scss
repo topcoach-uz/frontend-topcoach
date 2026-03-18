@@ -1,5 +1,14 @@
 @import '/src/styles/variables.scss';
 
 .main {
-  background-color: $colorBgContainer;
+  background-color: #ffffff;
+}
+
+.main > section {
+  box-sizing: border-box;
+}
+
+/* Same spacing between every section – slightly tighter so "Be among the top mentors!" and below sit higher */
+.main > section + section {
+  margin-top: 48px;
 }

@@ -1,11 +1,9 @@
 @import '/src/styles/variables.scss';
 
 .hero_section {
-  min-height: 100vh;
-  min-height: calc(100vh - 80px);
   position: relative;
   overflow: visible;
-  padding-bottom: 80px;
+  padding-bottom: 40px;
 }
 
 .container {
@@ -244,14 +242,14 @@
 }
 
 .mentors_section {
-  margin-top: 64px;
-  padding-top: 48px;
-  padding-bottom: 32px;
+  margin-top: 40px;
+  padding-top: 24px;
+  padding-bottom: 16px;
   width: 100%;
 
   @media (max-width: 768px) {
-    margin-top: 48px;
-    padding-top: 32px;
+    margin-top: 32px;
+    padding-top: 16px;
   }
 }
 
