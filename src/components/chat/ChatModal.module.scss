@@ -45,6 +45,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
+
+  .backButton {
+    border: none;
+    background: transparent;
+    margin-right: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
 }
 
 .headerAvatar {

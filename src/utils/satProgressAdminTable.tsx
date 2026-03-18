@@ -70,7 +70,16 @@ function getSatProgressRows(payload: Payload): SatProgressRow[] {
     const name = [firstName, lastName].filter(Boolean).join(' ') || String(user.name ?? user.email ?? '—');
     const email = sanitizeEmail(String(user.email ?? '').trim());
     const lessonOrder = typeof currentLesson.order === 'number' ? currentLesson.order : null;
-    const complete = typeof user.complete === 'number' ? user.complete : null;
+    const completedLessonsEnriched = typeof (r as any).topcoach_completed_lessons === 'number'
+      ? Number((r as any).topcoach_completed_lessons)
+      : null;
+    const totalLessonsEnriched = typeof (r as any).topcoach_total_lessons === 'number'
+      ? Number((r as any).topcoach_total_lessons)
+      : null;
+
+    // ScholarHub's `user.complete` appears to represent "touched/in-progress" rather than strict completion.
+    // Prefer backend-enriched strict counts when present; otherwise show null (unknown) instead of misleading value.
+    const complete = completedLessonsEnriched ?? null;
     const streak = typeof user.streak === 'number' ? user.streak : null;
     const maxStreak = typeof user.max_streak === 'number' ? user.max_streak : null;
     const lastLoginAt = user.last_login_at;
@@ -88,7 +97,7 @@ function getSatProgressRows(payload: Payload): SatProgressRow[] {
       currentLesson: String(lesson.name ?? '—'),
       lessonOrder,
       lessonsCompleted: complete,
-      totalLessons: null,
+      totalLessons: totalLessonsEnriched,
       currentStreak: streak,
       maxStreak: maxStreak,
       lastLogin: lastLoginAt ? dayjs(String(lastLoginAt)).format('MMM D, YYYY h:mm A') : '—',

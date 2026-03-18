@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { changeTheme, THEME_COLOR } from 'src/app/slices/layoutSlice';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import { scrollToTop } from 'src/utils';
-import ElevenLabsWidget from 'src/components/ElevenLabsWidget';
+import CustomChatAgent from 'src/components/CustomChatAgent';
 import ElevenLabsLoginPrompt from 'src/components/ElevenLabsLoginPrompt';
 
 export default function RootLayout() {
@@ -20,7 +20,7 @@ export default function RootLayout() {
   return (
     <>
       <Outlet />
-      {isAuthenticated ? <ElevenLabsWidget /> : <ElevenLabsLoginPrompt />}
+      {isAuthenticated ? <CustomChatAgent /> : <ElevenLabsLoginPrompt />}
     </>
   );
 }

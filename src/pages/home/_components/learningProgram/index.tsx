@@ -13,6 +13,7 @@ import { PlayCircleOutlined, DashboardOutlined, BookOutlined, SettingOutlined } 
 import { Progress, Space, Spin } from 'antd';
 import { useMemo, useState, useEffect } from 'react';
 import { api } from 'src/app/api';
+import { useGetEnrollmentMeQuery, useGetMenteeSatProgressQuery } from 'src/app/services/fullSupportApi';
 import styles from './learningProgram.module.scss';
 
 export default function LearningProgramSection() {
@@ -37,6 +38,15 @@ export default function LearningProgramSection() {
   });
   const { data: satStructure } = useGetCourseStructureQuery('sat', {
     skip: !satEnrollment?.canAccessLearning,
+  });
+
+  // Full Support (ScholarHub) SAT integration:
+  // This endpoint returns `null` if the user isn't enrolled, so we can safely call it whenever authenticated.
+  const { data: fullSupportSatProgress } = useGetMenteeSatProgressQuery(undefined, {
+    skip: !isAuthenticated,
+    pollingInterval: 60000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
   });
   
   // Legacy support - use admissions as default for backward compatibility
@@ -167,9 +177,12 @@ export default function LearningProgramSection() {
   const admissionsTimeWatched = admissionsProgress?.totalTimeWatched || 0;
   const admissionsTimeWatchedMinutes = Math.floor(admissionsTimeWatched / 60);
 
-  const satLessonsCompleted = satProgress?.completedLessons || 0;
-  const satProgressPercent = satTotalLessons > 0 
-    ? Math.round((satLessonsCompleted / satTotalLessons) * 100) 
+  const satLessonsCompleted =
+    (fullSupportSatProgress?.data?.completedLessons ?? satProgress?.completedLessons) || 0;
+  const satTotalLessonsEffective =
+    (fullSupportSatProgress?.data?.totalLessons ?? satTotalLessons) || 0;
+  const satProgressPercent = satTotalLessonsEffective > 0
+    ? Math.round((satLessonsCompleted / satTotalLessonsEffective) * 100)
     : 0;
   const satTimeWatched = satProgress?.totalTimeWatched || 0;
   const satTimeWatchedMinutes = Math.floor(satTimeWatched / 60);
@@ -205,7 +218,17 @@ export default function LearningProgramSection() {
         mb={24}
         color={colors.colorTextSecondary}
       >
-        Track your progress and continue your learning journey
+        {courseName === 'sat' && Array.isArray(fullSupportSatProgress?.data?.byCourse) && fullSupportSatProgress?.data?.byCourse?.length
+          ? (() => {
+              const by = fullSupportSatProgress.data.byCourse;
+              const math = by.find((c) => (c.courseName || '').toLowerCase().includes('math'));
+              const eng = by.find((c) => (c.courseName || '').toLowerCase().includes('english'));
+              const mathLabel = `Math: ${math?.completedLessons ?? 0}/${math?.totalLessons ?? 0}`;
+              const engLabel = `English: ${eng?.completedLessons ?? 0}/${eng?.totalLessons ?? 0}`;
+              const total = (math?.totalLessons ?? 0) + (eng?.totalLessons ?? 0);
+              return `${mathLabel} · ${engLabel}${total > 0 ? ` (Total: ${total})` : ''}`;
+            })()
+          : 'Track your progress and continue your learning journey'}
       </CustomText>
 
       <div className={styles.learning_content}>
@@ -360,7 +383,7 @@ export default function LearningProgramSection() {
           'sat',
           'SAT Prep Course',
           satLessonsCompleted,
-          satTotalLessons,
+          satTotalLessonsEffective,
           satProgressPercent,
           satTimeWatchedMinutes,
           satEnrollment

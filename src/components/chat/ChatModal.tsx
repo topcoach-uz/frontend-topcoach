@@ -68,6 +68,18 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const title = conversationId ? (
     <div className={styles.chatHeader}>
+      <button
+        type="button"
+        className={styles.backButton}
+        onClick={() => {
+          // Go back to conversation list
+          if (onConversationChange) {
+            onConversationChange('');
+          }
+        }}
+      >
+        ←
+      </button>
       {userAvatar && (
         <img src={userAvatar} alt={userName} className={styles.headerAvatar} />
       )}
@@ -106,14 +118,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
               <ChatInput conversationId={conversationId} />
             </>
           ) : !threadId ? (
-            <ThreadSelector
-              conversationId={conversationId}
-              onThreadSelect={(selectedThreadId) => {
-                if (onThreadChange) {
-                  onThreadChange(selectedThreadId);
-                }
-              }}
-            />
+            <>
+              <MessageList conversationId={conversationId} />
+              <ChatInput conversationId={conversationId} />
+            </>
           ) : (
             <>
               <MessageList
@@ -144,16 +152,11 @@ const ChatModal: React.FC<ChatModalProps> = ({
     );
   }
 
-  const modalBodyHeight = !conversationId 
-    ? '70vh'
-    : (threadId || openToGeneralConversation)
-    ? '70vh' 
-    : getThreadSelectorHeight();
-  const modalBodyMaxHeight = !conversationId
-    ? '700px'
-    : (threadId || openToGeneralConversation)
-    ? '700px' 
-    : threadsCount <= 3 ? '300px' : '500px';
+  // Desktop heights:
+  // - conversation list: moderate height
+  // - conversation messages (threaded or not): tall so message view isn't cramped
+  const modalBodyHeight = !conversationId ? '70vh' : '82vh';
+  const modalBodyMaxHeight = !conversationId ? '700px' : '900px';
 
   return (
     <Modal
@@ -161,9 +164,18 @@ const ChatModal: React.FC<ChatModalProps> = ({
       open={open}
       onCancel={onClose}
       footer={null}
-      width={600}
+      width={700}
       className={styles.chatModal}
-      styles={{ body: { padding: 0, height: modalBodyHeight, maxHeight: modalBodyMaxHeight, display: 'flex', flexDirection: 'column' } }}
+      style={{ top: 8, paddingBottom: 0 }}
+      styles={{
+        body: {
+          padding: 0,
+          height: modalBodyHeight,
+          maxHeight: modalBodyMaxHeight,
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
     >
       {content}
     </Modal>

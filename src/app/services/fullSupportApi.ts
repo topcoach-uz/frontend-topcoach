@@ -47,6 +47,7 @@ export type TaskDto = {
   feedback?: string;
   submissionText?: string;
   submissionFileUrls?: { fileName: string; url: string }[];
+  feedbackFileUrls?: { fileName: string; url: string }[];
 };
 
 export type MilestoneDto = {
@@ -72,6 +73,19 @@ export type CurriculumWatchlistItemDto = {
   label: string;
   percent: number;
   target: string | null;
+};
+
+export type SatProgressSummaryDto = {
+  totalLessons: number;
+  completedLessons: number;
+  overallProgress: number;
+  byCourse: Array<{
+    courseId: string;
+    courseName: string;
+    totalLessons: number;
+    completedLessons: number;
+    percent: number;
+  }>;
 };
 
 export type WeeklyReportData = {
@@ -270,14 +284,14 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     updateMentorTaskFeedback: builder.mutation<
       { data: unknown; success: boolean },
-      { id: string; feedback: string }
+      { id: string; feedback: string; feedbackFileUrls?: { fileName: string; url: string }[] }
     >({
-      query: ({ id, feedback }) => ({
+      query: ({ id, feedback, feedbackFileUrls }) => ({
         url: `/full-support/mentor/tasks/${id}`,
         method: 'PATCH',
-        body: { feedback },
+        body: { feedback, feedbackFileUrls },
       }),
-      invalidatesTags: ['FullSupportMentorTasks'],
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks'],
     }),
     deleteMentorTask: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
@@ -337,6 +351,22 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         body: { submissionText, submissionFileUrls },
       }),
       invalidatesTags: ['FullSupportMenteeTasks'],
+    }),
+    uploadMentorFeedbackFile: builder.mutation<
+      { data: { fileName: string; url: string } },
+      { taskId: string; file: File }
+    >({
+      query: ({ taskId, file }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: `/full-support/mentor/tasks/${taskId}/feedback-file`,
+          method: 'POST',
+          body: formData,
+          formData: true,
+        };
+      },
+      invalidatesTags: ['FullSupportMentorTasks'],
     }),
     getMentorMilestones: builder.query<{ data: MilestoneDto[] }, string>({
       query: (studentUserId) => ({
@@ -439,6 +469,45 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       },
       providesTags: ['FullSupportCurriculumProgress'],
     }),
+    getMenteeSatProgress: builder.query<{ data: SatProgressSummaryDto | null }, void>({
+      query: () => ({ url: '/full-support/mentee/sat-progress', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : null;
+        const obj = raw && typeof raw === 'object'
+          ? (raw as {
+              totalLessons?: number;
+              completedLessons?: number;
+              overallProgress?: number;
+              byCourse?: Array<{
+                courseId?: string;
+                courseName?: string;
+                totalLessons?: number;
+                completedLessons?: number;
+                percent?: number;
+              }>;
+            })
+          : {};
+        return {
+          data: obj && typeof obj === 'object'
+            ? {
+                totalLessons: typeof obj.totalLessons === 'number' ? obj.totalLessons : 0,
+                completedLessons: typeof obj.completedLessons === 'number' ? obj.completedLessons : 0,
+                overallProgress: typeof obj.overallProgress === 'number' ? obj.overallProgress : 0,
+                byCourse: Array.isArray(obj.byCourse)
+                  ? obj.byCourse.map((c) => ({
+                      courseId: String(c.courseId ?? ''),
+                      courseName: String(c.courseName ?? ''),
+                      totalLessons: typeof c.totalLessons === 'number' ? c.totalLessons : 0,
+                      completedLessons: typeof c.completedLessons === 'number' ? c.completedLessons : 0,
+                      percent: typeof c.percent === 'number' ? c.percent : 0,
+                    }))
+                  : [],
+              }
+            : null,
+        };
+      },
+      providesTags: ['FullSupportCurriculumProgress'],
+    }),
     getMentorCurriculumProgress: builder.query<{ data: CurriculumWatchlistItemDto[] }, string>({
       query: (studentUserId) => ({
         url: '/full-support/mentor/curriculum-progress',
@@ -450,6 +519,20 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         return { data: Array.isArray(raw) ? raw : [] };
       },
       providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportCurriculumProgress' as const, id: studentUserId }],
+    }),
+    setMentorCurriculumItem: builder.mutation<
+      { data: unknown },
+      { studentUserId: string; key: string; percent: number; target?: string | null }
+    >({
+      query: (body) => ({
+        url: '/full-support/mentor/curriculum-item',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, body) => [
+        { type: 'FullSupportCurriculumProgress' as const, id: body.studentUserId },
+        'FullSupportCurriculumProgress',
+      ],
     }),
     getAdminCurriculumProgress: builder.query<{ data: CurriculumWatchlistItemDto[] }, string>({
       query: (studentUserId) => ({ url: '/full-support/admin/curriculum-progress', method: 'GET', params: { studentUserId } }),
@@ -603,6 +686,7 @@ export const {
   useGetMenteeTasksQuery,
   useUploadTaskSubmissionFileMutation,
   useSubmitMenteeTaskMutation,
+  useUploadMentorFeedbackFileMutation,
   useGetMenteeSessionsQuery,
   useGetMentorMilestonesQuery,
   useCreateMentorMilestoneMutation,
@@ -616,6 +700,8 @@ export const {
   useGetMenteePipelineQuery,
   useGetMenteeCurriculumProgressQuery,
   useGetMentorCurriculumProgressQuery,
+  useSetMentorCurriculumItemMutation,
+  useGetMenteeSatProgressQuery,
   useGetAdminCurriculumProgressQuery,
   useGetAdminStudentSessionsQuery,
   useGetAdminStudentTasksQuery,

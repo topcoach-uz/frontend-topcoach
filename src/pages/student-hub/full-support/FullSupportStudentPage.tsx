@@ -7,7 +7,8 @@ import useColors from 'src/hooks/useColors';
 import { useTypedSelector } from 'src/app/store';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
-import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeCurriculumProgressQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useLazyGetScholarhubSsoLinkQuery, type TaskDto } from 'src/app/services/fullSupportApi';
+import { hostName } from 'src/app/services/api/const';
+import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useLazyGetScholarhubSsoLinkQuery, useGetMenteeSatProgressQuery, type TaskDto } from 'src/app/services/fullSupportApi';
 import dayjs from 'src/lib/dayjs';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import '../../full-support/full-support.scss';
@@ -56,14 +57,19 @@ export default function FullSupportStudentPage() {
   const menteeMilestones = milestonesData?.data ?? [];
   const { data: pipelineData } = useGetMenteePipelineQuery(undefined, { skip: !isEnrolled });
   const menteePipeline = pipelineData?.data ?? [];
-  const { data: curriculumData } = useGetMenteeCurriculumProgressQuery(undefined, { skip: !isEnrolled });
-  const curriculumWatchlist = curriculumData?.data ?? [];
   const { data: sessionsData } = useGetMenteeSessionsQuery(undefined, { skip: !isEnrolled });
   const menteeSessions = sessionsData?.data?.sessions ?? [];
   const usedHours = sessionsData?.data?.usedHours ?? 0;
   const allocatedHours = sessionsData?.data?.allocatedHours ?? 0;
   const [fetchWeeklyReport, { isLoading: weeklyReportLoading }] = useLazyGetWeeklyReportQuery();
   const [fetchSsoLink, { isLoading: ssoLinkLoading }] = useLazyGetScholarhubSsoLinkQuery();
+  const { data: satProgressData } = useGetMenteeSatProgressQuery(undefined, {
+    skip: !isEnrolled,
+    pollingInterval: 60000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+  const satProgress = satProgressData?.data ?? null;
 
   const taskColumns = [
     { title: 'TASK', dataIndex: 'task', key: 'task', width: 200 },
@@ -235,63 +241,72 @@ export default function FullSupportStudentPage() {
             )}
           </ul>
         </Card>
-        <Card title={<><BarChartOutlined style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>} className="full-support-card">
-          {curriculumWatchlist.length === 0 ? (
-            <p style={{ color: '#666', fontSize: 13 }}>No curriculum items yet. Your progress will appear here.</p>
-          ) : (
-            curriculumWatchlist.map((item) => (
-              <div key={item.key} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span>{item.label}</span>
-                  <span>{item.percent}%</span>
+        <Card
+          title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
+          className="full-support-card"
+        >
+          <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>
+            {t('fullSupport.satPrepDesc', 'As part of Full Support you have access to our SAT preparation course.')}
+          </p>
+          {satProgress ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 12, color: '#666' }}>Lessons completed</div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>
+                  {satProgress.completedLessons} / {satProgress.totalLessons}
                 </div>
-                <Progress percent={item.percent} size="small" strokeColor={primary} showInfo={false} />
-                {item.target && <div style={{ fontSize: 11, color: '#666' }}>{item.target}</div>}
               </div>
-            ))
+              <div>
+                <div style={{ fontSize: 12, color: '#666' }}>Overall progress</div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>{Math.round(satProgress.overallProgress)}%</div>
+              </div>
+              {Array.isArray(satProgress.byCourse) && satProgress.byCourse.length > 0 && (
+                <div style={{ minWidth: 240 }}>
+                  <div style={{ fontSize: 12, color: '#666' }}>Breakdown</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>
+                    {satProgress.byCourse
+                      .filter((c) => c && c.courseName)
+                      .map((c) => `${c.courseName.replace('SAT ', '')}: ${c.completedLessons} / ${c.totalLessons}`)
+                      .join(' · ')}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ color: '#666', fontSize: 12, marginBottom: 16 }}>Your SAT progress will appear here once you start the course.</p>
           )}
+          <Button
+            type="primary"
+            loading={ssoLinkLoading}
+            icon={<RocketOutlined />}
+            onClick={async () => {
+              try {
+                const res = await fetchSsoLink(undefined).unwrap();
+                const d = res?.data;
+                if (d?.redirectUrl) {
+                  window.open(d.redirectUrl, '_blank', 'noopener,noreferrer');
+                  return;
+                }
+                if (d?.frontendUrl && d?.token) {
+                  const url = `${d.frontendUrl.replace(/\/$/, '')}?token=${encodeURIComponent(d.token)}`;
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                  return;
+                }
+                if (d?.frontendUrl) {
+                  window.open(d.frontendUrl, '_blank', 'noopener,noreferrer');
+                  return;
+                }
+                message.info(t('fullSupport.satPrepLinkUnavailable', 'SAT prep link is not configured. Please try again later.'));
+              } catch {
+                message.error(t('fullSupport.satPrepLinkError', 'Could not open SAT prep.'));
+              }
+            }}
+            style={{ backgroundColor: primary, borderColor: primary }}
+          >
+            {t('fullSupport.goToSatPrep', 'Go to SAT prep')}
+          </Button>
         </Card>
       </div>
-
-      <Card
-        title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
-        className="full-support-card"
-        style={{ marginTop: 24 }}
-      >
-        <p style={{ color: '#666', fontSize: 13, marginBottom: 16 }}>
-          {t('fullSupport.satPrepDesc', 'As part of Full Support you have access to ScholarHub SAT preparation. Practice and track your progress in one place.')}
-        </p>
-        <Button
-          type="primary"
-          loading={ssoLinkLoading}
-          icon={<RocketOutlined />}
-          onClick={async () => {
-            try {
-              const res = await fetchSsoLink(undefined).unwrap();
-              const d = res?.data;
-              if (d?.redirectUrl) {
-                window.open(d.redirectUrl, '_blank', 'noopener,noreferrer');
-                return;
-              }
-              if (d?.frontendUrl && d?.token) {
-                const url = `${d.frontendUrl.replace(/\/$/, '')}?token=${encodeURIComponent(d.token)}`;
-                window.open(url, '_blank', 'noopener,noreferrer');
-                return;
-              }
-              if (d?.frontendUrl) {
-                window.open(d.frontendUrl, '_blank', 'noopener,noreferrer');
-                return;
-              }
-              message.info(t('fullSupport.satPrepLinkUnavailable', 'SAT prep link is not configured. Please try again later.'));
-            } catch {
-              message.error(t('fullSupport.satPrepLinkError', 'Could not open SAT prep.'));
-            }
-          }}
-          style={{ backgroundColor: primary, borderColor: primary }}
-        >
-          {t('fullSupport.goToSatPrep', 'Go to SAT prep')}
-        </Button>
-      </Card>
 
       <Card
         title={
@@ -418,7 +433,27 @@ export default function FullSupportStudentPage() {
         {feedbackModalTask?.hasFeedback && (
           <>
             <p style={{ color: '#666', marginBottom: 12 }}>Feedback from your mentor:</p>
-            <div style={{ background: '#fafafa', padding: 12, borderRadius: 8, whiteSpace: 'pre-wrap' }}>{feedbackModalTask.feedback}</div>
+            <div style={{ background: '#fafafa', padding: 12, borderRadius: 8, whiteSpace: 'pre-wrap', marginBottom: 12 }}>
+              {feedbackModalTask.feedback}
+            </div>
+            {feedbackModalTask.feedbackFileUrls && feedbackModalTask.feedbackFileUrls.length > 0 && (
+              <div>
+                <div style={{ fontWeight: 500, marginBottom: 8 }}>Attached files</div>
+                {feedbackModalTask.feedbackFileUrls.map((f, idx) => (
+                  <div key={idx} style={{ marginBottom: 6 }}>
+                    <a
+                      href={f.url.startsWith('http') ? f.url : `${hostName}${f.url}`}
+                      download={f.fileName}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: primary }}
+                    >
+                      {f.fileName}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </Modal>

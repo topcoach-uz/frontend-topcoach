@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
+import { chatApi, useGetConversationsQuery, useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
+import { isConversationArray, type Conversation } from 'src/app/services/chat/types';
 import { useTypedSelector } from 'src/app/store';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { FiMessageCircle } from 'react-icons/fi';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
+import { useSocket } from 'src/lib/socket';
+import { useAppDispatch } from 'src/app/store';
 
 interface ChatIconProps {
   className?: string;
@@ -40,18 +43,77 @@ function ChatIconFallback() {
 }
 
 const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
-  const isAuthenticated = useTypedSelector((state) => state?.auth?.isAuthenticated) ?? false;
+  const authState = useTypedSelector((state) => state.auth);
+  const isAuthenticated = authState?.isAuthenticated ?? false;
+  const currentUserId = authState?.profile?.id as string | undefined;
   const hasToken = getHasToken();
   const showIcon = isAuthenticated || hasToken;
+  const dispatch = useAppDispatch();
 
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
-  const { data: unreadData } = useGetUnreadCountQuery(undefined, {
+  // Subscribe to total unread count (includes threaded unread counts)
+  const {
+    data: unreadCountData,
+    refetch: refetchUnreadCount,
+  } = useGetUnreadCountQuery(undefined, {
     skip: !showIcon,
+    pollingInterval: 60000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
   });
-  const unreadCount = unreadData?.unreadCount ?? 0;
+
+  // Conversations-based unread count (matches popup list)
+  const { data: conversationsData } = useGetConversationsQuery(undefined, {
+    skip: !showIcon,
+    pollingInterval: 60000,
+  });
+
+  const conversations: Conversation[] = React.useMemo(() => {
+    if (!conversationsData) return [];
+    if (isConversationArray(conversationsData)) return conversationsData;
+    return (conversationsData as any).conversations || [];
+  }, [conversationsData]);
+
+  // Prefer backend's canonical total unread count (covers threaded chats).
+  // Fallback to conversation list sum if endpoint isn't available yet.
+  const unreadCount = React.useMemo(() => {
+    const apiCount = (unreadCountData as any)?.unreadCount;
+    const apiCountSafe = typeof apiCount === 'number' ? apiCount : null;
+
+    // Conversation list includes per-user unread fields but we may not always have
+    // `currentUserId` available immediately; in practice, only one side is non-zero.
+    const conversationSum = conversations.reduce((sum, conv) => {
+      if (currentUserId) {
+        if (conv.mentorId === currentUserId) return sum + (conv.unreadCountMentor || 0);
+        if (conv.studentId === currentUserId) return sum + (conv.unreadCountStudent || 0);
+        return sum;
+      }
+      return sum + Math.max(conv.unreadCountMentor || 0, conv.unreadCountStudent || 0);
+    }, 0);
+
+    if (apiCountSafe === null) return conversationSum;
+    return Math.max(apiCountSafe, conversationSum);
+  }, [unreadCountData, conversations, currentUserId]);
+
+  // Real-time: refresh unread badge when backend notifies changes
+  const { socket, isConnected, on, off } = useSocket({ autoConnect: true });
+  React.useEffect(() => {
+    if (!socket || !isConnected || !showIcon) return;
+
+    const handleUnreadCountChanged = () => {
+      // Ensure both list + total count stay in sync
+      dispatch(chatApi.util.invalidateTags(['ChatConversations', 'ChatThreads']));
+      refetchUnreadCount();
+    };
+
+    on('unread_count_changed', handleUnreadCountChanged);
+    return () => {
+      off('unread_count_changed', handleUnreadCountChanged);
+    };
+  }, [socket, isConnected, showIcon, on, off, dispatch, refetchUnreadCount]);
 
   if (!showIcon) {
     return null;

@@ -11,6 +11,7 @@
   border-radius: 6px;
   transition: all 0.2s ease-in-out;
   position: relative;
+  overflow: visible;
   color: #fff !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -27,6 +28,8 @@
     flex-shrink: 0;
     color: #fff !important;
     fill: #fff !important;
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -45,6 +48,8 @@
   background: #ff4d4f;
   border-radius: 8px;
   box-shadow: 0 0 0 1px #fff;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .chatPopover {

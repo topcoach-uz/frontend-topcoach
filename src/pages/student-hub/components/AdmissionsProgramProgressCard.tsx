@@ -15,7 +15,11 @@ import {
   useGetUserProgressQuery,
   useGetCourseStructureQuery,
 } from '../../../app/services/courses';
-import { useGetEnrollmentMeQuery, useLazyGetScholarhubSsoLinkQuery } from '../../../app/services/fullSupportApi';
+import {
+  useGetEnrollmentMeQuery,
+  useGetMenteeSatProgressQuery,
+  useLazyGetScholarhubSsoLinkQuery,
+} from '../../../app/services/fullSupportApi';
 import './AdmissionsProgramProgressCard.scss';
 
 interface AdmissionsProgramProgressCardProps {
@@ -56,6 +60,9 @@ export default function AdmissionsProgramProgressCard({
   const { data: satProgress } = useGetUserProgressQuery('sat', {
     skip: !!skip || !satEnrollment?.canAccessLearning,
   });
+  const { data: fullSupportSatProgress } = useGetMenteeSatProgressQuery(undefined, {
+    skip: !!skip || !enrollmentMe?.data?.enrolled,
+  });
 
   const { data: admissionsStructure } = useGetCourseStructureQuery('admissions', {
     skip: !!skip || !admissionsEnrollment?.canAccessLearning,
@@ -79,7 +86,10 @@ export default function AdmissionsProgramProgressCard({
     return 0;
   }, [admissionsProgress?.totalLessons, admissionsStructure]);
 
-  const satTotalLessons = satProgress?.totalLessons ?? 0;
+  const satTotalLessonsFromInternal = satProgress?.totalLessons ?? 0;
+  const satTotalLessonsFromScholarhub = fullSupportSatProgress?.data?.totalLessons ?? 0;
+  const satCompletedLessonsFromScholarhub = fullSupportSatProgress?.data?.completedLessons ?? 0;
+
   const hasAdmissions = admissionsEnrollment?.isEnrolled && admissionsEnrollment?.canAccessLearning;
   const hasSatCourse = satEnrollment?.isEnrolled && satEnrollment?.canAccessLearning;
   const hasSatFromFullSupport = enrollmentMe?.data?.enrolled === true;
@@ -203,11 +213,17 @@ export default function AdmissionsProgramProgressCard({
             renderCourseBlock(
               'sat',
               t('studentHub.dashboard.satPrepCourse', 'SAT Prep Course'),
-              hasSatCourse ? (satProgress?.completedLessons ?? 0) : 0,
-              hasSatCourse ? satTotalLessons : 0,
-              hasSatCourse && satTotalLessons > 0
-                ? Math.round(((satProgress?.completedLessons ?? 0) / satTotalLessons) * 100)
-                : 0,
+              hasSatCourse
+                ? (satProgress?.completedLessons ?? 0)
+                : satCompletedLessonsFromScholarhub,
+              hasSatCourse ? satTotalLessonsFromInternal : satTotalLessonsFromScholarhub,
+              (() => {
+                const total = hasSatCourse ? satTotalLessonsFromInternal : satTotalLessonsFromScholarhub;
+                const completed = hasSatCourse
+                  ? (satProgress?.completedLessons ?? 0)
+                  : satCompletedLessonsFromScholarhub;
+                return total > 0 ? Math.round((completed / total) * 100) : 0;
+              })(),
               hasSatFromFullSupport && !hasSatCourse ? handleSatContinueLearning : undefined
             )}
         </div>

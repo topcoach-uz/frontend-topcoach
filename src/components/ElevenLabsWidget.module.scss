@@ -127,10 +127,24 @@
     }
 
     // Ensure the widget doesn't interfere with mobile navigation
+    // and appears as a small floating icon on mobile
     @media (max-width: 768px) {
       elevenlabs-convai {
-        bottom: 80px !important; // Above mobile navigation
-        right: 15px !important; // Slightly adjust for mobile
+        bottom: 72px !important; // Above mobile navigation
+        right: 14px !important; // Slightly adjust for mobile
+        transform: scale(0.55); // Make the widget much smaller
+        transform-origin: bottom right;
+        max-width: 220px;
+        pointer-events: auto;
+      }
+
+      // Hide long text label so it feels like an icon button
+      elevenlabs-convai * {
+        // Try to hide any element that contains the long label text
+        // (exact DOM is controlled by ElevenLabs, so we use text match)
+        &:contains("Start a chat") {
+          display: none !important;
+        }
       }
     }
 

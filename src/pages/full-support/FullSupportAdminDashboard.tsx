@@ -94,7 +94,10 @@ export default function FullSupportAdminDashboard() {
   const [fetchWeeklyReport, { isLoading: weeklyReportDownloading }] = useLazyGetWeeklyReportQuery();
   const { data: interactionsData } = useGetAdminRecentInteractionsQuery(50);
   const adminInteractions = interactionsData?.data ?? [];
-  const { data: satCourseData, isLoading: satCourseLoading } = useGetScholarhubCourseProgressQuery({ page: 1, perPage: 50 });
+  const { data: satCourseData, isLoading: satCourseLoading } = useGetScholarhubCourseProgressQuery(
+    { page: 1, perPage: 50 },
+    { pollingInterval: 120000, refetchOnFocus: true, refetchOnReconnect: true },
+  );
   const satCoursePayload = satCourseData?.data;
 
   const handleUnassign = (studentUserId: string) => {

@@ -13,7 +13,7 @@ import useActions from './useActions.tsx';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MailOutlined } from '@ant-design/icons';
+import { MailFilled } from '@ant-design/icons';
 import ChatIcon from 'src/components/chat/ChatIcon';
 
 export default function Actions() {
@@ -90,7 +90,7 @@ export default function Actions() {
       </button>
       */}
       <Link to="/contact" className={styles.contactIcon}>
-        <MailOutlined style={{ fontSize: '20px', color: 'white' }} />
+        <MailFilled style={{ fontSize: '20px', color: 'white' }} />
       </Link>
       <ChatIcon />
       <LanguageSelect />

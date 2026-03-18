@@ -81,6 +81,7 @@ export const universityCountryFlags: Record<string, string> = {
   'New York University in Shanghai': '🇨🇳',
   'Duke Kunshan University': '🇨🇳',
   'Chinese petroleum University(Xian)': '🇨🇳',
+  'University of Michigan x Shanghai Jiao Tong University (Joint Institute)': '🇨🇳',
   
   // Canadian Universities
   'University of Toronto': '🇨🇦',

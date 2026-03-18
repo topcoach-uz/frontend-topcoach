@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Tag, Progress, Modal, Form, Input, Select, DatePicker, Switch, Space, message } from 'antd';
+import { Card, Table, Button, Tag, Progress, Modal, Form, Input, Select, DatePicker, Switch, Space, message, Upload } from 'antd';
+import type { UploadFile } from 'antd';
 import { UserOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined, GlobalOutlined, EditOutlined, EyeOutlined, DeleteOutlined, DownloadOutlined, CalendarOutlined, MessageOutlined, ScheduleOutlined, BarChartOutlined, RocketOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -29,11 +30,13 @@ import {
   useDeleteMentorPipelineRowMutation,
   useLazyGetWeeklyReportQuery,
   useGetMentorCurriculumProgressQuery,
+  useSetMentorCurriculumItemMutation,
   type MentorRosterStudent,
   type SessionLogDto,
   type TaskDto,
   type MilestoneDto,
   type PipelineDto,
+  useUploadMentorFeedbackFileMutation,
 } from 'src/app/services/fullSupportApi';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import './full-support.scss';
@@ -89,6 +92,7 @@ export default function FullSupportMentorDashboard() {
   const [assignTaskOpen, setAssignTaskOpen] = useState(false);
   const [feedbackModalTask, setFeedbackModalTask] = useState<TaskDto | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackFileList, setFeedbackFileList] = useState<UploadFile[]>([]);
   const [viewSubmissionTask, setViewSubmissionTask] = useState<TaskDto | null>(null);
   const [form] = Form.useForm();
   const [chatModalOpen, setChatModalOpen] = useState(false);
@@ -130,6 +134,9 @@ export default function FullSupportMentorDashboard() {
   const progressStudentTasks = selectedProgressStudent ? tasks.filter((t) => t.studentUserId === selectedProgressStudent.id) : [];
   const progressStudentPipeline = selectedProgressStudent ? pipelineRows.filter((p) => p.studentUserId === selectedProgressStudent.id) : [];
   const [progressReportDownloading, setProgressReportDownloading] = useState(false);
+  const [editSatTargetOpen, setEditSatTargetOpen] = useState(false);
+  const [satTargetValue, setSatTargetValue] = useState<string>('Target: 1450+');
+  const [setCurriculumItem, { isLoading: settingCurriculumItem }] = useSetMentorCurriculumItemMutation();
 
   React.useEffect(() => {
     if (roster.length > 0 && !roster.some((s) => s.id === selectedMilestoneStudentId)) {
@@ -227,11 +234,28 @@ export default function FullSupportMentorDashboard() {
     setFeedbackText(r.feedback ?? '');
   };
 
-  const saveFeedback = () => {
+  const [uploadFeedbackFile] = useUploadMentorFeedbackFileMutation();
+
+  const saveFeedback = async () => {
     if (!feedbackModalTask) return;
-    updateTaskFeedback({ id: feedbackModalTask.id, feedback: feedbackText });
+    const taskId = feedbackModalTask.id;
+    const feedbackFileUrls: { fileName: string; url: string }[] = [];
+    const files = feedbackFileList.map((f) => f.originFileObj).filter(Boolean) as File[];
+    try {
+      for (const file of files) {
+        const res = await uploadFeedbackFile({ taskId, file }).unwrap();
+        if (res?.data?.fileName && res?.data?.url) {
+          feedbackFileUrls.push({ fileName: res.data.fileName, url: res.data.url });
+        }
+      }
+    } catch {
+      message.error('Failed to upload one or more feedback files.');
+      return;
+    }
+    await updateTaskFeedback({ id: taskId, feedback: feedbackText, feedbackFileUrls }).unwrap();
     setFeedbackModalTask(null);
     setFeedbackText('');
+    setFeedbackFileList([]);
   };
 
   const confirmRemoveTask = (r: TaskDto) => {
@@ -298,14 +322,6 @@ export default function FullSupportMentorDashboard() {
             <h1 style={{ color: primary }}>Mentor Management</h1>
             <p style={{ marginBottom: 0 }}>Admissions & Portfolio Supervision — Monitor student progress, log sessions, and track milestones.</p>
           </div>
-          <Button
-            type="primary"
-            icon={<RocketOutlined />}
-            onClick={() => navigate('/full-support/mentor/sat-progress')}
-            style={{ backgroundColor: primary, borderColor: primary }}
-          >
-            {t('fullSupport.satProgressButton', 'SAT progress')}
-          </Button>
         </div>
       </Card>
 
@@ -419,7 +435,22 @@ export default function FullSupportMentorDashboard() {
                 )}
               </ul>
             </Card>
-            <Card size="small" title={<><BarChartOutlined style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>} style={{ marginBottom: 16 }}>
+            <Card
+              size="small"
+              title={<><BarChartOutlined style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>}
+              style={{ marginBottom: 16 }}
+              extra={
+                progressCurriculumWatchlist.some((i) => i.key === 'sat_prep') && selectedProgressStudent ? (
+                  <Button type="link" size="small" onClick={() => {
+                    const satItem = progressCurriculumWatchlist.find((i) => i.key === 'sat_prep');
+                    setSatTargetValue(satItem?.target ?? 'Target: 1450+');
+                    setEditSatTargetOpen(true);
+                  }}>
+                    Edit SAT target
+                  </Button>
+                ) : null
+              }
+            >
               {progressCurriculumWatchlist.length === 0 ? (
                 <p style={{ color: '#666', fontSize: 13 }}>No curriculum items yet.</p>
               ) : (
@@ -501,6 +532,37 @@ export default function FullSupportMentorDashboard() {
             </Button>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={editSatTargetOpen}
+        title="Edit SAT target"
+        onCancel={() => setEditSatTargetOpen(false)}
+        onOk={async () => {
+          if (!selectedProgressStudent) return;
+          const satItem = progressCurriculumWatchlist.find((i) => i.key === 'sat_prep');
+          const percent = satItem?.percent ?? 0;
+          try {
+            await setCurriculumItem({
+              studentUserId: selectedProgressStudent.id,
+              key: 'sat_prep',
+              percent,
+              target: satTargetValue.trim() || null,
+            }).unwrap();
+            message.success('SAT target updated.');
+            setEditSatTargetOpen(false);
+          } catch {
+            message.error('Could not update SAT target.');
+          }
+        }}
+        confirmLoading={settingCurriculumItem}
+      >
+        <p style={{ marginBottom: 8 }}>Set an encouraging SAT score target for this mentee (shown on their dashboard).</p>
+        <Input
+          value={satTargetValue}
+          onChange={(e) => setSatTargetValue(e.target.value)}
+          placeholder="Target: 1450+"
+        />
       </Modal>
 
       <Card
