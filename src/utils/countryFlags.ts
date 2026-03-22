@@ -155,6 +155,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Turkiye Burslari Winner': '🇹🇷',
   'Middle East Technical University': '🇹🇷',
   'Ankara University': '🇹🇷',
+  'Mugla Sıtkı Kocman University': '🇹🇷',
   'Gubkin Russian State University of Oil and Gas': '🇷🇺',
   
   // Additional common universities
