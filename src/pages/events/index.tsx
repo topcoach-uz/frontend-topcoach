@@ -14,6 +14,7 @@ import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
 import CustomSelect from 'src/components/common/select';
+import { CAMPS_LIST_QUERY } from './campsQuery';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 
@@ -37,7 +38,9 @@ interface PlaylistGroup {
 }
 
 export default function EventsPage() {
-  const { response: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useApi(() => api.camps.campsList());
+  const { response: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useApi(() =>
+    api.camps.campsList(CAMPS_LIST_QUERY as Parameters<typeof api.camps.campsList>[0]),
+  );
   const { response: workshopsData, isLoading: workshopsLoading, refetch: refetchWorkshops } = useApi(() => api.camps.getActiveWorkshops());
   const { t } = useTranslation();
   const authProfile = useTypedSelector((state) => state.auth.profile);
