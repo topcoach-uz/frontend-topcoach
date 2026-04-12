@@ -1,13 +1,13 @@
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 WORKDIR /app
-COPY package.json yarn.lock ./
 
-# Clear yarn cache and install with retries
+# Copy full tree; .dockerignore excludes node_modules/dist so install is clean.
+COPY . .
+
 RUN yarn cache clean || true
 RUN yarn install --network-timeout 300000 --frozen-lockfile || \
     (yarn cache clean && yarn install --network-timeout 300000 --frozen-lockfile)
 
-COPY . .
 RUN chmod +x ./node_modules/.bin/* || true
 RUN yarn build
 
