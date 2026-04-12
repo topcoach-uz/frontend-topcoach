@@ -15,32 +15,16 @@ import { InputFormItem } from "src/components/form";
 import styles from "./payment.module.scss";
 import useParamsHook from "src/hooks/params";
 import { themeFontSize, themeFontWeight } from "src/constants/theme";
-import { ArrowLeft, Card as CardIcon, Mobile, Lock } from "iconsax-react";
+import { ArrowLeft, CreditCard as CardIcon, Smartphone as Mobile, Lock } from "lucide-react";
 import CustomSelect from "src/components/common/select";
 import { Spin } from "antd";
 import { useGetPlansQuery } from "src/app/services/mentors";
 import { useGetMentorDetailQuery } from "src/app/services/mentors";
 import { ReferralCodeInput } from "src/components/referral/ReferralCodeInput";
 import FontAwesomeIcon from "src/components/common/icons/FontAwesomeIcon";
-import axios from "axios";
-import { baseUrl } from "src/app/services/api/const";
-import { ACCESS_TOKEN } from "src/constants/storage";
-
-// Custom payment redirect function with longer timeout (2 minutes)
-// Payment processing can take up to 30+ seconds for booking creation
-const paymentRedirectWithTimeout = async (provider: string, payload: any) => {
-  const token = localStorage.getItem(ACCESS_TOKEN);
-  
-  const response = await axios.post(`${baseUrl}/payments/redirect/${provider}`, payload, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    timeout: 120000, // 2 minutes timeout for payment processing
-  });
-  
-  return response.data;
-};
+import { paymentRedirectWithTimeout } from "src/app/services/paymentRedirect";
+import { PAYMENT_MERCHANT_RETURN_ORIGIN } from "src/constants/paymentMerchantReturn";
+import { REGISTRATION_FEE_USD_FALLBACK } from "src/pages/events/central-asian-admissions-forum/constants";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -57,6 +41,7 @@ function PaymentPage() {
   const planId = searchParams.get("planId") ?? "";
   const mentorId = searchParams.get("mentorId") ?? "";
   const enrollmentId = searchParams.get("enrollmentId") ?? "";
+  const caafApplicationId = searchParams.get("caafApplicationId") ?? "";
   const paymentType = searchParams.get("type") ?? "";
   const buyType = searchParams.get("buyType") ?? "";
   const slotStart = searchParams.get("slotStart") ?? "";
@@ -135,19 +120,27 @@ function PaymentPage() {
     }
   }, [sessionId, planId, mentorId, mentorDetail, plans, amount]);
 
+  const isCaafPayment = paymentType === 'caaf' && caafApplicationId;
+
   // Check if we have required parameters
-  if (!planId && !sessionId && !enrollmentId) {
+  if (!planId && !sessionId && !enrollmentId && !isCaafPayment) {
     message.error('Missing payment information.');
     return null;
   }
 
   // Determine the amount to display
-  const displayAmount = paymentType === 'course' 
-    ? amount 
-    : (calculatedAmount !== null ? calculatedAmount.toString() : amount);
-  
+  const displayAmount =
+    paymentType === 'course' || paymentType === 'caaf'
+      ? (paymentType === 'caaf' ? (amount || String(REGISTRATION_FEE_USD_FALLBACK)) : amount)
+      : calculatedAmount !== null
+        ? calculatedAmount.toString()
+        : amount;
+
   // Determine the currency to display
-  let displayCurrency = paymentType === 'course' ? 'USD' : (calculatedCurrency || currencyName || 'USD');
+  let displayCurrency =
+    paymentType === 'course' || paymentType === 'caaf'
+      ? 'USD'
+      : calculatedCurrency || currencyName || 'USD';
   
   // Calculate final amount with referral discount
   const originalAmount = parseFloat(displayAmount || '0');
@@ -165,17 +158,19 @@ function PaymentPage() {
     }
   }
 
-  // Determine return URL based on payment type
-  // Using topcoach.uz for payment return URLs since merchant accounts are configured for this domain
+  // Determine return URL based on payment type (merchant return host — see PAYMENT_MERCHANT_RETURN_ORIGIN)
   const getReturnUrl = () => {
+    if (paymentType === "caaf" && caafApplicationId) {
+      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/events/central-asian-admissions-forum?caaf_payment=success`;
+    }
     if (paymentType === "course" && enrollmentId) {
-      return "https://topcoach.uz/programs/success?success=true";
+      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/programs/success?success=true`;
     } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
-      return "https://topcoach.uz/?payment_status=success&type=subscription";
+      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success&type=subscription`;
     } else if (sessionId && mentorId) {
-      return "https://topcoach.uz/?payment_status=success&type=session";
+      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success&type=session`;
     } else {
-      return "https://topcoach.uz/?payment_status=success";
+      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success`;
     }
   };
 
@@ -232,7 +227,7 @@ function PaymentPage() {
 
   // Handle provider redirect (Click, Atmos)
   const handleProviderRedirect = async (provider: 'click' | 'atmos') => {
-    if (!planId && !sessionId && !enrollmentId) {
+    if (!planId && !sessionId && !enrollmentId && !isCaafPayment) {
       message.error('No payment information found');
       return;
     }
@@ -240,28 +235,32 @@ function PaymentPage() {
     setIsLoading(true);
     try {
       let payload;
-      
+
       if (paymentType === 'course' && enrollmentId) {
-        payload = { 
+        payload = {
           enrollmentId,
           returnUrl,
-          ...(referralCode && { referralCode })
+          ...(referralCode && { referralCode }),
+        };
+      } else if (paymentType === 'caaf' && caafApplicationId) {
+        payload = {
+          caafApplicationId,
+          returnUrl,
         };
       } else {
-        payload = { 
-          planId, 
+        payload = {
+          planId,
           returnUrl,
           ...(sessionId && { sessionId }),
           ...(mentorId && { mentorId }),
-          ...(referralCode && { referralCode })
+          ...(referralCode && { referralCode }),
         };
       }
-      
-      // Use custom function with longer timeout (2 min) for payment processing
+
       const res = await paymentRedirectWithTimeout(provider, payload);
-      
-      if (res?.url || res?.redirectUrl) {
-        const redirectUrl = res.url || res.redirectUrl;
+
+      const redirectUrl = res?.url || res?.redirectUrl;
+      if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
         message.error('No redirect URL received.');
@@ -299,7 +298,11 @@ function PaymentPage() {
       <div className={styles.header}>
         <Button
           icon={<ArrowLeft size={20} />}
-          onClick={() => navigate(-1)}
+          onClick={() =>
+            paymentType === 'caaf'
+              ? navigate('/events/central-asian-admissions-forum')
+              : navigate(-1)
+          }
           className={styles.backButton}
           type="text"
         >
@@ -314,6 +317,20 @@ function PaymentPage() {
           <Col xs={24} lg={10}>
             <Card className={styles.summaryCard} title="Payment Summary">
               <div className={styles.summaryContent}>
+                {paymentType === 'caaf' && (
+                  <div className={styles.orderSummary}>
+                    <Text className={styles.orderSummaryTitle}>Order Summary</Text>
+                    <div className={styles.orderSummaryRow}>
+                      <Text type="secondary">Item:</Text>
+                      <Text strong>Central Asian Admissions Forum</Text>
+                    </div>
+                    <div className={styles.orderSummaryRow}>
+                      <Text type="secondary">Registration fee (USD):</Text>
+                      <Text>${parseFloat(displayAmount || '0').toFixed(2)}</Text>
+                    </div>
+                  </div>
+                )}
+
                 {paymentType === 'session' && mentorDetail && (
                   <div className={styles.orderSummary}>
                     <Text className={styles.orderSummaryTitle}>Order Summary</Text>

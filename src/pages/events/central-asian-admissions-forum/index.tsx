@@ -27,7 +27,6 @@ import type { CaafDestinationId, CaafDraft } from './types';
 import { useCaafRegistration } from './useCaafRegistration';
 import { validateCaafStep } from './validation';
 import CaafApplicationStepper from './components/CaafApplicationStepper';
-import CaafPaymentCheckout from './components/CaafPaymentCheckout';
 import styles from './CentralAsianAdmissionsForum.module.scss';
 
 const { TextArea } = Input;
@@ -83,6 +82,9 @@ export default function CentralAsianAdmissionsForumPage() {
     meLoading,
   } = useCaafRegistration();
 
+  const caafPaymentSearch = (applicationId: string) =>
+    `type=caaf&caafApplicationId=${encodeURIComponent(applicationId)}&amount=${encodeURIComponent(String(feeUsd))}`;
+
   useEffect(() => {
     if (searchParams.get('caaf_payment') !== 'success') return;
     let cancelled = false;
@@ -101,7 +103,7 @@ export default function CentralAsianAdmissionsForumPage() {
 
   useEffect(() => {
     if (isAuthenticated) return;
-    if (phase === 'form' || phase === 'review' || phase === 'payment') {
+    if (phase === 'form' || phase === 'review') {
       try {
         window.localStorage.setItem('redirectAfterLogin', FORUM_PATH);
       } catch {
@@ -141,11 +143,24 @@ export default function CentralAsianAdmissionsForumPage() {
   };
 
   const onSubmitToPayment = async () => {
-    const ok = await submitApplicationPendingPayment();
-    if (!ok) message.error(t('caafForum.toast.submitFailed'));
+    if (serverApplication?.status === 'pending_payment' && activeSubmissionId) {
+      navigate(`/payment?${caafPaymentSearch(activeSubmissionId)}`);
+      return;
+    }
+    const applicationId = await submitApplicationPendingPayment();
+    if (!applicationId) {
+      message.error(t('caafForum.toast.submitFailed'));
+      return;
+    }
+    navigate(`/payment?${caafPaymentSearch(applicationId)}`);
   };
 
-  if (!isAuthenticated && (phase === 'form' || phase === 'review' || phase === 'payment')) {
+  if (!isAuthenticated && (phase === 'form' || phase === 'review')) {
+    return null;
+  }
+
+  if (serverApplication?.status === 'pending_payment' && activeSubmissionId) {
+    navigate(`/payment?${caafPaymentSearch(activeSubmissionId)}`, { replace: true });
     return null;
   }
 
@@ -158,22 +173,6 @@ export default function CentralAsianAdmissionsForumPage() {
       );
     }
     const sub = serverApplication;
-    if (sub?.status === 'pending_payment') {
-      return (
-        <main className={styles.page}>
-          <Alert
-            type="warning"
-            showIcon
-            message={t('caafForum.alert.pending.title')}
-            description={t('caafForum.alert.pending.description')}
-            style={{ marginBottom: 20 }}
-          />
-          <Button type="primary" size="large" onClick={() => void resumeFromSubmission()}>
-            {t('caafForum.btn.completePayment')}
-          </Button>
-        </main>
-      );
-    }
     if (!sub || sub.status !== 'paid') {
       return (
         <main className={styles.page}>
@@ -200,28 +199,6 @@ export default function CentralAsianAdmissionsForumPage() {
             {t('caafForum.btn.backToEvents')}
           </Button>
         </div>
-      </main>
-    );
-  }
-
-  if (phase === 'payment') {
-    if (!activeSubmissionId) {
-      return (
-        <main className={styles.page}>
-          <Alert type="error" showIcon message={t('caafForum.alert.missingRef')} />
-          <Button size="large" style={{ marginTop: 16 }} onClick={() => setPhase('review')}>
-            {t('caafForum.btn.backToReview')}
-          </Button>
-        </main>
-      );
-    }
-    return (
-      <main>
-        <CaafPaymentCheckout
-          draft={draft}
-          applicationId={activeSubmissionId}
-          onBackToReview={() => setPhase('review')}
-        />
       </main>
     );
   }

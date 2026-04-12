@@ -16,7 +16,7 @@ import { draftHasMeaningfulProgress } from './draftUtils';
 import { STEP_COUNT } from './validation';
 import type { CaafForumApplicationDto } from 'src/app/services/caafForumApi';
 
-export type CaafUiPhase = 'landing' | 'form' | 'review' | 'payment' | 'submitted';
+export type CaafUiPhase = 'landing' | 'form' | 'review' | 'submitted';
 
 function readDraft(): CaafDraft {
   if (typeof window === 'undefined') return createEmptyCaafDraft();
@@ -87,7 +87,7 @@ export function useCaafRegistration() {
     if (app?.status === 'pending_payment') {
       setActiveSubmissionId(app.id);
       setDraft(mergeCaafDraft(app.draft as Partial<CaafDraft>));
-      setPhase('payment');
+      setPhase('review');
       return;
     }
 
@@ -160,27 +160,29 @@ export function useCaafRegistration() {
     setPhase('review');
   }, []);
 
-  const submitApplicationPendingPayment = useCallback(async (): Promise<boolean> => {
+  const submitApplicationPendingPayment = useCallback(async (): Promise<string | null> => {
     try {
       const { application } = await submitApp(draft).unwrap();
       setActiveSubmissionId(application.id);
       setServerApplication(application);
-      setPhase('payment');
-      return true;
+      setPhase('review');
+      return application.id;
     } catch {
-      return false;
+      return null;
     }
   }, [draft, submitApp]);
 
-  const resumeFromSubmission = useCallback(async () => {
+  const resumeFromSubmission = useCallback(async (): Promise<string | null> => {
     const r = await refetchMe();
     const app = r.data?.application;
     if (app?.status === 'pending_payment') {
       setActiveSubmissionId(app.id);
       setDraft(mergeCaafDraft(app.draft as Partial<CaafDraft>));
       setServerApplication(app);
-      setPhase('payment');
+      setPhase('review');
+      return app.id;
     }
+    return null;
   }, [refetchMe]);
 
   const stepLabels = useMemo(
