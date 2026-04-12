@@ -13,6 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import UpcomingEventsSection from './_components/UpcomingEventsSection';
+// Youth Leaders application entry — temporarily hidden on Events page
+// import YouthLeadersProgramCard from './_components/YouthLeadersProgramCard';
+import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
 import CustomSelect from 'src/components/common/select';
 import { CAMPS_LIST_QUERY } from './campsQuery';
 
@@ -227,6 +230,9 @@ export default function EventsPage() {
             mb={48}
           />
         </div>
+        {/* <YouthLeadersProgramCard /> */}
+        <CentralAsianAdmissionsForumCard />
+
         <div className={styles.filter}>
           <CustomSelect
             defaultValue={'all'}

@@ -1,0 +1,95 @@
+$caaf-crimson: #9f1239;
+$caaf-crimson-line: #c2415c;
+
+.caafStepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  @media (max-width: 900px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.caafStepperItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.caafStepperCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.caafStepperItemActive .caafStepperCircle {
+  border-color: $caaf-crimson;
+  background: $caaf-crimson;
+  color: #fff;
+}
+
+.caafStepperItemDone .caafStepperCircle {
+  border-color: $caaf-crimson;
+  background: $caaf-crimson;
+  color: #fff;
+}
+
+.caafStepperTitle {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.25;
+  max-width: 140px;
+
+  @media (max-width: 900px) {
+    max-width: none;
+  }
+}
+
+.caafStepperItemActive .caafStepperTitle {
+  color: $caaf-crimson;
+  font-weight: 700;
+}
+
+.caafStepperItemDone .caafStepperTitle {
+  color: $caaf-crimson;
+}
+
+.caafStepperLine {
+  flex: 1;
+  height: 3px;
+  background: #e2e8f0;
+  min-width: 8px;
+  margin-top: 16px;
+  border-radius: 2px;
+  max-width: 40px;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.caafStepperLineDone {
+  background: $caaf-crimson-line;
+}

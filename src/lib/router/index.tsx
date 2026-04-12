@@ -37,6 +37,12 @@ const SuccessStoriesDetailPageLazy = lazy(
 );
 const ContactPageLazy = lazy(() => import("src/pages/contact"));
 const EventsPageLazy = lazy(() => import("src/pages/events"));
+const YouthLeadersApplicationPageLazy = lazy(
+  () => import("src/pages/events/youth-leaders-application")
+);
+const CentralAsianAdmissionsForumPageLazy = lazy(
+  () => import("src/pages/events/central-asian-admissions-forum")
+);
 const EventDetailsPageLazy = lazy(
   () => import("src/pages/events/detail")
 );
@@ -99,6 +105,12 @@ const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
+const YouthLeadersApplicationsAdminLazy = lazy(
+  () => import("src/pages/admin/youth-leaders-applications")
+);
+const CentralAsianAdmissionsForumAdminLazy = lazy(
+  () => import("src/pages/admin/central-asian-admissions-forum")
+);
 const FullSupportAdminDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportAdminDashboard"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
@@ -123,6 +135,7 @@ function RouterProvider() {
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
   const isSuperAdminOrOwner = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
+  const isYouthLeadersApplicationsSuperAdmin = currentUser?.managementRole === 'SuperAdmin';
   const isMentor = currentUser?.profile?.role === 'Mentor';
 
   return (
@@ -172,6 +185,22 @@ function RouterProvider() {
                 element={<MentorDetailsPageLazy />}
               />
               <Route path="/events" element={<EventsPageLazy />} />
+              <Route
+                path="/events/youth-leaders-application"
+                element={
+                  <Suspense fallback={<Loader height="70vh" />}>
+                    <YouthLeadersApplicationPageLazy />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/events/central-asian-admissions-forum"
+                element={
+                  <Suspense fallback={<Loader height="70vh" />}>
+                    <CentralAsianAdmissionsForumPageLazy />
+                  </Suspense>
+                }
+              />
               <Route
                 path="/events/:id"
                 element={<EventDetailsPageLazy />}
@@ -239,6 +268,54 @@ function RouterProvider() {
                     <Navigate to="/auth/signin" replace />
                   )
                 } 
+              />
+              <Route
+                path="/admin/youth-leaders-applications"
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isYouthLeadersApplicationsSuperAdmin ? (
+                    <Suspense
+                      fallback={
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                          <Spin size="large" />
+                        </div>
+                      }
+                    >
+                      <YouthLeadersApplicationsAdminLazy />
+                    </Suspense>
+                  ) : (
+                    <Navigate to="/student-hub" replace />
+                  )
+                }
+              />
+              <Route
+                path="/admin/central-asian-admissions-forum"
+                element={
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
+                  ) : profileLoading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : isYouthLeadersApplicationsSuperAdmin ? (
+                    <Suspense
+                      fallback={
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                          <Spin size="large" />
+                        </div>
+                      }
+                    >
+                      <CentralAsianAdmissionsForumAdminLazy />
+                    </Suspense>
+                  ) : (
+                    <Navigate to="/student-hub" replace />
+                  )
+                }
               />
               <Route
                 path="/full-support/admin"

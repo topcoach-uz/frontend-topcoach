@@ -10,7 +10,7 @@ import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { useGetMentorRosterQuery } from 'src/app/services/fullSupportApi';
-import { DashboardOutlined, BookOutlined, SettingOutlined, TeamOutlined, AuditOutlined } from '@ant-design/icons';
+import { LayoutDashboard, BookOpen, Settings, Users, FileCheck, Sparkles } from 'lucide-react';
 import { Space, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -28,6 +28,7 @@ export default function MentorHome() {
   });
   const currentUser = userData || user;
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
+  const isYouthLeadersApplicationsAdmin = currentUser?.managementRole === 'SuperAdmin';
   const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
   const { data: mentorRosterData } = useGetMentorRosterQuery(undefined, { skip: !isAuthenticated });
   const hasFullSupportAssignments = (mentorRosterData?.data?.length ?? 0) > 0;
@@ -36,11 +37,11 @@ export default function MentorHome() {
 
   return (
     <main>
-      {/* 0. Admissions Program Progress — when mentor is enrolled in a course */}
+      {/* 0. Admissions Program Progress when mentor is enrolled in a course */}
       <div className="container" style={{ paddingTop: 24 }}>
         <AdmissionsProgramProgressCard />
       </div>
-      {/* Profile status (under review + complete your profile) — before Availability & Sessions when not 100% complete */}
+      {/* Profile status (under review + complete your profile) before Availability & Sessions when not 100% complete */}
       <ProfileStatusSection />
       {/* SuperAdmin: left = Admin + Full Support stacked, right = Availability. Regular mentor: one container, Full Support + Availability full width (2 cards / 1 card layout). */}
       <div className="container" style={{ paddingTop: 12, marginBottom: sectionSpacing }}>
@@ -69,7 +70,7 @@ export default function MentorHome() {
                       size="small"
                       height={40}
                       onClick={() => navigate('/school-counselor')}
-                      icon={<DashboardOutlined />}
+                      icon={<LayoutDashboard size={16} />}
                       style={{
                         backgroundColor: 'transparent',
                         borderColor: colors.colorPrimary,
@@ -84,7 +85,7 @@ export default function MentorHome() {
                       size="small"
                       height={40}
                       onClick={() => navigate('/topcoach-management')}
-                      icon={<SettingOutlined />}
+                      icon={<Settings size={16} />}
                       style={{
                         backgroundColor: 'transparent',
                         borderColor: colors.colorPrimary,
@@ -99,7 +100,7 @@ export default function MentorHome() {
                       size="small"
                       height={40}
                       onClick={() => navigate('/course-admin/courses/modules')}
-                      icon={<BookOutlined />}
+                      icon={<BookOpen size={16} />}
                       style={{
                         backgroundColor: 'transparent',
                         borderColor: colors.colorPrimary,
@@ -110,11 +111,31 @@ export default function MentorHome() {
                     >
                       {t('studentHub.dashboard.courseContentManagement', 'Course Content Management')}
                     </CustomButton>
+                    {isYouthLeadersApplicationsAdmin && (
+                      <>
+                        {/* Youth Leaders Applications: hidden for now — /admin/youth-leaders-applications */}
+                        <CustomButton
+                          size="small"
+                          height={40}
+                          onClick={() => navigate('/admin/central-asian-admissions-forum')}
+                          icon={<Sparkles size={16} />}
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderColor: colors.colorPrimary,
+                            color: colors.colorPrimary,
+                            height: '40px',
+                            minHeight: '40px',
+                          }}
+                        >
+                          {t('studentHub.dashboard.caAdmissionsForumAdmin', 'CA Admissions Forum 2026')}
+                        </CustomButton>
+                      </>
+                    )}
                     <CustomButton
                       size="small"
                       height={40}
                       onClick={() => navigate('/full-support/admin')}
-                      icon={<AuditOutlined />}
+                      icon={<FileCheck size={16} />}
                       style={{
                         backgroundColor: 'transparent',
                         borderColor: colors.colorPrimary,
@@ -141,13 +162,13 @@ export default function MentorHome() {
                       {t('fullSupport.mentorManagement', 'Full Support Mentorship program')}
                     </CustomText>
                     <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
-                      {t('fullSupport.mentorManagementDesc', 'Mentor Management — Monitor your students, log sessions, assign tasks, and track applications.')}
+                      {t('fullSupport.mentorManagementDesc', 'Mentor management: monitor your students, log sessions, assign tasks, and track applications.')}
                     </CustomText>
                     <CustomButton
                       size="small"
                       height={40}
                       onClick={() => navigate('/full-support/mentor')}
-                      icon={<TeamOutlined />}
+                      icon={<Users size={16} />}
                       style={{
                         backgroundColor: 'transparent',
                         borderColor: colors.colorPrimary,
@@ -179,13 +200,13 @@ export default function MentorHome() {
                   {t('fullSupport.mentorManagement', 'Full Support Mentorship program')}
                 </CustomText>
                 <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
-                  {t('fullSupport.mentorManagementDesc', 'Mentor Management — Monitor your students, log sessions, assign tasks, and track applications.')}
+                  {t('fullSupport.mentorManagementDesc', 'Mentor management: monitor your students, log sessions, assign tasks, and track applications.')}
                 </CustomText>
                 <CustomButton
                   size="small"
                   height={40}
                   onClick={() => navigate('/full-support/mentor')}
-                  icon={<TeamOutlined />}
+                  icon={<Users size={16} />}
                   style={{
                     backgroundColor: 'transparent',
                     borderColor: colors.colorPrimary,
@@ -202,7 +223,7 @@ export default function MentorHome() {
           </>
         )}
       </div>
-      {/* School Counselor card — for mentors with counselor access (non-SuperAdmin) */}
+      {/* School Counselor card for mentors with counselor access (non-SuperAdmin) */}
       {isCounselor && !isSuperAdmin && (
         <div className="container" style={{ paddingTop: 24, marginBottom: sectionSpacing }}>
           <CustomCard
@@ -222,7 +243,7 @@ export default function MentorHome() {
               size="small"
               height={40}
               onClick={() => navigate('/school-counselor')}
-              icon={<DashboardOutlined />}
+              icon={<LayoutDashboard size={16} />}
               style={{
                 backgroundColor: 'transparent',
                 borderColor: colors.colorPrimary,

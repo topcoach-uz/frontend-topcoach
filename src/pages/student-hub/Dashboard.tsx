@@ -42,7 +42,7 @@ import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
 import { PageSkeleton, InlineLoader } from '../../components/loading';
-import { ClockCircleOutlined, ExclamationCircleOutlined, DashboardOutlined, BookOutlined, SettingOutlined } from '@ant-design/icons';
+import { Clock, AlertCircle, LayoutDashboard, BookOpen, Settings, Sparkles } from 'lucide-react';
 import './Dashboard.scss';
 
 // Props interface for Dashboard - supports both normal and read-only mode
@@ -83,7 +83,12 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   
   // Get user data - only for current user (not in read-only mode)
   const { data: currentUserData } = useGetMeQuery(undefined, { skip: isReadOnly });
-  const isSuperAdminAccount = !isReadOnly && currentUserData?.email === 'sheraliozodov6@gmail.com';
+  const managementRole = (currentUserData as { managementRole?: string } | undefined)?.managementRole;
+  const isSuperAdminAccount =
+    !isReadOnly &&
+    (currentUserData?.email === 'sheraliozodov6@gmail.com' ||
+      managementRole === 'SuperAdmin' ||
+      managementRole === 'Owner');
 
   const handleRecalculate = async () => {
     if (studentProfile?.id) {
@@ -272,7 +277,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   };
 
   const handleNewApplication = () => {
-    navigate('/student-hub/applications/new');
+    navigate('/student-hub?section=others&target=college-lists&applicationFlow=new');
   };
 
   const handleStartEssay = () => {
@@ -320,10 +325,10 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
     const now = new Date();
     const daysUntil = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (daysUntil < 0) return { level: 'overdue', icon: <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />, color: '#ff4d4f' };
-    if (daysUntil <= 7) return { level: 'urgent', icon: <ExclamationCircleOutlined style={{ color: '#ff9800' }} />, color: '#ff9800' };
-    if (daysUntil <= 30) return { level: 'soon', icon: <ClockCircleOutlined style={{ color: '#faad14' }} />, color: '#faad14' };
-    return { level: 'normal', icon: <ClockCircleOutlined style={{ color: '#8b0000' }} />, color: '#8b0000' };
+    if (daysUntil < 0) return { level: 'overdue', icon: <AlertCircle size={16} color="#ff4d4f" />, color: '#ff4d4f' };
+    if (daysUntil <= 7) return { level: 'urgent', icon: <AlertCircle size={16} color="#ff9800" />, color: '#ff9800' };
+    if (daysUntil <= 30) return { level: 'soon', icon: <Clock size={16} color="#faad14" />, color: '#faad14' };
+    return { level: 'normal', icon: <Clock size={16} color="#8b0000" />, color: '#8b0000' };
   };
 
   // Handle card click navigation
@@ -426,7 +431,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             id: `overdue-${appId}`,
             type: 'overdue',
             title: t('studentHub.dashboard.applicationOverdue', 'Application overdue'),
-            description: t('studentHub.dashboard.applicationOverdueDesc', 'Submit or update your application — deadline passed.'),
+            description: t('studentHub.dashboard.applicationOverdueDesc', 'Submit or update your application. The deadline has passed.'),
             priority: 'high',
             actionLabel: t('studentHub.dashboard.openCollege', 'Open college'),
             actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
@@ -441,7 +446,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             id: `prioritize-${appId}`,
             type: 'application',
             title: 'Prioritize application',
-            description: `${days} days left — complete checklist to stay on track.`,
+            description: `${days} days left. Complete the checklist to stay on track.`,
             priority: 'high',
             actionLabel: 'Complete now',
             actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
@@ -460,7 +465,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           id: `essay-${appId}`,
           type: 'essay',
           title: 'Work on essays',
-          description: hasWhy ? 'You listed goals for this school — make progress on essays.' : 'Complete required essays for this application.',
+          description: hasWhy ? 'You listed goals for this school. Make progress on essays.' : 'Complete required essays for this application.',
           priority: 'medium',
           actionLabel: 'Open Essays Hub',
           actionPath: '/student-hub/essays',
@@ -474,7 +479,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           id: `rec-${appId}`,
           type: 'recommendation',
           title: 'Request recommendation',
-          description: `Get recommendation letters — ${recs.submitted || 0} of ${recs.required} submitted.`,
+          description: `Get recommendation letters: ${recs.submitted || 0} of ${recs.required} submitted.`,
           priority: 'medium',
           actionLabel: 'Open Documents',
           actionPath: '/student-hub/documents',
@@ -529,7 +534,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         description: t('studentHub.dashboard.addFirstCollegeDesc', 'Start tracking universities and deadlines.'),
         priority: 'high',
         actionLabel: t('studentHub.applications.addApplication', 'Add to List'),
-        actionPath: '/student-hub/applications/new',
+        actionPath: '/student-hub?section=others&target=college-lists&applicationFlow=new',
       });
     }
 
@@ -625,32 +630,89 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Dropdown>
         </div>
 
-      {/* Super Admin Quick Access — sheraliozodov6@gmail.com only */}
+      {/* Super Admin Quick Access (sheraliozodov6@gmail.com only) */}
       {isSuperAdminAccount && (
         <Card size="small" style={{ marginBottom: 24, borderColor: '#8b0000', borderWidth: 2, borderRadius: 12 }}>
           <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{t('studentHub.dashboard.adminDashboard', 'Admin Dashboard')}</div>
           <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('studentHub.dashboard.quickAccess', 'QUICK ACCESS')}</div>
           <Space size="small" wrap>
-            <Button size="middle" onClick={() => navigate('/school-counselor')} icon={<DashboardOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+            <Button
+              type="button"
+              size="middle"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/school-counselor');
+              }}
+              icon={<LayoutDashboard size={16} />}
+              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
+            >
               {t('studentHub.dashboard.schoolCounselorDashboard', 'School Counselor Dashboard')}
             </Button>
-            <Button size="middle" onClick={() => navigate('/topcoach-management')} icon={<SettingOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+            <Button
+              type="button"
+              size="middle"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/topcoach-management');
+              }}
+              icon={<Settings size={16} />}
+              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
+            >
               {t('studentHub.dashboard.topcoachManagement', 'TopCoach Management')}
             </Button>
-            <Button size="middle" onClick={() => navigate('/course-admin/courses/modules')} icon={<BookOutlined />} style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}>
+            <Button
+              type="button"
+              size="middle"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/course-admin/courses/modules');
+              }}
+              icon={<BookOpen size={16} />}
+              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
+            >
               {t('studentHub.dashboard.courseContentManagement', 'Course Content Management')}
             </Button>
+            {managementRole === 'SuperAdmin' && (
+              <>
+                {/* Youth Leaders Applications — temporarily hidden
+                <Button
+                  type="button"
+                  size="middle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/admin/youth-leaders-applications');
+                  }}
+                  icon={<ClipboardList size={16} />}
+                  style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
+                >
+                  {t('studentHub.dashboard.youthLeadersApplications', 'Youth Leaders Applications')}
+                </Button>
+                */}
+                <Button
+                  type="button"
+                  size="middle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/admin/central-asian-admissions-forum');
+                  }}
+                  icon={<Sparkles size={16} />}
+                  style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
+                >
+                  {t('studentHub.dashboard.caAdmissionsForumAdmin', 'CA Admissions Forum 2026')}
+                </Button>
+              </>
+            )}
           </Space>
         </Card>
       )}
 
-      {/* Admissions Program Progress — for enrolled students, at top of dashboard */}
+      {/* Admissions Program Progress for enrolled students (top of dashboard) */}
       <AdmissionsProgramProgressCard skip={isReadOnly} />
 
-      {/* Telegram connection checklist — mentees only, above AI suggestions; hidden when connected */}
+      {/* Telegram connection checklist: mentees only, above AI suggestions; hidden when connected */}
       <TelegramConnectionChecklist skip={isReadOnly} />
 
-      {/* AI-powered suggestions — top placement (replaces "Your next step") */}
+      {/* AI-powered suggestions, top placement (replaces "Your next step") */}
       {aiSuggestions.length > 0 && (
         <div style={{ marginBottom: 32 }}>
           <AISuggestionsCard suggestions={aiSuggestions} />
@@ -897,18 +959,23 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                               >
                         <div className="activity-content">
                           <div className="activity-header">
-                            <div className="activity-icon">
-                                      <UnifiedIcon 
-                                        name={
-                                  item.type === 'application' ? 'university' :
-                                          item.type === 'scholarship' ? 'award' :
-                                          item.type === 'psychometric' ? 'trending-up' :
-                                          item.type === 'essay' ? 'edit' :
-                                  'file-text'
-                                } 
-                                        size="md"
-                                        color="primary"
-                                style={{ color: '#8b0000' }}
+                            <div className="activity-icon" aria-hidden>
+                              <UnifiedIcon
+                                name={
+                                  item.type === 'application'
+                                    ? 'admissions'
+                                    : item.type === 'scholarship'
+                                      ? 'award'
+                                      : item.type === 'psychometric'
+                                        ? 'major-match'
+                                        : item.type === 'essay'
+                                          ? 'essays'
+                                          : item.type === 'document'
+                                            ? 'documents'
+                                            : 'file-text'
+                                }
+                                size="lg"
+                                color="primary"
                               />
                             </div>
                             <div className="activity-info">

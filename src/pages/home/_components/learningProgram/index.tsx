@@ -9,7 +9,7 @@ import {
 } from 'src/app/services/courses';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
-import { PlayCircleOutlined, DashboardOutlined, BookOutlined, SettingOutlined } from '@ant-design/icons';
+import { PlayCircle, LayoutDashboard, BookOpen, Settings, Sparkles } from 'lucide-react';
 import { Progress, Space, Spin } from 'antd';
 import { useMemo, useState, useEffect } from 'react';
 import { api } from 'src/app/api';
@@ -63,6 +63,7 @@ export default function LearningProgramSection() {
   });
   const currentUser = userData || user;
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
+  const isYouthLeadersApplicationsAdmin = currentUser?.managementRole === 'SuperAdmin';
   
   // Check if user is a counselor
   const [isCounselor, setIsCounselor] = useState(false);
@@ -274,7 +275,7 @@ export default function LearningProgramSection() {
             <CustomButton
               height={40}
               onClick={() => navigate(`/learning?course=${courseName}`)}
-              icon={<PlayCircleOutlined style={{ color: 'white' }} />}
+              icon={<PlayCircle size={16} color="white" />}
               className={styles.continue_learning_btn}
               style={{ 
                 backgroundColor: colors.colorPrimary, 
@@ -323,7 +324,7 @@ export default function LearningProgramSection() {
                 size="small"
                 height={40}
                 onClick={() => navigate('/school-counselor')}
-                icon={<DashboardOutlined />}
+                icon={<LayoutDashboard size={16} />}
                 style={{ 
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
@@ -338,7 +339,7 @@ export default function LearningProgramSection() {
                 size="small"
                 height={40}
                 onClick={() => navigate('/topcoach-management')}
-                icon={<SettingOutlined />}
+                icon={<Settings size={16} />}
                 style={{ 
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
@@ -353,7 +354,7 @@ export default function LearningProgramSection() {
                 size="small"
                 height={40}
                 onClick={() => navigate('/course-admin/courses/modules')}
-                icon={<BookOutlined />}
+                icon={<BookOpen size={16} />}
                 style={{ 
                   backgroundColor: 'transparent',
                   borderColor: colors.colorPrimary,
@@ -364,6 +365,26 @@ export default function LearningProgramSection() {
               >
                 Course Content Management
               </CustomButton>
+              {isYouthLeadersApplicationsAdmin && (
+                <>
+                  {/* Youth Leaders Applications: hidden for now — use /admin/youth-leaders-applications when re-enabled */}
+                  <CustomButton
+                    size="small"
+                    height={40}
+                    onClick={() => navigate('/admin/central-asian-admissions-forum')}
+                    icon={<Sparkles size={16} />}
+                    style={{
+                      backgroundColor: 'transparent',
+                      borderColor: colors.colorPrimary,
+                      color: colors.colorPrimary,
+                      height: '40px',
+                      minHeight: '40px',
+                    }}
+                  >
+                    CA Admissions Forum 2026
+                  </CustomButton>
+                </>
+              )}
             </Space>
           </CustomCard>
         )}
