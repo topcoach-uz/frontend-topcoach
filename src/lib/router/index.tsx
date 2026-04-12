@@ -38,7 +38,7 @@ const SuccessStoriesDetailPageLazy = lazy(
 const ContactPageLazy = lazy(() => import("src/pages/contact"));
 const EventsPageLazy = lazy(() => import("src/pages/events"));
 const YouthLeadersApplicationPageLazy = lazy(
-  () => import("src/pages/events/youth-leaders-application")
+  () => import("src/pages/events/youth-leaders-application/index.tsx")
 );
 const CentralAsianAdmissionsForumPageLazy = lazy(
   () => import("src/pages/events/central-asian-admissions-forum")
@@ -106,7 +106,7 @@ const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/mod
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
 const YouthLeadersApplicationsAdminLazy = lazy(
-  () => import("src/pages/admin/youth-leaders-applications")
+  () => import("src/pages/admin/youth-leaders-applications/index.tsx")
 );
 const CentralAsianAdmissionsForumAdminLazy = lazy(
   () => import("src/pages/admin/central-asian-admissions-forum")

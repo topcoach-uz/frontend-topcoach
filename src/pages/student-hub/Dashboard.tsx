@@ -637,7 +637,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('studentHub.dashboard.quickAccess', 'QUICK ACCESS')}</div>
           <Space size="small" wrap>
             <Button
-              type="button"
+              htmlType="button"
+              type="default"
               size="middle"
               onClick={(e) => {
                 e.stopPropagation();
@@ -649,7 +650,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
               {t('studentHub.dashboard.schoolCounselorDashboard', 'School Counselor Dashboard')}
             </Button>
             <Button
-              type="button"
+              htmlType="button"
+              type="default"
               size="middle"
               onClick={(e) => {
                 e.stopPropagation();
@@ -661,7 +663,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
               {t('studentHub.dashboard.topcoachManagement', 'TopCoach Management')}
             </Button>
             <Button
-              type="button"
+              htmlType="button"
+              type="default"
               size="middle"
               onClick={(e) => {
                 e.stopPropagation();
@@ -689,7 +692,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
                 </Button>
                 */}
                 <Button
-                  type="button"
+                  htmlType="button"
+                  type="default"
                   size="middle"
                   onClick={(e) => {
                     e.stopPropagation();
