@@ -6,8 +6,9 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Bundler mode — resolvePackageJsonExports:false helps tsc resolve packages like lucide-react (exports + typings) in CI/Docker */
     "moduleResolution": "bundler",
+    "resolvePackageJsonExports": false,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
