@@ -1,235 +1,272 @@
 @import 'src/styles/variables.scss';
 
-.wrapper {
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto 32px;
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
 }
 
-.heroCard {
-  position: relative;
+.landingHero {
   width: 100%;
-  min-height: 320px;
-  border-radius: 22px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.2);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 24px 52px rgba(15, 23, 42, 0.26);
-  }
-
-  &:focus-visible {
-    outline: 3px solid #ffffff;
-    outline-offset: 3px;
-  }
-}
-
-.heroBg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  max-height: min(42vw, 320px);
   object-fit: cover;
-  object-position: center;
-  transform: scale(1.01);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  display: block;
+  background: #f1f5f9;
 }
 
-.heroOverlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(102deg, rgba(8, 18, 45, 0.82) 15%, rgba(8, 18, 45, 0.58) 45%, rgba(8, 18, 45, 0.2) 72%),
-    linear-gradient(180deg, rgba(14, 24, 53, 0.16) 0%, rgba(14, 24, 53, 0.64) 100%);
+.landingConsent {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
 }
 
-.heroContent {
-  position: relative;
-  z-index: 1;
+.landingConsentIntro {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.pageTitle {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #002b5b;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.introBlock {
+  background: linear-gradient(135deg, #f8fafc 0%, #fff 55%, #f0f9ff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.introParagraph {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #334155;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.valueList {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.valueItem {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 320px;
-  padding: 28px 34px;
-  color: #f8fafc;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.heroTop {
+.valueIcon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.valueText {
+  flex: 1;
+}
+
+.valueTitle {
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.feeBlock {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.spotsNote {
+  margin-top: 12px;
+  font-weight: 700;
+  color: #b45309;
+  font-size: 14px;
+}
+
+.landingActions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.mainTag {
-  margin: 0 !important;
-  background: rgba(2, 132, 199, 0.24) !important;
-  color: #dbeafe !important;
-  border-color: rgba(125, 211, 252, 0.55) !important;
-  font-weight: 700;
-}
-
-.title {
-  margin: 0;
-  max-width: 840px;
-  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.03em;
-  text-shadow: 0 8px 24px rgba(10, 20, 44, 0.35);
-}
-
-.statusTag {
-  margin: 0 !important;
-  font-weight: 700;
-}
-
-.desc {
-  margin: 12px 0 0;
-  max-width: 740px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(241, 245, 249, 0.95);
-  text-wrap: pretty;
-}
-
-.heroActions {
-  margin-top: auto;
-  padding-top: 20px;
-}
-
-.applyButton {
-  height: 46px !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  padding: 0 20px !important;
-  font-size: 0.95rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.01em;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
-  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.35);
-}
-
-.countdownCard {
-  margin-top: 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 16px 20px 18px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
-}
-
-.countdownHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.countdownTitle {
-  margin: 0;
-  color: #0f172a;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.deadlineText {
-  color: #475569;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.countdownGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  margin-top: 20px;
 }
 
-.countdownItem {
-  border-radius: 14px;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-  padding: 10px 8px;
-  text-align: center;
+.stepperWrap {
+  margin-bottom: 28px;
 }
 
-.countdownValue {
+.formSection {
+  margin-bottom: 20px;
+}
+
+.fieldLabel {
   display: block;
-  font-size: 1.5rem;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #1e3a8a;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
 }
 
-.countdownLabel {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.73rem;
+.optionalHint {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.radioStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btnPrimary {
+  min-width: 140px;
+}
+
+.btnOutline {
+  min-width: 120px;
+}
+
+.consentBox {
+  margin-top: 8px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.consentTitle {
+  margin: 0 0 12px;
+  font-size: 14px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+.consentList {
+  margin: 0 0 16px;
+  padding-left: 20px;
   color: #475569;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
-.closedText {
-  margin: 12px 0 0;
-  font-size: 0.88rem;
-  color: #b91c1c;
-  font-weight: 700;
+.reviewSection {
+  margin-bottom: 20px;
 }
 
-@media (max-width: 560px) {
-  .wrapper {
-    margin-bottom: 24px;
-  }
+.reviewRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 8px 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
 
-  .heroCard,
-  .heroContent {
-    min-height: 280px;
+  &:last-child {
+    border-bottom: none;
   }
+}
 
-  .heroContent {
-    padding: 18px 16px;
-  }
+.reviewKey {
+  color: #64748b;
+  font-weight: 500;
+}
 
-  .desc {
-    margin-top: 10px;
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
+.reviewVal {
+  color: #0f172a;
+  word-break: break-word;
+}
 
-  .applyButton {
-    width: 100%;
-    justify-content: center;
-  }
+.paymentCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  background: #fff;
+}
 
-  .countdownCard {
-    padding: 14px 12px 16px;
-  }
+.paymentLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
 
-  .countdownHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
+.paymentTotal {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #002b5b;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 2px solid #e2e8f0;
+}
 
-  .countdownGrid {
-    gap: 8px;
-  }
+.successCard {
+  text-align: center;
+  padding: 40px 24px;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
+}
 
-  .countdownValue {
-    font-size: 1.22rem;
-  }
+.successTitle {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #166534;
+}
 
-  .countdownLabel {
-    font-size: 0.64rem;
+.successBody {
+  margin: 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .reviewRow {
+    grid-template-columns: 1fr;
   }
 }
