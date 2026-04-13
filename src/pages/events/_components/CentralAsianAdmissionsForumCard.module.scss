@@ -2,8 +2,8 @@
 
 .wrapper {
   width: 100%;
-  max-width: 1120px;
-  margin: 0 auto 32px;
+  max-width: none;
+  margin: 0 0 44px;
 }
 
 .heroCard {
@@ -60,16 +60,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.mainTag {
-  margin: 0 !important;
-  background: rgba(2, 132, 199, 0.24) !important;
-  color: #dbeafe !important;
-  border-color: rgba(125, 211, 252, 0.55) !important;
-  font-weight: 700;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .title {
@@ -123,6 +115,47 @@
   padding: 16px 20px 18px;
   background: #ffffff;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
+.detailsCard {
+  margin-top: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  padding: 18px 22px;
+}
+
+.detailsLead {
+  margin: 0;
+  color: #1e293b;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  font-weight: 500;
+}
+
+.detailsList {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 0.93rem;
+  line-height: 1.52;
+}
+
+.detailsFee {
+  margin: 14px 0 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.dynamicMeta {
+  margin: 12px 0 0;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 600;
 }
 
 .countdownHeader {
@@ -188,7 +221,7 @@
 
 @media (max-width: 560px) {
   .wrapper {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .heroCard,
@@ -213,6 +246,14 @@
 
   .countdownCard {
     padding: 14px 12px 16px;
+  }
+
+  .detailsCard {
+    padding: 14px 12px;
+  }
+
+  .detailsList {
+    font-size: 0.89rem;
   }
 
   .countdownHeader {

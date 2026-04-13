@@ -141,13 +141,14 @@ export default function CentralAsianAdmissionsForumCard() {
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
           <div className={styles.heroTop}>
-            <Tag color="processing" className={styles.mainTag}>
-              {t('events.workshop')}
-            </Tag>
             {badge}
           </div>
           <h2 className={styles.title}>{t('caafForum.card.title')}</h2>
-          <p className={styles.desc}>{desc}</p>
+          <p className={styles.desc}>
+            Welcome to the first Central Asian Admissions Forum 2026. This forum is built for
+            ambitious students in Central Asia who want clear, practical guidance on getting into
+            top global universities.
+          </p>
           <div className={styles.heroActions}>
             <Button
               type="primary"
@@ -190,6 +191,32 @@ export default function CentralAsianAdmissionsForumCard() {
         {isDeadlinePassed && (
           <p className={styles.closedText}>Registration deadline has passed.</p>
         )}
+      </div>
+
+      <div className={styles.detailsCard}>
+        <p className={styles.detailsLead}>
+          Hosted by Top Coach, this forum combines admissions strategy, scholarship planning, and
+          mentorship access to help students compete confidently in a global admissions process.
+        </p>
+
+        <ul className={styles.detailsList}>
+          <li>Step-by-step admissions strategy for top universities in the US, UK, Europe, and Asia.</li>
+          <li>How to build an extracurricular and project profile that stands out.</li>
+          <li>Scholarship and financial aid guidance for international applicants.</li>
+          <li>Practical framework for writing strong and authentic personal statements.</li>
+          <li>Meaningful networking with mentors, peers, and successful alumni.</li>
+        </ul>
+
+        <p className={styles.detailsFee}>
+          Registration fee: <strong>{feeLabel}</strong>. This event is not for profit - proceeds are
+          reinvested into participant gifts, resources, and event materials.
+        </p>
+
+        <p className={styles.dynamicMeta}>
+          {!isAuthenticated ? t('caafForum.card.cta.signIn') : cta}
+          {' • '}
+          {desc}
+        </p>
       </div>
     </section>
   );
