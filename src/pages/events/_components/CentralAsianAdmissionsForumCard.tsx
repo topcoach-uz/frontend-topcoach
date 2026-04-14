@@ -18,7 +18,7 @@ import { CAAF_DRAFT_STORAGE_KEY } from '../central-asian-admissions-forum/types'
 import styles from './CentralAsianAdmissionsForumCard.module.scss';
 
 const FORUM_REGISTER_PATH = '/events/central-asian-admissions-forum';
-const CAAF_DEADLINE_ISO = '2026-05-02T23:59:00+05:00';
+const CAAF_DEADLINE_ISO = '2026-04-29T23:59:00+05:00';
 
 type CountdownParts = {
   days: string;
@@ -162,7 +162,7 @@ export default function CentralAsianAdmissionsForumCard() {
       <div className={styles.countdownCard} aria-live="polite">
         <div className={styles.countdownHeader}>
           <h3 className={styles.countdownTitle}>Registration closes in</h3>
-          <span className={styles.deadlineText}>Deadline: May 2, 2026, 23:59</span>
+          <span className={styles.deadlineText}>Deadline: April 29, 2026, 23:59</span>
         </div>
         <div className={styles.countdownGrid}>
           <div className={styles.countdownItem}>
@@ -263,6 +263,22 @@ export default function CentralAsianAdmissionsForumCard() {
         >
           {isAuthenticated ? cta : t('caafForum.card.cta.applyNow', 'Apply now')}
         </Button>
+      </div>
+
+      <div className={styles.importantDatesBlock}>
+        <p className={styles.detailsSectionTitle}>IMPORTANT DATES &amp; SCHEDULE</p>
+        <div className={styles.importantDateRow}>
+          <p className={styles.importantDateDay}>May 1 - How Admissions Actually Works</p>
+          <p className={styles.importantDateTopic}>US &amp; UK, EUROPE, Asia Big Picture</p>
+        </div>
+        <div className={styles.importantDateRow}>
+          <p className={styles.importantDateDay}>May 2 - Funding</p>
+          <p className={styles.importantDateTopic}>Scholarships &amp; Strategy</p>
+        </div>
+        <div className={styles.importantDateRow}>
+          <p className={styles.importantDateDay}>May 3 - From Profile to Offer</p>
+          <p className={styles.importantDateTopic}>Essays &amp; Positioning</p>
+        </div>
       </div>
     </section>
   );

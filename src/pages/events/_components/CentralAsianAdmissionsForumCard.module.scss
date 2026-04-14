@@ -198,13 +198,37 @@
   font-size: 0.96rem !important;
   font-weight: 800 !important;
   letter-spacing: 0.01em;
-  box-shadow: 0 10px 22px rgba(177, 15, 46, 0.28);
+  box-shadow: 0 4px 10px rgba(177, 15, 46, 0.16);
 
   &:hover,
   &:focus {
     background: #980d27 !important;
     color: #ffffff !important;
   }
+}
+
+.importantDatesBlock {
+  margin-top: 18px;
+  padding: 0 2px;
+}
+
+.importantDateRow {
+  margin-top: 10px;
+  padding: 0;
+}
+
+.importantDateDay {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.importantDateTopic {
+  margin: 6px 0 0;
+  color: #334155;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .dynamicMeta {
