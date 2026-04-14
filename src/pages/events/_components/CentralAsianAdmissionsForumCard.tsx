@@ -143,12 +143,6 @@ export default function CentralAsianAdmissionsForumCard() {
           <div className={styles.heroTop}>
             {badge}
           </div>
-          <h2 className={styles.title}>{t('caafForum.card.title')}</h2>
-          <p className={styles.desc}>
-            Welcome to the first Central Asian Admissions Forum 2026. This forum is built for
-            ambitious students in Central Asia who want clear, practical guidance on getting into
-            top global universities.
-          </p>
           <div className={styles.heroActions}>
             <Button
               type="primary"
@@ -166,6 +160,12 @@ export default function CentralAsianAdmissionsForumCard() {
       </div>
 
       <div className={styles.countdownCard} aria-live="polite">
+        <h2 className={styles.countdownIntroTitle}>Central Asian Admissions Forum 2026</h2>
+        <p className={styles.countdownIntroDesc}>
+          Welcome to the first Central Asian Admissions Forum 2026. This forum is built for
+          ambitious students in Central Asia who want clear, practical guidance on getting into top
+          global universities.
+        </p>
         <div className={styles.countdownHeader}>
           <h3 className={styles.countdownTitle}>Registration closes in</h3>
           <span className={styles.deadlineText}>Deadline: May 2, 2026, 23:59</span>
