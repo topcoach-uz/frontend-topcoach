@@ -121,22 +121,6 @@
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
 }
 
-.countdownIntroTitle {
-  margin: 0;
-  color: #0f172a;
-  font-size: clamp(1.3rem, 2.6vw, 2rem);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-}
-
-.countdownIntroDesc {
-  margin: 8px 0 14px;
-  max-width: 900px;
-  color: #334155;
-  font-size: 0.96rem;
-  line-height: 1.55;
-}
-
 .detailsCard {
   margin-top: 14px;
   border: 1px solid #e2e8f0;
@@ -154,8 +138,22 @@
   font-weight: 500;
 }
 
-.detailsList {
+.detailsBody {
+  margin: 10px 0 0;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.62;
+}
+
+.detailsSectionTitle {
   margin: 14px 0 0;
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.detailsList {
+  margin: 10px 0 0;
   padding-left: 18px;
   display: grid;
   gap: 7px;
@@ -270,11 +268,6 @@
 
   .countdownCard {
     padding: 14px 12px 16px;
-  }
-
-  .countdownIntroDesc {
-    margin: 8px 0 12px;
-    font-size: 0.91rem;
   }
 
   .detailsCard {

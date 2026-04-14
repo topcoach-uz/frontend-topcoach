@@ -160,12 +160,6 @@ export default function CentralAsianAdmissionsForumCard() {
       </div>
 
       <div className={styles.countdownCard} aria-live="polite">
-        <h2 className={styles.countdownIntroTitle}>Central Asian Admissions Forum 2026</h2>
-        <p className={styles.countdownIntroDesc}>
-          Welcome to the first Central Asian Admissions Forum 2026. This forum is built for
-          ambitious students in Central Asia who want clear, practical guidance on getting into top
-          global universities.
-        </p>
         <div className={styles.countdownHeader}>
           <h3 className={styles.countdownTitle}>Registration closes in</h3>
           <span className={styles.deadlineText}>Deadline: May 2, 2026, 23:59</span>
@@ -195,27 +189,51 @@ export default function CentralAsianAdmissionsForumCard() {
 
       <div className={styles.detailsCard}>
         <p className={styles.detailsLead}>
-          Hosted by Top Coach, this forum combines admissions strategy, scholarship planning, and
-          mentorship access to help students compete confidently in a global admissions process.
+          Welcome to the first Central Asian Admissions Forum 2026! Are you an ambitious high
+          school or university student in Central Asia with dreams of studying at the world&apos;s
+          most prestigious universities? Do you want to know what it truly takes to stand out in
+          the highly competitive global admissions landscape?
         </p>
 
+        <p className={styles.detailsBody}>
+          Hosted by Top Coach, this exclusive forum is the ultimate launchpad designed to equip you
+          with insider knowledge, actionable strategies, and a powerful network. We believe that
+          with the right guidance, students from our region can reach the Ivy League, secure
+          full-ride scholarships, and change their futures.
+        </p>
+
+        <p className={styles.detailsSectionTitle}>
+          At this comprehensive forum, you will gain deep insights into:
+        </p>
         <ul className={styles.detailsList}>
-          <li>Step-by-step admissions strategy for top universities in the US, UK, Europe, and Asia.</li>
-          <li>How to build an extracurricular and project profile that stands out.</li>
-          <li>Scholarship and financial aid guidance for international applicants.</li>
-          <li>Practical framework for writing strong and authentic personal statements.</li>
-          <li>Meaningful networking with mentors, peers, and successful alumni.</li>
+          <li>
+            <strong>Cracking the Global Code:</strong> Step-by-step breakdowns of the admissions
+            processes for top-tier universities in the US, the UK, Europe, and Asia.
+          </li>
+          <li>
+            <strong>Building a Standout Profile:</strong> Proven strategies for developing
+            extracurricular portfolios and passion projects that catch the eye of admissions
+            officers.
+          </li>
+          <li>
+            <strong>Financial Aid Masterclass:</strong> Insider tips on how to find and secure
+            significant scholarships and financial aid as an international applicant.
+          </li>
+          <li>
+            <strong>The Art of the Essay:</strong> How to craft personal statements that
+            authentically tell your unique story and highlight your strengths.
+          </li>
+          <li>
+            <strong>High-Level Networking:</strong> Opportunities to connect with like-minded
+            peers, mentors, and successful alumni from across the region.
+          </li>
         </ul>
 
+        <p className={styles.detailsSectionTitle}>Registration details and fee:</p>
         <p className={styles.detailsFee}>
-          Registration fee: <strong>{feeLabel}</strong>. This event is not for profit - proceeds are
-          reinvested into participant gifts, resources, and event materials.
-        </p>
-
-        <p className={styles.dynamicMeta}>
-          {!isAuthenticated ? t('caafForum.card.cta.signIn') : cta}
-          {' • '}
-          {desc}
+          To secure your spot, there is a nominal registration fee of <strong>{feeLabel}</strong>.
+          This event is not for profit. Proceeds from ticket sales are used to provide valuable
+          gifts, high-quality resources, and materials for every participant attending the forum.
         </p>
       </div>
     </section>
