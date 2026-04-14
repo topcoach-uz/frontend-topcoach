@@ -15,10 +15,13 @@ import { useConnectGoogleCalendar } from '../_components/useConnectGoogleCalenda
 
 dayjs.extend(customParseFormat);
 
+/** Set to true when Google OAuth/calendar scopes are approved in Console and reconnect flow is ready. */
+const SHOW_RECONNECT_GOOGLE_CALENDAR_ALERT = false;
+
 type ViewMode = 'availability' | 'sessions';
 
 interface BookingsSectionProps {
-  /** When true, do not wrap in container — card is full width of parent (e.g. to align with profile cards above). */
+  /** When true, do not wrap in container; card is full width of parent (e.g. to align with profile cards above). */
   skipContainer?: boolean;
 }
 
@@ -79,7 +82,7 @@ export default function BookingsSection({ skipContainer }: BookingsSectionProps 
       shadowed={false}
       style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)' }}
     >
-      {needsReconnect && (
+      {SHOW_RECONNECT_GOOGLE_CALENDAR_ALERT && needsReconnect && (
         <Alert
           type="warning"
           showIcon
