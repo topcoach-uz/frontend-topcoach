@@ -47,4 +47,4 @@ export function formatCaafRegistrationFeeUsd(usd: number): string {
 /** Icons for value props on landing (titles/bodies are i18n: caafForum.value.N.title / .body) */
 export const FORUM_VALUE_ICONS = ['🎓', '💡', '💰', '✍️', '🤝'] as const;
 
-export const CAAF_FORUM_CARD_IMAGE = '/img/casian_forum.jpeg';
+export const CAAF_FORUM_CARD_IMAGE = '/img/casian_forum1.jpeg';
