@@ -130,8 +130,24 @@
   padding: 18px 22px;
 }
 
-.detailsLead {
+.detailsMainTitle {
   margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.2rem, 2.3vw, 1.8rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.detailsTagline {
+  margin: 8px 0 0;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.detailsLead {
+  margin: 8px 0 0;
   color: #1e293b;
   font-size: 0.98rem;
   line-height: 1.65;
@@ -150,6 +166,8 @@
   color: #0f172a;
   font-size: 0.96rem;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .detailsList {
@@ -167,6 +185,26 @@
   color: #0f172a;
   font-size: 0.92rem;
   line-height: 1.55;
+}
+
+.detailsApplyButton {
+  width: 100%;
+  margin-top: 16px;
+  height: 46px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: #b10f2e !important;
+  color: #ffffff !important;
+  font-size: 0.96rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 22px rgba(177, 15, 46, 0.28);
+
+  &:hover,
+  &:focus {
+    background: #980d27 !important;
+    color: #ffffff !important;
+  }
 }
 
 .dynamicMeta {
@@ -272,6 +310,10 @@
 
   .detailsCard {
     padding: 14px 12px;
+  }
+
+  .detailsTagline {
+    font-size: 0.9rem;
   }
 
   .detailsList {

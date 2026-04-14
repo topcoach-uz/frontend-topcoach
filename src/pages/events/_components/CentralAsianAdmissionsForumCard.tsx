@@ -188,53 +188,81 @@ export default function CentralAsianAdmissionsForumCard() {
       </div>
 
       <div className={styles.detailsCard}>
+        <h3 className={styles.detailsMainTitle}>🌏 Central Asian Admissions Forum 2026</h3>
+        <p className={styles.detailsTagline}>
+          Bridging the gap between Central Asian talent and the world&apos;s top universities.
+        </p>
+
+        <p className={styles.detailsSectionTitle}>Overview</p>
         <p className={styles.detailsLead}>
-          Welcome to the first Central Asian Admissions Forum 2026! Are you an ambitious high
-          school or university student in Central Asia with dreams of studying at the world&apos;s
-          most prestigious universities? Do you want to know what it truly takes to stand out in
-          the highly competitive global admissions landscape?
+          The Central Asian Admissions Forum is an exclusive, high-impact online event designed for
+          ambitious high school and university students across the region. Hosted by Top Coach, this
+          forum brings together leading mentors, admissions experts, and successful alumni who have
+          secured spots at the Ivy League, Russell Group, and other top-tier global institutions.
         </p>
 
         <p className={styles.detailsBody}>
-          Hosted by Top Coach, this exclusive forum is the ultimate launchpad designed to equip you
-          with insider knowledge, actionable strategies, and a powerful network. We believe that
-          with the right guidance, students from our region can reach the Ivy League, secure
-          full-ride scholarships, and change their futures.
+          Our mission is simple: to move beyond generic advice and provide the exact academic,
+          financial, and extracurricular strategies that distinguish a successful applicant on a
+          global scale. If you are aiming to build a truly competitive, internationally recognized
+          profile, then this is your chance to start.
         </p>
 
-        <p className={styles.detailsSectionTitle}>
-          At this comprehensive forum, you will gain deep insights into:
+        <p className={styles.detailsSectionTitle}>What You Will Learn</p>
+        <p className={styles.detailsBody}>
+          By attending this forum, you will gain access to insider knowledge and actionable
+          roadmaps, including:
         </p>
         <ul className={styles.detailsList}>
           <li>
-            <strong>Cracking the Global Code:</strong> Step-by-step breakdowns of the admissions
-            processes for top-tier universities in the US, the UK, Europe, and Asia.
+            <strong>Admissions Strategies:</strong> Step-by-step breakdowns of the application
+            processes for top universities in the US, UK, and Europe.
           </li>
           <li>
-            <strong>Building a Standout Profile:</strong> Proven strategies for developing
-            extracurricular portfolios and passion projects that catch the eye of admissions
-            officers.
+            <strong>The Art of the Essay:</strong> Live workshops on how to craft personal
+            statements that authentically tell your unique story.
           </li>
           <li>
-            <strong>Financial Aid Masterclass:</strong> Insider tips on how to find and secure
-            significant scholarships and financial aid as an international applicant.
+            <strong>Building a Standout Profile:</strong> Proven methods for developing
+            extracurricular portfolios and high-impact passion projects.
           </li>
           <li>
-            <strong>The Art of the Essay:</strong> How to craft personal statements that
-            authentically tell your unique story and highlight your strengths.
+            <strong>Financial Aid Masterclass:</strong> Insider tips on finding and securing
+            full-ride scholarships as an international applicant.
           </li>
           <li>
-            <strong>High-Level Networking:</strong> Opportunities to connect with like-minded
-            peers, mentors, and successful alumni from across the region.
+            <strong>Direct Networking:</strong> Opportunities to ask questions and connect directly
+            with mentors who were once sitting exactly where you are today.
           </li>
         </ul>
 
-        <p className={styles.detailsSectionTitle}>Registration details and fee:</p>
+        <p className={styles.detailsSectionTitle}>Registration Details</p>
         <p className={styles.detailsFee}>
-          To secure your spot, there is a nominal registration fee of <strong>{feeLabel}</strong>.
-          This event is not for profit. Proceeds from ticket sales are used to provide valuable
-          gifts, high-quality resources, and materials for every participant attending the forum.
+          To ensure the highest quality experience, space for this forum is strictly limited.
         </p>
+        <ul className={styles.detailsList}>
+          <li>
+            <strong>Registration Fee:</strong> {feeLabel}
+          </li>
+          <li>
+            <strong>Our Promise:</strong> This event is not for profit. We are committed to
+            reinvesting 100% of this nominal fee directly back into our attendees. All proceeds are
+            used exclusively to provide valuable gifts, premium resources, and study materials for
+            every participant.
+          </li>
+        </ul>
+        <p className={styles.detailsFee}>
+          Apply now to secure your place.
+        </p>
+
+        <Button
+          type="primary"
+          size="large"
+          className={styles.detailsApplyButton}
+          onClick={go}
+        >
+          {isAuthenticated ? cta : t('caafForum.card.cta.applyNow', 'Apply now')}
+        </Button>
       </div>
     </section>
   );

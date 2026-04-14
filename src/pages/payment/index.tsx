@@ -292,17 +292,28 @@ function PaymentPage() {
     { label: "Uzcard", value: "uzcard" },
   ];
 
+  const handleBackClick = () => {
+    if (paymentType === 'caaf') {
+      // Use a hard redirect fallback so back always works.
+      window.location.assign('/events/central-asian-admissions-forum');
+      return;
+    }
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    window.location.assign('/');
+  };
+
   return (
     <div className={styles.pageContainer}>
       {/* Header Section */}
       <div className={styles.header}>
         <Button
           icon={<ArrowLeft size={20} />}
-          onClick={() =>
-            paymentType === 'caaf'
-              ? navigate('/events/central-asian-admissions-forum')
-              : navigate(-1)
-          }
+          onClick={handleBackClick}
           className={styles.backButton}
           type="text"
         >
