@@ -168,7 +168,7 @@ export default function CentralAsianAdmissionsForumCard() {
       <div className={styles.countdownCard} aria-live="polite">
         <div className={styles.countdownHeader}>
           <h3 className={styles.countdownTitle}>Registration closes in</h3>
-          <span className={styles.deadlineText}>Deadline: May 2, 23:59</span>
+          <span className={styles.deadlineText}>Deadline: May 2, 2026, 23:59</span>
         </div>
         <div className={styles.countdownGrid}>
           <div className={styles.countdownItem}>
