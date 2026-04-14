@@ -1,4 +1,9 @@
-import type { CaafDestinationId, CaafParticipantCategory, CaafPrimaryGoal } from './types';
+import type {
+  CaafDestinationId,
+  CaafParticipantCategory,
+  CaafParticipatingCountry,
+  CaafPrimaryGoal,
+} from './types';
 
 export const CATEGORY_OPTIONS: { id: CaafParticipantCategory }[] = [
   { id: 'high_school' },
@@ -15,6 +20,14 @@ export const DESTINATION_OPTIONS: { id: CaafDestinationId }[] = [
   { id: 'europe' },
   { id: 'asia' },
   { id: 'other' },
+];
+
+export const PARTICIPATING_COUNTRY_OPTIONS: { id: Exclude<CaafParticipatingCountry, ''> }[] = [
+  { id: 'uzbekistan' },
+  { id: 'kazakhstan' },
+  { id: 'kyrgyzstan' },
+  { id: 'tajikistan' },
+  { id: 'turkmenistan' },
 ];
 
 export const PRIMARY_GOAL_OPTIONS: { id: CaafPrimaryGoal }[] = [

@@ -9,6 +9,7 @@ export function validateCaafStep(step: number, d: CaafDraft): string | null {
     if (!d.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email.trim())) return 'caafForum.validation.email';
     if (!d.phone.trim()) return 'caafForum.validation.phone';
     if (!d.countryCity.trim()) return 'caafForum.validation.countryCity';
+    if (!d.participatingCountry) return 'caafForum.validation.participatingCountry';
     if (!d.categoryId) return 'caafForum.validation.category';
     if (d.categoryId === 'other' && !d.categoryOther.trim()) return 'caafForum.validation.categoryOther';
     return null;

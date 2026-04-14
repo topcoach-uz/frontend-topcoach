@@ -89,6 +89,7 @@ function submissionToExportRow(r: CaafForumApplicationDto, t: TFunction): Record
     Email: d.email,
     Phone: d.phone,
     'Country & city': d.countryCity,
+    'Participating from': d.participatingCountry ? t(`caafForum.participatingCountry.${d.participatingCountry}`) : '',
     Category: formatCategory(d, t),
     'Grade / year': d.gradeOrYear,
     Destinations: formatDestinations(d, t),
@@ -226,6 +227,15 @@ export default function CentralAsianAdmissionsForumAdminPage() {
         render: (_, r) => r.draft.email || '—',
       },
       {
+        title: t('caafForum.admin.col.participatingFrom'),
+        key: 'participatingCountry',
+        width: 160,
+        render: (_, r) =>
+          r.draft.participatingCountry
+            ? t(`caafForum.participatingCountry.${r.draft.participatingCountry}`)
+            : '—',
+      },
+      {
         title: t('caafForum.admin.col.status'),
         dataIndex: 'status',
         key: 'status',
@@ -348,6 +358,12 @@ export default function CentralAsianAdmissionsForumAdminPage() {
               [t('caafForum.review.email'), detail.draft.email],
               [t('caafForum.admin.drawer.phone'), detail.draft.phone],
               [t('caafForum.review.countryCity'), detail.draft.countryCity],
+              [
+                t('caafForum.review.participatingCountry'),
+                detail.draft.participatingCountry
+                  ? t(`caafForum.participatingCountry.${detail.draft.participatingCountry}`)
+                  : '—',
+              ],
               [t('caafForum.admin.drawer.category'), formatCategory(detail.draft, t)],
               [t('caafForum.admin.drawer.grade'), detail.draft.gradeOrYear],
               [t('caafForum.admin.drawer.destinations'), formatDestinations(detail.draft, t)],

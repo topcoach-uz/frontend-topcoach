@@ -9,6 +9,13 @@ export type CaafParticipantCategory =
 export type CaafDestinationId = 'us' | 'uk' | 'europe' | 'asia' | 'other';
 
 export type CaafPrimaryGoal = 'scholarship' | 'ivy' | 'networking' | 'extracurricular';
+export type CaafParticipatingCountry =
+  | 'uzbekistan'
+  | 'kazakhstan'
+  | 'kyrgyzstan'
+  | 'tajikistan'
+  | 'turkmenistan'
+  | '';
 
 /** After form submit, until $5 is paid */
 export type CaafRegistrationStatus = 'pending_payment' | 'paid' | 'refunded' | 'cancelled';
@@ -18,6 +25,7 @@ export interface CaafDraft {
   email: string;
   phone: string;
   countryCity: string;
+  participatingCountry: CaafParticipatingCountry;
   categoryId: CaafParticipantCategory | '';
   categoryOther: string;
   gradeOrYear: string;
@@ -45,6 +53,7 @@ export function createEmptyCaafDraft(): CaafDraft {
     email: '',
     phone: '',
     countryCity: '',
+    participatingCountry: '',
     categoryId: '',
     categoryOther: '',
     gradeOrYear: '',

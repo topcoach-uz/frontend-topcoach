@@ -19,11 +19,12 @@ import {
   CAAF_FORUM_CARD_IMAGE,
   DESTINATION_OPTIONS,
   FORUM_VALUE_ICONS,
+  PARTICIPATING_COUNTRY_OPTIONS,
   PRIMARY_GOAL_OPTIONS,
   formatCaafRegistrationFeeUsd,
   REGISTRATION_FEE_USD_FALLBACK,
 } from './constants';
-import type { CaafDestinationId, CaafDraft } from './types';
+import type { CaafDestinationId, CaafDraft, CaafParticipatingCountry } from './types';
 import { useCaafRegistration } from './useCaafRegistration';
 import { validateCaafStep } from './validation';
 import CaafApplicationStepper from './components/CaafApplicationStepper';
@@ -41,6 +42,14 @@ function destinationLabels(t: (key: string) => string, ids: CaafDestinationId[])
 
 function primaryGoalLabel(t: (key: string) => string, id: string): string {
   return t(`caafForum.goal.${id}`);
+}
+
+function participatingCountryLabel(
+  t: (key: string) => string,
+  id: CaafParticipatingCountry,
+): string {
+  if (!id) return '—';
+  return t(`caafForum.participatingCountry.${id}`);
 }
 
 const FORUM_PATH = '/events/central-asian-admissions-forum';
@@ -338,6 +347,10 @@ function ReviewRows({ draft }: { draft: CaafDraft }) {
     { k: t('caafForum.review.phone'), v: draft.phone },
     { k: t('caafForum.review.countryCity'), v: draft.countryCity },
     {
+      k: t('caafForum.review.participatingCountry'),
+      v: participatingCountryLabel(t, draft.participatingCountry),
+    },
+    {
       k: t('caafForum.review.category'),
       v:
         draft.categoryId === 'other'
@@ -427,6 +440,20 @@ function StepAboutYou({
           value={draft.countryCity}
           onChange={(e) => updateDraft({ countryCity: e.target.value })}
         />
+      </div>
+      <div className={styles.formSection}>
+        <label className={styles.fieldLabel}>{t('caafForum.form.about.participatingCountry')}</label>
+        <Radio.Group
+          className={styles.radioStack}
+          value={draft.participatingCountry || undefined}
+          onChange={(e) => updateDraft({ participatingCountry: e.target.value })}
+        >
+          {PARTICIPATING_COUNTRY_OPTIONS.map((country) => (
+            <Radio key={country.id} value={country.id}>
+              {t(`caafForum.participatingCountry.${country.id}`)}
+            </Radio>
+          ))}
+        </Radio.Group>
       </div>
       <div className={styles.formSection}>
         <label className={styles.fieldLabel}>{t('caafForum.form.about.category')}</label>

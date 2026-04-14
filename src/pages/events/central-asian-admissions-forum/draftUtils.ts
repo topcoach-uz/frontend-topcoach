@@ -18,6 +18,7 @@ export function draftHasMeaningfulProgress(d: CaafDraft): boolean {
     d.email.trim() !== '' ||
     d.phone.trim() !== '' ||
     d.countryCity.trim() !== '' ||
+    Boolean(d.participatingCountry) ||
     Boolean(d.categoryId) ||
     d.gradeOrYear.trim() !== '' ||
     (d.destinationIds && d.destinationIds.length > 0) ||
