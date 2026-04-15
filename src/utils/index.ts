@@ -186,7 +186,27 @@ export const getLatestCreatedImg = (
       );
   }
 
-  return profileImages?.[0]?.url || null;
+  const rawUrl = profileImages?.[0]?.url || null;
+  if (!rawUrl) return null;
+  try {
+    const current = window.location.origin;
+    if (rawUrl.startsWith('/uploads/')) {
+      return `${current}${rawUrl}`;
+    }
+    if (rawUrl.includes('/uploads/')) {
+      const parsed = new URL(rawUrl, current);
+      if (
+        parsed.hostname === 'localhost' &&
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1'
+      ) {
+        return `${current}${parsed.pathname}`;
+      }
+    }
+  } catch {
+    return rawUrl;
+  }
+  return rawUrl;
 };
 
 export const getLatestVideo = (media: MediaSchema[], mediaTag: MEDIA_TAGS) => {

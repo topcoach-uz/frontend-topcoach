@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Avatar, Card, Tag } from 'antd';
+import { Avatar, Card } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -16,19 +16,13 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
+import { useTypedSelector } from 'src/app/store';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
+import { getLatestCreatedImg } from 'src/utils';
 
 const ENABLE_COMMUNITY_FEED =
   String(import.meta.env.VITE_ENABLE_COMMUNITY_FEED ?? 'false').toLowerCase() === 'true';
-
-const MOCK_PROFILE = {
-  name: 'Alex Johnson',
-  handle: '@alexj',
-  plan: 'PRO PLAN',
-  coins: 1340,
-  phase: 'Applying',
-};
 
 export interface CommunityHubMobileDrawerNavProps {
   onNavigate: () => void;
@@ -43,6 +37,19 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
   const navigate = useNavigate();
   const location = useLocation();
   const { isCommunityEnrolled } = useJourneyExperience();
+  const profile = useTypedSelector((s) => s.auth.profile);
+  const currentProfile = useMemo(() => {
+    const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
+    const handle =
+      (profile?.profile as any)?.username?.trim() ||
+      `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
+    return {
+      name: fullName,
+      handle,
+      phase: t('studentHub.dashboard.phase.applying', 'Applying'),
+      avatar: getLatestCreatedImg(profile?.profile?.media || []),
+    };
+  }, [profile?.profile, t]);
 
   const { section, target } = useMemo(() => {
     const p = new URLSearchParams(location.search);
@@ -89,23 +96,17 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           }}
         >
           <div className={styles.profileTop}>
-            <Avatar size={48} icon={<User size={16} />} className={styles.profileAvatar} />
+            <Avatar
+              size={48}
+              src={currentProfile.avatar || undefined}
+              icon={<User size={16} />}
+              className={styles.profileAvatar}
+            />
             <div>
-              <div className={styles.profileName}>{MOCK_PROFILE.name}</div>
+              <div className={styles.profileName}>{currentProfile.name}</div>
               <div className={styles.profileHandle}>
-                {MOCK_PROFILE.handle} · <span className={styles.profilePhase}>{MOCK_PROFILE.phase}</span>
+                {currentProfile.handle} · <span className={styles.profilePhase}>{currentProfile.phase}</span>
               </div>
-            </div>
-          </div>
-          <div className={styles.profilePlanRow}>
-            <Tag color="crimson" className={styles.planTag}>
-              {MOCK_PROFILE.plan}
-            </Tag>
-          </div>
-          <div className={styles.profileCoinsRow}>
-            <div className={styles.profileCoins}>
-              <div className={styles.coinsValue}>{MOCK_PROFILE.coins.toLocaleString()}</div>
-              <div className={styles.coinsLabel}>COINS</div>
             </div>
           </div>
         </Card>

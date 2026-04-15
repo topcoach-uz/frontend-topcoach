@@ -56,6 +56,8 @@ import {
   type StudyBuddyInterestProfile,
 } from 'src/constants/studyBuddyInterests';
 import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
+import { useTypedSelector } from 'src/app/store';
+import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
   | 'feed'
@@ -78,14 +80,6 @@ type CommunityNavItem = {
 
 const ENABLE_COMMUNITY_FEED =
   String(import.meta.env.VITE_ENABLE_COMMUNITY_FEED ?? 'false').toLowerCase() === 'true';
-
-const MOCK_PROFILE = {
-  name: 'Alex Johnson',
-  handle: '@alexj',
-  plan: 'PRO PLAN',
-  coins: 1340,
-  phase: 'Applying',
-};
 
 const MOCK_COUNTS = {
   feed: 0,
@@ -403,8 +397,21 @@ export default function CommunityHubMockPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney } = useJourneyExperience();
+  const profile = useTypedSelector((s) => s.auth.profile);
   const { data: rawPreferences } = useGetUserPreferencesQuery();
   const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
+  const currentProfile = useMemo(() => {
+    const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
+    const handle =
+      (profile?.profile as any)?.username?.trim() ||
+      `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
+    return {
+      name: fullName,
+      handle,
+      phase: t('studentHub.dashboard.phase.applying', 'Applying'),
+      avatar: getLatestCreatedImg(profile?.profile?.media || []),
+    };
+  }, [profile?.profile, t]);
 
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(
     ENABLE_COMMUNITY_FEED ? 'feed' : 'myLearning',
@@ -690,8 +697,8 @@ export default function CommunityHubMockPage() {
     const newPost: MockFeedPost = {
       id: `self-${Date.now()}`,
       v: 'forYou',
-      authorName: MOCK_PROFILE.name,
-      authorHandle: MOCK_PROFILE.handle,
+      authorName: currentProfile.name,
+      authorHandle: currentProfile.handle,
       authorRoleLine: 'You',
       authorSubLine: 'TopCoach Community',
       timeAgo: 'Just now',
@@ -727,11 +734,16 @@ export default function CommunityHubMockPage() {
             }}
           >
             <div className={styles.profileTop}>
-              <Avatar size={48} icon={<User size={16} />} className={styles.profileAvatar} />
+              <Avatar
+                size={48}
+                src={currentProfile.avatar || undefined}
+                icon={<User size={16} />}
+                className={styles.profileAvatar}
+              />
               <div>
-                <div className={styles.profileName}>{MOCK_PROFILE.name}</div>
+                <div className={styles.profileName}>{currentProfile.name}</div>
                 <div className={styles.profileHandle}>
-                  {MOCK_PROFILE.handle} · <span className={styles.profilePhase}>{MOCK_PROFILE.phase}</span>
+                  {currentProfile.handle} · <span className={styles.profilePhase}>{currentProfile.phase}</span>
                 </div>
               </div>
             </div>
@@ -999,8 +1011,12 @@ export default function CommunityHubMockPage() {
                 <div className={styles.startPostSection}>
                   <div className={styles.startPostCard}>
                     <div className={styles.startPostTop}>
-                      <Avatar size={48} className={styles.startPostAvatar}>
-                        {MOCK_PROFILE.name.charAt(0)}
+                      <Avatar
+                        size={48}
+                        src={currentProfile.avatar || undefined}
+                        className={styles.startPostAvatar}
+                      >
+                        {currentProfile.name.charAt(0)}
                       </Avatar>
                       <div className={styles.startPostPillWrap}>
                         <Input

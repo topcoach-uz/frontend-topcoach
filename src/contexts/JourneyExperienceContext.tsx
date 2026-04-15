@@ -1,5 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useGetUserPreferencesQuery, useUpdateUserPreferencesMutation } from 'src/app/services/student-hub/dashboardApi';
+import {
+  useCreateUserPreferencesMutation,
+  useGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
+} from 'src/app/services/student-hub/dashboardApi';
 import { useTypedSelector } from 'src/app/store';
 
 const LEGACY_PREMIUM_KEY = 'topcoach_journey_premium';
@@ -30,6 +34,7 @@ function readCommunityEnrolled(): boolean {
 export function JourneyExperienceProvider({ children }: { children: React.ReactNode }) {
   const profile = useTypedSelector((s) => s.auth.profile);
   const { data: rawPreferences } = useGetUserPreferencesQuery();
+  const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
   const [isCommunityEnrolled, setState] = useState(readCommunityEnrolled);
   const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
@@ -55,13 +60,31 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     } catch {
       /* ignore */
     }
-    void updateUserPreferences({
+    const payload = {
+      ...(preferences?.id ? { id: preferences.id } : {}),
       applicationSettings: {
         ...(preferences?.applicationSettings || {}),
         communityExperienceMode: value ? 'community' : 'standard',
       },
-    });
-  }, [preferences?.applicationSettings, updateUserPreferences]);
+    };
+    void updateUserPreferences(payload)
+      .unwrap()
+      .catch((error: any) => {
+        const msg = error?.data?.message || error?.message || '';
+        if (
+          msg.includes('Resource id not provided') ||
+          msg.includes('Resource not found')
+        ) {
+          return createUserPreferences({
+            applicationSettings: payload.applicationSettings,
+          }).unwrap();
+        }
+        return Promise.reject(error);
+      })
+      .catch(() => {
+        // ignore background preference persistence errors; local state is still applied
+      });
+  }, [preferences?.id, preferences?.applicationSettings, updateUserPreferences, createUserPreferences]);
 
   /** Legacy alias */
   const setPremiumJourney = setCommunityEnrolled;

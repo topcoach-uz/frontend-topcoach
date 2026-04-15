@@ -4,10 +4,13 @@ import { User, Camera, CreditCard, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { useUpdateUserPreferencesMutation, useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
+import {
+  useCreateUserPreferencesMutation,
+  useUpdateUserPreferencesMutation,
+  useGetUserPreferencesQuery,
+} from 'src/app/services/student-hub/dashboardApi';
 import { useInvalidateGetMeMutation } from 'src/app/services/users';
-import { updateProfile } from 'src/app/slices/authSlice';
-import { useAppDispatch, useTypedSelector } from 'src/app/store';
+import { useTypedSelector } from 'src/app/store';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import {
   APPLICATION_GOAL_OPTIONS,
@@ -38,17 +41,17 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isCommunityEnrolled, setCommunityEnrolled } = useJourneyExperience();
-  const dispatch = useAppDispatch();
   const profile = useTypedSelector((s) => s.auth.profile);
   const [invalidateGetMe] = useInvalidateGetMeMutation();
   const { data: rawPreferences } = useGetUserPreferencesQuery();
+  const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences, { isLoading: savingPreferences }] = useUpdateUserPreferencesMutation();
   const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
   const [displayName, setDisplayName] = useState(
-    () => profile?.profile?.name || 'Alex Johnson',
+    () => profile?.profile?.name || '',
   );
   const [username, setUsername] = useState<string>(
-    () => (profile?.profile as any)?.username || `@${(profile?.profile?.name || 'Alex Johnson').toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+    () => (profile?.profile as any)?.username || '',
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [plan] = useState('Pro Plan');
@@ -77,12 +80,12 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   );
 
   useEffect(() => {
-    const fullName = profile?.profile?.name || 'Alex Johnson';
+    const fullName = profile?.profile?.name || '';
     const existingUsername = (profile?.profile as any)?.username;
     setDisplayName(fullName);
     setUsername(
       existingUsername ||
-        `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || 'student'}`,
+        `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || ''}`,
     );
   }, [profile?.profile?.name, (profile?.profile as any)?.username]);
 
@@ -113,6 +116,27 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       );
     }
     return false;
+  };
+
+  const upsertUserPreferences = async (patch: any) => {
+    const updatePayload = {
+      ...(preferences?.id ? { id: preferences.id } : {}),
+      ...patch,
+    };
+    try {
+      await updateUserPreferences(updatePayload).unwrap();
+      return;
+    } catch (error: any) {
+      const msg = error?.data?.message || error?.message || '';
+      if (
+        msg.includes('Resource id not provided') ||
+        msg.includes('Resource not found')
+      ) {
+        await createUserPreferences(patch).unwrap();
+        return;
+      }
+      throw error;
+    }
   };
 
   return (
@@ -234,18 +258,28 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
               type="primary"
               onClick={async () => {
                 try {
-                  await dispatch(
-                    updateProfile({
+                  const token = localStorage.getItem(ACCESS_TOKEN);
+                  await axios.put(
+                    `${baseUrl}/users`,
+                    {
                       profile: {
                         name: displayName.trim(),
                         username: username.trim(),
-                      } as any,
-                    } as any),
-                  ).unwrap();
+                      },
+                    },
+                    {
+                      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                      timeout: 30000,
+                    },
+                  );
                   await invalidateGetMe();
                   message.success(t('studentHub.settingsMock.saved', 'Profile saved'));
                 } catch (error: any) {
-                  message.error(error?.message || t('common.error', 'Failed to save profile'));
+                  message.error(
+                    error?.response?.data?.message ||
+                      error?.message ||
+                      t('common.error', 'Failed to save profile'),
+                  );
                 }
               }}
             >
@@ -383,12 +417,12 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             loading={savingPreferences}
             onClick={async () => {
               try {
-                await updateUserPreferences({
+                await upsertUserPreferences({
                   applicationSettings: {
                     ...(preferences?.applicationSettings || {}),
                     studyBuddyInterests: normalizeStudyBuddyInterestProfile(studyBuddyInterests),
                   },
-                }).unwrap();
+                });
                 message.success(
                   t(
                     'studentHub.settingsMock.studyBuddyInterestsSaved',

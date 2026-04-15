@@ -376,6 +376,19 @@ export const dashboardApi = RtkApi.injectEndpoints({
       providesTags: ['UserPreferences'],
     }),
 
+    // Create user preferences (fallback for environments where PATCH requires resource id)
+    createUserPreferences: builder.mutation<
+      ApiResponse<UserPreferences>,
+      UpdateUserPreferencesRequest
+    >({
+      query: (data) => ({
+        url: '/user-preferences',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['UserPreferences'],
+    }),
+
     // Update user preferences
     updateUserPreferences: builder.mutation<
       ApiResponse<UserPreferences>,
@@ -502,6 +515,7 @@ export const {
 
   // User Preferences
   useGetUserPreferencesQuery,
+  useCreateUserPreferencesMutation,
   useUpdateUserPreferencesMutation,
   useUpdateNotificationSettingsMutation,
   useUpdatePrivacySettingsMutation,

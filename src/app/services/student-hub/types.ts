@@ -796,6 +796,7 @@ export interface UserPreferences {
 }
 
 export interface UpdateUserPreferencesRequest {
+  id?: string;
   notificationSettings?: Partial<UserPreferences['notificationSettings']>;
   privacySettings?: Partial<UserPreferences['privacySettings']>;
   displaySettings?: Partial<UserPreferences['displaySettings']>;
