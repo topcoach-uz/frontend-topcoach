@@ -61,6 +61,17 @@ export interface ActiveSessionResponse {
   lastUpdated?: string;
 }
 
+export interface MajorMatchAccessStatus {
+  canStart: boolean;
+  requiresCommunityEnrollment: boolean;
+  isCommunityEnrolled: boolean;
+  freeSuccessfulAttemptsLimit: number;
+  successfulAttemptsUsed: number;
+  freeAttemptsRemaining: number;
+  promptTitle: string;
+  promptMessage: string;
+}
+
 export interface SubmitAnswerRequest {
   sessionId: string;
   questionId: string;
@@ -294,6 +305,14 @@ export const psychometricApi = RtkApi.injectEndpoints({
       providesTags: ['PsychometricAssessment'],
     }),
 
+    getMajorMatchAccessStatus: builder.query<MajorMatchAccessStatus, string>({
+      query: (studentProfileId) => ({
+        url: `/psychometric-assessment/access-status/${studentProfileId}`,
+        method: 'GET',
+      }),
+      providesTags: ['PsychometricAssessment'],
+    }),
+
     // Cancel session
     cancelSession: builder.mutation<{ success: boolean }, { sessionId: string; studentProfileId: string }>({
       query: ({ sessionId, studentProfileId }) => ({
@@ -327,6 +346,7 @@ export const {
   useGetRecommendationsQuery,
   useGetSessionProgressQuery,
   useCheckActiveSessionQuery,
+  useGetMajorMatchAccessStatusQuery,
   useCancelSessionMutation,
   useDeleteAssessmentMutation,
 } = psychometricApi;

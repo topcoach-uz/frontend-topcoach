@@ -10,6 +10,7 @@ import { referralApi } from './services/referralApi';
 import { contactApi } from './services/contactApi';
 import './services/availability'; // Ensure availability endpoints are injected into RtkApi
 import './services/caafForumApi';
+import './services/student-hub/studyBuddyApi';
 
 export const createStore = (
   options?: ConfigureStoreOptions['preloadedState'] | undefined

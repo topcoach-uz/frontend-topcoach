@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { List, Avatar, Empty, Spin, Typography, Input } from 'antd';
+import { List, Avatar, Empty, Spin, Typography, Input, Segmented } from 'antd';
 import { User, Search } from 'lucide-react';
 import { useGetConversationsQuery, chatApi } from 'src/app/services/chat/chatApi';
 import {
@@ -30,6 +30,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   selectedConversationId = null,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [segment, setSegment] = useState<'all' | 'mentors' | 'peers'>('all');
   const dispatch = useAppDispatch();
   const { data: conversationsData, isLoading } = useGetConversationsQuery(
     undefined,
@@ -68,7 +69,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
     /** One row per mentor–student pair (full support + 1:1 may have duplicated rows). */
     const byKey = new Map<string, Conversation[]>();
     for (const c of raw) {
-      const key = [c.mentorId, c.studentId].sort().join(':');
+      const type = c.conversationType ?? 'MENTOR_STUDENT';
+      const key = `${type}:${[c.mentorId, c.studentId].sort().join(':')}`;
       const list = byKey.get(key) ?? [];
       list.push(c);
       byKey.set(key, list);
@@ -112,31 +114,31 @@ const ConversationList: React.FC<ConversationListProps> = ({
     return conversation.mentor;
   };
 
+  const roleFiltered = useMemo(() => {
+    if (segment === 'all') return conversations;
+    if (segment === 'peers') return conversations.filter((c) => c.conversationType === 'PEER');
+    return conversations.filter((c) => c.conversationType !== 'PEER');
+  }, [conversations, segment]);
+
   const filteredConversations = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return conversations;
-    return conversations.filter((c) => {
+    if (!q) return roleFiltered;
+    return roleFiltered.filter((c) => {
       const other = getOtherUser(c);
       const name = (other?.profile?.name || '').toLowerCase();
       const email = (other?.email || '').toLowerCase();
-      return name.includes(q) || email.includes(q);
+      const handle = (other?.profile?.username || '').toLowerCase();
+      return name.includes(q) || email.includes(q) || handle.includes(q);
     });
-  }, [conversations, searchQuery, currentUser?.id]);
+  }, [roleFiltered, searchQuery, currentUser?.id]);
 
   const getOtherUserAvatar = (conversation: Conversation) => {
     const otherUser = getOtherUser(conversation);
     if (!otherUser) return null;
-
-    // Check if it's a mentor (has media array) or student
-    const isMentor = conversation.mentorId === otherUser.id;
-    
-    if (isMentor && otherUser.profile?.media) {
-      // For mentors, use getLatestCreatedImg to get image from media array
+    if (otherUser.profile?.media?.length) {
       const mediaImage = getLatestCreatedImg(otherUser.profile.media as any);
       if (mediaImage) return mediaImage;
     }
-    
-    // Fallback to avatar or null
     return otherUser.profile?.avatar || null;
   };
 
@@ -149,7 +151,9 @@ const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const getLastMessagePreview = (conversation: Conversation) => {
-    // This will be enhanced when we have message data
+    if (conversation.conversationType === 'PEER' && conversation.peerOverlapLabels?.length) {
+      return conversation.peerOverlapLabels.slice(0, 3).join(' · ');
+    }
     if (conversation.lastMessageAt) {
       return dayjs(conversation.lastMessageAt).fromNow();
     }
@@ -164,6 +168,38 @@ const ConversationList: React.FC<ConversationListProps> = ({
     return (
       <div className={styles.loadingContainer}>
         <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (roleFiltered.length === 0 && conversations.length > 0) {
+    return (
+      <div className={variant === 'messenger' ? styles.messengerListWrap : styles.emptyContainer}>
+        {variant === 'messenger' && (
+          <div className={styles.messengerSearch}>
+            <Segmented
+              block
+              value={segment}
+              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+              options={[
+                { label: 'All', value: 'all' },
+                { label: 'Mentors', value: 'mentors' },
+                { label: 'Peers', value: 'peers' },
+              ]}
+              style={{ marginBottom: 10 }}
+            />
+            <Input
+              allowClear
+              size="large"
+              placeholder="Search…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
+              className={styles.messengerSearchInput}
+            />
+          </div>
+        )}
+        <Empty description="No conversations in this category" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       </div>
     );
   }
@@ -184,6 +220,17 @@ const ConversationList: React.FC<ConversationListProps> = ({
       <div className={variant === 'messenger' ? styles.messengerEmpty : styles.emptyContainer}>
         {variant === 'messenger' && (
           <div className={styles.messengerSearch}>
+            <Segmented
+              block
+              value={segment}
+              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+              options={[
+                { label: 'All', value: 'all' },
+                { label: 'Mentors', value: 'mentors' },
+                { label: 'Peers', value: 'peers' },
+              ]}
+              style={{ marginBottom: 10 }}
+            />
             <Input
               allowClear
               size="large"
@@ -243,9 +290,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 </div>
               }
               description={
-                <Text type="secondary" className={styles.lastMessage}>
-                  {lastMessageTime}
-                </Text>
+                <div>
+                  {conversation.conversationType === 'PEER' && (
+                    <Text type="secondary" style={{ display: 'block', fontSize: 11, marginBottom: 2 }}>
+                      Peer · Study Buddy
+                    </Text>
+                  )}
+                  <Text type="secondary" className={styles.lastMessage}>
+                    {lastMessageTime}
+                  </Text>
+                </div>
               }
             />
           </List.Item>
@@ -258,6 +312,17 @@ const ConversationList: React.FC<ConversationListProps> = ({
     return (
       <div className={styles.messengerListWrap}>
         <div className={styles.messengerSearch}>
+          <Segmented
+            block
+            value={segment}
+            onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+            options={[
+              { label: 'All', value: 'all' },
+              { label: 'Mentors', value: 'mentors' },
+              { label: 'Peers', value: 'peers' },
+            ]}
+            style={{ marginBottom: 10 }}
+          />
           <Input
             allowClear
             size="large"

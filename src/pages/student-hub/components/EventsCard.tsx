@@ -11,6 +11,8 @@ import useMentee from '../../../pages/home/mentee/useMentee';
 import EventCardComp from '../../../pages/home/_components/events/_component';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useNavigate } from 'react-router-dom';
+import { useGetCaafForumApplicationsMeQuery } from '../../../app/services/caafForumApi';
+import { CAAF_FORUM_CARD_IMAGE } from '../../events/central-asian-admissions-forum/constants';
 import './EventsCard.scss';
 
 interface EventsCardProps {
@@ -22,7 +24,47 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { menteeEventData, isLoading } = useMentee();
-  const allEvents = Array.isArray(menteeEventData) ? menteeEventData : [];
+  const { data: caafMe, isLoading: isCaafLoading } = useGetCaafForumApplicationsMeQuery();
+
+  const mapCaafStatus = (
+    status: 'pending_payment' | 'paid' | 'refunded' | 'cancelled',
+  ): ApplicationStatusEnum => {
+    if (status === 'pending_payment') return ApplicationStatusEnum.Pending;
+    if (status === 'paid') return ApplicationStatusEnum.Successful;
+    return ApplicationStatusEnum.Rejected;
+  };
+
+  const caafApplication = caafMe?.application;
+  const caafAsEvent = caafApplication
+    ? [
+        {
+          id: `caaf-${caafApplication.id}`,
+          status: mapCaafStatus(caafApplication.status),
+          caafStatus: caafApplication.status,
+          isCaaf: true,
+          title: 'Central Asian Admissions Forum 2026',
+          date: caafApplication.submittedAt,
+          img: CAAF_FORUM_CARD_IMAGE,
+        },
+      ]
+    : [];
+
+  const allEvents = [...(Array.isArray(menteeEventData) ? menteeEventData : []), ...caafAsEvent];
+
+  const getEventStatusText = (item: any): string => {
+    if (item.isCaaf) {
+      if (item.caafStatus === 'pending_payment') {
+        return t('caafForum.card.tag.pending', 'Pending payment');
+      }
+      if (item.caafStatus === 'paid') {
+        return t('caafForum.card.tag.registered', 'Registered');
+      }
+      return t('home.rejected');
+    }
+    if (item.status === ApplicationStatusEnum.Pending) return t('home.reviewing');
+    if (item.status === ApplicationStatusEnum.Successful) return t('home.accepted');
+    return t('home.rejected');
+  };
 
   const pendingEvents = allEvents.filter(
     (event) => event.status === ApplicationStatusEnum.Pending
@@ -74,7 +116,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   ];
 
   function renderEvents(events: any[], showViewAll: boolean = false) {
-    if (isLoading) {
+    if (isLoading || isCaafLoading) {
       return (
         <div style={{
           display: 'flex',
@@ -117,17 +159,11 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
         {events.map((item) => (
           <EventCardComp
             key={item.id}
-            img={'/img/upcoming_event/event_mobile.png'}
+            img={item.img || '/img/upcoming_event/event_mobile.png'}
             status={item.status}
-            statusText={
-              item.status === ApplicationStatusEnum.Pending
-                ? t('home.reviewing')
-                : item.status === ApplicationStatusEnum.Successful
-                  ? t('home.accepted')
-                  : t('home.rejected')
-            }
-            title="Top 100 Uni Camp 2025"
-            date="25.05.2025"
+            statusText={getEventStatusText(item)}
+            title={item.title || 'Top 100 Uni Camp 2025'}
+            date={item.date ? new Date(item.date).toLocaleDateString() : '25.05.2025'}
           />
         ))}
         {showViewAll && !compact && (
@@ -160,7 +196,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
           </Button>
         }
       >
-        {isLoading ? (
+        {isLoading || isCaafLoading ? (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -177,17 +213,11 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
             {allEvents.slice(0, 2).map((item) => (
               <EventCardComp
                 key={item.id}
-                img={'/img/upcoming_event/event_mobile.png'}
+                img={item.img || '/img/upcoming_event/event_mobile.png'}
                 status={item.status}
-                statusText={
-                  item.status === ApplicationStatusEnum.Pending
-                    ? t('home.reviewing')
-                    : item.status === ApplicationStatusEnum.Successful
-                      ? t('home.accepted')
-                      : t('home.rejected')
-                }
-                title="Top 100 Uni Camp 2025"
-                date="25.05.2025"
+                statusText={getEventStatusText(item)}
+                title={item.title || 'Top 100 Uni Camp 2025'}
+                date={item.date ? new Date(item.date).toLocaleDateString() : '25.05.2025'}
               />
             ))}
           </div>

@@ -27,6 +27,13 @@ interface AssessmentStartProps {
   isLoading: boolean;
   readOnly?: boolean;
   activeSession?: ActiveSessionInfo;
+  majorMatchAccessStatus?: {
+    canStart: boolean;
+    requiresCommunityEnrollment: boolean;
+    freeAttemptsRemaining: number;
+    promptTitle: string;
+    promptMessage: string;
+  };
 }
 
 export const AssessmentStart: React.FC<AssessmentStartProps> = ({
@@ -37,6 +44,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   isLoading,
   readOnly = false,
   activeSession,
+  majorMatchAccessStatus,
 }) => {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'uz' | 'ru'>(
@@ -179,6 +187,16 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
       {/* Start button (Overview removed per counselor view requirements) */}
       {!readOnly && (
+        <>
+        {majorMatchAccessStatus?.requiresCommunityEnrollment && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={majorMatchAccessStatus.promptTitle || 'Join Community to continue'}
+            description={majorMatchAccessStatus.promptMessage}
+          />
+        )}
         <Card className="assessment-start-card" style={{ marginBottom: 24 }}>
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} lg={18}>
@@ -193,6 +211,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
                 size="large"
                 onClick={handleStart}
                 loading={isLoading}
+                disabled={!!majorMatchAccessStatus && !majorMatchAccessStatus.canStart}
                 className="start-button"
                 icon={<FontAwesomeIcon icon={activeSession?.hasActiveSession ? "redo" : "play-circle"} />}
                 block
@@ -212,6 +231,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
             </Col>
           </Row>
         </Card>
+        </>
       )}
 
       {/* Assessment Components (V2) - hidden in read-only counselor view */}

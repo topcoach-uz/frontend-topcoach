@@ -42,6 +42,7 @@ import DocumentsPage from '../documents/DocumentsPage';
 import ProfilePage from '../profile/ProfilePage';
 import MenteeSettingsPageMock from '../settings/MenteeSettingsPageMock';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
+import StudyBuddyHubSection from './StudyBuddyHubSection';
 import MessengerExperience from '../../../components/chat/MessengerExperience';
 import {
   ADMISSIONS_YOUTUBE_PREVIEW_SPECS,
@@ -648,8 +649,6 @@ export default function CommunityHubMockPage() {
         return 'feed';
       case 'buddies':
         return 'study-buddies';
-      case 'aiMajorMatch':
-        return 'ai-major-match';
       case 'researchProgram':
         return 'research-program';
       default:
@@ -862,7 +861,6 @@ export default function CommunityHubMockPage() {
               <UnifiedIcon name="major-match" size="md" color="primary" />
             </span>
             <span className={styles.navLabel}>{t('studentHub.hub.aiMajorMatch', 'AI Major Match')}</span>
-            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
           <button
@@ -980,11 +978,6 @@ export default function CommunityHubMockPage() {
                 {activeSection === 'researchProgram' && (
                   <div className={styles.comingSoonNote}>
                     {t('studentHub.hub.researchComingSoon', 'Research Prep modules are coming soon.')}
-                  </div>
-                )}
-                {activeSection === 'buddies' && (
-                  <div className={styles.comingSoonNote}>
-                    {t('studentHub.hub.buddyComingSoon', 'Study Buddy improvements are coming soon.')}
                   </div>
                 )}
                 {activeSection === 'account' && accountTarget === 'rewards' && (
@@ -1367,9 +1360,17 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
-            {activeSection === 'buddies' && isCommunityEnrolled && null}
+            {activeSection === 'buddies' && isCommunityEnrolled && (
+              <StudyBuddyHubSection
+                onOpenChat={(conversationId) => {
+                  setMessagesConversationId(conversationId);
+                  setActiveSection('messages');
+                  navigate('/student-hub?section=messages', { replace: true });
+                }}
+              />
+            )}
 
-            {activeSection === 'aiMajorMatch' && isCommunityEnrolled && (
+            {activeSection === 'aiMajorMatch' && (
               <div className={styles.hubDashEmbed}>
                 <Tabs
                   key={new URLSearchParams(location.search).get('applicationFlow') === 'new' ? 'ai-open-colleges' : 'ai-tabs'}

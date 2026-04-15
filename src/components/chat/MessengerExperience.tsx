@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Empty } from 'antd';
+import { Empty, Tag } from 'antd';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useScreenSize } from 'src/hooks/useScreenSize';
@@ -61,20 +61,25 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
 
   const otherUser = getOtherUser();
   const userName = otherUser?.profile?.name || otherUser?.email || 'User';
+  const peerUsername = (otherUser?.profile as { username?: string | null } | undefined)?.username?.trim();
   const isMentorSide = conversation?.mentorId === currentUser?.id;
-  const otherIsMentor = !isMentorSide && !!conversation?.mentorId;
-  const subtitle = threadId
-    ? 'Session thread'
-    : openToGeneralConversation
-      ? 'Full Support'
-      : isMentorSide
-        ? 'Student'
-        : 'Mentor';
+  const otherIsMentor =
+    conversation?.conversationType !== 'PEER' && !isMentorSide && !!conversation?.mentorId;
+  const subtitle =
+    conversation?.conversationType === 'PEER'
+      ? 'Peer · Study Buddy'
+      : threadId
+        ? 'Session thread'
+        : openToGeneralConversation
+          ? 'Full Support'
+          : isMentorSide
+            ? 'Student'
+            : 'Mentor';
+  const peerLabels = (conversation as { peerOverlapLabels?: string[] } | undefined)?.peerOverlapLabels ?? [];
 
   const avatarSrc = (() => {
     if (!otherUser || !conversation) return null;
-    const isMentor = conversation.mentorId === otherUser.id;
-    if (isMentor && otherUser.profile?.media) {
+    if (otherUser.profile?.media?.length) {
       const m = getLatestCreatedImg(otherUser.profile.media as any);
       if (m) return m;
     }
@@ -90,6 +95,7 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
   };
 
   const handleHeaderClick = () => {
+    if (conversation?.conversationType === 'PEER') return;
     if (otherIsMentor && conversation?.mentorId) {
       navigate(`/mentors/${conversation.mentorId}`);
     }
@@ -170,7 +176,7 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
                   type="button"
                   className={`${styles.threadHeaderProfile} ${otherIsMentor ? styles.threadHeaderProfileClickable : ''}`}
                   onClick={handleHeaderClick}
-                  disabled={!otherIsMentor}
+                  disabled={!otherIsMentor || conversation?.conversationType === 'PEER'}
                 >
                   <div className={styles.threadHeaderAvatar}>
                     {avatarSrc ? (
@@ -181,9 +187,21 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
                   </div>
                   <div className={styles.threadHeaderText}>
                     <div className={styles.threadHeaderName}>{userName}</div>
+                    {peerUsername && (
+                      <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>@{peerUsername}</div>
+                    )}
                     <div className={styles.threadHeaderMeta}>
                       <span className={styles.threadHeaderRole}>{subtitle}</span>
                     </div>
+                    {conversation?.conversationType === 'PEER' && peerLabels.length > 0 && (
+                      <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {peerLabels.slice(0, 5).map((label) => (
+                          <Tag key={label} color="processing" style={{ margin: 0 }}>
+                            {label}
+                          </Tag>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </button>
 

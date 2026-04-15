@@ -11,6 +11,7 @@ import {
   useGetRecommendationsQuery,
   useCancelSessionMutation,
   useCheckActiveSessionQuery,
+  useGetMajorMatchAccessStatusQuery,
 } from '../../../app/services/student-hub/psychometricApi';
 import { AssessmentStart } from './components/AssessmentStart';
 import { AssessmentQuestions } from './components/AssessmentQuestions';
@@ -67,6 +68,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     studentProfile?.id || '',
     { skip: !studentProfile?.id || currentStep !== 'start' }
   );
+  const { data: majorMatchAccessStatus } = useGetMajorMatchAccessStatusQuery(studentProfile?.id || '', {
+    skip: !studentProfile?.id || readOnly,
+  });
 
   // Check URL params for navigation
   useEffect(() => {
@@ -99,6 +103,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     
     if (!studentProfile?.id) {
       message.error('Student profile not found');
+      return;
+    }
+
+    if (majorMatchAccessStatus && !majorMatchAccessStatus.canStart) {
+      message.info(majorMatchAccessStatus.promptMessage || 'Join Community to continue AI Major Match.');
       return;
     }
 
@@ -248,6 +257,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             isLoading={startingAssessment}
             readOnly={readOnly}
             activeSession={activeSession}
+            majorMatchAccessStatus={majorMatchAccessStatus}
           />
         )}
 

@@ -1,9 +1,14 @@
 // Chat feature types for frontend
 
+export type ConversationKind = 'MENTOR_STUDENT' | 'PEER';
+
 export interface Conversation {
   id: string;
   mentorId: string;
   studentId: string;
+  conversationType?: ConversationKind;
+  /** Populated for PEER threads: shared interest labels vs current user */
+  peerOverlapLabels?: string[];
   lastMessageAt?: string;
   unreadCountMentor: number;
   unreadCountStudent: number;
@@ -14,6 +19,7 @@ export interface Conversation {
     email: string;
     profile?: {
       name: string;
+      username?: string | null;
       avatar?: string;
       media?: Array<{ url?: string; createdAt?: string; type?: string; tags?: string[] }>;
     };
@@ -23,6 +29,7 @@ export interface Conversation {
     email: string;
     profile?: {
       name: string;
+      username?: string | null;
       avatar?: string;
       media?: Array<{ url?: string; createdAt?: string; type?: string; tags?: string[] }>;
     };
