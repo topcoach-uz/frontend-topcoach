@@ -736,7 +736,8 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         </Col>
       </Row>
 
-      {/* PRIORITY 2: Deadlines (Left) + Recent Activity (Right) - Side by Side - Equal Height */}
+      {/* PRIORITY 2: Deadlines + Recent Activity (temporarily hidden) */}
+      {false && (
       <Row gutter={[24, 24]} className="priority-2-row equal-height-cards" style={{ marginBottom: 24 }}>
         {/* Left: Upcoming Deadlines */}
         <Col xs={24} lg={12} style={{ display: 'flex' }}>
@@ -1060,6 +1061,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           </Card>
         </Col>
       </Row>
+      )}
     </div>
   );
 };

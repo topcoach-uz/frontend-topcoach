@@ -60,6 +60,7 @@ interface DashboardData {
   updatedAt: string;
   accessGrantedAt: string | null;
   progressPercentage: number | null;
+  communityAccessEnabled?: boolean;
 }
 
 type SortOrder = 'ASC' | 'DESC';
@@ -91,6 +92,7 @@ const ProgramDashboard: React.FC = () => {
   const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat' | 'full_support'>('admissions');
   const [activeTab, setActiveTab] = useState('users');
   const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat' | 'full_support'>('all');
+  const [communityFilter, setCommunityFilter] = useState<'all' | 'community' | 'standard'>('all');
   const { data: fullSupportStudentsData, isLoading: fullSupportStudentsLoading } = useGetAdminStudentsQuery(undefined, { skip: activeTab !== 'full_support' });
   const fullSupportEnrolledUsers = fullSupportStudentsData?.data ?? [];
   const [adminEnroll, { isLoading: adminEnrollLoading }] = useAdminEnrollMutation();
@@ -126,7 +128,7 @@ const ProgramDashboard: React.FC = () => {
     }
 
     fetchData();
-  }, [isAuthenticated, isSuperAdmin, searchText, sortBy, sortOrder, courseFilter]);
+  }, [isAuthenticated, isSuperAdmin, searchText, sortBy, sortOrder, courseFilter, communityFilter]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -136,6 +138,7 @@ const ProgramDashboard: React.FC = () => {
         ...(sortBy && { sortBy }),
         ...(sortOrder && { sortOrder }),
         ...(courseFilter !== 'all' && { courseName: courseFilter }),
+        ...(communityFilter !== 'all' && { communityAccess: communityFilter }),
       });
       const url = `/program-dashboard?${queryParams.toString()}`;
       console.log('[TopCoach Management] Fetching dashboard data from:', url);
@@ -235,6 +238,22 @@ const ProgramDashboard: React.FC = () => {
     } else {
       setSortBy('');
       setSortOrder('DESC');
+    }
+  };
+
+  const handleToggleCommunityAccess = async (userId: string, enabled: boolean) => {
+    try {
+      await api.request({
+        path: `/program-dashboard/users/${userId}/community-access`,
+        method: 'POST',
+        secure: true,
+        body: { enabled },
+      });
+      message.success(enabled ? 'Community access granted' : 'Community access revoked');
+      fetchData();
+    } catch (error: any) {
+      console.error('Error updating community access:', error);
+      message.error(error.response?.data?.message || 'Failed to update community access');
     }
   };
 
@@ -1168,11 +1187,12 @@ const ProgramDashboard: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 220,
+      width: 260,
       fixed: 'right',
       render: (_: any, record: DashboardData) => {
         const hasAccess = record.paymentStatus === 'completed' && record.status === 'completed';
         const isTelegramConnected = record.telegramStatus === 'connected';
+        const communityEnabled = Boolean(record.communityAccessEnabled);
         return (
           <Space direction="vertical" size={4}>
             <Space>
@@ -1199,6 +1219,28 @@ const ProgramDashboard: React.FC = () => {
               >
                 Add program
               </Button>
+            </Space>
+            <Space size={6}>
+              {communityEnabled ? (
+                <Tag color="blue">Community Access</Tag>
+              ) : (
+                <Tag>Community Off</Tag>
+              )}
+              <Popconfirm
+                title={communityEnabled ? 'Revoke community access?' : 'Grant community access?'}
+                description={
+                  communityEnabled
+                    ? `This will move ${record.userName} to standard experience mode.`
+                    : `This will unlock Community features for ${record.userName}.`
+                }
+                onConfirm={() => handleToggleCommunityAccess(record.userId, !communityEnabled)}
+                okText={communityEnabled ? 'Revoke' : 'Grant'}
+                cancelText="Cancel"
+              >
+                <Button type="link" size="small">
+                  {communityEnabled ? 'Revoke community' : 'Grant community'}
+                </Button>
+              </Popconfirm>
             </Space>
           </Space>
         );
@@ -1291,6 +1333,16 @@ const ProgramDashboard: React.FC = () => {
                         <Select.Option value="admissions">Admissions Program</Select.Option>
                         <Select.Option value="sat">SAT Prep Course</Select.Option>
                         <Select.Option value="full_support">Full Support</Select.Option>
+                      </Select>
+                      <Select
+                        value={communityFilter}
+                        onChange={setCommunityFilter}
+                        style={{ width: 220 }}
+                        size="large"
+                      >
+                        <Select.Option value="all">All Community States</Select.Option>
+                        <Select.Option value="community">Community Enrolled</Select.Option>
+                        <Select.Option value="standard">Community Not Enrolled</Select.Option>
                       </Select>
                     </Space>
                   </Space>
