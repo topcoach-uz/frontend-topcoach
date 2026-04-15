@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Select, Button, Space, Spin, Alert, Empty, Progress, Tag, List, Collapse, Divider } from 'antd';
-import { 
-  CheckCircleOutlined, 
-  CloseCircleOutlined, 
-  WarningOutlined,
-  StarOutlined,
-  BulbOutlined,
-  FileTextOutlined
-} from '@ant-design/icons';
+import { CheckCircle2, XCircle, AlertTriangle, Star, Lightbulb, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { 
   useGetStudentEssaysQuery,
@@ -54,13 +47,13 @@ const AIFeedbackTab: React.FC = () => {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'grammar': return <FileTextOutlined />;
-      case 'clarity': return <BulbOutlined />;
-      case 'structure': return <FileTextOutlined />;
-      case 'tone': return <StarOutlined />;
-      case 'content': return <BulbOutlined />;
-      case 'style': return <StarOutlined />;
-      default: return <BulbOutlined />;
+      case 'grammar': return <FileText size={16} />;
+      case 'clarity': return <Lightbulb size={16} />;
+      case 'structure': return <FileText size={16} />;
+      case 'tone': return <Star size={16} />;
+      case 'content': return <Lightbulb size={16} />;
+      case 'style': return <Star size={16} />;
+      default: return <Lightbulb size={16} />;
     }
   };
 
@@ -69,7 +62,7 @@ const AIFeedbackTab: React.FC = () => {
       <Card 
         title={
           <Space>
-            <BulbOutlined style={{ color: '#8b0000' }} />
+            <Lightbulb size={16} color="#8b0000" />
             <span>AI Essay Feedback</span>
           </Space>
         }
@@ -103,7 +96,7 @@ const AIFeedbackTab: React.FC = () => {
               loading={feedbackLoading}
               size="large"
               style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-              icon={<BulbOutlined />}
+              icon={<Lightbulb size={16} />}
             >
               Get AI Feedback
             </Button>
@@ -196,7 +189,7 @@ const AIFeedbackTab: React.FC = () => {
             <Card 
               title={
                 <Space>
-                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                  <CheckCircle2 size={16} color="#52c41a" />
                   <span>Strengths</span>
                 </Space>
               }
@@ -207,7 +200,7 @@ const AIFeedbackTab: React.FC = () => {
                 renderItem={(strength: string) => (
                   <List.Item>
                     <Space>
-                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <CheckCircle2 size={16} color="#52c41a" />
                       <span>{strength}</span>
                     </Space>
                   </List.Item>
@@ -221,7 +214,7 @@ const AIFeedbackTab: React.FC = () => {
             <Card 
               title={
                 <Space>
-                  <WarningOutlined style={{ color: '#faad14' }} />
+                  <AlertTriangle size={16} color="#faad14" />
                   <span>Areas for Improvement</span>
                 </Space>
               }
@@ -232,7 +225,7 @@ const AIFeedbackTab: React.FC = () => {
                 renderItem={(weakness: string) => (
                   <List.Item>
                     <Space>
-                      <WarningOutlined style={{ color: '#faad14' }} />
+                      <AlertTriangle size={16} color="#faad14" />
                       <span>{weakness}</span>
                     </Space>
                   </List.Item>
@@ -246,7 +239,7 @@ const AIFeedbackTab: React.FC = () => {
             <Card 
               title={
                 <Space>
-                  <BulbOutlined style={{ color: '#8b0000' }} />
+                  <Lightbulb size={16} color="#8b0000" />
                   <span>Specific Suggestions</span>
                 </Space>
               }

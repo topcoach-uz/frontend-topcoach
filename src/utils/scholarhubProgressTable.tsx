@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Empty, Button, Modal, Space } from 'antd';
-import { ExpandAltOutlined } from '@ant-design/icons';
+import { Maximize2 } from 'lucide-react';
 
 type Payload = unknown;
 
@@ -57,7 +57,7 @@ function getColumnsFromRows(rows: Record<string, unknown>[]): { key: string; tit
 
 /** Format cell value for display. */
 function formatCell(value: unknown): React.ReactNode {
-  if (value === null || value === undefined) return '—';
+  if (value === null || value === undefined) return '-';
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
@@ -116,7 +116,7 @@ export function SatProgressTable({ payload, emptyText, viewRawLabel = 'View raw 
           {paginationSummary && (
             <div style={{ marginBottom: 12, fontSize: 13, color: '#666', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               <span>{paginationSummary}</span>
-              <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)}>
+              <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)}>
                 {viewRawLabel}
               </Button>
             </div>
@@ -129,7 +129,7 @@ export function SatProgressTable({ payload, emptyText, viewRawLabel = 'View raw 
             scroll={{ x: 'max-content' }}
           />
           {!paginationSummary && (
-            <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
+            <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
               {viewRawLabel}
             </Button>
           )}
@@ -160,7 +160,7 @@ export function SatProgressTable({ payload, emptyText, viewRawLabel = 'View raw 
           style={{ margin: '24px 0' }}
         >
           <Space>
-            <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)}>
+            <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)}>
               {viewRawLabel}
             </Button>
           </Space>
@@ -197,7 +197,7 @@ export function SatProgressTable({ payload, emptyText, viewRawLabel = 'View raw 
           size="small"
           scroll={{ x: 'max-content' }}
         />
-        <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
+        <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
           {viewRawLabel}
         </Button>
         <Modal
@@ -232,7 +232,7 @@ export function SatProgressTable({ payload, emptyText, viewRawLabel = 'View raw 
             size="small"
             rowKey="key"
           />
-          <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
+          <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)} style={{ marginTop: 8 }}>
             {viewRawLabel}
           </Button>
           <Modal

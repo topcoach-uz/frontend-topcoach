@@ -4,12 +4,12 @@ import dayjs from 'src/lib/dayjs';
 import type { WeeklyReportData } from 'src/app/services/fullSupportApi';
 
 function formatDate(isoDate: string): string {
-  if (!isoDate) return '—';
+  if (!isoDate) return '-';
   return dayjs(isoDate).format('MMM D, YYYY');
 }
 
 function formatDateTime(isoDate: string): string {
-  if (!isoDate) return '—';
+  if (!isoDate) return '-';
   return dayjs(isoDate).format('MMM D, YYYY h:mm A');
 }
 
@@ -41,7 +41,7 @@ export function generateWeeklyReportPdf(data: WeeklyReportData): void {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('Full Support — Weekly Report', pageWidth / 2, 18, { align: 'center' });
+  doc.text('Full Support: Weekly Report', pageWidth / 2, 18, { align: 'center' });
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.text(data.studentName, pageWidth / 2, 26, { align: 'center' });
@@ -69,7 +69,7 @@ export function generateWeeklyReportPdf(data: WeeklyReportData): void {
   } else {
     data.sessions.slice(0, 10).forEach((s) => {
       checkNewPage(14);
-      doc.text(`${formatDateTime(s.dateTime)} — ${s.duration}`, margin, yPos);
+      doc.text(`${formatDateTime(s.dateTime)} (${s.duration})`, margin, yPos);
       yPos += 5;
       if (s.description) {
         doc.setFontSize(9);
@@ -150,7 +150,7 @@ export function generateWeeklyReportPdf(data: WeeklyReportData): void {
   } else {
     data.milestones.forEach((m) => {
       checkNewPage(8);
-      doc.text(`${m.label} — ${m.date ? formatDate(m.date) : '—'} — ${m.done ? 'Done' : 'Pending'}`, margin, yPos);
+      doc.text(`${m.label}: ${m.date ? formatDate(m.date) : '-'} · ${m.done ? 'Done' : 'Pending'}`, margin, yPos);
       yPos += 6;
     });
     yPos += 4;
@@ -172,7 +172,7 @@ export function generateWeeklyReportPdf(data: WeeklyReportData): void {
     autoTable(doc, {
       startY: yPos,
       head: [['Program', 'Stage', 'Status', 'Financial aid']],
-      body: data.pipeline.map((p) => [p.program, p.stage, p.status, p.aid ? 'Considering' : '—']),
+      body: data.pipeline.map((p) => [p.program, p.stage, p.status, p.aid ? 'Considering' : '-']),
       margin: { left: margin },
       theme: 'grid',
       headStyles: { fillColor: [139, 0, 0], fontSize: 9 },

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Collapse, Progress, Button } from 'antd';
-import { 
-  PlayCircleOutlined, 
-  FileTextOutlined, 
-  VideoCameraOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  MenuOutlined,
-  DoubleLeftOutlined,
-  BookOutlined,
-  CloseOutlined
-} from '@ant-design/icons';
+import { PlayCircle, FileText, Video, Clock, CheckCircle2, Menu, ChevronsLeft, BookOpen, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './CourseSidebar.scss';
 
@@ -88,13 +78,13 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   const getLessonIcon = (lessonType: string) => {
     switch (lessonType) {
       case 'video':
-        return <PlayCircleOutlined />;
+        return <PlayCircle size={16} />;
       case 'pdf':
-        return <FileTextOutlined />;
+        return <FileText size={16} />;
       case 'live_session':
-        return <VideoCameraOutlined />;
+        return <Video size={16} />;
       default:
-        return <PlayCircleOutlined />;
+        return <PlayCircle size={16} />;
     }
   };
 
@@ -126,7 +116,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         {/* Desktop collapsed sidebar */}
         <div className="course-sidebar-collapsed desktop-only">
           <div className="course-icon" onClick={onToggleCollapse}>
-            <BookOutlined />
+            <BookOpen size={16} />
           </div>
           
           <div className="progress-summary">
@@ -140,7 +130,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
         {/* Mobile floating button */}
         <Button
           type="primary"
-          icon={<MenuOutlined />}
+          icon={<Menu size={16} />}
           onClick={onToggleCollapse}
           className="mobile-sidebar-toggle"
           size="large"
@@ -164,12 +154,12 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
             <h2>{t('Course Content')}</h2>
             <Button
               type="text"
-              icon={<CloseOutlined className="mobile-only-icon" />}
+              icon={<X size={16} className="mobile-only-icon" />}
               onClick={onToggleCollapse}
               className="collapse-btn"
               size="small"
             >
-              <DoubleLeftOutlined className="desktop-only-icon" />
+              <ChevronsLeft size={16} className="desktop-only-icon" />
             </Button>
           </div>
           <div className="overall-progress">
@@ -234,7 +224,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                       >
                         <div className="lesson-icon">
                           {isCompleted ? (
-                            <CheckCircleOutlined className="completed-icon" />
+                            <CheckCircle2 size={16} className="completed-icon" />
                           ) : (
                             getLessonIcon(lesson.lessonType)
                           )}
@@ -250,7 +240,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                           
                           <div className="lesson-meta">
                             <span className="lesson-duration">
-                              <ClockCircleOutlined />
+                              <Clock size={16} />
                               {formatDuration(lesson.duration)}
                             </span>
                             {!isCompleted && progress > 0 && lesson.lessonType !== 'pdf' && (
@@ -310,7 +300,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                                 >
                                   <div className="lesson-icon">
                                     {isCompleted ? (
-                                      <CheckCircleOutlined className="completed-icon" />
+                                      <CheckCircle2 size={16} className="completed-icon" />
                                     ) : (
                                       getLessonIcon(lesson.lessonType)
                                     )}
@@ -326,7 +316,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                                     
                                     <div className="lesson-meta">
                                       <span className="lesson-duration">
-                                        <ClockCircleOutlined />
+                                        <Clock size={16} />
                                         {formatDuration(lesson.duration)}
                                       </span>
                                       {!isCompleted && progress > 0 && lesson.lessonType !== 'pdf' && (

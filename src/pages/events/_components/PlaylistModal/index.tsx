@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Empty, Input, Modal, Popconfirm, Spin } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Trash2, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
@@ -132,7 +132,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {playlistName}
       {showRenameDelete && onRenamed && (
-        <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsEditingName(true)} title={t('events.editPlaylistName')} />
+        <Button type="text" size="small" icon={<Pencil size={16} />} onClick={() => setIsEditingName(true)} title={t('events.editPlaylistName')} />
       )}
       {showRenameDelete && onDeleted && (
         <Popconfirm
@@ -142,7 +142,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
           okText="Yes"
           cancelText="No"
         >
-          <Button type="text" size="small" danger icon={<DeleteOutlined />} title="Delete playlist" />
+          <Button type="text" size="small" danger icon={<Trash2 size={16} />} title="Delete playlist" />
         </Popconfirm>
       )}
     </span>

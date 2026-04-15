@@ -1,5 +1,5 @@
 import { Button, message } from 'antd';
-import { LinkOutlined } from '@ant-design/icons';
+import { Link } from 'lucide-react';
 import useColors from 'src/hooks/useColors';
 import MentorDetailsSocials from '../socials';
 import styles from './actionButtons.module.scss';
@@ -41,7 +41,7 @@ export default function ActionButtons({ mentorId, mentorName }: ActionButtonsPro
       {/* Copy URL Button - Icon only */}
       <Button
         type="text"
-        icon={<LinkOutlined />}
+        icon={<Link size={16} />}
         onClick={handleCopyUrl}
         className={styles.copy_url_button}
         style={{

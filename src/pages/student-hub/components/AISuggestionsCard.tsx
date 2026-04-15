@@ -1,5 +1,5 @@
 /**
- * AI-powered suggestions — contextual next actions from goals, profile, and progress.
+ * AI-powered suggestions: contextual next actions from goals, profile, and progress.
  */
 
 import React from 'react';
@@ -106,7 +106,7 @@ const AISuggestionsCard: React.FC<AISuggestionsCardProps> = ({ suggestions, load
                       <div className="ai-suggestion-title">
                         {item.universityId || item.universityName ? (
                           <>
-                            <span>{item.title} — </span>
+                            <span>{item.title}: </span>
                             <UniversityNameDisplay
                               universityId={item.universityId}
                               universityName={item.universityName}

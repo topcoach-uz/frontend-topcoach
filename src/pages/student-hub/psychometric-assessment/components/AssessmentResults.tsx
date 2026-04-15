@@ -214,7 +214,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         </Row>
       </Card>
 
-      {/* RIASEC code explanation — simple, clear for high-school-age users */}
+      {/* RIASEC code explanation (simple, clear for high-school-age users) */}
       <Alert
         type="info"
         showIcon
@@ -223,7 +223,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         description={
           <div>
             <Paragraph style={{ margin: '0 0 12px 0', fontSize: 14 }}>
-              {t('studentHub.psychometric.results.riasecExplanation', 'Your code {{code}} shows your top three interest types. RIASEC helps you explore majors and careers that fit you — especially useful when you\'re deciding what to study (e.g. in high school or before university).', { code: assessment.riasecCode })}
+              {t('studentHub.psychometric.results.riasecExplanation', 'Your code {{code}} shows your top three interest types. RIASEC helps you explore majors and careers that fit you. It is especially useful when you\'re deciding what to study (e.g. in high school or before university).', { code: assessment.riasecCode })}
             </Paragraph>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 20px' }}>
               {(assessment.riasecCode || '')

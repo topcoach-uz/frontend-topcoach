@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Space, Tag, Typography, message, Modal } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
+import { Calendar, Clock, MapPin, User } from 'lucide-react';
 import { formatDateRange, getLatestCreatedImg } from 'src/utils';
 import { MEDIA_TAGS, MediaSchema } from 'src/app/api/Api';
 import { useState, useEffect } from 'react';
@@ -198,7 +198,7 @@ export default function UpcomingEventsSection({
               
               <Space direction="vertical" size="small" className={styles.event_info}>
                 <div className={styles.info_item}>
-                  <CalendarOutlined className={styles.info_icon} />
+                  <Calendar size={16} className={styles.info_icon} />
                   <span>{formatDateRange(event.startDate, event.endDate)}</span>
                 </div>
               </Space>
@@ -304,13 +304,13 @@ export default function UpcomingEventsSection({
                 <div className={styles.workshop_meta}>
                   <Space direction="vertical" size="small" className={styles.workshop_info_compact}>
                     <div className={styles.info_item}>
-                      <CalendarOutlined className={styles.info_icon} />
+                      <Calendar size={16} className={styles.info_icon} />
                       <span>{formatDateRange(workshop.startDate, workshop.endDate)}</span>
                     </div>
 
                     {workshop.locations && workshop.locations.length > 0 && (
                       <div className={styles.info_item}>
-                        <EnvironmentOutlined className={styles.info_icon} />
+                        <MapPin size={16} className={styles.info_icon} />
                         <span>{workshop.locations[0]?.address || workshop.locations[0]?.region || 'TBA'}</span>
                       </div>
                     )}

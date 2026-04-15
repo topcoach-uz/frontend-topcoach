@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Typography, Tooltip } from 'antd';
-import { CheckOutlined, UserOutlined } from '@ant-design/icons';
+import { Check, User } from 'lucide-react';
 import { ChatMessage, MessageType, MessageStatus } from 'src/app/services/chat/types';
 import { useTypedSelector } from 'src/app/store';
 import dayjs from 'dayjs';
@@ -46,15 +46,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) 
       case MessageStatus.SENDING:
         return (
           <Tooltip title="Sent">
-            <CheckOutlined className={styles.statusIcon} />
+            <Check size={16} className={styles.statusIcon} />
           </Tooltip>
         );
       case MessageStatus.DELIVERED:
         return (
           <Tooltip title="Delivered">
             <span className={styles.statusIcon}>
-              <CheckOutlined />
-              <CheckOutlined />
+              <Check size={16} />
+              <Check size={16} />
             </span>
           </Tooltip>
         );
@@ -62,8 +62,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) 
         return (
           <Tooltip title="Read">
             <span className={`${styles.statusIcon} ${styles.statusRead}`}>
-              <CheckOutlined />
-              <CheckOutlined />
+              <Check size={16} />
+              <Check size={16} />
             </span>
           </Tooltip>
         );
@@ -134,7 +134,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) 
           size={32}
           className={styles.messageAvatar}
           style={{ backgroundColor: '#8b0000' }}
-          icon={!senderAvatar && !message.sender?.profile?.avatar ? <UserOutlined /> : undefined}
+          icon={!senderAvatar && !message.sender?.profile?.avatar ? <User size={16} /> : undefined}
         >
           {!senderAvatar && !message.sender?.profile?.avatar && message.sender?.profile?.name?.[0]?.toUpperCase()}
         </Avatar>

@@ -470,7 +470,12 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       providesTags: ['FullSupportCurriculumProgress'],
     }),
     getMenteeSatProgress: builder.query<{ data: SatProgressSummaryDto | null }, void>({
-      query: () => ({ url: '/full-support/mentee/sat-progress', method: 'GET' }),
+      query: () => ({
+        url: '/full-support/mentee/sat-progress',
+        method: 'GET',
+        // Prevent ETag/304 responses from keeping stale progress values in RTK Query/browser cache.
+        params: { cb: Date.now() },
+      }),
       transformResponse: (res: unknown) => {
         const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : null;
         const obj = raw && typeof raw === 'object'

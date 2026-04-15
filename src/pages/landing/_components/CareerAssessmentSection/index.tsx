@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CheckOutlined } from '@ant-design/icons';
+import { Check } from 'lucide-react';
 import { CustomButton, CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
@@ -57,7 +57,7 @@ export default function CareerAssessmentSection() {
             <ul className={styles.benefitsList}>
               <li>
                 <span className={styles.benefitIcon}>
-                  <CheckOutlined style={{ color: '#22c55e', fontSize: 16 }} />
+                  <Check size={16} color="#22c55e" />
                 </span>
                 <div>
                   <strong>{t('landing.careerAssessment.benefit1Title', 'Your Best-Fit Majors')}</strong>
@@ -66,7 +66,7 @@ export default function CareerAssessmentSection() {
               </li>
               <li>
                 <span className={styles.benefitIcon}>
-                  <CheckOutlined style={{ color: '#22c55e', fontSize: 16 }} />
+                  <Check size={16} color="#22c55e" />
                 </span>
                 <div>
                   <strong>{t('landing.careerAssessment.benefit2Title', 'Personalized University List')}</strong>
@@ -75,7 +75,7 @@ export default function CareerAssessmentSection() {
               </li>
               <li>
                 <span className={styles.benefitIcon}>
-                  <CheckOutlined style={{ color: '#22c55e', fontSize: 16 }} />
+                  <Check size={16} color="#22c55e" />
                 </span>
                 <div>
                   <strong>{t('landing.careerAssessment.benefit3Title', 'Career Path Insights')}</strong>
@@ -84,7 +84,7 @@ export default function CareerAssessmentSection() {
               </li>
               <li>
                 <span className={styles.benefitIcon}>
-                  <CheckOutlined style={{ color: '#22c55e', fontSize: 16 }} />
+                  <Check size={16} color="#22c55e" />
                 </span>
                 <div>
                   <strong>{t('landing.careerAssessment.benefit4Title', 'Scholarship Opportunities')}</strong>

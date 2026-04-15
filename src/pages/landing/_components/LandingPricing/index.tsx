@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
-import { StarFilled, CheckOutlined } from '@ant-design/icons';
+import { Star, Check } from 'lucide-react';
 import { useGetSubscriptionPlansQuery, useGetCurrentSubscriptionQuery } from 'src/app/services/api';
 import styles from './landingPricing.module.scss';
 
@@ -18,7 +18,7 @@ const PREMIUM_FEATURES = [
   'Admissions Program',
   'Gamified Research Program',
   'Startup & PM Program',
-  'Exchange Program Workshops — Live',
+  'Exchange Program Workshops (live)',
   'Weekly Live Workshops',
   'College Perks',
   'AI Tools for Admissions & Essays',
@@ -113,7 +113,7 @@ export default function LandingPricing() {
             <ul className={styles.features}>
               {FREE_FEATURES.map((f) => (
                 <li key={f}>
-                  <CheckOutlined className={styles.check} />
+                  <Check size={16} className={styles.check} />
                   <span>{f}</span>
                 </li>
               ))}
@@ -129,7 +129,7 @@ export default function LandingPricing() {
           {/* Premium */}
           <div className={`${styles.card} ${styles.popular}`} data-plan="premium">
             <span className={styles.popularBadge}>
-              <StarFilled /> Popular
+              <Star size={16} /> Popular
             </span>
             <h3 className={styles.planName}>Premium</h3>
             <p className={styles.planDesc}>Join the TopCoach admissions community</p>
@@ -144,7 +144,7 @@ export default function LandingPricing() {
             <ul className={styles.features}>
               {PREMIUM_FEATURES.map((f) => (
                 <li key={f}>
-                  <CheckOutlined className={styles.check} />
+                  <Check size={16} className={styles.check} />
                   <span>{f}</span>
                 </li>
               ))}
@@ -169,7 +169,7 @@ export default function LandingPricing() {
             <ul className={styles.features}>
               {CUSTOMISED_FEATURES.map((f) => (
                 <li key={f}>
-                  <CheckOutlined className={styles.check} />
+                  <Check size={16} className={styles.check} />
                   <span>{f}</span>
                 </li>
               ))}

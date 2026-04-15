@@ -771,6 +771,13 @@ export interface UserPreferences {
     autoSave?: boolean;
     reminderDays?: number;
     defaultPriority?: string;
+    communityExperienceMode?: 'community' | 'standard';
+    studyBuddyInterests?: {
+      examPrep?: string[];
+      applicationGoals?: string[];
+      intendedMajors?: string[];
+      focusAreas?: string[];
+    };
   };
   aiSettings: {
     assistanceLevel?: 'minimal' | 'moderate' | 'aggressive';

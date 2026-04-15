@@ -1,3 +1,7 @@
+import {
+  Phone, Mail, ArrowUpRight, MoreVertical, ArrowRight,
+  CirclePlus, CircleMinus, type LucideProps,
+} from 'lucide-react';
 import { SVGPropsType } from 'src/components/icons';
 
 export const TelegramSvg = () => (
@@ -109,63 +113,9 @@ export const FacebookSvg = () => (
   </svg>
 );
 
-export const PhoneSvg = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-  >
-    <path
-      d="M18.3087 15.2763C18.3087 15.5763 18.242 15.8846 18.1003 16.1846C17.9587 16.4846 17.7753 16.768 17.5337 17.0346C17.1253 17.4846 16.6753 17.8096 16.167 18.018C15.667 18.2263 15.1253 18.3346 14.542 18.3346C13.692 18.3346 12.7837 18.1346 11.8253 17.7263C10.867 17.318 9.90866 16.768 8.95866 16.0763C8.00033 15.3763 7.09199 14.6013 6.22533 13.743C5.36699 12.8763 4.59199 11.968 3.90033 11.018C3.21699 10.068 2.66699 9.11797 2.26699 8.1763C1.86699 7.2263 1.66699 6.31797 1.66699 5.4513C1.66699 4.88464 1.76699 4.34297 1.96699 3.84297C2.16699 3.33464 2.48366 2.86797 2.92533 2.4513C3.45866 1.9263 4.04199 1.66797 4.65866 1.66797C4.89199 1.66797 5.12533 1.71797 5.33366 1.81797C5.55033 1.91797 5.74199 2.06797 5.89199 2.28464L7.82533 5.00964C7.97533 5.21797 8.08366 5.40964 8.15866 5.59297C8.23366 5.76797 8.27533 5.94297 8.27533 6.1013C8.27533 6.3013 8.21699 6.5013 8.10033 6.69297C7.99199 6.88464 7.83366 7.08464 7.63366 7.28464L7.00033 7.94297C6.90866 8.03464 6.86699 8.14297 6.86699 8.2763C6.86699 8.34297 6.87533 8.4013 6.89199 8.46797C6.91699 8.53464 6.94199 8.58464 6.95866 8.63464C7.10866 8.90964 7.36699 9.26797 7.73366 9.7013C8.10866 10.1346 8.50866 10.5763 8.94199 11.018C9.39199 11.4596 9.82533 11.868 10.267 12.243C10.7003 12.6096 11.0587 12.8596 11.342 13.0096C11.3837 13.0263 11.4337 13.0513 11.492 13.0763C11.5587 13.1013 11.6253 13.1096 11.7003 13.1096C11.842 13.1096 11.9503 13.0596 12.042 12.968L12.6753 12.343C12.8837 12.1346 13.0837 11.9763 13.2753 11.8763C13.467 11.7596 13.6587 11.7013 13.867 11.7013C14.0253 11.7013 14.192 11.7346 14.3753 11.8096C14.5587 11.8846 14.7503 11.993 14.9587 12.1346L17.717 14.093C17.9337 14.243 18.0837 14.418 18.1753 14.6263C18.2587 14.8346 18.3087 15.043 18.3087 15.2763Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeMiterlimit="10"
-    />
-    <path
-      d="M15.4167 7.50138C15.4167 7.00138 15.025 6.23472 14.4417 5.60972C13.9083 5.03472 13.2 4.58472 12.5 4.58472"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M18.3333 7.5013C18.3333 4.2763 15.725 1.66797 12.5 1.66797"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+export const PhoneSvg = ({ size = 20, ...props }: LucideProps) => <Phone size={size} {...props} />;
 
-export const MailSvg = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M14.1665 17.0833H5.83317C3.33317 17.0833 1.6665 15.8333 1.6665 12.9166V7.08329C1.6665 4.16663 3.33317 2.91663 5.83317 2.91663H14.1665C16.6665 2.91663 18.3332 4.16663 18.3332 7.08329V12.9166C18.3332 15.8333 16.6665 17.0833 14.1665 17.0833Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeMiterlimit="10"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M14.1668 7.5L11.5585 9.58333C10.7002 10.2667 9.29183 10.2667 8.43349 9.58333L5.8335 7.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeMiterlimit="10"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+export const MailSvg = ({ size = 20, ...props }: LucideProps) => <Mail size={size} {...props} />;
 
 export const AiSearchStarsSvg = ({ ...rest }: SVGPropsType) => (
   <svg
@@ -351,96 +301,15 @@ export const GoogleMeetingSvg = () => (
   </svg>
 );
 
-export const RightUpSvg = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M4.66699 11.3345L11.3337 4.66785M11.3337 4.66785H4.66699M11.3337 4.66785V11.3345"
-      stroke="#1677FF"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+export const RightUpSvg = ({ size = 16, ...props }: LucideProps) => <ArrowUpRight size={size} color="#1677FF" {...props} />;
 
-export const ThreeDotsSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 14 14"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...rest}
-  >
-    <path
-      d="M6.125 2.6123C6.125 2.84437 6.21719 3.06693 6.38128 3.23102C6.54538 3.39512 6.76794 3.4873 7 3.4873C7.23206 3.4873 7.45462 3.39512 7.61872 3.23102C7.78281 3.06693 7.875 2.84437 7.875 2.6123C7.875 2.38024 7.78281 2.15768 7.61872 1.99359C7.45462 1.82949 7.23206 1.7373 7 1.7373C6.76794 1.7373 6.54538 1.82949 6.38128 1.99359C6.21719 2.15768 6.125 2.38024 6.125 2.6123ZM6.125 6.98731C6.125 7.21937 6.21719 7.44193 6.38128 7.60602C6.54538 7.77012 6.76794 7.86231 7 7.86231C7.23206 7.86231 7.45462 7.77012 7.61872 7.60602C7.78281 7.44193 7.875 7.21937 7.875 6.98731C7.875 6.75524 7.78281 6.53268 7.61872 6.36859C7.45462 6.20449 7.23206 6.11231 7 6.11231C6.76794 6.11231 6.54538 6.20449 6.38128 6.36859C6.21719 6.53268 6.125 6.75524 6.125 6.98731ZM6.125 11.3623C6.125 11.5944 6.21719 11.8169 6.38128 11.981C6.54538 12.1451 6.76794 12.2373 7 12.2373C7.23206 12.2373 7.45462 12.1451 7.61872 11.981C7.78281 11.8169 7.875 11.5944 7.875 11.3623C7.875 11.1302 7.78281 10.9077 7.61872 10.7436C7.45462 10.5795 7.23206 10.4873 7 10.4873C6.76794 10.4873 6.54538 10.5795 6.38128 10.7436C6.21719 10.9077 6.125 11.1302 6.125 11.3623Z"
-      fill="currentColor"
-      fillOpacity="0.88"
-    />
-  </svg>
-);
+export const ThreeDotsSvg = ({ size = 14, ...props }: LucideProps) => <MoreVertical size={size} {...props} />;
 
-export const RightArrowSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="18"
-    viewBox="0 0 18 18"
-    fill="none"
-    {...rest}
-  >
-    <path
-      d="M16.1722 8.51377L8.58242 1.92649C8.52416 1.87627 8.44983 1.84814 8.37149 1.84814H6.59358C6.44492 1.84814 6.37662 2.03297 6.48912 2.12939L13.5244 8.23654H1.76814C1.67974 8.23654 1.60742 8.30886 1.60742 8.39725V9.60261C1.60742 9.691 1.67974 9.76332 1.76814 9.76332H13.5224L6.48711 15.8705C6.37461 15.9689 6.44291 16.1517 6.59157 16.1517H8.42974C8.46791 16.1517 8.50608 16.1377 8.53421 16.1115L16.1722 9.48609C16.2417 9.42562 16.2975 9.35092 16.3357 9.26705C16.3739 9.18318 16.3937 9.09209 16.3937 8.99993C16.3937 8.90777 16.3739 8.81668 16.3357 8.73281C16.2975 8.64894 16.2417 8.57425 16.1722 8.51377Z"
-      fill="currentColor"
-      fillOpacity="0.88"
-    />
-  </svg>
-);
+export const RightArrowSvg = ({ size = 18, ...props }: LucideProps) => <ArrowRight size={size} {...props} />;
 
-export const CollapseExpandSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    {...rest}
-  >
-    <path
-      d="M12 8V16M8 12H16M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
-      stroke="currentColor"
-      strokeOpacity="0.45"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+export const CollapseExpandSvg = ({ size = 24, ...props }: LucideProps) => <CirclePlus size={size} {...props} />;
 
-export const CollapseMinusSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 22 22"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...rest}
-  >
-    <path
-      d="M7 11H15M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z"
-      stroke="currentColor"
-      strokeOpacity="0.45"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+export const CollapseMinusSvg = ({ size = 22, ...props }: LucideProps) => <CircleMinus size={size} {...props} />;
 
 export const Error404Svg = ({ ...rest }: SVGPropsType) => (
   <svg

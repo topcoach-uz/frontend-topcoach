@@ -394,31 +394,43 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
                   {(fields, { add, remove }) => (
                     <>
                       {fields.map(({ key, name, ...restField }) => (
-                        <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'language']}
-                            rules={[{ required: true, message: t('studentHub.profile.selectLanguage') }]}
-                          >
-                            <Select placeholder={t('studentHub.profile.language')} style={{ width: 150 }}>
-                              {languageOptions.map(lang => (
-                                <Option key={lang} value={lang}>{lang}</Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'proficiency']}
-                            rules={[{ required: true, message: t('studentHub.profile.selectProficiency') }]}
-                          >
-                            <Select placeholder={t('studentHub.profile.proficiency')} style={{ width: 150 }}>
-                              {proficiencyOptions.map(opt => (
-                                <Option key={opt.value} value={opt.value}>{opt.label}</Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          <Button type="link" onClick={() => remove(name)}>{t('studentHub.profile.remove')}</Button>
-                        </Space>
+                        <Row
+                          key={key}
+                          gutter={[8, 12]}
+                          align="bottom"
+                          className="language-spoken-row"
+                          wrap
+                        >
+                          <Col xs={24} sm={8} md={8}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'language']}
+                              rules={[{ required: true, message: t('studentHub.profile.selectLanguage') }]}
+                            >
+                              <Select placeholder={t('studentHub.profile.language')} className="form-select" style={{ width: '100%' }}>
+                                {languageOptions.map(lang => (
+                                  <Option key={lang} value={lang}>{lang}</Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} sm={8} md={8}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'proficiency']}
+                              rules={[{ required: true, message: t('studentHub.profile.selectProficiency') }]}
+                            >
+                              <Select placeholder={t('studentHub.profile.proficiency')} className="form-select" style={{ width: '100%' }}>
+                                {proficiencyOptions.map(opt => (
+                                  <Option key={opt.value} value={opt.value}>{opt.label}</Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} sm={8} md={8} className="language-spoken-row__remove">
+                            <Button type="link" onClick={() => remove(name)}>{t('studentHub.profile.remove')}</Button>
+                          </Col>
+                        </Row>
                       ))}
                       <Button type="dashed" onClick={() => add()} block>
                         {t('studentHub.profile.addLanguage')}

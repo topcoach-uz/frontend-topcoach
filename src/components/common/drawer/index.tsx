@@ -1,5 +1,5 @@
 import { ConfigProvider, Drawer, DrawerProps } from 'antd';
-import { CloseCircle } from 'iconsax-react';
+import { XCircle } from 'lucide-react';
 import { colors } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
 
@@ -22,7 +22,7 @@ export default function CustomDrawer({ bg, ...rest }: Props) {
       }}
     >
       <Drawer
-        closeIcon={<CloseCircle color={colors.colorText} size={16} />}
+        closeIcon={<XCircle color={colors.colorText} size={16} />}
         {...rest}
       />
     </ConfigProvider>

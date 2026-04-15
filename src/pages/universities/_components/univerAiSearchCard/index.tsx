@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Book1,
-  Briefcase,
-  Building,
-  Cup,
-  DollarCircle,
-  Location,
-  Profile2User,
-  Teacher,
-} from 'iconsax-react';
+import { BookOpen, Briefcase, Building2, Trophy, CircleDollarSign, MapPin, Users, GraduationCap } from 'lucide-react';
 import { CustomCard } from 'src/components/cards';
 import { CustomButton, CustomText } from 'src/components/common';
 import useColors from 'src/hooks/useColors';
@@ -55,7 +46,7 @@ function UniverAiSearchCard({
                 {getTranslation(name) || ''}
               </CustomText>
               <div className={styles.ranking}>
-                <Cup size="18" color={colors.colorBgBase} />
+                <Trophy size={18} color={colors.colorBgBase} />
                 <CustomText color={colors.colorBgBase}>
                   QS Rank #{ranking}
                 </CustomText>
@@ -63,7 +54,7 @@ function UniverAiSearchCard({
             </div>
             <div className={styles.location}>
               {' '}
-              <Location size="18" color={colors.colorTextDescription} />
+              <MapPin size={18} color={colors.colorTextDescription} />
               <CustomText fontSize={14} color={colors.colorTextDescription}>
                 {getTranslation(location) || ''}
               </CustomText>
@@ -80,7 +71,7 @@ function UniverAiSearchCard({
             className={styles.detailCard}
           >
             <div className={styles.detailTitle}>
-              <Profile2User size="18" color={colors.colorSecondary} />
+              <Users size={18} color={colors.colorSecondary} />
               <CustomText color={colors.colorText}>Admission</CustomText>
             </div>
             <CustomText mt={12} fontSize={14} color={colors.colorTextSecondary}>
@@ -99,7 +90,7 @@ function UniverAiSearchCard({
             className={styles.detailCard}
           >
             <div className={styles.detailTitle}>
-              <Teacher size="18" color={colors.colorSecondary} />
+              <GraduationCap size={18} color={colors.colorSecondary} />
               <CustomText color={colors.colorText}>Academics</CustomText>
             </div>
             <CustomText mt={12} fontSize={14} color={colors.colorTextSecondary}>
@@ -118,7 +109,7 @@ function UniverAiSearchCard({
             className={styles.detailCard}
           >
             <div className={styles.detailTitle}>
-              <DollarCircle size="18" color={colors.colorSecondary} />
+              <CircleDollarSign size={18} color={colors.colorSecondary} />
               <CustomText color={colors.colorText}>Costs & Aid</CustomText>
             </div>
             <CustomText mt={12} fontSize={14} color={colors.colorTextSecondary}>
@@ -139,7 +130,7 @@ function UniverAiSearchCard({
             <div className={styles.majorTop}>
               <div>
                 <div className={styles.majorTitle}>
-                  <Book1 size="22" color={colors.colorSecondary} />
+                  <BookOpen size={22} color={colors.colorSecondary} />
                   <CustomText
                     fontSize={20}
                     fontWeight={500}
@@ -162,7 +153,7 @@ function UniverAiSearchCard({
                 <div className={styles.paths}>
                   <div className={styles.courses}>
                     <div style={{ display: 'flex', columnGap: 4 }}>
-                      <Building size="18" color={colors.colorSecondary} />
+                      <Building2 size={18} color={colors.colorSecondary} />
                       <CustomText
                         fontSize={16}
                         fontWeight={500}
@@ -181,7 +172,7 @@ function UniverAiSearchCard({
                   </div>
                   <div className={styles.courses}>
                     <div style={{ display: 'flex', columnGap: 4 }}>
-                      <Briefcase size="18" color={colors.colorSecondary} />
+                      <Briefcase size={18} color={colors.colorSecondary} />
                       <CustomText
                         fontSize={16}
                         fontWeight={500}
@@ -201,7 +192,7 @@ function UniverAiSearchCard({
                 </div>
               </div>
               <div className={styles.match}>
-                <Cup size="24" color={colors.colorBgBase} />
+                <Trophy size={24} color={colors.colorBgBase} />
                 <CustomText
                   mt={4}
                   fontSize={18}

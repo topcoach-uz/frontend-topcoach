@@ -1,5 +1,5 @@
 import { App, Button, ConfigProvider, Flex, message, Modal } from 'antd';
-import { Clock } from 'iconsax-react';
+import { Clock } from 'lucide-react';
 import { useState } from 'react';
 import {
   MentorExperienceLevel,
@@ -110,7 +110,7 @@ export default function IndividualSessionsTab({
             >
               <div style={{ textAlign: 'left', width: '100%' }}>
                 <Flex gap={8} align="center" style={{ marginBottom: '8px' }}>
-                  <Clock size="24" color={colors.colorPrimary} />
+                  <Clock size={24} color={colors.colorPrimary} />
                   <CustomText 
                     color={colors.colorPrimary}
                     fontSize={20}

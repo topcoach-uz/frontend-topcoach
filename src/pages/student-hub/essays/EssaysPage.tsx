@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Row, Col, List, Badge, Space, Tag, Progress, Input, Select, message, Modal, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { EditOutlined, DownloadOutlined, FileTextOutlined, BulbOutlined, FileSearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Pencil, Download, FileText, Lightbulb, FileSearch, AlertCircle } from 'lucide-react';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { STATUS_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentHub } from '../../../hooks/useStudentHub';
@@ -53,7 +53,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                 <p style={{ color: '#666', margin: 0, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
                   {isReadOnlyEssays
                     ? t('studentHub.essays.counselorComingSoon')
-                    : t('studentHub.essays.comingSoonDescription', "We're building an essay hub that helps you brainstorm ideas based on your interests and target schools — so your essays stand out. Check back soon!")}
+                    : t('studentHub.essays.comingSoonDescription', "We're building an essay hub that helps you brainstorm ideas based on your interests and target schools, so your essays stand out. Check back soon!")}
                 </p>
               </div>
             }
@@ -315,7 +315,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
     Modal.confirm({
       title: t('studentHub.essays.deleteEssay'),
       content: t('studentHub.essays.deleteConfirm', { title: essay.title }),
-      icon: <ExclamationCircleOutlined style={{ color: '#8b0000' }} />,
+      icon: <AlertCircle size={16} color="#8b0000" />,
       okText: t('studentHub.applications.delete'),
       okButtonProps: { 
         danger: true,
@@ -409,7 +409,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
       key: 'write',
       label: (
         <div className="tab-label">
-          <EditOutlined />
+          <Pencil size={16} />
           <span>{t('studentHub.essays.tab.write')}</span>
         </div>
       ),
@@ -429,7 +429,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
       key: 'ai-feedback',
       label: (
         <div className="tab-label">
-          <BulbOutlined />
+          <Lightbulb size={16} />
           <span>{t('studentHub.essays.tab.aiFeedback')}</span>
         </div>
       ),
@@ -439,7 +439,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
       key: 'my-essays',
       label: (
         <div className="tab-label">
-          <FileTextOutlined />
+          <FileText size={16} />
           <span>{t('studentHub.essays.myEssays')}</span>
         </div>
       ),
@@ -492,7 +492,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                 </Select>
                 <Button
                   type="primary"
-                  icon={<EditOutlined />}
+                  icon={<Pencil size={16} />}
                   size="large"
                   onClick={() => {
                     // Clear essayId to start fresh
@@ -558,14 +558,14 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                     actions={[
                       <Button
                         type="text"
-                        icon={<EditOutlined />}
+                        icon={<Pencil size={16} />}
                         onClick={() => handleEditEssay(essay.id)}
                       >
                         {t('studentHub.essays.edit')}
                       </Button>,
                       <Button
                         type="text"
-                        icon={<DownloadOutlined />}
+                        icon={<Download size={16} />}
                         onClick={(e) => {
                           e.stopPropagation();
                           // Show dropdown for Word/PDF choice
@@ -652,7 +652,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
                       <div className="essay-meta">
                         <Space size="small" split={<span style={{ color: '#d9d9d9' }}>•</span>}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <FileTextOutlined style={{ color: '#8b0000', fontSize: 12 }} />
+                            <FileText size={12} color="#8b0000" />
                             <span>{essay.wordCount || 0} {t('studentHub.essays.words')}</span>
                           </span>
                           {essay.lastEditedAt && (
@@ -682,7 +682,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
       key: 'templates',
       label: (
         <div className="tab-label">
-          <FileSearchOutlined />
+          <FileSearch size={16} />
           <span>{t('studentHub.essays.templates')}</span>
         </div>
       ),

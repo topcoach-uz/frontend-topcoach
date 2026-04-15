@@ -21,7 +21,7 @@ interface UniversityMatch {
   campusType: 'large' | 'medium' | 'small';
   environment: 'research-intensive' | 'liberal-arts' | 'technical' | 'comprehensive';
   logo?: string;
-  /** Official university website — card click opens this in a new tab */
+  /** Official university website; card click opens this in a new tab */
   website?: string;
 }
 

@@ -1,0 +1,81 @@
+@import 'src/styles/variables.scss';
+
+.card {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 32px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #fff 50%, #f0f9ff 100%);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: #002b5b;
+    box-shadow: 0 8px 24px rgba(0, 43, 91, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #002b5b;
+    outline-offset: 2px;
+  }
+}
+
+.iconWrap {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #002b5b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #002b5b;
+  letter-spacing: -0.02em;
+}
+
+.statusTag {
+  margin: 0 !important;
+  font-weight: 600;
+}
+
+.desc {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #002b5b;
+}

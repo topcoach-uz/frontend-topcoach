@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Tag, Progress, Modal, Form, Input, Select, DatePicker, Switch, Space, message, Upload } from 'antd';
 import type { UploadFile } from 'antd';
-import { UserOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined, GlobalOutlined, EditOutlined, EyeOutlined, DeleteOutlined, DownloadOutlined, CalendarOutlined, MessageOutlined, ScheduleOutlined, BarChartOutlined, RocketOutlined } from '@ant-design/icons';
+import { User, Plus, CheckCircle2, FileText, Globe, Pencil, Eye, Trash2, Download, Calendar, MessageCircle, CalendarClock, BarChart2, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useColors from 'src/hooks/useColors';
@@ -206,7 +206,7 @@ export default function FullSupportMentorDashboard() {
   const confirmRemovePipelineRow = (row: PipelineDto) => {
     Modal.confirm({
       title: 'Remove this application?',
-      content: `${row.student ?? 'Student'} — ${row.program} will be removed from the pipeline. You can add it again later.`,
+      content: `${row.student ?? 'Student'} (${row.program}) will be removed from the pipeline. You can add it again later.`,
       okText: 'Remove',
       okType: 'danger',
       cancelText: 'Cancel',
@@ -298,17 +298,17 @@ export default function FullSupportMentorDashboard() {
         <Space size="middle" wrap align="center">
           {r.submissionText ? (
             <>
-              <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => setViewSubmissionTask(r)}>
+              <Button type="link" size="small" icon={<Eye size={16} />} onClick={() => setViewSubmissionTask(r)}>
                 View submission
               </Button>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openFeedbackModal(r)}>
+              <Button type="link" size="small" icon={<Pencil size={16} />} onClick={() => openFeedbackModal(r)}>
                 Feedback
               </Button>
             </>
           ) : (
             <span style={{ color: '#999', fontSize: 13 }}>Not submitted</span>
           )}
-          <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveTask(r)} title="Remove task" />
+          <Button type="text" size="small" danger icon={<Trash2 size={16} />} onClick={() => confirmRemoveTask(r)} title="Remove task" />
         </Space>
       ),
     },
@@ -320,13 +320,13 @@ export default function FullSupportMentorDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{ color: primary }}>Mentor Management</h1>
-            <p style={{ marginBottom: 0 }}>Admissions & Portfolio Supervision — Monitor student progress, log sessions, and track milestones.</p>
+            <p style={{ marginBottom: 0 }}>Admissions and portfolio supervision: monitor student progress, log sessions, and track milestones.</p>
           </div>
         </div>
       </Card>
 
       <Card
-        title={<><UserOutlined style={{ marginRight: 8, color: primary }} />Student Roster</>}
+        title={<><User size={16} style={{ marginRight: 8, color: primary }} />Student Roster</>}
         extra={<span style={{ color: '#666', fontSize: 13 }}>{roster.length} active students</span>}
         style={{ marginTop: 24 }}
         className="full-support-card"
@@ -360,7 +360,7 @@ export default function FullSupportMentorDashboard() {
                 <Button
                   type="primary"
                   size="small"
-                  icon={<CalendarOutlined />}
+                  icon={<Calendar size={16} />}
                   style={{ flex: 1, minWidth: 0, borderRadius: 8, backgroundColor: primary, borderColor: primary, fontSize: 12 }}
                   onClick={() => setSessionLogStudent(s)}
                 >
@@ -369,7 +369,7 @@ export default function FullSupportMentorDashboard() {
                 <Button
                   type="primary"
                   size="small"
-                  icon={<MessageOutlined />}
+                  icon={<MessageCircle size={16} />}
                   style={{ flex: 1, minWidth: 0, borderRadius: 8, backgroundColor: primary, borderColor: primary, fontSize: 12 }}
                   onClick={async () => {
                     if (!currentUser?.id) return;
@@ -401,7 +401,7 @@ export default function FullSupportMentorDashboard() {
       )}
 
       <Modal
-        title={`Full Support progress — ${selectedProgressStudent?.name ?? ''}`}
+        title={`Full Support progress: ${selectedProgressStudent?.name ?? ''}`}
         open={!!selectedProgressStudent}
         onCancel={() => setSelectedProgressStudent(null)}
         footer={<Button type="primary" onClick={() => setSelectedProgressStudent(null)} style={{ backgroundColor: primary, borderColor: primary }}>Close</Button>}
@@ -411,7 +411,7 @@ export default function FullSupportMentorDashboard() {
         {selectedProgressStudent && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ color: '#666', marginBottom: 16 }}>Track your mentorship sessions, applications, and deadlines.</p>
-            <Card size="small" title={<><ScheduleOutlined style={{ marginRight: 8, color: primary }} />Session timeline</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><CalendarClock size={16} style={{ marginRight: 8, color: primary }} />Session timeline</>} style={{ marginBottom: 16 }}>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span>This month</span>
@@ -437,7 +437,7 @@ export default function FullSupportMentorDashboard() {
             </Card>
             <Card
               size="small"
-              title={<><BarChartOutlined style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>}
+              title={<><BarChart2 size={16} style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>}
               style={{ marginBottom: 16 }}
               extra={
                 progressCurriculumWatchlist.some((i) => i.key === 'sat_prep') && selectedProgressStudent ? (
@@ -466,7 +466,7 @@ export default function FullSupportMentorDashboard() {
                 ))
               )}
             </Card>
-            <Card size="small" title={<><FileTextOutlined style={{ marginRight: 8, color: primary }} />Tasks from mentor</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><FileText size={16} style={{ marginRight: 8, color: primary }} />Tasks from mentor</>} style={{ marginBottom: 16 }}>
               <Table
                 dataSource={progressStudentTasks}
                 rowKey="id"
@@ -474,12 +474,12 @@ export default function FullSupportMentorDashboard() {
                 size="small"
                 columns={[
                   { title: 'TASK', dataIndex: 'task', key: 'task', width: 180 },
-                  { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (d: string) => d ? dayjs(d).format('MMM D, YYYY') : '—' },
+                  { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (d: string) => d ? dayjs(d).format('MMM D, YYYY') : '-' },
                   { title: 'STATUS', key: 'status', width: 110, render: (_: unknown, r: TaskDto) => <Tag color={statusColors[getTaskStatus(r)] ?? 'default'}>{getTaskStatus(r)}</Tag> },
                 ]}
               />
             </Card>
-            <Card size="small" title={<><CheckCircleOutlined style={{ marginRight: 8, color: primary }} />Milestone Tracker</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: primary }} />Milestone Tracker</>} style={{ marginBottom: 16 }}>
               <p style={{ color: '#666', fontSize: 12, marginBottom: 8 }}>Milestones for this student.</p>
               {progressMilestones.length === 0 ? (
                 <p style={{ color: '#666', fontSize: 13 }}>No milestones yet.</p>
@@ -495,7 +495,7 @@ export default function FullSupportMentorDashboard() {
                 ))
               )}
             </Card>
-            <Card size="small" title={<><GlobalOutlined style={{ marginRight: 8, color: primary }} />Application tracker</>} style={{ marginBottom: 8 }}>
+            <Card size="small" title={<><Globe size={16} style={{ marginRight: 8, color: primary }} />Application tracker</>} style={{ marginBottom: 8 }}>
               <Table
                 dataSource={progressStudentPipeline}
                 rowKey="id"
@@ -505,7 +505,7 @@ export default function FullSupportMentorDashboard() {
                   { title: 'PROGRAM', dataIndex: 'program', key: 'program', width: 200 },
                   { title: 'STAGE', dataIndex: 'stage', key: 'stage', width: 120 },
                   { title: 'STATUS', dataIndex: 'status', key: 'status', width: 100, render: (st: string) => <Tag color={statusColors[st] ?? 'default'}>{st}</Tag> },
-                  { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 100, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '—' },
+                  { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 100, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '-' },
                 ]}
               />
             </Card>
@@ -566,7 +566,7 @@ export default function FullSupportMentorDashboard() {
       </Modal>
 
       <Card
-        title={<><CheckCircleOutlined style={{ marginRight: 8, color: primary }} />Milestone Tracker</>}
+        title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: primary }} />Milestone Tracker</>}
         extra={
           <Space wrap>
             <Select
@@ -575,7 +575,7 @@ export default function FullSupportMentorDashboard() {
               options={roster.map((s) => ({ label: s.name, value: s.id }))}
               style={{ minWidth: 160 }}
             />
-            <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAddMilestoneOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, fontSize: 14, minHeight: 28 }}>
+            <Button type="primary" size="small" icon={<Plus size={16} />} onClick={() => setAddMilestoneOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, fontSize: 14, minHeight: 28 }}>
               Add milestone
             </Button>
           </Space>
@@ -599,7 +599,7 @@ export default function FullSupportMentorDashboard() {
                   checked={m.done}
                   onChange={(checked) => handleMilestoneDoneToggle(selectedMilestoneStudentId, m.id, checked)}
                 />
-                <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveMilestone(selectedMilestoneStudentId, m)} title="Remove milestone" />
+                <Button type="text" size="small" danger icon={<Trash2 size={16} />} onClick={() => confirmRemoveMilestone(selectedMilestoneStudentId, m)} title="Remove milestone" />
               </Space>
             </div>
           ))
@@ -607,8 +607,8 @@ export default function FullSupportMentorDashboard() {
       </Card>
 
       <Card
-        title={<><FileTextOutlined style={{ marginRight: 8, color: primary }} />Task Assignment</>}
-        extra={<Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAssignTaskOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, fontSize: 14, minHeight: 28 }}>Assign Task</Button>}
+        title={<><FileText size={16} style={{ marginRight: 8, color: primary }} />Task Assignment</>}
+        extra={<Button type="primary" size="small" icon={<Plus size={16} />} onClick={() => setAssignTaskOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, fontSize: 14, minHeight: 28 }}>Assign Task</Button>}
         style={{ marginTop: 24 }}
         className="full-support-card"
       >
@@ -616,9 +616,9 @@ export default function FullSupportMentorDashboard() {
       </Card>
 
       <Card
-        title={<><GlobalOutlined style={{ marginRight: 8, color: primary }} />Application Pipeline</>}
+        title={<><Globe size={16} style={{ marginRight: 8, color: primary }} />Application Pipeline</>}
         extra={
-          <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAddPipelineOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, minHeight: 28 }}>
+          <Button type="primary" size="small" icon={<Plus size={16} />} onClick={() => setAddPipelineOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20, minHeight: 28 }}>
             Add application
           </Button>
         }
@@ -680,7 +680,7 @@ export default function FullSupportMentorDashboard() {
                 />
               ),
             },
-            { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (v: string | null) => v ? dayjs(v).format('MMM D, YYYY') : '—' },
+            { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (v: string | null) => v ? dayjs(v).format('MMM D, YYYY') : '-' },
             {
               title: 'FIN. AID',
               dataIndex: 'aid',
@@ -744,7 +744,7 @@ export default function FullSupportMentorDashboard() {
       </Modal>
 
       <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
-        <Button type="default" icon={<FileTextOutlined />} onClick={() => setWeeklyReportModalOpen(true)}>
+        <Button type="default" icon={<FileText size={16} />} onClick={() => setWeeklyReportModalOpen(true)}>
           Students&apos; weekly report
         </Button>
         <Button type="primary" onClick={() => navigate('/')} style={{ backgroundColor: primary, borderColor: primary }}>Back to Home</Button>
@@ -768,7 +768,7 @@ export default function FullSupportMentorDashboard() {
                 <Button
                   type="primary"
                   size="small"
-                  icon={<DownloadOutlined />}
+                  icon={<Download size={16} />}
                   loading={downloadingStudentId === s.id}
                   disabled={!!downloadingStudentId}
                   onClick={async () => {
@@ -805,9 +805,9 @@ export default function FullSupportMentorDashboard() {
         />
       )}
 
-      {/* Session Log modal — per student */}
+      {/* Session Log modal (per student) */}
       <Modal
-        title={sessionLogStudent ? `${sessionLogStudent.initials} ${sessionLogStudent.name} — Session Log` : 'Session Log'}
+        title={sessionLogStudent ? `${sessionLogStudent.initials} ${sessionLogStudent.name}: session log` : 'Session Log'}
         open={!!sessionLogStudent}
         onCancel={() => { setSessionLogStudent(null); setAddSessionOpen(false); sessionForm.resetFields(); }}
         footer={null}
@@ -816,7 +816,7 @@ export default function FullSupportMentorDashboard() {
         {sessionLogStudent && (
           <div className="session-log-list">
             <div style={{ marginBottom: 16 }}>
-              <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAddSessionOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20 }}>
+              <Button type="primary" size="small" icon={<Plus size={16} />} onClick={() => setAddSessionOpen(true)} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 20 }}>
                 Add session
               </Button>
             </div>
@@ -859,7 +859,7 @@ export default function FullSupportMentorDashboard() {
                         onChange={(checked) => handleSessionDoneToggle(sessionLogStudent.id, session.id, checked)}
                         style={{ flexShrink: 0 }}
                       />
-                      <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveSession(sessionLogStudent.id, session.id, session.description)} title="Remove session" />
+                      <Button type="text" size="small" danger icon={<Trash2 size={16} />} onClick={() => confirmRemoveSession(sessionLogStudent.id, session.id, session.description)} title="Remove session" />
                     </Space>
                   </div>
                 </div>
@@ -918,7 +918,7 @@ export default function FullSupportMentorDashboard() {
         </Form>
       </Modal>
 
-      {/* Task Feedback modal — for Reviewed: read-only "See Feedback"; for Needs review/Pending: editable + Send */}
+      {/* Task Feedback modal: Reviewed = read-only; Needs review/Pending = editable + Send */}
       <Modal
         title="Task Feedback"
         open={!!feedbackModalTask}
@@ -958,7 +958,7 @@ export default function FullSupportMentorDashboard() {
 
       {/* View submission modal */}
       <Modal
-        title={viewSubmissionTask ? `${viewSubmissionTask.task} — Submission` : 'Submission'}
+        title={viewSubmissionTask ? `${viewSubmissionTask.task}: submission` : 'Submission'}
         open={!!viewSubmissionTask}
         onCancel={() => setViewSubmissionTask(null)}
         footer={<Button type="primary" onClick={() => setViewSubmissionTask(null)} style={{ backgroundColor: primary, borderColor: primary }}>Close</Button>}

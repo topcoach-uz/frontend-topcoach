@@ -1,6 +1,6 @@
 import { Col, Form, Upload } from "antd";
 import { FormItemProps, UploadProps } from "antd/lib";
-import { DocumentUpload } from "iconsax-react";
+import { FileUp } from "lucide-react";
 import { useState } from "react";
 import { CustomButton } from "src/components/common";
 import { colors } from "src/constants/theme";
@@ -54,7 +54,7 @@ export default function UploadFormItem({
         >
           <CustomButton
             type="primary"
-            icon={<DocumentUpload size="24" color={colors.white} />}
+            icon={<FileUp size={24} color={colors.white} />}
           >
             {buttonTitle}
           </CustomButton>

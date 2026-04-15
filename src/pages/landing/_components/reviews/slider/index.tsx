@@ -67,7 +67,7 @@ const CarouselSlide: React.FC<CarouselSlideProps> = ({
           color={colors.colorTextSecondary}
           className={styles.author}
         >
-          — {authorName || 'Student'}
+          {authorName ? `by ${authorName}` : 'Student'}
         </CustomText>
         <CustomRightArrow onClick={() => navigate(`/success-stories/${id}`)} />
       </div>

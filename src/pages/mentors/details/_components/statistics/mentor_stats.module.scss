@@ -17,9 +17,10 @@
 }
 
 .icon_wrapper {
-  background: $orange1;
-  padding: 12px;
-  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .num_wrapper {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { App, Input, Button, Upload, Space } from 'antd';
-import { SendOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { Send, Paperclip } from 'lucide-react';
 import {
   useSendMessageMutation,
   useSendFileMessageMutation,
@@ -197,7 +197,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       {selectedFile && !filePreview && (
         <div className={styles.filePreview}>
           <Space>
-            <PaperClipOutlined />
+            <Paperclip size={16} />
             <span>{selectedFile.name}</span>
             <Button
               type="text"
@@ -218,7 +218,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         >
           <Button
             type="text"
-            icon={<PaperClipOutlined />}
+            icon={<Paperclip size={16} />}
             className={styles.attachButton}
             disabled={isLoading}
           />
@@ -235,7 +235,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         />
         <Button
           type="primary"
-          icon={<SendOutlined />}
+          icon={<Send size={16} />}
           onClick={() => handleSend()}
           loading={isLoading}
           disabled={!message.trim() && !selectedFile}

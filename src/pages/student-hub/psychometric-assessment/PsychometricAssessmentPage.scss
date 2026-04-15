@@ -9,8 +9,9 @@ $crimson-dark: #660000;
   padding: $space-6;
   width: 100%;
 
+  /* Align horizontal inset with Student Hub; drop outer vertical padding (inner cards provide rhythm) */
   &.student-hub-page {
-    padding: 0;
+    padding: 0 $space-5;
   }
 
   .psychometric-assessment-loading {

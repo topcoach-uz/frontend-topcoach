@@ -6,9 +6,7 @@ import CancelConfirmationDialog from './CancelConfirmationDialog';
 import { message, Progress, Modal } from 'antd';
 import { useGetSubscriptionPlansQuery, useGetSubscriptionUsageQuery, useGetCurrentSubscriptionQuery, useCancelSubscriptionMutation, useDowngradeSubscriptionMutation } from 'src/app/services/api';
 import styles from './SubscriptionPlans.module.scss';
-import { CheckOutlined, StarFilled } from '@ant-design/icons';
-import { FaRocket } from 'react-icons/fa';
-import { GiLaurelsTrophy } from 'react-icons/gi';
+import { Check, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface Plan {
@@ -85,7 +83,7 @@ const SubscriptionPlans: React.FC = () => {
         button: t('pricing.upgradeToStandard'),
         buttonClass: '',
         description: t('pricing.standardDescription'),
-        badge: <div className={styles.popularBadge}><StarFilled /> {t('pricing.mostPopular')}</div>,
+        badge: <div className={styles.popularBadge}><Star size={16} /> {t('pricing.mostPopular')}</div>,
       },
       'Premium': {
         key: 'premium',

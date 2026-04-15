@@ -11,6 +11,7 @@ import { Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext';
 import StudentHubRoutes from './StudentHubRoutes';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
@@ -42,7 +43,11 @@ export default function StudentHubGate() {
   }
 
   if (email === SUPER_ADMIN_EMAIL) {
-    return <StudentHubRoutes />;
+    return (
+      <JourneyExperienceProvider>
+        <StudentHubRoutes />
+      </JourneyExperienceProvider>
+    );
   }
 
   if (isMentor && !MENTOR_EXCEPTION_EMAILS.includes(email || '')) {
@@ -61,5 +66,9 @@ export default function StudentHubGate() {
     return <Navigate to="/school-counselor" replace />;
   }
 
-  return <StudentHubRoutes />;
+  return (
+    <JourneyExperienceProvider>
+      <StudentHubRoutes />
+    </JourneyExperienceProvider>
+  );
 }

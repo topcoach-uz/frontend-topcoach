@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, Result, Spin } from 'antd';
-import { CheckCircleOutlined, RocketOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { CheckCircle2, Rocket, Clock, User } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import './success.scss';
@@ -63,14 +63,14 @@ const ProgramsSuccessPage: React.FC = () => {
       <div className="success-container">
         <Card className="success-card">
           <Result
-            icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+            icon={<CheckCircle2 size={16} color="#52c41a" />}
             status="success"
             title="Payment Successful!"
             subTitle={
               <div className="success-subtitle">
                 <p>Thank you for enrolling in our course program!</p>
                 <div className="approval-notice">
-                  <ClockCircleOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                  <Clock size={16} color="#faad14" style={{ marginRight: '8px' }} />
                   <span>
                     <strong>Your application has been submitted!</strong> Our administrator will review and contact you within 12 hours.
                   </span>
@@ -78,11 +78,11 @@ const ProgramsSuccessPage: React.FC = () => {
                 {enrollmentData && (
                   <div className="enrollment-details">
                     <div className="detail-item">
-                      <UserOutlined />
+                      <User size={16} />
                       <span>Plan: <strong>{enrollmentData.courseType === 'standard' ? 'Standard' : 'Premium'}</strong></span>
                     </div>
                     <div className="detail-item">
-                      <ClockCircleOutlined />
+                      <Clock size={16} />
                       <span>Status: <strong className="status-pending">Pending Approval</strong></span>
                     </div>
                   </div>
@@ -95,7 +95,7 @@ const ProgramsSuccessPage: React.FC = () => {
                 size="large" 
                 key="programs"
                 onClick={handleGoToPrograms}
-                icon={<RocketOutlined />}
+                icon={<Rocket size={16} />}
               >
                 View Program Details
               </Button>,

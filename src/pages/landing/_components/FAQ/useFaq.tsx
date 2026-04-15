@@ -130,7 +130,7 @@ const itemsEn: CollapseProps['items'] = [
           </li>
           {/* Temporarily hidden - rethinking subscription plans */}
           {/* <li>
-          <strong>Full Guidance Package:</strong> A 4-hour package designed to provide in-depth, personalized support on your application — including university selection, personal statements, and application strategy.
+          <strong>Full Guidance Package:</strong> A 4-hour package designed to provide in-depth, personalized support on your application, including university selection, personal statements, and application strategy.
           </li>
           <li>
           <strong>Intensive Course:</strong> An 8-hour mentorship program for students who want full guidance throughout the entire university application process, from start to finish.
@@ -273,7 +273,7 @@ const itemsUz: CollapseProps['items'] = [
     key: '1',
     label: 'TopCoach nima?',
     children:
-      'TopCoach — bu talabalarga universitetga ariza topshirish, testga tayyorgarlik ko‘rish, esse yozish va karyera bo‘yicha maslahat berishda tajribali mentorlar bilan bog‘lanish imkonini beruvchi mentorlik platformasidir.',
+      'TopCoach bu talabalarga universitetga ariza topshirish, testga tayyorgarlik ko‘rish, esse yozish va karyera bo‘yicha maslahat berishda tajribali mentorlar bilan bog‘lanish imkonini beruvchi mentorlik platformasidir.',
   },
   {
     key: '2',
@@ -389,7 +389,7 @@ const itemsUz: CollapseProps['items'] = [
     children: (
       <div>
         <p>
-          Mentee Dashboard — bu TopCoach’dagi shaxsiy maydonchangiz bo‘lib, unda
+          Mentee Dashboard, TopCoach’dagi shaxsiy maydonchangiz bo‘lib, unda
           siz:
         </p>
         <ul>
@@ -495,7 +495,7 @@ const itemsRu: CollapseProps['items'] = [
     key: '1',
     label: 'Что такое TopCoach?',
     children:
-      'TopCoach — это платформа наставничества, которая соединяет студентов с опытными наставниками, помогающими с поступлением в университет, подготовкой к экзаменам, написанием эссе и карьерным консультированием.',
+      'TopCoach: это платформа наставничества, которая соединяет студентов с опытными наставниками, помогающими с поступлением в университет, подготовкой к экзаменам, написанием эссе и карьерным консультированием.',
   },
   {
     key: '2',
@@ -562,7 +562,7 @@ const itemsRu: CollapseProps['items'] = [
             <strong>Pro Bono</strong>
             <ul>
               <li>
-              Pro Bono Mentor — это социальная роль для менторов, которые работают на добровольной основе:
+              Pro Bono Mentor: это социальная роль для менторов, которые работают на добровольной основе:
               </li>
               <li>
               Работают безвозмездно по собственному желанию.
@@ -641,7 +641,7 @@ const itemsRu: CollapseProps['items'] = [
     children: (
       <div>
         <p>
-          Панель управления для подопечных — это ваше личное пространство на
+          Панель управления для подопечных: ваше личное пространство на
           TopCoach, где вы можете:
         </p>
         <ul>
@@ -711,7 +711,7 @@ const itemsRu: CollapseProps['items'] = [
     key: '8',
     label: 'Как понять, подходит ли мне TopCoach?',
     children:
-      'Если вы готовитесь к поступлению в университет, нуждаетесь в помощи с эссе или хотите получить экспертные советы от тех, кто успешно прошёл этот процесс, TopCoach — отличное решение. Вы можете начать с одного сеанса или выбрать пакет для постоянного сопровождения.',
+      'Если вы готовитесь к поступлению в университет, нуждаетесь в помощи с эссе или хотите получить экспертные советы от тех, кто успешно прошёл этот процесс, TopCoach, отличное решение. Вы можете начать с одного сеанса или выбрать пакет для постоянного сопровождения.',
   },
   {
     key: '9',
@@ -805,7 +805,7 @@ const itemsKk: CollapseProps['items'] = [
             <strong>Pro Bono Mentor</strong>
             <ul>
               <li>
-              Pro Bono Mentor — бұл әлеуметтік жобаға үлес қосатын, өз еркімен тегін жұмыс істейтиң mentor.
+              Pro Bono Mentor: бұл әлеуметтік жобаға үлес қосатын, өз еркімен тегін жұмыс істейтиң mentor.
               </li>
               <li>Өз еркімен тегін жұмыс істейди.</li>
               <li>
@@ -818,7 +818,7 @@ const itemsKk: CollapseProps['items'] = [
             </ul>
             <strong>Маңызды ескертпе:</strong>
             <p>
-            Әр mentor-дың тәжирибеси жеке талданады — платформамызда ең сәйкесін таңдап беремиз.
+            Әр mentor-дың тәжирибеси жеке талданады; платформамызда ең сәйкесін таңдап беремиз.
             </p>
           </li>
         </ul>

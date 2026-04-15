@@ -1,5 +1,5 @@
 /**
- * Telegram connection checklist for mentees — shown at top of My Journey until connected.
+ * Telegram connection checklist for mentees, shown at top of My Journey until connected.
  * Hidden when connected or in read-only mode.
  */
 

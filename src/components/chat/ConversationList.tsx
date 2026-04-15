@@ -1,6 +1,6 @@
-import React, { useMemo, useEffect } from 'react';
-import { List, Avatar, Empty, Spin, Typography } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import React, { useMemo, useEffect, useState } from 'react';
+import { List, Avatar, Empty, Spin, Typography, Input } from 'antd';
+import { User, Search } from 'lucide-react';
 import { useGetConversationsQuery, chatApi } from 'src/app/services/chat/chatApi';
 import {
   Conversation,
@@ -19,11 +19,17 @@ const { Text } = Typography;
 
 interface ConversationListProps {
   onConversationClick: (conversationId: string) => void;
+  /** Two-column messenger: search, selection highlight, tighter styling */
+  variant?: 'default' | 'messenger';
+  selectedConversationId?: string | null;
 }
 
 const ConversationList: React.FC<ConversationListProps> = ({
   onConversationClick,
+  variant = 'default',
+  selectedConversationId = null,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useAppDispatch();
   const { data: conversationsData, isLoading } = useGetConversationsQuery(
     undefined,
@@ -55,12 +61,47 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const conversations = useMemo(() => {
     if (!conversationsData) return [];
-    // Handle both array and object response formats
-    if (isConversationArray(conversationsData)) {
-      return conversationsData;
+    const raw: Conversation[] = isConversationArray(conversationsData)
+      ? conversationsData
+      : conversationsData.conversations || [];
+
+    /** One row per mentor–student pair (full support + 1:1 may have duplicated rows). */
+    const byKey = new Map<string, Conversation[]>();
+    for (const c of raw) {
+      const key = [c.mentorId, c.studentId].sort().join(':');
+      const list = byKey.get(key) ?? [];
+      list.push(c);
+      byKey.set(key, list);
     }
-    // If it's an object, check for conversations property
-    return conversationsData.conversations || [];
+    const merged: Conversation[] = [];
+    for (const [, group] of byKey) {
+      if (group.length === 1) {
+        merged.push(group[0]);
+        continue;
+      }
+      const primary = group.reduce((best, cur) => {
+        const bt = best.lastMessageAt ? new Date(best.lastMessageAt).getTime() : 0;
+        const ct = cur.lastMessageAt ? new Date(cur.lastMessageAt).getTime() : 0;
+        return ct >= bt ? cur : best;
+      });
+      const maxT = Math.max(
+        0,
+        ...group.map((x) => (x.lastMessageAt ? new Date(x.lastMessageAt).getTime() : 0)),
+      );
+      merged.push({
+        ...primary,
+        unreadCountMentor: group.reduce((s, x) => s + (x.unreadCountMentor ?? 0), 0),
+        unreadCountStudent: group.reduce((s, x) => s + (x.unreadCountStudent ?? 0), 0),
+        lastMessageAt:
+          maxT > 0 ? new Date(maxT).toISOString() : primary.lastMessageAt,
+      });
+    }
+    merged.sort((a, b) => {
+      const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return tb - ta;
+    });
+    return merged;
   }, [conversationsData]);
 
   const getOtherUser = (conversation: Conversation) => {
@@ -70,6 +111,17 @@ const ConversationList: React.FC<ConversationListProps> = ({
     }
     return conversation.mentor;
   };
+
+  const filteredConversations = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter((c) => {
+      const other = getOtherUser(c);
+      const name = (other?.profile?.name || '').toLowerCase();
+      const email = (other?.email || '').toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+  }, [conversations, searchQuery, currentUser?.id]);
 
   const getOtherUserAvatar = (conversation: Conversation) => {
     const otherUser = getOtherUser(conversation);
@@ -127,19 +179,43 @@ const ConversationList: React.FC<ConversationListProps> = ({
     );
   }
 
-  return (
+  if (filteredConversations.length === 0) {
+    return (
+      <div className={variant === 'messenger' ? styles.messengerEmpty : styles.emptyContainer}>
+        {variant === 'messenger' && (
+          <div className={styles.messengerSearch}>
+            <Input
+              allowClear
+              size="large"
+              placeholder="Search…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
+              className={styles.messengerSearchInput}
+            />
+          </div>
+        )}
+        <Empty description="No matches" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      </div>
+    );
+  }
+
+  const list = (
     <List
-      className={styles.conversationList}
-      dataSource={conversations}
+      className={`${styles.conversationList} ${variant === 'messenger' ? styles.conversationListMessenger : ''}`}
+      dataSource={filteredConversations}
       renderItem={(conversation) => {
         const otherUser = getOtherUser(conversation);
         const unreadCount = getUnreadCount(conversation);
         const lastMessageTime = getLastMessagePreview(conversation);
+        const isSelected = selectedConversationId === conversation.id;
 
         return (
           <List.Item
             className={`${styles.conversationItem} ${
               unreadCount > 0 ? styles.unread : ''
+            } ${isSelected ? styles.conversationItemSelected : ''} ${
+              variant === 'messenger' ? styles.conversationItemMessenger : ''
             }`}
             onClick={() => handleConversationClick(conversation.id)}
           >
@@ -148,7 +224,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 <Avatar
                   src={getOtherUserAvatar(conversation)}
                   size={48}
-                  icon={!getOtherUserAvatar(conversation) ? <UserOutlined /> : undefined}
+                  icon={!getOtherUserAvatar(conversation) ? <User size={16} /> : undefined}
                   style={{ backgroundColor: '#8b0000' }}
                 >
                   {!getOtherUserAvatar(conversation) && (otherUser?.profile?.name?.[0]?.toUpperCase() || 'U')}
@@ -177,6 +253,27 @@ const ConversationList: React.FC<ConversationListProps> = ({
       }}
     />
   );
+
+  if (variant === 'messenger') {
+    return (
+      <div className={styles.messengerListWrap}>
+        <div className={styles.messengerSearch}>
+          <Input
+            allowClear
+            size="large"
+            placeholder="Search…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
+            className={styles.messengerSearchInput}
+          />
+        </div>
+        {list}
+      </div>
+    );
+  }
+
+  return list;
 };
 
 export default ConversationList;

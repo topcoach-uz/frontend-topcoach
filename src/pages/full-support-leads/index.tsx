@@ -1,5 +1,5 @@
 import styles from './full-support-leads.module.scss';
-import { TrophyOutlined, TeamOutlined, WarningOutlined } from '@ant-design/icons';
+import { Trophy, Users, AlertTriangle } from 'lucide-react';
 
 const APPLY_FORM_URL = 'https://forms.gle/1cf3CShA4P8HQeFo8';
 
@@ -12,7 +12,7 @@ const phases = [
     items: [
       'SAT Preparation (Jan – Apr): Achieve a high score early; finish before Grade 11',
       'Admissions & Portfolio: Personal narrative + profile gap analysis',
-      'Mentorship: 6 hrs/month — 2 hrs 1:1 strategy, 4 hrs EC project execution',
+      'Mentorship: 6 hrs/month (2 hrs 1:1 strategy, 4 hrs EC project execution)',
       'Summer Programs: Apply to 3–4 international programs',
     ],
   },
@@ -22,9 +22,9 @@ const phases = [
     timeline: 'Months 5 – 6',
     color: 'amber' as const,
     items: [
-      'Research — write an academic paper in your field',
-      'Startup — launch a business or community initiative',
-      'PM Project — lead an impactful community program',
+      'Research: write an academic paper in your field',
+      'Startup: launch a business or community initiative',
+      'PM Project: lead an impactful community program',
     ],
     note: 'Goal: Demonstrate leadership, impact, and innovation aligned with your intended major.',
   },
@@ -47,7 +47,7 @@ const phases = [
       'Maintain a strong GPA throughout the semester',
       'Strengthen your "Spike" project with measurable results',
       'Finalize your university list with mentor guidance',
-      'Full application support — PS, supplements, recommendations, platforms',
+      'Full application support: PS, supplements, recommendations, platforms',
     ],
   },
 ];
@@ -66,7 +66,7 @@ export default function FullSupportLeadsPage() {
               <span className={styles.heroAccent}>Top&nbsp;100</span> University
             </h1>
             <p className={styles.heroSubtitle}>
-              Structured expert guidance from SAT prep through final applications — built for students who are serious about standing out.
+              Structured expert guidance from SAT prep through final applications, for students who are serious about standing out.
             </p>
             <a
               href={APPLY_FORM_URL}
@@ -131,14 +131,14 @@ export default function FullSupportLeadsPage() {
             <div className={styles.infoCard}>
               <div className={styles.infoCardHeader}>
                 <div className={`${styles.infoIcon} ${styles.infoIconRed}`}>
-                  <TrophyOutlined />
+                  <Trophy size={16} />
                 </div>
                 <h3 className={styles.infoCardTitle}>Program Includes</h3>
               </div>
               <ul className={styles.infoList}>
-                <li><span aria-hidden>✓</span> EC & Admissions Mentor — <strong>16+ hours</strong></li>
+                <li><span aria-hidden>✓</span> EC & Admissions Mentor, <strong>16+ hours</strong></li>
                 <li><span aria-hidden>✓</span> Essay Group Mentor</li>
-                <li><span aria-hidden>✓</span> Individual Writing Mentor (Senior & Expert) — <strong>24+ hours</strong></li>
+                <li><span aria-hidden>✓</span> Individual Writing Mentor (Senior & Expert), <strong>24+ hours</strong></li>
                 <li><span aria-hidden>✓</span> Research Mentor</li>
                 <li><span aria-hidden>✓</span> Full SAT Mentored Program</li>
               </ul>
@@ -148,7 +148,7 @@ export default function FullSupportLeadsPage() {
             <div className={styles.infoCard}>
               <div className={styles.infoCardHeader}>
                 <div className={`${styles.infoIcon} ${styles.infoIconBlue}`}>
-                  <TeamOutlined />
+                  <Users size={16} />
                 </div>
                 <h3 className={styles.infoCardTitle}>Who Is This For?</h3>
               </div>
@@ -165,7 +165,7 @@ export default function FullSupportLeadsPage() {
             <div className={`${styles.infoCard} ${styles.infoCardWarning}`}>
               <div className={styles.infoCardHeader}>
                 <div className={`${styles.infoIcon} ${styles.infoIconAmber}`}>
-                  <WarningOutlined />
+                  <AlertTriangle size={16} />
                 </div>
                 <h3 className={styles.infoCardTitle}>Important</h3>
               </div>

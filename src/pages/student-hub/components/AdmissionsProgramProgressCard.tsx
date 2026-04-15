@@ -8,7 +8,7 @@ import React, { useMemo } from 'react';
 import { Card, Progress, Button, Spin, Empty, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayCircleOutlined } from '@ant-design/icons';
+import { PlayCircle } from 'lucide-react';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import {
   useGetEnrollmentStatusQuery,
@@ -170,7 +170,7 @@ export default function AdmissionsProgramProgressCard({
       <Button
         type="primary"
         size="middle"
-        icon={<PlayCircleOutlined />}
+        icon={<PlayCircle size={16} />}
         onClick={continueLearningClick ?? (() => navigate(`/learning?course=${courseName}`))}
         className="admissions-progress-btn"
       >

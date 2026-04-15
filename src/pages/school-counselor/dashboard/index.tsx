@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Progress, Spin, Alert } from 'antd';
-import {
-  TeamOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
+import { Users, Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
@@ -190,7 +187,7 @@ const DashboardPage: React.FC = () => {
             <Statistic
               title={t('schoolCounselor.dashboard.totalStudents', 'Total Students')}
               value={totalStudents}
-              prefix={<TeamOutlined />}
+              prefix={<Users size={16} />}
               valueStyle={{ color: '#8b0000' }}
             />
           </Card>
@@ -201,7 +198,7 @@ const DashboardPage: React.FC = () => {
               title={t('schoolCounselor.dashboard.averageProgress', 'Average Progress')}
               value={averageProgress}
               suffix="%"
-              prefix={<TrophyOutlined />}
+              prefix={<Trophy size={16} />}
               valueStyle={{ color: '#faad14' }}
               precision={1}
             />

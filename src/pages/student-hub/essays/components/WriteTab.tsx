@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, Input, Button, Select, Space, message, Alert, Spin, Row, Col, Divider, Avatar } from 'antd';
-import { BulbOutlined, EditOutlined, SaveOutlined, FileTextOutlined, UserOutlined, RobotOutlined, ClearOutlined } from '@ant-design/icons';
+import { Lightbulb, Pencil, Save, FileText, User, Bot, Eraser } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import QuillEditor from './QuillEditor';
 import { 
@@ -563,7 +563,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
           <Card
             title={
               <Space>
-                <EditOutlined style={{ color: '#8b0000' }} />
+                <Pencil size={16} color="#8b0000" />
                 <span>Write Your Essay</span>
               </Space>
             }
@@ -577,7 +577,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                   <Button
                     type="text"
                     size="small"
-                    icon={<BulbOutlined />}
+                    icon={<Lightbulb size={16} />}
                     onClick={() => setShowBrainstorming(true)}
                   >
                     Show AI
@@ -604,7 +604,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
                 {!currentEssayId && (
                   <Button
                     type="primary"
-                    icon={<FileTextOutlined />}
+                    icon={<FileText size={16} />}
                     onClick={handleStartWriting}
                     loading={isCreating}
                     disabled={wordCount === 0}
@@ -624,7 +624,7 @@ const WriteTab: React.FC<WriteTabProps> = ({ onEssayCreated, essayId }) => {
               {currentEssayId && (
                 <Space>
                   <Button
-                    icon={<SaveOutlined />}
+                    icon={<Save size={16} />}
                     onClick={handleSaveEssay}
                     loading={isAutoSaving || isUpdating}
                     size="large"

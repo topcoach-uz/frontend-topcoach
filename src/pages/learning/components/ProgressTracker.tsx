@@ -1,6 +1,6 @@
 import React from 'react';
 import { Progress, Tag } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { CheckCircle2, Clock } from 'lucide-react';
 import './ProgressTracker.scss';
 
 interface ProgressTrackerProps {
@@ -26,11 +26,11 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ lessonId, userProgres
     <div className="progress-tracker">
       <div className="progress-status">
         {isCompleted ? (
-          <Tag color="success" icon={<CheckCircleOutlined />}>
+          <Tag color="success" icon={<CheckCircle2 size={16} />}>
             Completed
           </Tag>
         ) : progressPercentage > 0 ? (
-          <Tag color="processing" icon={<ClockCircleOutlined />}>
+          <Tag color="processing" icon={<Clock size={16} />}>
             In Progress
           </Tag>
         ) : (
@@ -55,7 +55,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ lessonId, userProgres
 
         {timeWatched > 0 && (
           <div className="time-watched">
-            <ClockCircleOutlined />
+            <Clock size={16} />
             <span>{formatTime(timeWatched)} watched</span>
           </div>
         )}

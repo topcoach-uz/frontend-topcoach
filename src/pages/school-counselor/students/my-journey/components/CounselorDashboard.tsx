@@ -5,11 +5,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Row, Col, Descriptions, Progress, Timeline, Tag, Empty, Spin, Typography } from 'antd';
 import { Space } from 'antd';
-import {
-  MailOutlined,
-  PhoneOutlined,
-  CalendarOutlined,
-} from '@ant-design/icons';
+import { Mail, Phone, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { useOrganization } from '../../../context/OrganizationContext';
@@ -222,7 +218,7 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
               {university && (
                 <>
                   <Text strong>{university}</Text>
-                  <Text> — </Text>
+                  <Text> · </Text>
                 </>
               )}
               <Text>{eventLabel(ev)}</Text>
@@ -292,16 +288,16 @@ const CounselorDashboard: React.FC<CounselorDashboardProps> = ({ studentId, stud
           <Card title={t('schoolCounselor.dashboard.studentInformation', 'Student Information')} className="info-card">
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label={t('common.email', 'Email')}>
-                <Space><MailOutlined />{student.userEmail}</Space>
+                <Space><Mail size={16} />{student.userEmail}</Space>
               </Descriptions.Item>
               {student.telegramPhoneNumber && (
                 <Descriptions.Item label={t('common.phone', 'Phone')}>
-                  <Space><PhoneOutlined />{student.telegramPhoneNumber}</Space>
+                  <Space><Phone size={16} />{student.telegramPhoneNumber}</Space>
                 </Descriptions.Item>
               )}
               {student.enrolledAt && (
                 <Descriptions.Item label={t('schoolCounselor.dashboard.enrollmentDate', 'Enrollment Date')}>
-                  <Space><CalendarOutlined />{formatDate(student.enrolledAt)}</Space>
+                  <Space><Calendar size={16} />{formatDate(student.enrolledAt)}</Space>
                 </Descriptions.Item>
               )}
               <Descriptions.Item label={t('schoolCounselor.dashboard.lastActivity', 'Last Activity')}>{formatDateTime(lastActivity)}</Descriptions.Item>

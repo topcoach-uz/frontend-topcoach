@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, Typography, Progress, Tag, Button, Tooltip, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -91,7 +90,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
           }}
         >
           <FontAwesomeIcon
-            icon={config.icon as IconProp}
+            icon={config.icon as string}
             style={{ fontSize: 32, color: config.color }}
           />
         </div>

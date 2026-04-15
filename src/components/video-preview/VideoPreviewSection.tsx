@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Typography, Space } from 'antd';
-import { PlayCircleOutlined, ClockCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlayCircle, Clock, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ADMISSIONS_YOUTUBE_PREVIEW_SPECS, admissionsPreviewEmbedUrl } from 'src/constants/admissionsPreviewVideos';
 import styles from './VideoPreviewSection.module.scss';
 
 const { Title, Text } = Typography;
@@ -35,35 +36,15 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<VideoPreview | null>(null);
 
-  const defaultPreviewVideos: VideoPreview[] = [
-    {
-      id: '1',
-      title: t('videoPreview.video2.title'),
-      description: t('videoPreview.video2.description'),
-      duration: '7:17',
-      thumbnail: '/img/module2-cover.jpeg',
-      videoUrl: 'https://www.youtube.com/embed/uaC3wW4JIJA?autoplay=1&rel=0',
-      views: 100,
-    },
-    {
-      id: '2',
-      title: t('videoPreview.video1.title'),
-      description: t('videoPreview.video1.description'),
-      duration: '4:09',
-      thumbnail: '/img/module3-cover.jpeg',
-      videoUrl: 'https://www.youtube.com/embed/le6QJNo5D_0?autoplay=1&rel=0',
-      views: 100,
-    },
-    {
-      id: '3',
-      title: t('videoPreview.video3.title'),
-      description: t('videoPreview.video3.description'),
-      duration: '4:44',
-      thumbnail: '/img/module4-cover.jpeg',
-      videoUrl: 'https://www.youtube.com/embed/qb48VUSmA_w?autoplay=1&rel=0',
-      views: 100,
-    }
-  ];
+  const defaultPreviewVideos: VideoPreview[] = ADMISSIONS_YOUTUBE_PREVIEW_SPECS.map((spec) => ({
+    id: spec.id,
+    title: t(spec.titleKey),
+    description: t(spec.descriptionKey),
+    duration: spec.duration,
+    thumbnail: spec.thumbnail,
+    videoUrl: admissionsPreviewEmbedUrl(spec.youtubeId, true),
+    views: 100,
+  }));
 
   const previewVideos = customPreviewVideos || defaultPreviewVideos;
   const imageSrc = previewImage || '/img/students.jpeg';
@@ -96,7 +77,7 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({
           className={styles.preview_image}
         />
         <div className={styles.play_overlay}>
-          <PlayCircleOutlined className={styles.play_icon} />
+          <PlayCircle size={16} className={styles.play_icon} />
           <div className={styles.preview_text}>
             <Title level={4} className={styles.preview_title}>
               {previewTitle}
@@ -152,7 +133,7 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({
                     <div className={styles.preview_video_thumbnail}>
                       <img src={video.thumbnail} alt={video.title} />
                       <div className={styles.preview_play_overlay}>
-                        <PlayCircleOutlined className={styles.preview_play_icon} />
+                        <PlayCircle size={16} className={styles.preview_play_icon} />
                       </div>
                     </div>
                     <div className={styles.preview_video_info}>
@@ -164,7 +145,7 @@ const VideoPreviewSection: React.FC<VideoPreviewSectionProps> = ({
                       </Text>
                     </div>
                     <div className={styles.preview_video_duration}>
-                      <ClockCircleOutlined />
+                      <Clock size={16} />
                       <span>{video.duration}</span>
                     </div>
                   </div>

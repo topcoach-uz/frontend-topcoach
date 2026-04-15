@@ -8,7 +8,7 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 import { useTypedSelector } from 'src/app/store';
 import { getLatestCreatedImg } from 'src/utils';
 import { useTranslation } from 'react-i18next';
-import { LinkOutlined } from '@ant-design/icons';
+import { Link } from 'lucide-react';
 import MentorDetailsSocials from '../socials';
 
 interface Props {}
@@ -95,7 +95,7 @@ export default function MentorDetailsAvatar({}: Props) {
       <div className={styles.action_buttons_right}>
         <Button
           type="text"
-          icon={<LinkOutlined />}
+          icon={<Link size={16} />}
           onClick={handleCopyUrl}
           className={styles.copy_url_button}
           style={{

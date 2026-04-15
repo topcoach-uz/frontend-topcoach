@@ -1,5 +1,5 @@
 import { Breadcrumb, Dropdown, Form, MenuProps, Row, TabsProps } from 'antd';
-import { Alarm, ArrowRight } from 'iconsax-react';
+import { BellRing, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CustomCard } from 'src/components/cards';
@@ -76,7 +76,7 @@ function Help() {
           type="primary"
           mb={16}
           bg="red"
-          icon={<ArrowRight size="24" color="#FFf" />}
+          icon={<ArrowRight size={24} color="#FFf" />}
           iconPosition="end"
           className="custom-class"
         >
@@ -121,7 +121,7 @@ function Help() {
         <div className="scroll" style={{ height: 190, paddingRight: 50 }}>
           <CustomText
             mb={16}
-            prefix={<Alarm size="20" color={colors.textPrimary} />}
+            prefix={<BellRing size={20} color={colors.textPrimary} />}
           >
             Lorem ipsum dolor sit.
           </CustomText>

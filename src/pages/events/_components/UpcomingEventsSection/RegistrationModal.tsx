@@ -1,5 +1,5 @@
 import { Modal, Form, Input, Button, message, Typography, Space } from 'antd';
-import { UserOutlined, MailOutlined, CalendarOutlined, LinkOutlined } from '@ant-design/icons';
+import { User, Mail, Calendar, Link } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
@@ -124,7 +124,7 @@ export default function RegistrationModal({
                 ]}
               >
                 <Input
-                  prefix={<UserOutlined className={styles.input_icon} />}
+                  prefix={<User size={16} className={styles.input_icon} />}
                   placeholder={t('events.enterFullName')}
                   size="large"
                   className={styles.form_input}
@@ -140,7 +140,7 @@ export default function RegistrationModal({
                 ]}
               >
                 <Input
-                  prefix={<MailOutlined className={styles.input_icon} />}
+                  prefix={<Mail size={16} className={styles.input_icon} />}
                   placeholder={t('events.enterEmail')}
                   size="large"
                   className={styles.form_input}
@@ -150,11 +150,11 @@ export default function RegistrationModal({
               <div className={styles.registration_info}>
                 <Space direction="vertical" size="small">
                   <Text className={styles.info_text}>
-                    <CalendarOutlined className={styles.info_icon} />
+                    <Calendar size={16} className={styles.info_icon} />
                     {t('events.registrationConfirmation')}
                   </Text>
                   <Text className={styles.info_text}>
-                    <MailOutlined className={styles.info_icon} />
+                    <Mail size={16} className={styles.info_icon} />
                     {t('events.emailConfirmation')}
                   </Text>
                 </Space>

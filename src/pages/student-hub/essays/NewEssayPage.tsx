@@ -13,12 +13,7 @@ import {
   Space,
   Divider
 } from 'antd';
-import { 
-  UploadOutlined, 
-  FileTextOutlined, 
-  SaveOutlined,
-  ArrowLeftOutlined 
-} from '@ant-design/icons';
+import { Upload as UploadIcon, FileText, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { essayManagementApi } from '../../../app/services/student-hub/essayManagementApi';
@@ -142,14 +137,14 @@ const NewEssayPage: React.FC = () => {
       <div className="page-header">
         <Button 
           type="text" 
-          icon={<ArrowLeftOutlined />} 
+          icon={<ArrowLeft size={16} />} 
           onClick={handleBack}
           className="back-button"
         >
           Back to Essays
         </Button>
         <Title level={2} className="page-title">
-          <FileTextOutlined className="title-icon" />
+          <FileText size={16} className="title-icon" />
           Upload New Essay
         </Title>
         <Text type="secondary" className="page-subtitle">
@@ -235,7 +230,7 @@ const NewEssayPage: React.FC = () => {
               className="essay-upload"
             >
               <Button 
-                icon={<UploadOutlined />} 
+                icon={<UploadIcon size={16} />}
                 size="large"
                 className="upload-button"
               >
@@ -269,7 +264,7 @@ const NewEssayPage: React.FC = () => {
                 htmlType="submit" 
                 loading={uploading}
                 disabled={fileList.length === 0}
-                icon={<SaveOutlined />}
+                icon={<Save size={16} />}
                 size="large"
                 className="submit-button"
               >

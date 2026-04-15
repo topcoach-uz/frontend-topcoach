@@ -5,12 +5,11 @@ import LanguageSelect from 'src/components/language_select';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import HamburgerMenu from '../../hamburger';
 import ProfileDropdown from '../_components/ProfileDropdown';
-import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
 import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
 import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from '../actions.module.scss';
 import { Link } from 'react-router-dom';
-import { MailFilled } from '@ant-design/icons';
+import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
 
 interface Props {
@@ -56,7 +55,7 @@ export default function ActionsMobileVersion({
       {screenSize > 560 && (
         <>
           <Link to="/contact" className={styles.contactIcon}>
-            <MailFilled style={{ fontSize: '20px', color: 'white' }} />
+            <Mail size={20} color="white" />
           </Link>
           <LanguageSelect />
         </>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Tag, Alert, Row, Col, Statistic, Modal, Progress, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { UserOutlined, ClockCircleOutlined, FileTextOutlined, AimOutlined, TeamOutlined, SolutionOutlined, ScheduleOutlined, BarChartOutlined, CheckCircleOutlined, GlobalOutlined, HistoryOutlined, RocketOutlined } from '@ant-design/icons';
+import { User, Clock, FileText, Target, Users, ClipboardList, CalendarClock, BarChart2, CheckCircle2, Globe, History, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useColors from 'src/hooks/useColors';
 import dayjs from 'src/lib/dayjs';
@@ -52,7 +52,7 @@ export default function FullSupportAdminDashboard() {
   const primary = colors?.colorPrimary ?? '#8b0000';
   const { data: statsData } = useGetAdminStatsQuery();
   const { data: studentsData, isLoading: studentsLoading } = useGetAdminStudentsQuery();
-  const { data: mentorsFromPage } = useGetMentorsQuery(); // same API as Mentors page — accepted only
+  const { data: mentorsFromPage } = useGetMentorsQuery(); // same API as Mentors page (accepted only)
   const { data: assignmentsData } = useGetAdminMentorAssignmentsQuery();
   const stats = statsData?.data;
   const [assignMentor] = useAssignMentorMutation();
@@ -66,7 +66,7 @@ export default function FullSupportAdminDashboard() {
       return {
         id: m.id,
         name: m.profile?.name ?? 'Unknown',
-        specialization: m.mentorProfile?.major ?? m.mentorProfile?.university ?? '—',
+        specialization: m.mentorProfile?.major ?? m.mentorProfile?.university ?? '-',
         studentCount: c.studentCount,
         students: c.students,
       };
@@ -150,28 +150,28 @@ export default function FullSupportAdminDashboard() {
     <div className="full-support-page full-support-admin">
       <Card className="full-support-header">
         <h1 style={{ color: primary }}>Admin Dashboard for Full Support Program</h1>
-        <p>System Administration — Assign students to mentors, monitor all interactions, and oversee program progress.</p>
+        <p>System administration: assign students to mentors, monitor all interactions, and oversee program progress.</p>
       </Card>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Total Students" value={stats?.totalStudents ?? students.length} prefix={<UserOutlined style={{ color: primary }} />} loading={studentsLoading} />
+            <Statistic title="Total Students" value={stats?.totalStudents ?? students.length} prefix={<User size={16} style={{ color: primary }} />} loading={studentsLoading} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Sessions Conducted" value={stats?.sessionsConducted ?? 0} prefix={<ClockCircleOutlined style={{ color: primary }} />} />
+            <Statistic title="Sessions Conducted" value={stats?.sessionsConducted ?? 0} prefix={<Clock size={16} style={{ color: primary }} />} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Tasks Completed" value={stats?.tasksCompleted ?? 0} prefix={<FileTextOutlined style={{ color: primary }} />} />
+            <Statistic title="Tasks Completed" value={stats?.tasksCompleted ?? 0} prefix={<FileText size={16} style={{ color: primary }} />} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title="Applications Submitted" value={stats?.applicationsSubmitted ?? 0} prefix={<AimOutlined style={{ color: primary }} />} />
+            <Statistic title="Applications Submitted" value={stats?.applicationsSubmitted ?? 0} prefix={<Target size={16} style={{ color: primary }} />} />
           </Card>
         </Col>
       </Row>
@@ -195,7 +195,7 @@ export default function FullSupportAdminDashboard() {
         />
       )}
 
-      <Card title={<><TeamOutlined style={{ marginRight: 8, color: primary }} />Student–Mentor Assignments</>} style={{ marginTop: 24 }} className="full-support-card">
+      <Card title={<><Users size={16} style={{ marginRight: 8, color: primary }} />Student–Mentor Assignments</>} style={{ marginTop: 24 }} className="full-support-card">
         <Table
           dataSource={students}
           columns={columns}
@@ -206,7 +206,7 @@ export default function FullSupportAdminDashboard() {
         />
       </Card>
 
-      <Card title={<><SolutionOutlined style={{ marginRight: 8, color: primary }} />Mentors</>} style={{ marginTop: 24 }} className="full-support-card">
+      <Card title={<><ClipboardList size={16} style={{ marginRight: 8, color: primary }} />Mentors</>} style={{ marginTop: 24 }} className="full-support-card">
         {mentorsWithStudents.length === 0 ? (
           <p style={{ color: '#666' }}>No mentors with assigned students yet. Assign a mentor to a student to see them here.</p>
         ) : (
@@ -232,7 +232,7 @@ export default function FullSupportAdminDashboard() {
         )}
       </Card>
 
-      <Card title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satProgressAllStudents', 'SAT progress (all students)')}</>} style={{ marginTop: 24 }} className="full-support-card">
+      <Card title={<><Rocket size={16} style={{ marginRight: 8, color: primary }} />{t('fullSupport.satProgressAllStudents', 'SAT progress (all students)')}</>} style={{ marginTop: 24 }} className="full-support-card">
         <p style={{ color: '#666', marginBottom: 16 }}>{t('fullSupport.satProgressAllStudentsDesc', 'Course-level SAT progress from ScholarHub. Data is synced when students are enrolled in Full Support.')}</p>
         {satCourseLoading ? (
           <div style={{ padding: 24, textAlign: 'center' }}>{t('fullSupport.satProgressLoading', 'Loading SAT progress…')}</div>
@@ -249,7 +249,7 @@ export default function FullSupportAdminDashboard() {
       </Card>
 
       <Modal
-        title={`Assign mentor — ${assignModalStudent?.name ?? ''}`}
+        title={`Assign mentor: ${assignModalStudent?.name ?? ''}`}
         open={!!assignModalStudent}
         onCancel={() => setAssignModalStudent(null)}
         footer={null}
@@ -277,7 +277,7 @@ export default function FullSupportAdminDashboard() {
       </Modal>
 
       <Modal
-        title={`Track ${selectedMentor?.name ?? ''} — Actions`}
+        title={`Track ${selectedMentor?.name ?? ''}: actions`}
         open={!!selectedMentor}
         onCancel={() => setSelectedMentor(null)}
         footer={<Button type="primary" onClick={() => setSelectedMentor(null)} style={{ backgroundColor: primary, borderColor: primary }}>Close</Button>}
@@ -313,7 +313,7 @@ export default function FullSupportAdminDashboard() {
       </Modal>
 
       <Modal
-        title={`Full Support progress — ${selectedStudent?.name ?? ''}`}
+        title={`Full Support progress: ${selectedStudent?.name ?? ''}`}
         open={!!selectedStudent}
         onCancel={() => setSelectedStudent(null)}
         footer={<Button type="primary" onClick={() => setSelectedStudent(null)} style={{ backgroundColor: primary, borderColor: primary }}>Close</Button>}
@@ -323,7 +323,7 @@ export default function FullSupportAdminDashboard() {
         {selectedStudent && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ color: '#666', marginBottom: 16 }}>Track your mentorship sessions, applications, and deadlines.</p>
-            <Card size="small" title={<><ScheduleOutlined style={{ marginRight: 8, color: primary }} />Session timeline</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><CalendarClock size={16} style={{ marginRight: 8, color: primary }} />Session timeline</>} style={{ marginBottom: 16 }}>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span>This month</span>
@@ -347,7 +347,7 @@ export default function FullSupportAdminDashboard() {
                 )}
               </ul>
             </Card>
-            <Card size="small" title={<><BarChartOutlined style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><BarChart2 size={16} style={{ marginRight: 8, color: primary }} />Curriculum Watchlist</>} style={{ marginBottom: 16 }}>
               {adminCurriculumWatchlist.length === 0 ? (
                 <p style={{ color: '#666', fontSize: 13 }}>No curriculum items yet.</p>
               ) : (
@@ -363,7 +363,7 @@ export default function FullSupportAdminDashboard() {
                 ))
               )}
             </Card>
-            <Card size="small" title={<><FileTextOutlined style={{ marginRight: 8, color: primary }} />Tasks from mentor</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><FileText size={16} style={{ marginRight: 8, color: primary }} />Tasks from mentor</>} style={{ marginBottom: 16 }}>
               <Table
                 dataSource={adminStudentTasks}
                 rowKey="id"
@@ -371,12 +371,12 @@ export default function FullSupportAdminDashboard() {
                 size="small"
                 columns={[
                   { title: 'TASK', dataIndex: 'task', key: 'task', width: 180 },
-                  { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (d: string) => d ? dayjs(d).format('MMM D, YYYY') : '—' },
+                  { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (d: string) => d ? dayjs(d).format('MMM D, YYYY') : '-' },
                   { title: 'STATUS', key: 'status', width: 110, render: (_: unknown, r: TaskDto) => <Tag color={statusColors[getTaskStatus(r)] ?? 'default'}>{getTaskStatus(r)}</Tag> },
                 ]}
               />
             </Card>
-            <Card size="small" title={<><CheckCircleOutlined style={{ marginRight: 8, color: primary }} />Milestone Tracker</>} style={{ marginBottom: 16 }}>
+            <Card size="small" title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: primary }} />Milestone Tracker</>} style={{ marginBottom: 16 }}>
               <p style={{ color: '#666', fontSize: 12, marginBottom: 8 }}>Mentor tracks these milestones for the student.</p>
               {adminStudentMilestones.length === 0 ? (
                 <p style={{ color: '#666', fontSize: 13 }}>No milestones yet.</p>
@@ -392,7 +392,7 @@ export default function FullSupportAdminDashboard() {
                 ))
               )}
             </Card>
-            <Card size="small" title={<><GlobalOutlined style={{ marginRight: 8, color: primary }} />Application tracker</>} style={{ marginBottom: 8 }}>
+            <Card size="small" title={<><Globe size={16} style={{ marginRight: 8, color: primary }} />Application tracker</>} style={{ marginBottom: 8 }}>
               <Table
                 dataSource={adminStudentPipeline}
                 rowKey="id"
@@ -402,7 +402,7 @@ export default function FullSupportAdminDashboard() {
                   { title: 'PROGRAM', dataIndex: 'program', key: 'program', width: 200 },
                   { title: 'STAGE', dataIndex: 'stage', key: 'stage', width: 120 },
                   { title: 'STATUS', dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={statusColors[s] ?? 'default'}>{s}</Tag> },
-                  { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 100, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '—' },
+                  { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 100, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '-' },
                 ]}
               />
             </Card>
@@ -427,7 +427,7 @@ export default function FullSupportAdminDashboard() {
         )}
       </Modal>
 
-      <Card title={<><HistoryOutlined style={{ marginRight: 8, color: primary }} />Recent Mentor–Student Interactions</>} style={{ marginTop: 24 }} className="full-support-card">
+      <Card title={<><History size={16} style={{ marginRight: 8, color: primary }} />Recent Mentor–Student Interactions</>} style={{ marginTop: 24 }} className="full-support-card">
         {adminInteractions.length === 0 ? (
           <p style={{ color: '#666', padding: '12px 0', margin: 0 }}>No recent interactions yet.</p>
         ) : (

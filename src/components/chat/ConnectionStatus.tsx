@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge, Tooltip } from 'antd';
-import { WifiOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { WifiOff } from 'lucide-react';
 import { useSocket } from 'src/lib/socket';
 import styles from './ConnectionStatus.module.scss';
 
@@ -19,7 +19,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className }) => {
     <Tooltip title="Connection lost. Trying to reconnect...">
       <div className={`${styles.connectionStatus} ${className || ''}`}>
         <Badge status="error" />
-        <DisconnectOutlined className={styles.icon} />
+        <WifiOff size={16} className={styles.icon} />
         <span className={styles.text}>Offline</span>
       </div>
     </Tooltip>

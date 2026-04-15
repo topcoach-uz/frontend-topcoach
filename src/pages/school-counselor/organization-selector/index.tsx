@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Spin, Empty, Button, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { TeamOutlined, PlusOutlined, ArrowRightOutlined, UserOutlined, CalendarOutlined, MailOutlined, PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Users, Plus, ArrowRight, User, Calendar, Mail, Phone, MapPin } from 'lucide-react';
 import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
 
 const DESCRIPTION_PREVIEW_LENGTH = 120;
@@ -136,7 +136,7 @@ const OrganizationSelector: React.FC = () => {
                 </p>
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
+                  icon={<Plus size={16} />}
                   onClick={() => navigate('/topcoach-management?tab=organizations')}
                   size="large"
                 >
@@ -167,7 +167,7 @@ const OrganizationSelector: React.FC = () => {
               actions={[
                 <Button
                   type="primary"
-                  icon={<ArrowRightOutlined />}
+                  icon={<ArrowRight size={16} />}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelectOrganization(org.id);
@@ -192,21 +192,21 @@ const OrganizationSelector: React.FC = () => {
                 <div className="org-meta">
                   {org.createdAt && (
                     <div className="org-meta-item">
-                      <CalendarOutlined className="org-meta-icon" />
+                      <Calendar size={16} className="org-meta-icon" />
                       <span>{t('schoolCounselor.organizationSelector.created', 'Created')} {dayjs(org.createdAt).format('MMM D, YYYY')}</span>
                     </div>
                   )}
                   
                   {org.memberCount !== undefined && (
                     <div className="org-meta-item">
-                      <TeamOutlined className="org-meta-icon" />
+                      <Users size={16} className="org-meta-icon" />
                       <span>{org.memberCount} {org.memberCount === 1 ? t('schoolCounselor.organizationSelector.member', 'member') : t('schoolCounselor.organizationSelector.members', 'members')}</span>
                     </div>
                   )}
                   
                   {org.counselors && org.counselors.length > 0 && (
                     <div className="org-meta-item org-counselors">
-                      <UserOutlined className="org-meta-icon" />
+                      <User size={16} className="org-meta-icon" />
                       <div className="counselors-list">
                         <span className="counselors-label">
                           {org.counselors.length > 1 ? t('schoolCounselor.organizationSelector.counselors', 'Counselors') : t('schoolCounselor.organizationSelector.counselor', 'Counselor')}:
@@ -224,21 +224,21 @@ const OrganizationSelector: React.FC = () => {
                   
                   {org.contactEmail && (
                     <div className="org-meta-item">
-                      <MailOutlined className="org-meta-icon" />
+                      <Mail size={16} className="org-meta-icon" />
                       <span>{org.contactEmail}</span>
                     </div>
                   )}
                   
                   {org.contactPhone && (
                     <div className="org-meta-item">
-                      <PhoneOutlined className="org-meta-icon" />
+                      <Phone size={16} className="org-meta-icon" />
                       <span>{org.contactPhone}</span>
                     </div>
                   )}
                   
                   {(org.address || org.city || org.state || org.country) && (
                     <div className="org-meta-item">
-                      <EnvironmentOutlined className="org-meta-icon" />
+                      <MapPin size={16} className="org-meta-icon" />
                       <span>{[org.address, org.city, org.state, org.country].filter(Boolean).join(', ')}</span>
                     </div>
                   )}

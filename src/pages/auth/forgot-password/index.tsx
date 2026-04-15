@@ -8,7 +8,7 @@ import { api } from 'src/app/api';
 import { InputFormItem } from 'src/components/form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from 'src/components/logos';
-import { Lock } from 'iconsax-react';
+import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ForgotPasswordPageProps {}
@@ -53,7 +53,7 @@ const ForgotPasswordPage: FC<ForgotPasswordPageProps> = () => {
       <Form onFinish={handleSubmit} form={form} layout="vertical">
         <Flex gap={20} align="center">
           <div className={styles.icon}>
-            <Lock size="100%" color={colors.orange5} />
+            <Lock size={40} color={colors.orange5} />
           </div>
           <CustomText
             color={colors.colorText}

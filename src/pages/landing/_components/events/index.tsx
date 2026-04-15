@@ -8,6 +8,7 @@ import styles from './events.module.scss';
 import { useNavigate } from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import { api } from 'src/app/api';
+import { CAMPS_LIST_QUERY } from 'src/pages/events/campsQuery';
 import { useMemo } from 'react';
 import { formatDateRange } from 'src/utils';
 
@@ -16,7 +17,9 @@ export default function LandingEventsSection() {
   const navigate = useNavigate();
   const { screenSize } = useScreenSize();
   const { t } = useTranslation();
-  const { response: camps } = useApi(() => api.camps.campsList());
+  const { response: camps } = useApi(() =>
+    api.camps.campsList(CAMPS_LIST_QUERY as Parameters<typeof api.camps.campsList>[0]),
+  );
 
   // Get the most recent 3 camps sorted by start date
   const recentCamps = useMemo(() => {

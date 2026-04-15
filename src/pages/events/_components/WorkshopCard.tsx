@@ -1,5 +1,5 @@
 import { Card, Button, Progress, Tag, Space } from 'antd';
-import { CalendarOutlined, UserOutlined, ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Calendar, User, Clock, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDateRange } from 'src/utils';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
@@ -76,12 +76,12 @@ export default function WorkshopCard({
 
         <Space direction="vertical" size="small" className={styles.workshop_info}>
           <div className={styles.info_item}>
-            <CalendarOutlined className={styles.info_icon} />
+            <Calendar size={16} className={styles.info_icon} />
             <span>{formatDateRange(startDate, endDate)}</span>
           </div>
 
           <div className={styles.info_item}>
-            <ClockCircleOutlined className={styles.info_icon} />
+            <Clock size={16} className={styles.info_icon} />
             <span>
               {t('events.registrationDeadline')}: {hasDeadline ? dayjs(deadline).format('MMMM Do, YYYY [at] h:mm A') : 'TBA'}
             </span>
@@ -89,7 +89,7 @@ export default function WorkshopCard({
 
           {locations && locations.length > 0 && (
             <div className={styles.info_item}>
-              <EnvironmentOutlined className={styles.info_icon} />
+              <MapPin size={16} className={styles.info_icon} />
               <span>{locations[0]?.address || locations[0]?.region || 'TBA'}</span>
             </div>
           )}

@@ -2,14 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Input, Select, Table, Tag, Button, Space, Progress, Spin, Alert, Dropdown, MenuProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {
-  SearchOutlined,
-  EyeOutlined,
-  FilterOutlined,
-  ExportOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-} from '@ant-design/icons';
+import { Search as SearchIcon, Eye, Filter, FileOutput, FileSpreadsheet, FileText } from 'lucide-react';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
 import type { ColumnsType } from 'antd/es/table';
@@ -210,13 +203,13 @@ const StudentsPage: React.FC = () => {
     {
       key: 'excel',
       label: 'Export as Excel',
-      icon: <FileExcelOutlined />,
+      icon: <FileSpreadsheet size={16} />,
       onClick: exportToExcel,
     },
     {
       key: 'pdf',
       label: 'Export as PDF',
-      icon: <FilePdfOutlined />,
+      icon: <FileText size={16} />,
       onClick: exportToPDF,
     },
   ];
@@ -353,7 +346,7 @@ const StudentsPage: React.FC = () => {
       render: (_, record) => (
         <Button
           type="primary"
-          icon={<EyeOutlined />}
+          icon={<Eye size={16} />}
           onClick={() => handleViewStudent(record.userId)}
           style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
         >
@@ -397,7 +390,7 @@ const StudentsPage: React.FC = () => {
         </div>
         <Space>
           <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
-            <Button icon={<ExportOutlined />}>{t('schoolCounselor.students.export', 'Export')}</Button>
+            <Button icon={<FileOutput size={16} />}>{t('schoolCounselor.students.export', 'Export')}</Button>
           </Dropdown>
         </Space>
       </div>
@@ -408,7 +401,7 @@ const StudentsPage: React.FC = () => {
           <Search
             placeholder={t('schoolCounselor.students.searchPlaceholder', 'Search students by name or email')}
             allowClear
-            enterButton={<SearchOutlined />}
+            enterButton={<SearchIcon size={16} />}
             size="large"
             style={{ width: 300 }}
             value={searchText}
@@ -420,7 +413,7 @@ const StudentsPage: React.FC = () => {
             style={{ width: 150 }}
             value={statusFilter}
             onChange={setStatusFilter}
-            suffixIcon={<FilterOutlined />}
+            suffixIcon={<Filter size={16} />}
           >
             <Option value="all">{t('schoolCounselor.students.allStatus', 'All Status')}</Option>
             <Option value="active">{t('schoolCounselor.students.active', 'Active')}</Option>
@@ -433,7 +426,7 @@ const StudentsPage: React.FC = () => {
             style={{ width: 200 }}
             value={courseFilter}
             onChange={setCourseFilter}
-            suffixIcon={<FilterOutlined />}
+            suffixIcon={<Filter size={16} />}
           >
             <Option value="all">{t('schoolCounselor.students.allCourses', 'All Courses')}</Option>
             {allCourses.map((course) => {

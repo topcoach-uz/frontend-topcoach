@@ -25,7 +25,7 @@ import {
   Divider
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, ClockCircleOutlined, VideoCameraOutlined, FileTextOutlined, PlayCircleOutlined, InfoCircleOutlined, BookOutlined, UploadOutlined, EyeOutlined, LinkOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Plus, Pencil, Trash2, User, Clock, Video, FileText, PlayCircle, Info, BookOpen, Upload, Eye, Link, CheckCircle2 } from 'lucide-react';
 import { Segmented } from 'antd';
 import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
@@ -703,7 +703,7 @@ const CourseManagementAdmin: React.FC = () => {
         <div>
           <div className="module-title">{text}</div>
           <div className="module-mentor">
-            <Avatar size="small" src={record.mentor.avatar} icon={<UserOutlined />} />
+            <Avatar size="small" src={record.mentor.avatar} icon={<User size={16} />} />
             <span>{record.mentorName || record.mentor.email}</span>
           </div>
         </div>
@@ -725,7 +725,7 @@ const CourseManagementAdmin: React.FC = () => {
       key: 'estimatedDuration',
       render: (duration: number) => (
         <span>
-          <ClockCircleOutlined /> {duration} min
+          <Clock size={16} /> {duration} min
         </span>
       ),
     },
@@ -763,7 +763,7 @@ const CourseManagementAdmin: React.FC = () => {
           <Button
             type="primary"
             size="small"
-            icon={<PlusOutlined />}
+            icon={<Plus size={16} />}
             onClick={() => {
               setSelectedModule(record);
               setEditingSubmodule(null);
@@ -775,7 +775,7 @@ const CourseManagementAdmin: React.FC = () => {
           <Button
             type="primary"
             size="small"
-            icon={<PlusOutlined />}
+            icon={<Plus size={16} />}
             onClick={() => {
               setSelectedModule(record);
               setEditingLesson(null);
@@ -786,7 +786,7 @@ const CourseManagementAdmin: React.FC = () => {
           </Button>
           <Button
             size="small"
-            icon={<EditOutlined />}
+            icon={<Pencil size={16} />}
             onClick={() => {
               setEditingModule(record);
               setModuleModalVisible(true);
@@ -798,7 +798,7 @@ const CourseManagementAdmin: React.FC = () => {
             title="Are you sure you want to delete this module?"
             onConfirm={() => handleDeleteModule(record.id)}
           >
-            <Button size="small" danger icon={<DeleteOutlined />}>
+            <Button size="small" danger icon={<Trash2 size={16} />}>
               Delete
             </Button>
           </Popconfirm>
@@ -838,9 +838,9 @@ const CourseManagementAdmin: React.FC = () => {
       key: 'lessonType',
       render: (type: string) => {
         const icons = {
-          video: <VideoCameraOutlined />,
-          pdf: <FileTextOutlined />,
-          live_session: <PlayCircleOutlined />
+          video: <Video size={16} />,
+          pdf: <FileText size={16} />,
+          live_session: <PlayCircle size={16} />
         };
         const colors = {
           video: 'red',
@@ -860,7 +860,7 @@ const CourseManagementAdmin: React.FC = () => {
       key: 'duration',
       render: (duration: number) => (
         <span>
-          <ClockCircleOutlined /> {duration} min
+          <Clock size={16} /> {duration} min
         </span>
       ),
     },
@@ -898,7 +898,7 @@ const CourseManagementAdmin: React.FC = () => {
           <Button
             type="primary"
             size="small"
-            icon={<PlusOutlined />}
+            icon={<Plus size={16} />}
             onClick={() => {
               setSelectedLesson(record);
               setEditingTask(null);
@@ -910,7 +910,7 @@ const CourseManagementAdmin: React.FC = () => {
           <Button
             type="primary"
             size="small"
-            icon={<PlusOutlined />}
+            icon={<Plus size={16} />}
             onClick={() => {
               setSelectedLesson(record);
               setEditingResource(null);
@@ -921,7 +921,7 @@ const CourseManagementAdmin: React.FC = () => {
           </Button>
           <Button
             size="small"
-            icon={<EditOutlined />}
+            icon={<Pencil size={16} />}
             onClick={() => {
               setEditingLesson(record);
               setLessonModalVisible(true);
@@ -933,7 +933,7 @@ const CourseManagementAdmin: React.FC = () => {
             title="Are you sure you want to delete this lesson?"
             onConfirm={() => handleDeleteLesson(record.id)}
           >
-            <Button size="small" danger icon={<DeleteOutlined />}>
+            <Button size="small" danger icon={<Trash2 size={16} />}>
               Delete
             </Button>
           </Popconfirm>
@@ -976,7 +976,7 @@ const CourseManagementAdmin: React.FC = () => {
             <Statistic
               title="Total Modules"
               value={stats.totalModules}
-              prefix={<BookOutlined />}
+              prefix={<BookOpen size={16} />}
             />
           </Card>
         </Col>
@@ -985,7 +985,7 @@ const CourseManagementAdmin: React.FC = () => {
             <Statistic
               title="Total Lessons"
               value={stats.totalLessons}
-              prefix={<VideoCameraOutlined />}
+              prefix={<Video size={16} />}
             />
           </Card>
         </Col>
@@ -994,7 +994,7 @@ const CourseManagementAdmin: React.FC = () => {
             <Statistic
               title="Active Modules"
               value={stats.activeModules}
-              prefix={<BookOutlined />}
+              prefix={<BookOpen size={16} />}
             />
           </Card>
         </Col>
@@ -1003,7 +1003,7 @@ const CourseManagementAdmin: React.FC = () => {
             <Statistic
               title="Premium Modules"
               value={stats.premiumModules}
-              prefix={<BookOutlined />}
+              prefix={<BookOpen size={16} />}
             />
           </Card>
         </Col>
@@ -1012,7 +1012,7 @@ const CourseManagementAdmin: React.FC = () => {
       {/* File URL Helper */}
       <Card className="file-helper" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <InfoCircleOutlined style={{ color: '#1890ff' }} />
+          <Info size={16} color="#1890ff" />
           <strong>File Upload Instructions:</strong>
         </div>
         <div style={{ fontSize: '14px', color: '#666' }}>
@@ -1038,7 +1038,7 @@ const CourseManagementAdmin: React.FC = () => {
                 <Space>
                   <Button
                     type="primary"
-                    icon={<PlusOutlined />}
+                    icon={<Plus size={16} />}
                     onClick={() => {
                       setEditingModule(null);
                       setModuleModalVisible(true);
@@ -1066,7 +1066,7 @@ const CourseManagementAdmin: React.FC = () => {
               <div className="tab-header">
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
+                  icon={<Plus size={16} />}
                   onClick={() => {
                     setSelectedModule(null);
                     setEditingLesson(null);
@@ -1869,7 +1869,7 @@ const CourseManagementAdmin: React.FC = () => {
                                   <div style={{ margin: 0 }}>
                                     <Button
                                       type={currentIsCorrect ? 'primary' : 'default'}
-                                      icon={currentIsCorrect ? <CheckCircleOutlined /> : null}
+                                      icon={currentIsCorrect ? <CheckCircle2 size={16} /> : null}
                                       onClick={() => {
                                         const currentOptions = getFieldValue('options') || [];
                                         const updatedOptions = [...currentOptions];
@@ -1913,7 +1913,7 @@ const CourseManagementAdmin: React.FC = () => {
                                     >
                                       {currentIsCorrect ? (
                                         <>
-                                          <CheckCircleOutlined style={{ fontSize: '16px' }} />
+                                          <CheckCircle2 size={16} />
                                           Correct
                                         </>
                                       ) : (
@@ -1935,7 +1935,7 @@ const CourseManagementAdmin: React.FC = () => {
                               <Button 
                                 type="text" 
                                 danger 
-                                icon={<DeleteOutlined />}
+                                icon={<Trash2 size={16} />}
                                 onClick={() => remove(field.name)}
                                 style={{ marginLeft: 'auto' }}
                               >
@@ -1951,7 +1951,7 @@ const CourseManagementAdmin: React.FC = () => {
                     type="dashed" 
                     onClick={() => add({ text: '', isCorrect: false })} 
                     block 
-                    icon={<PlusOutlined />}
+                    icon={<Plus size={16} />}
                     style={{ marginTop: 8 }}
                   >
                     Add Option

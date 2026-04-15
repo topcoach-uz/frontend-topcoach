@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Select, DatePicker, Button, Row, Col, message, Space, AutoComplete, InputNumber, Typography, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { useStudentHub } from '../../../hooks/useStudentHub';
 import { useCreateCollegeApplicationMutation } from '../../../app/services/student-hub/applicationTrackingApi';
@@ -18,6 +18,7 @@ const { Text } = Typography;
 const NewApplicationPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form] = Form.useForm();
   const [createCollegeApplication, { isLoading }] = useCreateCollegeApplicationMutation();
   
@@ -323,7 +324,7 @@ const NewApplicationPage: React.FC = () => {
       console.log('Application created successfully:', result);
       
       message.success('Application created successfully!');
-      navigate('/student-hub/applications');
+      navigate(`/student-hub/applications${location.search}`);
     } catch (error: any) {
       console.error('Error creating application:', error);
       const errorMessage = error?.data?.message || error?.message || 'Failed to create application. Please try again.';
@@ -333,7 +334,7 @@ const NewApplicationPage: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/student-hub/applications');
+    navigate(`/student-hub/applications${location.search}`);
   };
 
   return (

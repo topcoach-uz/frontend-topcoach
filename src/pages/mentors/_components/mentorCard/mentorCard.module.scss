@@ -213,3 +213,53 @@
   margin-bottom: 40px;
 }
 
+/* Embedded / hub grid: tighter vertical layout */
+.cardCompact {
+  min-height: 0 !important;
+
+  .imgContainer {
+    height: 200px;
+    padding: 4px;
+  }
+
+  .nameOverlay {
+    padding: 10px 12px 14px;
+  }
+
+  .coach {
+    top: 10px !important;
+    right: 10px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .giveaway {
+    top: 10px !important;
+    left: 10px !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .textSection {
+    padding: 12px;
+    flex: 0 1 auto;
+  }
+
+  .universitySection {
+    flex: 0 1 auto;
+  }
+
+  .university {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .sessionsSection {
+    margin-top: 0;
+    padding-top: 10px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}

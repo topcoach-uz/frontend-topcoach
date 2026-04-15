@@ -606,13 +606,13 @@ $crimson-900: #7f1d1d;
       flex: 1;
     }
 
-    // Shared page layout: content starts from left, extends with page (all 8 My Journey pages)
-    // Force same content start on all 8 sidebar pages - no extra padding
+    // Shared page layout: consistent horizontal breathing room on all My Journey pages
     .student-hub-page {
       width: 100%;
-      max-width: none;
-      margin: 0;
-      padding: 0 !important;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 $space-5 !important;
+      box-sizing: border-box;
     }
 
     // When page header is a Card (Full Support, Profile, Major Match), no white box - transparent so title aligns with page
@@ -1589,4 +1589,52 @@ $crimson-900: #7f1d1d;
   color: white !important;
   fill: white !important;
   --ant-menu-item-icon-color: white !important;
+}
+
+/* Community nav: full-size users icon + circular lock badge (matches other items’ icon scale) */
+.community-nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.community-nav-lock-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #8b0000;
+  border: 2px solid #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+
+  svg {
+    stroke: #fff !important;
+    fill: none !important;
+    color: #fff !important;
+  }
+}
+
+.ant-menu-item-selected .community-nav-lock-badge {
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.95);
+
+  svg {
+    stroke: #8b0000 !important;
+  }
+}
+
+/* Main users icon → white on selected row */
+.ant-menu-item-selected .community-nav-main-icon svg {
+  stroke: #fff !important;
+  color: #fff !important;
 }

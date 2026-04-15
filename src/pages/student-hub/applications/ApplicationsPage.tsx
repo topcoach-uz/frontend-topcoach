@@ -143,13 +143,20 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
   const [updateCollegeApplication] = useUpdateCollegeApplicationMutation();
 
-  // Refetch data when returning from creation pages
+  // Refetch when returning to list (hub query or legacy path)
   useEffect(() => {
-    if (location.pathname === '/student-hub/applications') {
+    const p = new URLSearchParams(location.search);
+    const onHubList =
+      (location.pathname === '/student-hub' || location.pathname === '/student-hub/') &&
+      !p.get('applicationFlow') &&
+      (p.get('section') === 'others' && p.get('target') === 'college-lists') ||
+      p.get('section') === 'ai-major-match';
+    const legacyList = location.pathname === '/student-hub/applications';
+    if (onHubList || legacyList) {
       refetchApplications();
       refetchScholarships();
     }
-  }, [location.pathname, refetchApplications, refetchScholarships]);
+  }, [location.pathname, location.search, refetchApplications, refetchScholarships]);
 
   // Show loading state with unified skeleton
   if (isLoading) {
@@ -177,10 +184,13 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     );
   }
 
-  // Handle creation and edit routes
-  if (location.pathname === '/student-hub/applications/new') {
+  // Inline "add application" inside hub (same shell as College lists / AI Major Match tab)
+  const hubSearch = new URLSearchParams(location.search);
+  if (hubSearch.get('applicationFlow') === 'new' && !isReadOnly) {
     return <NewApplicationPage />;
   }
+
+  // Handle creation and edit routes
   if (location.pathname === '/student-hub/applications/scholarships/new') {
     return <NewScholarshipPage />;
   }
@@ -207,7 +217,19 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
 
   // Button click handlers
   const handleNewApplication = () => {
-    navigate('/student-hub/applications/new');
+    const p = new URLSearchParams(location.search);
+    const section = p.get('section');
+    if (section === 'ai-major-match') {
+      navigate('/student-hub?section=ai-major-match&applicationFlow=new');
+      return;
+    }
+    if (section === 'others' && p.get('target')) {
+      navigate(
+        `/student-hub?section=others&target=${encodeURIComponent(p.get('target')!)}&applicationFlow=new`,
+      );
+      return;
+    }
+    navigate('/student-hub?section=others&target=college-lists&applicationFlow=new');
   };
 
 

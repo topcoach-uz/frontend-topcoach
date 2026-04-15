@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import styles from './video-preview.module.scss';
 import CustomText from '../text';
 import useColors from 'src/hooks/useColors';
-import { CloseOutlined } from '@ant-design/icons';
+import { X } from 'lucide-react';
 
 interface VideoPreviewProps {
   videoFile?: File;
@@ -68,7 +68,7 @@ export default function VideoPreview({
                 className={styles.closeButton}
                 onClick={handleCloseButtonClick}
               >
-                <CloseOutlined />
+                <X size={16} />
               </button>
             </>
           )}

@@ -71,11 +71,8 @@ export default function MentorDetailsStatistics({}: Props) {
           </div>
         </li>
         <li>
-          <div
-            className={styles.icon_wrapper}
-            style={{ background: colors.green1 }}
-          >
-            <TickIcon width={24} height={24} color={colors.green1} />
+          <div className={styles.icon_wrapper}>
+            <TickIcon width={24} height={24} />
           </div>
           <div className={styles.num_wrapper}>
             <CustomText

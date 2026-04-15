@@ -70,7 +70,11 @@ export default function useActions() {
             key: '1',
             icon: <EditIcon className={styles.dropdown_icon} />,
             onClick: () => {
-              setIsModalVisible(true);
+              if (userData?.profile?.role === UserRole.Student) {
+                navigate('/student-hub/settings');
+              } else {
+                setIsModalVisible(true);
+              }
             },
           },
           {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Button, message, Spin } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined, ClockCircleOutlined, RocketOutlined, VideoCameraOutlined, FileTextOutlined, LeftOutlined, RightOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { PanelLeftClose, PanelLeftOpen, Clock, Rocket, Video, FileText, ChevronLeft, ChevronRight, CheckCircle2, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery, useGetTasksByLessonQuery, useGetLessonTaskSubmissionsQuery } from 'src/app/services/courses';
@@ -650,7 +650,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
       <div className="learning-pending-approval">
         <div className="pending-content">
           <div className="pending-icon">
-            <ClockCircleOutlined />
+            <Clock size={16} />
           </div>
           <h2>Enrollment Pending Approval</h2>
           <p className="pending-message">
@@ -664,7 +664,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               type="primary" 
               size="large"
               onClick={() => navigate('/programs/admissions', { replace: true })}
-              icon={<RocketOutlined />}
+              icon={<Rocket size={16} />}
             >
               Back to Programs
             </Button>
@@ -787,7 +787,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               <div className="lesson-header-mobile">
                 <div className="lesson-title-compact">
                   <span className="lesson-type-badge">
-                    {selectedLesson.lessonType === 'video' ? <VideoCameraOutlined style={{color: '#FFF'}}/> : selectedLesson.lessonType === 'pdf' ? <FileTextOutlined style={{color: '#FFF'}} /> : '🎯'}
+                    {selectedLesson.lessonType === 'video' ? <Video size={16} color="#FFF" /> : selectedLesson.lessonType === 'pdf' ? <FileText size={16} color="#FFF" /> : <Target size={16} color="#FFF" />}
                   </span>
                   <h1>{selectedLesson.title || 'Untitled Lesson'}</h1>
                 </div>

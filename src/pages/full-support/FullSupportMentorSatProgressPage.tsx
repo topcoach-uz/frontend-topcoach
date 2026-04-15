@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Select, Spin, Empty } from 'antd';
-import { ArrowLeftOutlined, RocketOutlined } from '@ant-design/icons';
+import { ArrowLeft, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useColors from 'src/hooks/useColors';
@@ -27,11 +27,11 @@ export default function FullSupportMentorSatProgressPage() {
   return (
     <div className="full-support-page full-support-mentor" style={{ padding: 24 }}>
       <Card className="full-support-card" style={{ marginBottom: 24 }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/full-support/mentor')} style={{ marginBottom: 16 }}>
+        <Button type="text" icon={<ArrowLeft size={16} />} onClick={() => navigate('/full-support/mentor')} style={{ marginBottom: 16 }}>
           {t('fullSupport.backToMentorDashboard', 'Back to Mentor Dashboard')}
         </Button>
         <h1 style={{ color: primary, marginBottom: 8 }}>
-          <RocketOutlined style={{ marginRight: 8 }} />
+          <Rocket size={16} style={{ marginRight: 8 }} />
           {t('fullSupport.satProgressTitle', 'SAT Progress')}
         </h1>
         <p style={{ color: '#666', marginBottom: 0 }}>

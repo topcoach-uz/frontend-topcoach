@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
-import { PhoneOutlined, CheckCircleTwoTone, ClockCircleTwoTone, ExclamationCircleTwoTone, UserOutlined, SendOutlined, KeyOutlined } from '@ant-design/icons';
+import { Phone, CheckCircle2, Clock, AlertCircle, User, Send, Key } from 'lucide-react';
 import { useVerifyTelegramCodeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 import { RtkApi } from 'src/app/services/api';
 
@@ -88,11 +88,11 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const getStatusIcon = () => {
     switch (typedTelegramStatus?.status) {
       case 'connected':
-        return <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: 48 }} />;
+        return <CheckCircle2 size={48} color="#52c41a" />;
       case 'pending':
-        return <ClockCircleTwoTone twoToneColor="#faad14" style={{ fontSize: 48 }} />;
+        return <Clock size={48} color="#faad14" />;
       case 'failed':
-        return <ExclamationCircleTwoTone twoToneColor="#ff4d4f" style={{ fontSize: 48 }} />;
+        return <AlertCircle size={48} color="#ff4d4f" />;
       default:
         return null;
     }
@@ -119,7 +119,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       title: 'Share Contact with Bot',
       description: (
         <>
-          Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <SendOutlined /></a> and click <b>'Share my contact'</b>
+          Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <Send size={16} /></a> and click <b>'Share my contact'</b>
         </>
       ),
       status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'process',
@@ -210,7 +210,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6))}
                   maxLength={6}
-                  prefix={<KeyOutlined />}
+                  prefix={<Key size={16} />}
                   size="large"
                   style={{ margin: '12px 0' }}
                 />

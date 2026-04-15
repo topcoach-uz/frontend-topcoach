@@ -1,4 +1,4 @@
-import { GlobalOutlined } from '@ant-design/icons';
+import { Globe } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { themeFontSize } from 'src/constants/theme';
 import CustomSelect from '../common/select';
@@ -60,7 +60,7 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
         dropdownStyle={{ minWidth: 120 }}
       />
       <div className={styles.languageIconDisplay}>
-        <GlobalOutlined style={{ fontSize: '20px', color: 'white' }} />
+        <Globe size={20} color="white" />
       </div>
     </div>
   );

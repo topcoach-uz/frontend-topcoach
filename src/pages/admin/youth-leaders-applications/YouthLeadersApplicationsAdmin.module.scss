@@ -1,0 +1,18 @@
+.page {
+  padding: 24px 16px 48px;
+  max-width: 1240px;
+  margin: 88px auto 0;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    margin-top: 72px;
+  }
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.filters {
+  align-items: center;
+}

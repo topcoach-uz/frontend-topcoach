@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Card, Modal, Alert, message, Spin, Progress, Avatar } from 'antd';
-import { 
-  BookOutlined,
-  CheckCircleOutlined,
-  StarOutlined,
-  TrophyOutlined,
-  RocketOutlined,
-  PlayCircleOutlined,
-  BarChartOutlined,
-  FileTextOutlined,
-  TeamOutlined,
-  ThunderboltOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import { BookOpen, CheckCircle2, Star, Trophy, Rocket, PlayCircle, BarChart2, FileText, Users, Zap, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { useAppDispatch } from 'src/app/store';
@@ -121,22 +109,22 @@ const SatPage: React.FC = () => {
 
   const features = [
     {
-      icon: <FileTextOutlined />,
+      icon: <FileText size={16} />,
       title: 'Comprehensive Practice Tests',
       description: 'Full-length practice tests with detailed score reports and performance analytics'
     },
     {
-      icon: <BookOutlined />,
+      icon: <BookOpen size={16} />,
       title: 'Expert-Led Instruction',
       description: 'Learn from instructors who scored 1550+ and have helped hundreds of students succeed'
     },
     {
-      icon: <ThunderboltOutlined />,
+      icon: <Zap size={16} />,
       title: 'Proven Test Strategies',
       description: 'Master time management, elimination techniques, and question-solving approaches'
     },
     {
-      icon: <RocketOutlined />,
+      icon: <Rocket size={16} />,
       title: 'Structured Learning Path',
       description: 'Video lessons followed by practice questions per lesson to reinforce understanding'
     }
@@ -145,7 +133,7 @@ const SatPage: React.FC = () => {
   const curriculum = [
     {
       section: 'SAT English',
-      icon: <FileTextOutlined />,
+      icon: <FileText size={16} />,
       description: 'Master reading comprehension, grammar, and writing skills',
       modules: [
         {
@@ -200,7 +188,7 @@ const SatPage: React.FC = () => {
     },
     {
       section: 'SAT Math',
-      icon: <BarChartOutlined />,
+      icon: <BarChart2 size={16} />,
       description: 'Comprehensive math coverage from basics to advanced topics',
       modules: [
         {
@@ -342,21 +330,21 @@ const SatPage: React.FC = () => {
             </p>
             <div className="hero-stats">
               <div className="stat">
-                <FileTextOutlined />
+                <FileText size={16} />
                 <div className="stat-content">
                   <span className="stat-value">3000+</span>
                   <span className="stat-label">Practice Questions</span>
                 </div>
               </div>
               <div className="stat">
-                <TeamOutlined />
+                <Users size={16} />
                 <div className="stat-content">
                   <span className="stat-value">200+</span>
                   <span className="stat-label">Students with SAT 1400+</span>
                 </div>
               </div>
               <div className="stat">
-                <TrophyOutlined />
+                <Trophy size={16} />
                 <div className="stat-content">
                   <span className="stat-value">1590</span>
                   <span className="stat-label">Scores up to 1590</span>
@@ -369,7 +357,7 @@ const SatPage: React.FC = () => {
                   type="primary" 
                   size="large"
                   className="apply-now-btn"
-                  icon={<PlayCircleOutlined />}
+                  icon={<PlayCircle size={16} />}
                   onClick={handleContinueLearning}
                 >
                   Continue Learning
@@ -379,7 +367,7 @@ const SatPage: React.FC = () => {
                   type="primary" 
                   size="large"
                   className="apply-now-btn"
-                  icon={<RocketOutlined />}
+                  icon={<Rocket size={16} />}
                   onClick={isAuthenticated ? handleEnroll : () => navigate('/auth/signup')}
                   loading={isEnrolling}
                 >
@@ -389,7 +377,7 @@ const SatPage: React.FC = () => {
               <Button 
                 size="large"
                 className="contact-us-btn"
-                icon={<PlayCircleOutlined />}
+                icon={<PlayCircle size={16} />}
                 onClick={handleVideoPreviewClick}
               >
                 Watch Preview
@@ -471,7 +459,7 @@ const SatPage: React.FC = () => {
                     type="primary" 
                     size="large"
                     onClick={handleContinueLearning}
-                    icon={<PlayCircleOutlined />}
+                    icon={<PlayCircle size={16} />}
                     className="continue-learning-btn"
                   >
                     Continue Learning
@@ -542,7 +530,7 @@ const SatPage: React.FC = () => {
                 <ul>
                   {mentor.achievements.map((achievement, index) => (
                     <li key={index}>
-                      <CheckCircleOutlined />
+                      <CheckCircle2 size={16} />
                       {achievement}
                     </li>
                   ))}
@@ -551,7 +539,7 @@ const SatPage: React.FC = () => {
 
               <div className="mentor-stats">
                 <div className="stat-item">
-                  <UserOutlined />
+                  <User size={16} />
                   <div>
                     <span className="stat-number">{mentor.stats.studentsMentored}</span>
                     <span className="stat-label">Students Mentored</span>
@@ -613,7 +601,7 @@ const SatPage: React.FC = () => {
               <Card key={index} className="testimonial-card">
                 <div className="testimonial-header">
                   <div className="testimonial-score">
-                    <TrophyOutlined />
+                    <Trophy size={16} />
                     <div>
                       <div className="score-value">{testimonial.score}</div>
                       <div className="score-improvement">{testimonial.improvement}</div>
@@ -621,12 +609,12 @@ const SatPage: React.FC = () => {
                   </div>
                   <div className="testimonial-stars">
                     {[...Array(5)].map((_, i) => (
-                      <StarOutlined key={i} />
+                      <Star size={16} />
                     ))}
                   </div>
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">— {testimonial.name}</div>
+                <div className="testimonial-author">by {testimonial.name}</div>
               </Card>
             ))}
           </div>
@@ -660,12 +648,12 @@ const SatPage: React.FC = () => {
                 </div>
                 <div className="pricing-features">
                   <ul>
-                    <li><CheckCircleOutlined /> Complete SAT curriculum</li>
-                    <li><CheckCircleOutlined /> Video lessons with expert instructors</li>
-                    <li><CheckCircleOutlined /> Practice questions per lesson to reinforce understanding</li>
-                    <li><CheckCircleOutlined /> Full-length practice tests</li>
-                    <li><CheckCircleOutlined /> Mock exams with detailed feedback</li>
-                    <li><CheckCircleOutlined /> Progress tracking and analytics</li>
+                    <li><CheckCircle2 size={16} /> Complete SAT curriculum</li>
+                    <li><CheckCircle2 size={16} /> Video lessons with expert instructors</li>
+                    <li><CheckCircle2 size={16} /> Practice questions per lesson to reinforce understanding</li>
+                    <li><CheckCircle2 size={16} /> Full-length practice tests</li>
+                    <li><CheckCircle2 size={16} /> Mock exams with detailed feedback</li>
+                    <li><CheckCircle2 size={16} /> Progress tracking and analytics</li>
                   </ul>
                 </div>
                 <Button

@@ -1,4 +1,4 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { Plus } from "lucide-react";
 import type {
   FormInstance,
   GetProp,
@@ -103,7 +103,7 @@ function ImageFormItem({
       }}
       type="button"
     >
-      <PlusOutlined />
+      <Plus size={16} />
       <div style={{ marginTop: 8 }}>{uploadText}</div>
     </button>
   );

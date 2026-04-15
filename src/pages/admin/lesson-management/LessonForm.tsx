@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, InputNumber, Switch, Button, message, Card, Divider } from 'antd';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { Plus, Upload } from 'lucide-react';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -149,7 +149,7 @@ const LessonForm: React.FC<LessonFormProps> = ({ initialValues, onSubmit, loadin
           >
             <Input 
               placeholder="Enter video URL (YouTube, Google Drive, etc.)" 
-              addonBefore={<UploadOutlined />}
+              addonBefore={<Upload size={16} />}
             />
           </Form.Item>
         )}
@@ -166,7 +166,7 @@ const LessonForm: React.FC<LessonFormProps> = ({ initialValues, onSubmit, loadin
             >
               <Input 
                 placeholder="Enter VdoCipher Video ID (e.g., 1234567890abcdef)" 
-                addonBefore={<PlusOutlined />}
+                addonBefore={<Plus size={16} />}
               />
             </Form.Item>
 

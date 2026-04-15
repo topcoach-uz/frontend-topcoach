@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Modal } from 'antd';
-import { DownloadOutlined, EyeOutlined, CloseOutlined } from '@ant-design/icons';
+import { Download, Eye, X } from 'lucide-react';
 import styles from './ImagePreview.module.scss';
 
 interface ImagePreviewProps {
@@ -54,7 +54,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
         <div className={styles.imageContainer} onClick={handleImageClick}>
           <img src={imageUrl} alt={fileName || 'Image'} className={styles.image} />
           <div className={styles.overlay}>
-            <EyeOutlined className={styles.viewIcon} />
+            <Eye size={16} className={styles.viewIcon} />
           </div>
         </div>
         <div className={styles.imageInfo}>
@@ -72,7 +72,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
             <Button
               type="text"
               size="small"
-              icon={<DownloadOutlined />}
+              icon={<Download size={16} />}
               onClick={handleDownload}
               className={styles.downloadButton}
             >
@@ -83,7 +83,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
             <Button
               type="text"
               size="small"
-              icon={<CloseOutlined />}
+              icon={<X size={16} />}
               onClick={onClose}
               className={styles.closeButton}
             >

@@ -20,7 +20,7 @@ interface RequirementItem {
 
 interface RequirementsChecklistProps {
   applicationId: string;
-  /** When true, show only "Requirements X% Complete" — no expandable bullet points */
+  /** When true, show only "Requirements X% Complete" with no expandable bullet points */
   headerOnly?: boolean;
   requirements?: {
     essays?: {

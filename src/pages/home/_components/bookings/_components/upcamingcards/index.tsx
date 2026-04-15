@@ -1,6 +1,6 @@
 import { App, Form, Input, MenuProps, Rate } from 'antd';
 import dayjs from 'dayjs';
-import { Brodcast } from 'iconsax-react';
+import { Radio } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ import { CustomButton, CustomModal, CustomText } from 'src/components/common';
 import styles from './upcoming.module.scss';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useGetConversationsQuery, useGetThreadsQuery, useCreateThreadMutation, useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
-import { FiMessageCircle } from 'react-icons/fi';
+import { MessageCircle } from 'lucide-react';
 
 import {
   useRateSessionMutation,
@@ -558,7 +558,7 @@ export default function UpcomingCard({
                 {t('home.joinSession')}
               </CustomButton>
             </div>
-            <Brodcast size="24" color={colors.green6} />
+            <Radio size={24} color={colors.green6} />
           </>
         </div>
         {dropdownVisible && (
@@ -648,7 +648,7 @@ export default function UpcomingCard({
                 title="Chat"
                 style={chatButtonStyle}
               >
-                <FiMessageCircle size={18} color="#fff" />
+                <MessageCircle size={18} color="#fff" />
                 <span style={{ color: '#fff' }}>Chat</span>
               </button>
             )}
@@ -660,7 +660,7 @@ export default function UpcomingCard({
               title={role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
               style={chatButtonStyle}
             >
-              <FiMessageCircle size={18} color="#fff" />
+              <MessageCircle size={18} color="#fff" />
               <span style={{ color: '#fff' }}>
                 {role === UserRole.Student ? 'Chat with mentor' : 'Chat with mentee'}
               </span>

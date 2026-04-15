@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Radio, Button, message, Space, Typography, Progress } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useGetTasksByLessonQuery, useSubmitTaskMutation, useGetTaskResultsQuery, useGetLessonTaskSubmissionsQuery, useRetakeTaskMutation } from 'src/app/services/courses';
 import type { CourseTaskDto, TaskResultDto } from 'src/app/services/courses';
 import './TaskSubmission.scss';
@@ -287,13 +287,13 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
           <div className="tasks-summary">
             <div className="summary-stats">
               <div className="stat-item correct">
-                <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px' }} />
+                <CheckCircle2 size={20} color="#52c41a" />
                 <Text strong style={{ color: '#52c41a', marginLeft: 8 }}>
                   {correctCount} Correct
                 </Text>
               </div>
               <div className="stat-item incorrect">
-                <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '20px' }} />
+                <XCircle size={20} color="#ff4d4f" />
                 <Text strong style={{ color: '#ff4d4f', marginLeft: 8 }}>
                   {incorrectCount} Incorrect
                 </Text>
@@ -307,7 +307,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
             />
             {canCompleteLesson ? (
               <Text type="success" style={{ display: 'block', marginTop: 12, fontSize: '14px' }}>
-                <CheckCircleOutlined /> Great job! You can now complete this lesson.
+                <CheckCircle2 size={16} /> Great job! You can now complete this lesson.
               </Text>
             ) : (
               <Text type="warning" style={{ display: 'block', marginTop: 12, fontSize: '14px' }}>
@@ -316,7 +316,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
             )}
             <Button
               type="default"
-              icon={<ReloadOutlined />}
+              icon={<RefreshCw size={16} />}
               onClick={handleRetryAll}
               loading={isRetaking}
               size="large"
@@ -344,9 +344,9 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
                 {reviewMode && result && (
                   <>
                     {result.isCorrect ? (
-                      <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                      <CheckCircle2 size={16} color="#52c41a" />
                     ) : (
-                      <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                      <XCircle size={16} color="#ff4d4f" />
                     )}
                   </>
                 )}
@@ -384,10 +384,10 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
                         {String.fromCharCode(65 + optionIndex)}. {option.text}
                       </span>
                       {showReviewDetails && isCorrect && (
-                        <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: 8 }} />
+                        <CheckCircle2 size={16} color="#52c41a" style={{ marginLeft: 8 }} />
                       )}
                       {showReviewDetails && isSelected && !isCorrect && (
-                        <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: 8 }} />
+                        <XCircle size={16} color="#ff4d4f" style={{ marginLeft: 8 }} />
                       )}
                       {showReviewDetails && isSelected && (
                         <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
@@ -425,11 +425,11 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
               <div className="task-feedback">
                 {result?.isCorrect ? (
                   <Text type="success" style={{ fontSize: '16px' }}>
-                    <CheckCircleOutlined /> Correct!
+                    <CheckCircle2 size={16} /> Correct!
                   </Text>
                 ) : (
                   <Text type="danger" style={{ fontSize: '16px' }}>
-                    <CloseCircleOutlined /> Incorrect
+                    <XCircle size={16} /> Incorrect
                   </Text>
                 )}
               </div>
@@ -439,7 +439,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
 
         <div className="task-navigation">
           <Button
-            icon={<LeftOutlined />}
+            icon={<ChevronLeft size={16} />}
             onClick={handlePrevious}
             disabled={currentTaskIndex === 0}
             className="nav-button"
@@ -452,7 +452,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
             </Text>
           </div>
           <Button
-            icon={<RightOutlined />}
+            icon={<ChevronRight size={16} />}
             onClick={handleNext}
             disabled={currentTaskIndex === tasks.length - 1}
             className="nav-button"

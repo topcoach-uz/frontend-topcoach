@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Typography, Collapse } from 'antd';
-import { 
-  ArrowRightOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined
-} from '@ant-design/icons';
+import { ArrowRight, Calendar, CheckCircle2 } from 'lucide-react';
 import './IntensiveMentorshipProgram.scss';
 
 const { Title, Paragraph, Text } = Typography;
@@ -150,7 +146,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
       <section className="hero">
         <div className="hero__container">
           <div className="hero__badge">
-            <CalendarOutlined />
+            <Calendar size={16} />
             <span>12-Month Program</span>
           </div>
           
@@ -161,7 +157,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
           
           <Paragraph className="hero__description">
             A personalized strategic roadmap for students applying for class of 2031.<br />
-            From SAT prep to application submission — we guide every step.
+            From SAT prep to application submission, we guide every step.
           </Paragraph>
 
           <Button 
@@ -170,7 +166,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
             className="hero__cta"
             onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
           >
-            Apply Now <ArrowRightOutlined />
+            Apply Now <ArrowRight size={16} />
           </Button>
         </div>
       </section>
@@ -205,7 +201,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
               >
                 <div className={`timeline__marker ${isCompleted ? 'timeline__marker--completed' : ''}`}>
                   {isCompleted ? (
-                    <CheckCircleOutlined />
+                    <CheckCircle2 size={16} />
                   ) : (
                     <span>{phase.id}</span>
                   )}
@@ -240,7 +236,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
             size="large"
             onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
           >
-            Apply Now <ArrowRightOutlined />
+            Apply Now <ArrowRight size={16} />
           </Button>
         </div>
       </section>

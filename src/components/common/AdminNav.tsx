@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Space, Card, Alert } from 'antd';
-import { BookOutlined, VideoCameraOutlined, UserOutlined, SettingOutlined, LockOutlined } from '@ant-design/icons';
+import { BookOpen, Video, User, Settings, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import './AdminNav.scss';
@@ -23,7 +23,7 @@ const AdminNav: React.FC = () => {
     {
       title: 'Course Modules',
       description: 'Manage course content, lessons, and resources',
-      icon: <BookOutlined />,
+      icon: <BookOpen size={16} />,
       path: '/course-admin/courses/modules',
       color: '#1890ff'
     }
@@ -43,7 +43,7 @@ const AdminNav: React.FC = () => {
           description="You need to be logged in to access the course management panel. Please log in first."
           type="warning"
           showIcon
-          icon={<LockOutlined />}
+          icon={<Lock size={16} />}
           style={{ maxWidth: 600, margin: '0 auto' }}
         />
       </div>
@@ -64,7 +64,7 @@ const AdminNav: React.FC = () => {
           description={`You need SuperAdmin privileges to access the course management panel. Your current role is: ${user?.managementRole || 'Unknown'}. Please contact your system administrator.`}
           type="error"
           showIcon
-          icon={<LockOutlined />}
+          icon={<Lock size={16} />}
           style={{ maxWidth: 600, margin: '0 auto' }}
         />
       </div>

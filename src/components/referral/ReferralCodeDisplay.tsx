@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, message, Typography, Space, Tag, Tooltip, Modal } from 'antd';
-import { 
-  GiftOutlined, 
-  CopyOutlined, 
-  ShareAltOutlined, 
-  TrophyOutlined,
-  DollarOutlined,
-  UserOutlined
-} from '@ant-design/icons';
+import { Gift, Copy, Share2, Trophy, CircleDollarSign, User } from 'lucide-react';
 import { useGetMyReferralCodeQuery, useGetReferralStatsQuery } from '../../app/services/referralApi';
 import './ReferralCodeDisplay.scss';
 
@@ -110,7 +103,7 @@ export const ReferralCodeDisplay: React.FC = () => {
       <Card className="referral-code-card">
         <div className="referral-header">
           <div className="referral-icon-container">
-            <GiftOutlined className="referral-icon" />
+            <Gift size={16} className="referral-icon" />
           </div>
           <div className="referral-title-section">
             <Title level={4} className="referral-title">
@@ -131,7 +124,7 @@ export const ReferralCodeDisplay: React.FC = () => {
               <Tooltip title="Copy code">
                 <Button
                   type="primary"
-                  icon={<CopyOutlined />}
+                  icon={<Copy size={16} />}
                   onClick={handleCopyCode}
                   size="small"
                   className="copy-button"
@@ -141,7 +134,7 @@ export const ReferralCodeDisplay: React.FC = () => {
               </Tooltip>
               <Tooltip title="Share code">
                 <Button
-                  icon={<ShareAltOutlined />}
+                  icon={<Share2 size={16} />}
                   onClick={handleShare}
                   size="small"
                   className="share-button"
@@ -158,7 +151,7 @@ export const ReferralCodeDisplay: React.FC = () => {
             <div className="stats-grid">
               <div className="stat-item">
                 <div className="stat-icon">
-                  <UserOutlined />
+                  <User size={16} />
                 </div>
                 <div className="stat-content">
                   <Text className="stat-number">{statsData.totalReferrals || 0}</Text>
@@ -167,7 +160,7 @@ export const ReferralCodeDisplay: React.FC = () => {
               </div>
               <div className="stat-item">
                 <div className="stat-icon earnings">
-                  <DollarOutlined />
+                  <CircleDollarSign size={16} />
                 </div>
                 <div className="stat-content">
                   <Text className="stat-number earnings">
@@ -182,7 +175,7 @@ export const ReferralCodeDisplay: React.FC = () => {
 
         <div className="referral-benefits">
           <div className="benefits-header">
-            <TrophyOutlined className="benefits-icon" />
+            <Trophy size={16} className="benefits-icon" />
             <Text strong>How it works:</Text>
           </div>
           <ul className="benefits-list">
@@ -198,7 +191,7 @@ export const ReferralCodeDisplay: React.FC = () => {
       <Modal
         title={
           <div className="share-modal-header">
-            <ShareAltOutlined className="share-modal-icon" />
+            <Share2 size={16} className="share-modal-icon" />
             <span>Share Your Referral Code</span>
           </div>
         }
@@ -220,7 +213,7 @@ export const ReferralCodeDisplay: React.FC = () => {
           <div className="share-buttons">
             <Button
               type="primary"
-              icon={<CopyOutlined />}
+              icon={<Copy size={16} />}
               onClick={handleCopyCode}
               block
               className="share-copy-button"

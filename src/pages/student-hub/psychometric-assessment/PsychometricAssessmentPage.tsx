@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Button, Spin, Alert, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import Spinner from '../../../components/loading/Spinner';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import {

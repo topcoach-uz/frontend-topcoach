@@ -7,7 +7,7 @@ import {
   TelegramSvg,
   YouTubeSvg,
 } from 'src/assets/svg';
-import { LinkedinOutlined } from '@ant-design/icons';
+import { Linkedin } from 'lucide-react';
 
 export default function useFooter() {
   const { t } = useTranslation();
@@ -57,7 +57,7 @@ export default function useFooter() {
         <TelegramSvg />,
         <YouTubeSvg />,
         <InstagramSvg />,
-        <LinkedinOutlined />,
+        <Linkedin size={16} />,
         // <FacebookSvg />,
       ],
     },

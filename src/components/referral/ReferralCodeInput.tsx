@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button, message, Spin, Tag, Space, Typography } from 'antd';
-import { GiftOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import { Gift, CheckCircle2, XCircle, Copy } from 'lucide-react';
 import { useValidateReferralCodeMutation } from '../../app/services/referralApi';
 import './ReferralCodeInput.scss';
 
@@ -130,7 +130,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
   return (
     <div className="referral-code-container">
       <div className="referral-code-header">
-        <GiftOutlined className="referral-icon" />
+        <Gift size={16} className="referral-icon" />
         <Title level={5} className="referral-title">
           Have a Referral Code?
         </Title>
@@ -163,21 +163,21 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
           <div className="applied-code-display">
             <Tag
               color="success"
-              icon={<CheckCircleOutlined />}
+              icon={<CheckCircle2 size={16} />}
               className="applied-code-tag"
             >
               {appliedCode}
             </Tag>
             <Button
               type="text"
-              icon={<CopyOutlined />}
+              icon={<Copy size={16} />}
               onClick={handleCopyCode}
               size="small"
               className="copy-button"
             />
             <Button
               type="text"
-              icon={<CloseCircleOutlined />}
+              icon={<XCircle size={16} />}
               onClick={handleRemoveCode}
               size="small"
               danger

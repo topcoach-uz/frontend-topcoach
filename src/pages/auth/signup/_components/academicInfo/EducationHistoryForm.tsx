@@ -1,5 +1,5 @@
 import { Button, Form, Space, Checkbox, DatePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Plus, Trash2 } from 'lucide-react';
 import { InputFormItem, SelectFormItem } from 'src/components/form';
 import { useTranslation } from 'react-i18next';
 
@@ -37,7 +37,7 @@ export default function EducationHistoryForm({
               type="dashed"
               onClick={() => add({ order: 0 })}
               block
-              icon={<PlusOutlined />}
+              icon={<Plus size={16} />}
             >
               {t('signUp.educationHistory.addEducation') || 'Add Education Entry'}
             </Button>
@@ -57,7 +57,7 @@ export default function EducationHistoryForm({
                 <Button
                   type="text"
                   danger
-                  icon={<DeleteOutlined />}
+                  icon={<Trash2 size={16} />}
                   onClick={() => remove(field.name)}
                   style={{
                     position: 'absolute',
@@ -173,7 +173,7 @@ export default function EducationHistoryForm({
               type="dashed"
               onClick={() => add({ order: fields.length })}
               block
-              icon={<PlusOutlined />}
+              icon={<Plus size={16} />}
               style={{ marginTop: '8px' }}
             >
               {t('signUp.educationHistory.addEducation') || 'Add Another Education'}

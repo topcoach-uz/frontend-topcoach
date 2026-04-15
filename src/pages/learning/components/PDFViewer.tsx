@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, message, Tooltip, Alert } from 'antd';
-import { 
-  DownloadOutlined, 
-  EyeOutlined,
-  FileTextOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
+import { Download, Eye, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './PDFViewer.scss';
 
@@ -214,7 +208,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         <div className="pdf-actions">
           <Button
             type="primary"
-            icon={<EyeOutlined />}
+            icon={<Eye size={16} />}
             onClick={handleViewInNewTab}
             size="large"
             className="view-button"
@@ -224,7 +218,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           
           <Tooltip title={isExternalUrl ? "Opens PDF in a new tab" : "Downloads PDF"}>
             <Button
-              icon={<DownloadOutlined />}
+              icon={<Download size={16} />}
               onClick={handleDownload}
               loading={isLoading}
               size="large"
@@ -237,7 +231,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           {!isCompleted && (
             <Button
               type="primary"
-              icon={<CheckCircleOutlined />}
+              icon={<CheckCircle2 size={16} />}
               onClick={handleMarkAsComplete}
               size="large"
               className="complete-button"
@@ -250,7 +244,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           {isCompleted && (
             <Button
               type="primary"
-              icon={<CheckCircleOutlined />}
+              icon={<CheckCircle2 size={16} />}
               size="large"
               className="completed-button"
               style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
@@ -268,7 +262,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             description="This PDF is hosted on Google Drive. If you can't view it directly, the 'View PDF' and 'Open PDF' buttons above will open it in a new tab."
             type="info"
             showIcon
-            icon={<ExclamationCircleOutlined />}
+            icon={<AlertCircle size={16} />}
             style={{ marginBottom: '16px' }}
           />
         )} */}
@@ -278,7 +272,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           {iframeError ? (
             <div className="pdf-error-fallback">
               <div className="pdf-icon">
-                <FileTextOutlined />
+                <FileText size={16} />
               </div>
               <h3>PDF Preview Unavailable</h3>
               <p>
@@ -291,13 +285,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <Button 
                   type="primary" 
                   onClick={handleViewInNewTab}
-                  icon={<EyeOutlined />}
+                  icon={<Eye size={16} />}
                 >
                   Open PDF in New Tab
                 </Button>
                 <Button 
                   onClick={handleDownload}
-                  icon={<DownloadOutlined />}
+                  icon={<Download size={16} />}
                   loading={isLoading}
                 >
                   Download PDF

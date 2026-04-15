@@ -3,14 +3,12 @@
 .chatModal {
   .ant-modal-content {
     padding: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
   }
 
   .ant-modal-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    margin: 0;
+    display: none;
   }
 
   .ant-modal-body {
@@ -20,17 +18,22 @@
   }
 }
 
-.chatDrawer {
-  .ant-drawer-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-  }
+.messengerModalBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-sizing: border-box;
+}
 
+.chatDrawer {
   .ant-drawer-body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    height: calc(90vh - 56px); // Subtract header height
+    flex: 1;
+    min-height: 0;
   }
 }
 

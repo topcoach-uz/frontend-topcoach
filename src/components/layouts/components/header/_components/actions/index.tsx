@@ -4,7 +4,6 @@ import { useScreenSize } from 'src/hooks/useScreenSize.ts';
 import AuthButtonGroup from './_components/AuthButtonGroup/index.tsx';
 import EditProfileModal from './_components/EditProfileModal/index.tsx';
 import ProfileDropdown from './_components/ProfileDropdown/index.tsx';
-import FontAwesomeIcon from 'src/components/common/icons/FontAwesomeIcon';
 import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
 import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from './actions.module.scss';
@@ -13,8 +12,10 @@ import useActions from './useActions.tsx';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MailFilled } from '@ant-design/icons';
+import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
+import { useTypedSelector } from 'src/app/store';
+import { UserRole } from 'src/app/api/Api';
 
 export default function Actions() {
   const {
@@ -22,6 +23,7 @@ export default function Actions() {
     isDark,
     isAuthenticated,
     profileMenuItems,
+    navigate,
 
     // Hamburger menu
     isMenuOpen,
@@ -34,6 +36,7 @@ export default function Actions() {
     // Auth loading state
     isAuthLoading,
   } = useActions();
+  const userRole = useTypedSelector((s) => s.auth.profile?.profile?.role);
   const { screenSize } = useScreenSize();
   const { i18n } = useTranslation();
 
@@ -41,10 +44,16 @@ export default function Actions() {
     i18n.language === 'en' ? screenSize < 1200 : screenSize < 1400;
 
   useEffect(() => {
-    const handler = () => setIsModalVisible(true);
+    const handler = () => {
+      if (userRole === UserRole.Student) {
+        navigate('/student-hub/settings');
+        return;
+      }
+      setIsModalVisible(true);
+    };
     window.addEventListener('openEditProfileModal', handler);
     return () => window.removeEventListener('openEditProfileModal', handler);
-  }, [setIsModalVisible]);
+  }, [setIsModalVisible, userRole, navigate]);
 
   // Mobile version
   if (isMobileVersion) {
@@ -90,7 +99,7 @@ export default function Actions() {
       </button>
       */}
       <Link to="/contact" className={styles.contactIcon}>
-        <MailFilled style={{ fontSize: '20px', color: 'white' }} />
+        <Mail size={20} color="white" />
       </Link>
       <ChatIcon />
       <LanguageSelect />

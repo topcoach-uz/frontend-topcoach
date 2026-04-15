@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Progress, Tag, Spin, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
-import {
-  TeamOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
+import { Users, Trophy, BarChart2 } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -149,7 +146,7 @@ const AnalyticsPage: React.FC = () => {
             <Statistic
               title={t('schoolCounselor.analytics.totalStudents', 'Total Students')}
               value={totalStudents}
-              prefix={<TeamOutlined />}
+              prefix={<Users size={16} />}
               valueStyle={{ color: '#8b0000' }}
             />
           </Card>
@@ -160,7 +157,7 @@ const AnalyticsPage: React.FC = () => {
               title={t('schoolCounselor.analytics.averageProgress', 'Average Progress')}
               value={averageProgress}
               suffix="%"
-              prefix={<TrophyOutlined />}
+              prefix={<Trophy size={16} />}
               valueStyle={{ color: '#faad14' }}
               precision={1}
             />
@@ -252,7 +249,7 @@ const AnalyticsPage: React.FC = () => {
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📊</div>
+                <BarChart2 size={48} style={{ marginBottom: '12px', color: '#9ca3af' }} />
                 <div style={{ fontSize: '14px', fontWeight: 500 }}>{t('schoolCounselor.analytics.noEnrollmentData', 'No enrollment data available')}</div>
               </div>
             )}

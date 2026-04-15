@@ -1,17 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  PlayCircleOutlined, 
-  PauseCircleOutlined, 
-  ReloadOutlined, 
-  SoundOutlined, 
-  AudioOutlined, 
-  MutedOutlined,
-  SettingOutlined,
-  FullscreenOutlined,
-  FullscreenExitOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
+import { PlayCircle, PauseCircle, RefreshCw, Volume2, Mic, VolumeX, Settings, Maximize2, Minimize2, CheckCircle2, AlertCircle } from 'lucide-react';
 import './VideoPlayer.scss';
 
 interface VideoPlayerProps {
@@ -347,7 +335,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
         <div className="google-drive-content">
           <div className="video-icon">
-            <PlayCircleOutlined />
+            <PlayCircle size={16} />
           </div>
           <h3>Video Available</h3>
           <p>
@@ -359,14 +347,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               className="watch-button"
               onClick={() => window.open(src, '_blank')}
             >
-              <PlayCircleOutlined />
+              <PlayCircle size={16} />
               Watch Video
             </button>
             <button 
               className="complete-button"
               onClick={onComplete}
             >
-              <CheckCircleOutlined />
+              <CheckCircle2 size={16} />
               Mark as Complete
             </button>
           </div>
@@ -384,7 +372,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
         <div className="google-drive-content">
           <div className="video-icon">
-            <PlayCircleOutlined />
+            <PlayCircle size={16} />
           </div>
           <h3>Video Available</h3>
           <p>
@@ -396,14 +384,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               className="watch-button"
               onClick={() => window.open(src, '_blank')}
             >
-              <PlayCircleOutlined />
+              <PlayCircle size={16} />
               Watch Video
             </button>
             <button 
               className="complete-button"
               onClick={onComplete}
             >
-              <CheckCircleOutlined />
+              <CheckCircle2 size={16} />
               Mark as Complete
             </button>
           </div>
@@ -481,7 +469,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               onClick={togglePlay}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+              {isPlaying ? <PauseCircle size={16} /> : <PlayCircle size={16} />}
             </button>
 
             <button 
@@ -489,7 +477,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               onClick={restart}
               aria-label="Restart"
             >
-              <ReloadOutlined />
+              <RefreshCw size={16} />
             </button>
 
             {/* Volume Control */}
@@ -507,11 +495,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
-                  <MutedOutlined />
+                  <VolumeX size={16} />
                 ) : volume < 0.5 ? (
-                  <AudioOutlined />
+                  <Mic size={16} />
                 ) : (
-                  <SoundOutlined />
+                  <Volume2 size={16} />
                 )}
               </button>
               
@@ -552,7 +540,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 onClick={() => setShowSpeedMenu(!showSpeedMenu)}
                 aria-label="Playback Speed"
               >
-                <SettingOutlined />
+                <Settings size={16} />
               </button>
               
               {showSpeedMenu && (
@@ -575,7 +563,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               onClick={toggleFullscreen}
               aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
             >
-              {isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
           </div>
         </div>
@@ -629,7 +617,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           e.stopPropagation();
           togglePlay();
         }}>
-          <PlayCircleOutlined />
+          <PlayCircle size={16} />
         </div>
       )}
 
@@ -640,7 +628,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           onClick={onComplete}
           style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
         >
-          <CheckCircleOutlined />
+          <CheckCircle2 size={16} />
           Mark as Complete
         </button>
       </div>

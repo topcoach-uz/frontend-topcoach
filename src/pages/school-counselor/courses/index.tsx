@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Progress, Button, Spin, Alert, Empty, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import {
-  BookOutlined,
-  TeamOutlined,
-  CheckCircleOutlined,
-  EyeOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { BookOpen, Users, CheckCircle2, Eye, Info } from 'lucide-react';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
 import type { ColumnsType } from 'antd/es/table';
@@ -129,7 +123,7 @@ const CoursesPage: React.FC = () => {
       width: 100,
       render: (lessons: number) => (
         <span>
-          <BookOutlined style={{ marginRight: 4 }} />
+          <BookOpen size={16} style={{ marginRight: 4 }} />
           {lessons || 0}
         </span>
       ),
@@ -142,7 +136,7 @@ const CoursesPage: React.FC = () => {
         <div>
           <Statistic
             value={record.enrolledStudents}
-            prefix={<TeamOutlined />}
+            prefix={<Users size={16} />}
             valueStyle={{ fontSize: 16, fontWeight: 600 }}
           />
         </div>
@@ -192,7 +186,7 @@ const CoursesPage: React.FC = () => {
       render: (_, record) => (
         <Button
           type="primary"
-          icon={<EyeOutlined />}
+          icon={<Eye size={16} />}
           onClick={() => handleViewStudents(record.id)}
           style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
         >
@@ -235,7 +229,7 @@ const CoursesPage: React.FC = () => {
           </p>
         </div>
         <div className="info-badge">
-          <InfoCircleOutlined style={{ marginRight: 8 }} />
+          <Info size={16} style={{ marginRight: 8 }} />
           Read-only view
         </div>
       </div>
@@ -247,7 +241,7 @@ const CoursesPage: React.FC = () => {
             <Statistic
               title="Total Courses"
               value={totalCourses}
-              prefix={<BookOutlined />}
+              prefix={<BookOpen size={16} />}
               valueStyle={{ color: '#8b0000' }}
             />
           </Card>
@@ -257,7 +251,7 @@ const CoursesPage: React.FC = () => {
             <Statistic
               title="Total Enrollments"
               value={totalEnrollments}
-              prefix={<TeamOutlined />}
+              prefix={<Users size={16} />}
               valueStyle={{ color: '#1890ff' }}
             />
           </Card>
@@ -267,7 +261,7 @@ const CoursesPage: React.FC = () => {
             <Statistic
               title="Students Completed Course"
               value={totalCompleted}
-              prefix={<CheckCircleOutlined />}
+              prefix={<CheckCircle2 size={16} />}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>

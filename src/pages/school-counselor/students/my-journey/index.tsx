@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, Button, Alert, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
 import { useGetUserByIdQuery } from 'src/app/services/users';
@@ -118,7 +118,7 @@ const StudentMyJourneyView: React.FC = () => {
     <div className="student-my-journey-view">
       <div className="journey-header">
         <Button
-          icon={<ArrowLeftOutlined />}
+          icon={<ArrowLeft size={16} />}
           onClick={() => navigate('/school-counselor/students')}
           className="back-button"
           style={{ borderColor: '#8b0000', color: '#8b0000' }}

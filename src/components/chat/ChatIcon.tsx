@@ -4,7 +4,7 @@ import { chatApi, useGetConversationsQuery, useGetUnreadCountQuery } from 'src/a
 import { isConversationArray, type Conversation } from 'src/app/services/chat/types';
 import { useTypedSelector } from 'src/app/store';
 import { ACCESS_TOKEN } from 'src/constants/storage';
-import { FiMessageCircle } from 'react-icons/fi';
+import { MessageCircle } from 'lucide-react';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
 import { useSocket } from 'src/lib/socket';
@@ -37,7 +37,7 @@ function ChatIconFallback() {
         color: '#fff',
       }}
     >
-      <FiMessageCircle size={22} color="#fff" />
+      <MessageCircle size={22} color="#fff" />
     </div>
   );
 }
@@ -130,7 +130,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     setSelectedThreadId(null);
   };
 
-  const handleThreadSelect = (threadId: string) => {
+  const handleThreadSelect = (threadId: string | null) => {
     setSelectedThreadId(threadId);
   };
 
@@ -153,7 +153,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
           opacity: 1,
         }}
       >
-        <FiMessageCircle size={22} color="#fff" />
+        <MessageCircle size={22} color="#fff" />
         {unreadCount > 0 && (
           <span className={styles.chatIconBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}
@@ -169,7 +169,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
             setSelectedThreadId(null);
           }}
           onConversationChange={handleConversationSelect}
-          onThreadChange={handleThreadSelect}
+          onThreadChange={(tid) => handleThreadSelect(tid)}
         />
       )}
     </>

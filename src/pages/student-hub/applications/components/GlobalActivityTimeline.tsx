@@ -161,7 +161,7 @@ const GlobalActivityTimeline: React.FC<GlobalActivityTimelineProps> = ({
               {university && (
                 <>
                   <Text strong>{university}</Text>
-                  <Text> — </Text>
+                  <Text> · </Text>
                 </>
               )}
               <Text>{e.label}</Text>

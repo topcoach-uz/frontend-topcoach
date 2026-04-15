@@ -1,4 +1,4 @@
-import { SVGPropsType } from 'src/components/icons';
+import { ListFilter, ChevronUp, type LucideProps } from 'lucide-react';
 
 export const MentorStarIcon = () => (
   <svg
@@ -15,72 +15,6 @@ export const MentorStarIcon = () => (
   </svg>
 );
 
-export const MentorFilterSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="25"
-    viewBox="0 0 24 25"
-    fill="none"
-    {...rest}
-  >
-    <path
-      d="M3 7.5H21"
-      stroke="currentColor"
-      strokeOpacity="0.88"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <path
-      d="M6 12.5H18"
-      stroke="currentColor"
-      strokeOpacity="0.88"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <path
-      d="M10 17.5H14"
-      stroke="currentColor"
-      strokeOpacity="0.88"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+export const MentorFilterSvg = ({ size = 24, ...props }: LucideProps) => <ListFilter size={size} {...props} />;
 
-export const LeftSvg = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="19"
-    height="18"
-    viewBox="0 0 19 18"
-    fill="none"
-  >
-    <path
-      d="M16.6722 8.51328L9.08242 1.926C9.02416 1.87578 8.94983 1.84766 8.87149 1.84766H7.09358C6.94492 1.84766 6.87662 2.03248 6.98912 2.12891L14.0244 8.23605H2.26814C2.17974 8.23605 2.10742 8.30837 2.10742 8.39676V9.60212C2.10742 9.69051 2.17974 9.76284 2.26814 9.76284H14.0224L6.98711 15.87C6.87461 15.9684 6.94291 16.1512 7.09157 16.1512H8.92974C8.96791 16.1512 9.00608 16.1372 9.03421 16.1111L16.6722 9.4856C16.7417 9.42513 16.7975 9.35043 16.8357 9.26656C16.8739 9.1827 16.8937 9.09161 16.8937 8.99944C16.8937 8.90728 16.8739 8.81619 16.8357 8.73232C16.7975 8.64845 16.7417 8.57376 16.6722 8.51328Z"
-      fill="white"
-    />
-  </svg>
-);
-
-export const UpArrowSvg = ({ ...rest }: SVGPropsType) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    {...rest}
-  >
-    <path
-      d="M16.6003 13.1664C16.4419 13.1664 16.2836 13.1081 16.1586 12.9831L10.7253 7.54974C10.3253 7.14974 9.67526 7.14974 9.27526 7.54974L3.84193 12.9831C3.60026 13.2247 3.20026 13.2247 2.95859 12.9831C2.71693 12.7414 2.71693 12.3414 2.95859 12.0997L8.39193 6.66641C9.27526 5.78307 10.7169 5.78307 11.6086 6.66641L17.0419 12.0997C17.2836 12.3414 17.2836 12.7414 17.0419 12.9831C16.9169 13.0997 16.7586 13.1664 16.6003 13.1664Z"
-      fill="currentColor"
-      fillOpacity="0.45"
-    />
-    <path
-      d="M16.6003 12.6664C16.5826 12.6664 16.5671 12.6632 16.5537 12.6578C16.5409 12.6526 16.5268 12.6442 16.5121 12.6295L11.0788 7.19619C10.4836 6.60092 9.51697 6.60092 8.92171 7.19619L3.48837 12.6295C3.46685 12.651 3.43611 12.6643 3.40026 12.6643C3.36441 12.6643 3.33367 12.651 3.31215 12.6295C3.29062 12.608 3.27734 12.5773 3.27734 12.5414C3.27734 12.5056 3.29062 12.4748 3.31215 12.4533L8.74548 7.01996C9.4324 6.33304 10.5582 6.33043 11.256 7.0209C11.2562 7.02114 11.2565 7.02138 11.2567 7.02162L16.6884 12.4533C16.7099 12.4748 16.7232 12.5056 16.7232 12.5414C16.7232 12.5744 16.712 12.603 16.6934 12.6241C16.6535 12.6585 16.6174 12.6664 16.6003 12.6664Z"
-      stroke="currentColor"
-      strokeOpacity="0.45"
-    />
-  </svg>
-);
+export const UpArrowSvg = ({ size = 20, ...props }: LucideProps) => <ChevronUp size={size} {...props} />;

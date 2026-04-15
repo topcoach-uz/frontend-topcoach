@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Button, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowRight } from 'lucide-react';
 import AdmissionsProgramProgressCard from '../components/AdmissionsProgramProgressCard';
 import './ProgramsPage.scss';
 
@@ -52,7 +52,7 @@ const ProgramsPage: React.FC = () => {
                     type="primary"
                     size="middle"
                     style={{ marginTop: 8 }}
-                    icon={<ArrowRightOutlined />}
+                    icon={<ArrowRight size={16} />}
                   >
                     View Program
                   </Button>

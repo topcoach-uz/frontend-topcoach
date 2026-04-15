@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Descriptions, Tag, message, Row, Col, Spin, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
-import {
-  UserOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  SaveOutlined,
-  CheckCircleOutlined,
-  GlobalOutlined,
-} from '@ant-design/icons';
+import { User, Mail, Phone, Save, CheckCircle2, Globe } from 'lucide-react';
 import { api } from 'src/app/api';
 import { useOrganization } from '../context/OrganizationContext';
 import './settings.scss';
@@ -160,7 +153,7 @@ const SettingsPage: React.FC = () => {
                 name="name"
                 rules={[{ required: true, message: t('schoolCounselor.settings.pleaseEnterOrgName', 'Please enter organization name') }]}
               >
-                <Input prefix={<UserOutlined />} size="large" />
+                <Input prefix={<User size={16} />} size="large" />
               </Form.Item>
 
               <Form.Item
@@ -171,11 +164,11 @@ const SettingsPage: React.FC = () => {
                   { type: 'email', message: t('schoolCounselor.settings.pleaseEnterValidEmail', 'Please enter a valid email') },
                 ]}
               >
-                <Input prefix={<MailOutlined />} size="large" />
+                <Input prefix={<Mail size={16} />} size="large" />
               </Form.Item>
 
               <Form.Item label={t('schoolCounselor.settings.phone', 'Phone')} name="phone">
-                <Input prefix={<PhoneOutlined />} size="large" />
+                <Input prefix={<Phone size={16} />} size="large" />
               </Form.Item>
 
               <Form.Item label={t('schoolCounselor.settings.address', 'Address')} name="address">
@@ -202,14 +195,14 @@ const SettingsPage: React.FC = () => {
                   },
                 ]}
               >
-                <Input prefix={<GlobalOutlined />} size="large" placeholder="https://" />
+                <Input prefix={<Globe size={16} />} size="large" placeholder="https://" />
               </Form.Item>
 
               <Form.Item>
                 <Button
                   type="primary"
                   htmlType="submit"
-                  icon={<SaveOutlined />}
+                  icon={<Save size={16} />}
                   size="large"
                   loading={loading}
                   style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
@@ -243,7 +236,7 @@ const SettingsPage: React.FC = () => {
                 {organization.id}
               </Descriptions.Item>
               <Descriptions.Item label={t('schoolCounselor.settings.accountStatus', 'Account Status')}>
-                <Tag color="green" icon={<CheckCircleOutlined />}>
+                <Tag color="green" icon={<CheckCircle2 size={16} />}>
                   {t('common.active', 'Active')}
                 </Tag>
               </Descriptions.Item>

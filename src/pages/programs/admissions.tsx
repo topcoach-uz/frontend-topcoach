@@ -1,23 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Tag, Avatar, Progress, Divider, Alert, Spin, message, Badge } from 'antd';
-import { 
-  PlayCircleOutlined, 
-  CheckCircleOutlined, 
-  StarOutlined, 
-  ClockCircleOutlined,
-  UserOutlined,
-  TrophyOutlined,
-  RocketOutlined,
-  SafetyCertificateOutlined,
-  DollarOutlined,
-  BookOutlined,
-  TeamOutlined,
-  CrownOutlined,
-  DownOutlined,
-  UpOutlined,
-  MessageOutlined
-} from '@ant-design/icons';
+import { PlayCircle, CheckCircle2, Star, Clock, User, Trophy, Rocket, ShieldCheck, CircleDollarSign, BookOpen, Users, Crown, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import { 
   useGetActivePricingQuery,
@@ -337,21 +321,21 @@ const AdmissionsPage: React.FC = () => {
             </p>
             <div className="hero-stats">
               <div className="stat">
-                <DollarOutlined />
+                <CircleDollarSign size={16} />
                 <div className="stat-content">
                   <span className="stat-value">$737K+</span>
                   <span className="stat-label">{t('programs.stats.scholarships')}</span>
                 </div>
               </div>
               <div className="stat">
-                <TeamOutlined />
+                <Users size={16} />
                 <div className="stat-content">
                   <span className="stat-value">110+</span>
                   <span className="stat-label">{t('programs.stats.students')}</span>
                 </div>
               </div>
               <div className="stat">
-                <TrophyOutlined />
+                <Trophy size={16} />
                 <div className="stat-content">
                   <span className="stat-value">50+</span>
                   <span className="stat-label">{t('programs.stats.universities')}</span>
@@ -363,7 +347,7 @@ const AdmissionsPage: React.FC = () => {
                 type="primary" 
                 size="large"
                 onClick={() => navigate('/contact-form')}
-                icon={<RocketOutlined />}
+                icon={<Rocket size={16} />}
                 className="apply-now-btn"
               >
                 {t('programs.stats.applyNow')}
@@ -372,7 +356,7 @@ const AdmissionsPage: React.FC = () => {
                 <Button 
                   size="large"
                   className="contact-us-btn"
-                  icon={<MessageOutlined />}
+                  icon={<MessageCircle size={16} />}
                 >
                   {t('programs.stats.contactUs')}
                 </Button>
@@ -393,12 +377,12 @@ const AdmissionsPage: React.FC = () => {
               <div className="enrollment-message">
                 {enrollmentStatus.canAccessLearning ? (
                   <>
-                    <CheckCircleOutlined />
+                    <CheckCircle2 size={16} />
                     <span>{t(getEnrollmentMessageKey(enrollmentStatus.enrollment.courseType))}</span>
                   </>
                 ) : (
                   <>
-                    <ClockCircleOutlined />
+                    <Clock size={16} />
                     <span>{t('programs.enrollment.pending')}</span>
                   </>
                 )}
@@ -454,7 +438,7 @@ const AdmissionsPage: React.FC = () => {
                   type="primary" 
                   size="large"
                   onClick={handleContinueLearning}
-                  icon={<PlayCircleOutlined />}
+                  icon={<PlayCircle size={16} />}
                   className="continue-learning-btn"
                 >
                   {t('programs.enrollment.continueLearning')}
@@ -500,7 +484,7 @@ const AdmissionsPage: React.FC = () => {
                     <p className="scholarship">{mentor.scholarship}</p>
                   </div>
                   <div className="module-info">
-                    <BookOutlined />
+                    <BookOpen size={16} />
                     <span>{mentor.module}</span>
                   </div>
                 </div>
@@ -511,7 +495,7 @@ const AdmissionsPage: React.FC = () => {
                 <ul>
                   {mentor.achievements.map((achievement, index) => (
                     <li key={index}>
-                      <CheckCircleOutlined />
+                      <CheckCircle2 size={16} />
                       {achievement}
                     </li>
                   ))}
@@ -520,7 +504,7 @@ const AdmissionsPage: React.FC = () => {
 
               <div className="mentor-stats">
                 <div className="stat-item">
-                  <UserOutlined />
+                  <User size={16} />
                   <div>
                     <span className="stat-number">{mentor.stats.studentsMentored}</span>
                     <span className="stat-label">{t('programs.mentor.studentsMentored')}</span>
@@ -535,7 +519,7 @@ const AdmissionsPage: React.FC = () => {
             type="default"
             size="large"
             onClick={() => setShowDetailedSections(!showDetailedSections)}
-            icon={showDetailedSections ? <UpOutlined /> : <DownOutlined />}
+            icon={showDetailedSections ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             className="learn-more-btn"
           >
             {showDetailedSections ? t('pricing.showLess') : t('pricing.learnMore')}
@@ -566,14 +550,14 @@ const AdmissionsPage: React.FC = () => {
                 <ul>
                   {module.topics.map((topic, topicIndex) => (
                     <li key={topicIndex}>
-                      <CheckCircleOutlined />
+                      <CheckCircle2 size={16} />
                       {topic}
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="module-duration">
-                <ClockCircleOutlined />
+                <Clock size={16} />
                 <span>{module.duration}</span>
               </div>
             </Card>
@@ -594,28 +578,28 @@ const AdmissionsPage: React.FC = () => {
         <div className="different-grid">
           <div className="different-item">
             <div className="icon">
-              <StarOutlined />
+              <Star size={16} />
             </div>
             <h3>{t('pricing.comprehensiveSupport')}</h3>
             <p>{t('pricing.fromApplicationStrategy')}</p>
           </div>
           <div className="different-item">
             <div className="icon">
-              <RocketOutlined />
+              <Rocket size={16} />
             </div>
             <h3>{t('pricing.resultsDriven')}</h3>
             <p>{t('pricing.focusOnActionable')}</p>
           </div>
           <div className="different-item">
             <div className="icon">
-              <UserOutlined />
+              <User size={16} />
             </div>
             <h3>Expert Mentorship</h3>
             <p>Learn from successful graduates who have been through the same journey</p>
           </div>
           <div className="different-item">
             <div className="icon">
-              <TrophyOutlined />
+              <Trophy size={16} />
             </div>
             <h3>Proven Success</h3>
             <p>Track record of helping students get into top universities worldwide</p>
@@ -642,7 +626,7 @@ const AdmissionsPage: React.FC = () => {
             >
               {plan.popular && (
                 <div className="popular-badge">
-                  <StarOutlined />
+                  <Star size={16} />
                   {t('pricing.mostPopular')}
                 </div>
               )}
@@ -658,7 +642,7 @@ const AdmissionsPage: React.FC = () => {
                 <ul>
                   {plan.features.map((feature, index) => (
                     <li key={index}>
-                      <CheckCircleOutlined />
+                      <CheckCircle2 size={16} />
                       {feature}
                     </li>
                   ))}
@@ -699,7 +683,7 @@ const AdmissionsPage: React.FC = () => {
             type="primary" 
             size="large"
             onClick={() => navigate('/contact-form')}
-            icon={<RocketOutlined />}
+            icon={<Rocket size={16} />}
           >
             {t('pricing.getStartedToday')}
           </Button>

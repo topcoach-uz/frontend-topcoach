@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from 'antd';
-import { PlayCircleOutlined } from '@ant-design/icons';
+import { PlayCircle } from 'lucide-react';
 import styles from './YouTubePlaylistCard.module.scss';
 
 interface YouTubePlaylistCardProps {
@@ -38,7 +38,7 @@ const YouTubePlaylistCard: React.FC<YouTubePlaylistCardProps> = ({
             className={styles.thumbnail}
           />
           <div className={styles.overlay}>
-            <PlayCircleOutlined className={styles.playIcon} />
+            <PlayCircle size={16} className={styles.playIcon} />
           </div>
           {videoCount !== undefined && (
             <div className={styles.videoCount}>

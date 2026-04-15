@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { CustomCard } from 'src/components/cards';
 import { CustomText, CustomButton } from 'src/components/common';
 import useColors from 'src/hooks/useColors';
-import { DashboardOutlined, TeamOutlined, BarChartOutlined, SettingOutlined } from '@ant-design/icons';
+import { LayoutDashboard, Users, BarChart2, Settings } from 'lucide-react';
 import styles from './schoolCounselorDashboard.module.scss';
 
 export default function SchoolCounselorDashboardSection() {
@@ -45,7 +45,7 @@ export default function SchoolCounselorDashboardSection() {
               className={styles.dashboard_card}
               onClick={() => handleNavigate('/school-counselor')}
             >
-              <DashboardOutlined className={styles.card_icon} />
+              <LayoutDashboard size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
                 Dashboard
               </CustomText>
@@ -58,7 +58,7 @@ export default function SchoolCounselorDashboardSection() {
               className={styles.dashboard_card}
               onClick={() => handleNavigate('/school-counselor/students')}
             >
-              <TeamOutlined className={styles.card_icon} />
+              <Users size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
                 Students
               </CustomText>
@@ -71,7 +71,7 @@ export default function SchoolCounselorDashboardSection() {
               className={styles.dashboard_card}
               onClick={() => handleNavigate('/school-counselor/analytics')}
             >
-              <BarChartOutlined className={styles.card_icon} />
+              <BarChart2 size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
                 Analytics
               </CustomText>
@@ -84,7 +84,7 @@ export default function SchoolCounselorDashboardSection() {
               className={styles.dashboard_card}
               onClick={() => handleNavigate('/school-counselor/settings')}
             >
-              <SettingOutlined className={styles.card_icon} />
+              <Settings size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
                 Settings
               </CustomText>

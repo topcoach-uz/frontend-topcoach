@@ -17,13 +17,7 @@ import {
   Statistic,
   Progress,
 } from 'antd';
-import {
-  SearchOutlined,
-  CheckCircleOutlined,
-  UserOutlined,
-  MailOutlined,
-  PhoneOutlined,
-} from '@ant-design/icons';
+import { Search as SearchIcon, CheckCircle2, User, Mail, Phone } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -281,7 +275,7 @@ const ProgramDashboard: React.FC = () => {
               <Statistic
                 title="Total Users"
                 value={analyticsData.totalUsers}
-                prefix={<UserOutlined />}
+                prefix={<User size={16} />}
                 valueStyle={{ fontSize: '24px' }}
               />
             </Card>
@@ -291,7 +285,7 @@ const ProgramDashboard: React.FC = () => {
               <Statistic
                 title="Students with Access"
                 value={analyticsData.studentsWithAccess}
-                prefix={<CheckCircleOutlined />}
+                prefix={<CheckCircle2 size={16} />}
                 valueStyle={{ color: '#3f8600', fontSize: '24px' }}
               />
             </Card>
@@ -526,7 +520,7 @@ const ProgramDashboard: React.FC = () => {
       width: 200,
       render: (text: string) => (
         <Space>
-          <UserOutlined />
+          <User size={16} />
           <span>{text}</span>
         </Space>
       ),
@@ -539,7 +533,7 @@ const ProgramDashboard: React.FC = () => {
       width: 250,
       render: (text: string) => (
         <Space>
-          <MailOutlined />
+          <Mail size={16} />
           <span>{text}</span>
         </Space>
       ),
@@ -553,7 +547,7 @@ const ProgramDashboard: React.FC = () => {
       render: (text: string | null) => (
         text ? (
           <Space>
-            <PhoneOutlined />
+            <Phone size={16} />
             <span>{text}</span>
           </Space>
         ) : (
@@ -704,7 +698,7 @@ const ProgramDashboard: React.FC = () => {
               <Button
                 type="primary"
                 size="small"
-                icon={<CheckCircleOutlined />}
+                icon={<CheckCircle2 size={16} />}
                 onClick={() => handleGrantAccess(record.id, record.userId, record.userName)}
                 disabled={!isTelegramConnected}
                 title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
@@ -787,7 +781,7 @@ const ProgramDashboard: React.FC = () => {
                     <Search
                       placeholder="Search by user name or email"
                       allowClear
-                      enterButton={<SearchOutlined />}
+                      enterButton={<SearchIcon size={16} />}
                       size="large"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}

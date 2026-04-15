@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, Radio, Space, message } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { User, Mail, Phone, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubmitFormMutation } from 'src/app/services/contactApi';
 import { useTypedSelector } from 'src/app/store';
@@ -304,7 +304,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
         ]}
       >
         <Input
-          prefix={<UserOutlined className={styles.input_icon} />}
+          prefix={<User size={16} className={styles.input_icon} />}
           placeholder={t('leadCapture.contact.fullNamePlaceholder')}
           size="large"
           className={styles.form_input}
@@ -320,7 +320,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
         ]}
       >
         <Input
-          prefix={<MailOutlined className={styles.input_icon} />}
+          prefix={<Mail size={16} className={styles.input_icon} />}
           placeholder={t('leadCapture.contact.emailPlaceholder')}
           size="large"
           className={styles.form_input}
@@ -335,7 +335,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
         ]}
       >
         <Input
-          prefix={<PhoneOutlined className={styles.input_icon} />}
+          prefix={<Phone size={16} className={styles.input_icon} />}
           placeholder={t('leadCapture.contact.phonePlaceholder')}
           size="large"
           className={styles.form_input}
@@ -431,7 +431,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
                 onClick={handleNext}
                 disabled={currentStep === 0}
                 className={styles.next_button}
-                icon={<ArrowRightOutlined />}
+                icon={<ArrowRight size={16} />}
               >
                 {t('leadCapture.next')}
               </Button>

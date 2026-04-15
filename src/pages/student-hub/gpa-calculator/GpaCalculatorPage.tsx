@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Row, Col, Select, Input, Button, Table, Tooltip, Alert, Divider, Space, Typography, Collapse } from 'antd';
-import { InfoCircleOutlined, CalculatorOutlined, CheckCircleOutlined, ClearOutlined } from '@ant-design/icons';
+import { Info, Calculator, CheckCircle2, Eraser, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import './GpaCalculatorPage.scss';
@@ -587,7 +587,7 @@ const GpaCalculatorPage: React.FC = () => {
         <span>
           {t('studentHub.gpaCalculator.credits')}
           <Tooltip title={t('studentHub.gpaCalculator.creditsTooltip')}>
-            <InfoCircleOutlined style={{ marginLeft: 4, color: '#8b0000' }} />
+            <Info size={16} color="#8b0000" style={{ marginLeft: 4 }} />
           </Tooltip>
         </span>
       ),
@@ -696,7 +696,7 @@ const GpaCalculatorPage: React.FC = () => {
                 }
                 type="info"
                 showIcon
-                icon={<InfoCircleOutlined />}
+                icon={<Info size={16} />}
               />
             </Space>
           </Card>
@@ -724,7 +724,7 @@ const GpaCalculatorPage: React.FC = () => {
                 message={targetSystems[targetSystem].description}
                 type="info"
                 showIcon
-                icon={<InfoCircleOutlined />}
+                icon={<Info size={16} />}
               />
             </Space>
           </Card>
@@ -746,7 +746,7 @@ const GpaCalculatorPage: React.FC = () => {
             <Button icon={<FontAwesomeIcon icon="plus" />} onClick={handleAddGrade}>
               {t('studentHub.gpaCalculator.addCourse')}
             </Button>
-            <Button icon={<ClearOutlined />} onClick={handleClear}>
+            <Button icon={<Eraser size={16} />} onClick={handleClear}>
               {t('studentHub.gpaCalculator.clearAll')}
             </Button>
           </Space>
@@ -765,7 +765,7 @@ const GpaCalculatorPage: React.FC = () => {
         <Button
           type="primary"
           size="large"
-          icon={<CalculatorOutlined />}
+          icon={<Calculator size={16} />}
           onClick={calculateGPA}
           block
           style={{
@@ -835,7 +835,7 @@ const GpaCalculatorPage: React.FC = () => {
       )}
 
       {/* Additional Help Section */}
-      <Card title={`💡 ${t('studentHub.gpaCalculator.tips')}`} className="tips-card" style={{ marginTop: 24 }}>
+      <Card title={<><Lightbulb size={16} style={{ marginRight: 6 }} />{t('studentHub.gpaCalculator.tips')}</>} className="tips-card" style={{ marginTop: 24 }}>
         <ul style={{ fontSize: 15, lineHeight: 2 }}>
           <li>{t('studentHub.gpaCalculator.tip1')}</li>
           <li>{t('studentHub.gpaCalculator.tip2')}</li>

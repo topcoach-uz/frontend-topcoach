@@ -26,6 +26,8 @@ interface MentorCardProps {
   name: string;
   level?: string;
   classname?: string;
+  /** Shorter card (e.g. hub / embedded grids): smaller image area, no forced min-height */
+  compact?: boolean;
   availableSessions?: number;
   isGiveaway?: boolean;
   giveawaySessionsCount?: number;
@@ -42,6 +44,7 @@ export default function MentorCard({
   id,
   level,
   classname,
+  compact = false,
   availableSessions = 0,
   isGiveaway = false,
   giveawaySessionsCount = 0,
@@ -61,7 +64,7 @@ export default function MentorCard({
     <CustomCard
       padding={0}
       shadowed={false}
-      className={styles.card}
+      className={`${styles.card}${compact ? ` ${styles.cardCompact}` : ''}${classname ? ` ${classname}` : ''}`}
       onClick={handleCardClick}
       bordered
     >
@@ -137,7 +140,7 @@ export default function MentorCard({
         {/* Name overlay on image */}
         <div className={styles.nameOverlay}>
           <CustomText
-            fontSize={18}
+            fontSize={compact ? 15 : 18}
             fontWeight={700}
             color="#ffffff"
             style={{ 

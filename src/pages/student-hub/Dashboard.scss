@@ -789,15 +789,14 @@ $crimson-900: #7f1d1d;
   flex: 1;
 }
 
+/* Flat icons — match hub sidebar (no circular pill behind UnifiedIcon) */
 .activity-icon {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: $radius-full;
-  background: $crimson-50;
   flex-shrink: 0;
+  padding-top: 2px;
+  color: #8b0000;
 
   .activity-icon-svg {
     font-size: 18px;

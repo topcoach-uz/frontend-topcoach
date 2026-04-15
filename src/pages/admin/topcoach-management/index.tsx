@@ -20,11 +20,7 @@ import {
   Select,
   Popconfirm,
 } from 'antd';
-import {
-  SearchOutlined,
-  CheckCircleOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
+import { Search as SearchIcon, CheckCircle2, User } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -755,7 +751,7 @@ const ProgramDashboard: React.FC = () => {
               <Statistic
                 title="Total Users"
                 value={analyticsData.totalUsers}
-                prefix={<UserOutlined />}
+                prefix={<User size={16} />}
                 valueStyle={{ fontSize: '24px' }}
               />
             </Card>
@@ -765,7 +761,7 @@ const ProgramDashboard: React.FC = () => {
               <Statistic
                 title="Students with Access"
                 value={analyticsData.studentsWithAccess}
-                prefix={<CheckCircleOutlined />}
+                prefix={<CheckCircle2 size={16} />}
                 valueStyle={{ color: '#3f8600', fontSize: '24px' }}
               />
             </Card>
@@ -1184,7 +1180,7 @@ const ProgramDashboard: React.FC = () => {
                 <Button
                   type="primary"
                   size="small"
-                  icon={<CheckCircleOutlined />}
+                  icon={<CheckCircle2 size={16} />}
                   onClick={() => handleGrantAccess(record.id, record.userId, record.userName, record.courseName)}
                   disabled={!isTelegramConnected}
                   title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
@@ -1278,7 +1274,7 @@ const ProgramDashboard: React.FC = () => {
                     <Search
                       placeholder="Search by user name or email"
                       allowClear
-                      enterButton={<SearchOutlined />}
+                      enterButton={<SearchIcon size={16} />}
                       size="large"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}

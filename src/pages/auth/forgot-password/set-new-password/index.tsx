@@ -1,5 +1,5 @@
 import { Button, Flex, Form, message } from 'antd';
-import { Unlock } from 'iconsax-react';
+import { Unlock } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CustomButton, CustomText } from 'src/components/common';
@@ -27,7 +27,7 @@ export default function SetNewPasswordPage() {
       </Link>
       <Flex gap={20} align="center">
         <div className={styles.icon}>
-          <Unlock size="100%" color={colors.green5} />
+          <Unlock size={40} color={colors.green5} />
         </div>
         <CustomText
           color={colors.colorText}

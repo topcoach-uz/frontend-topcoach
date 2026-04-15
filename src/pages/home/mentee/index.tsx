@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import CheckListItem from '../../home/mentor/_components/CheckListItem';
-import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { Card, Flex, Button } from 'antd';
 import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 
@@ -21,6 +22,7 @@ import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import { api } from 'src/app/api';
 
 function MenteeHomePage() {
+  const navigate = useNavigate();
   const profile = useTypedSelector((state) => state.auth.profile);
   const nameMissing = !profile?.profile?.name;
   const [showTelegramModal, setShowTelegramModal] = useState(false);
@@ -70,7 +72,7 @@ function MenteeHomePage() {
       isComplete: !nameMissing,
       buttonText: 'Edit',
       onClick: () => {
-        window.dispatchEvent(new CustomEvent('openEditProfileModal'));
+        navigate('/student-hub/settings');
       },
     },
     {

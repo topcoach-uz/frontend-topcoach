@@ -1,12 +1,6 @@
 import React from 'react';
 import { Button, Space } from 'antd';
-import {
-  DownloadOutlined,
-  FileOutlined,
-  FilePdfOutlined,
-  FileWordOutlined,
-  CloseOutlined,
-} from '@ant-design/icons';
+import { Download, FileText, X } from 'lucide-react';
 import { Typography } from 'antd';
 import styles from './FilePreview.module.scss';
 
@@ -34,17 +28,17 @@ const FilePreview: React.FC<FilePreviewProps> = ({
   const getFileIcon = () => {
     if (fileMimeType) {
       if (fileMimeType === 'application/pdf') {
-        return <FilePdfOutlined className={styles.fileIcon} style={{ color: '#d32f2f' }} />;
+        return <FileText size={16} className={styles.fileIcon} style={{ color: '#d32f2f' }} />;
       }
       if (
         fileMimeType === 'application/msword' ||
         fileMimeType ===
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       ) {
-        return <FileWordOutlined className={styles.fileIcon} style={{ color: '#2b579a' }} />;
+        return <FileText size={16} className={styles.fileIcon} style={{ color: '#2b579a' }} />;
       }
     }
-    return <FileOutlined className={styles.fileIcon} />;
+    return <FileText size={16} className={styles.fileIcon} />;
   };
 
   const handleDownload = () => {
@@ -89,7 +83,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           <Button
             type="text"
             size="small"
-            icon={<DownloadOutlined />}
+            icon={<Download size={16} />}
             onClick={handleDownload}
             className={styles.downloadButton}
           >
@@ -100,7 +94,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           <Button
             type="text"
             size="small"
-            icon={<CloseOutlined />}
+            icon={<X size={16} />}
             onClick={onClose}
             className={styles.closeButton}
           >

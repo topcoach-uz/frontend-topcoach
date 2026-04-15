@@ -87,7 +87,7 @@ export default function WhatWeOfferSection() {
               A complete admissions ecosystem for students, mentors, schools, and parents.
             </h2>
             <p className={styles.subtitle}>
-              Choose how you want to work with TopCoach — from 1:1 mentorship to full-school solutions.
+              Choose how you want to work with TopCoach, from 1:1 mentorship to full-school solutions.
             </p>
 
             {/* Progress dots */}

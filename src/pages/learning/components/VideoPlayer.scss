@@ -16,7 +16,7 @@
   height: auto;
   background: #000;
   border-radius: 8px 8px 0 0;
-  overflow: visible;             /* was hidden — caused clipping */
+  overflow: visible;             /* was hidden; caused clipping */
 }
 
 .video-player-container.youtube-embed .youtube-embed-container iframe {

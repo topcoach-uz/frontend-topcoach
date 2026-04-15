@@ -48,7 +48,7 @@ $shadow-lg:  0 10px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.05);
   @media (min-width: 1280px) { padding: 0 40px; }
 }
 
-// ─── Hero (light red gradient with white — header distinct from image) ───
+// ─── Hero (light red gradient with white; header distinct from image) ───
 .hero {
   background: linear-gradient(160deg, #fff 0%, $brandLight 20%, #fee2e2 50%, #fecaca 85%, #fca5a5 100%);
   padding: 56px 20px 64px;

@@ -1,4 +1,4 @@
-import { DownOutlined } from '@ant-design/icons';
+import { ChevronDown } from 'lucide-react';
 import { Avatar, Dropdown, Flex } from 'antd';
 import { MenuProps } from 'antd/lib';
 import { MEDIA_TAGS, UserRole } from 'src/app/api/Api';
@@ -53,7 +53,7 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
                 />
               )}
             </div>
-            <DownOutlined style={{ color: 'white', fontSize: 14 }} />
+            <ChevronDown size={14} style={{ color: 'white' }} />
           </Flex>
         </Dropdown>
       ) : (

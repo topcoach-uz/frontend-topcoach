@@ -92,12 +92,28 @@
     margin-bottom: 12px;
   }
 
-  .admissions-progress-btn {
+  .admissions-progress-btn.ant-btn {
     width: 100%;
     height: 40px;
     font-weight: 500;
     background-color: #8b0000;
     border-color: #8b0000;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px;
+    line-height: 1.2;
+
+    .ant-btn-icon {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 0 !important;
+    }
+
+    .ant-btn-icon svg {
+      display: block;
+    }
 
     &:hover {
       background-color: #a00;

@@ -96,7 +96,10 @@ const MessageList: React.FC<MessageListProps> = ({
   }, [messages.length, isLoadingMore]);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, []);
 
   // Load more messages when scrolling to top

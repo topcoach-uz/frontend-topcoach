@@ -2,14 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Dropdown } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  DashboardOutlined,
-  TeamOutlined,
-  BarChartOutlined,
-  SettingOutlined,
-  MenuOutlined,
-  CloseOutlined,
-} from '@ant-design/icons';
+import { LayoutDashboard, Users, BarChart2, Settings, Menu as MenuIcon, X } from 'lucide-react';
 import type { MenuProps } from 'antd';
 import { useOrganization } from '../context/OrganizationContext';
 import './SchoolCounselorLayout.scss';
@@ -68,12 +61,12 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
   const menuItems: MenuProps['items'] = [
     {
       key: '/school-counselor',
-      icon: <DashboardOutlined />,
+      icon: <LayoutDashboard size={16} />,
       label: t('schoolCounselor.menu.dashboard', 'Dashboard'),
     },
     {
       key: '/school-counselor/students',
-      icon: <TeamOutlined />,
+      icon: <Users size={16} />,
       label: t('schoolCounselor.menu.students', 'Students'),
     },
     // Courses - hidden for now
@@ -84,12 +77,12 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
     // },
     {
       key: '/school-counselor/analytics',
-      icon: <BarChartOutlined />,
+      icon: <BarChart2 size={16} />,
       label: t('schoolCounselor.menu.analytics', 'Analytics'),
     },
     {
       key: '/school-counselor/settings',
-      icon: <SettingOutlined />,
+      icon: <Settings size={16} />,
       label: t('schoolCounselor.menu.settings', 'Settings'),
     },
   ];
@@ -120,7 +113,7 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
       {isMobile && !mobileSidebarOpen && (
         <Button
           type="primary"
-          icon={<MenuOutlined />}
+          icon={<MenuIcon size={16} />}
           onClick={handleToggle}
           className="mobile-menu-button"
         />
@@ -165,7 +158,7 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
               className="sidebar-toggle"
               onClick={handleToggle}
             >
-              <MenuOutlined />
+              <MenuIcon size={16} />
             </button>
           )}
           {isMobile && (
@@ -177,7 +170,7 @@ const SchoolCounselorLayout: React.FC<SchoolCounselorLayoutProps> = ({ children 
                 setCollapsed(true);
               }}
             >
-              <CloseOutlined />
+              <X size={16} />
             </button>
           )}
         </div>

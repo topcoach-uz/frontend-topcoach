@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Avatar, Tag, Progress, Timeline, Descriptions, Button, Space, Spin, Alert } from 'antd';
-import {
-  ArrowLeftOutlined,
-  TeamOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  TrophyOutlined,
-  EyeOutlined,
-} from '@ant-design/icons';
+import { ArrowLeft, Users, Mail, Phone, Calendar, CheckCircle2, Clock, Trophy, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { useOrganization } from '../../context/OrganizationContext';
@@ -233,14 +223,14 @@ const StudentDetailPage: React.FC = () => {
     <div className="student-detail">
       <div className="detail-header">
         <Button
-          icon={<ArrowLeftOutlined />}
+          icon={<ArrowLeft size={16} />}
           onClick={() => navigate('/school-counselor/students')}
           style={{ marginBottom: 16 }}
         >
           Back to Students
         </Button>
         <div className="header-content">
-          <Avatar size={80} icon={<TeamOutlined />} style={{ backgroundColor: '#8b0000' }} />
+          <Avatar size={80} icon={<Users size={16} />} style={{ backgroundColor: '#8b0000' }} />
           <div className="header-info">
             <h1>{student.userName}</h1>
             <Space>
@@ -256,7 +246,7 @@ const StudentDetailPage: React.FC = () => {
             <div style={{ marginTop: 12 }}>
               <Button
                 type="primary"
-                icon={<EyeOutlined />}
+                icon={<Eye size={16} />}
                 onClick={() => navigate(`/school-counselor/students/${id}/my-journey`)}
                 style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
               >
@@ -274,14 +264,14 @@ const StudentDetailPage: React.FC = () => {
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Email">
                 <Space>
-                  <MailOutlined />
+                  <Mail size={16} />
                   {student.userEmail}
                 </Space>
               </Descriptions.Item>
               {student.telegramPhoneNumber && (
                 <Descriptions.Item label="Phone">
                   <Space>
-                    <PhoneOutlined />
+                    <Phone size={16} />
                     {student.telegramPhoneNumber}
                   </Space>
                 </Descriptions.Item>
@@ -294,7 +284,7 @@ const StudentDetailPage: React.FC = () => {
               {student.enrolledAt && (
                 <Descriptions.Item label="Enrollment Date">
                   <Space>
-                    <CalendarOutlined />
+                    <Calendar size={16} />
                     {new Date(student.enrolledAt).toLocaleDateString()}
                   </Space>
                 </Descriptions.Item>
@@ -315,13 +305,13 @@ const StudentDetailPage: React.FC = () => {
           <Card title="Quick Stats" className="stats-card" style={{ marginTop: 24 }}>
             <div className="stat-item">
               <div className="stat-label">
-                <TrophyOutlined /> Enrolled Courses
+                <Trophy size={16} /> Enrolled Courses
               </div>
               <div className="stat-value">{courses.length || 0}</div>
             </div>
             <div className="stat-item">
               <div className="stat-label">
-                <CheckCircleOutlined /> Completed Courses
+                <CheckCircle2 size={16} /> Completed Courses
               </div>
               <div className="stat-value">
                 {courses.filter((c) => c.status === 'completed' && c.progress >= 100).length}
@@ -329,7 +319,7 @@ const StudentDetailPage: React.FC = () => {
             </div>
             <div className="stat-item">
               <div className="stat-label">
-                <ClockCircleOutlined /> In Progress
+                <Clock size={16} /> In Progress
               </div>
               <div className="stat-value">
                 {courses.filter((c) => c.status === 'in-progress' || (c.status !== 'completed' && c.progress > 0 && c.progress < 100)).length}

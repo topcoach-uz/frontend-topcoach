@@ -1,7 +1,3 @@
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
-
-// Add all solid icons to the library
-library.add(fas);
-
-export default library;
+// Icon system migrated to lucide-react.
+// This file is kept as a no-op to avoid breaking the import in main.tsx.
+export default {};

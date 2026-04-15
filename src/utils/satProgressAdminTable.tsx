@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, Empty, Button, Modal, Space, Dropdown, Progress, Tag, Spin, Collapse } from 'antd';
-import { ExpandAltOutlined, DownloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { Maximize2, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import type { MenuProps } from 'antd';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -67,7 +67,7 @@ function getSatProgressRows(payload: Payload): SatProgressRow[] {
     const lesson = (currentLesson.lesson as Record<string, unknown>) ?? {};
     const firstName = String(user.first_name ?? '').trim();
     const lastName = String(user.last_name ?? '').trim();
-    const name = [firstName, lastName].filter(Boolean).join(' ') || String(user.name ?? user.email ?? '—');
+    const name = [firstName, lastName].filter(Boolean).join(' ') || String(user.name ?? user.email ?? '-');
     const email = sanitizeEmail(String(user.email ?? '').trim());
     const lessonOrder = typeof currentLesson.order === 'number' ? currentLesson.order : null;
     const completedLessonsEnriched = typeof (r as any).topcoach_completed_lessons === 'number'
@@ -93,25 +93,25 @@ function getSatProgressRows(payload: Payload): SatProgressRow[] {
       courseId: Number(r.course_id ?? 0),
       studentName: name,
       studentEmail: email,
-      courseName: String(course.name ?? '—'),
-      currentLesson: String(lesson.name ?? '—'),
+      courseName: String(course.name ?? '-'),
+      currentLesson: String(lesson.name ?? '-'),
       lessonOrder,
       lessonsCompleted: complete,
       totalLessons: totalLessonsEnriched,
       currentStreak: streak,
       maxStreak: maxStreak,
-      lastLogin: lastLoginAt ? dayjs(String(lastLoginAt)).format('MMM D, YYYY h:mm A') : '—',
-      lastActivity: updatedAt ? dayjs(String(updatedAt)).format('MMM D, YYYY h:mm A') : '—',
+      lastLogin: lastLoginAt ? dayjs(String(lastLoginAt)).format('MMM D, YYYY h:mm A') : '-',
+      lastActivity: updatedAt ? dayjs(String(updatedAt)).format('MMM D, YYYY h:mm A') : '-',
       tryCount,
-      endTime: endTimeStr ? dayjs(endTimeStr).format('MMM D, YYYY') : '—',
+      endTime: endTimeStr ? dayjs(endTimeStr).format('MMM D, YYYY') : '-',
       daysRemaining,
       subscriptionStatus: status,
       score: typeof r.score === 'number' && typeof r.max_score === 'number' && r.max_score > 0
         ? `${r.score} / ${r.max_score}`
         : typeof r.score === 'number'
           ? String(r.score)
-          : '—',
-      createdAt: r.created_at ? dayjs(String(r.created_at)).format('MMM D, YYYY') : '—',
+          : '-',
+      createdAt: r.created_at ? dayjs(String(r.created_at)).format('MMM D, YYYY') : '-',
     };
   });
 }
@@ -251,7 +251,7 @@ function toLessonItem(raw: Record<string, unknown>): LessonItem {
           : undefined;
 
   return {
-    lesson: String(lesson.name ?? raw.name ?? '—'),
+    lesson: String(lesson.name ?? raw.name ?? '-'),
     status: statusStr,
     score,
     completedAt: completedRaw ? dayjs(String(completedRaw)).format('MMM D, YYYY') : undefined,
@@ -433,21 +433,21 @@ export function SatProgressAdminTable({
     const headers = ['Student', 'Email', 'Course', 'Current Lesson', 'Lessons Done', 'Progress', 'Streak', 'Max Streak', 'Last Login', 'Last Activity', 'Days Left', 'Status', 'Try Count', 'End Time', 'Score', 'Enrolled'];
     const data = rows.map((r) => {
       const total = getRowTotalLessons(r);
-      const pct = r.lessonsCompleted != null && total != null && total > 0 ? `${Math.round((r.lessonsCompleted / total) * 100)}%` : '—';
+      const pct = r.lessonsCompleted != null && total != null && total > 0 ? `${Math.round((r.lessonsCompleted / total) * 100)}%` : '-';
       return [
         r.studentName,
         r.studentEmail,
         r.courseName,
         r.currentLesson,
-        r.lessonsCompleted ?? '—',
+        r.lessonsCompleted ?? '-',
         pct,
-        r.currentStreak ?? '—',
-        r.maxStreak ?? '—',
+        r.currentStreak ?? '-',
+        r.maxStreak ?? '-',
         r.lastLogin,
         r.lastActivity,
-        r.daysRemaining ?? '—',
+        r.daysRemaining ?? '-',
         r.subscriptionStatus,
-        r.tryCount ?? '—',
+        r.tryCount ?? '-',
         r.endTime,
         r.score,
         r.createdAt,
@@ -465,7 +465,7 @@ export function SatProgressAdminTable({
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.setTextColor(139, 0, 0);
-    doc.text('SAT Progress — All Students', 14, 18);
+    doc.text('SAT Progress: All Students', 14, 18);
     doc.setFontSize(10);
     doc.setTextColor(80, 80, 80);
     doc.text(`Generated: ${dayjs().format('MMM D, YYYY')}`, 14, 25);
@@ -475,9 +475,9 @@ export function SatProgressAdminTable({
       r.studentName,
       r.courseName,
       r.currentLesson,
-      r.lessonsCompleted ?? '—',
-      r.currentStreak ?? '—',
-      r.daysRemaining ?? '—',
+      r.lessonsCompleted ?? '-',
+      r.currentStreak ?? '-',
+      r.daysRemaining ?? '-',
       r.subscriptionStatus,
       r.lastActivity,
       r.endTime,
@@ -498,8 +498,8 @@ export function SatProgressAdminTable({
   };
 
   const exportMenuItems: MenuProps['items'] = [
-    { key: 'excel', label: t('fullSupport.satExportExcel', 'Export as Excel'), icon: <FileExcelOutlined />, onClick: exportToExcel },
-    { key: 'pdf', label: t('fullSupport.satExportPdf', 'Export as PDF'), icon: <FilePdfOutlined />, onClick: exportToPDF },
+    { key: 'excel', label: t('fullSupport.satExportExcel', 'Export as Excel'), icon: <FileSpreadsheet size={16} />, onClick: exportToExcel },
+    { key: 'pdf', label: t('fullSupport.satExportPdf', 'Export as PDF'), icon: <FileText size={16} />, onClick: exportToPDF },
   ];
 
   const progressPercent = (r: SatProgressRow) => {
@@ -540,13 +540,13 @@ export function SatProgressAdminTable({
             ? `${done} / ${total}`
             : done > 0
               ? `${done} / ?`
-              : '—';
+              : '-';
         if (pct != null) return <Progress percent={pct} size="small" format={() => label} />;
         return label;
       },
     },
-    { title: t('fullSupport.satColStreak', 'Streak'), dataIndex: 'currentStreak', key: 'currentStreak', width: 65, render: (v: number | null) => v ?? '—' },
-    { title: t('fullSupport.satColMaxStreak', 'Max Streak'), dataIndex: 'maxStreak', key: 'maxStreak', width: 85, render: (v: number | null) => v ?? '—' },
+    { title: t('fullSupport.satColStreak', 'Streak'), dataIndex: 'currentStreak', key: 'currentStreak', width: 65, render: (v: number | null) => v ?? '-' },
+    { title: t('fullSupport.satColMaxStreak', 'Max Streak'), dataIndex: 'maxStreak', key: 'maxStreak', width: 85, render: (v: number | null) => v ?? '-' },
     { title: t('fullSupport.satColLastLogin', 'Last Login'), dataIndex: 'lastLogin', key: 'lastLogin', width: 130 },
     { title: t('fullSupport.satColLastActivity', 'Last Activity'), dataIndex: 'lastActivity', key: 'lastActivity', width: 130 },
     {
@@ -562,7 +562,7 @@ export function SatProgressAdminTable({
         </span>
       ),
     },
-    { title: t('fullSupport.satColTryCount', 'Try Count'), dataIndex: 'tryCount', key: 'tryCount', width: 75, render: (v: number | null) => v ?? '—' },
+    { title: t('fullSupport.satColTryCount', 'Try Count'), dataIndex: 'tryCount', key: 'tryCount', width: 75, render: (v: number | null) => v ?? '-' },
     { title: t('fullSupport.satColEndTime', 'End Time'), dataIndex: 'endTime', key: 'endTime', width: 105 },
     { title: t('fullSupport.satColScore', 'Score'), dataIndex: 'score', key: 'score', width: 75 },
   ];
@@ -636,7 +636,7 @@ export function SatProgressAdminTable({
         {paginationSummary && <div style={{ marginBottom: 12, fontSize: 13, color: '#666' }}>{paginationSummary}</div>}
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyText} style={{ margin: '24px 0' }}>
           <Space>
-            <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)}>{viewRawLabel}</Button>
+            <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)}>{viewRawLabel}</Button>
           </Space>
         </Empty>
         <Modal title={viewRawLabel} open={rawModalOpen} onCancel={() => setRawModalOpen(false)} footer={<Button onClick={() => setRawModalOpen(false)}>Close</Button>} width={700} destroyOnClose>
@@ -652,9 +652,9 @@ export function SatProgressAdminTable({
         <span>{paginationSummary}</span>
         <Space>
           <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
-            <Button size="small" icon={<DownloadOutlined />}>{t('fullSupport.satExport', 'Export')}</Button>
+            <Button size="small" icon={<Download size={16} />}>{t('fullSupport.satExport', 'Export')}</Button>
           </Dropdown>
-          <Button type="link" size="small" icon={<ExpandAltOutlined />} onClick={() => setRawModalOpen(true)}>{viewRawLabel}</Button>
+          <Button type="link" size="small" icon={<Maximize2 size={16} />} onClick={() => setRawModalOpen(true)}>{viewRawLabel}</Button>
         </Space>
       </div>
       <Table

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Select, Avatar, Button, Space, Typography, Popover, message } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGetMentorsQuery } from '../../../../app/services/mentors';
@@ -146,7 +146,7 @@ const MentorAssignment: React.FC<MentorAssignmentProps> = ({
                 onClick={handleUnassign}
                 aria-label={t('studentHub.applications.unassignMentorAria')}
               >
-                <CloseOutlined />
+                <X size={16} />
               </button>
             </>
           ) : (

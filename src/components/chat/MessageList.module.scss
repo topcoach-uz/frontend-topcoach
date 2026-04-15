@@ -3,11 +3,13 @@
 .messageList {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: white;
+  gap: 4px;
+  background: #f8f9fa;
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -18,11 +20,11 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #d9d9d9;
-    border-radius: 3px;
+    background: #cbd5e1;
+    border-radius: 6px;
 
     &:hover {
-      background: #bfbfbf;
+      background: #94a3b8;
     }
   }
 }
@@ -34,7 +36,7 @@
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  background: white;
+  background: #f8f9fa;
 }
 
 .loadingMore {
@@ -49,22 +51,22 @@
   padding: 4px 12px;
 
   span {
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 4px 12px;
-    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(15, 23, 42, 0.06);
+    color: #64748b;
+    padding: 4px 14px;
+    border-radius: 999px;
   }
 }
 
-// Mobile adjustments
 @media (max-width: 768px) {
   .messageList {
     padding: 12px;
-    gap: 6px;
+    gap: 4px;
   }
 
   .dateHeader {
     margin: 12px 0 6px;
   }
 }
-

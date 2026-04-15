@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { CustomCard } from 'src/components/cards';
 import { CustomText, CustomButton } from 'src/components/common';
 import useColors from 'src/hooks/useColors';
-import { DashboardOutlined } from '@ant-design/icons';
+import { LayoutDashboard } from 'lucide-react';
 import BookingsSection from '../mentor/bookings';
 import EventsSection from '../_components/events';
 
@@ -37,7 +37,7 @@ export default function CounselorHome() {
             size="small"
             height={40}
             onClick={() => navigate('/school-counselor')}
-            icon={<DashboardOutlined />}
+            icon={<LayoutDashboard size={16} />}
             style={{
               backgroundColor: 'transparent',
               borderColor: colors.colorPrimary,

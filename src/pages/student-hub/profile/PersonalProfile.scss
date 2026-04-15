@@ -25,8 +25,9 @@
       }
 
       // NUCLEAR: Consistent styling for all form inputs and selects
+      // Single-line selects only; multi-select must grow with tags (mobile)
       .form-input,
-      .form-select {
+      .form-select:not(.ant-select-multiple) {
         width: 100%;
         height: 40px;
         border-radius: $radius-md;
@@ -66,6 +67,63 @@
           outline-width: 0 !important;
           outline-style: none !important;
           outline-color: transparent !important;
+        }
+      }
+
+      // Multi-select: tags wrap inside the control (fixes overlap on narrow screens)
+      .ant-select.form-select.ant-select-multiple {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 40px;
+
+        .ant-select-selector {
+          height: auto !important;
+          min-height: 40px !important;
+          align-items: flex-start !important;
+          justify-content: flex-start !important;
+          padding: 4px 28px 4px 8px !important;
+        }
+
+        .ant-select-selection-overflow {
+          flex-wrap: wrap !important;
+        }
+
+        .ant-select-selection-item {
+          line-height: 22px !important;
+          margin: 2px 4px 2px 0 !important;
+          text-align: left !important;
+          background: rgba(0, 0, 0, 0.06) !important;
+          background-color: rgba(0, 0, 0, 0.06) !important;
+          border-radius: 4px;
+        }
+
+        .ant-select-selection-placeholder {
+          line-height: 22px !important;
+          padding-top: 6px !important;
+        }
+
+        .ant-select-selection-search-input {
+          line-height: 22px !important;
+        }
+      }
+
+      // Languages spoken: stack on mobile, row on larger screens
+      .language-spoken-row {
+        margin-bottom: $space-3;
+        width: 100%;
+
+        .ant-form-item {
+          margin-bottom: 0;
+        }
+
+        &__remove {
+          display: flex;
+          align-items: center;
+          padding-bottom: 6px;
+
+          @media (max-width: 575px) {
+            justify-content: flex-start;
+          }
         }
       }
 

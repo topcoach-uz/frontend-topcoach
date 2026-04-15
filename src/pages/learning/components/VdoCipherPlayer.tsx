@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircle2 } from 'lucide-react';
 import './VdoCipherPlayer.scss';
 
 interface VdoCipherPlayerProps {
@@ -364,7 +364,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
           onClick={onComplete}
           style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
         >
-          <CheckCircleOutlined />
+          <CheckCircle2 size={16} />
           Mark as Complete
         </button>
       </div>

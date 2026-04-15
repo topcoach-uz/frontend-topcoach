@@ -1,4 +1,4 @@
-import { MailOutlined } from '@ant-design/icons';
+import { Mail } from 'lucide-react';
 import { Button, Divider, Flex } from 'antd';
 import { FormInstance } from 'antd/lib';
 import { useEffect, useState } from 'react';
@@ -72,7 +72,7 @@ export default function SignupPage() {
 
           <Button
             size="large"
-            icon={<MailOutlined />}
+            icon={<Mail size={16} />}
             style={{ width: '100%', marginBottom: 10 }}
             onClick={handleViaEmail}
             className={styles.signUpViaEmailButton}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Alert, Table, Tag, Progress, Modal, Input, Upload, Spin, message } from 'antd';
-import { CheckCircleOutlined, ScheduleOutlined, FileTextOutlined, GlobalOutlined, EyeOutlined, UploadOutlined, BarChartOutlined, RocketOutlined } from '@ant-design/icons';
+import { CheckCircle2, CalendarClock, FileText, Globe, Eye, Upload as UploadIcon, BarChart2, Rocket } from 'lucide-react';
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
 import useColors from 'src/hooks/useColors';
@@ -8,7 +9,7 @@ import { useTypedSelector } from 'src/app/store';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
 import { hostName } from 'src/app/services/api/const';
-import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useLazyGetScholarhubSsoLinkQuery, useGetMenteeSatProgressQuery, type TaskDto } from 'src/app/services/fullSupportApi';
+import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useGetMenteeSatProgressQuery, type TaskDto } from 'src/app/services/fullSupportApi';
 import dayjs from 'src/lib/dayjs';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import '../../full-support/full-support.scss';
@@ -33,6 +34,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function FullSupportStudentPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const colors = useColors();
   const primary = colors?.colorPrimary ?? '#8b0000';
@@ -62,7 +64,6 @@ export default function FullSupportStudentPage() {
   const usedHours = sessionsData?.data?.usedHours ?? 0;
   const allocatedHours = sessionsData?.data?.allocatedHours ?? 0;
   const [fetchWeeklyReport, { isLoading: weeklyReportLoading }] = useLazyGetWeeklyReportQuery();
-  const [fetchSsoLink, { isLoading: ssoLinkLoading }] = useLazyGetScholarhubSsoLinkQuery();
   const { data: satProgressData } = useGetMenteeSatProgressQuery(undefined, {
     skip: !isEnrolled,
     pollingInterval: 60000,
@@ -90,14 +91,14 @@ export default function FullSupportStudentPage() {
       render: (_: unknown, r: TaskDto) => {
         if (r.hasFeedback) {
           return (
-            <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => setFeedbackModalTask(r)}>
+            <Button type="link" size="small" icon={<Eye size={16} />} onClick={() => setFeedbackModalTask(r)}>
               View feedback
             </Button>
           );
         }
         if (r.submissionText) return <span style={{ color: '#666', fontSize: 13 }}>Awaiting mentor feedback</span>;
         return (
-          <Button type="link" size="small" icon={<UploadOutlined />} onClick={() => { setSubmitModalTask(r); setSubmitComment(''); setSubmitFileList([]); }}>
+          <Button type="link" size="small" icon={<UploadIcon size={16} />} onClick={() => { setSubmitModalTask(r); setSubmitComment(''); setSubmitFileList([]); }}>
             Upload submission
           </Button>
         );
@@ -123,7 +124,7 @@ export default function FullSupportStudentPage() {
     }
     const fileNames = submitFileList.map((f) => f.name).filter(Boolean).join(', ');
     const parts = [submitComment.trim(), fileNames].filter(Boolean);
-    const submissionText = parts.length ? parts.join(' — ') : (submissionFileUrls.length ? 'Files submitted.' : 'Submission sent.');
+    const submissionText = parts.length ? parts.join('. ') : (submissionFileUrls.length ? 'Files submitted.' : 'Submission sent.');
     try {
       await submitMenteeTask({ id: taskId, submissionText, submissionFileUrls: submissionFileUrls.length ? submissionFileUrls : undefined }).unwrap();
       message.success('Submission sent.');
@@ -164,14 +165,20 @@ export default function FullSupportStudentPage() {
           <Alert
             type="info"
             showIcon
-            message={t('fullSupport.enrollFirstTitle', 'Enroll in Full Support first')}
+            message={t('fullSupport.enrollFirstTitle', "Full Support isn't active on your account yet")}
             description={
               <>
                 <p style={{ marginBottom: 12 }}>
-                  {t('fullSupport.onlyAdminEnrollDesc', 'Only administrators can enroll you in the Full Support Mentorship Program. Please contact an administrator to get access.')}
+                  {t(
+                    'fullSupport.onlyAdminEnrollDesc',
+                    "The Full Support Mentorship Program is available after enrollment. If you'd like to join or have questions, email our team at support@topcoach.uz and we'll walk you through the next steps.",
+                  )}
                 </p>
                 <p style={{ color: '#666', fontSize: 13, marginBottom: 0 }}>
-                  {t('fullSupport.contactAdmin', 'Contact your administrator or request enrollment through TopCoach to get access.')}
+                  {t(
+                    'fullSupport.contactAdmin',
+                    'Prefer email? Reach us at support@topcoach.uz. Include your TopCoach account email if you have one so we can assist you faster.',
+                  )}
                 </p>
               </>
             }
@@ -215,7 +222,7 @@ export default function FullSupportStudentPage() {
 
       <div className="full-support-timeline-watchlist-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
         <Card
-          title={<><ScheduleOutlined style={{ marginRight: 8, color: primary }} />Session timeline</>}
+          title={<><CalendarClock size={16} style={{ marginRight: 8, color: primary }} />Session timeline</>}
           className="full-support-card"
         >
           <div style={{ marginBottom: 16 }}>
@@ -242,11 +249,14 @@ export default function FullSupportStudentPage() {
           </ul>
         </Card>
         <Card
-          title={<><RocketOutlined style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
+          title={<><Rocket size={16} style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
           className="full-support-card"
         >
           <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>
-            {t('fullSupport.satPrepDesc', 'As part of Full Support you have access to our SAT preparation course.')}
+            {t(
+              'fullSupport.satPrepDescTopCoach',
+              'Full Support includes TopCoach SAT prep: quizzes, flashcards, and lessons aligned to the digital SAT (rolling out in the app).',
+            )}
           </p>
           {satProgress ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
@@ -277,33 +287,11 @@ export default function FullSupportStudentPage() {
           )}
           <Button
             type="primary"
-            loading={ssoLinkLoading}
-            icon={<RocketOutlined />}
-            onClick={async () => {
-              try {
-                const res = await fetchSsoLink(undefined).unwrap();
-                const d = res?.data;
-                if (d?.redirectUrl) {
-                  window.open(d.redirectUrl, '_blank', 'noopener,noreferrer');
-                  return;
-                }
-                if (d?.frontendUrl && d?.token) {
-                  const url = `${d.frontendUrl.replace(/\/$/, '')}?token=${encodeURIComponent(d.token)}`;
-                  window.open(url, '_blank', 'noopener,noreferrer');
-                  return;
-                }
-                if (d?.frontendUrl) {
-                  window.open(d.frontendUrl, '_blank', 'noopener,noreferrer');
-                  return;
-                }
-                message.info(t('fullSupport.satPrepLinkUnavailable', 'SAT prep link is not configured. Please try again later.'));
-              } catch {
-                message.error(t('fullSupport.satPrepLinkError', 'Could not open SAT prep.'));
-              }
-            }}
+            icon={<Rocket size={16} />}
+            onClick={() => navigate('/student-hub?section=sat-course')}
             style={{ backgroundColor: primary, borderColor: primary }}
           >
-            {t('fullSupport.goToSatPrep', 'Go to SAT prep')}
+            {t('fullSupport.openSatPrepInHub', 'Open SAT prep in My Journey')}
           </Button>
         </Card>
       </div>
@@ -311,7 +299,7 @@ export default function FullSupportStudentPage() {
       <Card
         title={
           <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span><FileTextOutlined style={{ marginRight: 8, color: primary }} />Tasks from your mentor</span>
+            <span><FileText size={16} style={{ marginRight: 8, color: primary }} />Tasks from your mentor</span>
             <Button
               type="primary"
               disabled={!enrollmentData?.data?.mentorId}
@@ -351,7 +339,7 @@ export default function FullSupportStudentPage() {
       </Card>
 
       <Card
-        title={<><CheckCircleOutlined style={{ marginRight: 8, color: primary }} />Milestone Tracker</>}
+        title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: primary }} />Milestone Tracker</>}
         className="full-support-card"
         style={{ marginTop: 24 }}
       >
@@ -368,7 +356,7 @@ export default function FullSupportStudentPage() {
       </Card>
 
       <Card
-        title={<><GlobalOutlined style={{ marginRight: 8, color: primary }} />Application tracker</>}
+        title={<><Globe size={16} style={{ marginRight: 8, color: primary }} />Application tracker</>}
         className="full-support-card"
         style={{ marginTop: 24 }}
       >
@@ -388,7 +376,7 @@ export default function FullSupportStudentPage() {
               width: 120,
               render: (s: string) => <Tag color={statusColors[s] ?? 'default'}>{s}</Tag>,
             },
-            { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 120, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '—' },
+            { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 120, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '-' },
           ]}
         />
       </Card>
@@ -477,7 +465,7 @@ export default function FullSupportStudentPage() {
               maxCount={3}
               style={{ marginBottom: 40 }}
             >
-              <Button icon={<UploadOutlined />} style={{ marginBottom: 4 }}>Upload file</Button>
+              <Button icon={<UploadIcon size={16} />} style={{ marginBottom: 4 }}>Upload file</Button>
             </Upload>
             <Input.TextArea
               placeholder="Add a comment (optional)"
