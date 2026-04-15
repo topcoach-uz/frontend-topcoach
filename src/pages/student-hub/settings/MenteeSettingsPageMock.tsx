@@ -28,6 +28,9 @@ import BillingPlansModal from './BillingPlansModal';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
+const PROFILE_PHOTO_MAX_MB = 2;
+const PROFILE_PHOTO_MAX_BYTES = PROFILE_PHOTO_MAX_MB * 1024 * 1024;
+const PROFILE_PHOTO_ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
 
 export interface MenteeSettingsPageMockProps {
   /** Renders inside Community Hub center column (premium) — no classic sidebar; tighter chrome. */
@@ -96,6 +99,17 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   }, [preferences?.applicationSettings?.studyBuddyInterests]);
 
   const beforeUpload = async (file: File) => {
+    if (!PROFILE_PHOTO_ALLOWED_TYPES.has(file.type)) {
+      message.error(t('studentHub.settingsMock.photoTypeError', 'Only JPG or PNG files are allowed.'));
+      return Upload.LIST_IGNORE;
+    }
+    if (file.size > PROFILE_PHOTO_MAX_BYTES) {
+      message.error(
+        t('studentHub.settingsMock.photoSizeError', `Photo must be ${PROFILE_PHOTO_MAX_MB} MB or smaller.`),
+      );
+      return Upload.LIST_IGNORE;
+    }
+
     const formData = new FormData();
     formData.append('profileImage', file);
     const url = URL.createObjectURL(file);
@@ -239,7 +253,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
               </Button>
             </Upload>
             <Text type="secondary" className={styles.hint}>
-              {t('studentHub.settingsMock.photoHint', 'JPG or PNG, up to 5 MB')}
+              {t('studentHub.settingsMock.photoHint', `JPG or PNG, up to ${PROFILE_PHOTO_MAX_MB} MB`)}
             </Text>
           </div>
           <div className={styles.fields}>
