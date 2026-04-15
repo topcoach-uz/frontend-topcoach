@@ -30,12 +30,12 @@ export type StudyBuddyRequestRow = {
   requester?: {
     id: string;
     email?: string;
-    profile?: { name: string; username?: string | null };
+    profile?: { name: string; username?: string | null; media?: Array<{ url?: string; createdAt?: string; type?: string; tags?: string[] }> };
   };
   addressee?: {
     id: string;
     email?: string;
-    profile?: { name: string; username?: string | null };
+    profile?: { name: string; username?: string | null; media?: Array<{ url?: string; createdAt?: string; type?: string; tags?: string[] }> };
   };
 };
 

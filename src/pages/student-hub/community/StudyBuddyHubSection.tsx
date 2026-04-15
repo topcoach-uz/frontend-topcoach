@@ -9,6 +9,7 @@ import {
   useStudyBuddyRequestsQuery,
   useStudyBuddySendRequestMutation,
 } from 'src/app/services/student-hub/studyBuddyApi';
+import { getLatestCreatedImg } from 'src/utils';
 import styles from './communityHubMock.module.scss';
 
 const { Paragraph } = Typography;
@@ -85,7 +86,9 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                     {items.map((row) => (
                       <Card key={row.userId} bordered={false} className={styles.sectionCard}>
                         <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                          <Avatar size={48}>{row.name.charAt(0)}</Avatar>
+                          <Avatar size={48} src={row.avatarUrl || undefined}>
+                            {row.name.charAt(0)}
+                          </Avatar>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 800, fontSize: 16 }}>{row.name}</div>
                             {row.username && (
@@ -207,12 +210,18 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                     {(requestsData?.requests ?? []).map((r) => {
                       const other = reqDirection === 'in' ? r.requester : r.addressee;
                       const name = other?.profile?.name ?? 'Peer';
+                      const avatar = getLatestCreatedImg((other?.profile?.media as any[]) || []);
                       return (
                         <Card key={r.id} bordered={false} className={styles.sectionCard}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                            <div>
-                              <div style={{ fontWeight: 800 }}>{name}</div>
-                              <Tag style={{ marginTop: 6 }}>{r.status}</Tag>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <Avatar size={40} src={avatar || undefined}>
+                                {name.charAt(0)}
+                              </Avatar>
+                              <div>
+                                <div style={{ fontWeight: 800 }}>{name}</div>
+                                <Tag style={{ marginTop: 6 }}>{r.status}</Tag>
+                              </div>
                             </div>
                             <Space wrap>
                               {r.status === 'pending' && reqDirection === 'in' && (
