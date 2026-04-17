@@ -40,13 +40,12 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
   const profile = useTypedSelector((s) => s.auth.profile);
   const currentProfile = useMemo(() => {
     const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
-    const handle =
+    const username =
       (profile?.profile as any)?.username?.trim() ||
-      `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
+      `${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
     return {
       name: fullName,
-      handle,
-      phase: t('studentHub.dashboard.phase.applying', 'Applying'),
+      username: username.startsWith('@') ? username : `@${username}`,
       avatar: getLatestCreatedImg(profile?.profile?.media || []),
     };
   }, [profile?.profile, t]);
@@ -105,7 +104,7 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
             <div>
               <div className={styles.profileName}>{currentProfile.name}</div>
               <div className={styles.profileHandle}>
-                {currentProfile.handle} · <span className={styles.profilePhase}>{currentProfile.phase}</span>
+                {currentProfile.username}
               </div>
             </div>
           </div>

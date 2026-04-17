@@ -61,7 +61,6 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
 
   const otherUser = getOtherUser();
   const userName = otherUser?.profile?.name || otherUser?.email || 'User';
-  const peerUsername = (otherUser?.profile as { username?: string | null } | undefined)?.username?.trim();
   const isMentorSide = conversation?.mentorId === currentUser?.id;
   const otherIsMentor =
     conversation?.conversationType !== 'PEER' && !isMentorSide && !!conversation?.mentorId;
@@ -187,9 +186,6 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
                   </div>
                   <div className={styles.threadHeaderText}>
                     <div className={styles.threadHeaderName}>{userName}</div>
-                    {peerUsername && (
-                      <div style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>@{peerUsername}</div>
-                    )}
                     <div className={styles.threadHeaderMeta}>
                       <span className={styles.threadHeaderRole}>{subtitle}</span>
                     </div>

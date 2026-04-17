@@ -37,6 +37,11 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const [cancelRequest, { isLoading: cancelling }] = useStudyBuddyCancelRequestMutation();
   const [acceptRequest, { isLoading: accepting }] = useStudyBuddyAcceptRequestMutation();
   const [rejectRequest, { isLoading: rejecting }] = useStudyBuddyRejectRequestMutation();
+  const formatUsername = (value?: string | null) => {
+    const cleaned = String(value || '').trim();
+    if (!cleaned) return '';
+    return cleaned.startsWith('@') ? cleaned : `@${cleaned}`;
+  };
 
   const items = discoverData?.items ?? [];
 
@@ -85,14 +90,16 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                   <Space direction="vertical" size={12} style={{ width: '100%' }}>
                     {items.map((row) => (
                       <Card key={row.userId} bordered={false} className={styles.sectionCard}>
-                        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                           <Avatar size={48} src={row.avatarUrl || undefined}>
                             {row.name.charAt(0)}
                           </Avatar>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 800, fontSize: 16 }}>{row.name}</div>
                             {row.username && (
-                              <div style={{ color: '#64748b', fontWeight: 600, fontSize: 13 }}>@{row.username}</div>
+                              <div style={{ color: '#64748b', fontWeight: 600, fontSize: 13 }}>
+                                {formatUsername(row.username)}
+                              </div>
                             )}
                             <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                               {row.overlap.slice(0, 6).map((o) => (

@@ -76,13 +76,15 @@
 }
 
 .profileAvatar {
-  background: #8b0000;
-  color: #fff;
+  background: #f1f5f9;
+  color: #64748b;
   width: 48px !important;
   min-width: 48px !important;
   height: 48px !important;
   border-radius: 999px !important;
   overflow: hidden !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
 
   :global(img) {
     width: 100%;
@@ -95,12 +97,19 @@
 .profileName {
   font-weight: 700;
   color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .profileHandle {
   color: #64748b;
   font-size: 12px;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profilePhase {

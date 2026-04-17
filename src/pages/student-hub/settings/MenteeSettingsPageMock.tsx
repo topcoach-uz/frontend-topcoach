@@ -32,6 +32,13 @@ const PROFILE_PHOTO_MAX_MB = 2;
 const PROFILE_PHOTO_MAX_BYTES = PROFILE_PHOTO_MAX_MB * 1024 * 1024;
 const PROFILE_PHOTO_ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
 
+const normalizeUsernameInput = (value: string) =>
+  (value || '')
+    .toLowerCase()
+    .replace(/^@+/, '')
+    .replace(/[^a-z0-9._]/g, '')
+    .slice(0, 32);
+
 export interface MenteeSettingsPageMockProps {
   /** Renders inside Community Hub center column (premium) — no classic sidebar; tighter chrome. */
   embeddedInHub?: boolean;
@@ -54,7 +61,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     () => profile?.profile?.name || '',
   );
   const [username, setUsername] = useState<string>(
-    () => (profile?.profile as any)?.username || '',
+    () => normalizeUsernameInput((profile?.profile as any)?.username || ''),
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [plan] = useState('Pro Plan');
@@ -86,9 +93,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     const fullName = profile?.profile?.name || '';
     const existingUsername = (profile?.profile as any)?.username;
     setDisplayName(fullName);
+    const fallback = fullName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || '';
     setUsername(
-      existingUsername ||
-        `@${fullName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || ''}`,
+      normalizeUsernameInput(existingUsername || fallback),
     );
   }, [profile?.profile?.name, (profile?.profile as any)?.username]);
 
@@ -263,8 +270,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             <Input
               size="large"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="@alexj"
+              onChange={(e) => setUsername(normalizeUsernameInput(e.target.value))}
+              placeholder="starboy"
+              addonBefore="@"
             />
             <label className={styles.label}>{t('studentHub.settingsMock.email', 'Email')}</label>
             <Input size="large" value={email} disabled />
@@ -278,7 +286,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
                     {
                       profile: {
                         name: displayName.trim(),
-                        username: username.trim(),
+                        username: normalizeUsernameInput(username.trim()),
                       },
                     },
                     {
