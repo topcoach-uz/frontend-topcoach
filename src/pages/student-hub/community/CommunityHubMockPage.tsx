@@ -696,7 +696,7 @@ export default function CommunityHubMockPage() {
       id: `self-${Date.now()}`,
       v: 'forYou',
       authorName: currentProfile.name,
-      authorHandle: currentProfile.handle,
+      authorHandle: currentProfile.username,
       authorRoleLine: 'You',
       authorSubLine: 'TopCoach Community',
       timeAgo: 'Just now',
