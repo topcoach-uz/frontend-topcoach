@@ -371,7 +371,7 @@ export default function LearningProgramSection() {
                   <CustomButton
                     size="small"
                     height={40}
-                    onClick={() => navigate('/admin/central-asian-admissions-forum')}
+                    onClick={() => navigate('/new-admin/central-asian-admissions-forum')}
                     icon={<Sparkles size={16} />}
                     style={{
                       backgroundColor: 'transparent',

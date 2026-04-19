@@ -17,10 +17,13 @@ export default function RootLayout() {
     dispatch(changeTheme(theme));
   }, [pathname]);
 
+  const hideChatFab = pathname.startsWith('/admin');
+
   return (
     <>
       <Outlet />
-      {isAuthenticated ? <CustomChatAgent /> : <ElevenLabsLoginPrompt />}
+      {isAuthenticated && !hideChatFab ? <CustomChatAgent /> : null}
+      {!isAuthenticated ? <ElevenLabsLoginPrompt /> : null}
     </>
   );
 }

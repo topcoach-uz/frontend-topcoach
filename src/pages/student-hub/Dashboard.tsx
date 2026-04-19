@@ -42,7 +42,7 @@ import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
 import { PageSkeleton, InlineLoader } from '../../components/loading';
-import { Clock, AlertCircle, LayoutDashboard, BookOpen, Settings, Sparkles } from 'lucide-react';
+import { Clock, AlertCircle } from 'lucide-react';
 import './Dashboard.scss';
 
 // Props interface for Dashboard - supports both normal and read-only mode
@@ -83,12 +83,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
   
   // Get user data - only for current user (not in read-only mode)
   const { data: currentUserData } = useGetMeQuery(undefined, { skip: isReadOnly });
-  const managementRole = (currentUserData as { managementRole?: string } | undefined)?.managementRole;
-  const isSuperAdminAccount =
-    !isReadOnly &&
-    (currentUserData?.email === 'sheraliozodov6@gmail.com' ||
-      managementRole === 'SuperAdmin' ||
-      managementRole === 'Owner');
 
   const handleRecalculate = async () => {
     if (studentProfile?.id) {
@@ -629,86 +623,6 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             </Button>
           </Dropdown>
         </div>
-
-      {/* Super Admin Quick Access (sheraliozodov6@gmail.com only) */}
-      {isSuperAdminAccount && (
-        <Card size="small" style={{ marginBottom: 24, borderColor: '#8b0000', borderWidth: 2, borderRadius: 12 }}>
-          <div style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{t('studentHub.dashboard.adminDashboard', 'Admin Dashboard')}</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#666', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('studentHub.dashboard.quickAccess', 'QUICK ACCESS')}</div>
-          <Space size="small" wrap>
-            <Button
-              htmlType="button"
-              type="default"
-              size="middle"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('/school-counselor');
-              }}
-              icon={<LayoutDashboard size={16} />}
-              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
-            >
-              {t('studentHub.dashboard.schoolCounselorDashboard', 'School Counselor Dashboard')}
-            </Button>
-            <Button
-              htmlType="button"
-              type="default"
-              size="middle"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('/topcoach-management');
-              }}
-              icon={<Settings size={16} />}
-              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
-            >
-              {t('studentHub.dashboard.topcoachManagement', 'TopCoach Management')}
-            </Button>
-            <Button
-              htmlType="button"
-              type="default"
-              size="middle"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('/course-admin/courses/modules');
-              }}
-              icon={<BookOpen size={16} />}
-              style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
-            >
-              {t('studentHub.dashboard.courseContentManagement', 'Course Content Management')}
-            </Button>
-            {managementRole === 'SuperAdmin' && (
-              <>
-                {/* Youth Leaders Applications — temporarily hidden
-                <Button
-                  type="button"
-                  size="middle"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/admin/youth-leaders-applications');
-                  }}
-                  icon={<ClipboardList size={16} />}
-                  style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
-                >
-                  {t('studentHub.dashboard.youthLeadersApplications', 'Youth Leaders Applications')}
-                </Button>
-                */}
-                <Button
-                  htmlType="button"
-                  type="default"
-                  size="middle"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/admin/central-asian-admissions-forum');
-                  }}
-                  icon={<Sparkles size={16} />}
-                  style={{ height: 40, borderColor: '#8b0000', color: '#8b0000' }}
-                >
-                  {t('studentHub.dashboard.caAdmissionsForumAdmin', 'CA Admissions Forum 2026')}
-                </Button>
-              </>
-            )}
-          </Space>
-        </Card>
-      )}
 
       {/* Admissions Program Progress for enrolled students (top of dashboard) */}
       <AdmissionsProgramProgressCard skip={isReadOnly} />

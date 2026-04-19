@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Table,
   Card,
   Input,
   Button,
   Space,
-  Tag,
   message,
   Alert,
   Spin,
@@ -14,34 +13,29 @@ import {
   Tabs,
   Row,
   Col,
-  Statistic,
   Progress,
-  Form,
   Select,
   Popconfirm,
-} from 'antd';
-import { Search as SearchIcon, CheckCircle2, User } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Dot,
-} from 'recharts';
+  Typography,
+} from 'antd';
+import { Search as SearchIcon, CheckCircle2 } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetAdminStudentsQuery, useAdminEnrollMutation, useAdminUnenrollMutation } from 'src/app/services/fullSupportApi';
+import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
+import ProgramManagementAnalyticsTab, { type AnalyticsProgramScope } from './ProgramManagementAnalyticsTab';
+import ProgramManagementOrganizationsTab from './ProgramManagementOrganizationsTab';
 import useColors from 'src/hooks/useColors';
 import type { ColumnsType } from 'antd/es/table';
+import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
+import { cleanUserName } from 'src/pages/admin/console/utils';
 import './index.scss';
 
 const { Search } = Input;
+const { Text: AntText } = Typography;
 
 interface DashboardData {
   id: string | null;
@@ -65,7 +59,20 @@ interface DashboardData {
 
 type SortOrder = 'ASC' | 'DESC';
 
-const ProgramDashboard: React.FC = () => {
+export type ProgramDashboardProps = {
+  /** Renders inside admin console with light embed + URL-driven tabs. */
+  embedInAdminConsole?: boolean;
+  routeTab?: string;
+  onRouteTabChange?: (tab: string) => void;
+};
+
+const MANAGEMENT_TAB_KEYS = new Set(['users', 'analytics', 'organizations', 'full_support']);
+
+const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
+  embedInAdminConsole = false,
+  routeTab,
+  onRouteTabChange,
+}) => {
   const navigate = useNavigate();
   const user = useTypedSelector((state) => state.auth.profile);
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
@@ -90,7 +97,17 @@ const ProgramDashboard: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<{ id: string | null; userId: string; userName: string } | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
   const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat' | 'full_support'>('admissions');
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (embedInAdminConsole && routeTab && MANAGEMENT_TAB_KEYS.has(routeTab)) {
+      return routeTab;
+    }
+    return 'users';
+  });
+
+  useEffect(() => {
+    if (!embedInAdminConsole || !routeTab || !MANAGEMENT_TAB_KEYS.has(routeTab)) return;
+    setActiveTab(routeTab);
+  }, [embedInAdminConsole, routeTab]);
   const [courseFilter, setCourseFilter] = useState<'all' | 'admissions' | 'sat' | 'full_support'>('all');
   const [communityFilter, setCommunityFilter] = useState<'all' | 'community' | 'standard'>('all');
   const { data: fullSupportStudentsData, isLoading: fullSupportStudentsLoading } = useGetAdminStudentsQuery(undefined, { skip: activeTab !== 'full_support' });
@@ -100,12 +117,13 @@ const ProgramDashboard: React.FC = () => {
   const [removeFullSupportStudent, setRemoveFullSupportStudent] = useState<{ id: string; name: string } | null>(null);
   const colors = useColors();
   const primaryRed = colors?.colorPrimary ?? '#8b0000';
+  const actionAccent = embedInAdminConsole ? '#10b981' : primaryRed;
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsCourseFilter, setAnalyticsCourseFilter] = useState<AnalyticsProgramScope>('all');
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [organizationsLoading, setOrganizationsLoading] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<any[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
 
   // Check if user is SuperAdmin
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
@@ -178,7 +196,7 @@ const ProgramDashboard: React.FC = () => {
   };
 
   const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string, courseName?: 'admissions' | 'sat' | 'full_support') => {
-    setSelectedUser({ id: enrollmentId, userId, userName: userName || 'this student' });
+    setSelectedUser({ id: enrollmentId, userId, userName: cleanUserName(userName, undefined) || 'this student' });
     setSelectedPlan('standard'); // Reset to default
     setSelectedCourseName(courseName || 'admissions');
     setGrantAccessModalVisible(true);
@@ -257,27 +275,26 @@ const ProgramDashboard: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      completed: 'green',
-      pending: 'orange',
-      failed: 'red',
-      cancelled: 'default',
-      rejected: 'red',
-    };
-    return colors[status] || 'default';
+  const pillPayment = (status: string | null): AcPillVariant => {
+    if (!status) return 'neutral';
+    const s = status.toLowerCase();
+    if (s === 'completed') return 'mint';
+    if (s === 'pending') return 'warning';
+    if (['failed', 'rejected', 'cancelled'].includes(s)) return 'danger';
+    return 'neutral';
   };
 
-  const getTelegramStatusColor = (status: string | null) => {
-    const colors: Record<string, string> = {
-      connected: 'green',
-      pending: 'orange',
-      failed: 'red',
-    };
-    return colors[status || ''] || 'default';
+  const pillTelegram = (status: string | null): AcPillVariant => {
+    const s = (status || '').toLowerCase();
+    if (s === 'connected') return 'mint';
+    if (s === 'pending') return 'warning';
+    if (s === 'failed') return 'danger';
+    return 'neutral';
   };
 
-  const fetchAnalytics = async (courseName?: 'admissions' | 'sat') => {
+  const emptyMuted = embedInAdminConsole ? 'var(--ac-text-muted)' : '#999';
+
+  const fetchAnalytics = useCallback(async (courseName?: 'admissions' | 'sat') => {
     setAnalyticsLoading(true);
     try {
       const params = courseName ? `?courseName=${courseName}` : '';
@@ -310,13 +327,12 @@ const ProgramDashboard: React.FC = () => {
     } finally {
       setAnalyticsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (activeTab === 'analytics') {
-      fetchAnalytics(); // fetch all analytics (no course filter)
-    }
-  }, [activeTab]);
+    if (activeTab !== 'analytics') return;
+    void fetchAnalytics(analyticsCourseFilter === 'all' ? undefined : analyticsCourseFilter);
+  }, [activeTab, analyticsCourseFilter, fetchAnalytics]);
 
   const fetchOrganizations = async (bypassCache = false) => {
     setOrganizationsLoading(true);
@@ -407,601 +423,22 @@ const ProgramDashboard: React.FC = () => {
     return Array.from(monthMap.values()).sort((a, b) => a.month.localeCompare(b.month));
   }, [analyticsData?.userSignups, analyticsData?.mentorSignups]);
 
-  const renderOrganizationsTab = () => {
-    const [createOrgModalVisible, setCreateOrgModalVisible] = useState(false);
-    const [assignUserModalVisible, setAssignUserModalVisible] = useState(false);
-    const [createForm] = Form.useForm();
-    const [assignForm] = Form.useForm();
+  const renderAnalyticsTab = () => (
+    <ProgramManagementAnalyticsTab
+      analyticsData={analyticsData}
+      analyticsLoading={analyticsLoading}
+      embedInAdminConsole={Boolean(embedInAdminConsole)}
+      chartData={chartData}
+      programScope={analyticsCourseFilter}
+      onProgramScopeChange={setAnalyticsCourseFilter}
+    />
+  );
 
-    const handleCreateOrganization = async (values: any) => {
-      try {
-        await api.request({
-          path: '/organizations',
-          method: 'POST',
-          secure: true,
-          body: values,
-        });
-        message.success('Organization created successfully');
-        setCreateOrgModalVisible(false);
-        createForm.resetFields();
-        // Bypass cache to get the newly created organization
-        fetchOrganizations(true);
-      } catch (error: any) {
-        console.error('Error creating organization:', error);
-        message.error(error.response?.data?.message || 'Failed to create organization');
-      }
-    };
-
-    const handleAssignUser = async (values: any) => {
-      if (!selectedOrg) return;
-      try {
-        await api.request({
-          path: `/organizations/${selectedOrg}/members`,
-          method: 'POST',
-          secure: true,
-          body: {
-            userId: values.userId,
-            role: values.role,
-          },
-        });
-        message.success('User assigned successfully');
-        setAssignUserModalVisible(false);
-        assignForm.resetFields();
-        setSelectedOrg(null);
-        // Bypass cache to get updated organization data
-        fetchOrganizations(true);
-        fetchAvailableUsers();
-      } catch (error: any) {
-        console.error('Error assigning user:', error);
-        message.error(error.response?.data?.message || 'Failed to assign user');
-      }
-    };
-
-    const handleRemoveUser = async (orgId: string, userId: string) => {
-      try {
-        await api.request({
-          path: `/organizations/${orgId}/members/${userId}`,
-          method: 'DELETE',
-          secure: true,
-        });
-        message.success('User removed from organization');
-        // Bypass cache to get updated organization data
-        fetchOrganizations(true);
-      } catch (error: any) {
-        console.error('Error removing user:', error);
-        message.error('Failed to remove user');
-      }
-    };
-
-    const handleDeleteOrganization = async (orgId: string, orgName: string) => {
-      try {
-        await api.request({
-          path: `/organizations/${orgId}`,
-          method: 'DELETE',
-          secure: true,
-        });
-        message.success(`Organization "${orgName}" deleted successfully`);
-        // Bypass cache to get updated organization data
-        fetchOrganizations(true);
-      } catch (error: any) {
-        console.error('Error deleting organization:', error);
-        message.error(error.response?.data?.message || 'Failed to delete organization');
-      }
-    };
-
-    if (organizationsLoading) {
-      return (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '50px',
-          gap: 16,
-          textAlign: 'center',
-        }}>
-          <Spin size="large" />
-          <div>Loading organizations...</div>
-        </div>
-      );
-    }
-
-    return (
-      <div style={{ paddingBottom: 0, marginBottom: 0 }}>
-        <Card style={{ marginBottom: 0 }}>
-          <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h2>Organizations</h2>
-            <Button type="primary" onClick={() => setCreateOrgModalVisible(true)}>
-              Create Organization
-            </Button>
-          </Space>
-
-          <Table
-            dataSource={organizations}
-            rowKey="id"
-            scroll={{ x: 'max-content' }}
-            columns={[
-              {
-                title: 'Name',
-                dataIndex: 'name',
-                key: 'name',
-              },
-              {
-                title: 'Contact Email',
-                dataIndex: 'contactEmail',
-                key: 'contactEmail',
-              },
-              {
-                title: 'Contact Phone',
-                dataIndex: 'contactPhone',
-                key: 'contactPhone',
-              },
-              {
-                title: 'Location',
-                key: 'location',
-                render: (_, record) => {
-                  const parts = [];
-                  if (record.address) {
-                    parts.push(record.address);
-                  }
-                  if (record.city) {
-                    parts.push(record.city);
-                  }
-                  if (record.state) {
-                    parts.push(record.state);
-                  }
-                  if (record.country) {
-                    parts.push(record.country);
-                  }
-                  return parts.length > 0 ? parts.join(', ') : 'N/A';
-                },
-              },
-              {
-                title: 'Members',
-                dataIndex: 'memberCount',
-                key: 'memberCount',
-                render: (count) => count || 0,
-              },
-              {
-                title: 'Actions',
-                key: 'actions',
-                render: (_, record) => (
-                  <Space>
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        setSelectedOrg(record.id);
-                        fetchAvailableUsers();
-                        setAssignUserModalVisible(true);
-                      }}
-                    >
-                      Assign User
-                    </Button>
-                    <Button
-                      size="small"
-                      onClick={async () => {
-                        try {
-                          const response = await api.request({
-                            path: `/organizations/${record.id}?includeMembers=true`,
-                            method: 'GET',
-                            secure: true,
-                          });
-                          Modal.info({
-                            title: `Members of ${record.name}`,
-                            width: 800,
-                            content: (
-                              <Table
-                                dataSource={response.data.members || []}
-                                rowKey="id"
-                                columns={[
-                                  { title: 'Name', dataIndex: 'userName', key: 'userName' },
-                                  { title: 'Email', dataIndex: 'userEmail', key: 'userEmail' },
-                                  {
-                                    title: 'Role',
-                                    dataIndex: 'role',
-                                    key: 'role',
-                                    render: (role) => (
-                                      <Tag color={role === 'counselor' ? 'blue' : 'green'}>
-                                        {role}
-                                      </Tag>
-                                    ),
-                                  },
-                                  {
-                                    title: 'Actions',
-                                    key: 'actions',
-                                    render: (_, member: any) => (
-                                      <Popconfirm
-                                        title="Remove user from organization?"
-                                        onConfirm={() => handleRemoveUser(record.id, member.userId)}
-                                      >
-                                        <Button size="small" danger>Remove</Button>
-                                      </Popconfirm>
-                                    ),
-                                  },
-                                ]}
-                                pagination={false}
-                              />
-                            ),
-                          });
-                        } catch (error: any) {
-                          message.error('Failed to load members');
-                        }
-                      }}
-                    >
-                      View Members
-                    </Button>
-                    <Popconfirm
-                      title="Delete Organization"
-                      description={`Are you sure you want to delete "${record.name}"? This will remove all counselors and students from this organization, and unlink all course enrollments. This action cannot be undone.`}
-                      onConfirm={() => handleDeleteOrganization(record.id, record.name)}
-                      okText="Yes, Delete"
-                      okButtonProps={{ danger: true }}
-                      cancelText="Cancel"
-                    >
-                      <Button size="small" danger>
-                        Delete
-                      </Button>
-                    </Popconfirm>
-                  </Space>
-                ),
-              },
-            ]}
-            pagination={false}
-          />
-        </Card>
-
-        <Modal
-          title="Create Organization"
-          open={createOrgModalVisible}
-          onOk={() => createForm.submit()}
-          onCancel={() => {
-            setCreateOrgModalVisible(false);
-            createForm.resetFields();
-          }}
-        >
-          <Form form={createForm} onFinish={handleCreateOrganization} layout="vertical">
-            <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="description" label="Description">
-              <Input.TextArea rows={3} />
-            </Form.Item>
-            <Form.Item name="contactEmail" label="Contact Email">
-              <Input type="email" />
-            </Form.Item>
-            <Form.Item name="contactPhone" label="Contact Phone">
-              <Input />
-            </Form.Item>
-            <Form.Item name="address" label="Address">
-              <Input.TextArea rows={2} />
-            </Form.Item>
-            <Row gutter={16}>
-              <Col span={8}>
-                <Form.Item name="city" label="City">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="state" label="State">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item name="country" label="Country">
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item name="postalCode" label="Postal Code">
-              <Input />
-            </Form.Item>
-            <Form.Item name="website" label="Website">
-              <Input type="url" />
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        <Modal
-          title="Assign User to Organization"
-          open={assignUserModalVisible}
-          onOk={() => assignForm.submit()}
-          onCancel={() => {
-            setAssignUserModalVisible(false);
-            assignForm.resetFields();
-            setSelectedOrg(null);
-          }}
-        >
-          <Form form={assignForm} onFinish={handleAssignUser} layout="vertical">
-            <Form.Item name="userId" label="User" rules={[{ required: true }]}>
-              <Select
-                showSearch
-                placeholder="Search by name or email"
-                optionFilterProp="children"
-                onSearch={(value) => fetchAvailableUsers(value)}
-                filterOption={false}
-                notFoundContent={availableUsers.length === 0 ? <Spin size="small" /> : null}
-              >
-                {availableUsers.map((user) => (
-                  <Select.Option key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-              <Radio.Group>
-                <Radio value="counselor">Counselor</Radio>
-                <Radio value="student">Student</Radio>
-              </Radio.Group>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </div>
-    );
-  };
-
-  const renderAnalyticsTab = () => {
-    if (analyticsLoading) {
-      return (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '50px',
-          gap: 16,
-          textAlign: 'center',
-        }}>
-          <Spin size="large" />
-          <div>Loading analytics...</div>
-        </div>
-      );
-    }
-
-    if (!analyticsData) {
-      return <Alert message="No analytics data available" type="info" />;
-    }
-
-    return (
-      <div>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} sm={12} md={6}>
-            <Card>
-              <Statistic
-                title="Total Users"
-                value={analyticsData.totalUsers}
-                prefix={<User size={16} />}
-                valueStyle={{ fontSize: '24px' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card>
-              <Statistic
-                title="Students with Access"
-                value={analyticsData.studentsWithAccess}
-                prefix={<CheckCircle2 size={16} />}
-                valueStyle={{ color: '#3f8600', fontSize: '24px' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card>
-              <Statistic
-                title="Average Course Progress"
-                value={analyticsData.averageProgress}
-                suffix="%"
-                precision={1}
-                valueStyle={{ color: '#1890ff', fontSize: '24px' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card>
-              <Statistic
-                title="Access Rate"
-                value={analyticsData.totalUsers > 0 
-                  ? ((analyticsData.studentsWithAccess / analyticsData.totalUsers) * 100).toFixed(1)
-                  : 0}
-                suffix="%"
-                valueStyle={{ color: '#722ed1', fontSize: '24px' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={16}>
-            <Card title="User & Mentor Signups (Last 12 Months)" loading={analyticsLoading}>
-              <div style={{ minHeight: 400, padding: '20px 0' }}>
-                {analyticsData.userSignups && analyticsData.userSignups.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <LineChart
-                      data={chartData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      onClick={(data: any) => {
-                        if (data && data.activePayload && data.activePayload[0]) {
-                          const payload = data.activePayload[0].payload;
-                          message.info(`${payload.month}: ${payload.users.toLocaleString()} users, ${payload.mentors.toLocaleString()} mentors`);
-                        }
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis 
-                        dataKey="month" 
-                        stroke="#666"
-                        style={{ fontSize: '12px' }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis 
-                        stroke="#666"
-                        style={{ fontSize: '12px' }}
-                        tickFormatter={(value) => value.toLocaleString()}
-                      />
-                      <Tooltip 
-                        formatter={(value: number, name: string) => [
-                          value.toLocaleString(),
-                          name === 'users' ? 'Users' : 'Mentors'
-                        ]}
-                        labelFormatter={(label) => `Month: ${label}`}
-                        contentStyle={{ 
-                          backgroundColor: '#fff',
-                          border: '1px solid #ccc',
-                          borderRadius: '4px',
-                          padding: '8px'
-                        }}
-                      />
-                      <Legend 
-                        formatter={(value) => value === 'users' ? 'Users' : 'Mentors'}
-                        wrapperStyle={{ paddingTop: '20px' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="users" 
-                        stroke="#1890ff" 
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: '#1890ff' }}
-                        activeDot={{ r: 8, fill: '#1890ff' }}
-                        name="users"
-                        animationDuration={1000}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="mentors" 
-                        stroke="#52c41a" 
-                        strokeWidth={3}
-                        dot={{ r: 5, fill: '#52c41a' }}
-                        activeDot={{ r: 8, fill: '#52c41a' }}
-                        name="mentors"
-                        animationDuration={1000}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>No data available</div>
-                )}
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} lg={8}>
-            <Card title="Course Enrollments (Last 12 Months)" loading={analyticsLoading}>
-              <div style={{ minHeight: 400, padding: '20px 0' }}>
-                {analyticsData.enrollmentsPerMonth && analyticsData.enrollmentsPerMonth.length > 0 ? (
-                  analyticsData.enrollmentsPerMonth.map((item: any, index: number) => {
-                    const maxCount = analyticsData.enrollmentsPerMonth.length > 0 
-                      ? Math.max(...analyticsData.enrollmentsPerMonth.map((i: any) => i.count))
-                      : 0;
-                    return (
-                      <div key={index} style={{ width: '100%', marginBottom: 16, padding: '8px 0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <span style={{ fontSize: '14px', fontWeight: 500 }}>{item.month}</span>
-                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                        </div>
-                        <Progress 
-                          percent={maxCount > 0 ? (item.count / maxCount * 100) : 0} 
-                          showInfo={false}
-                          strokeColor="#52c41a"
-                          strokeWidth={20}
-                        />
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>No data available</div>
-                )}
-              </div>
-            </Card>
-          </Col>
-        </Row>
-
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          <Col xs={24} lg={12}>
-            <Card title="Enrollment Status (With Access)" loading={analyticsLoading}>
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                {analyticsData.enrollmentStatusBreakdown && analyticsData.enrollmentStatusBreakdown.length > 0 ? (
-                  analyticsData.enrollmentStatusBreakdown.map((item: any, index: number) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        padding: '12px 0',
-                        borderBottom: index < analyticsData.enrollmentStatusBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
-                      }}
-                    >
-                      <Tag color={getStatusColor(item.status)} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                        {item.status?.toUpperCase()}
-                      </Tag>
-                      <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No data available</div>
-                )}
-              </Space>
-            </Card>
-          </Col>
-          {analyticsData.courseTypeBreakdown && analyticsData.courseTypeBreakdown.length > 0 && (
-            <Col xs={24} lg={12}>
-              <Card title="Course Type" loading={analyticsLoading}>
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                  {analyticsData.courseTypeBreakdown.map((item: any, index: number) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        padding: '12px 0',
-                        borderBottom: index < analyticsData.courseTypeBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
-                      }}
-                    >
-                      <Tag color={item.courseType === 'premium' ? 'gold' : 'blue'} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                        {item.courseType?.toUpperCase()}
-                      </Tag>
-                      <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </Space>
-              </Card>
-            </Col>
-          )}
-        </Row>
-
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          <Col xs={24} lg={12}>
-            <Card title="Telegram Status" loading={analyticsLoading}>
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                {analyticsData.telegramStatusBreakdown && analyticsData.telegramStatusBreakdown.length > 0 ? (
-                  analyticsData.telegramStatusBreakdown.map((item: any, index: number) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        padding: '12px 0',
-                        borderBottom: index < analyticsData.telegramStatusBreakdown.length - 1 ? '1px solid #f0f0f0' : 'none'
-                      }}
-                    >
-                      <Tag color={getTelegramStatusColor(item.telegramStatus)} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                        {item.telegramStatus?.toUpperCase()}
-                      </Tag>
-                      <span style={{ fontSize: '18px', fontWeight: 600 }}>{item.count.toLocaleString()}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#999' }}>No data available</div>
-                )}
-              </Space>
-            </Card>
-          </Col>
-        </Row>
-      </div>
-    );
+  const rowProgramLabel = (courseName: DashboardData['courseName']) => {
+    if (courseName === 'sat') return 'SAT Prep';
+    if (courseName === 'full_support') return 'Full Support';
+    if (courseName === 'admissions') return 'Admissions';
+    return 'this row’s program';
   };
 
   const columns: ColumnsType<DashboardData> = [
@@ -1011,7 +448,7 @@ const ProgramDashboard: React.FC = () => {
       key: 'name',
       sorter: true,
       width: 200,
-      render: (text: string) => <span>{text}</span>,
+      render: (text: string, record: DashboardData) => <span>{cleanUserName(text, record.userEmail)}</span>,
     },
     {
       title: 'Email',
@@ -1043,11 +480,9 @@ const ProgramDashboard: React.FC = () => {
       width: 150,
       render: (status: string | null) => (
         status ? (
-          <Tag color={getTelegramStatusColor(status)}>
-            {status?.toUpperCase()}
-          </Tag>
+          <AcPill variant={pillTelegram(status)}>{status.toUpperCase()}</AcPill>
         ) : (
-          <span style={{ color: '#999' }}>N/A</span>
+          <span style={{ color: emptyMuted }}>N/A</span>
         )
       ),
     },
@@ -1062,17 +497,17 @@ const ProgramDashboard: React.FC = () => {
           return <span style={{ color: '#999' }}>N/A</span>;
         }
         if (courseName === 'full_support') {
-          return <Tag color="green">Full Support</Tag>;
+          return <AcPill variant="mint">Full Support</AcPill>;
         }
         return (
-          <Tag color={courseName === 'sat' ? 'purple' : 'blue'}>
+          <AcPill variant={courseName === 'sat' ? 'purple' : 'cyan'}>
             {courseName === 'sat' ? 'SAT Prep' : 'Admissions'}
-          </Tag>
+          </AcPill>
         );
       },
     },
     {
-      title: 'Course Type',
+      title: 'Course type (Admissions tier)',
       dataIndex: 'courseType',
       key: 'courseType',
       sorter: true,
@@ -1082,11 +517,9 @@ const ProgramDashboard: React.FC = () => {
           return <span style={{ color: '#999' }}>N/A</span>;
         }
         return type ? (
-          <Tag color={type === 'premium' ? 'gold' : 'blue'}>
-            {type.toUpperCase()}
-          </Tag>
+          <AcPill variant={type === 'premium' ? 'amber' : 'cyan'}>{type.toUpperCase()}</AcPill>
         ) : (
-          <span style={{ color: '#999' }}>N/A</span>
+          <span style={{ color: emptyMuted }}>N/A</span>
         );
       },
     },
@@ -1106,13 +539,15 @@ const ProgramDashboard: React.FC = () => {
       key: 'paymentStatus',
       sorter: true,
       width: 140,
-      render: (status: string | null) => (
+      render: (status: string | null, record: DashboardData) => (
         status ? (
-          <Tag color={getStatusColor(status)}>
-            {status.toUpperCase()}
-          </Tag>
+          <Tooltip title={`Payment for ${rowProgramLabel(record.courseName)} (see Course column).`}>
+            <span>
+              <AcPill variant={pillPayment(status)}>{status.toUpperCase()}</AcPill>
+            </span>
+          </Tooltip>
         ) : (
-          <span style={{ color: '#999' }}>N/A</span>
+          <span style={{ color: emptyMuted }}>N/A</span>
         )
       ),
     },
@@ -1122,13 +557,15 @@ const ProgramDashboard: React.FC = () => {
       key: 'status',
       sorter: true,
       width: 120,
-      render: (status: string | null) => (
+      render: (status: string | null, record: DashboardData) => (
         status ? (
-          <Tag color={getStatusColor(status)}>
-            {status.toUpperCase()}
-          </Tag>
+          <Tooltip title={`Course enrollment status for ${rowProgramLabel(record.courseName)}.`}>
+            <span>
+              <AcPill variant={pillPayment(status)}>{status.toUpperCase()}</AcPill>
+            </span>
+          </Tooltip>
         ) : (
-          <span style={{ color: '#999' }}>N/A</span>
+          <span style={{ color: emptyMuted }}>N/A</span>
         )
       ),
     },
@@ -1172,17 +609,20 @@ const ProgramDashboard: React.FC = () => {
       key: 'progressPercentage',
       sorter: true,
       width: 150,
-      render: (progress: number | null) => (
+      render: (progress: number | null, record: DashboardData) =>
         progress !== null ? (
-          <Progress 
-            percent={Math.round(progress)} 
-            size="small" 
-            status={Math.round(progress) === 100 ? 'success' : 'active'}
-          />
+          <Tooltip title={`Course completion for ${rowProgramLabel(record.courseName)}.`}>
+            <div>
+              <Progress
+                percent={Math.round(progress)}
+                size="small"
+                status={Math.round(progress) === 100 ? 'success' : 'active'}
+              />
+            </div>
+          </Tooltip>
         ) : (
           <span style={{ color: '#999' }}>N/A</span>
-        )
-      ),
+        ),
     },
     {
       title: 'Actions',
@@ -1208,7 +648,7 @@ const ProgramDashboard: React.FC = () => {
                   Grant Access
                 </Button>
               ) : (
-                <Tag color="green">Access Granted</Tag>
+                <AcPill variant="mint">Access Granted</AcPill>
               )}
               <Button
                 type="link"
@@ -1221,21 +661,19 @@ const ProgramDashboard: React.FC = () => {
               </Button>
             </Space>
             <Space size={6}>
-              {communityEnabled ? (
-                <Tag color="blue">Community Access</Tag>
-              ) : (
-                <Tag>Community Off</Tag>
-              )}
+              {communityEnabled && <AcPill variant="info">Community</AcPill>}
               <Popconfirm
                 title={communityEnabled ? 'Revoke community access?' : 'Grant community access?'}
                 description={
                   communityEnabled
-                    ? `This will move ${record.userName} to standard experience mode.`
-                    : `This will unlock Community features for ${record.userName}.`
+                    ? `This will move ${cleanUserName(record.userName, record.userEmail)} to standard experience mode.`
+                    : `This will unlock Community features for ${cleanUserName(record.userName, record.userEmail)}.`
                 }
                 onConfirm={() => handleToggleCommunityAccess(record.userId, !communityEnabled)}
                 okText={communityEnabled ? 'Revoke' : 'Grant'}
                 cancelText="Cancel"
+                placement="topRight"
+                getPopupContainer={(trigger) => trigger.parentElement || document.body}
               >
                 <Button type="link" size="small">
                   {communityEnabled ? 'Revoke community' : 'Grant community'}
@@ -1248,61 +686,73 @@ const ProgramDashboard: React.FC = () => {
     },
   ];
 
-  if (!isAuthenticated) {
-    return (
-      <div className="program-dashboard">
-        <Alert
-          message="Authentication Required"
-          description="You need to be logged in to access the program dashboard."
-          type="warning"
-          showIcon
-        />
+  const wrapProgramShell = (inner: React.ReactNode) =>
+    embedInAdminConsole ? (
+      <div className="ac-program-management-root">
+        <div className="program-dashboard program-dashboard--embed program-dashboard--admin-dark">{inner}</div>
       </div>
+    ) : (
+      <div className="program-dashboard">{inner}</div>
+    );
+
+  if (!isAuthenticated) {
+    return wrapProgramShell(
+      <Alert
+        message="Authentication Required"
+        description="You need to be logged in to access the program dashboard."
+        type="warning"
+        showIcon
+      />,
     );
   }
 
   // Show loading while fetching profile
   if (profileLoading) {
-    return (
-      <div className="program-dashboard" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 300,
-        padding: 50,
-        gap: 16,
-        textAlign: 'center',
-      }}>
+    return wrapProgramShell(
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 300,
+          padding: 50,
+          gap: 16,
+          textAlign: 'center',
+        }}
+      >
         <Spin size="large" />
         <div>Loading...</div>
-      </div>
+      </div>,
     );
   }
 
   if (!isSuperAdmin) {
-    return (
-      <div className="program-dashboard">
-        <Alert
-          message="Access Denied"
-          description={`You need SuperAdmin privileges to access the program dashboard. Your current role is: ${currentUser?.managementRole || 'Unknown'}.`}
-          type="error"
-          showIcon
-        />
-      </div>
+    return wrapProgramShell(
+      <Alert
+        message="Access Denied"
+        description={`You need SuperAdmin or Owner privileges to access the program dashboard. Your current role is: ${currentUser?.managementRole || 'Unknown'}.`}
+        type="error"
+        showIcon
+      />,
     );
   }
 
-  return (
-    <div className="program-dashboard">
-      <Card className="dashboard-header">
-        <h1>TopCoach Management</h1>
-        <p>Manage users, enrollments, and organizations</p>
+  const dashboardMain = (
+    <>
+      <Card className={`dashboard-header${embedInAdminConsole ? ' dashboard-header--embed' : ''}`}>
+        <h1>Programs</h1>
+        <p>Enrollments, analytics, organizations, and Full Support.</p>
       </Card>
 
       <Tabs 
         activeKey={activeTab} 
-        onChange={setActiveTab} 
+        onChange={(key) => {
+          setActiveTab(key);
+          if (embedInAdminConsole) {
+            onRouteTabChange?.(key);
+          }
+        }} 
         style={{ marginTop: 16, marginBottom: 0 }}
         items={[
           {
@@ -1312,7 +762,7 @@ const ProgramDashboard: React.FC = () => {
               <>
                 <Card className="dashboard-filters" style={{ marginTop: 16 }}>
                   <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    <Space>
+                    <Space wrap align="center">
                     <Search
                       placeholder="Search by user name or email"
                       allowClear
@@ -1326,13 +776,13 @@ const ProgramDashboard: React.FC = () => {
                       <Select
                         value={courseFilter}
                         onChange={setCourseFilter}
-                        style={{ width: 200 }}
+                        style={{ width: 220 }}
                         size="large"
                       >
-                        <Select.Option value="all">All Courses</Select.Option>
-                        <Select.Option value="admissions">Admissions Program</Select.Option>
-                        <Select.Option value="sat">SAT Prep Course</Select.Option>
-                        <Select.Option value="full_support">Full Support</Select.Option>
+                        <Select.Option value="all">All programs (table rows)</Select.Option>
+                        <Select.Option value="admissions">Admissions only</Select.Option>
+                        <Select.Option value="sat">SAT Prep only</Select.Option>
+                        <Select.Option value="full_support">Full Support only</Select.Option>
                       </Select>
                       <Select
                         value={communityFilter}
@@ -1345,6 +795,10 @@ const ProgramDashboard: React.FC = () => {
                         <Select.Option value="standard">Community Not Enrolled</Select.Option>
                       </Select>
                     </Space>
+                    <AntText type="secondary" style={{ fontSize: 13, display: 'block', maxWidth: 920 }}>
+                      Each row is one program enrollment (Admissions, SAT Prep, or Full Support). Payment, enrollment
+                      status, timestamps, and progress apply to that row's program (see the Course column).
+                    </AntText>
                   </Space>
                 </Card>
 
@@ -1381,13 +835,29 @@ const ProgramDashboard: React.FC = () => {
           },
           {
             key: 'organizations',
-            label: 'Organizations',
-            children: renderOrganizationsTab(),
+            label: 'School organizations',
+            children: (
+              <ProgramManagementOrganizationsTab
+                organizations={organizations}
+                organizationsLoading={organizationsLoading}
+                fetchOrganizations={fetchOrganizations}
+                fetchAvailableUsers={fetchAvailableUsers}
+                availableUsers={availableUsers}
+              />
+            ),
           },
           {
             key: 'full_support',
             label: 'Full Support',
-            children: (
+            children: embedInAdminConsole ? (
+              <div className="tc-program-mgmt-full-support-embed">
+                <p className="tc-program-mgmt-full-support-hint">
+                  Grant access from <strong>Users &amp; Enrollments</strong> (Full Support), then manage assignments,
+                  sessions, and pipeline below.
+                </p>
+                <FullSupportAdminDashboard integratedInAdminConsole />
+              </div>
+            ) : (
               <Card style={{ marginTop: 16 }}>
                 <p style={{ marginBottom: 16, color: '#666' }}>
                   Users enrolled in the Full Support Mentorship Program. Enroll students from <strong>Users &amp; Enrollments</strong> by choosing &quot;Full Support Mentorship Program&quot; in the Grant Access modal.
@@ -1402,7 +872,7 @@ const ProgramDashboard: React.FC = () => {
                     { title: 'Assigned Mentor', dataIndex: 'mentorName', key: 'mentorName', width: 180, render: (v: string | null) => v ?? <span style={{ color: '#999' }}>Unassigned</span> },
                     { title: 'Sessions', dataIndex: 'sessions', key: 'sessions', width: 100 },
                     { title: 'Tasks', dataIndex: 'tasks', key: 'tasks', width: 80 },
-                    { title: 'Status', dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={s === 'Active' ? 'green' : 'default'}>{s}</Tag> },
+                    { title: 'Status', dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <AcPill variant={s === 'Active' ? 'mint' : 'neutral'}>{s}</AcPill> },
                     {
                       title: 'Actions',
                       key: 'actions',
@@ -1436,7 +906,7 @@ const ProgramDashboard: React.FC = () => {
             key="remove"
             type="primary"
             loading={adminUnenrollLoading}
-            style={{ backgroundColor: primaryRed, borderColor: primaryRed }}
+            style={{ backgroundColor: actionAccent, borderColor: actionAccent, color: embedInAdminConsole ? '#04120c' : undefined }}
             onClick={() => {
               if (!removeFullSupportStudent) return;
               adminUnenroll(removeFullSupportStudent.id)
@@ -1460,6 +930,7 @@ const ProgramDashboard: React.FC = () => {
       <Modal
         title="Grant Access"
         open={grantAccessModalVisible}
+        width={560}
         onOk={handleConfirmGrantAccess}
         onCancel={() => {
           setGrantAccessModalVisible(false);
@@ -1467,7 +938,13 @@ const ProgramDashboard: React.FC = () => {
         }}
         okText="Grant Access"
         cancelText="Cancel"
-        okButtonProps={{ type: 'primary', loading: adminEnrollLoading }}
+        okButtonProps={{
+          type: 'primary',
+          loading: adminEnrollLoading,
+          ...(embedInAdminConsole
+            ? { style: { backgroundColor: actionAccent, borderColor: actionAccent, color: '#04120c' } }
+            : {}),
+        }}
       >
         {selectedUser && (
           <div>
@@ -1501,9 +978,11 @@ const ProgramDashboard: React.FC = () => {
                 }}
                 style={{ width: '100%' }}
               >
-                <Radio value="admissions">Admissions Program</Radio>
-                <Radio value="sat">SAT Prep Course</Radio>
-                <Radio value="full_support">Full Support Mentorship Program</Radio>
+                <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                  <Radio value="admissions"><strong>Admissions Program</strong></Radio>
+                  <Radio value="sat"><strong>SAT Prep Course</strong></Radio>
+                  <Radio value="full_support"><strong>Full Support Mentorship Program</strong></Radio>
+                </Space>
               </Radio.Group>
             </div>
             {selectedCourseName === 'full_support' && (
@@ -1538,8 +1017,10 @@ const ProgramDashboard: React.FC = () => {
           </div>
         )}
       </Modal>
-    </div>
+    </>
   );
+
+  return wrapProgramShell(dashboardMain);
 };
 
 export default ProgramDashboard;

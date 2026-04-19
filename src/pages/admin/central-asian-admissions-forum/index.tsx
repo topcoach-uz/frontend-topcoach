@@ -18,7 +18,7 @@ import type { MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TFunction } from 'i18next';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -151,6 +151,8 @@ function exportSubmissionsXlsx(list: CaafForumApplicationDto[], filenameBase: st
 export default function CentralAsianAdmissionsForumAdminPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const adminBackPath = pathname.startsWith('/new-admin/') ? '/new-admin/content' : '/student-hub';
   const user = useTypedSelector((state) => state.auth.profile);
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const { data: userData, isLoading: profileLoading } = useGetMeQuery(undefined, { skip: !isAuthenticated });
@@ -193,9 +195,10 @@ export default function CentralAsianAdmissionsForumAdminPage() {
   useEffect(() => {
     if (!profileLoading && isAuthenticated && !isSuperAdminOnly) {
       message.warning(t('caafForum.admin.onlySuperAdmin'));
-      navigate('/student-hub', { replace: true });
+      const fallback = pathname.startsWith('/new-admin/') ? '/new-admin/dashboard' : '/student-hub';
+      navigate(fallback, { replace: true });
     }
-  }, [profileLoading, isAuthenticated, isSuperAdminOnly, navigate, t]);
+  }, [profileLoading, isAuthenticated, isSuperAdminOnly, navigate, pathname, t]);
 
   const onExportMenuClick = useCallback<NonNullable<MenuProps['onClick']>>(
     ({ key }) => {
@@ -275,7 +278,12 @@ export default function CentralAsianAdmissionsForumAdminPage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-      <Button type="text" icon={<ArrowLeft size={18} />} onClick={() => navigate('/student-hub')} style={{ marginBottom: 16 }}>
+      <Button
+        type="text"
+        icon={<ArrowLeft size={18} />}
+        onClick={() => navigate(adminBackPath)}
+        style={{ marginBottom: 16 }}
+      >
         {t('caafForum.admin.back')}
       </Button>
 

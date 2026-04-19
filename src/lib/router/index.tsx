@@ -5,6 +5,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Navigate,
+  useSearchParams,
 } from "react-router-dom";
 import { Spin } from "antd";
 import { useTypedSelector } from "src/app/store";
@@ -21,6 +22,7 @@ import customHistory from "../history";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
 import { GlobalModals } from "src/components/GlobalModals";
+import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 
 // Pages
 
@@ -101,17 +103,43 @@ const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"))
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
-const TopCoachManagementLazy = lazy(() => import("src/pages/admin/topcoach-management"));
-const CentralAsianAdmissionsForumAdminLazy = lazy(
-  () => import("src/pages/admin/central-asian-admissions-forum")
+const AdminConsoleLayoutLazy = lazy(() => import("src/pages/admin/console/AdminConsoleLayout"));
+const AdminConsoleDashboardLazy = lazy(
+  () => import("src/pages/admin/console/pages/DashboardPage"),
 );
-const FullSupportAdminDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportAdminDashboard"));
+const AdminConsoleUsersLazy = lazy(
+  () => import("src/pages/admin/console/pages/UsersPage"),
+);
+const AdminConsoleAdministrationLazy = lazy(
+  () => import("src/pages/admin/console/pages/AdministrationPage"),
+);
+const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/pages/PaymentsPage"));
+const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
+const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
+const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
+const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
+const AdminProgramManagementLazy = lazy(() => import("src/pages/admin/console/pages/ProgramManagementPage"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
 const FullSupportLeadsPageLazy = lazy(() => import("src/pages/full-support-leads"));
+
+const PROGRAM_TAB_SLUG: Record<string, string> = {
+  users: "enrollments",
+  analytics: "analytics",
+  organizations: "organizations",
+  full_support: "full-support",
+};
+
+/** Old `/topcoach-management?tab=` links → unified admin program management. */
+function TopCoachManagementCanonicalRedirect() {
+  const [searchParams] = useSearchParams();
+  const raw = searchParams.get("tab") ?? "users";
+  const slug = PROGRAM_TAB_SLUG[raw] ?? "enrollments";
+  return <Navigate to={`/new-admin/programs/${slug}`} replace />;
+}
 
 function RouterProvider() {
   const isAuthenticated = useTypedSelector(
@@ -129,7 +157,6 @@ function RouterProvider() {
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
   const isSuperAdminOrOwner = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
-  const isYouthLeadersApplicationsSuperAdmin = currentUser?.managementRole === 'SuperAdmin';
   const isMentor = currentUser?.profile?.role === 'Mentor';
 
   return (
@@ -149,6 +176,68 @@ function RouterProvider() {
               </Suspense>
             }
           />
+
+          <Route element={<AddFallbackLayout />}>
+            <Route path="/new-admin" element={<AdminConsoleGate />}>
+              <Route
+                element={
+                  <Suspense
+                    fallback={
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          minHeight: '100vh',
+                        }}
+                      >
+                        <Spin size="large" />
+                      </div>
+                    }
+                  >
+                    <AdminConsoleLayoutLazy />
+                  </Suspense>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<AdminConsoleDashboardLazy />} />
+
+                {/* Unified users directory (tabs via ?tab= query) */}
+                <Route path="users" element={<AdminConsoleUsersLazy />} />
+
+                {/* Programs */}
+                <Route path="programs" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
+                <Route path="programs/enrollments" element={<AdminProgramManagementLazy />} />
+                <Route path="programs/analytics" element={<AdminProgramManagementLazy />} />
+                <Route path="programs/organizations" element={<AdminProgramManagementLazy />} />
+                <Route path="programs/full-support" element={<AdminProgramManagementLazy />} />
+
+                {/* Operations */}
+                <Route path="payments" element={<AdminConsolePaymentsLazy />} />
+                <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
+                <Route path="events" element={<AdminConsoleEventsLazy />} />
+                <Route path="events/caaf" element={<CaafAdminRouteLazy />} />
+
+                {/* Insights + governance */}
+                <Route path="insights" element={<AdminConsoleInsightsLazy />} />
+                <Route path="administration" element={<AdminConsoleAdministrationLazy />} />
+
+                {/* Permanent redirects from legacy console paths */}
+                <Route path="mentees" element={<Navigate to="/new-admin/users?tab=mentees" replace />} />
+                <Route path="mentors" element={<Navigate to="/new-admin/users?tab=mentors" replace />} />
+                <Route path="organizations" element={<Navigate to="/new-admin/programs/organizations" replace />} />
+                <Route path="content" element={<Navigate to="/new-admin/events" replace />} />
+                <Route path="central-asian-admissions-forum" element={<Navigate to="/new-admin/events/caaf" replace />} />
+                <Route path="management" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
+                <Route path="management/users" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
+                <Route path="management/analytics" element={<Navigate to="/new-admin/programs/analytics" replace />} />
+                <Route path="management/organizations" element={<Navigate to="/new-admin/programs/organizations" replace />} />
+                <Route path="management/full_support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
+                <Route path="full-support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
+                <Route path="access-programs" element={<Navigate to="/new-admin/dashboard" replace />} />
+              </Route>
+            </Route>
+          </Route>
 
           {/* Main Layout */}
           <Route element={<MainLayout />}>
@@ -239,8 +328,8 @@ function RouterProvider() {
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />
-              <Route 
-                path="/topcoach-management" 
+              <Route
+                path="/topcoach-management"
                 element={
                   !isAuthenticated ? (
                     <Navigate to="/auth/signin" replace />
@@ -249,33 +338,9 @@ function RouterProvider() {
                       <Spin size="large" />
                     </div>
                   ) : isSuperAdminOrOwner ? (
-                    <TopCoachManagementLazy />
+                    <TopCoachManagementCanonicalRedirect />
                   ) : (
                     <Navigate to="/auth/signin" replace />
-                  )
-                } 
-              />
-              <Route
-                path="/admin/central-asian-admissions-forum"
-                element={
-                  !isAuthenticated ? (
-                    <Navigate to="/auth/signin" replace />
-                  ) : profileLoading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
-                    </div>
-                  ) : isYouthLeadersApplicationsSuperAdmin ? (
-                    <Suspense
-                      fallback={
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-                          <Spin size="large" />
-                        </div>
-                      }
-                    >
-                      <CentralAsianAdmissionsForumAdminLazy />
-                    </Suspense>
-                  ) : (
-                    <Navigate to="/student-hub" replace />
                   )
                 }
               />
@@ -289,9 +354,7 @@ function RouterProvider() {
                       <Spin size="large" />
                     </div>
                   ) : isSuperAdminOrOwner ? (
-                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
-                      <FullSupportAdminDashboardLazy />
-                    </Suspense>
+                    <Navigate to="/new-admin/programs/full-support" replace />
                   ) : (
                     <Navigate to="/auth/signin" replace />
                   )

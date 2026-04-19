@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Share2,
   MoreHorizontal,
+  Shield,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -941,6 +942,18 @@ export default function CommunityHubMockPage() {
             <span className={styles.navIconCircle}><Settings size={20} color="#8b0000" /></span>
             <span className={styles.navLabel}>{t('studentHub.nav.settings', 'Settings')}</span>
           </button>
+
+          {((profile as { managementRole?: string } | null | undefined)?.managementRole === 'SuperAdmin' ||
+            (profile as { managementRole?: string } | null | undefined)?.managementRole === 'Owner') && (
+            <button
+              type="button"
+              className={styles.navItem}
+              onClick={() => navigate('/new-admin/dashboard')}
+            >
+              <span className={styles.navIconCircle}><Shield size={20} color="#8b0000" /></span>
+              <span className={styles.navLabel}>{t('studentHub.nav.adminConsole', 'Admin console')}</span>
+            </button>
+          )}
         </div>
       </div>
 

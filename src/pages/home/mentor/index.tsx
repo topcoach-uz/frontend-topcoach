@@ -117,7 +117,7 @@ export default function MentorHome() {
                         <CustomButton
                           size="small"
                           height={40}
-                          onClick={() => navigate('/admin/central-asian-admissions-forum')}
+                          onClick={() => navigate('/new-admin/central-asian-admissions-forum')}
                           icon={<Sparkles size={16} />}
                           style={{
                             backgroundColor: 'transparent',
@@ -134,7 +134,7 @@ export default function MentorHome() {
                     <CustomButton
                       size="small"
                       height={40}
-                      onClick={() => navigate('/full-support/admin')}
+                      onClick={() => navigate('/new-admin/management/full_support')}
                       icon={<FileCheck size={16} />}
                       style={{
                         backgroundColor: 'transparent',

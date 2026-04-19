@@ -1,0 +1,37 @@
+// Admin console — layered dark UI (sidebar darkest, canvas + cards stepped like reference mocks)
+:root {
+  /* Darkest rail — left nav only */
+  --ac-sidebar-bg: #111217;
+  --ac-sidebar-bg-mid: #0f1218;
+
+  /* Main workspace — cool grey / subtle purple (between #1a1c23 and #1e222b) */
+  --ac-canvas-bg: #1c1f28;
+  --ac-canvas-bg-soft: #21252f;
+
+  /* Cards & panels — clearly lifted from canvas */
+  --ac-bg-surface: #252a35;
+  --ac-bg-elevated: #2d3340;
+  --ac-bg-muted: #363d4d;
+
+  /* Legacy alias: “page” background = canvas (not sidebar black) */
+  --ac-bg-deep: var(--ac-canvas-bg);
+
+  --ac-border: rgba(255, 255, 255, 0.07);
+  --ac-border-strong: rgba(255, 255, 255, 0.12);
+  --ac-text: #f4f4f5;
+  --ac-text-secondary: #d1d5e0;
+  --ac-text-muted: #a8b4c8;
+  --ac-accent: #10b981;
+  --ac-accent-dim: rgba(16, 185, 129, 0.18);
+  --ac-accent-glow: rgba(16, 185, 129, 0.35);
+  --ac-warn: #f59e0b;
+  --ac-danger: #ef4444;
+  --ac-info: #3b82f6;
+  --ac-radius: 12px;
+  --ac-radius-sm: 8px;
+  --ac-radius-lg: 16px;
+  --ac-font: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ac-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --ac-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.28);
+  --ac-shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.35);
+}

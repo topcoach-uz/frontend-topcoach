@@ -1,0 +1,206 @@
+@import './admin-console-tokens.scss';
+
+/* Program management + Full Support — same canvas as admin (no “paper” island) */
+.admin-console-app .ac-program-management-root,
+.admin-console-app .ac-full-support-workspace-root--integrated {
+  min-width: 0;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark {
+  padding: 0 0 32px;
+  max-width: none;
+  margin: 0;
+  color: var(--ac-text);
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-card {
+  background: var(--ac-bg-surface) !important;
+  border: 1px solid var(--ac-border) !important;
+  border-radius: var(--ac-radius) !important;
+  box-shadow: none;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-card-head-title {
+  color: var(--ac-text) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .dashboard-header h1 {
+  color: var(--ac-text) !important;
+  font-size: 1.5rem;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .dashboard-header p {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .dashboard-filters.ant-card,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .dashboard-table.ant-card {
+  background: var(--ac-bg-surface) !important;
+  border: 1px solid var(--ac-border) !important;
+  border-radius: var(--ac-radius) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-tabs-nav::before {
+  border-color: var(--ac-border) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-tabs-tab {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--ac-accent) !important;
+  font-weight: 600;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-tabs-ink-bar {
+  background: var(--ac-accent) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input-affix-wrapper,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-selector {
+  background: var(--ac-bg-elevated) !important;
+  border-color: var(--ac-border-strong) !important;
+  color: var(--ac-text) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-table {
+  color: var(--ac-text);
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-table-thead > tr > th {
+  background: var(--ac-bg-elevated) !important;
+  color: var(--ac-text-secondary) !important;
+  border-bottom-color: var(--ac-border) !important;
+  font-weight: 600;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-table-tbody > tr > td {
+  border-color: var(--ac-border) !important;
+  background: var(--ac-bg-surface) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-table-tbody > tr:hover > td {
+  background: rgba(16, 185, 129, 0.06) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-item,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-prev .ant-pagination-item-link,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-next .ant-pagination-item-link {
+  background: var(--ac-bg-elevated) !important;
+  border-color: var(--ac-border) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-item a {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-item-active {
+  border-color: var(--ac-accent) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-pagination-item-active a {
+  color: var(--ac-accent) !important;
+}
+
+.admin-console-app .tc-program-mgmt-full-support-embed {
+  margin-top: 8px;
+}
+
+.admin-console-app .tc-program-mgmt-full-support-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ac-text-secondary) !important;
+}
+
+/* Full Support dashboard — dark integrated */
+.admin-console-app .full-support-page.full-support-page--admin-integrated {
+  padding: 0 0 40px;
+  max-width: none;
+  margin: 0;
+  color: var(--ac-text);
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-header.ant-card {
+  background: var(--ac-bg-surface) !important;
+  border: 1px solid var(--ac-border) !important;
+  border-radius: var(--ac-radius) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-header h1 {
+  color: var(--ac-accent) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-header p {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated > .ant-row > .ant-col > .ant-card {
+  background: var(--ac-bg-surface) !important;
+  border: 1px solid var(--ac-border) !important;
+  border-radius: var(--ac-radius) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-statistic-title {
+  color: var(--ac-text-muted) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-statistic-content-value {
+  color: var(--ac-text) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-card.ant-card {
+  background: var(--ac-bg-surface) !important;
+  border: 1px solid var(--ac-border) !important;
+  border-radius: var(--ac-radius) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-card .ant-card-head {
+  border-bottom-color: var(--ac-border) !important;
+  color: var(--ac-text);
+}
+
+.admin-console-app .full-support-page--admin-integrated .full-support-card .ant-card-head-title {
+  color: var(--ac-text) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-table-thead > tr > th {
+  background: var(--ac-bg-elevated) !important;
+  color: var(--ac-text-secondary) !important;
+  border-color: var(--ac-border) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-table-tbody > tr > td {
+  background: var(--ac-bg-surface) !important;
+  border-color: var(--ac-border) !important;
+  color: var(--ac-text);
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-table-tbody > tr:hover > td {
+  background: rgba(16, 185, 129, 0.06) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .mentor-row {
+  border-bottom-color: var(--ac-border) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .interactions-list li {
+  border-bottom-color: var(--ac-border) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-modal .ant-card {
+  background: var(--ac-bg-elevated) !important;
+  border-color: var(--ac-border) !important;
+}
+
+.admin-console-app .full-support-page--admin-integrated .ant-alert {
+  background: var(--ac-bg-elevated) !important;
+  border-color: var(--ac-border) !important;
+}
+
+.admin-console-app .tc-program-mgmt-full-support-embed .fs-mentor-student-pill {
+  margin-top: 4px;
+  margin-right: 6px;
+}
