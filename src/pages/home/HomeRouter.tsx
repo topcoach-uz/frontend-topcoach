@@ -12,7 +12,6 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
 import { useTypedSelector } from 'src/app/store';
 import { PageLoader } from 'src/components/loading';
-import MentorHomePage from './mentor';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
@@ -63,7 +62,7 @@ function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
   }
 
   if (profile?.role === 'Mentor') {
-    return <MentorHomePage />;
+    return <Navigate to="/mentor/dashboard" replace />;
   }
 
   return <Navigate to="/student-hub" replace />;

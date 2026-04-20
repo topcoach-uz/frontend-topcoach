@@ -23,6 +23,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
 import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
+import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
 
 // Pages
 
@@ -102,6 +103,14 @@ const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
+const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleLayout"));
+const MentorConsoleDashboardLazy = lazy(() => import("src/pages/mentor/console/pages/DashboardPage"));
+const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
+const MentorConsoleSessionsLazy = lazy(() => import("src/pages/mentor/console/pages/SessionsPage"));
+const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
+const MentorConsoleTasksLazy = lazy(() => import("src/pages/mentor/console/pages/TasksPage"));
+const MentorConsoleMilestonesLazy = lazy(() => import("src/pages/mentor/console/pages/MilestonesPage"));
+const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const AdminConsoleLayoutLazy = lazy(() => import("src/pages/admin/console/AdminConsoleLayout"));
 const AdminConsoleDashboardLazy = lazy(
@@ -362,21 +371,7 @@ function RouterProvider() {
               />
               <Route
                 path="/full-support/mentor"
-                element={
-                  !isAuthenticated ? (
-                    <Navigate to="/auth/signin" replace />
-                  ) : profileLoading ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
-                    </div>
-                  ) : isMentor || isSuperAdminOrOwner ? (
-                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
-                      <FullSupportMentorDashboardLazy />
-                    </Suspense>
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
+                element={<Navigate to="/mentor/dashboard" replace />}
               />
               <Route
                 path="/full-support/mentor/sat-progress"
@@ -396,6 +391,20 @@ function RouterProvider() {
                   )
                 }
               />
+
+              {/* Unified Mentor Console — nested inside MainLayout so the website header stays. */}
+              <Route path="/mentor" element={<MentorConsoleGate />}>
+                <Route element={<MentorConsoleLayoutLazy />}>
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route path="dashboard" element={<MentorConsoleDashboardLazy />} />
+                  <Route path="students" element={<MentorConsoleStudentsLazy />} />
+                  <Route path="sessions" element={<MentorConsoleSessionsLazy />} />
+                  <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
+                  <Route path="tasks" element={<MentorConsoleTasksLazy />} />
+                  <Route path="milestones" element={<MentorConsoleMilestonesLazy />} />
+                  <Route path="profile" element={<MentorConsoleProfileLazy />} />
+                </Route>
+              </Route>
               <Route
                 path="/events/undergraduate"
                 element={<ApplyToEventUndergraduatePageLazy />}
