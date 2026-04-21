@@ -11,6 +11,7 @@ import { useAppDispatch } from 'src/app/store';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import { useChatMessages } from './useChatMessages';
+import { useSmartPolling } from 'src/hooks/useSmartPolling';
 import styles from './MessageList.module.scss';
 
 const { Text } = Typography;
@@ -31,6 +32,11 @@ const MessageList: React.FC<MessageListProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Poll every 5s while the user is actively looking at the chat; pause when
+  // the tab is backgrounded (refetchOnFocus will catch up on return). Stops
+  // the background flood that was the biggest hidden-tab network source.
+  const messagesPollInterval = useSmartPolling(5000);
+
   const {
     data: messagesData,
     isLoading,
@@ -43,7 +49,8 @@ const MessageList: React.FC<MessageListProps> = ({
       limit: 50,
     },
     {
-      pollingInterval: 5000, // Poll every 5 seconds for new messages
+      pollingInterval: messagesPollInterval,
+      refetchOnFocus: true,
     }
   );
 

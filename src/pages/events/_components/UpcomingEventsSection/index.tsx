@@ -181,9 +181,11 @@ export default function UpcomingEventsSection({
         {upcomingEvents.map((event) => (
           <div key={`event-${event.id}`} className={styles.upcoming_card_wrapper}>
             <div className={styles.card_image}>
-              <img 
-                src={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
+              <img
+                src={getLatestCreatedImg(event.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'}
                 alt={event.title}
+                loading="lazy"
+                decoding="async"
               />
               <div className={styles.card_overlay}>
                 <Tag color="green" className={styles.upcoming_tag}>
@@ -281,10 +283,12 @@ export default function UpcomingEventsSection({
 
               {/* Image on the left */}
               <div className={styles.workshop_image_container}>
-                <img 
-                  src={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'} 
+                <img
+                  src={getLatestCreatedImg(workshop.media, MEDIA_TAGS.General) || '/img/upcoming_event/event_mobile.png'}
                   alt={workshop.title}
                   className={styles.workshop_image}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 

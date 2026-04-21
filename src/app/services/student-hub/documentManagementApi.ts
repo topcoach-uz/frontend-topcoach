@@ -86,9 +86,10 @@ export const documentManagementApi = RtkApi.injectEndpoints({
       query: ({ page = 1, limit = 10, documentType, status }) => ({
         url: '/document-management',
         method: 'GET',
-        params: { page, limit, documentType, status, _t: Date.now() }, // Cache busting
+        params: { page, limit, documentType, status },
       }),
       providesTags: ['StudentDocuments'],
+      keepUnusedDataFor: 300,
     }),
 
     // Get document by ID
@@ -159,7 +160,6 @@ export const documentManagementApi = RtkApi.injectEndpoints({
       query: () => ({
         url: '/document-management/stats',
         method: 'GET',
-        params: { _t: Date.now() }, // Cache busting
       }),
       providesTags: ['StudentDocuments'],
     }),

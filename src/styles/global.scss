@@ -1,8 +1,10 @@
 @import './normalize.scss';
 @import './variables.scss';
 @import './help.scss';
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+/* Fonts are preloaded asynchronously in index.html with preconnect + async
+   stylesheet links, which lets the rest of CSS parse without waiting for
+   the Google Fonts roundtrip. `display=swap` there means text paints in
+   fallback fonts immediately and swaps when the webfont arrives. */
 
 *,
 :after,

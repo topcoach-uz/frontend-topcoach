@@ -1,9 +1,16 @@
-// Fonts
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
-
-// Font family (primary UI font – DM Sans is clean and highly readable for education sites)
-$font-primary: 'DM Sans', sans-serif;
+// Fonts are preloaded asynchronously in index.html (preconnect + rel="preload"
+// as="style" swap) so CSS parsing doesn't block on font downloads. We ship a
+// single family — DM Sans — with a full system-font fallback stack so text
+// renders instantly in native fonts and swaps in DM Sans on arrival.
+$font-primary:
+  'DM Sans',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Roboto,
+  'Helvetica Neue',
+  Arial,
+  sans-serif;
 
 // $colorTextBase: var(--colorTextBase);
 // $colorTextSecondary: var(--colorTextSecondary);

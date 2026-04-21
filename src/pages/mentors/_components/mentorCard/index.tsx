@@ -1,14 +1,25 @@
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
-import { MentorStarIcon } from 'src/assets/svg/mentor';
 import { CustomCard } from 'src/components/cards';
 import { CustomText } from 'src/components/common';
 import styles from './mentorCard.module.scss';
-import { themeColors } from 'src/constants/theme';
-import { UserIcon } from 'src/components/icons';
-import { Skeleton } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { getUniversityFlag } from 'src/utils/countryFlags';
+
+function initialsFromName(name: string | null | undefined): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0]!.charAt(0).toUpperCase();
+  return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase();
+}
+
+function hashHue(key: string): number {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  return Math.abs(hash) % 360;
+}
 
 /** Temporary: Master Program mentors (today-only override for tag and rate). Revert later. */
 const MASTER_PROGRAM_MENTOR_EMAILS = [
@@ -32,23 +43,23 @@ interface MentorCardProps {
   isGiveaway?: boolean;
   giveawaySessionsCount?: number;
   email?: string;
+  /** Index in the grid — the first ~6 cards are above-the-fold and should load eagerly. */
+  cardIndex?: number;
 }
 
-export default function MentorCard({
+function MentorCard({
   name,
   imgSrc,
-  rating,
-  sessionNumber,
   major,
   university,
   id,
   level,
   classname,
   compact = false,
-  availableSessions = 0,
   isGiveaway = false,
   giveawaySessionsCount = 0,
   email,
+  cardIndex = 99,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
@@ -59,6 +70,11 @@ export default function MentorCard({
   };
 
   const { t } = useTranslation();
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const showImage = Boolean(imgSrc) && !imgFailed;
+  const avatarHue = hashHue(id || email || name || 'mentor');
+  const avatarBg = `linear-gradient(135deg, hsl(${avatarHue}, 70%, 55%) 0%, hsl(${(avatarHue + 35) % 360}, 70%, 45%) 100%)`;
 
   return (
     <CustomCard
@@ -70,22 +86,30 @@ export default function MentorCard({
     >
       <div className={styles.imgContainer}>
         <div className={styles.img}>
-          {imgSrc ? (
-            <img 
-              src={imgSrc} 
-              alt="mentor profile" 
-              loading="lazy"
-              onLoad={(e) => {
-                // Fade in effect when image loads
-                e.currentTarget.style.opacity = '1';
-              }}
-              style={{ 
-                opacity: 0, 
-                transition: 'opacity 0.3s ease-in-out' 
-              }}
+          {showImage ? (
+            <img
+              src={imgSrc}
+              alt={name ? `${name} — mentor profile` : 'mentor profile'}
+              width={compact ? 200 : 320}
+              height={compact ? 200 : 320}
+              loading={cardIndex < 6 ? 'eager' : 'lazy'}
+              decoding="async"
+              // @ts-expect-error — fetchpriority is a valid HTML attr React has not typed yet.
+              fetchpriority={cardIndex < 3 ? 'high' : 'auto'}
+              onError={() => setImgFailed(true)}
             />
           ) : (
-            <Skeleton.Image active />
+            // When the image record is missing or returns 404, render a
+            // deterministic initials avatar instead of the broken-image icon.
+            // The hue is derived from the mentor id, so each mentor gets a
+            // stable color across renders.
+            <div
+              className={styles.imgFallback}
+              style={{ background: avatarBg }}
+              aria-label={name ? `${name} initials placeholder` : 'mentor placeholder'}
+            >
+              {initialsFromName(name)}
+            </div>
           )}
         </div>
         
@@ -232,3 +256,5 @@ export default function MentorCard({
     </CustomCard>
   );
 }
+
+export default memo(MentorCard);

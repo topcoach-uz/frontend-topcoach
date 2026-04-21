@@ -24,6 +24,7 @@ import ErrorFallback from "src/components/ErrorFallback";
 import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
+import NavigationProgressBar from "src/components/NavigationProgressBar";
 
 // Pages
 
@@ -171,6 +172,7 @@ function RouterProvider() {
 
   return (
     <CustomRouter history={customHistory}>
+      <NavigationProgressBar />
       <GlobalModals />
       <Routes>
         <Route element={<RootLayout />}>

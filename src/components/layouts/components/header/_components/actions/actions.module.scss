@@ -6,6 +6,23 @@
   gap: 24px;
 }
 
+/* Reserve width for the auth actions area so the header doesn't shift when
+   auth status resolves (sign-in/sign-up buttons vs avatar dropdown differ in
+   width). Without this, every cold load nudges the right side of the header. */
+.authContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .authContainer {
+    min-width: 52px;
+  }
+}
+
 .mode_switch {
   border: none;
   background-color: transparent;

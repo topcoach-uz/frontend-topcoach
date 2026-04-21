@@ -10,6 +10,7 @@ const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 const SENTRY_ENVIRONMENT = import.meta.env.VITE_SENTRY_ENVIRONMENT || import.meta.env.MODE || 'development';
 
 if (SENTRY_DSN) {
+  const isProd = SENTRY_ENVIRONMENT === 'production';
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: SENTRY_ENVIRONMENT,
@@ -20,11 +21,12 @@ if (SENTRY_DSN) {
         blockAllMedia: false,
       }),
     ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0, // Capture 100% of transactions
-    // Session Replay
-    replaysSessionSampleRate: 0.1, // 10% of sessions
-    replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+    // Performance Monitoring — 100% sampling adds measurable overhead on every
+    // route transition. Keep it high in dev for debugging, low in prod.
+    tracesSampleRate: isProd ? 0.1 : 1.0,
+    // Session Replay — record 1% of normal sessions, 100% of errored ones.
+    replaysSessionSampleRate: isProd ? 0.01 : 0.1,
+    replaysOnErrorSampleRate: 1.0,
   });
 }
 

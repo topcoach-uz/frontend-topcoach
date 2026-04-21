@@ -153,21 +153,18 @@ const UniversityDetailSection = React.memo(({
             {/* Empty div to maintain the grey background area without image icon */}
           </div>
         ) : img ? (
-          <img 
-            src={img} 
-            alt="University image" 
+          // No opacity trick: if the browser can't run onLoad (CORS, slow net,
+          // stale cache hits) the image would stay invisible. Native <img> with
+          // a decoded async handoff already renders progressively.
+          <img
+            src={img}
+            alt="University image"
             loading="eager"
             decoding="async"
-            onLoad={(e) => {
-              // Fade in effect when image loads
-              e.currentTarget.style.opacity = '1';
-            }}
-            style={{ 
-              width: '100%', 
+            style={{
+              width: '100%',
               height: 'auto',
               objectFit: 'cover',
-              opacity: 0,
-              transition: 'opacity 0.3s ease-in-out'
             }}
           />
         ) : null}

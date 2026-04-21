@@ -1,4 +1,4 @@
-import { Flex, Image, Button, message } from 'antd';
+import { Flex, Button, message } from 'antd';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import useColors from 'src/hooks/useColors';
@@ -63,12 +63,17 @@ export default function MentorDetailsAvatar({}: Props) {
         {!img ? (
           <UserIcon width={200} height={200} />
         ) : (
-          <Image
+          <img
             src={img}
-            rootClassName={styles.image_wrapper}
+            alt={name ? `${name} — mentor profile` : 'mentor profile'}
             width={200}
             height={200}
-            style={{ flexShrink: '0' }}
+            loading="eager"
+            decoding="async"
+            // @ts-expect-error fetchpriority is valid HTML, React types catch up later
+            fetchpriority="high"
+            className={styles.image_wrapper}
+            style={{ flexShrink: 0, objectFit: 'cover', borderRadius: 12 }}
           />
         )}
         <div className={styles.title_wrapper}>

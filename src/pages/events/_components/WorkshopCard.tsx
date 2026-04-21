@@ -51,7 +51,7 @@ export default function WorkshopCard({
       cover={
         img && (
           <div className={styles.card_image}>
-            <img alt={title} src={img} />
+            <img alt={title} src={img} loading="lazy" decoding="async" />
           </div>
         )
       }

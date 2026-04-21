@@ -6,6 +6,25 @@
     <link rel="canonical" href="https://topcoachuni.com/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Top Coach - Empowering Your Journey to Success</title>
+
+    <!-- Non-blocking Google Fonts: preconnect opens the TLS handshake early,
+         then we load the stylesheet with a swap-on-load trick so CSS parsing
+         isn't blocked waiting on the font request. display=swap means text
+         paints in fallback fonts instantly, then swaps in Inter/Montserrat. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap"
+      />
+    </noscript>
     
 
     <!-- Open Graph Metadata for Telegram -->

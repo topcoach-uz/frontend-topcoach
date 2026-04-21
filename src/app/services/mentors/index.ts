@@ -31,18 +31,23 @@ export const mentorApi = RtkApi.injectEndpoints({
         params: { id: mentorId },
       }),
       providesTags: ['GetMentorDetail'],
+      // Mentor detail doesn't change often — hold it for 5 minutes so navigation
+      // back/forward between list and detail is instant.
+      keepUnusedDataFor: 300,
     }),
     getMentorBalance: build.query<IBalance, { mentorId: string }>({
       query: ({ mentorId }) => ({
         url: `/users/balance/${mentorId}`,
         params: { mentorId },
-      }), // This is not correct, but I don't have the correct endpoint
+      }),
       providesTags: ['GetMentorBalance'],
     }),
     getPlans: build.query<PaymentPlansSchema[], void>({
       query: () => ({
         url: `/payments/plans`,
       }),
+      // Plans rarely change — keep in cache for an hour app-wide.
+      keepUnusedDataFor: 3600,
     }),
     getPlansWithParams: build.query<
       PaymentPlansSchema[],
@@ -52,6 +57,7 @@ export const mentorApi = RtkApi.injectEndpoints({
         url: `/payments/plans`,
         params: { currency },
       }),
+      keepUnusedDataFor: 3600,
     }),
   }),
 });

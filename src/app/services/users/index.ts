@@ -3,15 +3,20 @@ import { RtkApi } from '../api';
 
 export const authApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
-    // Get user data endpoint
+    // Get user data endpoint. Called from ~24 components — hold the result for
+    // 15 minutes so navigation doesn't refetch the same payload on every mount.
+    // Mutations that change the user (login, linkCalendar, telegram verify)
+    // already invalidate the 'GetMe' tag so freshness isn't an issue.
     getMe: build.query<UsersSchema, void>({
       query: () => ({ url: '/users/me' }),
       providesTags: ['GetMe'],
+      keepUnusedDataFor: 900,
     }),
     // Get user by ID (for counselors viewing student data)
     getUserById: build.query<UsersSchema, string>({
       query: (userId) => ({ url: `/users/user/${userId}` }),
       providesTags: (result, error, userId) => [{ type: 'Users', id: userId }],
+      keepUnusedDataFor: 300,
     }),
     linkCalendar: build.mutation<void, CalendarLinkDto>({
       query: (body) => ({

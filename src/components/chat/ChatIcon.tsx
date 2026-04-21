@@ -8,6 +8,7 @@ import { MessageCircle } from 'lucide-react';
 import ChatModal from './ChatModal';
 import styles from './ChatIcon.module.scss';
 import { useSocket } from 'src/lib/socket';
+import { useSmartPolling } from 'src/hooks/useSmartPolling';
 import { useAppDispatch } from 'src/app/store';
 
 interface ChatIconProps {
@@ -54,13 +55,17 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
+  // Pause polling while tab is hidden — refetchOnFocus snaps fresh data when
+  // the user returns, so we don't keep 2 pollers running in the background.
+  const chatPollInterval = useSmartPolling(60000);
+
   // Subscribe to total unread count (includes threaded unread counts)
   const {
     data: unreadCountData,
     refetch: refetchUnreadCount,
   } = useGetUnreadCountQuery(undefined, {
     skip: !showIcon,
-    pollingInterval: 60000,
+    pollingInterval: chatPollInterval,
     refetchOnFocus: true,
     refetchOnReconnect: true,
   });
@@ -68,7 +73,8 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
   // Conversations-based unread count (matches popup list)
   const { data: conversationsData } = useGetConversationsQuery(undefined, {
     skip: !showIcon,
-    pollingInterval: 60000,
+    pollingInterval: chatPollInterval,
+    refetchOnFocus: true,
   });
 
   const conversations: Conversation[] = React.useMemo(() => {

@@ -113,9 +113,12 @@ export default function FullSupportAdminDashboard({
   const [fetchWeeklyReport, { isLoading: weeklyReportDownloading }] = useLazyGetWeeklyReportQuery();
   const { data: interactionsData } = useGetAdminRecentInteractionsQuery(50);
   const adminInteractions = interactionsData?.data ?? [];
+  // Polling already keeps this fresh every 2 min while the tab is active.
+  // `refetchOnFocus`/`refetchOnReconnect` on top of polling = double-fetching
+  // every time the admin tabs back. Let polling own the freshness contract.
   const { data: satCourseData, isLoading: satCourseLoading } = useGetScholarhubCourseProgressQuery(
     { page: 1, perPage: 50 },
-    { pollingInterval: 120000, refetchOnFocus: true, refetchOnReconnect: true },
+    { pollingInterval: 120000 },
   );
   const satCoursePayload = satCourseData?.data;
 

@@ -27,9 +27,10 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
       query: ({ page = 1, limit = 10, status, category }) => ({
         url: '/application-tracking/college-applications',
         method: 'GET',
-        params: { page, limit, status, category, _t: Date.now() },
+        params: { page, limit, status, category },
       }),
       providesTags: ['CollegeApplications'],
+      keepUnusedDataFor: 600,
     }),
 
     // Get college application by ID
@@ -100,9 +101,10 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
       query: ({ page = 1, limit = 10, status, priority }) => ({
         url: '/application-tracking/tasks',
         method: 'GET',
-        params: { page, limit, status, priority, _t: Date.now() },
+        params: { page, limit, status, priority },
       }),
       providesTags: ['ApplicationTasks'],
+      keepUnusedDataFor: 300,
     }),
 
     // Get application task by ID
@@ -180,9 +182,10 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
       query: ({ page = 1, limit = 10, status }) => ({
         url: '/application-tracking/scholarship-applications',
         method: 'GET',
-        params: { page, limit, status, _t: Date.now() },
+        params: { page, limit, status },
       }),
       providesTags: ['ScholarshipApplications'],
+      keepUnusedDataFor: 600,
     }),
 
     // Get scholarship application by ID
