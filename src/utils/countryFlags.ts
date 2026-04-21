@@ -152,6 +152,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Qatar university': '🇶🇦',
   'University of Lodz': '🇵🇱',
   'University of Debrecen': '🇭🇺',
+  'University of Szeged': '🇭🇺',
   'Turkiye Burslari Winner': '🇹🇷',
   'Middle East Technical University': '🇹🇷',
   'Ankara University': '🇹🇷',
