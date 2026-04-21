@@ -1034,6 +1034,87 @@
   color: var(--ac-text) !important;
 }
 
+/* AI Major Match page — make AntD form elements readable on the dark surface */
+.ac-mm-page {
+  .ant-form-item-label > label {
+    color: var(--ac-text) !important;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .ant-form-item-label > label.ant-form-item-required::before {
+    color: #f87171 !important;
+  }
+  .ant-form-item-extra {
+    color: var(--ac-text-muted) !important;
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .ant-input,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-input-affix-wrapper,
+  textarea.ant-input {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--ac-border-strong) !important;
+    color: var(--ac-text) !important;
+  }
+  .ant-input::placeholder,
+  .ant-input-number-input::placeholder {
+    color: var(--ac-text-muted) !important;
+  }
+  .ant-input:hover,
+  .ant-input-number:hover,
+  .ant-input-affix-wrapper:hover {
+    border-color: rgba(16, 185, 129, 0.45) !important;
+  }
+  .ant-input:focus,
+  .ant-input-number-focused,
+  .ant-input-affix-wrapper-focused {
+    border-color: rgba(16, 185, 129, 0.7) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12) !important;
+  }
+  .ant-btn-primary {
+    color: #06130f !important;
+    font-weight: 600;
+  }
+  .ant-btn-primary:hover,
+  .ant-btn-primary:focus {
+    color: #06130f !important;
+  }
+
+  /* "Current state" side card */
+  .ac-mm-summary {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--ac-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .ac-mm-summary-label {
+    color: var(--ac-text-muted);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .ac-mm-summary-row {
+    color: var(--ac-text);
+    font-size: 13px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ac-mm-summary-row strong {
+    color: var(--ac-text);
+    font-weight: 700;
+  }
+
+  .ant-table-tbody > tr > td {
+    color: var(--ac-text);
+  }
+}
+
 .ac-stat-tile-title {
   color: var(--ac-text) !important;
   font-size: 14px;

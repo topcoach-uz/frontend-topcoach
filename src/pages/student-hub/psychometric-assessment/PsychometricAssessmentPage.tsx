@@ -47,6 +47,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const [savedAnswers, setSavedAnswers] = useState<Record<string, any>>({});
   const [isResuming, setIsResuming] = useState(false);
   const [isGeneratingResults, setIsGeneratingResults] = useState(false);
+  const [isRecoveringSession, setIsRecoveringSession] = useState(false);
 
   // API hooks
   const [startAssessment, { isLoading: startingAssessment }] = useStartAssessmentMutation();
@@ -66,7 +67,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   // Check for active (saved) session
   const { data: activeSession, refetch: refetchActiveSession } = useCheckActiveSessionQuery(
     studentProfile?.id || '',
-    { skip: !studentProfile?.id || currentStep !== 'start' }
+    { skip: !studentProfile?.id || readOnly }
   );
   const { data: majorMatchAccessStatus } = useGetMajorMatchAccessStatusQuery(studentProfile?.id || '', {
     skip: !studentProfile?.id || readOnly,
@@ -77,6 +78,10 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     const step = searchParams.get('step') as AssessmentStep;
     if (step && ['start', 'questions', 'results'].includes(step)) {
       setCurrentStep(step);
+    }
+    const sessionIdFromUrl = searchParams.get('sessionId');
+    if (sessionIdFromUrl) {
+      setSessionId(sessionIdFromUrl);
     }
   }, [searchParams]);
 
@@ -93,6 +98,62 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       setIsGeneratingResults(false);
     }
   }, [selectedAssessment, latestAssessment, recommendations, assessmentLoading, selectedAssessmentLoading, recommendationsLoading]);
+
+  // Recovery path: if user lands on step=questions without in-memory session data (e.g. refresh),
+  // try to resume the active session; otherwise redirect to start with a clear message.
+  useEffect(() => {
+    if (readOnly || !studentProfile?.id || currentStep !== 'questions' || isRecoveringSession) return;
+    if (sessionId && questions.length > 0) return;
+
+    const recoverSession = async () => {
+      try {
+        setIsRecoveringSession(true);
+
+        if (!activeSession?.hasActiveSession) {
+          message.warning('No active assessment session found. Please start a new assessment.');
+          setCurrentStep('start');
+          setSessionId(null);
+          setQuestions([]);
+          navigate('/student-hub/psychometric-assessment?step=start');
+          return;
+        }
+
+        const response = await startAssessment({
+          studentProfileId: studentProfile.id,
+          language,
+          includeAptitude: Boolean(activeSession.includeAptitude),
+        }).unwrap();
+
+        setSessionId(response.sessionId);
+        setQuestions(response.questions || []);
+        setCurrentStep('questions');
+        navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+      } catch (error: any) {
+        console.error('Assessment session recovery error:', error);
+        message.error(error?.data?.message || 'Unable to restore your assessment session.');
+        setCurrentStep('start');
+        setSessionId(null);
+        setQuestions([]);
+        navigate('/student-hub/psychometric-assessment?step=start');
+      } finally {
+        setIsRecoveringSession(false);
+      }
+    };
+
+    void recoverSession();
+  }, [
+    readOnly,
+    studentProfile?.id,
+    currentStep,
+    isRecoveringSession,
+    sessionId,
+    questions.length,
+    activeSession?.hasActiveSession,
+    activeSession?.includeAptitude,
+    startAssessment,
+    language,
+    navigate,
+  ]);
 
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
     // Prevent starting assessment in read-only mode
@@ -272,6 +333,29 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             onSaveAndExit={handleSaveAndExit}
             onAbandon={handleAbandon}
           />
+        )}
+
+        {currentStep === 'questions' && (!sessionId || questions.length === 0) && (
+          <Card>
+            {isRecoveringSession ? (
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <Spin size="large" />
+                <p style={{ marginTop: 12, marginBottom: 0 }}>Restoring your assessment session...</p>
+              </div>
+            ) : (
+              <Alert
+                type="warning"
+                showIcon
+                message="Assessment session missing"
+                description="We couldn't find active question data. Please return to Start and launch or resume your assessment."
+                action={
+                  <Button size="small" onClick={() => navigate('/student-hub/psychometric-assessment?step=start')}>
+                    Go to Start
+                  </Button>
+                }
+              />
+            )}
+          </Card>
         )}
 
         {currentStep === 'results' && assessmentId && (

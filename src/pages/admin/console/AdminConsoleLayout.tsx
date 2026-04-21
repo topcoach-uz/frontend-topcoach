@@ -23,6 +23,7 @@ import {
   BookOpen,
   GraduationCap,
   Search as SearchIcon,
+  Brain,
 } from 'lucide-react';
 import { useAdminConsole } from './AdminConsoleContext';
 import './admin-console-tokens.scss';
@@ -41,6 +42,7 @@ type NavKey =
   | 'sessions'
   | 'events'
   | 'insights'
+  | 'major-match'
   | 'administration'
   | 'course-content'
   | 'school-counselor';
@@ -130,6 +132,12 @@ export default function AdminConsoleLayout() {
             icon: <LineChart size={18} strokeWidth={1.75} />,
             path: '/new-admin/insights',
           },
+          {
+            key: 'major-match',
+            label: 'AI Major Match',
+            icon: <Brain size={18} strokeWidth={1.75} />,
+            path: '/new-admin/major-match',
+          },
         ],
       },
       {
@@ -175,6 +183,7 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/sessions')) return 'sessions';
     if (p.startsWith('/new-admin/events')) return 'events';
     if (p.startsWith('/new-admin/insights')) return 'insights';
+    if (p.startsWith('/new-admin/major-match')) return 'major-match';
     if (p.startsWith('/new-admin/administration')) return 'administration';
     return null;
   }, [location.pathname]);
@@ -205,6 +214,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/sessions': 'Sessions',
       '/new-admin/events': 'Events',
       '/new-admin/insights': 'Insights',
+      '/new-admin/major-match': 'AI Major Match',
       '/new-admin/administration': 'Administration',
     };
     const title = map[p] ?? 'Admin';

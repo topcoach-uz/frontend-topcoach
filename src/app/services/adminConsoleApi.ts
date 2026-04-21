@@ -177,6 +177,69 @@ export type AdminUserDetail = {
   organizations: AdminUserDetailOrganization[];
 };
 
+export type AdminMajorMatchPolicy = {
+  id: string;
+  isActive: boolean;
+  freeSuccessfulAttempts: number;
+  blockAfterFreeAttempts: boolean;
+  promptTitle: string;
+  promptMessage: string;
+  updatedAt: string;
+};
+
+export type AdminMajorMatchUsageRow = {
+  userId: string;
+  email: string;
+  displayName: string;
+  startedAttempts: number;
+  completedAttempts: number;
+  successfulAttempts: number;
+  blockedAttempts: number;
+  lastAttemptAt: string | null;
+  lastSuccessfulAt: string | null;
+  lastBlockedAt: string | null;
+};
+
+export type AdminMajorMatchUsageResponse = {
+  items: AdminMajorMatchUsageRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type AdminMajorMatchHistoryRow = {
+  id: string;
+  userId: string;
+  email: string;
+  displayName: string;
+  riasecCode: string;
+  completedAt: string;
+  createdAt: string;
+  topMajors: string[];
+};
+
+export type AdminMajorMatchHistoryResponse = {
+  items: AdminMajorMatchHistoryRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type AdminMajorMatchHistoryDetail = {
+  id: string;
+  createdAt: string;
+  completedAt: string;
+  user: { id: string; email: string; displayName: string };
+  riasecCode: string;
+  riasecScores: Record<string, number>;
+  bigFiveScores: Record<string, number>;
+  valuesScores: Record<string, number>;
+  workStyleProfile: unknown;
+  academicConfidenceScore: number | null;
+  riskFlags: unknown[];
+  metadata: Record<string, unknown>;
+};
+
 export type AdminEventRow = {
   id: string;
   title: string | Record<string, string> | null;
@@ -264,6 +327,76 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
       providesTags: (_result, _err, id) => [{ type: 'AdminConsoleUserDetail', id }],
     }),
 
+    getAdminMajorMatchPolicy: builder.query<AdminMajorMatchPolicy, void>({
+      query: () => ({ url: '/admin/major-match/policy', method: 'GET' }),
+      transformResponse: (res: unknown) => unwrap<AdminMajorMatchPolicy>(res),
+      providesTags: ['AdminMajorMatchPolicy'],
+    }),
+
+    updateAdminMajorMatchPolicy: builder.mutation<
+      AdminMajorMatchPolicy,
+      Partial<Pick<AdminMajorMatchPolicy, 'freeSuccessfulAttempts' | 'blockAfterFreeAttempts' | 'promptTitle' | 'promptMessage'>>
+    >({
+      query: (body) => ({ url: '/admin/major-match/policy', method: 'PUT', body }),
+      transformResponse: (res: unknown) => unwrap<AdminMajorMatchPolicy>(res),
+      invalidatesTags: ['AdminMajorMatchPolicy'],
+    }),
+
+    getAdminMajorMatchUsage: builder.query<
+      AdminMajorMatchUsageResponse,
+      { search?: string; page?: number; pageSize?: number; onlyBlocked?: boolean } | void
+    >({
+      query: (params) => ({ url: '/admin/major-match/usage', method: 'GET', params: params ?? {} }),
+      transformResponse: (res: unknown) => {
+        const raw = unwrap<Partial<AdminMajorMatchUsageResponse>>(res);
+        return {
+          items: raw.items ?? [],
+          total: raw.total ?? 0,
+          page: raw.page ?? 1,
+          pageSize: raw.pageSize ?? 25,
+        };
+      },
+      providesTags: ['AdminMajorMatchUsage'],
+    }),
+
+    resetAdminMajorMatchUser: builder.mutation<{ userId: string; reset: boolean }, string>({
+      query: (userId) => ({
+        url: `/admin/major-match/usage/reset/${encodeURIComponent(userId)}`,
+        method: 'POST',
+      }),
+      transformResponse: (res: unknown) => unwrap<{ userId: string; reset: boolean }>(res),
+      invalidatesTags: ['AdminMajorMatchUsage'],
+    }),
+
+    resetAdminMajorMatchAll: builder.mutation<{ resetCount: number }, void>({
+      query: () => ({ url: '/admin/major-match/usage/reset-all', method: 'POST' }),
+      transformResponse: (res: unknown) => unwrap<{ resetCount: number }>(res),
+      invalidatesTags: ['AdminMajorMatchUsage'],
+    }),
+
+    getAdminMajorMatchHistory: builder.query<
+      AdminMajorMatchHistoryResponse,
+      { search?: string; page?: number; pageSize?: number } | void
+    >({
+      query: (params) => ({ url: '/admin/major-match/history', method: 'GET', params: params ?? {} }),
+      transformResponse: (res: unknown) => {
+        const raw = unwrap<Partial<AdminMajorMatchHistoryResponse>>(res);
+        return {
+          items: raw.items ?? [],
+          total: raw.total ?? 0,
+          page: raw.page ?? 1,
+          pageSize: raw.pageSize ?? 25,
+        };
+      },
+      providesTags: ['AdminMajorMatchHistory'],
+    }),
+
+    getAdminMajorMatchHistoryDetail: builder.query<AdminMajorMatchHistoryDetail, string>({
+      query: (id) => ({ url: `/admin/major-match/history/${encodeURIComponent(id)}`, method: 'GET' }),
+      transformResponse: (res: unknown) => unwrap<AdminMajorMatchHistoryDetail>(res),
+      providesTags: (_r, _e, id) => [{ type: 'AdminMajorMatchHistory', id }],
+    }),
+
     getAdminEvents: builder.query<
       { items: AdminEventRow[]; total: number },
       { start?: number; end?: number } | void
@@ -294,4 +427,11 @@ export const {
   useGetAdminSessionsOverviewQuery,
   useGetAdminEventsQuery,
   useGetAdminUserDetailQuery,
+  useGetAdminMajorMatchPolicyQuery,
+  useUpdateAdminMajorMatchPolicyMutation,
+  useGetAdminMajorMatchUsageQuery,
+  useResetAdminMajorMatchUserMutation,
+  useResetAdminMajorMatchAllMutation,
+  useGetAdminMajorMatchHistoryQuery,
+  useGetAdminMajorMatchHistoryDetailQuery,
 } = adminConsoleApi;

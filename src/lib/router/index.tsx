@@ -126,6 +126,7 @@ const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/page
 const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
 const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
 const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
+const AdminConsoleMajorMatchLazy = lazy(() => import("src/pages/admin/console/pages/MajorMatchPage"));
 const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
 const AdminProgramManagementLazy = lazy(() => import("src/pages/admin/console/pages/ProgramManagementPage"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
@@ -229,6 +230,7 @@ function RouterProvider() {
 
                 {/* Insights + governance */}
                 <Route path="insights" element={<AdminConsoleInsightsLazy />} />
+                <Route path="major-match" element={<AdminConsoleMajorMatchLazy />} />
                 <Route path="administration" element={<AdminConsoleAdministrationLazy />} />
 
                 {/* Permanent redirects from legacy console paths */}
