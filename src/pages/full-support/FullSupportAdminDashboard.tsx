@@ -389,136 +389,74 @@ export default function FullSupportAdminDashboard({
         )}
       </Modal>
 
+      {(() => {
+        // Some legacy profile rows have a trailing " undefined" in the name —
+        // scrub it here so the modal header reads cleanly.
+        const cleanStudentName = (selectedStudent?.name ?? '')
+          .replace(/\s+(undefined|null)\b/gi, '')
+          .trim() || 'Student';
+        const usagePct = adminStudentAllocatedHours > 0
+          ? Math.round((adminStudentUsedHours / adminStudentAllocatedHours) * 100)
+          : 0;
+        // Ant Modal renders in a portal outside the admin console's
+        // ConfigProvider, so CSS variables declared on `.admin-console-app`
+        // don't resolve here. Use concrete hex colors for the dark-theme path,
+        // and lean on `.fs-progress-modal--dark` in the stylesheet for antd
+        // sub-component overrides (table, card, etc.).
+        const panelStyle: React.CSSProperties = integratedInAdminConsole
+          ? {
+              marginBottom: 16,
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderColor: 'rgba(148, 163, 184, 0.22)',
+            }
+          : { marginBottom: 16 };
+        const headStyle: React.CSSProperties = integratedInAdminConsole
+          ? { color: '#e5e7eb', borderBottom: '1px solid rgba(148, 163, 184, 0.22)' }
+          : {};
+        const labelColor = integratedInAdminConsole ? '#e5e7eb' : '#222';
+        const subtextColor = integratedInAdminConsole ? '#cbd5e1' : muted;
+        const mutedColor = integratedInAdminConsole ? '#94a3b8' : subtle;
+        const dividerColor = integratedInAdminConsole
+          ? 'rgba(148, 163, 184, 0.22)'
+          : '#f0f0f0';
+
+        return (
       <Modal
-        title={`Full Support progress: ${selectedStudent?.name ?? ''}`}
+        title={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: mutedColor,
+              }}
+            >
+              Full Support progress
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                fontWeight: 700,
+                color: integratedInAdminConsole ? '#ffffff' : '#111827',
+                lineHeight: 1.2,
+              }}
+            >
+              {cleanStudentName}
+            </span>
+          </div>
+        }
         open={!!selectedStudent}
         onCancel={() => setSelectedStudent(null)}
         footer={
-          <Button
-            type="primary"
-            onClick={() => setSelectedStudent(null)}
-            style={{
-              backgroundColor: accent,
-              borderColor: accent,
-              ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
-            }}
-          >
-            Close
-          </Button>
-        }
-        width={720}
-        styles={{ body: { maxHeight: '75vh', overflow: 'auto' } }}
-      >
-        {selectedStudent && (
-          <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#666', marginBottom: 16 }}>Track your mentorship sessions, applications, and deadlines.</p>
-            <Card size="small" title={<><CalendarClock size={16} style={{ marginRight: 8, color: accent }} />Session timeline</>} style={{ marginBottom: 16 }}>
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span>This month</span>
-                  <span>{adminStudentUsedHours}h used / {adminStudentAllocatedHours}h allocated</span>
-                </div>
-                <Progress percent={adminStudentAllocatedHours > 0 ? Math.round((adminStudentUsedHours / adminStudentAllocatedHours) * 100) : 0} size="small" strokeColor={accent} showInfo={false} />
-              </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {adminStudentSessions.length === 0 ? (
-                  <li style={{ color: '#666', fontSize: 13, padding: '8px 0' }}>No sessions logged yet.</li>
-                ) : (
-                  adminStudentSessions.map((s) => (
-                    <li key={s.id} style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                      <div>
-                        <div style={{ fontWeight: 500 }}>{dayjs(s.dateTime).format('MMM D, YYYY h:mm A')}</div>
-                        <div style={{ color: '#666', fontSize: 13, marginTop: 2 }}>{s.description}</div>
-                      </div>
-                      <AcPill variant="cyan">{s.duration}</AcPill>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </Card>
-            <Card size="small" title={<><BarChart2 size={16} style={{ marginRight: 8, color: accent }} />Curriculum Watchlist</>} style={{ marginBottom: 16 }}>
-              {adminCurriculumWatchlist.length === 0 ? (
-                <p style={{ color: '#666', fontSize: 13 }}>No curriculum items yet.</p>
-              ) : (
-                adminCurriculumWatchlist.map((item) => (
-                  <div key={item.key} style={{ marginBottom: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span>{item.label}</span>
-                      <span>{item.percent}%</span>
-                    </div>
-                    <Progress percent={item.percent} size="small" strokeColor={accent} showInfo={false} />
-                    {item.target && <div style={{ fontSize: 11, color: '#666' }}>{item.target}</div>}
-                  </div>
-                ))
-              )}
-            </Card>
-            <Card size="small" title={<><FileText size={16} style={{ marginRight: 8, color: accent }} />Tasks from mentor</>} style={{ marginBottom: 16 }}>
-              <Table
-                dataSource={adminStudentTasks}
-                rowKey="id"
-                pagination={false}
-                size="small"
-                columns={[
-                  { title: 'TASK', dataIndex: 'task', key: 'task', width: 180 },
-                  { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 110, render: (d: string) => d ? dayjs(d).format('MMM D, YYYY') : '-' },
-                  {
-                    title: 'STATUS',
-                    key: 'status',
-                    width: 110,
-                    render: (_: unknown, r: TaskDto) => (
-                      <AcPill variant={taskPillVariant(getTaskStatus(r))}>{getTaskStatus(r)}</AcPill>
-                    ),
-                  },
-                ]}
-              />
-            </Card>
-            <Card size="small" title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: accent }} />Milestone Tracker</>} style={{ marginBottom: 16 }}>
-              <p style={{ color: '#666', fontSize: 12, marginBottom: 8 }}>Mentor tracks these milestones for the student.</p>
-              {adminStudentMilestones.length === 0 ? (
-                <p style={{ color: '#666', fontSize: 13 }}>No milestones yet.</p>
-              ) : (
-                adminStudentMilestones.map((m) => (
-                  <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <div>
-                      <div><strong>{m.label}</strong></div>
-                      {m.date && <span style={{ fontSize: 12, color: '#666' }}>{dayjs(m.date).format('MMM D, YYYY')}</span>}
-                    </div>
-                    {m.done ? <AcPill variant="mint">Done</AcPill> : <AcPill variant="neutral">Pending</AcPill>}
-                  </div>
-                ))
-              )}
-            </Card>
-            <Card size="small" title={<><Globe size={16} style={{ marginRight: 8, color: accent }} />Application tracker</>} style={{ marginBottom: 8 }}>
-              <Table
-                dataSource={adminStudentPipeline}
-                rowKey="id"
-                pagination={false}
-                size="small"
-                columns={[
-                  { title: 'PROGRAM', dataIndex: 'program', key: 'program', width: 200 },
-                  { title: 'STAGE', dataIndex: 'stage', key: 'stage', width: 120 },
-                  {
-                    title: 'STATUS',
-                    dataIndex: 'status',
-                    key: 'status',
-                    width: 100,
-                    render: (s: string) => <AcPill variant={taskPillVariant(s)}>{s}</AcPill>,
-                  },
-                  {
-                    title: 'FINANCIAL AID',
-                    dataIndex: 'aid',
-                    key: 'aid',
-                    width: 100,
-                    render: (v: boolean) => (v ? <AcPill variant="mint">Considering</AcPill> : '-'),
-                  },
-                ]}
-              />
-            </Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Button
               type="link"
               size="small"
               loading={weeklyReportDownloading}
               onClick={async () => {
+                if (!selectedStudent) return;
                 try {
                   const res = await fetchWeeklyReport(selectedStudent.id).unwrap();
                   if (res?.data) generateWeeklyReportPdf(res.data);
@@ -527,13 +465,321 @@ export default function FullSupportAdminDashboard({
                   message.error('Could not load report.');
                 }
               }}
-              style={{ marginTop: 12, padding: 0 }}
+              style={{ padding: 0, color: accent }}
             >
-              Download {selectedStudent.name}&apos;s weekly report
+              Download {cleanStudentName}&apos;s weekly report
             </Button>
+            <Button
+              type="primary"
+              onClick={() => setSelectedStudent(null)}
+              style={{
+                backgroundColor: accent,
+                borderColor: accent,
+                ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
+              }}
+            >
+              Close
+            </Button>
+          </div>
+        }
+        width={960}
+        centered
+        className={integratedInAdminConsole ? 'fs-progress-modal fs-progress-modal--dark' : 'fs-progress-modal'}
+        styles={{
+          body: {
+            maxHeight: '72vh',
+            overflow: 'auto',
+            paddingTop: 8,
+            background: integratedInAdminConsole ? 'transparent' : undefined,
+          },
+          content: integratedInAdminConsole
+            ? {
+                background: '#161922',
+                border: '1px solid rgba(148, 163, 184, 0.22)',
+                borderRadius: 14,
+              }
+            : undefined,
+          header: integratedInAdminConsole
+            ? {
+                // Dark-paint the header explicitly — relying on `transparent`
+                // let antd's default colorBgContainer (white) flash through
+                // as a white strip above the title.
+                background: '#161922',
+                borderBottom: '1px solid rgba(148, 163, 184, 0.22)',
+                margin: 0,
+                padding: '16px 24px',
+                borderRadius: '14px 14px 0 0',
+              }
+            : undefined,
+          footer: integratedInAdminConsole
+            ? {
+                background: 'transparent',
+                borderTop: '1px solid rgba(148, 163, 184, 0.22)',
+              }
+            : undefined,
+          mask: integratedInAdminConsole ? { background: 'rgba(5, 8, 14, 0.65)' } : undefined,
+        }}
+      >
+        {selectedStudent && (
+          <div style={{ padding: '4px 0 8px' }}>
+            <p style={{ color: subtextColor, marginBottom: 20, fontSize: 14 }}>
+              Track sessions, applications, and deadlines for this student.
+            </p>
+
+            {(() => {
+              const tileStyle: React.CSSProperties = {
+                padding: '14px 16px',
+                borderRadius: 12,
+                border: `1px solid ${dividerColor}`,
+                background: integratedInAdminConsole ? 'rgba(255,255,255,0.045)' : '#fafafa',
+              };
+              const tileLabelStyle: React.CSSProperties = {
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                color: mutedColor,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+              };
+              const tileValueStyle: React.CSSProperties = {
+                fontSize: 24,
+                fontWeight: 700,
+                color: integratedInAdminConsole ? '#ffffff' : '#111827',
+                marginTop: 6,
+                lineHeight: 1.1,
+                letterSpacing: '-0.01em',
+              };
+              const tileCaptionStyle: React.CSSProperties = {
+                fontSize: 12,
+                color: subtextColor,
+                marginTop: 8,
+              };
+              return (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: 12,
+                    marginBottom: 20,
+                  }}
+                >
+                  <div style={tileStyle}>
+                    <div style={tileLabelStyle}>Hours this month</div>
+                    <div style={tileValueStyle}>
+                      {adminStudentUsedHours}h / {adminStudentAllocatedHours}h
+                    </div>
+                    <Progress
+                      percent={usagePct}
+                      size="small"
+                      strokeColor={accent}
+                      showInfo={false}
+                      style={{ marginTop: 8, marginBottom: 0 }}
+                    />
+                  </div>
+                  <div style={tileStyle}>
+                    <div style={tileLabelStyle}>Open tasks</div>
+                    <div style={tileValueStyle}>
+                      {
+                        adminStudentTasks.filter(
+                          (t) => getTaskStatus(t).toLowerCase() !== 'done',
+                        ).length
+                      }
+                    </div>
+                    <div style={tileCaptionStyle}>{adminStudentTasks.length} total</div>
+                  </div>
+                  <div style={tileStyle}>
+                    <div style={tileLabelStyle}>Milestones</div>
+                    <div style={tileValueStyle}>
+                      {adminStudentMilestones.filter((m) => m.done).length} /{' '}
+                      {adminStudentMilestones.length}
+                    </div>
+                    <div style={tileCaptionStyle}>completed</div>
+                  </div>
+                  <div style={tileStyle}>
+                    <div style={tileLabelStyle}>Applications</div>
+                    <div style={tileValueStyle}>{adminStudentPipeline.length}</div>
+                    <div style={tileCaptionStyle}>in pipeline</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <Card
+              size="small"
+              title={<><CalendarClock size={16} style={{ marginRight: 8, color: accent }} />Session timeline</>}
+              style={panelStyle}
+              styles={{ header: headStyle }}
+            >
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {adminStudentSessions.length === 0 ? (
+                  <li style={{ color: subtextColor, fontSize: 13, padding: '8px 0' }}>
+                    No sessions logged yet.
+                  </li>
+                ) : (
+                  adminStudentSessions.map((s) => (
+                    <li
+                      key={s.id}
+                      style={{
+                        padding: '10px 0',
+                        borderBottom: `1px solid ${dividerColor}`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        flexWrap: 'wrap',
+                        gap: 8,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600, color: labelColor }}>
+                          {dayjs(s.dateTime).format('MMM D, YYYY · h:mm A')}
+                        </div>
+                        {s.description && (
+                          <div style={{ color: subtextColor, fontSize: 13, marginTop: 2 }}>
+                            {s.description}
+                          </div>
+                        )}
+                      </div>
+                      <AcPill variant="cyan">{s.duration}</AcPill>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </Card>
+
+            <Card
+              size="small"
+              title={<><BarChart2 size={16} style={{ marginRight: 8, color: accent }} />Curriculum watchlist</>}
+              style={panelStyle}
+              styles={{ header: headStyle }}
+            >
+              {adminCurriculumWatchlist.length === 0 ? (
+                <p style={{ color: subtextColor, fontSize: 13, margin: 0 }}>
+                  No curriculum items yet.
+                </p>
+              ) : (
+                adminCurriculumWatchlist.map((item) => (
+                  <div key={item.key} style={{ marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ color: labelColor, fontWeight: 500 }}>{item.label}</span>
+                      <span style={{ color: subtextColor }}>{item.percent}%</span>
+                    </div>
+                    <Progress percent={item.percent} size="small" strokeColor={accent} showInfo={false} />
+                    {item.target && (
+                      <div style={{ fontSize: 11, color: subtextColor, marginTop: 4 }}>
+                        {item.target}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </Card>
+
+            <Card
+              size="small"
+              title={<><FileText size={16} style={{ marginRight: 8, color: accent }} />Tasks from mentor</>}
+              style={panelStyle}
+              styles={{ header: headStyle }}
+            >
+              <Table
+                dataSource={adminStudentTasks}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                columns={[
+                  { title: 'Task', dataIndex: 'task', key: 'task' },
+                  {
+                    title: 'Deadline',
+                    dataIndex: 'deadline',
+                    key: 'deadline',
+                    width: 140,
+                    render: (d: string) => (d ? dayjs(d).format('MMM D, YYYY') : '—'),
+                  },
+                  {
+                    title: 'Status',
+                    key: 'status',
+                    width: 120,
+                    render: (_: unknown, r: TaskDto) => (
+                      <AcPill variant={taskPillVariant(getTaskStatus(r))}>{getTaskStatus(r)}</AcPill>
+                    ),
+                  },
+                ]}
+              />
+            </Card>
+
+            <Card
+              size="small"
+              title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: accent }} />Milestone tracker</>}
+              style={panelStyle}
+              styles={{ header: headStyle }}
+            >
+              <p style={{ color: subtextColor, fontSize: 12, marginBottom: 8 }}>
+                Mentor tracks these milestones for the student.
+              </p>
+              {adminStudentMilestones.length === 0 ? (
+                <p style={{ color: subtextColor, fontSize: 13, margin: 0 }}>
+                  No milestones yet.
+                </p>
+              ) : (
+                adminStudentMilestones.map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 0',
+                      borderBottom: `1px solid ${dividerColor}`,
+                    }}
+                  >
+                    <div>
+                      <div style={{ color: labelColor, fontWeight: 600 }}>{m.label}</div>
+                      {m.date && (
+                        <span style={{ fontSize: 12, color: subtextColor }}>
+                          {dayjs(m.date).format('MMM D, YYYY')}
+                        </span>
+                      )}
+                    </div>
+                    {m.done ? <AcPill variant="mint">Done</AcPill> : <AcPill variant="neutral">Pending</AcPill>}
+                  </div>
+                ))
+              )}
+            </Card>
+
+            <Card
+              size="small"
+              title={<><Globe size={16} style={{ marginRight: 8, color: accent }} />Application tracker</>}
+              style={{ ...panelStyle, marginBottom: 0 }}
+              styles={{ header: headStyle }}
+            >
+              <Table
+                dataSource={adminStudentPipeline}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                columns={[
+                  { title: 'Program', dataIndex: 'program', key: 'program' },
+                  { title: 'Stage', dataIndex: 'stage', key: 'stage', width: 140 },
+                  {
+                    title: 'Status',
+                    dataIndex: 'status',
+                    key: 'status',
+                    width: 120,
+                    render: (s: string) => <AcPill variant={taskPillVariant(s)}>{s}</AcPill>,
+                  },
+                  {
+                    title: 'Financial aid',
+                    dataIndex: 'aid',
+                    key: 'aid',
+                    width: 130,
+                    render: (v: boolean) => (v ? <AcPill variant="mint">Considering</AcPill> : '—'),
+                  },
+                ]}
+              />
+            </Card>
           </div>
         )}
       </Modal>
+        );
+      })()}
 
       <Card title={<><History size={16} style={{ marginRight: 8, color: accent }} />Recent Mentor–Student Interactions</>} style={{ marginTop: 24 }} className="full-support-card">
         {adminInteractions.length === 0 ? (

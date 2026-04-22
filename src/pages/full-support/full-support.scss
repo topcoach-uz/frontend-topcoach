@@ -73,3 +73,162 @@
     }
   }
 }
+
+/* Full Support progress modal — dark-theme overrides when rendered inside
+   the admin console. Ant Modal portals outside the console's ConfigProvider,
+   so without these overrides every text color falls back to antd's default
+   (#000 at 88% alpha) and vanishes against the dark modal surface. */
+.fs-progress-modal--dark {
+  /* Scope tokens this modal needs, so the file is self-contained even when
+     loaded from outside the admin-console.scss import chain. */
+  --_mc-text: #e5e7eb;
+  --_mc-text-secondary: #cbd5e1;
+  --_mc-text-muted: #94a3b8;
+  --_mc-border: rgba(148, 163, 184, 0.22);
+  --_mc-surface: #161922;
+  --_mc-surface-raised: rgba(255, 255, 255, 0.04);
+  --_mc-surface-hover: rgba(255, 255, 255, 0.06);
+
+  /* antd v5 sometimes sets a colorBgElevated token inline on the modal —
+     paint the whole shell so no default white peeks through. */
+  .ant-modal-content,
+  .ant-modal-content > * {
+    background-color: var(--_mc-surface) !important;
+  }
+
+  .ant-modal-content {
+    color: var(--_mc-text) !important;
+    border: 1px solid var(--_mc-border) !important;
+    border-radius: 14px !important;
+    padding: 20px 24px !important;
+  }
+
+  /* Header: paint it with the same surface (not transparent) so we never
+     depend on the parent showing through — that's what was rendering as a
+     white strip at the top of the modal. */
+  .ant-modal-header {
+    background-color: var(--_mc-surface) !important;
+    background-image: none !important;
+    border-bottom: 1px solid var(--_mc-border) !important;
+    margin: 0 -24px 16px !important;
+    padding: 16px 24px !important;
+    border-radius: 14px 14px 0 0 !important;
+  }
+
+  /* Title wrapper inherits light base color; inline styles on the two inner
+     spans (the uppercase eyebrow + the student name) keep their own hues
+     for hierarchy. */
+  .ant-modal-title,
+  .ant-modal-header .ant-modal-title {
+    color: var(--_mc-text) !important;
+    background: transparent !important;
+  }
+
+  /* Close button sits on the header — keep the hit area transparent so the
+     dark header paint shows through. */
+  .ant-modal-header .ant-modal-close,
+  .ant-modal-content > .ant-modal-close {
+    background: transparent !important;
+  }
+
+  .ant-modal-body {
+    color: var(--_mc-text) !important;
+  }
+
+  .ant-modal-body,
+  .ant-modal-body * {
+    /* Anything not overridden to a specific token inherits the light text
+       color so no description / label / number ever renders invisible. */
+    color: inherit;
+  }
+
+  .ant-modal-footer {
+    background: transparent !important;
+    border-top: 1px solid var(--_mc-border) !important;
+    margin: 12px -24px -4px !important;
+    padding: 12px 24px 0 !important;
+  }
+
+  .ant-modal-close {
+    color: var(--_mc-text-muted) !important;
+    &:hover {
+      color: var(--_mc-text) !important;
+      background: var(--_mc-surface-hover) !important;
+    }
+  }
+
+  .ant-card {
+    background: var(--_mc-surface-raised) !important;
+    border: 1px solid var(--_mc-border) !important;
+    border-radius: 10px !important;
+    color: var(--_mc-text) !important;
+  }
+
+  .ant-card-head {
+    background: transparent !important;
+    color: var(--_mc-text) !important;
+    border-bottom: 1px solid var(--_mc-border) !important;
+    min-height: 42px !important;
+  }
+
+  .ant-card-head-title {
+    color: var(--_mc-text) !important;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  .ant-card-body {
+    color: var(--_mc-text) !important;
+  }
+
+  .ant-table {
+    background: transparent !important;
+    color: var(--_mc-text) !important;
+  }
+
+  .ant-table-thead > tr > th {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--_mc-text-secondary) !important;
+    border-bottom: 1px solid var(--_mc-border) !important;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  .ant-table-tbody > tr > td {
+    background: transparent !important;
+    border-bottom: 1px solid var(--_mc-border) !important;
+    color: var(--_mc-text) !important;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: var(--_mc-surface-hover) !important;
+  }
+
+  .ant-table-placeholder {
+    background: transparent !important;
+  }
+
+  .ant-empty-description {
+    color: var(--_mc-text-muted) !important;
+  }
+
+  .ant-progress-inner {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .ant-progress-text {
+    color: var(--_mc-text-secondary) !important;
+  }
+
+  /* Links (weekly report download) — use accent so it reads as interactive. */
+  .ant-btn-link {
+    color: #34d399 !important;
+  }
+  .ant-btn-link:hover {
+    color: #6ee7b7 !important;
+  }
+}
