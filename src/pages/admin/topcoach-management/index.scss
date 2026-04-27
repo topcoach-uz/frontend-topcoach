@@ -72,6 +72,33 @@
 }
 
 // Responsive design
+.enrollment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+
+  &__pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 8px;
+    row-gap: 0;
+    align-items: center;
+
+    .ant-btn-link {
+      padding: 0;
+      height: 22px;
+      font-size: 12px;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .program-dashboard {
     padding: 16px;

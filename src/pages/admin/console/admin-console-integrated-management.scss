@@ -204,3 +204,77 @@
   margin-top: 4px;
   margin-right: 6px;
 }
+
+/* Grant Access modal — rendered into a portal at <body>, so the parent dark
+   theme doesn't reach it. Scope styles by the className on the modal root. */
+.ac-grant-access-modal {
+  .ant-modal-content {
+    background: var(--ac-bg-surface);
+    border: 1px solid var(--ac-border-strong);
+    border-radius: var(--ac-radius);
+    box-shadow: var(--ac-shadow-md);
+    color: var(--ac-text);
+  }
+  .ant-modal-header {
+    background: transparent;
+    border-bottom: 1px solid var(--ac-border);
+  }
+  .ant-modal-title,
+  .ant-modal-body,
+  .ant-modal-body p,
+  .ant-modal-body label,
+  .ant-modal-body strong {
+    color: var(--ac-text);
+  }
+  .ant-modal-body p {
+    color: var(--ac-text-secondary);
+  }
+  .ant-modal-body label {
+    color: var(--ac-text);
+  }
+  .ant-modal-close,
+  .ant-modal-close-x {
+    color: var(--ac-text-muted);
+  }
+  .ant-modal-close:hover {
+    color: var(--ac-text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .ant-modal-footer {
+    border-top: 1px solid var(--ac-border);
+  }
+
+  /* Radio buttons: outline circle + tinted accent fill when selected */
+  .ant-radio-wrapper {
+    color: var(--ac-text);
+  }
+  .ant-radio-inner {
+    background: transparent;
+    border-color: var(--ac-border-strong);
+  }
+  .ant-radio-checked .ant-radio-inner {
+    background: var(--ac-accent);
+    border-color: var(--ac-accent);
+  }
+  .ant-radio-checked .ant-radio-inner::after {
+    background: #04120c;
+  }
+  .ant-radio:hover .ant-radio-inner {
+    border-color: var(--ac-accent);
+  }
+  .ant-radio-disabled + span {
+    color: var(--ac-text-muted);
+  }
+
+  /* Cancel button: ghost on dark */
+  .ant-btn-default {
+    background: transparent;
+    border-color: var(--ac-border-strong);
+    color: var(--ac-text);
+  }
+  .ant-btn-default:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--ac-text-muted);
+    color: var(--ac-text);
+  }
+}

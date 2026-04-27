@@ -37,6 +37,23 @@
   display: none;
 }
 
+/*
+ * Full-bleed mode — Research Prep takes over the page (no left/right columns,
+ * no sticky community sidebar). Used while activeSection === 'researchProgram'
+ * because that page brings its own top bar + back-to-menu navigation.
+ */
+.hubFullBleed {
+  grid-template-columns: minmax(0, 1fr);
+}
+.hubFullBleed .leftCol,
+.hubFullBleed .rightCol {
+  display: none;
+}
+.hubPageOuter.hubPageOuterFullBleed {
+  max-width: none;
+  padding: 0;
+}
+
 .leftCol {
   position: sticky;
   top: 24px;

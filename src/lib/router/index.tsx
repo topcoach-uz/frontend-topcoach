@@ -112,6 +112,7 @@ const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/consol
 const MentorConsoleTasksLazy = lazy(() => import("src/pages/mentor/console/pages/TasksPage"));
 const MentorConsoleMilestonesLazy = lazy(() => import("src/pages/mentor/console/pages/MilestonesPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
+const MentorResearchGradingLazy = lazy(() => import("src/pages/mentor/research-grading"));
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
 const AdminConsoleLayoutLazy = lazy(() => import("src/pages/admin/console/AdminConsoleLayout"));
 const AdminConsoleDashboardLazy = lazy(
@@ -223,6 +224,7 @@ function RouterProvider() {
                 <Route path="programs/analytics" element={<AdminProgramManagementLazy />} />
                 <Route path="programs/organizations" element={<AdminProgramManagementLazy />} />
                 <Route path="programs/full-support" element={<AdminProgramManagementLazy />} />
+                <Route path="programs/research-prep" element={<AdminProgramManagementLazy />} />
 
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
@@ -406,6 +408,7 @@ function RouterProvider() {
                   <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
                   <Route path="tasks" element={<MentorConsoleTasksLazy />} />
                   <Route path="milestones" element={<MentorConsoleMilestonesLazy />} />
+                  <Route path="research-grading" element={<MentorResearchGradingLazy />} />
                   <Route path="profile" element={<MentorConsoleProfileLazy />} />
                 </Route>
               </Route>

@@ -29,6 +29,7 @@ import { Plus, Pencil, Trash2, User, Clock, Video, FileText, PlayCircle, Info, B
 import { Segmented } from 'antd';
 import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
+import ResearchAdminTab from '../research/ResearchAdminTab';
 import './index.scss';
 
 const { TextArea } = Input;
@@ -260,7 +261,7 @@ const CourseManagementAdmin: React.FC = () => {
   const [submoduleModalVisible, setSubmoduleModalVisible] = useState(false);
   const [taskModalVisible, setTaskModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('modules');
-  const [courseName, setCourseName] = useState<'admissions' | 'sat'>('admissions');
+  const [courseName, setCourseName] = useState<'admissions' | 'sat' | 'research'>('admissions');
   const [lessonForm] = Form.useForm();
   
   const user = useGetCourseStructureQuery();
@@ -277,6 +278,14 @@ const CourseManagementAdmin: React.FC = () => {
       return;
     }
     
+    // Research Prep uses its own RTK slice + dedicated authoring tab —
+    // skip the legacy /course-admin/courses/modules call which doesn't
+    // serve `courseName=research`.
+    if (courseName === 'research') {
+      setModules([]);
+      return;
+    }
+
     const loadModules = async () => {
       try {
         const url = `/course-admin/courses/modules?courseName=${courseName}`;
@@ -292,12 +301,13 @@ const CourseManagementAdmin: React.FC = () => {
         });
       }
     };
-    
+
     loadModules();
   }, [user, courseName]);
 
   // Fetch modules and mentors
   useEffect(() => {
+    if (courseName === 'research') return;
     const loadData = async () => {
       await fetchModules();
       await fetchMentors();
@@ -962,14 +972,17 @@ const CourseManagementAdmin: React.FC = () => {
             options={[
               { label: 'Admissions', value: 'admissions' },
               { label: 'SAT', value: 'sat' },
+              { label: 'Research Prep', value: 'research' },
             ]}
             value={courseName}
-            onChange={(value) => setCourseName(value as 'admissions' | 'sat')}
+            onChange={(value) => setCourseName(value as 'admissions' | 'sat' | 'research')}
           />
         </div>
       </div>
 
-      {/* Statistics */}
+      {/* Statistics — Admissions/SAT only. Research has its own stat strip
+          inside ResearchAdminTab. */}
+      {courseName !== 'research' && (
       <Row gutter={16} className="stats-row">
         <Col span={6}>
           <Card>
@@ -1008,8 +1021,10 @@ const CourseManagementAdmin: React.FC = () => {
           </Card>
         </Col>
       </Row>
+      )}
 
       {/* File URL Helper */}
+      {courseName !== 'research' && (
       <Card className="file-helper" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Info size={16} color="#1890ff" />
@@ -1021,12 +1036,18 @@ const CourseManagementAdmin: React.FC = () => {
           <p>🔗 <strong>URL format:</strong> <code>https://yourdomain.com/course-content/videos/module-1/lesson-1.mp4</code></p>
         </div>
       </Card>
+      )}
 
-      {/* Main Content */}
+      {/* Research Prep — fixed 8-week curriculum (different shape from
+          Admissions/SAT, so it gets a dedicated authoring tab). */}
+      {courseName === 'research' && <ResearchAdminTab />}
+
+      {/* Main Content — Admissions / SAT module CRUD */}
+      {courseName !== 'research' && (
       <Card className="main-content">
         <div className="content-header">
-          <Tabs 
-            activeKey={activeTab} 
+          <Tabs
+            activeKey={activeTab}
             onChange={setActiveTab}
             items={[
               {
@@ -1104,6 +1125,7 @@ const CourseManagementAdmin: React.FC = () => {
           />
         </div>
       </Card>
+      )}
 
       {/* Module Modal */}
       <Modal

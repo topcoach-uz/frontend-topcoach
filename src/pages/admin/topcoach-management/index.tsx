@@ -28,6 +28,7 @@ import { useGetAdminStudentsQuery, useAdminEnrollMutation, useAdminUnenrollMutat
 import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
 import ProgramManagementAnalyticsTab, { type AnalyticsProgramScope } from './ProgramManagementAnalyticsTab';
 import ProgramManagementOrganizationsTab from './ProgramManagementOrganizationsTab';
+import ResearchPrepProgressTab from './ResearchPrepProgressTab';
 import useColors from 'src/hooks/useColors';
 import type { ColumnsType } from 'antd/es/table';
 import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
@@ -66,7 +67,13 @@ export type ProgramDashboardProps = {
   onRouteTabChange?: (tab: string) => void;
 };
 
-const MANAGEMENT_TAB_KEYS = new Set(['users', 'analytics', 'organizations', 'full_support']);
+const MANAGEMENT_TAB_KEYS = new Set([
+  'users',
+  'analytics',
+  'organizations',
+  'full_support',
+  'research_prep',
+]);
 
 const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   embedInAdminConsole = false,
@@ -627,41 +634,55 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 260,
+      width: 220,
       fixed: 'right',
       render: (_: any, record: DashboardData) => {
         const hasAccess = record.paymentStatus === 'completed' && record.status === 'completed';
         const isTelegramConnected = record.telegramStatus === 'connected';
         const communityEnabled = Boolean(record.communityAccessEnabled);
+        const telegramHint = !isTelegramConnected
+          ? 'User must have Telegram connected.'
+          : '';
+
         return (
-          <Space direction="vertical" size={4}>
-            <Space>
-              {!hasAccess ? (
-                <Button
-                  type="primary"
-                  size="small"
-                  icon={<CheckCircle2 size={16} />}
-                  onClick={() => handleGrantAccess(record.id, record.userId, record.userName, record.courseName)}
-                  disabled={!isTelegramConnected}
-                  title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
-                >
-                  Grant Access
-                </Button>
-              ) : (
-                <AcPill variant="mint">Access Granted</AcPill>
+          <div className="enrollment-actions">
+            <div className="enrollment-actions__pills">
+              <AcPill variant={hasAccess ? 'mint' : 'neutral'}>
+                {hasAccess ? 'Access granted' : 'No access'}
+              </AcPill>
+              <AcPill variant={communityEnabled ? 'info' : 'slate'}>
+                {communityEnabled ? 'Community' : 'No community'}
+              </AcPill>
+            </div>
+
+            <div className="enrollment-actions__links">
+              {!hasAccess && (
+                <Tooltip title={telegramHint}>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<CheckCircle2 size={14} />}
+                    onClick={() =>
+                      handleGrantAccess(record.id, record.userId, record.userName, record.courseName)
+                    }
+                    disabled={!isTelegramConnected}
+                  >
+                    Grant access
+                  </Button>
+                </Tooltip>
               )}
-              <Button
-                type="link"
-                size="small"
-                onClick={() => handleGrantAccess(null, record.userId, record.userName, undefined)}
-                disabled={!isTelegramConnected}
-                title={!isTelegramConnected ? 'User must have Telegram connected' : 'Grant access to another program'}
-              >
-                Add program
-              </Button>
-            </Space>
-            <Space size={6}>
-              {communityEnabled && <AcPill variant="info">Community</AcPill>}
+              <Tooltip title={telegramHint || 'Grant access to another program'}>
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() =>
+                    handleGrantAccess(null, record.userId, record.userName, undefined)
+                  }
+                  disabled={!isTelegramConnected}
+                >
+                  Add program
+                </Button>
+              </Tooltip>
               <Popconfirm
                 title={communityEnabled ? 'Revoke community access?' : 'Grant community access?'}
                 description={
@@ -675,12 +696,12 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
                 placement="topRight"
                 getPopupContainer={(trigger) => trigger.parentElement || document.body}
               >
-                <Button type="link" size="small">
+                <Button type="link" size="small" danger={communityEnabled}>
                   {communityEnabled ? 'Revoke community' : 'Grant community'}
                 </Button>
               </Popconfirm>
-            </Space>
-          </Space>
+            </div>
+          </div>
         );
       },
     },
@@ -893,6 +914,11 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
               </Card>
             ),
           },
+          {
+            key: 'research_prep',
+            label: 'Research Prep',
+            children: <ResearchPrepProgressTab />,
+          },
         ]}
       />
 
@@ -938,6 +964,7 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
         }}
         okText="Grant Access"
         cancelText="Cancel"
+        className={embedInAdminConsole ? 'ac-grant-access-modal' : undefined}
         okButtonProps={{
           type: 'primary',
           loading: adminEnrollLoading,

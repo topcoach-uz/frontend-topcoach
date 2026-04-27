@@ -10,11 +10,7 @@ import {
   Flag,
   UserCircle2,
   ChevronLeft,
-  GraduationCap,
-  BookOpen,
-  Sparkles,
-  Settings,
-  LifeBuoy,
+  FlaskConical,
 } from 'lucide-react';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
@@ -28,6 +24,7 @@ type NavKey =
   | 'availability'
   | 'tasks'
   | 'milestones'
+  | 'research-grading'
   | 'profile'
   | 'admin-school-counselor'
   | 'admin-topcoach-management'
@@ -50,7 +47,7 @@ export default function MentorConsoleLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const { displayName, avatarUrl, managementRole, isMentor, isSuperAdmin, hasFullSupport } =
+  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
     useMentorConsole();
 
   const navGroups: NavGroup[] = useMemo(() => {
@@ -88,6 +85,12 @@ export default function MentorConsoleLayout() {
           icon: <Flag size={18} strokeWidth={1.75} />,
           path: '/mentor/milestones',
         },
+        {
+          key: 'research-grading',
+          label: 'Research grading',
+          icon: <FlaskConical size={18} strokeWidth={1.75} />,
+          path: '/mentor/research-grading',
+        },
       );
     }
 
@@ -123,52 +126,11 @@ export default function MentorConsoleLayout() {
       },
     ];
 
-    if (isSuperAdmin) {
-      groups.push({
-        id: 'admin-tools',
-        label: 'Admin tools',
-        items: [
-          {
-            key: 'admin-school-counselor',
-            label: 'School counselor',
-            icon: <GraduationCap size={18} strokeWidth={1.75} />,
-            path: '/school-counselor',
-            external: true,
-          },
-          {
-            key: 'admin-topcoach-management',
-            label: 'TopCoach management',
-            icon: <Settings size={18} strokeWidth={1.75} />,
-            path: '/new-admin/programs/enrollments',
-            external: true,
-          },
-          {
-            key: 'admin-course-content',
-            label: 'Course content',
-            icon: <BookOpen size={18} strokeWidth={1.75} />,
-            path: '/course-admin/courses/modules',
-            external: true,
-          },
-          {
-            key: 'admin-caaf',
-            label: 'CA Admissions Forum',
-            icon: <Sparkles size={18} strokeWidth={1.75} />,
-            path: '/new-admin/events/caaf',
-            external: true,
-          },
-          {
-            key: 'admin-full-support',
-            label: 'Full Support admin',
-            icon: <LifeBuoy size={18} strokeWidth={1.75} />,
-            path: '/new-admin/programs/full-support',
-            external: true,
-          },
-        ],
-      });
-    }
-
     return groups;
-  }, [isSuperAdmin, hasFullSupport]);
+    // SuperAdmin lands here only via the role-toggle exception (admin who is
+    // also a mentor). They reach the admin console from the user menu, so we
+    // intentionally don't surface admin-only tools inside the mentor sidebar.
+  }, [hasFullSupport]);
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
@@ -178,6 +140,7 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/availability')) return 'availability';
     if (p.startsWith('/mentor/tasks')) return 'tasks';
     if (p.startsWith('/mentor/milestones')) return 'milestones';
+    if (p.startsWith('/mentor/research-grading')) return 'research-grading';
     if (p.startsWith('/mentor/profile')) return 'profile';
     return null;
   }, [location.pathname]);

@@ -107,10 +107,21 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
   return <JourneyExperienceContext.Provider value={value}>{children}</JourneyExperienceContext.Provider>;
 }
 
+/**
+ * Safe defaults so the hook can be called outside the provider (e.g. on the
+ * mentor home or admin console). Reads/writes degrade to no-ops in that
+ * case — the only consumer still wired to those values is the Research Prep
+ * teaser, which gracefully hides.
+ */
+const FALLBACK_VALUE: JourneyExperienceValue = {
+  hasPremiumJourney: false,
+  setPremiumJourney: () => {},
+  unlockPremiumJourney: () => {},
+  isCommunityEnrolled: false,
+  setCommunityEnrolled: () => {},
+};
+
 export function useJourneyExperience(): JourneyExperienceValue {
   const ctx = useContext(JourneyExperienceContext);
-  if (!ctx) {
-    throw new Error('useJourneyExperience must be used within JourneyExperienceProvider');
-  }
-  return ctx;
+  return ctx ?? FALLBACK_VALUE;
 }

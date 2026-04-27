@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Alert, Row, Col, Statistic, Modal, Progress, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { User, Clock, FileText, Target, Users, ClipboardList, CalendarClock, BarChart2, CheckCircle2, Globe, History, Rocket } from 'lucide-react';
+import { User, Clock, FileText, Target, Users, ClipboardList, CalendarClock, BarChart2, CheckCircle2, Globe, History, Rocket, FlaskConical, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useColors from 'src/hooks/useColors';
 import dayjs from 'src/lib/dayjs';
@@ -27,6 +27,11 @@ import { useGetMentorsQuery } from 'src/app/services/mentors';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import { SatProgressAdminTable } from 'src/utils/satProgressAdminTable';
 import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
+import {
+  useGetAdminStudentsQuery as useGetResearchAdminStudentsQuery,
+  useGetGraderInboxQuery as useGetResearchGraderInboxQuery,
+  useGetResearchProgressSummaryQuery,
+} from 'src/app/services/research-prep';
 import './full-support.scss';
 
 function getTaskStatus(r: TaskDto): string {
@@ -113,6 +118,29 @@ export default function FullSupportAdminDashboard({
   const [fetchWeeklyReport, { isLoading: weeklyReportDownloading }] = useLazyGetWeeklyReportQuery();
   const { data: interactionsData } = useGetAdminRecentInteractionsQuery(50);
   const adminInteractions = interactionsData?.data ?? [];
+
+  // Research Prep — admin per-student progress and grader inbox view.
+  // Mock-mode today: matches by name fallback. Backend will accept selectedStudent.id directly.
+  const { data: researchStudentsRaw } = useGetResearchAdminStudentsQuery();
+  const { data: researchInboxRaw } = useGetResearchGraderInboxQuery();
+  // Defensive coerce: the backend can return either a plain array or an
+  // error/wrapper object on non-2xx responses. Treat anything non-array as [].
+  const researchStudentsList = Array.isArray(researchStudentsRaw)
+    ? researchStudentsRaw
+    : Array.isArray((researchStudentsRaw as { data?: unknown })?.data)
+      ? ((researchStudentsRaw as { data: typeof researchStudentsRaw }).data as any[])
+      : [];
+  const researchInbox = Array.isArray(researchInboxRaw)
+    ? researchInboxRaw
+    : Array.isArray((researchInboxRaw as { data?: unknown })?.data)
+      ? ((researchInboxRaw as { data: typeof researchInboxRaw }).data as any[])
+      : [];
+  const researchStudentRow = researchStudentsList.find(
+    (s) => (s?.name ?? '').toLowerCase() === (selectedStudent?.name ?? '').toLowerCase(),
+  );
+  const researchSubmissionsForStudent = researchInbox.filter(
+    (s) => (s?.studentName ?? '').toLowerCase() === (selectedStudent?.name ?? '').toLowerCase(),
+  );
   // Polling already keeps this fresh every 2 min while the tab is active.
   // `refetchOnFocus`/`refetchOnReconnect` on top of polling = double-fetching
   // every time the admin tabs back. Let polling own the freshness contract.
@@ -142,6 +170,27 @@ export default function FullSupportAdminDashboard({
     },
     { title: 'SESSIONS', dataIndex: 'sessions', key: 'sessions', width: 100 },
     { title: 'TASKS', dataIndex: 'tasks', key: 'tasks', width: 100 },
+    {
+      title: 'RESEARCH',
+      key: 'research',
+      width: 130,
+      render: (_: unknown, record: AdminStudentRow) => {
+        const r = researchStudentsList.find(
+          (rs) => (rs?.name ?? '').toLowerCase() === record.name.toLowerCase(),
+        );
+        if (!r) return <span style={{ color: '#999', fontSize: 12 }}>—</span>;
+        return (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <FlaskConical size={12} color={accent} />
+            <strong>{r.weeksCompleted}/8</strong>
+            <span style={{ color: muted }}>· {r.overallPercent}%</span>
+            {r.pendingSubmissions > 0 && (
+              <AcPill variant="amber">{r.pendingSubmissions}</AcPill>
+            )}
+          </span>
+        );
+      },
+    },
     {
       title: 'STATUS',
       dataIndex: 'status',
@@ -599,6 +648,23 @@ export default function FullSupportAdminDashboard({
                     <div style={tileValueStyle}>{adminStudentPipeline.length}</div>
                     <div style={tileCaptionStyle}>in pipeline</div>
                   </div>
+                  <div style={tileStyle}>
+                    <div style={tileLabelStyle}>Research Prep</div>
+                    <div style={tileValueStyle}>
+                      {researchStudentRow?.weeksCompleted ?? 0} / 8
+                    </div>
+                    <Progress
+                      percent={researchStudentRow?.overallPercent ?? 0}
+                      size="small"
+                      strokeColor={accent}
+                      showInfo={false}
+                      style={{ marginTop: 8, marginBottom: 0 }}
+                    />
+                    <div style={tileCaptionStyle}>
+                      {researchStudentRow?.pendingSubmissions ?? 0} pending submission
+                      {(researchStudentRow?.pendingSubmissions ?? 0) === 1 ? '' : 's'}
+                    </div>
+                  </div>
                 </div>
               );
             })()}
@@ -742,6 +808,69 @@ export default function FullSupportAdminDashboard({
                   </div>
                 ))
               )}
+            </Card>
+
+            <Card
+              size="small"
+              title={<><FlaskConical size={16} style={{ marginRight: 8, color: accent }} />Research Prep submissions</>}
+              style={panelStyle}
+              styles={{ header: headStyle }}
+            >
+              {researchSubmissionsForStudent.length === 0 ? (
+                <p style={{ color: subtextColor, fontSize: 13, margin: 0 }}>
+                  No Research Prep submissions yet for this student.
+                </p>
+              ) : (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {researchSubmissionsForStudent.map((s) => {
+                    const status = s.status;
+                    const variant: AcPillVariant =
+                      status === 'graded'
+                        ? 'mint'
+                        : status === 'returned_for_revision'
+                          ? 'amber'
+                          : status === 'under_review'
+                            ? 'amber'
+                            : 'cyan';
+                    const statusLabel =
+                      status === 'graded'
+                        ? `Graded · ${s.score}/100`
+                        : status === 'returned_for_revision'
+                          ? 'Revision requested'
+                          : status === 'under_review'
+                            ? 'Under review'
+                            : 'Submitted';
+                    return (
+                      <li
+                        key={s.id}
+                        style={{
+                          padding: '10px 0',
+                          borderBottom: `1px solid ${dividerColor}`,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          gap: 8,
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, color: labelColor }}>
+                            <Sparkles size={12} style={{ marginRight: 6, verticalAlign: -1, color: accent }} />
+                            Week {s.weekNumber} — {s.weekTitle}
+                          </div>
+                          <div style={{ fontSize: 12, color: subtextColor, marginTop: 2 }}>
+                            {dayjs(s.submittedAt).format('MMM D, YYYY · h:mm A')} · attempt #{s.attemptNumber}
+                            {s.fileName ? ` · ${s.fileName}` : ''}
+                          </div>
+                        </div>
+                        <AcPill variant={variant}>{statusLabel}</AcPill>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <div style={{ marginTop: 12, fontSize: 12, color: subtextColor }}>
+                Submissions from this student route to their assigned mentor's grading inbox.
+              </div>
             </Card>
 
             <Card

@@ -35,6 +35,8 @@ import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import Dashboard from '../Dashboard';
 import styles from './communityHubMock.module.scss';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
+import ResearchPrepPage from '../research/ResearchPrepPage';
+import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import PsychometricAssessmentPage from '../psychometric-assessment/PsychometricAssessmentPage';
 import OpportunitiesPage from '../opportunities/OpportunitiesPage';
@@ -394,6 +396,18 @@ function formatCompactNumber(n: number) {
   return `${n}`;
 }
 
+/**
+ * Wraps ResearchPrepPage and resolves the current user's Full Support
+ * enrollment, which gates the "Book a mentor review" CTA on each
+ * assignment submission card. FS students get auto-routed to their teacher;
+ * non-FS students see the optional booking CTA.
+ */
+function ResearchPrepSection() {
+  const { data: enrollmentMe } = useGetEnrollmentMeQuery();
+  const isFullSupport = Boolean((enrollmentMe as any)?.data?.enrolled);
+  return <ResearchPrepPage isFullSupport={isFullSupport} />;
+}
+
 export default function CommunityHubMockPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -620,10 +634,9 @@ export default function CommunityHubMockPage() {
           subtitle: t('studentHub.hub.satSubtitle', 'Quizzes, flashcards, and bite-sized lessons for the digital SAT.'),
         };
       case 'researchProgram':
-        return {
-          title: t('studentHub.hub.researchPageTitle', 'Research Prep'),
-          subtitle: t('studentHub.hub.researchSubtitle', 'Research track and opportunities. Start from opportunities or your mentor workflow.'),
-        };
+        // Research Prep brings its own top bar (breadcrumb + Overview/Module
+        // switch + Back to main menu). Suppress the generic hub header here.
+        return null;
       case 'account':
         if (accountTarget === 'rewards')
           return {
@@ -713,9 +726,23 @@ export default function CommunityHubMockPage() {
     message.success(t('studentHub.hub.feedComposerPostedMock', 'Posted to Community.'));
   };
 
+  // Research Prep takes over the page once it opens — no community sidebar,
+  // no max-width clamp. The page itself supplies a top bar with breadcrumb,
+  // an Overview/Module switch, and a "Back to main menu" button.
+  const isResearchFullBleed =
+    activeSection === 'researchProgram' && isCommunityEnrolled;
+
   return (
-    <div className={styles.hubPageOuter}>
-      <div className={`${styles.hub} ${styles.hubNoRight}`}>
+    <div
+      className={`${styles.hubPageOuter} ${
+        isResearchFullBleed ? styles.hubPageOuterFullBleed : ''
+      }`}
+    >
+      <div
+        className={`${styles.hub} ${
+          isResearchFullBleed ? styles.hubFullBleed : styles.hubNoRight
+        }`}
+      >
       <div className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''}`}>
         {isCommunityEnrolled && (
           <Card
@@ -974,7 +1001,8 @@ export default function CommunityHubMockPage() {
           <div
             key={`${activeSection}-${othersTarget ?? 'none'}-${accountTarget ?? 'none'}`}
             className={`${styles.sectionSwap} ${
-              !(activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED)
+              !(activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED) &&
+              !isResearchFullBleed
                 ? styles.sectionSwapHubPad
                 : ''
             }`}
@@ -987,11 +1015,6 @@ export default function CommunityHubMockPage() {
                 <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
                   {pageHeader.subtitle}
                 </p>
-                {activeSection === 'researchProgram' && (
-                  <div className={styles.comingSoonNote}>
-                    {t('studentHub.hub.researchComingSoon', 'Research Prep modules are coming soon.')}
-                  </div>
-                )}
                 {activeSection === 'account' && accountTarget === 'rewards' && (
                   <div className={styles.comingSoonNote}>
                     {t('studentHub.hub.rewardsComingSoon', 'My Rewards modules are coming soon.')}
@@ -1357,6 +1380,12 @@ export default function CommunityHubMockPage() {
           {(activeSection === 'dashboard' || activeSection === 'myLearning') && (
             <div className={styles.hubDashEmbed}>
               <Dashboard />
+            </div>
+          )}
+
+          {activeSection === 'researchProgram' && isCommunityEnrolled && (
+            <div className={styles.hubDashEmbed}>
+              <ResearchPrepSection />
             </div>
           )}
 

@@ -1,0 +1,245 @@
+/* Mentor research grading inbox — list of submissions + side drawer.
+   Matches the maroon brand language used elsewhere in the mentor console. */
+
+.research-grading {
+  --rg-accent: #8b0000;
+  --rg-accent-soft: #fdecec;
+  --rg-text: #1f2937;
+  --rg-muted: #6b7280;
+  --rg-subtle: #9ca3af;
+  --rg-border: #e5e7eb;
+  --rg-border-strong: #d1d5db;
+  --rg-surface: #ffffff;
+  --rg-surface-soft: #f9fafb;
+  --rg-success: #16a34a;
+  --rg-warning: #d97706;
+  --rg-info: #2563eb;
+  --rg-danger: #dc2626;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 0;
+
+  .rg-head {
+    padding: 22px 24px 6px;
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rg-accent);
+      font-weight: 700;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--rg-text);
+      margin: 4px 0 4px;
+      letter-spacing: -0.01em;
+    }
+    p {
+      font-size: 14px;
+      color: var(--rg-muted);
+      margin: 0;
+      max-width: 720px;
+    }
+  }
+
+  .rg-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 24px;
+    @media (max-width: 800px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .stat {
+      padding: 12px 16px;
+      border: 1px solid var(--rg-border);
+      border-radius: 12px;
+      background: var(--rg-surface);
+      .label {
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--rg-subtle);
+        font-weight: 700;
+      }
+      .value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--rg-text);
+        margin-top: 4px;
+        letter-spacing: -0.02em;
+      }
+    }
+  }
+
+  .rg-toolbar {
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rg-list {
+    padding: 0 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rg-item {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid var(--rg-border);
+    border-radius: 12px;
+    background: var(--rg-surface);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:hover {
+      border-color: var(--rg-accent);
+      box-shadow: 0 2px 12px rgba(139, 0, 0, 0.06);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--rg-accent-soft);
+      color: var(--rg-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+    .meta {
+      min-width: 0;
+      .name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--rg-text);
+        letter-spacing: -0.01em;
+      }
+      .sub {
+        font-size: 12.5px;
+        color: var(--rg-muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+    .right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .rg-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border: 1px solid transparent;
+
+    &--submitted {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--rg-info);
+      border-color: rgba(37, 99, 235, 0.22);
+    }
+    &--review {
+      background: rgba(217, 119, 6, 0.1);
+      color: var(--rg-warning);
+      border-color: rgba(217, 119, 6, 0.22);
+    }
+    &--graded {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--rg-success);
+      border-color: rgba(22, 163, 74, 0.22);
+    }
+    &--returned {
+      background: rgba(220, 38, 38, 0.08);
+      color: var(--rg-danger);
+      border-color: rgba(220, 38, 38, 0.22);
+    }
+  }
+
+  .rg-empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--rg-muted);
+    border: 1px dashed var(--rg-border-strong);
+    border-radius: 12px;
+    margin: 0 24px;
+
+    h3 {
+      font-size: 18px;
+      color: var(--rg-text);
+      margin: 0 0 8px;
+    }
+    p {
+      margin: 0;
+      font-size: 13.5px;
+    }
+  }
+}
+
+/* Drawer body styles — scoped to research-grading-drawer for global Drawer
+   portal compatibility. */
+.research-grading-drawer {
+  .rgd-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    margin-bottom: 14px;
+    overflow: hidden;
+
+    .head {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #f9fafb;
+      font-size: 12.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1f2937;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .body {
+      padding: 14px 16px;
+      font-size: 13.5px;
+      color: #1f2937;
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+  }
+  .rgd-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    .meta {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+}

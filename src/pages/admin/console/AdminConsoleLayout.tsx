@@ -200,6 +200,7 @@ export default function AdminConsoleLayout() {
         analytics: 'Analytics',
         organizations: 'Organizations',
         'full-support': 'Full Support',
+        'research-prep': 'Research Prep',
       };
       return [
         { title: 'Admin' },

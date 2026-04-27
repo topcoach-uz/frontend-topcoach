@@ -7,6 +7,7 @@ const SLUG_TO_TAB: Record<string, string> = {
   analytics: 'analytics',
   organizations: 'organizations',
   'full-support': 'full_support',
+  'research-prep': 'research_prep',
 };
 
 const TAB_TO_SLUG: Record<string, string> = {
@@ -14,6 +15,7 @@ const TAB_TO_SLUG: Record<string, string> = {
   analytics: 'analytics',
   organizations: 'organizations',
   full_support: 'full-support',
+  research_prep: 'research-prep',
 };
 
 export default function AdminProgramManagementPage() {

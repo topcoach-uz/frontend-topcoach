@@ -180,7 +180,7 @@ export default function MentorConsoleDashboardPage() {
               <Card bordered={false} className="mc-kpi-card">
                 <div className="mc-kpi-label">Active students</div>
                 <div className="mc-kpi-value">{kpis.activeStudents}</div>
-                <div className="mc-kpi-meta">Full Support roster</div>
+                <div className="mc-kpi-meta">Full Support students</div>
               </Card>
             </Col>
             <Col xs={24} sm={12} xl={6}>
@@ -276,7 +276,7 @@ export default function MentorConsoleDashboardPage() {
               title={
                 <Space>
                   <Users size={18} color="var(--mc-accent)" />
-                  <span>Your roster</span>
+                  <span>Your students</span>
                 </Space>
               }
               extra={
