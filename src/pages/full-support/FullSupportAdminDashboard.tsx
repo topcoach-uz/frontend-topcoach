@@ -31,8 +31,25 @@ import {
   useGetAdminStudentsQuery as useGetResearchAdminStudentsQuery,
   useGetGraderInboxQuery as useGetResearchGraderInboxQuery,
   useGetResearchProgressSummaryQuery,
+  type ResearchAdminStudent,
+  type ResearchSubmission,
 } from 'src/app/services/research-prep';
 import './full-support.scss';
+
+/**
+ * Normalise an RTK Query response that we expect to be an array. Accepts a
+ * plain array, a `{ data: [...] }` wrapper, or anything else (treated as
+ * empty). Lets us call `.find` / `.filter` without crashing when the endpoint
+ * returns an error envelope.
+ */
+function coerceArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object') {
+    const maybe = (value as { data?: unknown }).data;
+    if (Array.isArray(maybe)) return maybe as T[];
+  }
+  return [];
+}
 
 function getTaskStatus(r: TaskDto): string {
   if (r.hasFeedback) return 'Reviewed';
@@ -125,16 +142,8 @@ export default function FullSupportAdminDashboard({
   const { data: researchInboxRaw } = useGetResearchGraderInboxQuery();
   // Defensive coerce: the backend can return either a plain array or an
   // error/wrapper object on non-2xx responses. Treat anything non-array as [].
-  const researchStudentsList = Array.isArray(researchStudentsRaw)
-    ? researchStudentsRaw
-    : Array.isArray((researchStudentsRaw as { data?: unknown })?.data)
-      ? ((researchStudentsRaw as { data: typeof researchStudentsRaw }).data as any[])
-      : [];
-  const researchInbox = Array.isArray(researchInboxRaw)
-    ? researchInboxRaw
-    : Array.isArray((researchInboxRaw as { data?: unknown })?.data)
-      ? ((researchInboxRaw as { data: typeof researchInboxRaw }).data as any[])
-      : [];
+  const researchStudentsList = coerceArray<ResearchAdminStudent>(researchStudentsRaw);
+  const researchInbox = coerceArray<ResearchSubmission>(researchInboxRaw);
   const researchStudentRow = researchStudentsList.find(
     (s) => (s?.name ?? '').toLowerCase() === (selectedStudent?.name ?? '').toLowerCase(),
   );
