@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Avatar, Button, Card, Segmented, Space, Spin, Tag, Tabs, Typography, message } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Avatar, Button, Card, Pagination, Segmented, Space, Spin, Tag, Tabs, Typography, message } from 'antd';
 import { UserPlus } from 'lucide-react';
 import {
   useStudyBuddyAcceptRequestMutation,
@@ -12,6 +12,8 @@ import {
 import { getLatestCreatedImg } from 'src/utils';
 import styles from './communityHubMock.module.scss';
 
+const PAGE_SIZE = 4;
+
 const { Paragraph } = Typography;
 
 export type StudyBuddyHubSectionProps = {
@@ -21,6 +23,8 @@ export type StudyBuddyHubSectionProps = {
 export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectionProps) {
   const [mainTab, setMainTab] = useState<'discover' | 'requests'>('discover');
   const [reqDirection, setReqDirection] = useState<'in' | 'out'>('in');
+  const [discoverPage, setDiscoverPage] = useState(1);
+  const [reqPage, setReqPage] = useState(1);
 
   const {
     data: discoverData,
@@ -44,6 +48,36 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   };
 
   const items = discoverData?.items ?? [];
+  const requestList = requestsData?.requests ?? [];
+
+  useEffect(() => {
+    setDiscoverPage(1);
+    setReqPage(1);
+  }, [mainTab]);
+
+  useEffect(() => {
+    setReqPage(1);
+  }, [reqDirection]);
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(items.length / PAGE_SIZE) || 1);
+    if (discoverPage > maxPage) setDiscoverPage(maxPage);
+  }, [items.length, discoverPage]);
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(requestList.length / PAGE_SIZE) || 1);
+    if (reqPage > maxPage) setReqPage(maxPage);
+  }, [requestList.length, reqPage]);
+
+  const discoverPageItems = useMemo(
+    () => items.slice((discoverPage - 1) * PAGE_SIZE, discoverPage * PAGE_SIZE),
+    [items, discoverPage],
+  );
+
+  const requestPageItems = useMemo(
+    () => requestList.slice((reqPage - 1) * PAGE_SIZE, reqPage * PAGE_SIZE),
+    [requestList, reqPage],
+  );
 
   const handleSend = async (targetUserId: string) => {
     try {
@@ -87,109 +121,135 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                     </Paragraph>
                   </Card>
                 ) : (
-                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                    {items.map((row) => (
-                      <Card key={row.userId} bordered={false} className={styles.sectionCard}>
-                        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                          <Avatar size={48} src={row.avatarUrl || undefined}>
-                            {row.name.charAt(0)}
-                          </Avatar>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 800, fontSize: 16 }}>{row.name}</div>
-                            {row.username && (
-                              <div style={{ color: '#64748b', fontWeight: 600, fontSize: 13 }}>
+                  <div className={styles.studyBuddyDiscoverGrid}>
+                    {discoverPageItems.map((row) => {
+                      const snippetTags = row.overlap.slice(0, 4);
+                      const footerSnippet =
+                        row.overlap.length > 0
+                          ? row.overlap
+                              .slice(0, 2)
+                              .map((o) => o.label)
+                              .join(' · ')
+                          : null;
+
+                      return (
+                        <div key={row.userId} className={styles.studyBuddyInstaCard}>
+                          <div className={styles.studyBuddyInstaInner}>
+                            <Avatar size={104} src={row.avatarUrl || undefined} className={styles.studyBuddyInstaAvatar}>
+                              {row.name.charAt(0)}
+                            </Avatar>
+                            {row.username ? (
+                              <div className={styles.studyBuddyInstaHandlePill} title={formatUsername(row.username)}>
                                 {formatUsername(row.username)}
                               </div>
+                            ) : (
+                              <div style={{ height: 8 }} aria-hidden />
                             )}
-                            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                              {row.overlap.slice(0, 6).map((o) => (
-                                <Tag key={`${o.field}-${o.value}`} color="processing">
-                                  {o.label}
-                                </Tag>
-                              ))}
-                              {row.overlap.length === 0 && <Tag>No overlap yet</Tag>}
-                            </div>
-                            <div style={{ marginTop: 10, color: '#64748b', fontSize: 12, fontWeight: 600 }}>
-                              {row.overlapCount} shared interest{row.overlapCount === 1 ? '' : 's'}
-                            </div>
-                            {row.matchExplanation && (
-                              <div style={{ marginTop: 8, color: '#475569', fontSize: 12, lineHeight: 1.45 }}>
-                                {row.matchExplanation}
+                            <div className={styles.studyBuddyInstaName}>{row.name}</div>
+                            {row.matchExplanation ? (
+                              <p className={styles.studyBuddyInstaBio}>{row.matchExplanation}</p>
+                            ) : snippetTags.length > 0 ? (
+                              <div className={styles.studyBuddyInstaTagRow}>
+                                {snippetTags.map((o) => (
+                                  <Tag key={`${o.field}-${o.value}`} color="processing" style={{ margin: 0 }}>
+                                    {o.label}
+                                  </Tag>
+                                ))}
                               </div>
+                            ) : (
+                              <p className={styles.studyBuddyInstaBio}>
+                                No shared study-buddy tags yet — connect to find common ground.
+                              </p>
                             )}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-                            {row.requestStatus === 'none' && (
-                              <Button
-                                type="primary"
-                                icon={<UserPlus size={16} />}
-                                loading={sending}
-                                onClick={() => void handleSend(row.userId)}
-                              >
-                                Request
-                              </Button>
-                            )}
-                            {row.requestStatus === 'outgoing_pending' && (
-                              <>
-                                <Tag color="gold">Pending</Tag>
-                                <Button
-                                  size="small"
-                                  loading={cancelling}
-                                  onClick={async () => {
-                                    if (!row.outgoingRequestId) return;
-                                    try {
-                                      await cancelRequest(row.outgoingRequestId).unwrap();
-                                      message.info('Request cancelled.');
-                                      void refetchDiscover();
-                                    } catch (e: any) {
-                                      message.error(e?.data?.message || 'Could not cancel.');
-                                    }
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
-                              </>
-                            )}
-                            {row.requestStatus === 'incoming_pending' && (
-                              <Space direction="vertical" align="end">
-                                <Tag color="blue">Wants to connect</Tag>
+                            <div className={styles.studyBuddyInstaFooterPill} title={footerSnippet || undefined}>
+                              {footerSnippet
+                                ? `${footerSnippet}${row.overlap.length > 2 ? '…' : ''}`
+                                : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
+                            </div>
+                            <div className={styles.studyBuddyInstaActions}>
+                              {row.requestStatus === 'none' && (
                                 <Button
                                   type="primary"
-                                  size="small"
-                                  loading={accepting}
-                                  onClick={() => row.incomingRequestId && void handleAccept(row.incomingRequestId)}
+                                  icon={<UserPlus size={18} />}
+                                  loading={sending}
+                                  onClick={() => void handleSend(row.userId)}
                                 >
-                                  Accept
+                                  Request
                                 </Button>
-                                <Button
-                                  size="small"
-                                  danger
-                                  loading={rejecting}
-                                  onClick={async () => {
-                                    if (!row.incomingRequestId) return;
-                                    try {
-                                      await rejectRequest(row.incomingRequestId).unwrap();
-                                      message.success('Declined.');
-                                      void refetchDiscover();
-                                    } catch (e: any) {
-                                      message.error(e?.data?.message || 'Could not reject.');
-                                    }
-                                  }}
-                                >
-                                  Decline
+                              )}
+                              {row.requestStatus === 'outgoing_pending' && (
+                                <>
+                                  <Tag color="gold" style={{ margin: 0, alignSelf: 'center' }}>
+                                    Pending
+                                  </Tag>
+                                  <Button
+                                    loading={cancelling}
+                                    onClick={async () => {
+                                      if (!row.outgoingRequestId) return;
+                                      try {
+                                        await cancelRequest(row.outgoingRequestId).unwrap();
+                                        message.info('Request cancelled.');
+                                        void refetchDiscover();
+                                      } catch (e: any) {
+                                        message.error(e?.data?.message || 'Could not cancel.');
+                                      }
+                                    }}
+                                  >
+                                    Cancel request
+                                  </Button>
+                                </>
+                              )}
+                              {row.requestStatus === 'incoming_pending' && (
+                                <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                                  <Tag color="blue" style={{ margin: 0, textAlign: 'center', width: '100%' }}>
+                                    Wants to connect
+                                  </Tag>
+                                  <Button
+                                    type="primary"
+                                    loading={accepting}
+                                    onClick={() => row.incomingRequestId && void handleAccept(row.incomingRequestId)}
+                                  >
+                                    Accept
+                                  </Button>
+                                  <Button
+                                    danger
+                                    loading={rejecting}
+                                    onClick={async () => {
+                                      if (!row.incomingRequestId) return;
+                                      try {
+                                        await rejectRequest(row.incomingRequestId).unwrap();
+                                        message.success('Declined.');
+                                        void refetchDiscover();
+                                      } catch (e: any) {
+                                        message.error(e?.data?.message || 'Could not reject.');
+                                      }
+                                    }}
+                                  >
+                                    Decline
+                                  </Button>
+                                </Space>
+                              )}
+                              {row.requestStatus === 'connected' && row.conversationId && (
+                                <Button type="primary" onClick={() => onOpenChat(row.conversationId!)}>
+                                  Message
                                 </Button>
-                              </Space>
-                            )}
-                            {row.requestStatus === 'connected' && row.conversationId && (
-                              <Button type="primary" onClick={() => onOpenChat(row.conversationId!)}>
-                                Message
-                              </Button>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </Card>
-                    ))}
-                  </Space>
+                      );
+                    })}
+                  </div>
+                )}
+                {items.length > PAGE_SIZE && (
+                  <Pagination
+                    className={styles.studyBuddyPagination}
+                    current={discoverPage}
+                    pageSize={PAGE_SIZE}
+                    total={items.length}
+                    onChange={(p) => setDiscoverPage(p)}
+                    showSizeChanger={false}
+                  />
                 )}
               </>
             ),
@@ -214,7 +274,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                   </div>
                 ) : (
                   <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                    {(requestsData?.requests ?? []).map((r) => {
+                    {requestPageItems.map((r) => {
                       const other = reqDirection === 'in' ? r.requester : r.addressee;
                       const name = other?.profile?.name ?? 'Peer';
                       const avatar = getLatestCreatedImg((other?.profile?.media as any[]) || []);
@@ -279,7 +339,17 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                         </Card>
                       );
                     })}
-                    {(requestsData?.requests ?? []).length === 0 && (
+                    {requestList.length > PAGE_SIZE && (
+                      <Pagination
+                        className={styles.studyBuddyPagination}
+                        current={reqPage}
+                        pageSize={PAGE_SIZE}
+                        total={requestList.length}
+                        onChange={(p) => setReqPage(p)}
+                        showSizeChanger={false}
+                      />
+                    )}
+                    {requestList.length === 0 && (
                       <Paragraph type="secondary">No requests in this tab.</Paragraph>
                     )}
                   </Space>

@@ -1,7 +1,7 @@
 .hubPageOuter {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: 16px 20px 24px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -2460,5 +2460,150 @@
 
 .studyBuddyHub {
   width: 100%;
+}
+
+.studyBuddyPagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  :global(.ant-pagination) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+// —— Study Buddy discover: Instagram-style grid cards ——
+.studyBuddyDiscoverGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studyBuddyInstaCard {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow:
+    0 4px 24px rgba(15, 23, 42, 0.07),
+    0 1px 3px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 14px 36px rgba(15, 23, 42, 0.12),
+      0 4px 10px rgba(15, 23, 42, 0.06);
+  }
+}
+
+.studyBuddyInstaInner {
+  padding: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 100%;
+}
+
+.studyBuddyInstaAvatar {
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+}
+
+.studyBuddyInstaHandlePill {
+  margin-top: -14px;
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studyBuddyInstaName {
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.studyBuddyInstaTagRow {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.studyBuddyInstaBio {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: center;
+  width: 100%;
+}
+
+.studyBuddyInstaFooterPill {
+  margin-top: 14px;
+  background: rgba(139, 0, 0, 0.08);
+  color: #8b0000;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studyBuddyInstaActions {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+
+  :global(.ant-btn) {
+    width: 100%;
+    border-radius: 12px;
+    height: 42px;
+    font-weight: 700;
+  }
+
+  :global(.ant-space) {
+    width: 100%;
+  }
 }
 

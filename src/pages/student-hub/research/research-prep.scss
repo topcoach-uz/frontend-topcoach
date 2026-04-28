@@ -7,13 +7,9 @@
    The page sits inside the Community Hub's center column with no left/right
    sidebars (the parent applies `hubFullBleed` for this section). */
 
-/* When the Research page mounts inside the student-hub layout, the parent
-   `.main-content` ships with `padding: $space-8` plus a 6px top inset. That
-   creates a visible gap between the global maroon site header and the
-   Research top bar. Zero the padding so the topbar sits flush. The hub
-   center column also adds padding-bottom — preserve that here for natural
-   end-of-page breathing room. */
-.main-content:has(.rp) {
+/* Research topbar should sit flush under the global header: zero the inner
+   padded wrapper (banner + `.main-content-padded` stack — see StudentHubLayout). */
+.main-content-padded:has(.rp) {
   padding: 0 !important;
 }
 

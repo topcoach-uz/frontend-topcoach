@@ -79,6 +79,17 @@ export function normalizeStudyBuddyInterestProfile(input: unknown): StudyBuddyIn
   };
 }
 
+/** True if the student saved at least one study-buddy goal in Settings (any category). */
+export function hasStudyBuddyGoalsSet(profile: StudyBuddyInterestProfile | unknown): boolean {
+  const n = normalizeStudyBuddyInterestProfile(profile);
+  return (
+    n.examPrep.length > 0 ||
+    n.applicationGoals.length > 0 ||
+    n.intendedMajors.length > 0 ||
+    n.focusAreas.length > 0
+  );
+}
+
 export function loadStudyBuddyInterestProfile(): StudyBuddyInterestProfile {
   try {
     const raw = localStorage.getItem(STUDY_BUDDY_INTERESTS_STORAGE_KEY);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Avatar, Button, Card, Input, Modal, Radio, Select, Space, Tag, Tabs, message } from 'antd';
+import { Avatar, Button, Card, Input, Modal, Radio, Select, Space, Tag, Tabs, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   Compass,
@@ -52,14 +52,7 @@ import {
   admissionsPreviewEmbedUrl,
   type AdmissionsYoutubePreviewSpec,
 } from 'src/constants/admissionsPreviewVideos';
-import {
-  computeInterestOverlap,
-  EMPTY_STUDY_BUDDY_INTEREST_PROFILE,
-  getInterestLabel,
-  normalizeStudyBuddyInterestProfile,
-  type StudyBuddyInterestProfile,
-} from 'src/constants/studyBuddyInterests';
-import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
+import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterests';
 import { useTypedSelector } from 'src/app/store';
 import { getLatestCreatedImg } from 'src/utils';
 
@@ -414,8 +407,6 @@ export default function CommunityHubMockPage() {
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
-  const { data: rawPreferences } = useGetUserPreferencesQuery();
-  const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
   const currentProfile = useMemo(() => {
     const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
     const username =
@@ -434,9 +425,6 @@ export default function CommunityHubMockPage() {
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
   const [accountTarget, setAccountTarget] = useState<string | null>(null);
   const [feedPostDraft, setFeedPostDraft] = useState('');
-  const [myStudyBuddyInterests, setMyStudyBuddyInterests] = useState<StudyBuddyInterestProfile>(() =>
-    ({ ...EMPTY_STUDY_BUDDY_INTEREST_PROFILE }),
-  );
   const [feedPosts, setFeedPosts] = useState<MockFeedPost[]>(() =>
     MOCK_FEED_POSTS.filter((p) => p.v === 'forYou'),
   );
@@ -454,12 +442,6 @@ export default function CommunityHubMockPage() {
       ? '/student-hub?section=feed'
       : '/student-hub?section=my-learning'
     : '/student-hub?section=dashboard';
-
-  useEffect(() => {
-    const persisted = preferences?.applicationSettings?.studyBuddyInterests;
-    if (!persisted) return;
-    setMyStudyBuddyInterests(normalizeStudyBuddyInterestProfile(persisted));
-  }, [preferences?.applicationSettings?.studyBuddyInterests]);
 
   /** Default landing: dashboard when not enrolled; feed/my-progress when enrolled. */
   useEffect(() => {

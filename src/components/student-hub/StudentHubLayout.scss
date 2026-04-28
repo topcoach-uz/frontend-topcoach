@@ -599,11 +599,87 @@ $crimson-900: #7f1d1d;
 
     .main-content {
       position: relative; // Ensure loading overlay positions correctly
-      padding: $space-8;
-      padding-top: calc(#{$space-8} + 6px); // Slight top offset so scrollbar appears slightly lower
+      padding: 0;
       min-height: calc(100vh - 0px);
       overflow-y: auto;
       flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      /* Page gutter lives below the optional goals banner so the strip can sit flush under the global header */
+      .main-content-padded {
+        padding: $space-8;
+        padding-top: $space-7; // Tighter under global site header than old $space-8 + 6px
+        flex: 1;
+        min-height: 0;
+        box-sizing: border-box;
+        position: relative;
+      }
+
+      // Full-bleed strip directly under global site header (no padding gap); sticks while this column scrolls
+      .study-goals-sticky-banner-outer {
+        position: sticky;
+        top: 0;
+        z-index: 25;
+        flex-shrink: 0;
+        margin: 0;
+        margin-bottom: $space-5;
+        width: 100%;
+        box-sizing: border-box;
+        background: #fff8e4;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+      }
+
+      .study-goals-sticky-banner-inner {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 14px $space-8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $space-5;
+        flex-wrap: wrap;
+        box-sizing: border-box;
+      }
+
+      .study-goals-sticky-banner-copy {
+        flex: 1;
+        min-width: min(100%, 240px);
+      }
+
+      .study-goals-sticky-banner-title {
+        margin: 0 0 4px;
+        font-weight: 800;
+        font-size: 15px;
+        line-height: 1.35;
+        color: #0f172a;
+      }
+
+      .study-goals-sticky-banner-desc {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #334155;
+      }
+
+      .study-goals-sticky-banner-cta {
+        flex-shrink: 0;
+        border-radius: 999px !important;
+        font-weight: 600 !important;
+        height: auto !important;
+        padding: 8px 22px !important;
+        background: #ffffff !important;
+        border: 2px solid #0f172a !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+
+        &:hover {
+          background: #f8fafc !important;
+          border-color: #0f172a !important;
+          color: #0f172a !important;
+        }
+      }
     }
 
     // Shared page layout: consistent horizontal breathing room on all My Journey pages
@@ -1142,7 +1218,18 @@ $crimson-900: #7f1d1d;
       margin-top: 56px;
       
       .main-content {
-        padding: $space-3;
+        .main-content-padded {
+          padding: $space-3;
+          padding-top: $space-3;
+        }
+
+        .study-goals-sticky-banner-inner {
+          padding: 12px $space-3;
+        }
+
+        .study-goals-sticky-banner-cta {
+          width: 100%;
+        }
       }
     }
   }
@@ -1467,7 +1554,10 @@ $crimson-900: #7f1d1d;
   .student-hub-layout {
     .main-layout {
       .main-content {
-        padding: $space-4;
+        .main-content-padded {
+          padding: $space-4;
+          padding-top: $space-4;
+        }
       }
     }
   }

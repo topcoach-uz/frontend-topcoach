@@ -8,6 +8,7 @@ import UnifiedIcon from '../common/icons/UnifiedIcon';
 import LoginPrompt from 'src/components/student-hub/LoginPrompt';
 import { useStudentHub } from 'src/hooks/useStudentHub';
 import CommunityHubMobileDrawerNav from 'src/pages/student-hub/community/CommunityHubMobileDrawerNav';
+import StudyGoalsStickyBanner from 'src/components/student-hub/StudyGoalsStickyBanner';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -186,7 +187,9 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
         <Layout className="main-layout">
           <Content className="main-content">
-            <LoginPrompt />
+            <div className="main-content-padded">
+              <LoginPrompt />
+            </div>
           </Content>
         </Layout>
       </Layout>
@@ -333,16 +336,19 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       <Layout className="main-layout">
         <Content className="main-content">
-          {isLoading && location.pathname === '/student-hub' ? (
-            <div className="student-hub-loading-content">
-              <div className="loading-spinner-container">
-                <Spin size="large" />
-                <p>Loading your dashboard...</p>
+          <StudyGoalsStickyBanner />
+          <div className="main-content-padded">
+            {isLoading && location.pathname === '/student-hub' ? (
+              <div className="student-hub-loading-content">
+                <div className="loading-spinner-container">
+                  <Spin size="large" />
+                  <p>Loading your dashboard...</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            children
-          )}
+            ) : (
+              children
+            )}
+          </div>
         </Content>
       </Layout>
     </Layout>
