@@ -97,7 +97,8 @@ export default function MentorConsoleStudentsPage() {
     <div>
       <h1 className="mc-page-title">Students</h1>
       <p className="mc-page-lead">
-        Your Full Support students. Click a student to see sessions, tasks, milestones, and applications.
+        Your Full Support students. Open a student to manage tasks, sessions, essays, milestones,
+        and research grading in one workspace.
       </p>
 
       <Card bordered={false} className="mc-panel">

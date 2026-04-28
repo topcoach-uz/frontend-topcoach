@@ -145,11 +145,12 @@ export default function AdmissionsProgramProgressCard({
     completed: number,
     total: number,
     progressPercent: number,
-    continueLearningClick?: () => void
+    continueLearningClick?: () => void,
+    iconName: 'programs' | 'sat' = 'programs',
   ) => (
     <div key={courseName} className="admissions-progress-course">
       <div className="admissions-progress-course-header">
-        <UnifiedIcon name="programs" size="md" color="primary" />
+        <UnifiedIcon name={iconName} size="md" color="primary" />
         <span className="admissions-progress-course-title">{title}</span>
       </div>
       <div className="admissions-progress-stats">
@@ -237,7 +238,8 @@ export default function AdmissionsProgramProgressCard({
                   : satCompletedLessonsFromScholarhub;
                 return total > 0 ? Math.round((completed / total) * 100) : 0;
               })(),
-              hasSatFromFullSupport && !hasSatCourse ? handleSatContinueLearning : undefined
+              hasSatFromFullSupport && !hasSatCourse ? handleSatContinueLearning : undefined,
+              'sat',
             )}
           {hasResearchPrep && researchSummary && (
             <div key="research" className="admissions-progress-course">

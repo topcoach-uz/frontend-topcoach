@@ -1312,4 +1312,41 @@
       text-transform: uppercase;
     }
   }
+
+  @media (max-width: 640px) {
+    --rp-page-pad-x: 14px;
+
+    .rp-upnext {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 14px 16px;
+      grid-template-columns: unset;
+
+      .label {
+        line-height: 1.4;
+        white-space: normal;
+      }
+
+      .body {
+        min-width: 0;
+
+        .title {
+          font-size: 15px;
+          line-height: 1.35;
+        }
+
+        .sub {
+          margin-top: 6px;
+          line-height: 1.45;
+        }
+      }
+
+      .end-cta {
+        align-self: flex-start;
+        flex-shrink: 0;
+      }
+    }
+  }
 }

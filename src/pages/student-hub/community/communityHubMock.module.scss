@@ -6,6 +6,21 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .hubPageOuter {
+    padding: 12px 10px 20px;
+  }
+
+  .hub {
+    gap: 12px;
+  }
+
+  .sectionSwapHubPad {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
 
 .messengerHubWrap {
   display: flex;

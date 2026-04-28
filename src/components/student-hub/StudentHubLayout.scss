@@ -1218,10 +1218,12 @@ $crimson-900: #7f1d1d;
       margin-top: 56px;
       
       .main-content {
-        .main-content-padded {
-          padding: $space-3;
-          padding-top: $space-3;
-        }
+      .main-content-padded {
+        padding: $space-3;
+        padding-top: $space-3;
+        padding-left: $space-2;
+        padding-right: $space-2;
+      }
 
         .study-goals-sticky-banner-inner {
           padding: 12px $space-3;
@@ -1557,6 +1559,8 @@ $crimson-900: #7f1d1d;
         .main-content-padded {
           padding: $space-4;
           padding-top: $space-4;
+          padding-left: $space-2;
+          padding-right: $space-2;
         }
       }
     }

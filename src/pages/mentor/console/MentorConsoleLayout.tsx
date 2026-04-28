@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import {
@@ -11,6 +11,7 @@ import {
   UserCircle2,
   ChevronLeft,
   FlaskConical,
+  Menu,
 } from 'lucide-react';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
@@ -42,10 +43,37 @@ type NavItem = {
 
 type NavGroup = { id: string; label: string; items: NavItem[] };
 
+const MOBILE_SIDEBAR_MQ = '(max-width: 900px)';
+
 export default function MentorConsoleLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobileConsole, setIsMobileConsole] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_SIDEBAR_MQ).matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_SIDEBAR_MQ);
+    const sync = () => setIsMobileConsole(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMobileConsole || !mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobileConsole, mobileMenuOpen]);
 
   const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
     useMentorConsole();
@@ -159,30 +187,54 @@ export default function MentorConsoleLayout() {
 
   const siderWidth = collapsed ? 76 : 232;
 
+  const siderClass = [
+    'mentor-console-sider',
+    collapsed ? 'mentor-console-sider--collapsed' : '',
+    isMobileConsole ? 'mentor-console-sider--mobile' : '',
+    isMobileConsole && mobileMenuOpen ? 'mentor-console-sider--mobile-open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="mentor-console-app" style={{ minHeight: 'calc(100vh - 80px)' }}>
+    <div
+      className={`mentor-console-app ${isMobileConsole ? 'mentor-console-app--mobile-layout' : ''}`}
+      style={{ minHeight: 'calc(100vh - 80px)' }}
+    >
+      {isMobileConsole && mobileMenuOpen ? (
+        <button
+          type="button"
+          className="mentor-console-nav-backdrop mentor-console-nav-backdrop--visible"
+          aria-label="Close menu"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      ) : null}
+
       <aside
-        className={`mentor-console-sider ${
-          collapsed ? 'mentor-console-sider--collapsed' : ''
-        }`}
-        style={{ width: siderWidth, flex: `0 0 ${siderWidth}px` }}
+        id="mentor-console-sider"
+        className={siderClass}
+        style={
+          isMobileConsole
+            ? undefined
+            : { width: siderWidth, flex: `0 0 ${siderWidth}px` as const }
+        }
       >
         <div className="mentor-console-sider-inner">
           <div className="mentor-console-brand">
             <div className="mentor-console-brand-title">
-              {collapsed ? 'MC' : 'Mentor console'}
+              {collapsed && !isMobileConsole ? 'MC' : 'Mentor console'}
             </div>
-            {!collapsed && (
+            {(!collapsed || isMobileConsole) && (
               <div className="mentor-console-brand-sub">
                 Students, sessions &amp; milestones
               </div>
             )}
           </div>
 
-          <nav className="mentor-console-nav" aria-label="Mentor navigation">
+          <nav className="mentor-console-nav" aria-label="Mentor navigation" id="mentor-console-sider-nav">
             {navGroups.map((group) => (
               <div key={group.id} className="mentor-console-nav-group">
-                {!collapsed && (
+                {(!collapsed || isMobileConsole) && (
                   <div className="mentor-console-nav-group-label">{group.label}</div>
                 )}
                 {group.items.map((item) => {
@@ -194,11 +246,14 @@ export default function MentorConsoleLayout() {
                       className={`mentor-console-nav-item ${
                         isActive ? 'mentor-console-nav-item--active' : ''
                       }`}
-                      onClick={() => navigate(item.path)}
-                      title={collapsed ? item.label : undefined}
+                      onClick={() => {
+                        navigate(item.path);
+                        setMobileMenuOpen(false);
+                      }}
+                      title={collapsed && !isMobileConsole ? item.label : undefined}
                     >
                       <span className="mentor-console-nav-item-icon">{item.icon}</span>
-                      {!collapsed && (
+                      {(!collapsed || isMobileConsole) && (
                         <span className="mentor-console-nav-item-label">{item.label}</span>
                       )}
                     </button>
@@ -234,7 +289,7 @@ export default function MentorConsoleLayout() {
                 {initialsFromName(displayName)}
               </div>
             )}
-            {!collapsed && (
+            {(!collapsed || isMobileConsole) && (
               <div className="mentor-console-user-meta">
                 <div className="mentor-console-user-name">{displayName}</div>
                 <div className="mentor-console-user-role">{roleLabel}</div>
@@ -245,6 +300,21 @@ export default function MentorConsoleLayout() {
       </aside>
 
       <main className="mentor-console-main">
+        {isMobileConsole ? (
+          <div className="mentor-console-mobile-bar">
+            <button
+              type="button"
+              className="mentor-console-mobile-bar-btn"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mentor-console-sider"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={22} strokeWidth={2} />
+            </button>
+            <span className="mentor-console-mobile-bar-title">Mentor console</span>
+          </div>
+        ) : null}
         <Suspense
           fallback={
             <div
