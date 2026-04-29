@@ -46,6 +46,7 @@ import { useMentorBookings } from '../sessionSources';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
 import { avatarStyleForId, formatDate, formatDateTime, initialsFromName } from '../utils';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './StudentDetailDrawer.scss';
 
 const { Text } = Typography;
@@ -112,7 +113,8 @@ function scrollToSection(id: string) {
 }
 
 export default function StudentDetailDrawer({ student, open, onClose }: Props) {
-  const { hasFullSupport } = useMentorConsole();
+  const { hasFullSupport, email, managementRole } = useMentorConsole();
+  const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student?.id ?? '';
 
   const [assignTaskOpen, setAssignTaskOpen] = useState(false);
@@ -160,7 +162,7 @@ export default function StudentDetailDrawer({ student, open, onClose }: Props) {
   });
 
   const { data: inbox, isFetching: loadingInbox } = useGetGraderInboxQuery(undefined, {
-    skip: !hasFullSupport || !studentId,
+    skip: !hasFullSupport || !researchPrepLive || !studentId,
   });
 
   const { bookings, isLoading: loadingBookings } = useMentorBookings(studentId, {
@@ -543,7 +545,7 @@ export default function StudentDetailDrawer({ student, open, onClose }: Props) {
               <div className="mc-student-ws-kpi-label">Essays / apps</div>
               <div className="mc-student-ws-kpi-value">{pipeline.length}</div>
             </div>
-            {hasFullSupport ? (
+            {hasFullSupport && researchPrepLive ? (
               <div className="mc-student-ws-kpi">
                 <div className="mc-student-ws-kpi-label">Research queue</div>
                 <div className="mc-student-ws-kpi-value">{researchPendingCount}</div>
@@ -604,7 +606,7 @@ export default function StudentDetailDrawer({ student, open, onClose }: Props) {
               Milestones
               <span className="mc-student-ws-nav-count">{milestones.length}</span>
             </button>
-            {hasFullSupport ? (
+            {hasFullSupport && researchPrepLive ? (
               <button
                 type="button"
                 className="mc-student-ws-nav-btn"
@@ -818,7 +820,7 @@ export default function StudentDetailDrawer({ student, open, onClose }: Props) {
             </div>
           </section>
 
-          {hasFullSupport ? (
+          {hasFullSupport && researchPrepLive ? (
             <section id={SEC.research} className="mc-student-ws-section">
               <div className="mc-student-ws-section-head">
                 <h2 className="mc-student-ws-section-title">

@@ -54,6 +54,7 @@ import {
 } from 'src/constants/admissionsPreviewVideos';
 import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterests';
 import { useTypedSelector } from 'src/app/store';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
@@ -407,6 +408,14 @@ export default function CommunityHubMockPage() {
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
+  const researchPrepLive = useMemo(
+    () =>
+      canUseResearchPrepLive(
+        profile?.email,
+        profile?.managementRole as string | undefined,
+      ),
+    [profile?.email, profile?.managementRole],
+  );
   const currentProfile = useMemo(() => {
     const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
     const username =
@@ -637,19 +646,26 @@ export default function CommunityHubMockPage() {
   }, [activeSection, accountTarget, t]);
 
   const communityLockVariant = useMemo((): CommunityLockVariant | null => {
-    if (isCommunityEnrolled) return null;
-    if (activeSection === 'account' && accountTarget === 'rewards') return 'my-rewards';
-    switch (activeSection) {
-      case 'feed':
-        return 'feed';
-      case 'buddies':
-        return 'study-buddies';
-      case 'researchProgram':
-        return 'research-program';
-      default:
-        return null;
+    if (activeSection === 'account' && accountTarget === 'rewards' && !isCommunityEnrolled) {
+      return 'my-rewards';
     }
-  }, [isCommunityEnrolled, activeSection, accountTarget]);
+    if (!isCommunityEnrolled) {
+      switch (activeSection) {
+        case 'feed':
+          return 'feed';
+        case 'buddies':
+          return 'study-buddies';
+        case 'researchProgram':
+          return 'research-program';
+        default:
+          return null;
+      }
+    }
+    if (activeSection === 'researchProgram' && !researchPrepLive) {
+      return 'research-prep-coming-soon';
+    }
+    return null;
+  }, [isCommunityEnrolled, activeSection, accountTarget, researchPrepLive]);
 
   const hideHubChrome = true;
 
@@ -712,7 +728,7 @@ export default function CommunityHubMockPage() {
   // no max-width clamp. The page itself supplies a top bar with breadcrumb,
   // an Overview/Module switch, and a "Back to main menu" button.
   const isResearchFullBleed =
-    activeSection === 'researchProgram' && isCommunityEnrolled;
+    activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive;
 
   return (
     <div
@@ -1365,7 +1381,7 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
-          {activeSection === 'researchProgram' && isCommunityEnrolled && (
+          {activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive && (
             <div className={styles.hubDashEmbed}>
               <ResearchPrepSection />
             </div>

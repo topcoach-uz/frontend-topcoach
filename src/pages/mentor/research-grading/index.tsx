@@ -7,12 +7,15 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Spin, Tabs } from 'antd';
+import { Button, Result, Spin, Tabs } from 'antd';
 import { Calendar, FileCheck2, GraduationCap, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   useGetGraderInboxQuery,
   type ResearchSubmission,
 } from 'src/app/services/research-prep';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
+import { useMentorConsole } from '../console/MentorConsoleContext';
 import SubmissionDrawer from './SubmissionDrawer';
 import './research-grading.scss';
 
@@ -41,9 +44,27 @@ const fmtDate = (iso: string) =>
   });
 
 const ResearchGradingPage: React.FC = () => {
-  const { data: inbox, isLoading } = useGetGraderInboxQuery();
+  const navigate = useNavigate();
+  const { email, managementRole } = useMentorConsole();
+  const researchLive = canUseResearchPrepLive(email, managementRole);
+  const { data: inbox, isLoading } = useGetGraderInboxQuery(undefined, { skip: !researchLive });
   const [tab, setTab] = useState<'pending' | 'all'>('pending');
   const [openSub, setOpenSub] = useState<ResearchSubmission | null>(null);
+
+  if (!researchLive) {
+    return (
+      <Result
+        status="info"
+        title="Research grading — coming soon"
+        subTitle="The grading inbox will open when Research Prep launches for all mentors."
+        extra={
+          <Button type="primary" onClick={() => navigate('/mentor/dashboard')}>
+            Back to dashboard
+          </Button>
+        }
+      />
+    );
+  }
 
   const pending = useMemo(
     () =>

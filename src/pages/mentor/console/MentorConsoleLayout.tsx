@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
@@ -75,10 +76,17 @@ export default function MentorConsoleLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isMobileConsole, mobileMenuOpen]);
 
-  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
+  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport, email } =
     useMentorConsole();
 
   const navGroups: NavGroup[] = useMemo(() => {
+    const researchGradingItem: NavItem = {
+      key: 'research-grading',
+      label: 'Research grading',
+      icon: <FlaskConical size={18} strokeWidth={1.75} />,
+      path: '/mentor/research-grading',
+    };
+
     const mentorshipItems: NavItem[] = [
       {
         key: 'availability',
@@ -113,12 +121,7 @@ export default function MentorConsoleLayout() {
           icon: <Flag size={18} strokeWidth={1.75} />,
           path: '/mentor/milestones',
         },
-        {
-          key: 'research-grading',
-          label: 'Research grading',
-          icon: <FlaskConical size={18} strokeWidth={1.75} />,
-          path: '/mentor/research-grading',
-        },
+        ...(canUseResearchPrepLive(email, managementRole) ? [researchGradingItem] : []),
       );
     }
 
@@ -158,7 +161,7 @@ export default function MentorConsoleLayout() {
     // SuperAdmin lands here only via the role-toggle exception (admin who is
     // also a mentor). They reach the admin console from the user menu, so we
     // intentionally don't surface admin-only tools inside the mentor sidebar.
-  }, [hasFullSupport]);
+  }, [hasFullSupport, email, managementRole]);
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;

@@ -22,6 +22,8 @@ import {
 } from '../../../app/services/fullSupportApi';
 import { useGetResearchProgressSummaryQuery } from '../../../app/services/research-prep';
 import { useJourneyExperience } from '../../../contexts/JourneyExperienceContext';
+import { useTypedSelector } from '../../../app/store';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './AdmissionsProgramProgressCard.scss';
 
 const { Paragraph } = Typography;
@@ -76,12 +78,21 @@ export default function AdmissionsProgramProgressCard({
   const { data: fullSupportSatProgress } = useGetMenteeSatProgressQuery(undefined, {
     skip: !!skip || !enrollmentMe?.data?.enrolled,
   });
-  // Research Prep is bundled with Community enrollment — backend 403s for
-  // non-community users, so skip the call entirely when the user isn't in.
   const { isCommunityEnrolled, setCommunityEnrolled } = useJourneyExperience();
-  // Research Prep: mentees only fetch when Community mode; mentors with program access still call API.
+  const profile = useTypedSelector((s) => s.auth.profile);
+  const researchPrepLive = useMemo(
+    () =>
+      canUseResearchPrepLive(
+        profile?.email,
+        profile?.managementRole as string | undefined,
+      ),
+    [profile?.email, profile?.managementRole],
+  );
+  // Research Prep: mentees only fetch when Community mode; mentors with program access still call API when live.
   const skipResearchQuery =
-    !!skip || (forContext === 'mentee' && !isCommunityEnrolled);
+    !!skip ||
+    !researchPrepLive ||
+    (forContext === 'mentee' && !isCommunityEnrolled);
   const { data: researchSummary, isLoading: researchLoading } = useGetResearchProgressSummaryQuery(
     undefined,
     {
@@ -120,10 +131,21 @@ export default function AdmissionsProgramProgressCard({
   const hasSatCourse = satEnrollment?.isEnrolled && satEnrollment?.canAccessLearning;
   const hasSatFromFullSupport = enrollmentMe?.data?.enrolled === true;
   const hasSat = hasSatCourse || hasSatFromFullSupport;
-  // Show a Research Prep teaser tile to enrolled-elsewhere users who haven't
-  // joined Community yet, so they can discover and unlock it.
+  // Teaser for non–Community mentees; "Join Community" only when Research Prep is in public rollout.
   const showResearchTeaser =
-    forContext === 'mentee' && !isCommunityEnrolled && (hasAdmissions || hasSat);
+    researchPrepLive &&
+    forContext === 'mentee' &&
+    !isCommunityEnrolled &&
+    (hasAdmissions || hasSat);
+  const showResearchComingSoonTeaser =
+    !researchPrepLive &&
+    forContext === 'mentee' &&
+    !isCommunityEnrolled &&
+    (hasAdmissions || hasSat);
+  const showResearchComingSoonTile =
+    !researchPrepLive &&
+    (forContext === 'mentor' || isCommunityEnrolled) &&
+    (hasAdmissions || hasSat);
 
   const embeddedBody = embedded || wrapWithMentorPanel;
 
@@ -361,6 +383,88 @@ export default function AdmissionsProgramProgressCard({
               >
                 Join the community to unlock
               </Button>
+            </div>
+          )}
+          {showResearchComingSoonTeaser && (
+            <div
+              key="research-soon-teaser"
+              className="admissions-progress-course admissions-progress-course--locked"
+            >
+              <div className="admissions-progress-course-header">
+                <FlaskConical size={16} color="#8b0000" />
+                <span className="admissions-progress-course-title">
+                  {t('studentHub.dashboard.researchPrep', 'Research Prep')}
+                </span>
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    color: '#8a93a0',
+                  }}
+                >
+                  {t('studentHub.dashboard.comingSoonBadge', 'Coming soon')}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: '8px 0 0',
+                  fontSize: 13,
+                  color: '#5b6470',
+                  lineHeight: 1.5,
+                }}
+              >
+                {t(
+                  'studentHub.dashboard.researchPrepSoonTeaser',
+                  'Research Prep is almost here — we will open access for all students shortly.',
+                )}
+              </p>
+            </div>
+          )}
+          {showResearchComingSoonTile && (
+            <div
+              key="research-soon-tile"
+              className="admissions-progress-course admissions-progress-course--locked"
+            >
+              <div className="admissions-progress-course-header">
+                <FlaskConical size={16} color="#8b0000" />
+                <span className="admissions-progress-course-title">
+                  {t('studentHub.dashboard.researchPrep', 'Research Prep')}
+                </span>
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    color: '#8a93a0',
+                  }}
+                >
+                  {t('studentHub.dashboard.comingSoonBadge', 'Coming soon')}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: '8px 0 0',
+                  fontSize: 13,
+                  color: '#5b6470',
+                  lineHeight: 1.5,
+                }}
+              >
+                {t(
+                  'studentHub.dashboard.researchPrepSoonTileBody',
+                  'The hub shortcut stays in place — we are finishing the launch experience.',
+                )}
+              </p>
             </div>
           )}
         </div>

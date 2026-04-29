@@ -12,6 +12,7 @@ export type CommunityLockVariant =
   | 'admissions-program'
   | 'sat-course'
   | 'research-program'
+  | 'research-prep-coming-soon'
   | 'my-rewards'
   | 'study-buddies';
 
@@ -120,6 +121,19 @@ export default function CommunityLockedPage({ variant = 'feed' }: CommunityLocke
           { icon: 'sparkles', text: t('studentHub.communityLock.researchB3', 'Unlock rewards as you land roles and milestones') },
         ],
       },
+      'research-prep-coming-soon': {
+        badge: t('studentHub.communityLock.badgeComingSoon', 'Coming soon'),
+        title: t('studentHub.communityLock.researchPrepSoonTitle', 'Research Prep is almost here'),
+        lead: t(
+          'studentHub.communityLock.researchPrepSoonLead',
+          'We are finishing the 8-week Research Prep curriculum and mentor grading workflow. The hub entry stays in place — check back shortly.',
+        ),
+        bullets: [
+          { icon: 'flask', text: t('studentHub.communityLock.researchSoonB1', 'Weekly lessons, knowledge checks, and assignments') },
+          { icon: 'users', text: t('studentHub.communityLock.researchSoonB2', 'Mentor feedback on your research writing') },
+          { icon: 'sparkles', text: t('studentHub.communityLock.researchSoonB3', 'Same workspace as Community when we open access') },
+        ],
+      },
       'my-rewards': {
         badge: t('studentHub.communityLock.badgeRewards', 'My Rewards'),
         title: t('studentHub.communityLock.rewardsTitle', 'Redeem coins and unlock perks with Community'),
@@ -150,7 +164,10 @@ export default function CommunityLockedPage({ variant = 'feed' }: CommunityLocke
     return defaults[variant];
   }, [t, variant]);
 
+  const isResearchComingSoon = variant === 'research-prep-coming-soon';
+
   const handleUpgrade = () => {
+    if (isResearchComingSoon) return;
     message.warning(
       t(
         'studentHub.communityLock.unlockComingSoon',
@@ -223,18 +240,30 @@ export default function CommunityLockedPage({ variant = 'feed' }: CommunityLocke
           ))}
         </ul>
 
-        <div className={styles.actions}>
-          <Button type="primary" size="large" className={styles.primaryBtn} onClick={handleUpgrade}>
-            {t('studentHub.communityLock.unlockCta', 'Unlock Community')}
-          </Button>
-        </div>
+        {!isResearchComingSoon && (
+          <div className={styles.actions}>
+            <Button type="primary" size="large" className={styles.primaryBtn} onClick={handleUpgrade}>
+              {t('studentHub.communityLock.unlockCta', 'Unlock Community')}
+            </Button>
+          </div>
+        )}
 
-        <p className={styles.finePrint}>
-          {t(
-            'studentHub.communityLock.modalDisclaimer',
-            'Unlock switches your account view to the Community experience.',
-          )}
-        </p>
+        {isResearchComingSoon && (
+          <div className={styles.actions}>
+            <Button type="primary" size="large" className={styles.primaryBtn} onClick={dismiss}>
+              {t('studentHub.communityLock.backCta', 'Back to hub')}
+            </Button>
+          </div>
+        )}
+
+        {!isResearchComingSoon && (
+          <p className={styles.finePrint}>
+            {t(
+              'studentHub.communityLock.modalDisclaimer',
+              'Unlock switches your account view to the Community experience.',
+            )}
+          </p>
+        )}
       </div>
     </div>
   );

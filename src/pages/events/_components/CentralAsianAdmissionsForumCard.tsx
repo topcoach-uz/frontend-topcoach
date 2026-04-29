@@ -18,7 +18,14 @@ import { CAAF_DRAFT_STORAGE_KEY } from '../central-asian-admissions-forum/types'
 import styles from './CentralAsianAdmissionsForumCard.module.scss';
 
 const FORUM_REGISTER_PATH = '/events/central-asian-admissions-forum';
-const CAAF_DEADLINE_ISO = '2026-04-29T23:59:00+05:00';
+
+/** Next calendar day at 23:59:59.999 local — registration “closes tomorrow night”. */
+function getRegistrationDeadlineEnd(fromNow: number): Date {
+  const d = new Date(fromNow);
+  d.setDate(d.getDate() + 1);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
 
 type CountdownParts = {
   days: string;
@@ -27,10 +34,9 @@ type CountdownParts = {
   seconds: string;
 };
 
-function getCountdownParts(targetIso: string): CountdownParts {
-  const targetTs = new Date(targetIso).getTime();
-  const nowTs = Date.now();
-  const distance = Math.max(targetTs - nowTs, 0);
+function getCountdownParts(target: Date, nowMs: number): CountdownParts {
+  const targetTs = target.getTime();
+  const distance = Math.max(targetTs - nowMs, 0);
 
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
   const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
@@ -59,6 +65,16 @@ export default function CentralAsianAdmissionsForumCard() {
   const app = data?.application;
   const [tick, setTick] = useState<number>(Date.now());
 
+  const registrationDeadline = useMemo(() => getRegistrationDeadlineEnd(tick), [tick]);
+  const deadlineLabel = useMemo(
+    () =>
+      registrationDeadline.toLocaleString(undefined, {
+        dateStyle: 'long',
+        timeStyle: 'short',
+      }),
+    [registrationDeadline],
+  );
+
   const go = () => {
     if (!isAuthenticated) {
       try {
@@ -79,10 +95,10 @@ export default function CentralAsianAdmissionsForumCard() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const countdown = useMemo(() => getCountdownParts(CAAF_DEADLINE_ISO), [tick]);
+  const countdown = useMemo(() => getCountdownParts(registrationDeadline, tick), [registrationDeadline, tick]);
   const isDeadlinePassed = useMemo(
-    () => new Date(CAAF_DEADLINE_ISO).getTime() <= tick,
-    [tick],
+    () => registrationDeadline.getTime() <= tick,
+    [registrationDeadline, tick],
   );
 
   let desc = t('caafForum.card.defaultDesc', { fee: feeLabel });
@@ -162,7 +178,7 @@ export default function CentralAsianAdmissionsForumCard() {
       <div className={styles.countdownCard} aria-live="polite">
         <div className={styles.countdownHeader}>
           <h3 className={styles.countdownTitle}>Registration closes in</h3>
-          <span className={styles.deadlineText}>Deadline: April 29, 2026, 23:59</span>
+          <span className={styles.deadlineText}>Deadline: {deadlineLabel}</span>
         </div>
         <div className={styles.countdownGrid}>
           <div className={styles.countdownItem}>
