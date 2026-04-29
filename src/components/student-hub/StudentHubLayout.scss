@@ -1221,12 +1221,17 @@ $crimson-900: #7f1d1d;
       .main-content-padded {
         padding: $space-3;
         padding-top: $space-3;
-        padding-left: $space-2;
-        padding-right: $space-2;
+        padding-left: max(0px, env(safe-area-inset-left, 0px));
+        padding-right: max(0px, env(safe-area-inset-right, 0px));
       }
 
         .study-goals-sticky-banner-inner {
           padding: 12px $space-3;
+        }
+
+        .student-hub-page {
+          padding-left: $space-1 !important;
+          padding-right: $space-1 !important;
         }
 
         .study-goals-sticky-banner-cta {
