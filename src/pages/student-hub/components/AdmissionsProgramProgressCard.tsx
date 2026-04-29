@@ -9,6 +9,7 @@ import { Card, Progress, Button, Spin, Empty, message, Space, Typography } from 
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, PlayCircle, BookOpen, FlaskConical } from 'lucide-react';
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import {
   useGetEnrollmentStatusQuery,
   useGetUserProgressQuery,
