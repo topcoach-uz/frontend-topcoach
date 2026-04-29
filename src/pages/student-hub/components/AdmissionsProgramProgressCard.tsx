@@ -5,11 +5,10 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, Progress, Button, Spin, Empty, message } from 'antd';
+import { Card, Progress, Button, Spin, Empty, message, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Lock, PlayCircle } from 'lucide-react';
-import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
+import { Lock, PlayCircle, BookOpen, FlaskConical } from 'lucide-react';
 import {
   useGetEnrollmentStatusQuery,
   useGetUserProgressQuery,
@@ -21,9 +20,10 @@ import {
   useLazyGetScholarhubSsoLinkQuery,
 } from '../../../app/services/fullSupportApi';
 import { useGetResearchProgressSummaryQuery } from '../../../app/services/research-prep';
-import { FlaskConical } from 'lucide-react';
 import { useJourneyExperience } from '../../../contexts/JourneyExperienceContext';
 import './AdmissionsProgramProgressCard.scss';
+
+const { Paragraph } = Typography;
 
 interface AdmissionsProgramProgressCardProps {
   /** Skip rendering (e.g. in read-only mode) */
@@ -36,6 +36,13 @@ interface AdmissionsProgramProgressCardProps {
   title?: string;
   /** Optional subtitle override */
   subtitle?: string;
+  /**
+   * `mentor`: fetch research progress without requiring Community journey mode
+   * (for mentors granted learner enrollments).
+   */
+  forContext?: 'mentee' | 'mentor';
+  /** Mentor dashboard: embed body in a `mc-panel` Card with title (implies embedded layout). */
+  wrapWithMentorPanel?: boolean;
 }
 
 export default function AdmissionsProgramProgressCard({
@@ -44,6 +51,8 @@ export default function AdmissionsProgramProgressCard({
   showEmptyWhenNotEnrolled = false,
   title,
   subtitle,
+  forContext = 'mentee',
+  wrapWithMentorPanel = false,
 }: AdmissionsProgramProgressCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -69,9 +78,15 @@ export default function AdmissionsProgramProgressCard({
   // Research Prep is bundled with Community enrollment — backend 403s for
   // non-community users, so skip the call entirely when the user isn't in.
   const { isCommunityEnrolled, setCommunityEnrolled } = useJourneyExperience();
-  const { data: researchSummary } = useGetResearchProgressSummaryQuery(undefined, {
-    skip: !!skip || !isCommunityEnrolled,
-  });
+  // Research Prep: mentees only fetch when Community mode; mentors with program access still call API.
+  const skipResearchQuery =
+    !!skip || (forContext === 'mentee' && !isCommunityEnrolled);
+  const { data: researchSummary, isLoading: researchLoading } = useGetResearchProgressSummaryQuery(
+    undefined,
+    {
+      skip: skipResearchQuery,
+    },
+  );
   const hasResearchPrep = Boolean(researchSummary && researchSummary.weeksCompleted >= 0);
 
   const { data: admissionsStructure } = useGetCourseStructureQuery('admissions', {
@@ -106,9 +121,15 @@ export default function AdmissionsProgramProgressCard({
   const hasSat = hasSatCourse || hasSatFromFullSupport;
   // Show a Research Prep teaser tile to enrolled-elsewhere users who haven't
   // joined Community yet, so they can discover and unlock it.
-  const showResearchTeaser = !isCommunityEnrolled && (hasAdmissions || hasSat);
+  const showResearchTeaser =
+    forContext === 'mentee' && !isCommunityEnrolled && (hasAdmissions || hasSat);
 
-  const isLoading = enrollmentLoading || (hasAdmissions && progressLoading);
+  const embeddedBody = embedded || wrapWithMentorPanel;
+
+  const isLoading =
+    enrollmentLoading ||
+    (!skipResearchQuery && researchLoading) ||
+    (hasAdmissions && progressLoading);
   if (isLoading && !hasAdmissions && !hasSat && !hasResearchPrep) {
     return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
   }
@@ -195,7 +216,7 @@ export default function AdmissionsProgramProgressCard({
 
   const content = (
     <>
-      {!embedded && (
+      {!embeddedBody && (
         <div className="admissions-progress-header">
           <h3 className="admissions-progress-title">
             {title ?? t('programs.enrollment.learningProgress')}
@@ -281,7 +302,11 @@ export default function AdmissionsProgramProgressCard({
                 type="primary"
                 size="middle"
                 icon={<PlayCircle size={16} />}
-                onClick={() => navigate('/student-hub?section=research-program')}
+                onClick={() =>
+                  forContext === 'mentor'
+                    ? navigate('/mentor/research-prep')
+                    : navigate('/student-hub?section=research-program')
+                }
                 className="admissions-progress-btn"
               >
                 {t('programs.enrollment.continueLearning')}
@@ -341,6 +366,30 @@ export default function AdmissionsProgramProgressCard({
       )}
     </>
   );
+
+  if (wrapWithMentorPanel) {
+    return (
+      <Card
+        bordered={false}
+        className="mc-panel mc-learning-progress-panel admissions-progress-card"
+        title={
+          <Space size="small">
+            <BookOpen size={18} color="var(--mc-accent)" />
+            <span>{title ?? t('programs.enrollment.learningProgress')}</span>
+          </Space>
+        }
+      >
+        <Paragraph type="secondary" style={{ marginBottom: 16, marginTop: 0 }}>
+          {subtitle ??
+            t(
+              'mentor.dashboard.learningProgressLead',
+              'Track your progress in programs you are enrolled in as a learner.',
+            )}
+        </Paragraph>
+        {content}
+      </Card>
+    );
+  }
 
   if (embedded) {
     return content;

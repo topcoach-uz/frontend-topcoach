@@ -21,6 +21,7 @@ import FullSupportBookingCard from '../components/FullSupportBookingCard';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { formatRelative } from '../utils';
 import { useMentorBookings, type MentorBooking } from '../sessionSources';
+import AdmissionsProgramProgressCard from 'src/pages/student-hub/components/AdmissionsProgramProgressCard';
 
 const { Paragraph } = Typography;
 
@@ -230,6 +231,12 @@ export default function MentorConsoleDashboardPage() {
             </Col>
           </>
         )}
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 16, marginBottom: 28 }}>
+        <Col xs={24}>
+          <AdmissionsProgramProgressCard forContext="mentor" wrapWithMentorPanel />
+        </Col>
       </Row>
 
       <Row gutter={[16, 16]}>

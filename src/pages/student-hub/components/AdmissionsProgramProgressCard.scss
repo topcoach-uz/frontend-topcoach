@@ -121,3 +121,30 @@
     }
   }
 }
+
+/* Mentor console: root uses `.mc-panel` + `.admissions-progress-card` so tile styles apply.
+   Slight responsive tweak when only one course is shown. */
+.mc-panel.mc-learning-progress-panel.admissions-progress-card {
+  .admissions-progress-courses:has(.admissions-progress-course:only-child) {
+    .admissions-progress-course {
+      max-width: 100%;
+      flex: 1 1 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admissions-progress-courses {
+      flex-direction: column;
+    }
+
+    .admissions-progress-course {
+      min-width: 0;
+    }
+
+    .admissions-progress-stats {
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+    }
+  }
+}
