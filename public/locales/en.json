@@ -1994,6 +1994,8 @@
   "caafForum.btn.backToReview": "Back to review",
   "caafForum.btn.backToEdit": "Back to edit",
   "caafForum.btn.backToEvents": "Back to events",
+  "caafForum.registrationClosed.title": "Registration closed",
+  "caafForum.registrationClosed.body": "Online registration for the Central Asian Admissions Forum 2026 has ended.",
   "caafForum.btn.signInToRegister": "Sign in to register",
   "caafForum.btn.register": "Register for the forum",
   "caafForum.alert.signIn.title": "Sign in required",

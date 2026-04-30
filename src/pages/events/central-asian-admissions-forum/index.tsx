@@ -22,6 +22,7 @@ import {
   PARTICIPATING_COUNTRY_OPTIONS,
   PRIMARY_GOAL_OPTIONS,
   formatCaafRegistrationFeeUsd,
+  isPastCaafRegistrationDeadline,
   REGISTRATION_FEE_USD_FALLBACK,
 } from './constants';
 import type { CaafDestinationId, CaafDraft, CaafParticipatingCountry } from './types';
@@ -171,6 +172,28 @@ export default function CentralAsianAdmissionsForumPage() {
   if (serverApplication?.status === 'pending_payment' && activeSubmissionId) {
     navigate(`/payment?${caafPaymentSearch(activeSubmissionId)}`, { replace: true });
     return null;
+  }
+
+  if (isPastCaafRegistrationDeadline()) {
+    const exempt =
+      phase === 'submitted' ||
+      serverApplication?.status === 'paid' ||
+      serverApplication?.status === 'pending_payment';
+    if (!exempt) {
+      return (
+        <main className={styles.page}>
+          <Alert
+            type="warning"
+            showIcon
+            message={t('caafForum.registrationClosed.title')}
+            description={t('caafForum.registrationClosed.body')}
+          />
+          <Button type="primary" size="large" style={{ marginTop: 24 }} onClick={() => navigate('/events')}>
+            {t('caafForum.btn.backToEvents')}
+          </Button>
+        </main>
+      );
+    }
   }
 
   if (phase === 'submitted') {

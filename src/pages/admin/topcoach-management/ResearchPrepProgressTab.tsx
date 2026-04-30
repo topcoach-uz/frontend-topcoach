@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Alert, Card, Input, Progress, Spin, Table, Tag, Typography } from 'antd';
+import { Alert, Card, Input, Progress, Spin, Table, Typography } from 'antd';
 import { Search as SearchIcon, Sparkles } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -44,15 +44,14 @@ const ResearchPrepProgressTab: React.FC = () => {
 
   const stats = useMemo(() => {
     if (students.length === 0) {
-      return { total: 0, fullSupport: 0, avgPercent: 0, pending: 0 };
+      return { total: 0, avgPercent: 0, pending: 0 };
     }
     const total = students.length;
-    const fullSupport = students.filter((s) => s.isFullSupport).length;
     const avgPercent = Math.round(
       students.reduce((acc, s) => acc + (s.overallPercent ?? 0), 0) / total,
     );
     const pending = students.reduce((acc, s) => acc + (s.pendingSubmissions ?? 0), 0);
-    return { total, fullSupport, avgPercent, pending };
+    return { total, avgPercent, pending };
   }, [students]);
 
   const columns: ColumnsType<ResearchAdminStudent> = [
@@ -60,10 +59,9 @@ const ResearchPrepProgressTab: React.FC = () => {
       title: 'Student',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string, row) => (
+      render: (name: string) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <strong>{name ?? '—'}</strong>
-          {row.isFullSupport && <Tag color="gold">Full Support</Tag>}
         </div>
       ),
       sorter: (a, b) => (a.name ?? '').localeCompare(b.name ?? ''),
@@ -122,8 +120,9 @@ const ResearchPrepProgressTab: React.FC = () => {
           />
           <AntText type="secondary" style={{ fontSize: 13 }}>
             <Sparkles size={13} style={{ verticalAlign: -2, marginRight: 4 }} />
-            Research Prep is bundled with Community enrollment — only Community-enrolled
-            students appear here. Full Support students' submissions route to their assigned mentor.
+            Research Prep follows Community access only. Full Support is a separate track — anyone
+            enrolled in Full Support is excluded from this roster (even if preferences still show
+            Community from legacy data).
           </AntText>
         </div>
       </Card>
@@ -131,14 +130,13 @@ const ResearchPrepProgressTab: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: 12,
           marginTop: 16,
         }}
       >
         {[
           { label: 'Students enrolled', value: stats.total },
-          { label: 'Full Support', value: stats.fullSupport },
           { label: 'Avg. completion', value: `${stats.avgPercent}%` },
           { label: 'Pending submissions', value: stats.pending },
         ].map((s) => (

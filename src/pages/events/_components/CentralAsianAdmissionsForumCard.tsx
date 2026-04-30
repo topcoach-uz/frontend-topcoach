@@ -11,21 +11,15 @@ import {
 } from 'src/app/services/caafForumApi';
 import {
   CAAF_FORUM_CARD_IMAGE,
+  CAAF_REGISTRATION_DEADLINE_ISO,
   formatCaafRegistrationFeeUsd,
+  isPastCaafRegistrationDeadline,
   REGISTRATION_FEE_USD_FALLBACK,
 } from '../central-asian-admissions-forum/constants';
 import { CAAF_DRAFT_STORAGE_KEY } from '../central-asian-admissions-forum/types';
 import styles from './CentralAsianAdmissionsForumCard.module.scss';
 
 const FORUM_REGISTER_PATH = '/events/central-asian-admissions-forum';
-
-/** Next calendar day at 23:59:59.999 local — registration “closes tomorrow night”. */
-function getRegistrationDeadlineEnd(fromNow: number): Date {
-  const d = new Date(fromNow);
-  d.setDate(d.getDate() + 1);
-  d.setHours(23, 59, 59, 999);
-  return d;
-}
 
 type CountdownParts = {
   days: string;
@@ -65,7 +59,8 @@ export default function CentralAsianAdmissionsForumCard() {
   const app = data?.application;
   const [tick, setTick] = useState<number>(Date.now());
 
-  const registrationDeadline = useMemo(() => getRegistrationDeadlineEnd(tick), [tick]);
+  const registrationDeadline = useMemo(() => new Date(CAAF_REGISTRATION_DEADLINE_ISO), []);
+
   const deadlineLabel = useMemo(
     () =>
       registrationDeadline.toLocaleString(undefined, {
@@ -100,6 +95,10 @@ export default function CentralAsianAdmissionsForumCard() {
     () => registrationDeadline.getTime() <= tick,
     [registrationDeadline, tick],
   );
+
+  if (isPastCaafRegistrationDeadline(tick)) {
+    return null;
+  }
 
   let desc = t('caafForum.card.defaultDesc', { fee: feeLabel });
   let cta = t('caafForum.card.cta.register');
