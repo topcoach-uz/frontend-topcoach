@@ -12,7 +12,7 @@ import {
 import { getLatestCreatedImg } from 'src/utils';
 import styles from './communityHubMock.module.scss';
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 6;
 
 const { Paragraph } = Typography;
 
