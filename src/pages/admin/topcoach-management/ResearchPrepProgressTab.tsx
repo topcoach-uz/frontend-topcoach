@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Alert, Card, Input, Progress, Spin, Table, Typography } from 'antd';
+import { Alert, Card, Input, Progress, Spin, Table, Tag, Typography } from 'antd';
 import { Search as SearchIcon, Sparkles } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import {
