@@ -29,7 +29,9 @@ function normalizeStudents(raw: unknown): ResearchAdminStudent[] {
 }
 
 const ResearchPrepProgressTab: React.FC = () => {
-  const { data, isLoading, error } = useGetAdminStudentsQuery();
+  const { data, isLoading, error } = useGetAdminStudentsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const [search, setSearch] = useState('');
 
   const students = useMemo<ResearchAdminStudent[]>(() => normalizeStudents(data), [data]);
