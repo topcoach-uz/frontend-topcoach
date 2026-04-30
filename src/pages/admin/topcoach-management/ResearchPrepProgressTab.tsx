@@ -1,9 +1,9 @@
 /**
  * ResearchPrepProgressTab
  *
- * Superadmin view of the Research Prep roster: which Community-enrolled
- * students are working through the 8-week curriculum, how far they've
- * gotten, and how many submissions are waiting on a grader.
+ * Superadmin view of the Research Prep roster: students with Community access
+ * (Research Prep is part of Community). Progress through the 8-week curriculum
+ * and pending grader work. Rows may also show Full Support when that grant applies.
  *
  * Data source: GET /research-prep/admin/students
  */
@@ -59,9 +59,12 @@ const ResearchPrepProgressTab: React.FC = () => {
       title: 'Student',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      render: (name: string, row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <strong>{name ?? '—'}</strong>
+          {row.isFullSupport ? (
+            <Tag color="geekblue">Full Support</Tag>
+          ) : null}
         </div>
       ),
       sorter: (a, b) => (a.name ?? '').localeCompare(b.name ?? ''),
@@ -120,9 +123,9 @@ const ResearchPrepProgressTab: React.FC = () => {
           />
           <AntText type="secondary" style={{ fontSize: 13 }}>
             <Sparkles size={13} style={{ verticalAlign: -2, marginRight: 4 }} />
-            Research Prep follows Community access only. Full Support is a separate track — anyone
-            enrolled in Full Support is excluded from this roster (even if preferences still show
-            Community from legacy data).
+            Research Prep is bundled with Community: everyone listed here has Community access. Full
+            Support is granted separately — students can be on both; they still see Research Prep
+            when they have Community.
           </AntText>
         </div>
       </Card>
