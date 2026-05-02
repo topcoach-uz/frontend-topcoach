@@ -13,7 +13,7 @@ import { Alert, Card, Input, Progress, Spin, Table, Tag, Typography } from 'antd
 import { Search as SearchIcon, Sparkles } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import {
-  useGetAdminStudentsQuery,
+  useGetResearchPrepAdminRosterQuery,
   type ResearchAdminStudent,
 } from 'src/app/services/research-prep';
 
@@ -29,7 +29,7 @@ function normalizeStudents(raw: unknown): ResearchAdminStudent[] {
 }
 
 const ResearchPrepProgressTab: React.FC = () => {
-  const { data, isLoading, error } = useGetAdminStudentsQuery(undefined, {
+  const { data, isLoading, error } = useGetResearchPrepAdminRosterQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
   const [search, setSearch] = useState('');

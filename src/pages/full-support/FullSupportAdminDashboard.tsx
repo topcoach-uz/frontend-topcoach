@@ -28,7 +28,7 @@ import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import { SatProgressAdminTable } from 'src/utils/satProgressAdminTable';
 import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
 import {
-  useGetAdminStudentsQuery as useGetResearchAdminStudentsQuery,
+  useGetResearchPrepAdminRosterQuery,
   useGetGraderInboxQuery as useGetResearchGraderInboxQuery,
   useGetResearchProgressSummaryQuery,
   type ResearchAdminStudent,
@@ -138,7 +138,7 @@ export default function FullSupportAdminDashboard({
 
   // Research Prep — admin per-student progress and grader inbox view.
   // Mock-mode today: matches by name fallback. Backend will accept selectedStudent.id directly.
-  const { data: researchStudentsRaw } = useGetResearchAdminStudentsQuery();
+  const { data: researchStudentsRaw } = useGetResearchPrepAdminRosterQuery();
   const { data: researchInboxRaw } = useGetResearchGraderInboxQuery();
   // Defensive coerce: the backend can return either a plain array or an
   // error/wrapper object on non-2xx responses. Treat anything non-array as [].

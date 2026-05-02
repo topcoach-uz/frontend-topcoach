@@ -126,9 +126,19 @@ export const researchPrepApi = RtkApi.injectEndpoints({
     }),
 
     // ── Admin authoring ─────────────────────────────────────────────────
-    getAdminStudents: builder.query<ResearchAdminStudent[], void>({
+    /** Unique endpoint name — do NOT use `getAdminStudents` (collides with fullSupportApi on RtkApi). */
+    getResearchPrepAdminRoster: builder.query<ResearchAdminStudent[], void>({
       query: () => `${BASE}/admin/students`,
       providesTags: ['ResearchPrepAdmin'],
+      transformResponse: (res: unknown): ResearchAdminStudent[] => {
+        if (Array.isArray(res)) return res as ResearchAdminStudent[];
+        if (res && typeof res === 'object') {
+          const o = res as Record<string, unknown>;
+          if (Array.isArray(o.data)) return o.data as ResearchAdminStudent[];
+          if (Array.isArray(o.items)) return o.items as ResearchAdminStudent[];
+        }
+        return [];
+      },
     }),
 
     updateWeek: builder.mutation<
@@ -234,7 +244,7 @@ export const {
   useGetGraderInboxQuery,
   useClaimSubmissionMutation,
   useGradeSubmissionMutation,
-  useGetAdminStudentsQuery,
+  useGetResearchPrepAdminRosterQuery,
   useUpdateWeekMutation,
   useUpsertVideoLessonMutation,
   useDeleteVideoLessonMutation,
