@@ -19,10 +19,8 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { useTypedSelector } from 'src/app/store';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
+import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import { getLatestCreatedImg } from 'src/utils';
-
-const ENABLE_COMMUNITY_FEED =
-  String(import.meta.env.VITE_ENABLE_COMMUNITY_FEED ?? 'false').toLowerCase() === 'true';
 
 export interface CommunityHubMobileDrawerNavProps {
   onNavigate: () => void;

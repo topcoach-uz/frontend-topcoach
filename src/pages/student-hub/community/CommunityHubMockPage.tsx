@@ -34,6 +34,7 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import Dashboard from '../Dashboard';
 import styles from './communityHubMock.module.scss';
+import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
 import ResearchPrepPage from '../research/ResearchPrepPage';
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
@@ -75,9 +76,6 @@ type CommunityNavItem = {
   label: string;
   icon: React.ReactNode;
 };
-
-const ENABLE_COMMUNITY_FEED =
-  String(import.meta.env.VITE_ENABLE_COMMUNITY_FEED ?? 'false').toLowerCase() === 'true';
 
 const MOCK_COUNTS = {
   feed: 0,
