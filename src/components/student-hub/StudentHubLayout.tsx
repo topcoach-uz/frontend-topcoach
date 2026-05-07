@@ -213,6 +213,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   ];
   const isCommunityLanding =
     hubSurfacePaths.includes(location.pathname) && location.pathname !== '/student-hub/settings';
+  // SAT Prep is a self-contained area that owns its full-width chrome
+  // (matches the Research Prep treatment). Hide the My Journey sidebar
+  // and let the page render edge-to-edge.
+  const isSatPrep = location.pathname.startsWith('/student-hub/sat-prep');
+  const hideSidebar = isCommunityLanding || isSatPrep;
 
   return (
     <Layout className="student-hub-layout">
@@ -232,7 +237,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
       )}
 
       {/* Community hub: Ant sidebar hidden; mobile header still needs a drawer with profile + hub nav */}
-      {isCommunityLanding && shouldShowMobileHeader && (
+      {hideSidebar && shouldShowMobileHeader && (
         <Drawer
           title={t('studentHub.nav.myJourney', 'My Journey')}
           placement="left"
@@ -248,7 +253,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         </Drawer>
       )}
 
-      {!isCommunityLanding && (
+      {!hideSidebar && (
         <>
           {/* Desktop Sidebar */}
           <Sider
@@ -334,10 +339,10 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         </>
       )}
 
-      <Layout className="main-layout">
-        <Content className="main-content">
-          <StudyGoalsStickyBanner />
-          <div className="main-content-padded">
+      <Layout className={`main-layout ${isSatPrep ? 'main-layout--sat-prep' : ''}`}>
+        <Content className={`main-content ${isSatPrep ? 'main-content--sat-prep' : ''}`}>
+          {!isSatPrep && <StudyGoalsStickyBanner />}
+          <div className={isSatPrep ? 'main-content-flush' : 'main-content-padded'}>
             {isLoading && location.pathname === '/student-hub' ? (
               <div className="student-hub-loading-content">
                 <div className="loading-spinner-container">

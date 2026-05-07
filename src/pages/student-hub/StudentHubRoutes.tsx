@@ -4,10 +4,20 @@ import { Spin } from 'antd';
 import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
 import CommunityHubMockPage from './community/CommunityHubMockPage';
+import { useTypedSelector } from 'src/app/store';
+import { canUseSatPrep } from 'src/lib/satPrepAccess';
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
 const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
 const PsychometricAssessmentPage = lazy(() => import('./psychometric-assessment/PsychometricAssessmentPage'));
+const SatPrepLayout = lazy(() => import('src/components/sat-prep/SatPrepLayout'));
+const SatDashboardPage = lazy(() => import('./sat-prep/SatDashboardPage'));
+const SatPracticeFlowPage = lazy(() => import('./sat-prep/SatPracticeFlowPage'));
+const SatTestPacksPage = lazy(() => import('./sat-prep/SatTestPacksPage'));
+const SatMockTestsPage = lazy(() => import('./sat-prep/SatMockTestsPage'));
+const SatTestRunnerPage = lazy(() => import('./sat-prep/SatMockTestPage'));
+const SatLibraryPage = lazy(() => import('./sat-prep/SatLibraryPage'));
+const SatPrepComingSoonPage = lazy(() => import('./sat-prep/SatPrepComingSoonPage'));
 
 const RouteFallback = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 240, padding: 48 }}>
@@ -21,6 +31,23 @@ const withSuspense = (node: React.ReactNode) => <Suspense fallback={<RouteFallba
 const PsychometricRouteShell = ({ children }: { children: React.ReactNode }) => (
   <div style={{ paddingTop: 20, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>{children}</div>
 );
+
+/**
+ * SAT Prep is gated by `SAT_PREP_SHOW_ALL` (see src/lib/satPrepAccess.ts).
+ * If the flag is `false` and the user isn't a SuperAdmin/Owner, every SAT
+ * route falls through to the SatPrepComingSoonPage. The runner is gated
+ * the same way, so a logged-out tab can't deep-link past the placeholder.
+ */
+const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const profile = useTypedSelector((s) => s.auth.profile);
+  const allowed = canUseSatPrep(profile?.managementRole as string | undefined);
+  if (allowed) return children;
+  return (
+    <SatPrepLayout>
+      <SatPrepComingSoonPage />
+    </SatPrepLayout>
+  );
+};
 
 /**
  * All mentees use the unified Community Hub shell (`CommunityHubMockPage`) with the same left column.
@@ -74,6 +101,36 @@ const StudentHubRoutes: React.FC = () => {
               <PsychometricRouteShell>{withSuspense(<PsychometricAssessmentPage />)}</PsychometricRouteShell>
             }
           />
+
+          {/* SAT Prep — full College Board question bank, wrapped in shared shell.
+              Gated by SatGate (SAT_PREP_SHOW_ALL flag) so non-SuperAdmins
+              currently see the "coming soon" placeholder. */}
+          <Route
+            path="/sat-prep"
+            element={withSuspense(<SatGate><SatPrepLayout><SatDashboardPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/practice"
+            element={withSuspense(<SatGate><SatPrepLayout><SatPracticeFlowPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/test-packs"
+            element={withSuspense(<SatGate><SatPrepLayout><SatTestPacksPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/mock-tests"
+            element={withSuspense(<SatGate><SatPrepLayout><SatMockTestsPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/library"
+            element={withSuspense(<SatGate><SatPrepLayout><SatLibraryPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/runner"
+            element={withSuspense(<SatGate><PsychometricRouteShell><SatTestRunnerPage /></PsychometricRouteShell></SatGate>)}
+          />
+          {/* Back-compat for the old /mock-test path */}
+          <Route path="/sat-prep/mock-test" element={<Navigate to="/student-hub/sat-prep/runner" replace />} />
 
           <Route path="/opportunities" element={<Navigate to="/student-hub?section=others&target=opportunities" replace />} />
           <Route path="/opportunities/*" element={<Navigate to="/student-hub?section=others&target=opportunities" replace />} />

@@ -28,6 +28,8 @@ import {
   Share2,
   MoreHorizontal,
   Shield,
+  ArrowLeft,
+  BookOpen,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -56,6 +58,7 @@ import {
 import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterests';
 import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
+import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
@@ -414,6 +417,10 @@ export default function CommunityHubMockPage() {
       ),
     [profile?.email, profile?.managementRole],
   );
+  const satPrepLive = useMemo(
+    () => canUseSatPrep(profile?.managementRole as string | undefined),
+    [profile?.managementRole],
+  );
   const currentProfile = useMemo(() => {
     const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
     const username =
@@ -727,19 +734,25 @@ export default function CommunityHubMockPage() {
   // an Overview/Module switch, and a "Back to main menu" button.
   const isResearchFullBleed =
     activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive;
+  // Admissions Program also goes full-bleed for the editorial layout —
+  // a breadcrumb at the top + cream-toned cards underneath.
+  const isAdmissionsFullBleed = activeSection === 'admissionsProgram' && isCommunityEnrolled;
+  const isFullBleed = isResearchFullBleed || isAdmissionsFullBleed;
 
   return (
     <div
       className={`${styles.hubPageOuter} ${
-        isResearchFullBleed ? styles.hubPageOuterFullBleed : ''
-      }`}
+        isFullBleed ? styles.hubPageOuterFullBleed : ''
+      } ${isAdmissionsFullBleed ? styles.admissionsShellOuter : ''}`}
     >
       <div
         className={`${styles.hub} ${
-          isResearchFullBleed ? styles.hubFullBleed : styles.hubNoRight
-        }`}
+          isFullBleed ? styles.hubFullBleed : styles.hubNoRight
+        } ${isAdmissionsFullBleed ? styles.admissionsShellHub : ''}`}
       >
-      <div className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''}`}>
+      <div
+        className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''} ${isFullBleed ? styles.leftColHidden : ''}`}
+      >
         {isCommunityEnrolled && (
           <Card
             className={styles.profileCard}
@@ -755,18 +768,29 @@ export default function CommunityHubMockPage() {
               }
             }}
           >
-            <div className={styles.profileTop}>
-              <Avatar
-                size={48}
-                src={currentProfile.avatar || undefined}
-                icon={<User size={16} />}
-                className={styles.profileAvatar}
-              />
-              <div>
-                <div className={styles.profileName}>{currentProfile.name}</div>
-                <div className={styles.profileHandle}>
-                  {currentProfile.username}
+            <div className={styles.profilePhoto}>
+              {currentProfile.avatar ? (
+                <img
+                  src={currentProfile.avatar}
+                  alt={currentProfile.name}
+                  className={styles.profilePhotoImg}
+                />
+              ) : (
+                <div className={styles.profilePhotoFallback} aria-hidden>
+                  <User size={40} />
                 </div>
+              )}
+            </div>
+            <div className={styles.profileBody}>
+              <div className={styles.profileName} title={currentProfile.name}>
+                {currentProfile.name}
+              </div>
+              <div className={styles.profileHandle} title={currentProfile.username}>
+                {currentProfile.username}
+              </div>
+              <div className={styles.profileFooter}>
+                <span>View profile</span>
+                <span className={styles.profileFooterArrow} aria-hidden>→</span>
               </div>
             </div>
 
@@ -888,16 +912,14 @@ export default function CommunityHubMockPage() {
 
           <button
             type="button"
-            className={`${styles.navItem} ${activeSection === 'satCourse' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('satCourse');
-              navigate('/student-hub?section=sat-course', { replace: true });
-            }}
+            className={styles.navItem}
+            onClick={() => navigate('/student-hub/sat-prep')}
           >
             <span className={styles.navIconCircle}>
               <UnifiedIcon name="sat" size="md" color="primary" />
             </span>
             <span className={styles.navLabel}>{t('studentHub.hub.satTestPrep', 'SAT test prep')}</span>
+            {!satPrepLive && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
           <button
@@ -929,16 +951,20 @@ export default function CommunityHubMockPage() {
             {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
-          <button
-            type="button"
-            className={styles.navItem}
-            onClick={() => navigate('/events')}
-          >
-            <span className={styles.navIconCircle}>
-              <Presentation size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.opportunitiesNav', 'Opportunities')}</span>
-          </button>
+          {/* Opportunities entry hidden for now — feature still building.
+              Restore by un-commenting when the page is ready. */}
+          {false && (
+            <button
+              type="button"
+              className={styles.navItem}
+              onClick={() => navigate('/events')}
+            >
+              <span className={styles.navIconCircle}>
+                <Presentation size={20} color="#8b0000" />
+              </span>
+              <span className={styles.navLabel}>{t('studentHub.hub.opportunitiesNav', 'Opportunities')}</span>
+            </button>
+          )}
 
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navAccount', 'ACCOUNT')}</div>
           <button
@@ -1003,7 +1029,9 @@ export default function CommunityHubMockPage() {
                 : ''
             }`}
           >
-            {pageHeader && !communityLockVariant && (
+            {/* Admissions full-bleed renders its own editorial header below;
+                suppress the generic one to avoid double titles. */}
+            {pageHeader && !communityLockVariant && !isAdmissionsFullBleed && (
               <div
                 className={`${styles.pageHeader} ${needsExtraSubtitleGap ? styles.pageHeaderSpacious : ''} ${needsSettingsSubtitleGap ? styles.pageHeaderSettingsSpacious : ''} student-hub-page`}
               >
@@ -1022,6 +1050,38 @@ export default function CommunityHubMockPage() {
                   </div>
                 )}
               </div>
+            )}
+
+            {isAdmissionsFullBleed && (
+              <header className={styles.admissionsShellHeader}>
+                <div className={styles.admissionsShellInner}>
+                  <div className={styles.admissionsCrumb}>
+                    <span className={styles.admissionsCrumbBadge}>
+                      <BookOpen size={13} /> Admissions Program
+                    </span>
+                    <span className={styles.admissionsCrumbSep}>›</span>
+                    <span className={styles.admissionsCrumbCurrent}>Lessons catalog</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.admissionsBackBtn}
+                    onClick={() => navigate(defaultHubSectionPath)}
+                  >
+                    <ArrowLeft size={13} />
+                    Back to main menu
+                  </button>
+                </div>
+                <div className={styles.admissionsHero}>
+                  <div className={styles.admissionsEyebrow}>Top Coach · Admissions track</div>
+                  <h1 className={styles.admissionsTitle}>
+                    Get into your dream school — one lesson at a time.
+                  </h1>
+                  <p className={styles.admissionsSub}>
+                    Continue your admissions lessons from the learning catalog. Bite-sized videos
+                    from mentors at Harvard, Oxford, Yale, Babson, and beyond.
+                  </p>
+                </div>
+              </header>
             )}
             {communityLockVariant && (
               <div className={styles.feedLockedWrap}>
@@ -1440,10 +1500,28 @@ export default function CommunityHubMockPage() {
             )}
 
             {activeSection === 'admissionsProgram' && (
-              <Card
-                className={`${styles.sectionCard} ${styles.programShortcutCard} ${styles.programShortcutWide} ${styles.sectionContentSpaced}`}
-                bordered={false}
-              >
+              <div className={styles.admissionsBody}>
+                <div className={styles.admissionsListHeader}>
+                  <div>
+                    <h2 className={styles.admissionsListTitle}>Featured lessons</h2>
+                    <div className={styles.admissionsListMeta}>
+                      {ADMISSIONS_YOUTUBE_PREVIEW_SPECS.length} videos · ~{
+                        ADMISSIONS_YOUTUBE_PREVIEW_SPECS.reduce((n, s) => {
+                          const [m, sec] = s.duration.split(':').map(Number);
+                          return n + (m || 0) + (sec || 0) / 60;
+                        }, 0).toFixed(0)
+                      } min total
+                    </div>
+                  </div>
+                  <Button
+                    type="primary"
+                    size="large"
+                    className={styles.programShortcutCta}
+                    onClick={() => navigate('/learning?course=admissions')}
+                  >
+                    {t('studentHub.hub.goToAdmissionsLessons', 'Go to admissions lessons')}
+                  </Button>
+                </div>
 
                 <div className={styles.admissionsVideoGrid}>
                   {ADMISSIONS_YOUTUBE_PREVIEW_SPECS.map((spec) => (
@@ -1463,6 +1541,7 @@ export default function CommunityHubMockPage() {
                         <span className={styles.videoPlayFab}>
                           <Play size={22} color="#8b0000" />
                         </span>
+                        <span className={styles.admissionsVideoDurChip}>{spec.duration}</span>
                       </div>
                       <div className={styles.admissionsVideoMeta}>
                         <div className={styles.admissionsVideoTitle}>{t(spec.titleKey)}</div>
@@ -1497,18 +1576,7 @@ export default function CommunityHubMockPage() {
                     </>
                   )}
                 </Modal>
-
-                <div className={styles.programShortcutActions} style={{ marginTop: 20 }}>
-                  <Button
-                    type="primary"
-                    size="large"
-                    className={styles.programShortcutCta}
-                    onClick={() => navigate('/learning?course=admissions')}
-                  >
-                    {t('studentHub.hub.goToAdmissionsLessons', 'Go to admissions lessons')}
-                  </Button>
-                </div>
-              </Card>
+              </div>
             )}
 
             {activeSection === 'satCourse' && null}

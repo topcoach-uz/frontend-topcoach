@@ -1,0 +1,400 @@
+/* SAT Prep — editorial-style shell.
+ *
+ * Cream background, serif page titles, sans body, restrained color use.
+ * Brand red (#7B1F2F) is reserved for the primary CTA and hover/active
+ * accents — it should never dominate a section.
+ *
+ * Design tokens live on :root so atoms like .sat-btn / .sat-card work
+ * even when rendered outside the .sat-shell wrapper (the runner page
+ * uses PsychometricRouteShell, not SatPrepLayout).
+ */
+
+:root {
+  --sat-brand: #7B1F2F;
+  --sat-brand-soft: #fbe9ec;
+  --sat-brand-deep: #5d1622;
+  --sat-text: #1f2937;
+  --sat-text-muted: #6b7280;
+  --sat-text-dim: #9ca3af;
+  --sat-bg: #faf8f3;
+  --sat-card: #ffffff;
+  --sat-border: #e5e3da;
+  --sat-border-strong: #d6d3c8;
+  --sat-success: #15803d;
+  --sat-success-soft: #dcfce7;
+  --sat-warning: #c2410c;
+  --sat-warning-soft: #fef3c7;
+  --sat-danger: #b91c1c;
+  --sat-danger-soft: #fee2e2;
+  --sat-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+  --sat-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+}
+
+.sat-shell {
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--sat-bg);
+  font-family: var(--sat-sans);
+  color: var(--sat-text);
+
+  /* Sticky header with subtle bottom shadow */
+  &__header {
+    background: var(--sat-bg);
+    border-bottom: 1px solid var(--sat-border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  &__header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__crumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.92rem;
+    color: var(--sat-text-muted);
+  }
+  &__crumb-sep { color: var(--sat-text-dim); }
+  &__crumb-current {
+    color: var(--sat-text);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  &__brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    background: var(--sat-brand-soft);
+    color: var(--sat-brand);
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.82rem;
+  }
+
+  &__back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--sat-border-strong);
+    background: white;
+    color: var(--sat-text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    &:hover {
+      background: var(--sat-brand-soft);
+      border-color: var(--sat-brand);
+      color: var(--sat-brand);
+    }
+  }
+
+  &__tabs {
+    border-top: 1px solid var(--sat-border);
+  }
+  &__tabs-inner {
+    display: flex;
+    gap: 0;
+    padding: 0 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-x: auto;
+  }
+  &__tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 16px;
+    color: var(--sat-text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.18s ease, border-bottom-color 0.18s ease, font-weight 0s;
+    white-space: nowrap;
+    /* Kill the browser's default dotted focus ring — the underline +
+       weight bump already signal the active tab. Keep a subtle
+       keyboard-only focus ring for a11y. */
+    outline: none;
+
+    &:hover { color: var(--sat-text); }
+    &:focus { outline: none; }
+    &:focus-visible {
+      outline: 2px solid rgba(123, 31, 47, 0.35);
+      outline-offset: -3px;
+      border-radius: 4px;
+    }
+
+    &--active {
+      color: var(--sat-text);
+      border-bottom-color: var(--sat-brand);
+      font-weight: 600;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    padding: 32px 28px 64px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+}
+
+/* ───── Editorial helpers ───── */
+
+.sat-eyebrow {
+  font-family: var(--sat-sans, system-ui);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sat-text-muted, #6b7280);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.sat-page-title {
+  font-family: var(--sat-serif, Georgia, serif);
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  color: var(--sat-text, #1f2937);
+}
+
+.sat-page-desc {
+  color: var(--sat-text-muted, #6b7280);
+  font-size: 0.96rem;
+  line-height: 1.5;
+  max-width: 640px;
+  margin: 0;
+}
+
+/* Card primitive */
+.sat-card {
+  background: white;
+  border: 1px solid var(--sat-border, #e5e3da);
+  border-radius: 14px;
+  padding: 22px 24px;
+
+  &--soft {
+    background: #fdfaf3;
+  }
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  &__title {
+    font-family: var(--sat-serif);
+    font-size: 1.08rem;
+    font-weight: 500;
+    color: var(--sat-text);
+    margin: 0;
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+  }
+  &__subtitle {
+    font-size: 0.8rem;
+    color: var(--sat-text-muted);
+  }
+}
+
+/* Stat tile */
+.sat-stat {
+  background: white;
+  border: 1px solid var(--sat-border, #e5e3da);
+  border-radius: 12px;
+  padding: 18px 20px;
+
+  &__label {
+    font-size: 0.7rem;
+    color: var(--sat-text-muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  &__value {
+    font-family: var(--sat-serif, Georgia, serif);
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--sat-text, #1f2937);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums;
+  }
+  &__value-unit {
+    font-family: var(--sat-sans);
+    font-size: 0.95rem;
+    color: var(--sat-text-muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  &__sub {
+    font-size: 0.8rem;
+    color: var(--sat-text-muted, #6b7280);
+    margin-top: 6px;
+  }
+}
+
+/* Filter chips */
+.sat-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--sat-text);
+  font-family: inherit;
+  transition: all 0.15s;
+
+  &:hover { background: #f3f1ea; }
+
+  &--active {
+    background: #1f2937;
+    color: white;
+
+    &:hover { background: #1f2937; }
+  }
+  &--easy.sat-chip--active   { background: var(--sat-success); }
+  &--medium.sat-chip--active { background: var(--sat-warning); }
+  &--hard.sat-chip--active   { background: var(--sat-danger); }
+}
+
+/* Buttons */
+.sat-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  /* Default variant when no modifier is applied — quiet ghost style. */
+  background: white;
+  color: var(--sat-text);
+  border: 1px solid var(--sat-border-strong);
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.08s, box-shadow 0.15s;
+
+  &:hover { background: #f3f1ea; border-color: #6b7280; }
+  &:active { transform: translateY(1px); }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: white;
+    border-color: var(--sat-border-strong);
+  }
+
+  & svg { flex-shrink: 0; }
+
+  &--primary {
+    background: var(--sat-brand);
+    color: white;
+    border-color: var(--sat-brand);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+
+    &:hover { background: var(--sat-brand-deep); border-color: var(--sat-brand-deep); }
+    &:disabled { background: var(--sat-brand); border-color: var(--sat-brand); }
+  }
+  &--ghost {
+    /* ghost == bare sat-btn — explicit alias kept for readability */
+    background: white;
+    color: var(--sat-text);
+    border-color: var(--sat-border-strong);
+  }
+  &--dark {
+    background: #1f2937;
+    color: white;
+    border-color: #1f2937;
+
+    &:hover { background: #111827; border-color: #111827; }
+  }
+}
+
+/* Status pills */
+.sat-pill-new {
+  background: var(--sat-brand-soft);
+  color: var(--sat-brand);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sat-pill-done {
+  background: var(--sat-success-soft);
+  color: var(--sat-success);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Skill-rating dots — used in practice flow + mastery sections */
+.sat-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.sat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sat-border-strong, #d6d3c8);
+
+  &--filled { background: var(--sat-success, #15803d); }
+  &--building { background: var(--sat-warning, #c2410c); }
+  &--focus { background: var(--sat-danger, #b91c1c); }
+}
+
+/* Mini progress bar */
+.sat-progress-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--sat-border, #e5e3da);
+  overflow: hidden;
+  position: relative;
+
+  &__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--sat-brand, #7B1F2F);
+    border-radius: 999px;
+  }
+}

@@ -616,6 +616,16 @@ $crimson-900: #7f1d1d;
         position: relative;
       }
 
+      /* SAT Prep takes the full hub area; the page itself supplies its own
+         padding via the SatPrepLayout shell (header, tabs, body container). */
+      .main-content-flush {
+        padding: 0;
+        flex: 1;
+        min-height: 0;
+        box-sizing: border-box;
+        position: relative;
+      }
+
       // Full-bleed strip directly under global site header (no padding gap); sticks while this column scrolls
       .study-goals-sticky-banner-outer {
         position: sticky;

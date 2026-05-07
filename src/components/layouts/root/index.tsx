@@ -17,7 +17,11 @@ export default function RootLayout() {
     dispatch(changeTheme(theme));
   }, [pathname]);
 
-  const hideChatFab = pathname.startsWith('/admin');
+  // Hide the AI chat FAB on admin pages and inside the SAT runner so it
+  // doesn't overlap the test surface.
+  const hideChatFab =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/student-hub/sat-prep/runner');
 
   return (
     <>

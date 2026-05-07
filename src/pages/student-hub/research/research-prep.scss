@@ -14,21 +14,22 @@
 }
 
 .rp {
-  --rp-accent: #7c1c1c;
-  --rp-accent-strong: #621414;
-  --rp-accent-soft: #faecec;
-  --rp-text: #0f1419;
-  --rp-text-muted: #5b6470;
-  --rp-text-subtle: #8a93a0;
-  --rp-border: #e5e7eb;
-  --rp-border-strong: #d1d5db;
+  --rp-accent: #7B1F2F;
+  --rp-accent-strong: #5d1622;
+  --rp-accent-soft: #fbe9ec;
+  --rp-text: #1f2937;
+  --rp-text-muted: #6b7280;
+  --rp-text-subtle: #9ca3af;
+  --rp-border: #e5e3da;
+  --rp-border-strong: #d6d3c8;
   --rp-surface: #ffffff;
-  --rp-surface-soft: #f8f9fb;
-  --rp-surface-tonal: #f3f4f6;
-  --rp-success: #1f7a3a;
-  --rp-warning: #b25e09;
-  --rp-locked: #94a3b8;
+  --rp-surface-soft: #faf8f3;
+  --rp-surface-tonal: #f3f1ea;
+  --rp-success: #15803d;
+  --rp-warning: #c2410c;
+  --rp-locked: #9ca3af;
   --rp-page-pad-x: 32px;
+  --rp-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 
   width: 100%;
   background: var(--rp-surface-soft);
@@ -433,10 +434,11 @@
       display: inline-flex;
     }
     .title {
-      font-size: 15px;
-      font-weight: 700;
+      font-family: var(--rp-serif);
+      font-size: 17px;
+      font-weight: 500;
       color: var(--tile-fg);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.012em;
       line-height: 1.25;
     }
     .sub {
@@ -563,11 +565,13 @@
       flex-wrap: wrap;
     }
     .rp-module-title {
-      font-size: 20px;
-      font-weight: 700;
+      font-family: var(--rp-serif);
+      font-size: 26px;
+      font-weight: 500;
       color: var(--rp-text);
       margin: 0;
-      letter-spacing: -0.015em;
+      letter-spacing: -0.018em;
+      line-height: 1.15;
     }
     .rp-module-status {
       display: inline-flex;

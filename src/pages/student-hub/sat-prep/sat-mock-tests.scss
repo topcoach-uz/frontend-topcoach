@@ -1,0 +1,292 @@
+.sat-mocks {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  /* Top: hero + progress card */
+  &__top {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 900px) { grid-template-columns: 1fr; }
+  }
+
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .sat-eyebrow { margin-bottom: 6px; }
+  }
+  &__hero-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  &__progress {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  &__progress-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    margin-top: 10px;
+  }
+  &__progress-num {
+    font-family: var(--sat-serif);
+    font-size: 2rem;
+    font-weight: 500;
+    color: #1f2937;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+
+    &--muted { color: #9ca3af; }
+  }
+  &__progress-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-top: 6px;
+  }
+  &__progress-divider {
+    width: 1px;
+    align-self: stretch;
+    background: #e5e3da;
+  }
+  &__progress-track {
+    margin-top: 8px;
+  }
+  &__progress-track-label {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 6px;
+  }
+
+  /* List header */
+  &__list-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  &__list-title {
+    font-family: var(--sat-serif);
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  &__list-meta {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  /* Grid */
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  /* Card */
+  &__card {
+    position: relative;
+    background: white;
+    border: 1px solid #e5e3da;
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.18s, transform 0.12s;
+
+    &:hover {
+      border-color: #b9b6a8;
+      transform: translateY(-1px);
+    }
+  }
+
+  &__card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  &__card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--math { background: #eff6ff; color: #2563eb; }
+    &--rw   { background: #f5f3ff; color: #7c3aed; }
+  }
+
+  &__card-eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  &__card-title {
+    font-family: var(--sat-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #111827;
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    margin: 0 0 12px;
+  }
+
+  &__card-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #6b7280;
+    font-size: 0.84rem;
+    margin-bottom: 6px;
+
+    & > span { display: inline-flex; align-items: center; gap: 5px; }
+    & svg { color: #9ca3af; flex-shrink: 0; }
+  }
+
+  &__card-date {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-bottom: 14px;
+  }
+
+  &__card--done {
+    border-color: #cbd5dc;
+    background: linear-gradient(180deg, #fbfaf6 0%, white 60%);
+  }
+  &__card-top-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__card-done-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  &__card-attempt {
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #faf8f3;
+    border: 1px solid #e5e3da;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "label value"
+      "bar bar"
+      "meta meta";
+    align-items: baseline;
+    gap: 4px 8px;
+  }
+  &__card-attempt-label {
+    grid-area: label;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 700;
+  }
+  &__card-attempt-value {
+    grid-area: value;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  &__card-attempt-score {
+    font-family: var(--sat-serif);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1f2937;
+    letter-spacing: -0.01em;
+    margin-right: 2px;
+  }
+  &__card-attempt-frac {
+    font-size: 0.82rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  &__card-attempt-sep {
+    color: #cbcbb6;
+    font-size: 0.82rem;
+  }
+  &__card-attempt-pct {
+    font-size: 0.82rem;
+    color: #7B1F2F;
+    font-weight: 600;
+  }
+  &__card-attempt-bar {
+    grid-area: bar;
+    margin-top: 6px;
+    height: 4px;
+    background: #e5e3da;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  &__card-attempt-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B1F2F, #b45462);
+    border-radius: inherit;
+    transition: width 0.4s ease;
+  }
+  &__card-attempt-meta {
+    grid-area: meta;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #6b7280;
+  }
+
+  &__card-cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid #d6d3c8;
+    border-radius: 10px;
+    background: white;
+    color: #1f2937;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: #1f2937;
+      color: white;
+      border-color: #1f2937;
+    }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+  &__card-cta-arrow {
+    margin-left: auto;
+    opacity: 0.6;
+  }
+}
