@@ -1,22 +1,126 @@
 // 📝 New Application Page Styles
 @import '../../../styles/student-hub-design-system.scss';
 
+/* Editorial palette — match the rest of My Journey. */
+$na-cream: #faf8f3;
+$na-cream-elevated: #fbfaf6;
+$na-ink: #1c1a17;
+$na-muted: #6b6258;
+$na-hairline: #e5e3da;
+$na-brand: #7B1F2F;
+
 .new-application-page {
+  /* Editorial page surface — cream with hairline-rounded form panel.
+     The legacy crimson `.page-title` etc. styles below still apply for
+     parts that haven't been migrated, but the editorial overrides on
+     the wrapper take precedence visually. */
+  background: $na-cream;
+  padding: 28px 32px 40px;
+  border-radius: 14px;
+
+  @media (max-width: 768px) {
+    padding: 22px 18px 32px;
+  }
+
   .page-header {
-    margin-bottom: $space-8;
-    
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid $na-hairline;
+
     .page-title {
-      font-size: $text-3xl;
-      font-weight: $font-bold;
-      color: $text-primary;
-      margin: 0 0 $space-2 0;
+      font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: $na-ink;
+      margin: 0 0 6px;
+      line-height: 1.15;
+
+      @media (max-width: 768px) { font-size: 1.6rem; }
     }
-    
+
     .page-subtitle {
-      font-size: $text-lg;
-      color: $text-secondary;
+      font-size: 0.95rem;
+      color: $na-muted;
       margin: 0;
     }
+  }
+
+  /* Form card: cream surface, hairline edge, serif sub-headings. */
+  .application-form-card {
+    background: $na-cream-elevated !important;
+    border: 1px solid $na-hairline !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+
+    .ant-card-body { padding: 22px 24px !important; }
+
+    .ant-form-item-label > label {
+      font-size: 0.78rem !important;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: $na-muted !important;
+      font-weight: 600 !important;
+    }
+
+    .ant-input,
+    .ant-input-affix-wrapper,
+    .ant-select-selector,
+    .ant-picker {
+      background: #fff !important;
+      border: 1px solid $na-hairline !important;
+      border-radius: 10px !important;
+      box-shadow: none !important;
+
+      &:hover {
+        border-color: rgba(123, 31, 47, 0.4) !important;
+      }
+      &:focus,
+      &.ant-input-focused,
+      &.ant-select-focused .ant-select-selector,
+      &.ant-picker-focused {
+        border-color: $na-brand !important;
+        box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.08) !important;
+      }
+    }
+
+    /* Inner "Set up requirements" sub-card. */
+    .ant-card {
+      background: $na-cream !important;
+      border: 1px solid $na-hairline !important;
+      border-radius: 12px !important;
+      box-shadow: none !important;
+    }
+    .ant-card-head-title {
+      font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+      font-weight: 600 !important;
+      color: $na-ink !important;
+    }
+
+    .ant-btn-primary {
+      background: $na-brand !important;
+      border-color: $na-brand !important;
+      border-radius: 999px !important;
+      font-weight: 600 !important;
+      &:hover, &:focus {
+        background: darken($na-brand, 6%) !important;
+        border-color: darken($na-brand, 6%) !important;
+      }
+    }
+
+    /* Required-field star in brand red instead of garish system red. */
+    .ant-form-item-required::before {
+      color: $na-brand !important;
+    }
+  }
+
+  /* Form action row at the bottom (Cancel / Create application). */
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+
+    .ant-btn { border-radius: 999px !important; }
   }
 
   .application-form-card {

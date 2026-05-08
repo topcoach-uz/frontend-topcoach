@@ -35,6 +35,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import Dashboard from '../Dashboard';
+import MyProgressEditorialView from '../MyProgressEditorialView';
 import styles from './communityHubMock.module.scss';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
@@ -59,6 +60,8 @@ import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterest
 import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
+import { canUseMyRewards } from 'src/lib/myRewardsAccess';
+import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
 import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
@@ -419,6 +422,13 @@ export default function CommunityHubMockPage() {
   );
   const satPrepLive = useMemo(
     () => canUseSatPrep(profile?.managementRole as string | undefined),
+    [profile?.managementRole],
+  );
+  // My Rewards editorial UI is gated to SuperAdmin/Owner during the
+  // internal preview (see MY_REWARDS_SHOW_ALL). Everyone else sees the
+  // "Coming soon" placeholder so the page stops feeling broken.
+  const myRewardsLive = useMemo(
+    () => canUseMyRewards(profile?.managementRole as string | undefined),
     [profile?.managementRole],
   );
   const currentProfile = useMemo(() => {
@@ -1029,9 +1039,52 @@ export default function CommunityHubMockPage() {
                 : ''
             }`}
           >
-            {/* Admissions full-bleed renders its own editorial header below;
-                suppress the generic one to avoid double titles. */}
-            {pageHeader && !communityLockVariant && !isAdmissionsFullBleed && (
+            {/* Editorial-style header for the magazine-themed sections
+                (Messages, Find Study Buddy). Reuses the brand-red eyebrow
+                + serif title pattern from SAT Prep / Admissions. */}
+            {activeSection === 'messages' && (
+              <header className={styles.editorialHeader}>
+                <div className={styles.editorialEyebrow}>
+                  Inbox
+                  <span className={styles.editorialEyebrowSep}>·</span>
+                  <span className={styles.editorialEyebrowAccent}>
+                    mentors, peers, support
+                  </span>
+                </div>
+                <h1 className={styles.editorialTitle}>Messages</h1>
+                <p className={styles.editorialDesc}>
+                  All your conversations in one place — chat with your mentors, study
+                  buddies you've connected with, and the Top Coach team.
+                </p>
+              </header>
+            )}
+            {activeSection === 'buddies' && isCommunityEnrolled && (
+              <header className={styles.editorialHeader}>
+                <div className={styles.editorialEyebrow}>
+                  Study buddies
+                  <span className={styles.editorialEyebrowSep}>·</span>
+                  <span className={styles.editorialEyebrowAccent}>match by goal</span>
+                </div>
+                <h1 className={styles.editorialTitle}>Find someone on the same path.</h1>
+                <p className={styles.editorialDesc}>
+                  Connect with peers who share your goals, prep schedules, and target schools.
+                  Match scores are based on overlap in tests, timelines, and study windows.
+                </p>
+              </header>
+            )}
+
+            {/* Generic page header — skipped for sections that have their
+                own editorial header above. My Rewards (both the editorial
+                and the coming-soon view) bring their own hero header so we
+                also suppress this generic title when the user is on the
+                rewards target. */}
+            {pageHeader &&
+              !communityLockVariant &&
+              !isAdmissionsFullBleed &&
+              activeSection !== 'messages' &&
+              activeSection !== 'buddies' &&
+              !(activeSection === 'account' && accountTarget === 'rewards') &&
+              !(activeSection === 'account' && accountTarget === 'settings') && (
               <div
                 className={`${styles.pageHeader} ${needsExtraSubtitleGap ? styles.pageHeaderSpacious : ''} ${needsSettingsSubtitleGap ? styles.pageHeaderSettingsSpacious : ''} student-hub-page`}
               >
@@ -1416,7 +1469,11 @@ export default function CommunityHubMockPage() {
 
           {activeSection === 'account' && (
             <>
-              {accountTarget === 'rewards' && isCommunityEnrolled && null}
+              {accountTarget === 'rewards' && isCommunityEnrolled && (
+                <div className={styles.hubDashEmbed}>
+                  {myRewardsLive ? <MyRewardsEditorialView /> : <MyRewardsComingSoon />}
+                </div>
+              )}
               {accountTarget === 'settings' && (
                 <div className={styles.settingsSectionOffset}>
                   <MenteeSettingsPageMock embeddedInHub />
@@ -1433,9 +1490,14 @@ export default function CommunityHubMockPage() {
             </>
           )}
 
-          {(activeSection === 'dashboard' || activeSection === 'myLearning') && (
+          {activeSection === 'dashboard' && (
             <div className={styles.hubDashEmbed}>
               <Dashboard />
+            </div>
+          )}
+          {activeSection === 'myLearning' && (
+            <div className={styles.hubDashEmbed}>
+              <MyProgressEditorialView />
             </div>
           )}
 

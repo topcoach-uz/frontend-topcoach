@@ -86,17 +86,23 @@
 .messengerSearch {
   padding: 12px 14px 10px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid #e5e3da;
 }
 
 .messengerSearchInput {
-  border-radius: 999px !important;
-  background: #f4f4f5 !important;
-  border: none !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  border: 1px solid #e5e3da !important;
+
+  &:focus,
+  &:focus-within {
+    border-color: #b9b6a8 !important;
+    box-shadow: none !important;
+  }
 }
 
 .messengerSearchIcon {
-  color: #94a3b8;
+  color: #9ca3af;
 }
 
 .messengerEmpty {
@@ -115,18 +121,28 @@
 .conversationItemMessenger {
   padding: 14px 16px !important;
   border-radius: 0;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+  border-bottom: 1px solid #ece9df !important;
+  transition: background 0.15s ease;
 
+  &:hover {
+    background: rgba(123, 31, 47, 0.04) !important;
+  }
   &:last-child {
     border-bottom: none !important;
   }
 }
 
+/* Selected conversation: just a 3px brand-red left rail + a very
+ * faint cream wash. The previous full pink fill (#fbe9ec) competed
+ * with the same color used for the active sidebar nav item; muting it
+ * here keeps a single saturated-pink moment per page. */
 .conversationItemSelected {
-  background: rgba(139, 0, 0, 0.08) !important;
+  background: #faf8f3 !important;
+  border-left: 3px solid #7B1F2F !important;
+  padding-left: 13px !important;
 
   &:hover {
-    background: rgba(139, 0, 0, 0.1) !important;
+    background: #f3f1ea !important;
   }
 }
 

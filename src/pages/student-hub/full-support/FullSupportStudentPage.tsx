@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Alert, Table, Tag, Progress, Modal, Input, Upload, Spin, message } from 'antd';
-import { CheckCircle2, CalendarClock, FileText, Globe, Eye, Upload as UploadIcon, BarChart2, Rocket } from 'lucide-react';
+import { Button, Alert, Tag, Modal, Input, Upload, Spin, message } from 'antd';
+import {
+  CheckCircle2,
+  CalendarClock,
+  FileText,
+  Globe,
+  Eye,
+  Upload as UploadIcon,
+  Rocket,
+  ArrowUpRight,
+  MessageCircle,
+  Clock,
+} from 'lucide-react';
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
-import useColors from 'src/hooks/useColors';
 import { useTypedSelector } from 'src/app/store';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
 import { hostName } from 'src/app/services/api/const';
-import { useGetEnrollmentMeQuery, useGetMenteeTasksQuery, useSubmitMenteeTaskMutation, useUploadTaskSubmissionFileMutation, useGetMenteeMilestonesQuery, useGetMenteePipelineQuery, useGetMenteeSessionsQuery, useLazyGetWeeklyReportQuery, useGetMenteeSatProgressQuery, type TaskDto } from 'src/app/services/fullSupportApi';
+import {
+  useGetEnrollmentMeQuery,
+  useGetMenteeTasksQuery,
+  useSubmitMenteeTaskMutation,
+  useUploadTaskSubmissionFileMutation,
+  useGetMenteeMilestonesQuery,
+  useGetMenteePipelineQuery,
+  useGetMenteeSessionsQuery,
+  useLazyGetWeeklyReportQuery,
+  useGetMenteeSatProgressQuery,
+  type TaskDto,
+} from 'src/app/services/fullSupportApi';
 import dayjs from 'src/lib/dayjs';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
 import '../../full-support/full-support.scss';
@@ -25,19 +46,27 @@ function formatDeadline(isoDate: string): string {
   return dayjs(isoDate).format('MMM D, YYYY');
 }
 
-const statusColors: Record<string, string> = {
-  Pending: 'default',
-  'Needs review': 'orange',
-  Reviewed: 'green',
-  'In-Process': 'orange',
-  Submitted: 'blue',
-};
+/** Map backend statuses → editorial pill modifier classes. */
+function statusModifier(status: string): string {
+  switch (status) {
+    case 'Reviewed':
+    case 'Done':
+      return 'fseditorial__pill--done';
+    case 'Needs review':
+    case 'In-Process':
+      return 'fseditorial__pill--progress';
+    case 'Submitted':
+      return 'fseditorial__pill--submitted';
+    case 'Pending':
+    default:
+      return 'fseditorial__pill--pending';
+  }
+}
 
 export default function FullSupportStudentPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const colors = useColors();
-  const primary = colors?.colorPrimary ?? '#8b0000';
+
   const { data: enrollmentData, isLoading: enrollmentLoading } = useGetEnrollmentMeQuery();
   const isEnrolled = enrollmentData?.data?.enrolled ?? false;
 
@@ -72,40 +101,6 @@ export default function FullSupportStudentPage() {
   });
   const satProgress = satProgressData?.data ?? null;
 
-  const taskColumns = [
-    { title: 'TASK', dataIndex: 'task', key: 'task', width: 200 },
-    { title: 'DEADLINE', dataIndex: 'deadline', key: 'deadline', width: 120, render: (d: string) => formatDeadline(d) },
-    {
-      title: 'STATUS',
-      key: 'status',
-      width: 120,
-      render: (_: unknown, r: TaskDto) => {
-        const status = getTaskStatus(r);
-        return <Tag color={statusColors[status] ?? 'default'}>{status}</Tag>;
-      },
-    },
-    {
-      title: 'ACTIONS',
-      key: 'actions',
-      width: 160,
-      render: (_: unknown, r: TaskDto) => {
-        if (r.hasFeedback) {
-          return (
-            <Button type="link" size="small" icon={<Eye size={16} />} onClick={() => setFeedbackModalTask(r)}>
-              View feedback
-            </Button>
-          );
-        }
-        if (r.submissionText) return <span style={{ color: '#666', fontSize: 13 }}>Awaiting mentor feedback</span>;
-        return (
-          <Button type="link" size="small" icon={<UploadIcon size={16} />} onClick={() => { setSubmitModalTask(r); setSubmitComment(''); setSubmitFileList([]); }}>
-            Upload submission
-          </Button>
-        );
-      },
-    },
-  ];
-
   const handleSubmitTask = async () => {
     if (!submitModalTask) return;
     const taskId = submitModalTask.id;
@@ -124,9 +119,17 @@ export default function FullSupportStudentPage() {
     }
     const fileNames = submitFileList.map((f) => f.name).filter(Boolean).join(', ');
     const parts = [submitComment.trim(), fileNames].filter(Boolean);
-    const submissionText = parts.length ? parts.join('. ') : (submissionFileUrls.length ? 'Files submitted.' : 'Submission sent.');
+    const submissionText = parts.length
+      ? parts.join('. ')
+      : submissionFileUrls.length
+        ? 'Files submitted.'
+        : 'Submission sent.';
     try {
-      await submitMenteeTask({ id: taskId, submissionText, submissionFileUrls: submissionFileUrls.length ? submissionFileUrls : undefined }).unwrap();
+      await submitMenteeTask({
+        id: taskId,
+        submissionText,
+        submissionFileUrls: submissionFileUrls.length ? submissionFileUrls : undefined,
+      }).unwrap();
       message.success('Submission sent.');
     } catch {
       message.error('Failed to submit.');
@@ -137,20 +140,28 @@ export default function FullSupportStudentPage() {
     setSubmitFileList([]);
   };
 
+  const openChatWithMentor = async () => {
+    const mentorId = enrollmentData?.data?.mentorId;
+    if (!currentUser?.id || !mentorId) return;
+    try {
+      const res = await findOrCreateConversation({ mentorId, studentId: currentUser.id }).unwrap();
+      const convId = res?.conversation?.id;
+      if (convId) {
+        setSelectedConversationId(convId);
+        setSelectedThreadId(null);
+        setFullSupportChatOpen(true);
+        setChatModalOpen(true);
+      }
+    } catch {
+      message.error('Could not open chat.');
+    }
+  };
+
   if (enrollmentLoading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 48,
-          gap: 16,
-        }}
-      >
+      <div className="fseditorial fseditorial--loading">
         <Spin size="large" />
-        <span style={{ color: '#666', fontSize: 14 }}>
+        <span className="fseditorial__loading-label">
           {t('fullSupport.checkingEnrollment', 'Loading your Full Support…')}
         </span>
       </div>
@@ -159,9 +170,12 @@ export default function FullSupportStudentPage() {
 
   if (!isEnrolled) {
     return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
-        <Card>
-          <h1 style={{ marginBottom: 16 }}>{t('fullSupport.studentTitle', 'Full Support Mentorship Program')}</h1>
+      <div className="fseditorial fseditorial--gated">
+        <div className="fseditorial__gated-card">
+          <div className="fseditorial__eyebrow">Full Support</div>
+          <h1 className="fseditorial__title">
+            {t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
+          </h1>
           <Alert
             type="info"
             showIcon
@@ -174,7 +188,7 @@ export default function FullSupportStudentPage() {
                     "The Full Support Mentorship Program is available after enrollment. If you'd like to join or have questions, email our team at support@topcoach.uz and we'll walk you through the next steps.",
                   )}
                 </p>
-                <p style={{ color: '#666', fontSize: 13, marginBottom: 0 }}>
+                <p style={{ color: '#6b6258', fontSize: 13, marginBottom: 0 }}>
                   {t(
                     'fullSupport.contactAdmin',
                     'Prefer email? Reach us at support@topcoach.uz. Include your TopCoach account email if you have one so we can assist you faster.',
@@ -183,7 +197,7 @@ export default function FullSupportStudentPage() {
               </>
             }
           />
-        </Card>
+        </div>
       </div>
     );
   }
@@ -193,219 +207,364 @@ export default function FullSupportStudentPage() {
 
   if (isEnrolled && !hasAssignedMentor) {
     return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: 24 }}>
-        <Card>
-          <h1 style={{ marginBottom: 16 }}>{t('fullSupport.studentTitle', 'Full Support Mentorship Program')}</h1>
+      <div className="fseditorial fseditorial--gated">
+        <div className="fseditorial__gated-card">
+          <div className="fseditorial__eyebrow">Full Support</div>
+          <h1 className="fseditorial__title">
+            {t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
+          </h1>
           <Alert
             type="info"
             showIcon
             message={t('fullSupport.waitingForMentorTitle', 'You’re enrolled')}
             description={
               <p style={{ marginBottom: 0 }}>
-                {t('fullSupport.waitingForMentorDesc', 'An admin will assign you a mentor soon. Your dashboard (sessions, tasks, milestones) will be available once a mentor is assigned.')}
+                {t(
+                  'fullSupport.waitingForMentorDesc',
+                  'An admin will assign you a mentor soon. Your dashboard (sessions, tasks, milestones) will be available once a mentor is assigned.',
+                )}
               </p>
             }
           />
-        </Card>
+        </div>
       </div>
     );
   }
 
+  const sessionPct = allocatedHours > 0 ? Math.round((usedHours / allocatedHours) * 100) : 0;
+
   return (
-    <div className="full-support-page full-support-student student-hub-page">
-      <div style={{ marginBottom: 24 }}>
-        <h1 className="student-hub-page-title">{t('fullSupport.studentDashboardTitle', 'Full Support Mentorship Program')}</h1>
-        <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
-          {t('fullSupport.studentDashboardDesc', 'Track your mentorship sessions, applications, and deadlines.')}
+    <div className="fseditorial">
+      {/* Header ─────────────────────────────────────────────────── */}
+      <header className="fseditorial__header">
+        <div className="fseditorial__eyebrow">Full Support · Mentorship</div>
+        <h1 className="fseditorial__title">
+          {t('fullSupport.studentDashboardTitle', 'Full Support Mentorship Program')}
+        </h1>
+        <p className="fseditorial__subtitle">
+          {t(
+            'fullSupport.studentDashboardDesc',
+            'Track your mentorship sessions, applications, and deadlines.',
+          )}
         </p>
+        <div className="fseditorial__header-actions">
+          <button
+            type="button"
+            className="fseditorial__btn fseditorial__btn--primary"
+            onClick={openChatWithMentor}
+            disabled={!enrollmentData?.data?.mentorId}
+          >
+            <MessageCircle size={14} />
+            Chat with {mentorName}
+          </button>
+          <button
+            type="button"
+            className="fseditorial__btn fseditorial__btn--ghost"
+            onClick={async () => {
+              try {
+                const res = await fetchWeeklyReport(undefined).unwrap();
+                if (res?.data) generateWeeklyReportPdf(res.data);
+                else message.error('Could not load report.');
+              } catch {
+                message.error('Could not load report.');
+              }
+            }}
+            disabled={weeklyReportLoading}
+          >
+            <FileText size={14} />
+            {weeklyReportLoading ? 'Preparing…' : 'My weekly report'}
+          </button>
+        </div>
+      </header>
+
+      {/* Top row: Session timeline + SAT Prep ────────────────────── */}
+      <div className="fseditorial__row fseditorial__row--two">
+        {/* Session timeline */}
+        <section className="fseditorial__card">
+          <div className="fseditorial__card-head">
+            <div className="fseditorial__card-head-left">
+              <CalendarClock size={16} />
+              <h2 className="fseditorial__card-title">Session timeline</h2>
+            </div>
+            <span className="fseditorial__card-meta">This month</span>
+          </div>
+          <div className="fseditorial__card-body">
+            <div className="fseditorial__hours">
+              <div className="fseditorial__hours-figure">
+                <span className="fseditorial__hours-num">{usedHours}h</span>
+                <span className="fseditorial__hours-divider">/</span>
+                <span className="fseditorial__hours-total">
+                  {allocatedHours > 0 ? `${allocatedHours}h allocated` : 'No sessions scheduled'}
+                </span>
+              </div>
+              <div className="fseditorial__bar">
+                <div
+                  className="fseditorial__bar-fill"
+                  style={{ width: `${Math.min(100, sessionPct)}%` }}
+                />
+              </div>
+            </div>
+
+            <ul className="fseditorial__sessions">
+              {menteeSessions.length === 0 ? (
+                <li className="fseditorial__empty">No sessions logged yet.</li>
+              ) : (
+                menteeSessions.map((s) => (
+                  <li key={s.id} className="fseditorial__session">
+                    <div className="fseditorial__session-main">
+                      <div className="fseditorial__session-date">
+                        {dayjs(s.dateTime).format('MMM D, YYYY · h:mm A')}
+                      </div>
+                      {s.description && (
+                        <div className="fseditorial__session-desc">{s.description}</div>
+                      )}
+                    </div>
+                    <span className="fseditorial__session-duration">
+                      <Clock size={12} />
+                      {s.duration}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </section>
+
+        {/* SAT Prep */}
+        <section className="fseditorial__card">
+          <div className="fseditorial__card-head">
+            <div className="fseditorial__card-head-left">
+              <Rocket size={16} />
+              <h2 className="fseditorial__card-title">{t('fullSupport.satPrepTitle', 'SAT Prep')}</h2>
+            </div>
+          </div>
+          <div className="fseditorial__card-body">
+            <p className="fseditorial__lede">
+              {t(
+                'fullSupport.satPrepDescTopCoach',
+                'Full Support includes TopCoach SAT prep: quizzes, flashcards, and lessons aligned to the digital SAT (rolling out in the app).',
+              )}
+            </p>
+            {satProgress ? (
+              <div className="fseditorial__sat-stats">
+                <div className="fseditorial__stat">
+                  <span className="fseditorial__stat-label">Lessons completed</span>
+                  <span className="fseditorial__stat-value">
+                    {satProgress.completedLessons}
+                    <span className="fseditorial__stat-divider"> / {satProgress.totalLessons}</span>
+                  </span>
+                </div>
+                <div className="fseditorial__stat">
+                  <span className="fseditorial__stat-label">Overall progress</span>
+                  <span className="fseditorial__stat-value">
+                    {Math.round(satProgress.overallProgress)}%
+                  </span>
+                </div>
+                {Array.isArray(satProgress.byCourse) && satProgress.byCourse.length > 0 && (
+                  <div className="fseditorial__stat fseditorial__stat--wide">
+                    <span className="fseditorial__stat-label">Breakdown</span>
+                    <span className="fseditorial__stat-value fseditorial__stat-value--small">
+                      {satProgress.byCourse
+                        .filter((c) => c && c.courseName)
+                        .map(
+                          (c) =>
+                            `${c.courseName.replace('SAT ', '')}: ${c.completedLessons} / ${c.totalLessons}`,
+                        )
+                        .join(' · ')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="fseditorial__muted">
+                Your SAT progress will appear here once you start the course.
+              </p>
+            )}
+            <button
+              type="button"
+              className="fseditorial__btn fseditorial__btn--primary"
+              onClick={() => navigate('/learning?course=sat')}
+            >
+              <Rocket size={14} />
+              {t('fullSupport.openSatPrepInHub', 'Open SAT prep in My Journey')}
+            </button>
+          </div>
+        </section>
       </div>
 
-      <div className="full-support-timeline-watchlist-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
-        <Card
-          title={<><CalendarClock size={16} style={{ marginRight: 8, color: primary }} />Session timeline</>}
-          className="full-support-card"
-        >
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>This month</span>
-              <span>{allocatedHours > 0 ? `${usedHours}h used / ${allocatedHours}h allocated` : `${usedHours}h used · No sessions scheduled`}</span>
-            </div>
-            <Progress percent={allocatedHours > 0 ? Math.round((usedHours / allocatedHours) * 100) : 0} size="small" strokeColor={primary} showInfo={false} />
+      {/* Tasks from your mentor ─────────────────────────────────── */}
+      <section className="fseditorial__card">
+        <div className="fseditorial__card-head">
+          <div className="fseditorial__card-head-left">
+            <FileText size={16} />
+            <h2 className="fseditorial__card-title">Tasks from your mentor</h2>
           </div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {menteeSessions.length === 0 ? (
-              <li style={{ color: '#666', fontSize: 13, padding: '8px 0' }}>No sessions logged yet.</li>
-            ) : (
-              menteeSessions.map((s) => (
-                <li key={s.id} style={{ padding: '10px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{dayjs(s.dateTime).format('MMM D, YYYY h:mm A')}</div>
-                    <div style={{ color: '#666', fontSize: 13, marginTop: 2 }}>{s.description}</div>
-                  </div>
-                  <Tag color="blue">{s.duration}</Tag>
-                </li>
-              ))
-            )}
-          </ul>
-        </Card>
-        <Card
-          title={<><Rocket size={16} style={{ marginRight: 8, color: primary }} />{t('fullSupport.satPrepTitle', 'SAT Prep')}</>}
-          className="full-support-card"
-        >
-          <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>
-            {t(
-              'fullSupport.satPrepDescTopCoach',
-              'Full Support includes TopCoach SAT prep: quizzes, flashcards, and lessons aligned to the digital SAT (rolling out in the app).',
-            )}
-          </p>
-          {satProgress ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
-              <div>
-                <div style={{ fontSize: 12, color: '#666' }}>Lessons completed</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>
-                  {satProgress.completedLessons} / {satProgress.totalLessons}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 12, color: '#666' }}>Overall progress</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>{Math.round(satProgress.overallProgress)}%</div>
-              </div>
-              {Array.isArray(satProgress.byCourse) && satProgress.byCourse.length > 0 && (
-                <div style={{ minWidth: 240 }}>
-                  <div style={{ fontSize: 12, color: '#666' }}>Breakdown</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>
-                    {satProgress.byCourse
-                      .filter((c) => c && c.courseName)
-                      .map((c) => `${c.courseName.replace('SAT ', '')}: ${c.completedLessons} / ${c.totalLessons}`)
-                      .join(' · ')}
-                  </div>
-                </div>
-              )}
+          <button
+            type="button"
+            className="fseditorial__card-action"
+            onClick={openChatWithMentor}
+            disabled={!enrollmentData?.data?.mentorId}
+          >
+            Chat with {mentorName}
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+        <div className="fseditorial__table">
+          <div className="fseditorial__table-head">
+            <span>Task</span>
+            <span>Deadline</span>
+            <span>Status</span>
+            <span>Actions</span>
+          </div>
+          {tasks.length === 0 ? (
+            <div className="fseditorial__empty fseditorial__empty--row">
+              No tasks yet — your mentor will assign them here.
             </div>
           ) : (
-            <p style={{ color: '#666', fontSize: 12, marginBottom: 16 }}>Your SAT progress will appear here once you start the course.</p>
+            tasks.map((r) => {
+              const status = getTaskStatus(r);
+              return (
+                <div key={r.id} className="fseditorial__table-row">
+                  <span className="fseditorial__table-cell fseditorial__table-cell--task">
+                    {r.task}
+                  </span>
+                  <span className="fseditorial__table-cell fseditorial__table-cell--meta">
+                    {formatDeadline(r.deadline)}
+                  </span>
+                  <span className="fseditorial__table-cell">
+                    <span className={`fseditorial__pill ${statusModifier(status)}`}>{status}</span>
+                  </span>
+                  <span className="fseditorial__table-cell">
+                    {r.hasFeedback ? (
+                      <button
+                        type="button"
+                        className="fseditorial__link"
+                        onClick={() => setFeedbackModalTask(r)}
+                      >
+                        <Eye size={14} /> View feedback
+                      </button>
+                    ) : r.submissionText ? (
+                      <span className="fseditorial__muted-row">Awaiting mentor feedback</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="fseditorial__link"
+                        onClick={() => {
+                          setSubmitModalTask(r);
+                          setSubmitComment('');
+                          setSubmitFileList([]);
+                        }}
+                      >
+                        <UploadIcon size={14} /> Upload submission
+                      </button>
+                    )}
+                  </span>
+                </div>
+              );
+            })
           )}
-          <Button
-            type="primary"
-            icon={<Rocket size={16} />}
-            onClick={() => navigate('/student-hub?section=sat-course')}
-            style={{ backgroundColor: primary, borderColor: primary }}
-          >
-            {t('fullSupport.openSatPrepInHub', 'Open SAT prep in My Journey')}
-          </Button>
-        </Card>
-      </div>
+        </div>
+      </section>
 
-      <Card
-        title={
-          <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span><FileText size={16} style={{ marginRight: 8, color: primary }} />Tasks from your mentor</span>
-            <Button
-              type="primary"
-              disabled={!enrollmentData?.data?.mentorId}
-              onClick={async () => {
-                const mentorId = enrollmentData?.data?.mentorId;
-                if (!currentUser?.id || !mentorId) return;
-                try {
-                  const res = await findOrCreateConversation({ mentorId, studentId: currentUser.id }).unwrap();
-                  const convId = res?.conversation?.id;
-                  if (convId) {
-                    setSelectedConversationId(convId);
-                    setSelectedThreadId(null);
-                    setFullSupportChatOpen(true);
-                    setChatModalOpen(true);
-                  }
-                } catch {
-                  message.error('Could not open chat.');
-                }
-              }}
-              style={{ backgroundColor: primary, borderColor: primary }}
-            >
-              Chat with {mentorName}
-            </Button>
-          </span>
-        }
-        className="full-support-card"
-        style={{ marginTop: 24 }}
-      >
-        <Table
-          dataSource={tasks}
-          columns={taskColumns}
-          rowKey="id"
-          pagination={false}
-          size="middle"
-          className="task-assignment-table"
-        />
-      </Card>
-
-      <Card
-        title={<><CheckCircle2 size={16} style={{ marginRight: 8, color: primary }} />Milestone Tracker</>}
-        className="full-support-card"
-        style={{ marginTop: 24 }}
-      >
-        <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>Your mentor tracks these milestones for you.</p>
-        {menteeMilestones.map((m) => (
-          <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <div>
-              <div><strong>{m.label}</strong></div>
-              {m.date && <span style={{ fontSize: 12, color: '#666' }}>{dayjs(m.date).format('MMM D, YYYY')}</span>}
+      {/* Bottom row: Milestones + Applications ──────────────────── */}
+      <div className="fseditorial__row fseditorial__row--two">
+        {/* Milestones */}
+        <section className="fseditorial__card">
+          <div className="fseditorial__card-head">
+            <div className="fseditorial__card-head-left">
+              <CheckCircle2 size={16} />
+              <h2 className="fseditorial__card-title">Milestone tracker</h2>
             </div>
-            {m.done ? <Tag color="green">Done</Tag> : <Tag>Pending</Tag>}
           </div>
-        ))}
-      </Card>
+          <div className="fseditorial__card-body">
+            <p className="fseditorial__lede">Your mentor tracks these milestones for you.</p>
+            {menteeMilestones.length === 0 ? (
+              <div className="fseditorial__empty">No milestones yet.</div>
+            ) : (
+              <ul className="fseditorial__milestones">
+                {menteeMilestones.map((m) => (
+                  <li key={m.id} className="fseditorial__milestone">
+                    <div className="fseditorial__milestone-main">
+                      <div className="fseditorial__milestone-label">{m.label}</div>
+                      {m.date && (
+                        <div className="fseditorial__milestone-date">
+                          {dayjs(m.date).format('MMM D, YYYY')}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`fseditorial__pill ${
+                        m.done ? 'fseditorial__pill--done' : 'fseditorial__pill--pending'
+                      }`}
+                    >
+                      {m.done ? 'Done' : 'Pending'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
 
-      <Card
-        title={<><Globe size={16} style={{ marginRight: 8, color: primary }} />Application tracker</>}
-        className="full-support-card"
-        style={{ marginTop: 24 }}
-      >
-        <Table
-          dataSource={menteePipeline}
-          rowKey="id"
-          pagination={false}
-          size="middle"
-          className="task-assignment-table"
-          columns={[
-            { title: 'PROGRAM', dataIndex: 'program', key: 'program', width: 220 },
-            { title: 'STAGE', dataIndex: 'stage', key: 'stage', width: 140 },
-            {
-              title: 'STATUS',
-              dataIndex: 'status',
-              key: 'status',
-              width: 120,
-              render: (s: string) => <Tag color={statusColors[s] ?? 'default'}>{s}</Tag>,
-            },
-            { title: 'FINANCIAL AID', dataIndex: 'aid', key: 'aid', width: 120, render: (v: boolean) => v ? <Tag color="green">Considering</Tag> : '-' },
-          ]}
-        />
-      </Card>
-
-      <div style={{ marginTop: 24 }}>
-        <Button
-          type="primary"
-          loading={weeklyReportLoading}
-          onClick={async () => {
-            try {
-              const res = await fetchWeeklyReport(undefined).unwrap();
-              if (res?.data) generateWeeklyReportPdf(res.data);
-              else message.error('Could not load report.');
-            } catch {
-              message.error('Could not load report.');
-            }
-          }}
-          style={{ backgroundColor: primary, borderColor: primary }}
-        >
-          My weekly report
-        </Button>
+        {/* Applications */}
+        <section className="fseditorial__card">
+          <div className="fseditorial__card-head">
+            <div className="fseditorial__card-head-left">
+              <Globe size={16} />
+              <h2 className="fseditorial__card-title">Application tracker</h2>
+            </div>
+          </div>
+          <div className="fseditorial__table fseditorial__table--applications">
+            <div className="fseditorial__table-head">
+              <span>Program</span>
+              <span>Stage</span>
+              <span>Status</span>
+              <span>Aid</span>
+            </div>
+            {menteePipeline.length === 0 ? (
+              <div className="fseditorial__empty fseditorial__empty--row">
+                No applications tracked yet.
+              </div>
+            ) : (
+              menteePipeline.map((p: any) => (
+                <div key={p.id} className="fseditorial__table-row">
+                  <span className="fseditorial__table-cell fseditorial__table-cell--task">
+                    {p.program}
+                  </span>
+                  <span className="fseditorial__table-cell fseditorial__table-cell--meta">
+                    {p.stage}
+                  </span>
+                  <span className="fseditorial__table-cell">
+                    <span className={`fseditorial__pill ${statusModifier(p.status)}`}>
+                      {p.status}
+                    </span>
+                  </span>
+                  <span className="fseditorial__table-cell">
+                    {p.aid ? (
+                      <span className="fseditorial__pill fseditorial__pill--soft">Considering</span>
+                    ) : (
+                      <span className="fseditorial__muted-row">—</span>
+                    )}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
 
+      {/* Modals (kept as AntD; styling follows global brand) ────── */}
       {chatModalOpen && (
         <ChatModal
           conversationId={selectedConversationId}
           threadId={selectedThreadId || undefined}
           open={chatModalOpen}
-          onClose={() => { setChatModalOpen(false); setSelectedConversationId(null); setSelectedThreadId(null); setFullSupportChatOpen(false); }}
+          onClose={() => {
+            setChatModalOpen(false);
+            setSelectedConversationId(null);
+            setSelectedThreadId(null);
+            setFullSupportChatOpen(false);
+          }}
           openToGeneralConversation={fullSupportChatOpen}
           onConversationChange={setSelectedConversationId}
           onThreadChange={setSelectedThreadId}
@@ -416,12 +575,29 @@ export default function FullSupportStudentPage() {
         title="Task Feedback"
         open={!!feedbackModalTask}
         onCancel={() => setFeedbackModalTask(null)}
-        footer={<Button type="primary" onClick={() => setFeedbackModalTask(null)} style={{ backgroundColor: primary, borderColor: primary }}>Close</Button>}
+        footer={
+          <Button
+            type="primary"
+            onClick={() => setFeedbackModalTask(null)}
+            style={{ backgroundColor: '#7B1F2F', borderColor: '#7B1F2F' }}
+          >
+            Close
+          </Button>
+        }
       >
         {feedbackModalTask?.hasFeedback && (
           <>
-            <p style={{ color: '#666', marginBottom: 12 }}>Feedback from your mentor:</p>
-            <div style={{ background: '#fafafa', padding: 12, borderRadius: 8, whiteSpace: 'pre-wrap', marginBottom: 12 }}>
+            <p style={{ color: '#6b6258', marginBottom: 12 }}>Feedback from your mentor:</p>
+            <div
+              style={{
+                background: '#faf8f3',
+                border: '1px solid #e5e3da',
+                padding: 12,
+                borderRadius: 8,
+                whiteSpace: 'pre-wrap',
+                marginBottom: 12,
+              }}
+            >
               {feedbackModalTask.feedback}
             </div>
             {feedbackModalTask.feedbackFileUrls && feedbackModalTask.feedbackFileUrls.length > 0 && (
@@ -434,7 +610,7 @@ export default function FullSupportStudentPage() {
                       download={f.fileName}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: primary }}
+                      style={{ color: '#7B1F2F' }}
                     >
                       {f.fileName}
                     </a>
@@ -449,15 +625,21 @@ export default function FullSupportStudentPage() {
       <Modal
         title={submitModalTask ? `Submit: ${submitModalTask.task}` : 'Submit task'}
         open={!!submitModalTask}
-        onCancel={() => { setSubmitModalTask(null); setSubmitComment(''); setSubmitFileList([]); }}
+        onCancel={() => {
+          setSubmitModalTask(null);
+          setSubmitComment('');
+          setSubmitFileList([]);
+        }}
         onOk={handleSubmitTask}
         okText="Send"
         cancelText="Cancel"
-        okButtonProps={{ style: { backgroundColor: primary, borderColor: primary } }}
+        okButtonProps={{ style: { backgroundColor: '#7B1F2F', borderColor: '#7B1F2F' } }}
       >
         {submitModalTask && (
           <>
-            <p style={{ color: '#666', marginBottom: 12 }}>Upload your work and add an optional comment for your mentor.</p>
+            <p style={{ color: '#6b6258', marginBottom: 12 }}>
+              Upload your work and add an optional comment for your mentor.
+            </p>
             <Upload
               fileList={submitFileList}
               onChange={({ fileList }) => setSubmitFileList(fileList.slice(-3))}
@@ -465,7 +647,9 @@ export default function FullSupportStudentPage() {
               maxCount={3}
               style={{ marginBottom: 40 }}
             >
-              <Button icon={<UploadIcon size={16} />} style={{ marginBottom: 4 }}>Upload file</Button>
+              <Button icon={<UploadIcon size={16} />} style={{ marginBottom: 4 }}>
+                Upload file
+              </Button>
             </Upload>
             <Input.TextArea
               placeholder="Add a comment (optional)"

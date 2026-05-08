@@ -1,3 +1,12 @@
+/* Editorial palette — match the rest of My Journey. */
+$st-cream: #faf8f3;
+$st-cream-elevated: #fbfaf6;
+$st-ink: #1c1a17;
+$st-muted: #6b6258;
+$st-hairline: #e5e3da;
+$st-brand: #7B1F2F;
+$st-brand-soft: rgba(123, 31, 47, 0.08);
+
 .page {
   max-width: 800px;
   margin: 0 auto;
@@ -8,10 +17,86 @@
 .pageEmbedded {
   max-width: none;
   margin: 0;
-  padding: 0 0 32px;
+  padding: 4px 0 32px;
   width: 100%;
+  color: $st-ink;
 }
 
+/* Editorial header — eyebrow + serif title + subtitle. Mirrors My
+   Rewards / My Progress so the Account section reads cohesively. */
+.editorialHeader {
+  padding-bottom: 18px;
+  border-bottom: 1px solid $st-hairline;
+  margin-bottom: 18px;
+}
+
+.editorialEyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $st-muted;
+  margin-bottom: 8px;
+}
+
+.editorialTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+  font-size: 2.1rem !important;
+  line-height: 1.18 !important;
+  font-weight: 600 !important;
+  color: $st-ink !important;
+  margin: 0 0 8px !important;
+
+  @media (max-width: 768px) {
+    font-size: 1.7rem !important;
+  }
+}
+
+.editorialSubtitle {
+  font-size: 0.95rem !important;
+  color: $st-muted !important;
+  margin: 0 !important;
+  max-width: 64ch;
+}
+
+/* Tab strip — SAT-style underline tabs. */
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid $st-hairline;
+  margin-bottom: 18px;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: $st-muted;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 4px;
+  margin-right: 22px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-bottom-color 0.15s ease;
+
+  &:hover { color: $st-ink; }
+
+  &:last-child { margin-right: 0; }
+}
+
+.tabActive {
+  color: $st-ink;
+  border-bottom-color: $st-brand;
+  font-weight: 600;
+}
+
+/* Legacy heading styles kept for backward compat (used in standalone
+   non-embedded view). */
 .pageTitle {
   margin-bottom: 8px !important;
 }
@@ -21,10 +106,82 @@
   font-size: 15px;
 }
 
+/* Editorial card override — cream surface, hairline border, serif title. */
 .card {
   margin-bottom: 20px;
-  border-radius: 12px;
-  border: 1px solid #f0f0f0;
+  border-radius: 14px !important;
+  border: 1px solid $st-hairline !important;
+  background: $st-cream-elevated !important;
+  box-shadow: none !important;
+
+  :global(.ant-card-head) {
+    background: transparent !important;
+    border-bottom: 1px solid $st-hairline !important;
+    padding: 14px 20px !important;
+    min-height: auto !important;
+  }
+  :global(.ant-card-head-title) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    color: $st-ink !important;
+  }
+  :global(.ant-card-body) {
+    padding: 18px 20px !important;
+  }
+
+  :global(.ant-btn-primary) {
+    background: $st-brand !important;
+    border-color: $st-brand !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+
+    &:hover, &:focus {
+      background: darken($st-brand, 6%) !important;
+      border-color: darken($st-brand, 6%) !important;
+    }
+  }
+}
+
+/* Notifications — light grouping inside the Notifications card. */
+.notifGroup {
+  padding: 14px 0 6px;
+  border-top: 1px solid $st-hairline;
+
+  &:first-of-type { border-top: none; padding-top: 0; }
+}
+
+.notifGroupTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $st-brand;
+  margin-bottom: 8px;
+}
+
+.notifList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    padding: 8px 0;
+    border-bottom: 1px solid $st-hairline;
+    font-size: 0.9rem;
+    color: $st-ink;
+
+    &:last-child { border-bottom: none; }
+  }
+}
+
+.notifMeta {
+  color: $st-muted;
+  font-size: 0.78rem;
+  margin-left: 4px;
 }
 
 .mockJourneyCard {

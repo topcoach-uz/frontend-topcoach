@@ -46,23 +46,56 @@
     z-index: 50;
 
     width: 100%;
-    background: var(--rp-surface);
+    /* Match the SAT Test Prep shell — header shares the cream body
+       background (`--rp-surface-soft`) instead of stark white, so the
+       topbar reads as a continuation of the page rather than a floating
+       white slab. Drop-shadow removed for the same reason: SAT relies on
+       the hairline border alone to separate header from body. */
+    background: var(--rp-surface-soft);
     border-bottom: 1px solid var(--rp-border);
-    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 6px 18px -14px rgba(15, 23, 42, 0.14);
   }
-  .rp-topbar-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 16px;
-    padding: 12px var(--rp-page-pad-x);
+  /* Two-row layout, identical hierarchy to SAT Test Prep shell:
+       row 1 — brand+crumb left, progress chip + Back button right
+       row 2 — underline tab nav (Overview / Module), constrained
+               to a centered 1200px container like SAT's `.sat-shell__tabs-inner`.
+     The legacy `.rp-topbar-inner` grid + `.rp-viewswitch` pill are retired. */
+  .rp-topbar-row {
+    width: 100%;
 
-    @media (max-width: 1100px) {
-      grid-template-columns: 1fr;
-      gap: 10px;
-      padding: 10px 16px;
+    &--head {
+      border-bottom: 1px solid var(--rp-border);
+    }
+
+    &--tabs {
+      border-top: 1px solid var(--rp-border);
     }
   }
+
+  .rp-topbar-row-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px var(--rp-page-pad-x);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    @media (max-width: 900px) {
+      padding: 10px 16px;
+      flex-wrap: wrap;
+    }
+
+    &--tabs {
+      padding: 0 var(--rp-page-pad-x);
+      gap: 0;
+      justify-content: flex-start;
+
+      @media (max-width: 900px) {
+        padding: 0 16px;
+      }
+    }
+  }
+
   .rp-topbar-left {
     display: inline-flex;
     align-items: center;
@@ -72,19 +105,50 @@
     color: var(--rp-text-muted);
     flex-wrap: wrap;
   }
-  .rp-topbar-center {
-    display: inline-flex;
-    justify-content: center;
-  }
+
   .rp-topbar-right {
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    justify-content: flex-end;
     flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 
-    @media (max-width: 1100px) {
-      justify-content: flex-start;
+  /* SAT-style underline tabs. Active tab gets a brand-red underline
+     plus a slight weight bump — the same affordance used by
+     `.sat-shell__tab--active`. */
+  .rp-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 16px;
+    color: var(--rp-text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.18s ease, border-bottom-color 0.18s ease;
+
+    &:hover:not(:disabled) { color: var(--rp-text); }
+    &:focus { outline: none; }
+    &:focus-visible {
+      outline: 2px solid rgba(124, 28, 28, 0.35);
+      outline-offset: -3px;
+      border-radius: 4px;
+    }
+
+    &--active {
+      color: var(--rp-text);
+      border-bottom-color: var(--rp-accent);
+      font-weight: 600;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
   }
   .rp-brand {

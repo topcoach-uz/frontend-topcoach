@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Upload, Input, Typography, message, Avatar, Tag, Select, Modal } from 'antd';
-import { User, Camera, CreditCard, Sparkles } from 'lucide-react';
+import {
+  User,
+  Camera,
+  CreditCard,
+  Sparkles,
+  Users as UsersIcon,
+  Bell,
+  Target,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -70,6 +78,15 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   const [studyBuddyInterests, setStudyBuddyInterests] = useState<StudyBuddyInterestProfile>(() =>
     ({ ...EMPTY_STUDY_BUDDY_INTEREST_PROFILE }),
   );
+
+  /**
+   * Editorial tab state. We expose Profile / Study buddy / Experience /
+   * Notifications. Security is intentionally omitted — password resets
+   * happen via email today and there's no UI to manage 2FA yet, so
+   * surfacing an empty tab would feel broken.
+   */
+  type SettingsTabKey = 'profile' | 'studyBuddy' | 'experience' | 'notifications';
+  const [activeTab, setActiveTab] = useState<SettingsTabKey>('profile');
 
   const normalizedPlan = plan.toLowerCase();
   const subscriptionPlanClass =
@@ -231,20 +248,54 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         </div>
       </Modal>
 
-      {!embeddedInHub && (
-        <>
-          <Title level={2} className={styles.pageTitle}>
-            {t('studentHub.settingsMock.title', 'Account & settings')}
-          </Title>
-          <Paragraph type="secondary" className={styles.sub}>
-            {t(
-              'studentHub.settingsMock.subtitle',
-              'Manage your profile, subscription, and preferences.',
-            )}
-          </Paragraph>
-        </>
-      )}
+      {/* Editorial header — eyebrow + serif title + subtitle, mirrors
+          My Rewards / My Progress so the Account section reads as one
+          coherent magazine spread. Always renders (the previous variant
+          only showed it when standalone), since the hub's generic page
+          header is suppressed for the editorial settings view. */}
+      <div className={styles.editorialHeader}>
+        <div className={styles.editorialEyebrow}>Account</div>
+        <Title level={1} className={styles.editorialTitle}>
+          {t('studentHub.settingsMock.title', 'Settings')}
+        </Title>
+        <Paragraph className={styles.editorialSubtitle}>
+          {t(
+            'studentHub.settingsMock.subtitle',
+            'Manage your profile, subscription, and preferences.',
+          )}
+        </Paragraph>
+      </div>
 
+      {/* Tab strip — Profile / Study buddy / Experience / Notifications.
+          Security tab intentionally omitted (no UI to back it). */}
+      <nav className={styles.tabs} aria-label="Settings sections">
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'profile' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          {t('studentHub.settingsMock.profile', 'Profile')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'studyBuddy' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('studyBuddy')}
+        >
+          {t('studentHub.settingsMock.studyBuddy', 'Study buddy')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'experience' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('experience')}
+        >
+          {t('studentHub.settingsMock.experience', 'Experience')}
+        </button>
+        {/* Notifications tab hidden until the per-channel toggle backend
+            ships — surfacing static text felt half-baked. The render
+            block below stays in place so re-enabling is a one-line flip. */}
+      </nav>
+
+      {activeTab === 'profile' && (
       <Card className={styles.card} title={<><User size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.profile', 'Profile')}</>}>
         <div className={styles.profileRow}>
           <div className={styles.avatarBlock}>
@@ -310,6 +361,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           </div>
         </div>
       </Card>
+      )}
 
       {/* Subscription section hidden for this release */}
       {false && (
@@ -356,11 +408,12 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         </Card>
       )}
 
+      {activeTab === 'studyBuddy' && (
       <Card
         className={styles.card}
         title={
           <>
-            <User size={18} style={{ marginRight: 8 }} />
+            <UsersIcon size={18} style={{ marginRight: 8 }} />
             {t('studentHub.settingsMock.studyBuddyInterestsTitle', 'Study Buddy Interests')}
           </>
         }
@@ -460,8 +513,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           </Button>
         </div>
       </Card>
+      )}
 
-      {isSuperAdmin && (
+      {activeTab === 'experience' && isSuperAdmin && (
         <Card
           className={`${styles.card} ${styles.mockJourneyCard}`}
           title={
@@ -494,6 +548,71 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
               ]}
             />
           </div>
+        </Card>
+      )}
+
+      {/* Non-SuperAdmin fallback for the Experience tab — the
+          experience-mode toggle is dev-only, so regular users see a
+          short explanatory card instead of an empty pane. */}
+      {activeTab === 'experience' && !isSuperAdmin && (
+        <Card className={styles.card} title={<><Sparkles size={18} style={{ marginRight: 8 }} />Experience mode</>}>
+          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+            {t(
+              'studentHub.settingsMock.experienceMenteeNote',
+              'You are in the Community experience. New experience modes will appear here as they roll out.',
+            )}
+          </Paragraph>
+        </Card>
+      )}
+
+      {/* Notifications — placeholder card. The toggle matrix
+          (Email / Push / SMS × event types) ships alongside the
+          notifications backend; we surface the section now so the
+          editorial nav is complete. */}
+      {activeTab === 'notifications' && (
+        <Card className={styles.card} title={<><Bell size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.notifications', 'Notifications')}</>}>
+          <Paragraph type="secondary">
+            {t(
+              'studentHub.settingsMock.notificationsDesc',
+              'Choose how you want to be reached for each event. Email is on by default.',
+            )}
+          </Paragraph>
+          <div className={styles.notifGroup}>
+            <div className={styles.notifGroupTitle}>
+              <Target size={14} /> Mentor sessions
+            </div>
+            <ul className={styles.notifList}>
+              <li>Session reminders (24h before) · <span className={styles.notifMeta}>Email · Push · SMS</span></li>
+              <li>New tasks &amp; feedback · <span className={styles.notifMeta}>Email · Push</span></li>
+              <li>Mentor messages · <span className={styles.notifMeta}>Push</span></li>
+            </ul>
+          </div>
+          <div className={styles.notifGroup}>
+            <div className={styles.notifGroupTitle}>
+              <UsersIcon size={14} /> Community
+            </div>
+            <ul className={styles.notifList}>
+              <li>Study buddy requests · <span className={styles.notifMeta}>Email · Push</span></li>
+              <li>Replies to your posts · <span className={styles.notifMeta}>Push</span></li>
+              <li>Mentions · <span className={styles.notifMeta}>Email · Push</span></li>
+            </ul>
+          </div>
+          <div className={styles.notifGroup}>
+            <div className={styles.notifGroupTitle}>
+              <CreditCard size={14} /> Billing
+            </div>
+            <ul className={styles.notifList}>
+              <li>Payment receipts · <span className={styles.notifMeta}>Email</span></li>
+              <li>Renewal reminders · <span className={styles.notifMeta}>Email</span></li>
+              <li>Card expiry warnings · <span className={styles.notifMeta}>Email · SMS</span></li>
+            </ul>
+          </div>
+          <Paragraph type="secondary" style={{ marginTop: 14, marginBottom: 0, fontSize: 12 }}>
+            {t(
+              'studentHub.settingsMock.notificationsComingSoon',
+              'Per-channel toggles roll out with the upcoming notifications service.',
+            )}
+          </Paragraph>
         </Card>
       )}
     </div>

@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { Card, Button, Radio, Space, Typography, Alert, Row, Col, Divider, Badge, List, Empty, Collapse, Modal, message } from 'antd';
+import { Modal, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
-import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
+import {
+  Compass,
+  Brain,
+  Star,
+  Lightbulb,
+  PenLine,
+  FlaskConical,
+  Trash2,
+  Lightbulb as LightbulbHint,
+  RotateCcw,
+  Play,
+  Eye,
+  Trophy,
+} from 'lucide-react';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
-import { useGetAllAssessmentsQuery, useDeleteAssessmentMutation } from '../../../../app/services/student-hub/psychometricApi';
-
-const { Panel } = Collapse;
-
-const { Title, Paragraph, Text } = Typography;
+import {
+  useGetAllAssessmentsQuery,
+  useDeleteAssessmentMutation,
+} from '../../../../app/services/student-hub/psychometricApi';
 
 interface ActiveSessionInfo {
   hasActiveSession: boolean;
@@ -36,10 +47,90 @@ interface AssessmentStartProps {
   };
 }
 
+/**
+ * The five (or six, with aptitude) assessment modules. Defined statically
+ * so the component grid stays declarative and easy to scan.
+ */
+type ModuleSpec = {
+  num: string;
+  Icon: typeof Compass;
+  titleKey: string;
+  titleFallback: string;
+  descKey: string;
+  descFallback: string;
+  questions: number;
+  minutes: number;
+  highlight?: boolean;
+};
+
+const CORE_MODULES: ModuleSpec[] = [
+  {
+    num: '01',
+    Icon: Compass,
+    titleKey: 'studentHub.psychometric.interestInventory',
+    titleFallback: 'Interest Inventory (RIASEC)',
+    descKey: 'studentHub.psychometric.interestInventoryDescLong',
+    descFallback: '12 forced-choice pairs to identify career interests across six dimensions.',
+    questions: 12,
+    minutes: 4,
+  },
+  {
+    num: '02',
+    Icon: Brain,
+    titleKey: 'studentHub.psychometric.personalityProfile',
+    titleFallback: 'Personality Profile (Big Five)',
+    descKey: 'studentHub.psychometric.personalityProfileDescLong',
+    descFallback: '20 statements measuring openness, conscientiousness, extraversion, agreeableness, neuroticism.',
+    questions: 20,
+    minutes: 5,
+  },
+  {
+    num: '03',
+    Icon: Star,
+    titleKey: 'studentHub.psychometric.valuesAssessment',
+    titleFallback: 'Values Assessment',
+    descKey: 'studentHub.psychometric.valuesAssessmentDescLong',
+    descFallback: '10 questions on what matters most: stability, autonomy, impact, status, growth.',
+    questions: 10,
+    minutes: 2,
+  },
+  {
+    num: '04',
+    Icon: Lightbulb,
+    titleKey: 'studentHub.psychometric.realLifeScenarios',
+    titleFallback: 'Real-Life Scenarios (SJT)',
+    descKey: 'studentHub.psychometric.realLifeScenariosDescLong',
+    descFallback: '4 situational judgment items — how you respond when it counts.',
+    questions: 4,
+    minutes: 2,
+  },
+  {
+    num: '05',
+    Icon: PenLine,
+    titleKey: 'studentHub.psychometric.openEndedQuestions',
+    titleFallback: 'Open-Ended Questions',
+    descKey: 'studentHub.psychometric.openEndedQuestionsDescLong',
+    descFallback: '2 reflective prompts for AI-powered personalization. There are no wrong answers.',
+    questions: 2,
+    minutes: 2,
+  },
+];
+
+const APTITUDE_MODULE: ModuleSpec = {
+  num: '06',
+  Icon: FlaskConical,
+  titleKey: 'studentHub.psychometric.aptitudeTests',
+  titleFallback: 'Aptitude Tests',
+  descKey: 'studentHub.psychometric.aptitudeTestsDescLong',
+  descFallback: '12 cognitive-ability questions — recommended for STEM majors.',
+  questions: 12,
+  minutes: 6,
+  highlight: true,
+};
+
 export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   studentProfile,
   onStart,
-  hasExistingAssessment,
   onViewExisting,
   isLoading,
   readOnly = false,
@@ -47,25 +138,20 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   majorMatchAccessStatus,
 }) => {
   const { t, i18n } = useTranslation();
-  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'uz' | 'ru'>(
-    (i18n.language.split('-')[0] as 'en' | 'uz' | 'ru') || 'en'
+  const [selectedLanguage] = useState<'en' | 'uz' | 'ru'>(
+    (i18n.language.split('-')[0] as 'en' | 'uz' | 'ru') || 'en',
   );
   const [includeAptitude, setIncludeAptitude] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [assessmentToDelete, setAssessmentToDelete] = useState<string | null>(null);
 
-  // Fetch all completed assessments
   const { data: allAssessments, isLoading: assessmentsLoading } = useGetAllAssessmentsQuery(
     studentProfile?.id || '',
-    { skip: !studentProfile?.id }
+    { skip: !studentProfile?.id },
   );
-
-  // Delete assessment mutation
   const [deleteAssessment, { isLoading: isDeleting }] = useDeleteAssessmentMutation();
 
-  const handleStart = () => {
-    onStart(selectedLanguage, includeAptitude);
-  };
+  const handleStart = () => onStart(selectedLanguage, includeAptitude);
 
   const handleDeleteClick = (assessmentId: string) => {
     setAssessmentToDelete(assessmentId);
@@ -74,7 +160,6 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
   const handleDeleteConfirm = async () => {
     if (!assessmentToDelete) return;
-
     try {
       await deleteAssessment(assessmentToDelete).unwrap();
       message.success('Assessment deleted successfully');
@@ -85,300 +170,294 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
     }
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteModalVisible(false);
-    setAssessmentToDelete(null);
-  };
+  const totalQuestions = 48 + (includeAptitude ? 12 : 0);
+  const estimatedTime = includeAptitude ? '18–22' : '12–15';
 
-  // V2 Question counts:
-  // Core: 48 (12 RIASEC + 20 Big Five + 10 Values + 4 SJT + 2 Open-ended)
-  // Aptitude: 12 (optional)
-  const totalQuestions = 48 + (includeAptitude ? 12 : 0); // 48 without aptitude, 60 with aptitude
-  const estimatedTime = includeAptitude ? '18-22' : '12-15';
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
-  };
+
+  const formatLastSaved = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  const modules = includeAptitude ? [...CORE_MODULES, APTITUDE_MODULE] : CORE_MODULES;
+  const hasActive = !!activeSession?.hasActiveSession;
 
   return (
-    <div className="assessment-start">
-      {/* Completed Assessments History */}
-      {allAssessments && allAssessments.length > 0 && (
-        <Collapse
-          defaultActiveKey={['history']}
-          style={{ marginBottom: 24 }}
-          items={[
-            {
-              key: 'history',
-              label: (
-                <span>
-                  <FontAwesomeIcon icon="history" style={{ marginRight: 8 }} />
-                  {t('studentHub.psychometric.assessmentHistory', 'Assessment History')} ({allAssessments.length})
-                </span>
-              ),
-              children: (
-                <List
-                  dataSource={allAssessments}
-                  loading={assessmentsLoading}
-                  locale={{ emptyText: <Empty description={t('studentHub.psychometric.noCompletedAssessments', 'No completed assessments yet')} /> }}
-                  renderItem={(assessment) => (
-                    <List.Item
-                      actions={[
-                        <Button 
-                          key="view" 
-                          type="link" 
-                          onClick={() => onViewExisting(assessment.id)}
-                        >
-                          {t('studentHub.psychometric.viewResults', 'View Results')}
-                        </Button>,
-                        !readOnly && (
-                        <Button
-                          key="delete"
-                          type="link"
-                          className="btn-delete-crimson-link"
-                          icon={<UnifiedIcon name="trash-2" size="sm" color="primary" />}
-                          onClick={() => handleDeleteClick(assessment.id)}
-                        >
-                          {t('common.delete', 'Delete')}
-                        </Button>
-                        ),
-                      ].filter(Boolean)}
-                    >
-                      <List.Item.Meta
-                        title={
-                          <Space>
-                            <Text strong>{t('studentHub.psychometric.assessment', 'Assessment')} #{allAssessments.indexOf(assessment) + 1}</Text>
-                            <Badge 
-                              color={assessment.aptitudeScores ? 'green' : 'blue'} 
-                              text={assessment.aptitudeScores ? t('studentHub.psychometric.withAptitude', 'With Aptitude') : t('studentHub.psychometric.coreOnly', 'Core Only')}
-                            />
-                          </Space>
-                        }
-                        description={
-                          <Space direction="vertical" size={4}>
-                            <Text type="secondary">
-                              {t('studentHub.psychometric.completed', 'Completed')}: {formatDate(assessment.assessmentMetadata?.completedAt || assessment.createdAt)}
-                            </Text>
-                            <Text type="secondary">
-                              {t('studentHub.psychometric.riasecCode', 'RIASEC Code')}: <Text strong style={{ color: '#8b0000' }}>{assessment.riasecCode}</Text>
-                              {' • '}
-                              {t('studentHub.psychometric.questions', 'Questions')}: {assessment.assessmentMetadata?.questionCount || t('common.notAvailable', 'N/A')}
-                              {' • '}
-                              {t('studentHub.psychometric.time', 'Time')}: {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)} {t('common.minutes', 'min')}
-                            </Text>
-                          </Space>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              ),
-            },
-          ]}
-        />
-      )}
-
-      {/* Start button (Overview removed per counselor view requirements) */}
-      {!readOnly && (
-        <>
-        {majorMatchAccessStatus?.requiresCommunityEnrollment && (
-          <Alert
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-            message={majorMatchAccessStatus.promptTitle || 'Join Community to continue'}
-            description={majorMatchAccessStatus.promptMessage}
-          />
+    <div className="majormatch">
+      {/* Hero ─────────────────────────────────────────────────────── */}
+      <header className="majormatch__hero">
+        <div className="majormatch__hero-text">
+          <div className="majormatch__eyebrow">AI Major Match · Psychometric Assessment</div>
+          <h1 className="majormatch__title">
+            {t(
+              'studentHub.psychometric.editorialTitle',
+              'Find the major that fits — not the one that sounds good.',
+            )}
+          </h1>
+          <p className="majormatch__lede">
+            {t(
+              'studentHub.psychometric.editorialLede',
+              'A 48-question psychometric battery covering interests, personality, values, and aptitudes. Built on RIASEC, Big Five, and SJT methodology.',
+            )}
+          </p>
+        </div>
+        {!readOnly && (
+          <div className="majormatch__hero-cta">
+            {majorMatchAccessStatus?.requiresCommunityEnrollment && (
+              <div className="majormatch__access-note">
+                {majorMatchAccessStatus.promptMessage}
+              </div>
+            )}
+            <button
+              type="button"
+              className="majormatch__btn majormatch__btn--primary"
+              onClick={handleStart}
+              disabled={
+                isLoading || (!!majorMatchAccessStatus && !majorMatchAccessStatus.canStart)
+              }
+            >
+              {hasActive ? <RotateCcw size={14} /> : <Play size={14} />}
+              {hasActive
+                ? t('studentHub.psychometric.resume', 'Resume ({{answered}}/{{total}})', {
+                    answered: activeSession?.answeredCount ?? 0,
+                    total: activeSession?.totalCount ?? 48,
+                  })
+                : t('studentHub.psychometric.startAssessment', 'Start Assessment')}
+            </button>
+            {hasActive && activeSession?.lastUpdated && (
+              <div className="majormatch__cta-meta">
+                {t('studentHub.psychometric.lastSaved', 'Last saved')}{' · '}
+                {formatLastSaved(activeSession.lastUpdated)}
+              </div>
+            )}
+          </div>
         )}
-        <Card className="assessment-start-card" style={{ marginBottom: 24 }}>
-          <Row gutter={[24, 24]} align="middle">
-            <Col xs={24} lg={18}>
-              <Title level={4} style={{ margin: 0 }}>{t('studentHub.psychometric.readyToStart', 'Ready to start?')}</Title>
-              <Text type="secondary">
-                {totalQuestions} {t('studentHub.psychometric.questions', 'questions')} · ~{estimatedTime} {t('common.minutes', 'minutes')}
-              </Text>
-            </Col>
-            <Col xs={24} lg={6}>
-              <Button
-                type="primary"
-                size="large"
-                onClick={handleStart}
-                loading={isLoading}
-                disabled={!!majorMatchAccessStatus && !majorMatchAccessStatus.canStart}
-                className="start-button"
-                icon={<FontAwesomeIcon icon={activeSession?.hasActiveSession ? "redo" : "play-circle"} />}
-                block
-                style={{ height: 56, fontSize: 16, fontWeight: 600 }}
-              >
-                {activeSession?.hasActiveSession 
-                  ? t('studentHub.psychometric.resume', 'Resume ({{answered}}/{{total}})', { answered: activeSession.answeredCount, total: activeSession.totalCount })
-                  : t('studentHub.psychometric.startAssessment', 'Start Assessment')}
-              </Button>
-              {activeSession?.hasActiveSession && activeSession.lastUpdated && (
-                <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 8, fontSize: 12 }}>
-                  {t('studentHub.psychometric.lastSaved', 'Last saved')}: {new Date(activeSession.lastUpdated).toLocaleDateString('en-US', { 
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                  })}
-                </Text>
-              )}
-            </Col>
-          </Row>
-        </Card>
-        </>
+      </header>
+
+      {/* Stats strip ──────────────────────────────────────────────── */}
+      <section className="majormatch__stats">
+        <div className="majormatch__stat">
+          <div className="majormatch__stat-label">Questions</div>
+          <div className="majormatch__stat-value">{totalQuestions}</div>
+          <div className="majormatch__stat-foot">across 5 components</div>
+        </div>
+        <div className="majormatch__stat">
+          <div className="majormatch__stat-label">Time</div>
+          <div className="majormatch__stat-value">{estimatedTime}</div>
+          <div className="majormatch__stat-foot">minutes</div>
+        </div>
+        <div className="majormatch__stat">
+          <div className="majormatch__stat-label">Frameworks</div>
+          <div className="majormatch__stat-value">4</div>
+          <div className="majormatch__stat-foot">RIASEC · Big Five · SJT · Values</div>
+        </div>
+        <div className="majormatch__stat">
+          <div className="majormatch__stat-label">Output</div>
+          <div className="majormatch__stat-value">
+            <span className="majormatch__stat-infinity">∞</span>
+          </div>
+          <div className="majormatch__stat-foot">major + career match</div>
+        </div>
+      </section>
+
+      {/* History (only if there are completed assessments) ───────── */}
+      {allAssessments && allAssessments.length > 0 && (
+        <section className="majormatch__section">
+          <div className="majormatch__section-head">
+            <Trophy size={16} />
+            <h2 className="majormatch__section-title">
+              {t('studentHub.psychometric.assessmentHistory', 'Assessment history')} (
+              {allAssessments.length})
+            </h2>
+          </div>
+          <ul className="majormatch__history">
+            {assessmentsLoading && <li className="majormatch__history-loading">Loading…</li>}
+            {!assessmentsLoading &&
+              allAssessments.map((assessment, idx) => (
+                <li key={assessment.id} className="majormatch__history-row">
+                  <div className="majormatch__history-main">
+                    <div className="majormatch__history-title">
+                      {t('studentHub.psychometric.assessment', 'Assessment')} #{idx + 1}
+                      <span
+                        className={`majormatch__pill ${
+                          assessment.aptitudeScores
+                            ? 'majormatch__pill--green'
+                            : 'majormatch__pill--blue'
+                        }`}
+                      >
+                        {assessment.aptitudeScores
+                          ? t('studentHub.psychometric.withAptitude', 'With Aptitude')
+                          : t('studentHub.psychometric.coreOnly', 'Core Only')}
+                      </span>
+                    </div>
+                    <div className="majormatch__history-meta">
+                      {t('studentHub.psychometric.completed', 'Completed')}:{' '}
+                      {formatDate(
+                        assessment.assessmentMetadata?.completedAt || assessment.createdAt,
+                      )}
+                    </div>
+                    <div className="majormatch__history-meta">
+                      {t('studentHub.psychometric.riasecCode', 'RIASEC code')}:{' '}
+                      <strong className="majormatch__history-code">{assessment.riasecCode}</strong>
+                      {' · '}
+                      {assessment.assessmentMetadata?.questionCount || '—'}{' '}
+                      {t('studentHub.psychometric.questions', 'questions')}
+                      {' · '}
+                      {Math.round((assessment.assessmentMetadata?.completionTime || 0) / 60)}{' '}
+                      {t('common.minutes', 'min')}
+                    </div>
+                  </div>
+                  <div className="majormatch__history-actions">
+                    <button
+                      type="button"
+                      className="majormatch__link"
+                      onClick={() => onViewExisting(assessment.id)}
+                    >
+                      <Eye size={13} /> {t('studentHub.psychometric.viewResults', 'View results')}
+                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        className="majormatch__link majormatch__link--danger"
+                        onClick={() => handleDeleteClick(assessment.id)}
+                      >
+                        <Trash2 size={13} /> {t('common.delete', 'Delete')}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </section>
       )}
 
-      {/* Assessment Components (V2) - hidden in read-only counselor view */}
+      {/* Components grid ─────────────────────────────────────────── */}
       {!readOnly && (
-      <Card className="assessment-components-card" title={t('studentHub.psychometric.assessmentComponents', 'Assessment Components')} style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="compass" className="component-icon" />
-              <div className="component-content">
-                <Text strong>{t('studentHub.psychometric.interestInventory', 'Interest Inventory (RIASEC)')}</Text>
-                <Text type="secondary" className="component-description">
-                  {t('studentHub.psychometric.interestInventoryDesc', '12 choice pairs to identify your career interests')}
-                </Text>
-              </div>
-              <Badge count={12} className="component-badge" />
-            </div>
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="brain" className="component-icon" />
-              <div className="component-content">
-                <Text strong>{t('studentHub.psychometric.personalityProfile', 'Personality Profile (Big Five)')}</Text>
-                <Text type="secondary" className="component-description">
-                  {t('studentHub.psychometric.personalityProfileDesc', '20 questions to understand your personality traits')}
-                </Text>
-              </div>
-              <Badge count={20} className="component-badge" />
-            </div>
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="star" className="component-icon" />
-              <div className="component-content">
-                <Text strong>{t('studentHub.psychometric.valuesAssessment', 'Values Assessment')}</Text>
-                <Text type="secondary" className="component-description">
-                  {t('studentHub.psychometric.valuesAssessmentDesc', '10 questions about what matters most to you')}
-                </Text>
-              </div>
-              <Badge count={10} className="component-badge" />
-            </div>
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="lightbulb" className="component-icon" />
-              <div className="component-content">
-                <Text strong>{t('studentHub.psychometric.realLifeScenarios', 'Real-Life Scenarios (SJT)')}</Text>
-                <Text type="secondary" className="component-description">
-                  {t('studentHub.psychometric.realLifeScenariosDesc', '4 situational judgment questions')}
-                </Text>
-              </div>
-              <Badge count={4} className="component-badge" />
-            </div>
-          </Col>
-          <Col xs={24} md={12}>
-            <div className="component-item">
-              <FontAwesomeIcon icon="edit" className="component-icon" />
-              <div className="component-content">
-                <Text strong>{t('studentHub.psychometric.openEndedQuestions', 'Open-Ended Questions')}</Text>
-                <Text type="secondary" className="component-description">
-                  {t('studentHub.psychometric.openEndedQuestionsDesc', '2 questions for AI-powered personalization')}
-                </Text>
-              </div>
-              <Badge count={2} className="component-badge" />
-            </div>
-          </Col>
-          {includeAptitude && (
-            <Col xs={24} md={12}>
-              <div className="component-item component-item-highlight">
-                <FontAwesomeIcon icon="flask" className="component-icon" />
-                <div className="component-content">
-                  <Text strong>{t('studentHub.psychometric.aptitudeTests', 'Aptitude Tests')}</Text>
-                  <Text type="secondary" className="component-description">
-                    {t('studentHub.psychometric.aptitudeTestsDesc', '12 questions to assess cognitive abilities')}
-                  </Text>
+        <section className="majormatch__section">
+          <div className="majormatch__section-head majormatch__section-head--row">
+            <h2 className="majormatch__section-title">
+              {t('studentHub.psychometric.assessmentComponents', 'Assessment components')}
+            </h2>
+            <span className="majormatch__section-meta">
+              {modules.length} modules · take in any order
+            </span>
+          </div>
+          <div className="majormatch__modules">
+            {modules.map(({ num, Icon, titleKey, titleFallback, descKey, descFallback, questions, minutes, highlight }) => (
+              <article
+                key={num}
+                className={`majormatch__module ${highlight ? 'majormatch__module--highlight' : ''}`}
+              >
+                <div className="majormatch__module-head">
+                  <span className="majormatch__module-num">{num}</span>
+                  <span className="majormatch__module-icon">
+                    <Icon size={16} />
+                  </span>
+                  <span className="majormatch__module-time">{minutes} min</span>
                 </div>
-                <Badge count={12} className="component-badge" />
-              </div>
-            </Col>
-          )}
-        </Row>
-      </Card>
+                <h3 className="majormatch__module-title">{t(titleKey, titleFallback)}</h3>
+                <p className="majormatch__module-desc">{t(descKey, descFallback)}</p>
+                <div className="majormatch__module-foot">
+                  <span className="majormatch__module-count">{questions} questions</span>
+                  <span className="majormatch__module-status">Not started</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Settings - hidden in read-only counselor view */}
+      {/* Settings ────────────────────────────────────────────────── */}
       {!readOnly && (
-      <Card className="assessment-settings-card" title={t('studentHub.psychometric.assessmentSettings', 'Assessment Settings')}>
-        <Row gutter={[24, 24]}>
-          {/* Language selection temporarily hidden - not working yet */}
-          {/* <Col xs={24} md={12}>
-            <div className="setting-group">
-              <Text strong className="setting-label">Language</Text>
-              <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
-                Choose your preferred language for the assessment
-              </Paragraph>
-              <Radio.Group
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                size="large"
-              >
-                <Radio.Button value="en">English</Radio.Button>
-                <Radio.Button value="uz">O'zbek</Radio.Button>
-                <Radio.Button value="ru">Русский</Radio.Button>
-              </Radio.Group>
-            </div>
-          </Col> */}
+        <section className="majormatch__section majormatch__section--settings">
+          <div className="majormatch__section-head">
+            <h2 className="majormatch__section-title">
+              {t('studentHub.psychometric.assessmentSettings', 'Assessment settings')}
+            </h2>
+          </div>
 
-          <Col xs={24} md={24}>
-            <div className="setting-group">
-              <Text strong className="setting-label">{t('studentHub.psychometric.includeAptitudeTests', 'Include Aptitude Tests')}</Text>
-              <Paragraph type="secondary" style={{ marginTop: 4, marginBottom: 12 }}>
-                {t('studentHub.psychometric.includeAptitudeTestsDesc', 'Get deeper insights with cognitive ability assessment (+12 questions)')}
-              </Paragraph>
-              <Radio.Group
-                value={includeAptitude}
-                onChange={(e) => setIncludeAptitude(e.target.value)}
-                size="large"
-              >
-                <Radio.Button value={true}>{t('studentHub.psychometric.yesInclude', 'Yes, Include')}</Radio.Button>
-                <Radio.Button value={false}>{t('studentHub.psychometric.noSkip', 'No, Skip')}</Radio.Button>
-              </Radio.Group>
-              <div className="aptitude-hint" style={{ marginTop: 8 }}>
-                <FontAwesomeIcon icon="lightbulb" style={{ marginRight: 6, color: '#f59e0b' }} />
-                <Text type="secondary" style={{ fontSize: 13 }}>
-                  {t('studentHub.psychometric.recommendedForStem', 'Recommended for STEM majors')}
-                </Text>
+          <div className="majormatch__setting">
+            <div className="majormatch__setting-text">
+              <div className="majormatch__setting-label">
+                {t('studentHub.psychometric.includeAptitudeTests', 'Include aptitude tests')}
+              </div>
+              <div className="majormatch__setting-desc">
+                {t(
+                  'studentHub.psychometric.includeAptitudeTestsDesc',
+                  'Get deeper insights with cognitive ability assessment (+12 questions)',
+                )}
               </div>
             </div>
-          </Col>
-        </Row>
-      </Card>
+            <div className="majormatch__toggle" role="radiogroup" aria-label="Include aptitude">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={includeAptitude}
+                className={`majormatch__toggle-btn ${
+                  includeAptitude ? 'is-active' : ''
+                }`}
+                onClick={() => setIncludeAptitude(true)}
+              >
+                {t('studentHub.psychometric.yesInclude', 'Yes, include')}
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={!includeAptitude}
+                className={`majormatch__toggle-btn ${
+                  !includeAptitude ? 'is-active' : ''
+                }`}
+                onClick={() => setIncludeAptitude(false)}
+              >
+                {t('studentHub.psychometric.noSkip', 'No, skip')}
+              </button>
+            </div>
+          </div>
+
+          <div className="majormatch__hint">
+            <LightbulbHint size={14} />
+            <span>
+              {t('studentHub.psychometric.recommendedForStem', 'Recommended for STEM majors')}
+            </span>
+          </div>
+        </section>
       )}
 
-      {/* Delete Confirmation Modal */}
       <Modal
         title={t('studentHub.psychometric.deleteAssessment', 'Delete Assessment')}
         open={deleteModalVisible}
         onOk={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onCancel={() => {
+          setDeleteModalVisible(false);
+          setAssessmentToDelete(null);
+        }}
         confirmLoading={isDeleting}
         okText={t('common.delete', 'Delete')}
         okButtonProps={{ danger: true }}
         cancelText={t('common.cancel', 'Cancel')}
       >
-        <p>{t('studentHub.psychometric.deleteConfirm', 'Are you sure you want to delete this assessment? This action cannot be undone.')}</p>
-        <p style={{ color: '#ff4d4f', fontWeight: 500 }}>
-          {t('studentHub.psychometric.deleteWarning', 'All assessment data, scores, and recommendations will be permanently removed.')}
+        <p>
+          {t(
+            'studentHub.psychometric.deleteConfirm',
+            'Are you sure you want to delete this assessment? This action cannot be undone.',
+          )}
+        </p>
+        <p style={{ color: '#7B1F2F', fontWeight: 500 }}>
+          {t(
+            'studentHub.psychometric.deleteWarning',
+            'All assessment data, scores, and recommendations will be permanently removed.',
+          )}
         </p>
       </Modal>
     </div>

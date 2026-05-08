@@ -865,3 +865,87 @@ $crimson-900: #7f1d1d;
     }
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Editorial overrides for the My Progress / Dashboard page.
+ *
+ * Reuses the SAT prep / Admissions vocabulary: hairline cream borders,
+ * serif card titles, brand-red accents, no harsh shadows. Applied via
+ * .student-hub-dashboard scope so the same overrides don't bleed into
+ * other pages that share AntD primitives.
+ * ───────────────────────────────────────────────────────────────────── */
+.student-hub-dashboard {
+  /* Hairline cream borders on every primary card. */
+  .ant-card,
+  .deadlines-card,
+  .activity-summary-card {
+    border: 1px solid #e5e3da !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+
+    &:hover {
+      border-color: #c9b8bc !important;
+    }
+  }
+
+  /* Serif card headers with editorial tracking. */
+  .ant-card-head {
+    background: transparent !important;
+    border-bottom: 1px solid #ece9df !important;
+    padding: 16px 22px !important;
+    min-height: 0 !important;
+  }
+  .ant-card-head-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-weight: 500 !important;
+    font-size: 1.08rem !important;
+    letter-spacing: -0.012em !important;
+    color: #1f2937 !important;
+    padding: 0 !important;
+  }
+  .ant-card-body {
+    padding: 18px 22px !important;
+  }
+
+  /* Phase badge — keep the colored pill but tighten styling. */
+  .phase-badge-minimal {
+    border-radius: 999px !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700 !important;
+  }
+
+  /* Quick Add brand-red pill. */
+  .dashboard-top-bar .ant-btn-primary {
+    background: #7B1F2F !important;
+    border-color: #7B1F2F !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05) !important;
+
+    &:hover {
+      background: #5d1622 !important;
+      border-color: #5d1622 !important;
+    }
+  }
+
+  /* Activity / deadline list rows — editorial dividers. */
+  .activity-item,
+  .deadline-item,
+  .ant-list-item {
+    border-bottom: 1px solid #ece9df !important;
+    transition: background 0.15s ease;
+
+    &:last-child { border-bottom: none !important; }
+  }
+
+  /* Empty-state cards — soft cream wash. */
+  .empty-state {
+    background: #faf8f3 !important;
+    border: 1px dashed #d6d3c8 !important;
+    border-radius: 12px !important;
+  }
+}

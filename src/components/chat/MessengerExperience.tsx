@@ -4,8 +4,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import { useGetConversationQuery, useGetThreadsQuery, useGetUnreadCountQuery } from 'src/app/services/chat/chatApi';
+import { useGetMentorDetailQuery } from 'src/app/services/mentors';
 import { useTypedSelector } from 'src/app/store';
 import { getLatestCreatedImg } from 'src/utils';
+import { avatarColorForName, avatarInitials } from 'src/utils/avatarColor';
 import ConversationList from './ConversationList';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
@@ -64,6 +66,18 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
   const isMentorSide = conversation?.mentorId === currentUser?.id;
   const otherIsMentor =
     conversation?.conversationType !== 'PEER' && !isMentorSide && !!conversation?.mentorId;
+
+  // Pull mentor detail (university, title) so the thread header can
+  // surface a richer subtitle like "Mentor · Yale NUS" instead of just
+  // "Mentor". Only fetched when the conversation peer is actually a
+  // mentor — skip otherwise to avoid a wasted call.
+  const { data: mentorDetail } = useGetMentorDetailQuery(
+    { mentorId: conversation?.mentorId ?? '' },
+    { skip: !otherIsMentor || !conversation?.mentorId },
+  );
+  const mentorUniversity = (mentorDetail as { mentorProfile?: { university?: string } } | undefined)
+    ?.mentorProfile?.university;
+
   const subtitle =
     conversation?.conversationType === 'PEER'
       ? 'Peer · Study Buddy'
@@ -73,7 +87,9 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
           ? 'Full Support'
           : isMentorSide
             ? 'Student'
-            : 'Mentor';
+            : mentorUniversity
+              ? `Mentor · ${mentorUniversity}`
+              : 'Mentor';
   const peerLabels = (conversation as { peerOverlapLabels?: string[] } | undefined)?.peerOverlapLabels ?? [];
 
   const avatarSrc = (() => {
@@ -181,7 +197,12 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
                     {avatarSrc ? (
                       <img src={avatarSrc} alt="" className={styles.threadAvatarImg} />
                     ) : (
-                      <span className={styles.threadAvatarFallback}>{userName.charAt(0).toUpperCase()}</span>
+                      <span
+                        className={styles.threadAvatarFallback}
+                        style={{ backgroundColor: avatarColorForName(userName) }}
+                      >
+                        {avatarInitials(userName)}
+                      </span>
                     )}
                   </div>
                   <div className={styles.threadHeaderText}>
@@ -189,15 +210,9 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
                     <div className={styles.threadHeaderMeta}>
                       <span className={styles.threadHeaderRole}>{subtitle}</span>
                     </div>
-                    {conversation?.conversationType === 'PEER' && peerLabels.length > 0 && (
-                      <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                        {peerLabels.slice(0, 5).map((label) => (
-                          <Tag key={label} color="processing" style={{ margin: 0 }}>
-                            {label}
-                          </Tag>
-                        ))}
-                      </div>
-                    )}
+                    {/* Peer-overlap tags (e.g. "Applying to UK") removed —
+                        cluttered the editorial header and weren't content
+                        the user explicitly authored. */}
                   </div>
                 </button>
 

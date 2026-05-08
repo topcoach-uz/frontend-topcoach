@@ -1,18 +1,18 @@
 /**
- * Research Prep top bar.
+ * Research Prep top bar — mirrors the SAT Test Prep shell so both
+ * programs share the same visual hierarchy.
  *
- * Sticky horizontal header that pins under the main website header. Contains:
- *   - Breadcrumb (Research Program > {Dashboard | Week N · short title})
- *   - View toggle pills (Overview / Week N Module)
- *   - Program progress chip (X/8 weeks · NN%)
- *   - Back button (Back to main menu in overview, ← Back to Overview in module)
+ *   Row 1 — brand badge + breadcrumb (left), program-progress chip
+ *           and Back-to-main button (right).
+ *   Row 2 — underline tab nav (Overview / Module), centered in a
+ *           1200px container exactly like SAT's tabs.
  *
- * No avatar — the global website header already shows the user's identity,
- * so we keep this bar focused on navigation + progress.
+ * No avatar — the global website header already shows the user's
+ * identity, so we keep this bar focused on navigation + progress.
  */
 
 import React from 'react';
-import { ArrowLeft, ChevronRight, FlaskConical } from 'lucide-react';
+import { ArrowLeft, ChevronRight, FlaskConical, LayoutDashboard, BookOpen } from 'lucide-react';
 
 interface ResearchTopBarProps {
   view: 'overview' | 'module';
@@ -39,80 +39,78 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
 
   return (
     <header className="rp-topbar" role="banner">
-      <div className="rp-topbar-inner">
-        {/* Left zone — brand + breadcrumb */}
-        <div className="rp-topbar-left">
-          <span className="rp-brand">
-            <span className="rp-brand-mark" aria-hidden>
-              <FlaskConical size={15} />
-            </span>
-            <span className="rp-brand-name">Research Program</span>
-          </span>
-          <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
-          {view === 'overview' ? (
-            <span className="rp-crumb-leaf">Dashboard</span>
-          ) : (
-            <>
-              <span className="rp-crumb-leaf">Week {selectedWeekNumber}</span>
-              {weekShort && (
-                <>
-                  <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
-                  <span className="rp-crumb-trail">{weekShort}</span>
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Center zone — view switch */}
-        <div className="rp-topbar-center">
-          <div className="rp-viewswitch" role="tablist" aria-label="Research view">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'overview'}
-              className={`seg ${view === 'overview' ? 'seg-active' : ''}`}
-              onClick={() => onSwitchView('overview')}
-            >
-              Overview
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'module'}
-              className={`seg ${view === 'module' ? 'seg-active' : ''} ${
-                !selectedWeekNumber ? 'seg-disabled' : ''
-              }`}
-              onClick={() => selectedWeekNumber && onSwitchView('module')}
-              disabled={!selectedWeekNumber}
-              title={selectedWeekNumber ? '' : 'Pick a week from the dashboard first'}
-            >
-              {selectedWeekNumber ? `Week ${selectedWeekNumber} Module` : 'Module'}
-            </button>
-          </div>
-        </div>
-
-        {/* Right zone — progress + back */}
-        <div className="rp-topbar-right">
-          <div className="rp-progress-chip" aria-label="Program progress">
-            <span className="chip-text">
-              <span className="chip-label">Program Progress</span>
-              <span className="chip-value">
-                {weeksCompleted}<span className="chip-sep">/</span>{totalWeeks}
-                <span className="chip-unit"> Weeks</span>
+      {/* Row 1 — brand + crumb on the left, progress + back on the right. */}
+      <div className="rp-topbar-row rp-topbar-row--head">
+        <div className="rp-topbar-row-inner">
+          <div className="rp-topbar-left">
+            <span className="rp-brand">
+              <span className="rp-brand-mark" aria-hidden>
+                <FlaskConical size={13} />
               </span>
+              <span className="rp-brand-name">Research Program</span>
             </span>
-            <span className="bar" aria-hidden>
-              <span className="fill" style={{ width: `${overallPercent}%` }} />
-            </span>
-            <span className="pct">{overallPercent}%</span>
+            <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
+            {view === 'overview' ? (
+              <span className="rp-crumb-leaf">Dashboard</span>
+            ) : (
+              <>
+                <span className="rp-crumb-leaf">Week {selectedWeekNumber}</span>
+                {weekShort && (
+                  <>
+                    <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
+                    <span className="rp-crumb-trail">{weekShort}</span>
+                  </>
+                )}
+              </>
+            )}
           </div>
-          <button type="button" className="rp-back-btn" onClick={onBackToMain}>
-            <ArrowLeft size={14} />
-            <span>{view === 'module' ? 'Back to Overview' : 'Back to main menu'}</span>
-          </button>
+          <div className="rp-topbar-right">
+            <div className="rp-progress-chip" aria-label="Program progress">
+              <span className="chip-text">
+                <span className="chip-label">Program Progress</span>
+                <span className="chip-value">
+                  {weeksCompleted}<span className="chip-sep">/</span>{totalWeeks}
+                  <span className="chip-unit"> Weeks</span>
+                </span>
+              </span>
+              <span className="bar" aria-hidden>
+                <span className="fill" style={{ width: `${overallPercent}%` }} />
+              </span>
+              <span className="pct">{overallPercent}%</span>
+            </div>
+            <button type="button" className="rp-back-btn" onClick={onBackToMain}>
+              <ArrowLeft size={13} />
+              <span>{view === 'module' ? 'Back to Overview' : 'Back to main menu'}</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Row 2 — Overview / Module as SAT-style underline tabs. */}
+      <nav className="rp-topbar-row rp-topbar-row--tabs" aria-label="Research view">
+        <div className="rp-topbar-row-inner rp-topbar-row-inner--tabs">
+          <button
+            type="button"
+            className={`rp-tab ${view === 'overview' ? 'rp-tab--active' : ''}`}
+            onClick={() => onSwitchView('overview')}
+          >
+            <LayoutDashboard size={15} />
+            <span>Overview</span>
+          </button>
+          <button
+            type="button"
+            className={`rp-tab ${view === 'module' ? 'rp-tab--active' : ''} ${
+              !selectedWeekNumber ? 'rp-tab--disabled' : ''
+            }`}
+            onClick={() => selectedWeekNumber && onSwitchView('module')}
+            disabled={!selectedWeekNumber}
+            title={selectedWeekNumber ? '' : 'Pick a week from the dashboard first'}
+          >
+            <BookOpen size={15} />
+            <span>{selectedWeekNumber ? `Week ${selectedWeekNumber} Module` : 'Module'}</span>
+          </button>
+        </div>
+      </nav>
     </header>
   );
 };

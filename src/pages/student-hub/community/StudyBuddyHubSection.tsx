@@ -21,10 +21,11 @@ export type StudyBuddyHubSectionProps = {
 };
 
 export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectionProps) {
-  const [mainTab, setMainTab] = useState<'discover' | 'requests'>('discover');
+  const [mainTab, setMainTab] = useState<'discover' | 'requests' | 'connected'>('discover');
   const [reqDirection, setReqDirection] = useState<'in' | 'out'>('in');
   const [discoverPage, setDiscoverPage] = useState(1);
   const [reqPage, setReqPage] = useState(1);
+  const [connectedPage, setConnectedPage] = useState(1);
 
   const {
     data: discoverData,
@@ -50,9 +51,22 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const items = discoverData?.items ?? [];
   const requestList = requestsData?.requests ?? [];
 
+  // Split the discover list into "still to discover" and "already
+  // connected" so each tab gets its own subset (and its own pagination).
+  // Connected peers should only appear under the Connected tab.
+  const discoverItems = useMemo(
+    () => items.filter((r) => r.requestStatus !== 'connected'),
+    [items],
+  );
+  const connectedItems = useMemo(
+    () => items.filter((r) => r.requestStatus === 'connected'),
+    [items],
+  );
+
   useEffect(() => {
     setDiscoverPage(1);
     setReqPage(1);
+    setConnectedPage(1);
   }, [mainTab]);
 
   useEffect(() => {
@@ -60,18 +74,28 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   }, [reqDirection]);
 
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(items.length / PAGE_SIZE) || 1);
+    const maxPage = Math.max(1, Math.ceil(discoverItems.length / PAGE_SIZE) || 1);
     if (discoverPage > maxPage) setDiscoverPage(maxPage);
-  }, [items.length, discoverPage]);
+  }, [discoverItems.length, discoverPage]);
 
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(requestList.length / PAGE_SIZE) || 1);
     if (reqPage > maxPage) setReqPage(maxPage);
   }, [requestList.length, reqPage]);
 
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(connectedItems.length / PAGE_SIZE) || 1);
+    if (connectedPage > maxPage) setConnectedPage(maxPage);
+  }, [connectedItems.length, connectedPage]);
+
   const discoverPageItems = useMemo(
-    () => items.slice((discoverPage - 1) * PAGE_SIZE, discoverPage * PAGE_SIZE),
-    [items, discoverPage],
+    () => discoverItems.slice((discoverPage - 1) * PAGE_SIZE, discoverPage * PAGE_SIZE),
+    [discoverItems, discoverPage],
+  );
+
+  const connectedPageItems = useMemo(
+    () => connectedItems.slice((connectedPage - 1) * PAGE_SIZE, connectedPage * PAGE_SIZE),
+    [connectedItems, connectedPage],
   );
 
   const requestPageItems = useMemo(
@@ -99,22 +123,138 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
     }
   };
 
+  // Single card renderer reused by Discover and Connected tabs. The
+  // action area branches on requestStatus so connected peers see a
+  // "Message" button and pending ones see request controls.
+  type BuddyRow = (typeof items)[number];
+  const renderCard = (row: BuddyRow) => {
+    const snippetTags = row.overlap.slice(0, 4);
+    const footerSnippet =
+      row.overlap.length > 0
+        ? row.overlap.slice(0, 2).map((o) => o.label).join(' · ')
+        : null;
+    return (
+      <div key={row.userId} className={styles.studyBuddyInstaCard}>
+        <div className={styles.studyBuddyInstaInner}>
+          <Avatar size={104} src={row.avatarUrl || undefined} className={styles.studyBuddyInstaAvatar}>
+            {row.name.charAt(0)}
+          </Avatar>
+          {row.username ? (
+            <div className={styles.studyBuddyInstaHandlePill} title={formatUsername(row.username)}>
+              {formatUsername(row.username)}
+            </div>
+          ) : (
+            <div style={{ height: 8 }} aria-hidden />
+          )}
+          <div className={styles.studyBuddyInstaName}>{row.name}</div>
+          {row.matchExplanation ? (
+            <p className={styles.studyBuddyInstaBio}>{row.matchExplanation}</p>
+          ) : snippetTags.length > 0 ? (
+            <div className={styles.studyBuddyInstaTagRow}>
+              {snippetTags.map((o) => (
+                <Tag key={`${o.field}-${o.value}`} color="processing" style={{ margin: 0 }}>
+                  {o.label}
+                </Tag>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.studyBuddyInstaBio}>
+              No shared study-buddy tags yet — connect to find common ground.
+            </p>
+          )}
+          <div className={styles.studyBuddyInstaFooterPill} title={footerSnippet || undefined}>
+            {footerSnippet
+              ? `${footerSnippet}${row.overlap.length > 2 ? '…' : ''}`
+              : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
+          </div>
+          <div className={styles.studyBuddyInstaActions}>
+            {row.requestStatus === 'none' && (
+              <Button
+                type="primary"
+                icon={<UserPlus size={18} />}
+                loading={sending}
+                onClick={() => void handleSend(row.userId)}
+              >
+                Request
+              </Button>
+            )}
+            {row.requestStatus === 'outgoing_pending' && (
+              <>
+                <Tag color="gold" style={{ margin: 0, alignSelf: 'center' }}>Pending</Tag>
+                <Button
+                  loading={cancelling}
+                  onClick={async () => {
+                    if (!row.outgoingRequestId) return;
+                    try {
+                      await cancelRequest(row.outgoingRequestId).unwrap();
+                      message.info('Request cancelled.');
+                      void refetchDiscover();
+                    } catch (e: any) {
+                      message.error(e?.data?.message || 'Could not cancel.');
+                    }
+                  }}
+                >
+                  Cancel request
+                </Button>
+              </>
+            )}
+            {row.requestStatus === 'incoming_pending' && (
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                <Tag color="blue" style={{ margin: 0, textAlign: 'center', width: '100%' }}>
+                  Wants to connect
+                </Tag>
+                <Button
+                  type="primary"
+                  loading={accepting}
+                  onClick={() => row.incomingRequestId && void handleAccept(row.incomingRequestId)}
+                >
+                  Accept
+                </Button>
+                <Button
+                  danger
+                  loading={rejecting}
+                  onClick={async () => {
+                    if (!row.incomingRequestId) return;
+                    try {
+                      await rejectRequest(row.incomingRequestId).unwrap();
+                      message.success('Declined.');
+                      void refetchDiscover();
+                    } catch (e: any) {
+                      message.error(e?.data?.message || 'Could not reject.');
+                    }
+                  }}
+                >
+                  Decline
+                </Button>
+              </Space>
+            )}
+            {row.requestStatus === 'connected' && row.conversationId && (
+              <Button type="primary" onClick={() => onOpenChat(row.conversationId!)}>
+                Message
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.studyBuddyHub}>
       <Tabs
         activeKey={mainTab}
-        onChange={(k) => setMainTab(k as 'discover' | 'requests')}
+        onChange={(k) => setMainTab(k as 'discover' | 'requests' | 'connected')}
         items={[
           {
             key: 'discover',
-            label: 'Discover',
+            label: `Discover${discoverItems.length ? ` · ${discoverItems.length}` : ''}`,
             children: (
               <>
                 {discoverLoading && !items.length ? (
                   <div style={{ padding: 48, textAlign: 'center' }}>
                     <Spin />
                   </div>
-                ) : items.length === 0 ? (
+                ) : discoverItems.length === 0 ? (
                   <Card bordered={false} className={styles.sectionCard}>
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                       No community peers to show yet. Check back as more students enable Community mode.
@@ -122,131 +262,15 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                   </Card>
                 ) : (
                   <div className={styles.studyBuddyDiscoverGrid}>
-                    {discoverPageItems.map((row) => {
-                      const snippetTags = row.overlap.slice(0, 4);
-                      const footerSnippet =
-                        row.overlap.length > 0
-                          ? row.overlap
-                              .slice(0, 2)
-                              .map((o) => o.label)
-                              .join(' · ')
-                          : null;
-
-                      return (
-                        <div key={row.userId} className={styles.studyBuddyInstaCard}>
-                          <div className={styles.studyBuddyInstaInner}>
-                            <Avatar size={104} src={row.avatarUrl || undefined} className={styles.studyBuddyInstaAvatar}>
-                              {row.name.charAt(0)}
-                            </Avatar>
-                            {row.username ? (
-                              <div className={styles.studyBuddyInstaHandlePill} title={formatUsername(row.username)}>
-                                {formatUsername(row.username)}
-                              </div>
-                            ) : (
-                              <div style={{ height: 8 }} aria-hidden />
-                            )}
-                            <div className={styles.studyBuddyInstaName}>{row.name}</div>
-                            {row.matchExplanation ? (
-                              <p className={styles.studyBuddyInstaBio}>{row.matchExplanation}</p>
-                            ) : snippetTags.length > 0 ? (
-                              <div className={styles.studyBuddyInstaTagRow}>
-                                {snippetTags.map((o) => (
-                                  <Tag key={`${o.field}-${o.value}`} color="processing" style={{ margin: 0 }}>
-                                    {o.label}
-                                  </Tag>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className={styles.studyBuddyInstaBio}>
-                                No shared study-buddy tags yet — connect to find common ground.
-                              </p>
-                            )}
-                            <div className={styles.studyBuddyInstaFooterPill} title={footerSnippet || undefined}>
-                              {footerSnippet
-                                ? `${footerSnippet}${row.overlap.length > 2 ? '…' : ''}`
-                                : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
-                            </div>
-                            <div className={styles.studyBuddyInstaActions}>
-                              {row.requestStatus === 'none' && (
-                                <Button
-                                  type="primary"
-                                  icon={<UserPlus size={18} />}
-                                  loading={sending}
-                                  onClick={() => void handleSend(row.userId)}
-                                >
-                                  Request
-                                </Button>
-                              )}
-                              {row.requestStatus === 'outgoing_pending' && (
-                                <>
-                                  <Tag color="gold" style={{ margin: 0, alignSelf: 'center' }}>
-                                    Pending
-                                  </Tag>
-                                  <Button
-                                    loading={cancelling}
-                                    onClick={async () => {
-                                      if (!row.outgoingRequestId) return;
-                                      try {
-                                        await cancelRequest(row.outgoingRequestId).unwrap();
-                                        message.info('Request cancelled.');
-                                        void refetchDiscover();
-                                      } catch (e: any) {
-                                        message.error(e?.data?.message || 'Could not cancel.');
-                                      }
-                                    }}
-                                  >
-                                    Cancel request
-                                  </Button>
-                                </>
-                              )}
-                              {row.requestStatus === 'incoming_pending' && (
-                                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                                  <Tag color="blue" style={{ margin: 0, textAlign: 'center', width: '100%' }}>
-                                    Wants to connect
-                                  </Tag>
-                                  <Button
-                                    type="primary"
-                                    loading={accepting}
-                                    onClick={() => row.incomingRequestId && void handleAccept(row.incomingRequestId)}
-                                  >
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    danger
-                                    loading={rejecting}
-                                    onClick={async () => {
-                                      if (!row.incomingRequestId) return;
-                                      try {
-                                        await rejectRequest(row.incomingRequestId).unwrap();
-                                        message.success('Declined.');
-                                        void refetchDiscover();
-                                      } catch (e: any) {
-                                        message.error(e?.data?.message || 'Could not reject.');
-                                      }
-                                    }}
-                                  >
-                                    Decline
-                                  </Button>
-                                </Space>
-                              )}
-                              {row.requestStatus === 'connected' && row.conversationId && (
-                                <Button type="primary" onClick={() => onOpenChat(row.conversationId!)}>
-                                  Message
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {discoverPageItems.map(renderCard)}
                   </div>
                 )}
-                {items.length > PAGE_SIZE && (
+                {discoverItems.length > PAGE_SIZE && (
                   <Pagination
                     className={styles.studyBuddyPagination}
                     current={discoverPage}
                     pageSize={PAGE_SIZE}
-                    total={items.length}
+                    total={discoverItems.length}
                     onChange={(p) => setDiscoverPage(p)}
                     showSizeChanger={false}
                   />
@@ -256,7 +280,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
           },
           {
             key: 'requests',
-            label: 'Requests',
+            label: `Requests${requestList.length ? ` · ${requestList.length}` : ''}`,
             children: (
               <>
                 <Segmented
@@ -353,6 +377,41 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                       <Paragraph type="secondary">No requests in this tab.</Paragraph>
                     )}
                   </Space>
+                )}
+              </>
+            ),
+          },
+          {
+            key: 'connected',
+            label: `Connected${connectedItems.length ? ` · ${connectedItems.length}` : ''}`,
+            children: (
+              <>
+                {discoverLoading && !connectedItems.length ? (
+                  <div style={{ padding: 48, textAlign: 'center' }}>
+                    <Spin />
+                  </div>
+                ) : connectedItems.length === 0 ? (
+                  <Card bordered={false} className={styles.sectionCard}>
+                    <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                      No study buddies yet. Send a request from{' '}
+                      <a onClick={() => setMainTab('discover')} style={{ cursor: 'pointer' }}>Discover</a>{' '}
+                      and we'll show your connections here once they accept.
+                    </Paragraph>
+                  </Card>
+                ) : (
+                  <div className={styles.studyBuddyDiscoverGrid}>
+                    {connectedPageItems.map(renderCard)}
+                  </div>
+                )}
+                {connectedItems.length > PAGE_SIZE && (
+                  <Pagination
+                    className={styles.studyBuddyPagination}
+                    current={connectedPage}
+                    pageSize={PAGE_SIZE}
+                    total={connectedItems.length}
+                    onChange={(p) => setConnectedPage(p)}
+                    showSizeChanger={false}
+                  />
                 )}
               </>
             ),

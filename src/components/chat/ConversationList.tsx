@@ -9,6 +9,7 @@ import {
 import { useTypedSelector, useAppDispatch } from 'src/app/store';
 import { useSocket } from 'src/lib/socket';
 import { getLatestCreatedImg } from 'src/utils';
+import { avatarColorForName, avatarInitials } from 'src/utils/avatarColor';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import styles from './ConversationList.module.scss';
@@ -151,9 +152,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const getLastMessagePreview = (conversation: Conversation) => {
-    if (conversation.conversationType === 'PEER' && conversation.peerOverlapLabels?.length) {
-      return conversation.peerOverlapLabels.slice(0, 3).join(' · ');
-    }
+    // Peer overlap labels (e.g., "Applying to UK · SAT") were previously
+    // surfaced here as the conversation preview. They cluttered the
+    // editorial layout and didn't represent actual message content, so
+    // we've dropped them in favor of the standard time-ago line.
     if (conversation.lastMessageAt) {
       return dayjs(conversation.lastMessageAt).fromNow();
     }
@@ -271,10 +273,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 <Avatar
                   src={getOtherUserAvatar(conversation)}
                   size={48}
-                  icon={!getOtherUserAvatar(conversation) ? <User size={16} /> : undefined}
-                  style={{ backgroundColor: '#8b0000' }}
+                  style={{
+                    backgroundColor: !getOtherUserAvatar(conversation)
+                      ? avatarColorForName(otherUser?.profile?.name || otherUser?.email || 'User')
+                      : undefined,
+                    fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
+                    fontWeight: 500,
+                    fontSize: 18,
+                  }}
                 >
-                  {!getOtherUserAvatar(conversation) && (otherUser?.profile?.name?.[0]?.toUpperCase() || 'U')}
+                  {!getOtherUserAvatar(conversation) && avatarInitials(otherUser?.profile?.name || otherUser?.email)}
                 </Avatar>
               }
               title={

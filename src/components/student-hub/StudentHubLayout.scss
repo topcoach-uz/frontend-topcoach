@@ -18,7 +18,10 @@ $crimson-900: #7f1d1d;
 
 .student-hub-layout {
   min-height: 100vh;
-  background-color: #f8fafc;
+  /* Editorial cream — was #f8fafc (cool slate). Matches the SAT prep
+     and Admissions Program shells so the whole "My Journey" reads as
+     one editorial surface. */
+  background-color: #faf8f3;
   display: flex;
   
   // Loading state - perfectly centered in main content area
@@ -592,7 +595,7 @@ $crimson-900: #7f1d1d;
   }
 
   .main-layout {
-    background: #f8fafc;
+    background: #faf8f3;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -713,17 +716,30 @@ $crimson-900: #7f1d1d;
       background: transparent !important;
     }
 
-    // Consistent title and subtitle - same alignment and style on all 8 pages
+    // Editorial-style title + subtitle for every My Journey page
+    // (Dashboard, applications, documents, etc). Serif Iowan Old Style
+    // with negative tracking, muted slate prose subtitle. Matches the
+    // SAT prep / Admissions / Messages / Find Study Buddy headers.
     .student-hub-page .student-hub-page-title {
-      font-size: 28px !important;
-      font-weight: 600 !important;
-      margin: 0 0 8px 0 !important;
-      color: #1a1a1a !important;
+      font-family: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif !important;
+      font-size: 2.1rem !important;
+      font-weight: 500 !important;
+      letter-spacing: -0.02em !important;
+      line-height: 1.18 !important;
+      margin: 0 0 10px 0 !important;
+      color: #111827 !important;
+    }
+    @media (max-width: 600px) {
+      .student-hub-page .student-hub-page-title {
+        font-size: 1.7rem !important;
+      }
     }
     .student-hub-page .student-hub-page-subtitle {
-      font-size: 14px !important;
-      color: #666 !important;
+      font-size: 0.98rem !important;
+      color: #4b5563 !important;
+      line-height: 1.55 !important;
       margin: 0 !important;
+      max-width: 640px;
     }
   }
 

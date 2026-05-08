@@ -1,0 +1,1005 @@
+/**
+ * Editorial My Progress layout.
+ *
+ * Cream backdrop (inherited from .student-hub-layout), white cards
+ * with hairline borders, serif titles, brand-red accents only on
+ * primary CTAs. Mirrors the SAT prep / Admissions / Messages
+ * vocabulary.
+ */
+
+.myprog {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 4px 0 32px;
+
+  /* ── Header ───────────────────────────────────────────────────── */
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ece9df;
+    margin-bottom: 4px;
+  }
+  &__head-left { max-width: 700px; }
+  &__title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+    font-size: 2.1rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.18;
+    color: #111827;
+    margin: 0 0 8px;
+
+    @media (max-width: 600px) { font-size: 1.7rem; }
+  }
+  &__title-muted { color: #9ca3af; }
+  &__desc {
+    font-size: 0.98rem;
+    color: #4b5563;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 640px;
+  }
+  &__head-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ── Buttons ──────────────────────────────────────────────────── */
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.08s;
+    border: 1px solid transparent;
+
+    &:active { transform: translateY(1px); }
+    & svg { flex-shrink: 0; }
+
+    &--ghost {
+      background: white;
+      color: #1f2937;
+      border-color: #d6d3c8;
+      &:hover { background: #f3f1ea; border-color: #6b7280; }
+    }
+    &--primary {
+      background: #7B1F2F;
+      color: white;
+      border-color: #7B1F2F;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+      &:hover { background: #5d1622; border-color: #5d1622; }
+    }
+  }
+
+  /* ── Card primitive ───────────────────────────────────────────── */
+  &__card {
+    background: #fff;
+    border: 1px solid #e5e3da;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  &__card-eyebrow {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6b7280;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  &__card-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    color: #1f2937;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* ── Tracks (3 program cards in a row) ───────────────────────── */
+  &__tracks-section { width: 100%; }
+  &__tracks-head {
+    margin-bottom: 18px;
+  }
+  &__tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+
+    @media (max-width: 960px) { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+  }
+  &__track {
+    background: #faf8f3;
+    border: 1px solid #e5e3da;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  &__track-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  &__track-icon {
+    width: 28px;
+    height: 28px;
+    background: #fbe9ec;
+    color: #7B1F2F;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  &__track-name {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: #1f2937;
+    flex: 1;
+    min-width: 0;
+  }
+  &__track-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    &--progress { background: #fbe9ec; color: #7B1F2F; }
+    &--done     { background: #dcfce7; color: #047857; }
+    &--idle     { background: #f3f1ea; color: #6b7280; }
+  }
+  &__track-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 6px 0;
+    border-top: 1px solid #ece9df;
+    border-bottom: 1px solid #ece9df;
+  }
+  &__track-stat {
+    padding: 8px 8px;
+    border-right: 1px solid #ece9df;
+    text-align: left;
+    &:last-child { border-right: none; }
+  }
+  &__track-stat-num {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.18rem;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    color: #1f2937;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  &__track-stat-label {
+    margin-top: 4px;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 700;
+  }
+  &__track-bar {
+    height: 4px;
+    background: #ece9df;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  &__track-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B1F2F, #b45462);
+    border-radius: inherit;
+    transition: width 0.4s ease;
+  }
+  &__track-cta {
+    width: 100%;
+    margin-top: auto;
+  }
+  &__tracks-empty {
+    text-align: center;
+    padding: 28px 16px;
+    color: #6b7280;
+
+    p { margin: 0 auto 14px; max-width: 420px; }
+  }
+
+  /* ── Active track ─────────────────────────────────────────────── */
+  &__active {}
+  &__active-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+
+    &--progress {
+      background: #fbe9ec;
+      color: #7B1F2F;
+    }
+    &--done {
+      background: #dcfce7;
+      color: #047857;
+    }
+    &--idle {
+      background: #f3f1ea;
+      color: #6b7280;
+    }
+  }
+  &__active-meta {
+    margin-top: 6px;
+    font-size: 0.86rem;
+    color: #6b7280;
+  }
+  &__active-divider {
+    height: 1px;
+    background: #ece9df;
+    margin: 18px 0;
+  }
+  &__active-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #fbe9ec;
+    color: #7B1F2F;
+    border-radius: 8px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  &__active-bar {
+    height: 6px;
+    background: #ece9df;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 16px 0 0;
+  }
+  &__active-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B1F2F, #b45462);
+    border-radius: inherit;
+    transition: width 0.4s ease;
+  }
+  &__active-other {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #ece9df;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__active-other-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+
+    &:hover { background: #faf8f3; }
+  }
+  &__active-other-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #faf8f3;
+    color: #6b7280;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  &__active-other-name {
+    flex: 1;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1f2937;
+  }
+  &__active-other-pct {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #1f2937;
+    font-variant-numeric: tabular-nums;
+  }
+  &__active-other-arrow { color: #9ca3af; }
+  &__active--empty {
+    text-align: left;
+    p { margin-top: 8px; max-width: 480px; }
+  }
+  &__statgrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+
+    @media (max-width: 720px) { grid-template-columns: repeat(2, 1fr); }
+
+    &--three { grid-template-columns: repeat(3, 1fr); }
+  }
+  &__stat {
+    padding: 0 16px;
+    border-right: 1px solid #ece9df;
+    &:first-child { padding-left: 0; }
+    &:last-child { padding-right: 0; border-right: none; }
+
+    @media (max-width: 720px) {
+      border-right: none;
+      padding: 12px 0;
+      border-bottom: 1px solid #ece9df;
+      &:nth-last-child(-n+2) { border-bottom: none; }
+    }
+  }
+  &__stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  &__stat-num {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.85rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: #1f2937;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  &__stat-unit {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-weight: 400;
+    margin-left: 3px;
+    letter-spacing: 0;
+  }
+  &__active-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #ece9df;
+    flex-wrap: wrap;
+  }
+  &__active-next {
+    font-size: 0.88rem;
+    color: #4b5563;
+    strong { color: #1f2937; font-weight: 600; }
+  }
+
+  /* ── Nearest deadline ─────────────────────────────────────────── */
+  &__deadline {}
+  &__deadline--wide {
+    .myprog__deadline-num {
+      margin-top: 0;
+    }
+  }
+  &__deadline-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  &__deadline-num {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 4.2rem;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #111827;
+    margin-top: 16px;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+
+    @media (max-width: 600px) { font-size: 3.2rem; }
+  }
+  &__deadline-num-unit {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #6b7280;
+    letter-spacing: 0;
+  }
+  &__deadline-when {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  &__deadline-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid #ece9df;
+  }
+  &__deadline-stat {
+    border: 1px solid #ece9df;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  &__deadline-stat-label {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6b7280;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  &__deadline-stat-frac {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.92rem;
+    color: #6b7280;
+    font-variant-numeric: tabular-nums;
+  }
+  &__deadline-stat-num {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-right: 1px;
+  }
+
+  /* ── Bottom grid (3 cards) ────────────────────────────────────── */
+  &__btmgrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Mentor sessions ──────────────────────────────────────────── */
+  &__sessions {
+    display: flex;
+    flex-direction: column;
+  }
+  &__sessions-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  &__sessions-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: #1f2937;
+    margin: 0;
+  }
+  &__sessions-all {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+
+    &:hover { color: #7B1F2F; }
+  }
+  &__sessions-tabs {
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid #ece9df;
+    margin-bottom: 12px;
+  }
+  &__sessions-tab {
+    background: none;
+    border: none;
+    padding: 8px 0;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+
+    &:hover { color: #1f2937; }
+    &.is-active {
+      color: #1f2937;
+      font-weight: 700;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0; right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: #7B1F2F;
+      }
+    }
+  }
+  &__sessions-list {
+    list-style: none;
+    margin: 0 0 14px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Cap to roughly 5 cards. Older meetings stay accessible via vertical
+       scroll instead of being hard-sliced out of the array. */
+    max-height: 540px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(123, 31, 47, 0.18);
+      border-radius: 999px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+  &__sessions-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #ece9df;
+    border-radius: 10px;
+    background: white;
+  }
+
+  /* Editorial session card — mirrors the legacy UpcomingCard layout
+     but with serif date typography and brand-red Chat with mentor pill. */
+  &__session-card {
+    border: 1px solid #ece9df;
+    border-radius: 12px;
+    padding: 14px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  &__session-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  &__session-join {
+    background: none;
+    border: none;
+    color: #1d4ed8;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font-family: inherit;
+
+    &:hover { color: #1e3a8a; }
+    &--idle {
+      color: #9ca3af;
+      cursor: default;
+    }
+  }
+  &__session-join-icon {
+    font-size: 0.6rem;
+  }
+  &__session-live {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+    flex-shrink: 0;
+    animation: myprog-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes myprog-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+    50%      { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  }
+  &__session-date {
+    margin-top: 8px;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.18rem;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: #1f2937;
+    line-height: 1.2;
+  }
+  &__session-time {
+    font-size: 0.86rem;
+    color: #6b7280;
+  }
+  &__session-with {
+    margin-top: 6px;
+    font-size: 0.92rem;
+    color: #4b5563;
+  }
+  &__session-mentor-link {
+    background: none;
+    border: none;
+    color: #1d4ed8;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+
+    &:hover { text-decoration: underline; }
+  }
+  &__session-chat {
+    margin-top: 12px;
+    width: 100%;
+    height: 38px;
+  }
+  &__sessions-empty {
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 0.86rem;
+    color: #6b7280;
+    background: #faf8f3;
+    border: 1px dashed #d6d3c8;
+    border-radius: 10px;
+  }
+  &__sessions-date {
+    width: 50px;
+    height: 56px;
+    border: 1px solid #ece9df;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    flex-shrink: 0;
+    background: #faf8f3;
+  }
+  &__sessions-date-mo {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: #7B1F2F;
+    font-weight: 700;
+    line-height: 1;
+  }
+  &__sessions-date-day {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #1f2937;
+    line-height: 1;
+  }
+  &__sessions-date-dow {
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    font-weight: 600;
+    line-height: 1;
+  }
+  &__sessions-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.92rem;
+  }
+  &__sessions-topic {
+    font-size: 0.84rem;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+  &__sessions-meta {
+    margin-top: 4px;
+    font-size: 0.74rem;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+  }
+  &__sessions-book {
+    margin-top: auto;
+    width: 100%;
+    border-style: dashed !important;
+    color: #6b7280 !important;
+
+    &:hover { color: #1f2937 !important; }
+  }
+
+  /* ── Top Coach Presents (dark gradient promo) ────────────────── */
+  &__promo {
+    background: linear-gradient(160deg, #4a0e1a 0%, #7B1F2F 60%, #2a0810 100%);
+    color: white;
+    border-color: #4a0e1a;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  &__promo-yr {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  &__promo-eyebrow {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  &__promo-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.55rem;
+    font-weight: 500;
+    letter-spacing: -0.018em;
+    line-height: 1.18;
+    color: white;
+    margin: 0 0 10px;
+    max-width: 86%;
+  }
+  &__promo-meta {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 14px;
+  }
+  &__promo-desc {
+    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+  &__promo-foot {
+    margin-top: auto;
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  &__promo-foot-status {
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+  &__promo-cta {
+    background: white !important;
+    color: #1f2937 !important;
+    border-color: white !important;
+
+    &:hover { background: #f3f1ea !important; }
+  }
+
+  /* Status chips inside the promo footer (pending / paid / cancelled). */
+  &__promo-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    &--pending {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fde68a;
+    }
+    &--paid {
+      background: rgba(34, 197, 94, 0.18);
+      color: #bbf7d0;
+    }
+    &--cancelled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  /* Empty / no-active-event state — keeps the editorial cream palette
+   * so a missing event doesn't leave a black hole in the layout. */
+  &__promo--empty {
+    background: #fdf8ef !important;
+    border: 1px dashed #d6d3c8 !important;
+    color: #6b7280 !important;
+    box-shadow: none !important;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px !important;
+  }
+  &__promo-empty-eyebrow {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6b7280;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  &__promo-empty-icon {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+  &__promo-empty-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    color: #1f2937;
+    margin-bottom: 6px;
+  }
+  &__promo-empty-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #6b7280;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  /* ── AI recommendations ───────────────────────────────────────── */
+  &__airecs {
+    background: linear-gradient(155deg, #fff 0%, #fef7e8 60%, #fdebcb 100%);
+    border-color: #f3e6c0;
+  }
+  &__airecs-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  &__airecs-glyph {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fbe9ec;
+    color: #7B1F2F;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  &__airecs-eyebrow {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #92400e;
+    font-weight: 700;
+  }
+  &__airecs-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.18rem;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    line-height: 1.25;
+    color: #1f2937;
+    margin: 0 0 14px;
+  }
+  &__airecs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: airec;
+  }
+  &__airecs-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(146, 64, 14, 0.12);
+
+    &:last-child { border-bottom: none; }
+
+    &--link {
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 0 -12px;
+
+      &:hover { background: rgba(255, 255, 255, 0.5); }
+    }
+  }
+  &__airecs-empty {
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+  &__airecs-num {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #b45309;
+    font-variant-numeric: tabular-nums;
+    padding-top: 1px;
+  }
+  &__airecs-rt {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  &__airecs-name {
+    font-weight: 600;
+    font-size: 0.94rem;
+    color: #1f2937;
+    line-height: 1.3;
+  }
+  &__airecs-time {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    background: rgba(180, 83, 9, 0.12);
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  &__airecs-desc {
+    margin-top: 4px;
+    font-size: 0.84rem;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+}

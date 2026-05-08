@@ -35,22 +35,27 @@
 }
 
 .bubble {
-  padding: 10px 14px;
-  border-radius: 18px;
+  padding: 11px 15px;
+  border-radius: 14px;
   word-wrap: break-word;
   position: relative;
 
+  /* Editorial: own messages are charcoal (you, the user), other
+     messages are cream-on-white. Mirrors the asymmetry of a real
+     conversation thread without the saturated brand-red on both
+     sides that the previous styles had. */
   &.bubbleOwn {
-    background: #8b0000;
-    color: white;
+    background: #1f2937;
+    color: #fff;
     border-bottom-right-radius: 4px;
   }
 
   &.bubbleOther {
-    background: #8b0000;
-    color: white;
+    background: #faf8f3;
+    color: #1f2937;
+    border: 1px solid #ece9df;
     border-bottom-left-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
   }
 }
 

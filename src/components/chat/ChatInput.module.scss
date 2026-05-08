@@ -54,27 +54,27 @@
   align-items: flex-end;
   gap: 8px;
   padding: 8px 12px;
-  background: #f4f4f5;
-  border-radius: 22px;
-  border: 1px solid transparent;
+  background: #faf8f3;
+  border-radius: 14px;
+  border: 1px solid #e5e3da;
   transition: border-color 0.15s ease, background 0.15s ease;
 
   &:focus-within {
     background: #fff;
-    border-color: #e2e8f0;
-    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.06);
+    border-color: #b9b6a8;
+    box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.08);
   }
 }
 
 .attachButton {
   flex-shrink: 0;
-  color: #94a3b8;
+  color: #9ca3af;
   padding: 4px;
   border-radius: 50%;
 
   &:hover {
-    color: #8b0000 !important;
-    background: rgba(139, 0, 0, 0.06) !important;
+    color: #7B1F2F !important;
+    background: rgba(123, 31, 47, 0.06) !important;
   }
 }
 
@@ -144,8 +144,8 @@
 
 .sendButton {
   flex-shrink: 0;
-  background: #8b0000 !important;
-  border-color: #8b0000 !important;
+  background: #7B1F2F !important;
+  border-color: #7B1F2F !important;
   border-radius: 50% !important;
   padding: 0 !important;
   height: 34px !important;
@@ -165,8 +165,8 @@
   }
 
   &:hover {
-    background: #6b0000 !important;
-    border-color: #6b0000 !important;
+    background: #5d1622 !important;
+    border-color: #5d1622 !important;
   }
 
   &:disabled {

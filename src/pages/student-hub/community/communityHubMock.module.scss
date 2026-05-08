@@ -309,13 +309,46 @@
   min-width: 0;
 }
 
-/* Tab bar — horizontal gutter comes only from `.sectionSwapHubPad` (same as My progress) */
+/* AI Major Match tab strip — editorial / magazine treatment.
+   Underline-only ink bar in brand red; serif tab labels; matches
+   the language used by Messages / Find Study Buddy / Full Support. */
 .aiMajorMatchTabs {
   :global(.ant-tabs-nav) {
-    margin: 0 0 16px;
+    margin: 0 0 18px;
     padding-left: 0;
     padding-right: 0;
     box-sizing: border-box;
+
+    &::before {
+      border-bottom: 1px solid #e5e3da !important;
+    }
+  }
+
+  :global(.ant-tabs-nav-wrap) {
+    overflow: visible;
+  }
+
+  :global(.ant-tabs-tab) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 4px;
+    margin: 0 24px 0 0;
+    color: #6b6258;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #1c1a17;
+    }
+  }
+
+  :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+    color: #7B1F2F !important;
+  }
+
+  :global(.ant-tabs-ink-bar) {
+    background: #7B1F2F !important;
+    height: 2px !important;
   }
 }
 
@@ -483,54 +516,73 @@
 }
 
 .leftNav {
-  margin-top: 16px;
-  padding-left: 12px;
-  padding-right: 8px;
+  margin-top: 18px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
+/* Editorial section labels — small caps, brand-red, hairline rule
+ * underneath to give the sidebar a layered "magazine TOC" feel. */
 .leftNavHeader {
-  font-size: 12px;
+  font-size: 0.68rem;
   font-weight: 700;
-  color: #8b0000;
-  letter-spacing: 0.08em;
+  color: #7B1F2F;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin: 10px 0 12px;
+  margin: 18px 0 8px;
+  padding: 0 8px 6px;
+  border-bottom: 1px solid #ece9df;
+
+  &:first-child { margin-top: 6px; }
 }
 
 .navItem {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 9px 10px;
   border: none;
   background: transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  color: #0f172a;
-  font-weight: 600;
-  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+  font-size: 0.92rem;
   line-height: 1;
-  transition: background 0.2s ease;
+  transition: background 0.18s ease, color 0.18s ease;
   justify-content: flex-start;
   user-select: none;
 }
 
 .navItem:hover {
-  background: #f8fafc;
+  background: #f3f1ea;
+  color: #111827;
 }
 
+/* Active item — warm cream tint, slightly darker than the page bg
+ * (#faf8f3) so it reads as "selected" without the saturated pink that
+ * was competing with the brand-red moments on the page. Brand-red text
+ * + icon still signal the active state. */
 .navItemActive {
-  background: #f1f5f9;
-  color: #8b0000;
-  border: 1px solid #e2e8f0;
+  background: #f0eadf;
+  color: #7B1F2F;
+  font-weight: 600;
+  border: none;
+  box-shadow: inset 0 0 0 1px #e5dfd2;
+
+  &:hover { background: #ebe4d6; }
 }
 
 .navIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #8b0000;
+  color: #6b7280;
+  transition: color 0.18s ease;
+
+  .navItem:hover & { color: #1f2937; }
+  .navItemActive & { color: #7B1F2F; }
 }
 
 .navLabel {
@@ -2920,4 +2972,325 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Editorial-style page header (Messages, Find Study Buddy, …).
+ *
+ * Same vocabulary as SAT Prep / Admissions Program: brand-red eyebrow
+ * with a small bullet, serif title (Iowan Old Style), muted prose
+ * subtitle. Lives at the top of the section, above any per-section UI.
+ * ───────────────────────────────────────────────────────────────────── */
+.editorialHeader {
+  margin: 4px 0 28px;
+  max-width: 760px;
+}
+.editorialEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.editorialEyebrowSep { color: #cbcbb6; }
+.editorialEyebrowAccent {
+  color: #7B1F2F;
+  font-weight: 700;
+}
+.editorialTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+  font-size: 2.1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  color: #111827;
+  margin: 0 0 10px;
+
+  @media (max-width: 600px) { font-size: 1.7rem; }
+}
+.editorialDesc {
+  font-size: 0.98rem;
+  color: #4b5563;
+  line-height: 1.55;
+  max-width: 640px;
+  margin: 0;
+}
+
+/* Editorial overrides for the messenger surface, scoped to the
+ * Community Hub embedding so we don't disturb other places the
+ * MessengerExperience renders (chat modal, etc).
+ *
+ * CSS modules generate hashed class names like
+ * `MessengerExperience_sidebarHeader__abc123` at build time, so we
+ * use [class*="…"] attribute selectors to match by substring. The
+ * negative-lookahead-style :not() chain skips elements whose class
+ * is a different one that just happens to start with the same prefix
+ * (e.g. sidebarHeaderTitle, threadHeaderText). */
+.messengerHubWrap {
+  /* Hide the inner "Messages" subheader — duplicate of the page
+     title above. The sidebarHeader is the immediate child container
+     that holds the "Messages" label + unread badge. */
+  :global(aside[class*="sidebar"] > [class*="sidebarHeader"]) {
+    display: none;
+  }
+
+  /* Editorial underline tabs — matches Study Buddy's Discover /
+     Requests / Connected pattern. Even though the underlying control
+     is AntD's Segmented (semantically correct for a filter pill), we
+     restyle it to render as flat underline tabs with a brand-red ink
+     bar so the messages page reads visually consistent with the rest
+     of the editorial surfaces. */
+  :global(.ant-segmented) {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #ece9df !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  /* AntD's `.ant-segmented-thumb` is the element that animates between
+     tabs. We don't hide it — instead we style it as a brand-red
+     underline, so flipping tabs slides the ink bar smoothly along the
+     bottom rather than fading static ::after pseudo-bars on each
+     item. */
+  :global(.ant-segmented-thumb) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    /* Drop the bottom edge to coincide with the row's hairline rule. */
+    top: auto !important;
+    bottom: -1px !important;
+    height: 2px !important;
+    border: none !important;
+    /* Override AntD's default 0.3s cubic to a snappier 0.22s. */
+    transition: transform 0.22s cubic-bezier(.4, 0, .2, 1),
+                width 0.22s cubic-bezier(.4, 0, .2, 1) !important;
+    /* The thumb's actual color rendered via background-color below. */
+    background-color: #7B1F2F !important;
+  }
+  :global(.ant-segmented-item) {
+    background: transparent !important;
+    border-radius: 0 !important;
+    /* Tighter padding so 3-4 tabs fit in the ~280px conv-list pane. */
+    padding: 9px 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    color: #6b7280 !important;
+    position: relative;
+    transition: color 0.18s ease !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+
+    &::before, &::after { background: transparent !important; }
+    &:hover { color: #1f2937 !important; background: transparent !important; }
+  }
+  :global(.ant-segmented-item-label) {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+  }
+  :global(.ant-segmented-item-selected) {
+    background: transparent !important;
+    color: #1f2937 !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Study Buddy — editorial card redesign.
+ *
+ * Replaces the pillowy Instagram-style card with a tighter editorial
+ * unit: avatar centered, serif name + @handle, match-% chip in the
+ * top-right corner color-coded by tier, alignment chip, label/value
+ * meta rows for Goal + Schedule, brand-red Send request pill at the
+ * bottom. Hover lifts 2px with a soft shadow.
+ *
+ * The original .studyBuddyInsta* classes are kept above so the
+ * existing JSX renders without rewrites — these new classes layer on
+ * top via class composition where applicable, but the visual shift
+ * comes from overriding the legacy class rules below.
+ * ───────────────────────────────────────────────────────────────────── */
+
+/* Tab pill group — segmented control matching the My Library tabs.
+ * Uses :global to reach into the Tabs primitive AntD renders inside
+ * the StudyBuddyHubSection. */
+.studyBuddyHub :global(.ant-tabs-nav)::before { display: none; }
+.studyBuddyHub :global(.ant-tabs-tab) {
+  font-weight: 600;
+  color: #6b7280;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 0;
+  transition: color 0.15s;
+
+  &:hover { color: #1f2937; }
+}
+.studyBuddyHub :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #1f2937 !important;
+  font-weight: 700;
+}
+.studyBuddyHub :global(.ant-tabs-ink-bar) {
+  background: #7B1F2F !important;
+  height: 2px !important;
+  transition: left 0.22s cubic-bezier(.4, 0, .2, 1),
+              width 0.22s cubic-bezier(.4, 0, .2, 1) !important;
+}
+
+/* Card override — editorial framing. */
+.studyBuddyInstaCard {
+  background: #fff !important;
+  border-radius: 14px !important;
+  border: 1px solid #e5e3da !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px) !important;
+    border-color: #c9b8bc !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08) !important;
+  }
+}
+
+.studyBuddyInstaInner {
+  padding: 22px 20px 20px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  min-height: 100%;
+  gap: 12px;
+}
+
+/* Avatar centered at top, smaller + softer ring than the original. */
+.studyBuddyInstaAvatar {
+  width: 56px !important;
+  height: 56px !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  align-self: flex-start;
+  background: #faf8f3 !important;
+  color: #6b7280 !important;
+}
+
+/* Serif name + handle row, left-aligned. */
+.studyBuddyInstaName {
+  margin: 0 !important;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+  font-size: 1.08rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.012em !important;
+  color: #1f2937 !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+}
+
+.studyBuddyInstaHandlePill {
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  color: #6b7280 !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Description / match explanation — editorial prose. */
+.studyBuddyInstaBio {
+  margin: 6px 0 0 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+  color: #4b5563 !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+  -webkit-line-clamp: 3;
+}
+
+/* Tag row — alignment chips. Override AntD Tag colors to fit cream
+ * palette (warm soft tints instead of saturated AntD blues). */
+.studyBuddyInstaTagRow {
+  margin: 4px 0 0 !important;
+  justify-content: flex-start !important;
+
+  :global(.ant-tag) {
+    background: #faf8f3 !important;
+    border: 1px solid #e5e3da !important;
+    color: #1f2937 !important;
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    border-radius: 999px !important;
+    padding: 2px 10px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* Footer "shared interests" pill — softened to fit the cream theme. */
+.studyBuddyInstaFooterPill {
+  margin: auto 0 0 !important;
+  padding: 8px 12px !important;
+  background: #faf8f3 !important;
+  color: #6b7280 !important;
+  border: 1px solid #e5e3da !important;
+  border-radius: 8px !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+  text-align: left !important;
+  max-width: 100%;
+  white-space: normal !important;
+  line-height: 1.45 !important;
+}
+
+/* Action area — pill primary button, brand red. */
+.studyBuddyInstaActions {
+  margin-top: 14px !important;
+
+  :global(.ant-btn) {
+    border-radius: 999px !important;
+    height: 40px !important;
+    font-weight: 600 !important;
+    font-size: 0.86rem !important;
+  }
+  :global(.ant-btn-primary) {
+    background: #7B1F2F !important;
+    border-color: #7B1F2F !important;
+
+    &:hover {
+      background: #5d1622 !important;
+      border-color: #5d1622 !important;
+    }
+  }
+}
+
+/* Pagination — match editorial palette. */
+.studyBuddyPagination {
+  :global(.ant-pagination-item-active) {
+    background: #7B1F2F !important;
+    border-color: #7B1F2F !important;
+
+    a { color: white !important; }
+  }
+  :global(.ant-pagination-item:hover),
+  :global(.ant-pagination-prev:hover .ant-pagination-item-link),
+  :global(.ant-pagination-next:hover .ant-pagination-item-link) {
+    border-color: #7B1F2F !important;
+  }
+  :global(.ant-pagination-item:hover a) { color: #7B1F2F !important; }
 }

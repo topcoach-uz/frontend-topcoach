@@ -298,12 +298,16 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   return (
     <div className="psychometric-assessment-page student-hub-page">
-      {/* Header - only show on start step, NOT on results */}
-      {currentStep === 'start' && (
+      {/* Header is now baked into the AssessmentStart editorial hero on
+          the start step, and AssessmentResults provides its own context
+          on results. Counselor (read-only) view keeps the legacy header
+          so the static "Psychometric Assessment" subtitle still renders
+          even when there's no `Start Assessment` CTA. */}
+      {currentStep === 'start' && readOnly && (
         <div style={{ marginBottom: 24 }}>
           <h1 className="student-hub-page-title">{t('studentHub.psychometric.title', 'Psychometric Assessment')}</h1>
           <p className="student-hub-page-subtitle" style={{ marginTop: 8 }}>
-            {readOnly ? t('studentHub.psychometric.counselorSubtitle', 'View the student\'s assessment results and major recommendations.') : t('studentHub.psychometric.subtitle', 'Comprehensive assessment of interests, personality, values, and aptitudes to discover your ideal major and career path.')}
+            {t('studentHub.psychometric.counselorSubtitle', "View the student's assessment results and major recommendations.")}
           </p>
         </div>
       )}

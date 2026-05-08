@@ -1,5 +1,501 @@
 @import '../../../styles/student-hub-design-system.scss';
 
+/* ──────────────────────────────────────────────────────────────────
+   Editorial / magazine style — AI Major Match start screen.
+   Class prefix: `majormatch`. Cream surfaces, hairline borders,
+   serif headlines, brand-red CTAs. Mirrors Full Support / My Progress
+   style language so all of My Journey reads as one publication.
+   ────────────────────────────────────────────────────────────────── */
+
+$mm-cream: #faf8f3;
+$mm-cream-elevated: #fbfaf6;
+$mm-ink: #1c1a17;
+$mm-ink-soft: #4b463f;
+$mm-muted: #6b6258;
+$mm-hairline: #e5e3da;
+$mm-brand: #7B1F2F;
+$mm-brand-soft: rgba(123, 31, 47, 0.08);
+$mm-amber: #b6824b;
+
+.majormatch {
+  background: $mm-cream;
+  color: $mm-ink;
+  border-radius: 14px;
+  padding: 28px 32px 40px;
+
+  @media (max-width: 768px) {
+    padding: 22px 18px 32px;
+  }
+
+  /* — primitives ──────────────────────────────────────────────── */
+  &__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $mm-muted;
+    margin-bottom: 8px;
+  }
+
+  /* — hero ────────────────────────────────────────────────────── */
+  &__hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 28px;
+    align-items: start;
+    padding-bottom: 22px;
+    border-bottom: 1px solid $mm-hairline;
+    margin-bottom: 24px;
+
+    @media (max-width: 820px) {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+  }
+
+  &__hero-text { max-width: 64ch; }
+
+  &__title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 2.25rem;
+    line-height: 1.15;
+    color: $mm-ink;
+    font-weight: 600;
+    margin: 0 0 10px;
+
+    @media (max-width: 768px) {
+      font-size: 1.7rem;
+    }
+  }
+
+  &__lede {
+    color: $mm-ink-soft;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  &__hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+
+    @media (max-width: 820px) {
+      align-items: flex-start;
+    }
+  }
+
+  &__access-note {
+    font-size: 0.78rem;
+    color: $mm-muted;
+    background: rgba(182, 130, 75, 0.08);
+    border: 1px solid rgba(182, 130, 75, 0.2);
+    padding: 6px 10px;
+    border-radius: 8px;
+    max-width: 240px;
+  }
+
+  &__cta-meta {
+    color: $mm-muted;
+    font-size: 0.75rem;
+    text-align: right;
+
+    @media (max-width: 820px) { text-align: left; }
+  }
+
+  /* — buttons ─────────────────────────────────────────────────── */
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 12px 22px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      background: $mm-brand;
+      color: #fff;
+      &:hover:not(:disabled) { background: darken($mm-brand, 6%); }
+    }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    color: $mm-brand;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+
+    &:hover { background: $mm-brand-soft; }
+
+    &--danger { color: #b04545; }
+    &--danger:hover { background: rgba(176, 69, 69, 0.08); }
+  }
+
+  /* — stats strip ─────────────────────────────────────────────── */
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    background: $mm-cream-elevated;
+    border: 1px solid $mm-hairline;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+
+    @media (max-width: 820px) { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 16px;
+    border-right: 1px solid $mm-hairline;
+
+    &:last-child { border-right: none; }
+
+    @media (max-width: 820px) {
+      &:nth-child(2n) { border-right: none; }
+    }
+  }
+
+  &__stat-label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    color: $mm-muted;
+    font-weight: 600;
+  }
+
+  &__stat-value {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: $mm-ink;
+    line-height: 1;
+  }
+
+  &__stat-infinity {
+    font-family: inherit;
+    font-size: 1.7rem;
+    color: $mm-brand;
+  }
+
+  &__stat-foot {
+    color: $mm-muted;
+    font-size: 0.78rem;
+  }
+
+  /* — sections ────────────────────────────────────────────────── */
+  &__section {
+    background: $mm-cream-elevated;
+    border: 1px solid $mm-hairline;
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+
+    &--settings {
+      background: $mm-cream-elevated;
+    }
+  }
+
+  &__section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: $mm-brand;
+
+    &--row {
+      justify-content: space-between;
+    }
+  }
+
+  &__section-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: $mm-ink;
+    margin: 0;
+  }
+
+  &__section-meta {
+    color: $mm-muted;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* — history ─────────────────────────────────────────────────── */
+  &__history {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__history-loading {
+    color: $mm-muted;
+    font-size: 0.85rem;
+    padding: 8px 0;
+  }
+
+  &__history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid $mm-hairline;
+
+    &:last-child { border-bottom: none; }
+
+    @media (max-width: 720px) {
+      flex-direction: column;
+    }
+  }
+
+  &__history-main { min-width: 0; flex: 1; }
+
+  &__history-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: $mm-ink;
+    margin-bottom: 4px;
+  }
+
+  &__history-meta {
+    color: $mm-muted;
+    font-size: 0.82rem;
+    margin-bottom: 2px;
+  }
+
+  &__history-code {
+    color: $mm-brand;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  }
+
+  &__history-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* — pills ───────────────────────────────────────────────────── */
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+
+    &--green {
+      background: rgba(46, 110, 78, 0.1);
+      color: #2e6e4e;
+      border: 1px solid rgba(46, 110, 78, 0.25);
+    }
+
+    &--blue {
+      background: rgba(60, 100, 145, 0.1);
+      color: #3c6491;
+      border: 1px solid rgba(60, 100, 145, 0.25);
+    }
+  }
+
+  /* — modules grid ────────────────────────────────────────────── */
+  &__modules {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+
+    @media (max-width: 720px) { grid-template-columns: 1fr; }
+  }
+
+  &__module {
+    background: #fff;
+    border: 1px solid $mm-hairline;
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      border-color: $mm-brand;
+      transform: translateY(-1px);
+    }
+
+    &--highlight {
+      background: rgba(182, 130, 75, 0.06);
+      border-color: rgba(182, 130, 75, 0.32);
+    }
+  }
+
+  &__module-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  &__module-num {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $mm-muted;
+    letter-spacing: 0.04em;
+  }
+
+  &__module-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: $mm-brand-soft;
+    color: $mm-brand;
+  }
+
+  &__module-time {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: $mm-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  &__module-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: $mm-ink;
+    margin: 0 0 6px;
+  }
+
+  &__module-desc {
+    color: $mm-muted;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin: 0 0 12px;
+  }
+
+  &__module-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid $mm-hairline;
+    font-size: 0.74rem;
+  }
+
+  &__module-count {
+    color: $mm-ink-soft;
+    font-weight: 600;
+  }
+
+  &__module-status {
+    color: $mm-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  /* — settings ────────────────────────────────────────────────── */
+  &__setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0 4px;
+
+    @media (max-width: 720px) {
+      flex-direction: column;
+    }
+  }
+
+  &__setting-text { min-width: 0; flex: 1; }
+
+  &__setting-label {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: $mm-ink;
+    margin-bottom: 4px;
+  }
+
+  &__setting-desc {
+    color: $mm-muted;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  &__toggle {
+    display: inline-flex;
+    background: #fff;
+    border: 1px solid $mm-hairline;
+    border-radius: 999px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+
+  &__toggle-btn {
+    background: transparent;
+    border: none;
+    color: $mm-ink;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &.is-active {
+      background: $mm-ink;
+      color: #fff;
+    }
+  }
+
+  &__hint {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: $mm-amber;
+    background: rgba(182, 130, 75, 0.08);
+    border: 1px solid rgba(182, 130, 75, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+}
+
+
 // TopCoach Crimson Colors (matching Dashboard)
 $crimson-primary: #8b0000;
 $crimson-light: #a52a2a;
