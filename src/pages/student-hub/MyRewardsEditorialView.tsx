@@ -38,6 +38,7 @@ import {
   Trophy,
   Users,
   ShoppingBag,
+  type LucideIcon,
 } from 'lucide-react';
 import './MyRewardsEditorialView.scss';
 
@@ -48,7 +49,7 @@ import './MyRewardsEditorialView.scss';
    ─────────────────────────────────────────────────────────────── */
 
 interface MissionRow {
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   title: string;
   reward: string;
 }
@@ -63,7 +64,7 @@ const HOW_TO_EARN: MissionRow[] = [
 ];
 
 interface EarningRow {
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   title: string;
   date: string;
   amount: number;
@@ -83,7 +84,7 @@ type MarketplaceCategory = 'all' | 'apparel' | 'study' | 'home' | 'access';
 interface MarketplaceItem {
   id: string;
   category: Exclude<MarketplaceCategory, 'all'>;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   title: string;
   desc: string;
   cost: number;
