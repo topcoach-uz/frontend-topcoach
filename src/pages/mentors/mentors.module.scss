@@ -1,15 +1,62 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match the rest of My Journey. */
+$mp-cream: #faf8f3;
+$mp-cream-elevated: #fbfaf6;
+$mp-ink: #1c1a17;
+$mp-muted: #6b6258;
+$mp-hairline: #e5e3da;
+$mp-brand: #7B1F2F;
+
+/* Full-bleed cream shell — paints the entire viewport behind the page so
+   the editorial surface reads as one piece (matches the SAT prep and
+   Student Hub layouts). The constrained content lives inside `.mentors`. */
+.shell {
+  background: $mp-cream;
+  min-height: calc(100vh - 80px);
+  color: $mp-ink;
+}
+
 .mentors {
   width: 100%;
   max-width: 1400px;
-  margin: 40px auto;
-  padding: 0 20px;
+  margin: 0 auto;
+  padding: 36px 24px 56px;
 }
 
+/* Override `MainTitleDescription` heading + lede for the editorial
+   look. The component renders generic `h1` + `p` siblings so we
+   reach into descendants from the page wrapper. */
 .top {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 22px;
+  border-bottom: 1px solid $mp-hairline;
+  margin-bottom: 24px;
+
+  :global(h1) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-size: 2.4rem !important;
+    line-height: 1.15 !important;
+    color: $mp-ink !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px !important;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem !important;
+    }
+  }
+
+  :global(p) {
+    color: $mp-muted !important;
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+    margin: 0 !important;
+    max-width: 60ch;
+  }
 }
 
 .filter {

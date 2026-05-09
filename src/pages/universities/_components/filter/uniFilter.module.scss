@@ -1,7 +1,13 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — sidebar sits on the cream surface like a magazine
+   index column, separated only by a hairline. */
+$uvf-cream-elevated: #fbfaf6;
+$uvf-hairline: #e5e3da;
+
 .aside {
-  background-color: $colorBgContainer;
+  background-color: $uvf-cream-elevated;
+  border-right: 1px solid $uvf-hairline;
 }
 
 .filter {

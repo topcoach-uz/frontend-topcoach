@@ -1,13 +1,18 @@
 .intensive-program {
-  --primary: #8b0000;
-  --primary-dark: #6d0000;
-  --text-primary: #1a1a2e;
-  --text-secondary: #4a4a68;
-  --text-muted: #8888a0;
-  --bg-light: #f8f9fc;
-  --bg-card: #ffffff;
-  --border: #e8e8f0;
-  
+  /* Editorial palette — match Mentors / Workshops / SAT prep / My Journey.
+     Brand red is reserved for hero + CTA accents; the body of the page
+     reads as one cream editorial surface. */
+  --primary: #7B1F2F;
+  --primary-dark: #5d1622;
+  --text-primary: #1c1a17;
+  --text-secondary: #4b463f;
+  --text-muted: #6b6258;
+  --bg-light: #faf8f3;
+  --bg-card: #fbfaf6;
+  --border: #e5e3da;
+  --serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+  background: var(--bg-light);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   
   // ============================================
@@ -69,20 +74,21 @@
     }
     
     &__title {
+      font-family: var(--serif);
       font-size: 64px !important;
-      font-weight: 800 !important;
-      color: white !important;
+      font-weight: 600 !important;
+      color: #ffffff !important;
       line-height: 1.1 !important;
       margin-bottom: 24px !important;
-      letter-spacing: -0.03em;
-      
+      letter-spacing: -0.02em;
+
       span {
-        background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--bg-light);
+        background: none;
+        -webkit-text-fill-color: var(--bg-light);
+        font-style: italic;
       }
-      
+
       @media (max-width: 768px) {
         font-size: 40px !important;
       }
@@ -132,18 +138,26 @@
     &__header {
       text-align: center;
       margin-bottom: 50px;
-      
+
       h2 {
-        font-size: 36px;
-        font-weight: 700;
+        font-family: var(--serif);
+        font-size: 2.4rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
         color: var(--text-primary);
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+
+        @media (max-width: 768px) {
+          font-size: 1.8rem;
+        }
       }
-      
+
       .ant-typography {
-        font-size: 16px;
-        color: var(--text-secondary);
+        font-size: 1rem;
+        color: var(--text-muted);
         margin: 0;
+        line-height: 1.55;
       }
     }
     
@@ -159,36 +173,38 @@
       }
     }
     
-    // Vertical center line (desktop)
+    // Vertical center line (desktop) — thin editorial hairline. The
+    // inline gradient (set via React) fills the completed portion with
+    // brand color and leaves the rest as the page hairline tone.
     &__line {
       position: absolute;
       left: 50%;
       top: 0;
       bottom: 0;
-      width: 3px;
-      background: #e0e0e0;
+      width: 2px;
+      background: var(--border);
       transform: translateX(-50%);
-      border-radius: 2px;
+      border-radius: 1px;
       transition: background 0.3s ease;
-      
+
       @media (max-width: 768px) {
         display: none;
       }
     }
-    
+
     // Vertical line for mobile (left side)
     &__line-mobile {
       display: none;
-      
+
       @media (max-width: 768px) {
         display: block;
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 4px;
-        background: #e0e0e0;
-        border-radius: 2px;
+        width: 2px;
+        background: var(--border);
+        border-radius: 1px;
         transition: background 0.3s ease;
       }
     }
@@ -222,10 +238,16 @@
       &:nth-child(3) {
         top: 0px;
         left: 0;
-        
+
         .timeline__marker {
           right: -66px;
           left: auto;
+
+          // Connector: hairline runs LEFT from the marker toward the card.
+          &::after {
+            right: 100%;
+            left: auto;
+          }
         }
         
         .timeline__card {
@@ -268,10 +290,16 @@
         top: 180px;
         right: 0;
         left: auto;
-        
+
         .timeline__marker {
           left: -66px;
           right: auto;
+
+          // Connector: hairline runs RIGHT from the marker toward the card.
+          &::after {
+            left: 100%;
+            right: auto;
+          }
         }
         
         @media (max-width: 768px) {
@@ -285,10 +313,16 @@
       &:nth-child(5) {
         top: 360px;
         left: 0;
-        
+
         .timeline__marker {
           right: -66px;
           left: auto;
+
+          // Connector: hairline runs LEFT from the marker toward the card.
+          &::after {
+            right: 100%;
+            left: auto;
+          }
         }
         
         .timeline__card {
@@ -330,10 +364,16 @@
         top: 540px;
         right: 0;
         left: auto;
-        
+
         .timeline__marker {
           left: -66px;
           right: auto;
+
+          // Connector: hairline runs RIGHT from the marker toward the card.
+          &::after {
+            left: 100%;
+            right: auto;
+          }
         }
         
         @media (max-width: 768px) {
@@ -344,45 +384,71 @@
       }
     }
     
-    // Circle marker on timeline - vertically centered on card
+    // Circle marker on timeline — vertically centered on card. Editorial
+    // outlined-ring style: cream-elevated center, brand-colored ring,
+    // serif phase number inside. Completed state inverts the fill so the
+    // brand reads against cream rather than glowing with a heavy shadow.
     &__marker {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      background: var(--primary);
+      width: 30px;
+      height: 30px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 2;
-      box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      
+      box-shadow: 0 0 0 4px var(--bg-light);
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+
       span {
-        color: white;
-        font-size: 13px;
-        font-weight: 700;
-        transition: opacity 0.3s ease;
+        color: var(--primary);
+        font-family: var(--serif);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1;
+        transition: color 0.3s ease;
       }
-      
+
       .anticon {
-        color: white;
-        font-size: 16px;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--primary);
+        font-size: 14px;
+        transition: color 0.3s ease;
       }
-      
+
+      // Hairline connector linking marker to its card. Direction is set
+      // per-side by the &:nth-child(N) blocks above (left/right of marker).
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 32px;
+        height: 1px;
+        background: var(--border);
+        transform: translateY(-50%);
+        transition: background 0.3s ease;
+      }
+
       &--completed {
         background: var(--primary);
-        box-shadow: 0 4px 16px rgba(139, 0, 0, 0.4);
-        transform: translateY(-50%) scale(1.1);
-        
+        border-color: var(--primary);
+
+        span {
+          color: var(--bg-light);
+        }
+
         .anticon {
-          transform: scale(1.1);
+          color: var(--bg-light);
+        }
+
+        &::after {
+          background: var(--primary);
         }
       }
-      
+
       @media (max-width: 768px) {
         display: none; // Remove markers on mobile
       }
@@ -391,23 +457,23 @@
     // Content card
     &__card {
       background: var(--bg-card);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 20px 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      box-shadow: none;
       border: 1px solid var(--border);
-      transition: all 0.3s ease;
-      
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(139, 0, 0, 0.1);
-        border-color: rgba(139, 0, 0, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(28, 26, 23, 0.08);
+        border-color: rgba(123, 31, 47, 0.35);
       }
-      
+
       @media (max-width: 768px) {
         border-left: 4px solid var(--primary);
-        border-radius: 0 12px 12px 0;
+        border-radius: 0 14px 14px 0;
         margin-left: 0;
-        
+
         &:hover {
           transform: none;
         }
@@ -424,7 +490,7 @@
     
     &__duration {
       display: inline-block;
-      background: rgba(139, 0, 0, 0.08);
+      background: rgba(123, 31, 47, 0.08);
       color: var(--primary);
       padding: 4px 12px;
       border-radius: 20px;
@@ -432,10 +498,12 @@
       font-weight: 600;
       margin-bottom: 8px;
     }
-    
+
     &__card-title {
-      font-size: 18px !important;
-      font-weight: 700 !important;
+      font-family: var(--serif);
+      font-size: 1.15rem !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.005em;
       color: var(--text-primary) !important;
       margin: 0 !important;
       line-height: 1.3 !important;
@@ -520,42 +588,51 @@
       color: var(--text-secondary) !important;
       line-height: 1.6;
       padding: 16px 20px;
-      background: white;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 8px;
       border-left: 3px solid var(--primary);
-      
+
       @media (max-width: 768px) {
         font-size: 15px;
         padding: 14px 18px;
       }
     }
   }
-  
+
   // ============================================
   // CTA SECTION
   // ============================================
   .cta {
     padding: 80px 24px;
-    background: white;
+    background: var(--bg-light);
     text-align: center;
-    
+    border-top: 1px solid var(--border);
+
     &__container {
       max-width: 600px;
       margin: 0 auto;
-      
+
       h2 {
-        font-size: 32px;
-        font-weight: 700;
+        font-family: var(--serif);
+        font-size: 2.2rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
         color: var(--text-primary);
-        margin-bottom: 16px;
+        margin-bottom: 14px;
+
+        @media (max-width: 768px) {
+          font-size: 1.7rem;
+        }
       }
-      
+
       .ant-typography {
-        font-size: 16px;
-        color: var(--text-secondary);
+        font-size: 1rem;
+        color: var(--text-muted);
         margin-bottom: 32px;
+        line-height: 1.55;
       }
-      
+
       .ant-btn {
         height: 56px;
         padding: 0 48px;
@@ -564,68 +641,75 @@
         background: var(--primary);
         border-radius: 12px;
         border: none;
-        
+
         &:hover {
           background: var(--primary-dark);
           transform: translateY(-2px);
         }
-        
+
         .anticon {
           margin-left: 8px;
         }
       }
     }
   }
-  
+
   // ============================================
   // FAQ SECTION
   // ============================================
   .faq {
     padding: 80px 24px;
     background: var(--bg-light);
-    
+    border-top: 1px solid var(--border);
+
     &__container {
       max-width: 800px;
       margin: 0 auto;
-      
+
       h2 {
-        font-size: 32px;
-        font-weight: 700;
+        font-family: var(--serif);
+        font-size: 2.2rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
         color: var(--text-primary);
         text-align: center;
         margin-bottom: 40px;
+
+        @media (max-width: 768px) {
+          font-size: 1.7rem;
+        }
       }
     }
-    
+
     &__collapse {
       background: transparent;
       border: none;
-      
+
       .ant-collapse-item {
         background: var(--bg-card);
         border: 1px solid var(--border) !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         margin-bottom: 12px;
         overflow: hidden;
-        
+
         &:last-child {
           margin-bottom: 0;
         }
-        
+
         .ant-collapse-header {
           padding: 18px 24px !important;
           font-size: 15px;
           font-weight: 600;
           color: var(--text-primary);
-          
+
           &:hover {
             color: var(--primary);
           }
         }
-        
+
         .ant-collapse-content {
           border-top: 1px solid var(--border);
-          
+
           .ant-collapse-content-box {
             padding: 18px 24px;
             font-size: 14px;

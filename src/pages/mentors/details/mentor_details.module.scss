@@ -1,17 +1,67 @@
 @import '/src/styles/variables.scss';
 
+/* Editorial palette — match the mentors listing + the rest of My Journey. */
+$md-cream: #faf8f3;
+$md-cream-elevated: #fbfaf6;
+$md-ink: #1c1a17;
+$md-muted: #6b6258;
+$md-hairline: #e5e3da;
+$md-brand: #7B1F2F;
+
 .main {
-  background-color: $colorBgContainer;
+  background-color: $md-cream;
+  color: $md-ink;
+  min-height: calc(100vh - 80px);
 }
 
 .container {
-  padding-top: 40px;
+  padding-top: 32px;
   padding-bottom: 64px;
 
   @media (max-width: 1024px) {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  /* Section card surfaces — Overview, How I Can Help, Education,
+     Reviews, etc. all render their content inside their own
+     wrappers; we re-skin them here so the page reads as one cream
+     spread instead of a stack of stark white blocks. */
+  :global(.ant-card) {
+    background: $md-cream-elevated !important;
+    border: 1px solid $md-hairline !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+  }
+  :global(.ant-card-head) {
+    background: transparent !important;
+    border-bottom: 1px solid $md-hairline !important;
+  }
+  :global(.ant-card-head-title) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-weight: 600 !important;
+    color: $md-ink !important;
+  }
+
+  /* Primary CTAs (Book a Session, Request Session, etc.) get the
+     editorial brand-red pill treatment. */
+  :global(.ant-btn-primary) {
+    background: $md-brand !important;
+    border-color: $md-brand !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+
+    &:hover, &:focus {
+      background: darken($md-brand, 6%) !important;
+      border-color: darken($md-brand, 6%) !important;
+    }
+  }
+
+  :global(.ant-tag) {
+    border-radius: 999px !important;
+    border-width: 1px !important;
+    font-weight: 600 !important;
   }
 }
 
@@ -100,13 +150,19 @@
   }
 }
 
+/* Skeleton placeholder for the mentor profile image. The actual
+   image is a 200×200 *rounded square* (12px radius, see
+   `MentorDetailsAvatar` `style.borderRadius: 12`). The skeleton used
+   to render as a circle (`border-radius: 50%`) which then snapped to
+   a square once the image loaded — distracting flash. Match the
+   final geometry exactly so the layout is stable across loading. */
 .skeletonAvatar {
   flex-shrink: 0 !important;
 
   :global(.ant-skeleton-avatar) {
     width: 200px !important;
     height: 200px !important;
-    border-radius: 50% !important;
+    border-radius: 12px !important;
 
     @media (max-width: 768px) {
       width: 120px !important;

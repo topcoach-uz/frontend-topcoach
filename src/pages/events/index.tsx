@@ -222,8 +222,9 @@ export default function EventsPage() {
 
   return (
     <main>
-      <div className={'container ' + styles.container}>
-        <div className={styles.header_section}>
+      <section className={styles.shell}>
+        <div className={styles.container}>
+          <div className={styles.header_section}>
           <MainTitleDescription
             title={t('events.workshops')}
             description={t('events.description')}
@@ -313,7 +314,8 @@ export default function EventsPage() {
             )}
           </>
         )}
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,10 +1,15 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — overview sits on the cream surface like a magazine
+   sidebar, separated from the article column by a hairline only. */
+$uo-cream-elevated: #fbfaf6;
+$uo-hairline: #e5e3da;
+
 .overview {
-  background-color: $colorBgContainer;
+  background-color: $uo-cream-elevated;
   width: 430px;
   padding: 40px;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-right: 1px solid $uo-hairline;
   overflow: hidden;
 
   @media (max-width: 1024px) {
@@ -19,7 +24,7 @@
     padding: 20px;
     border-right: none;
   }
-  
+
   // Improve skeleton appearance - remove bold borders
   :global(.ant-skeleton-input) {
     border: none !important;
@@ -28,7 +33,7 @@
     background-size: 200% 100% !important;
     border-radius: 4px !important;
   }
-  
+
   :global(.ant-skeleton-button) {
     border: none !important;
     box-shadow: none !important;

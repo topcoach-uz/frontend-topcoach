@@ -1,23 +1,33 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — keep parity with the listing wrapper. */
+$mc-cream: #faf8f3;
+$mc-cream-elevated: #fbfaf6;
+$mc-ink: #1c1a17;
+$mc-ink-soft: #4b463f;
+$mc-muted: #6b6258;
+$mc-hairline: #e5e3da;
+$mc-brand: #7B1F2F;
+
 .card {
   position: relative;
-  background-color: $colorBgContainer !important;
+  background-color: $mc-cream-elevated !important;
   cursor: pointer;
-  border: 1px solid $colorBorder !important;
-  border-radius: 16px !important;
+  border: 1px solid $mc-hairline !important;
+  border-radius: 14px !important;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   min-height: 480px;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    
+    transform: translateY(-3px);
+    border-color: rgba(123, 31, 47, 0.35);
+    box-shadow: 0 8px 24px rgba(28, 26, 23, 0.08);
+
     .img img {
-      transform: scale(1.08);
+      transform: scale(1.05);
       filter: brightness(1);
     }
   }
@@ -90,41 +100,33 @@
   border-radius: 16px; /* Changed from 12px to 16px to match image */
 }
 
+/* Editorial coach-level pill: restrained chip on top of the photo with
+   uppercase tracked label. The vivid base color set inline still bleeds
+   through (kept for level-recognition), but the chip is muted with a
+   semi-opaque cream wash + hairline border so it reads as editorial. */
 .coach {
   position: absolute !important;
-  top: 16px !important;
-  right: 16px !important;
+  top: 14px !important;
+  right: 14px !important;
   z-index: 12 !important;
-  text-transform: capitalize !important;
-  border-radius: 12px !important;
-  font-weight: 500 !important;
-  padding: 6px 12px !important;
-  font-size: 12px !important;
-  letter-spacing: 0.2px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
-  backdrop-filter: blur(4px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  min-width: 70px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  box-shadow: 0 2px 6px rgba(28, 26, 23, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  min-width: 0 !important;
   text-align: center !important;
-  transition: all 0.3s ease !important;
-  
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+
   &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(28, 26, 23, 0.22) !important;
   }
-  
-  // Gradient overlay for extra depth
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-    pointer-events: none;
-  }
+
+  &::before { display: none; } /* drop the gradient overlay; it muddied the chip */
 }
 
 .giveaway {
@@ -183,8 +185,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  background-color: #fafafa;
+  padding: 16px 18px 18px;
+  background-color: $mc-cream-elevated;
 }
 
 .universitySection {
@@ -196,7 +198,7 @@
 .sessionsSection {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid #e8e8e8;
+  border-top: 1px solid $mc-hairline;
 }
 
 .rates {

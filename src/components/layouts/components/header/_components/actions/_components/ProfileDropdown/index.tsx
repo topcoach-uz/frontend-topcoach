@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { Avatar, Dropdown, Flex } from 'antd';
 import { MenuProps } from 'antd/lib';
+import { useState } from 'react';
 import { MEDIA_TAGS, UserRole } from 'src/app/api/Api';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import { LogoutIcon, UserIcon } from 'src/components/icons';
@@ -31,6 +32,12 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
 
   const profileImage = profileImages?.[0]?.url;
 
+  // If the media URL points at a file that no longer exists on disk
+  // (stale DB rows, host-volume drift) the request 404s. Fall back to
+  // the placeholder avatar instead of leaving a broken-image circle.
+  const [imageBroken, setImageBroken] = useState(false);
+  const showImage = !!profileImage && !imageBroken;
+
   const handleLogout = () => {
     dispatch(logout());
   };
@@ -43,8 +50,12 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
         <Dropdown menu={{ items: profileMenuItems }} trigger={['click']}>
           <Flex style={{ cursor: 'pointer' }} gap={4}>
             <div className={styles.avatar_wrapper}>
-              {profileImage ? (
-                <img src={profileImage} alt="Img error" />
+              {showImage ? (
+                <img
+                  src={profileImage}
+                  alt=""
+                  onError={() => setImageBroken(true)}
+                />
               ) : (
                 <Avatar
                   size="large"

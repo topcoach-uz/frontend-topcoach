@@ -1,8 +1,19 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match Mentors / Workshops / Programs / FAQ. */
+$uv-cream: #faf8f3;
+$uv-cream-elevated: #fbfaf6;
+$uv-ink: #1c1a17;
+$uv-muted: #6b6258;
+$uv-hairline: #e5e3da;
+
+/* Full-bleed cream shell — paints the entire viewport so the sidebar
+   and content sit on the same editorial surface. */
 .univer {
   display: flex;
-  // column-gap: 40px;
+  background: $uv-cream;
+  color: $uv-ink;
+  min-height: calc(100vh - 80px);
 }
 
 .universitySection {

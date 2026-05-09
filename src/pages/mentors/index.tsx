@@ -100,8 +100,8 @@ export default function MentorsPage() {
 
   return (
     <main>
-      <section>
-        <div className={'container ' + styles.mentors}>
+      <section className={styles.shell}>
+        <div className={styles.mentors}>
           <div className={styles.top}>
             <MainTitleDescription
               title={title}

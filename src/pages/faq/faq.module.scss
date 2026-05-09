@@ -1,7 +1,27 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match Mentors / Workshops / Programs / SAT prep. */
+$faq-cream: #faf8f3;
+$faq-cream-elevated: #fbfaf6;
+$faq-ink: #1c1a17;
+$faq-ink-soft: #4b463f;
+$faq-muted: #6b6258;
+$faq-hairline: #e5e3da;
+$faq-brand: #7B1F2F;
+
+/* Full-bleed cream shell — paints the entire viewport so the editorial
+   surface reads as one piece. */
+.shell {
+  background: $faq-cream;
+  min-height: calc(100vh - 80px);
+  color: $faq-ink;
+}
+
 .faq {
-  padding: 40px 80px 80px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -12,8 +32,102 @@
   }
 }
 
+/* Editorial breadcrumb — softer, no underline by default. */
+.breadcrumb {
+  :global(.ant-breadcrumb-link),
+  :global(.ant-breadcrumb-separator) {
+    color: $faq-muted !important;
+    font-size: 0.9rem;
+  }
+
+  :global(.ant-breadcrumb-link a) {
+    color: $faq-muted !important;
+
+    &:hover {
+      color: $faq-brand !important;
+      background: transparent !important;
+    }
+  }
+
+  :global(.ant-breadcrumb li:last-child .ant-breadcrumb-link) {
+    color: $faq-ink !important;
+    font-weight: 500;
+  }
+}
+
+/* Editorial title — serif Iowan Old Style with hairline divider, matches
+   the Mentors / Workshops / Programs section heads. */
+.title {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 22px;
+  border-bottom: 1px solid $faq-hairline;
+  margin: 4px 0 4px;
+
+  h1 {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 2.4rem;
+    line-height: 1.15;
+    color: $faq-ink;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
+
+  p {
+    color: $faq-muted;
+    font-size: 1rem;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 60ch;
+  }
+}
+
 .content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+
+  /* Editorial collapse — restyle MyCollapse's header/body to use
+     cream-elevated cards with a hairline border. Header (`> div:first-child`)
+     and body (`> div:nth-child(2)`) are siblings inside an antd Flex
+     wrapper; styling them directly keeps the open/close animation. */
+  > div > div:first-child {
+    background-color: $faq-cream-elevated !important;
+    border: 1px solid $faq-hairline;
+    border-radius: 14px;
+    padding: 18px 22px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+      border-color: rgba(123, 31, 47, 0.35);
+      box-shadow: 0 6px 18px rgba(28, 26, 23, 0.05);
+    }
+
+    h2 {
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      color: $faq-ink !important;
+      font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+      letter-spacing: -0.005em;
+    }
+  }
+
+  /* The body element keeps MyCollapse's own padding/visibility behavior so
+     the open/close animation still works; we only re-tint its colors. */
+  > div > div:nth-child(2) {
+    background-color: $faq-cream-elevated !important;
+    border-radius: 14px;
+
+    p {
+      color: $faq-ink-soft !important;
+      font-size: 0.95rem !important;
+      line-height: 1.6 !important;
+      margin: 0;
+    }
+  }
 }

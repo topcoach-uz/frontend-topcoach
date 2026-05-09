@@ -1,15 +1,46 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match the cream shell wrapping this column. */
+$udd-cream: #faf8f3;
+$udd-cream-elevated: #fbfaf6;
+$udd-ink: #1c1a17;
+$udd-muted: #6b6258;
+$udd-hairline: #e5e3da;
+$udd-brand: #7B1F2F;
+$udd-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
 .detail {
   width: 100%;
   max-width: 1400px;
   margin: 20px auto;
-  padding: 20px;
+  padding: 20px 32px;
+  color: $udd-ink;
 
   @media (max-width: 768px) {
     max-width: 100%;
     padding: 16px;
     margin: 16px auto;
+  }
+
+  /* Editorial breadcrumb — muted ink with brand hover. */
+  :global(.ant-breadcrumb-link),
+  :global(.ant-breadcrumb-separator) {
+    color: $udd-muted !important;
+    font-size: 0.9rem;
+  }
+
+  :global(.ant-breadcrumb-link a) {
+    color: $udd-muted !important;
+
+    &:hover {
+      color: $udd-brand !important;
+      background: transparent !important;
+    }
+  }
+
+  :global(.ant-breadcrumb li:last-child .ant-breadcrumb-link) {
+    color: $udd-ink !important;
+    font-weight: 500;
   }
 }
 
@@ -34,17 +65,20 @@
 }
 
 .img {
-  padding: 12px 0;
+  padding: 18px 0;
 
   img {
     width: 100%;
+    border-radius: 14px;
+    border: 1px solid $udd-hairline;
   }
 }
 
 .imageSkeletonWrapper {
   width: 100%;
-  background-color: #f5f5f5;
-  border-radius: 12px;
+  background-color: $udd-cream-elevated;
+  border: 1px solid $udd-hairline;
+  border-radius: 14px;
   min-height: 500px;
   display: block;
 }
@@ -52,16 +86,25 @@
 .bottom {
   margin-top: 28px;
   padding: 12px;
-  border-top: 1px solid $colorBorder;
+  border-top: 1px solid $udd-hairline;
 }
 
+/* Editorial section heading — serif Iowan Old Style with negative
+   tracking, matching Mentors / Workshops / Programs section heads. */
 .majorTitle {
   display: flex;
 
   h2 {
-    color: $colorTextBase;
-    font-size: 28px;
+    font-family: $udd-serif;
+    color: $udd-ink;
+    font-size: 2rem;
     font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 1.6rem;
+    }
   }
 }
 
@@ -102,44 +145,61 @@
   }
 }
 
+/* Editorial display heading — used by RichTextRenderer for level-2
+   headers ("Imperial College London", "About Imperial College London"). */
 .name {
-  color: $colorTextBase;
-  font-size: 32px;
+  font-family: $udd-serif;
+  color: $udd-ink;
+  font-size: 2.6rem;
   font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  margin: 8px 0 4px;
+
+  @media (max-width: 768px) {
+    font-size: 1.9rem;
+  }
 }
 
+/* Editorial sub-heading — RichTextRenderer level-3. */
 .minorTitles {
-  color: $colorTextBase;
-  font-size: 20px;
+  font-family: $udd-serif;
+  color: $udd-ink;
+  font-size: 1.4rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin: 24px 0 8px;
 }
 
 .details {
-  color: $colorTextSecondary;
-  // text-align: justify;
-  font-size: 16px;
+  color: $udd-ink;
+  font-size: 1rem;
   font-weight: 400;
-  line-height: 140%;
-
-  margin: 8px 0;
+  line-height: 1.65;
+  margin: 12px 0;
 }
 
 .ranking {
-  color: $colorTextSecondary;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 140%;
-
-  margin-bottom: 24px;
+  color: $udd-muted;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  margin-bottom: 28px;
 }
 
+/* Editorial pull quote — italic with a brand-colored left rule. */
 .quote {
-  color: $colorTextSecondary;
-  font-size: 16px;
+  color: $udd-ink;
+  font-family: $udd-serif;
+  font-style: italic;
+  font-size: 1.15rem;
   font-weight: 400;
-  line-height: 140%;
-
-  margin: 8px 0;
+  line-height: 1.55;
+  margin: 24px 0;
+  padding: 4px 0 4px 18px;
+  border-left: 3px solid $udd-brand;
 }
 
 .allMajors {

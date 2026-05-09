@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Typography, Collapse } from 'antd';
-import { ArrowRight, Calendar, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Calendar } from 'lucide-react';
 import './IntensiveMentorshipProgram.scss';
 
 const { Title, Paragraph, Text } = Typography;
@@ -200,11 +200,7 @@ const IntensiveMentorshipProgram: React.FC = () => {
                 className={`timeline__item ${index % 2 === 0 ? 'timeline__item--left' : 'timeline__item--right'} ${isCompleted ? 'timeline__item--completed' : ''}`}
               >
                 <div className={`timeline__marker ${isCompleted ? 'timeline__marker--completed' : ''}`}>
-                  {isCompleted ? (
-                    <CheckCircle2 size={16} />
-                  ) : (
-                    <span>{phase.id}</span>
-                  )}
+                  <span>{phase.id}</span>
                 </div>
               
                 <div className="timeline__card">

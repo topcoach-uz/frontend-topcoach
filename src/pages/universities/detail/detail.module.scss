@@ -1,7 +1,16 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match Mentors / Workshops / Programs / Universities listing. */
+$ud-cream: #faf8f3;
+$ud-ink: #1c1a17;
+
+/* Full-bleed cream shell — paints the entire viewport so the overview
+   sidebar and the article column sit on the same editorial surface. */
 .detail {
   display: flex;
+  background: $ud-cream;
+  color: $ud-ink;
+  min-height: calc(100vh - 80px);
 
   @media (max-width: 768px) {
     flex-direction: column;

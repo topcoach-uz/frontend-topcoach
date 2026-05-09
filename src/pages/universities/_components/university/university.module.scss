@@ -1,8 +1,17 @@
 @import 'src/styles/variables.scss';
 
+/* Editorial palette — match the cream shell on the listing wrapper. */
+$uvs-cream: #faf8f3;
+$uvs-cream-elevated: #fbfaf6;
+$uvs-ink: #1c1a17;
+$uvs-muted: #6b6258;
+$uvs-hairline: #e5e3da;
+$uvs-brand: #7B1F2F;
+
 .university {
   width: 100%;
-  padding: 40px 40px 40px 0;
+  padding: 40px 40px 40px 32px;
+  color: $uvs-ink;
 
   @media (max-width: 1024px) {
     padding: 40px;
@@ -14,19 +23,31 @@
   }
 }
 
+/* Four cards per line on the editorial listing — matches the mentors and
+   workshops grids. Steps down on narrower viewports. */
 .card_list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 
   list-style: none;
 
   margin-top: 20px;
   min-height: 400px; // Prevent layout shift during loading
-  
-  // No animation - cards stay in place like mentor cards
-  li {
-    // Removed fadeInUp animation
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
