@@ -14,7 +14,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown } from 'antd';
+import { App, Dropdown, Form, Input, Modal } from 'antd';
 import {
   ArrowRight,
   Plus,
@@ -28,7 +28,11 @@ import {
   PenLine,
   LineChart,
   FileUp,
+  MoreVertical,
 } from 'lucide-react';
+import { GoogleMeetingSvg } from 'src/assets/svg';
+import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
+import { useInvalidateGetMeMutation } from 'src/app/services/users';
 import dayjs from 'dayjs';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -185,6 +189,52 @@ const MyProgressEditorialView: React.FC = () => {
   // Tab state for the Mentor sessions card. Declared up here so the
   // `visibleSessions` memo below can read it without TDZ errors.
   const [sessionTab, setSessionTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
+
+  /* — Withdraw flow state ────────────────────────────────────────
+   * The 3-dot menu on each upcoming session card opens a modal that
+   * mirrors the legacy UpcomingCard withdraw experience (reason
+   * picker + free-text "Other"). Triggered with the session id of
+   * whichever card the menu was opened from.
+   */
+  const { message } = App.useApp();
+  const [withdrawForm] = Form.useForm();
+  const [withdrawModalSessionId, setWithdrawModalSessionId] = useState<string | null>(null);
+  const [withdrawReason, setWithdrawReason] = useState<string>('');
+  const [cancelAsStudent, { isLoading: cancelingAsStudent }] = useCancelSessionAsStudentMutation();
+  const [invalidateGetMe] = useInvalidateGetMeMutation();
+  const WITHDRAW_REASONS = [
+    'I have another meeting',
+    'I have an emergency',
+    'I have a personal problem',
+    'I have a technical problem',
+    'Other',
+  ];
+
+  const closeWithdrawModal = () => {
+    setWithdrawModalSessionId(null);
+    setWithdrawReason('');
+    withdrawForm.resetFields();
+  };
+
+  const handleWithdrawSubmit = async () => {
+    if (!withdrawModalSessionId) return;
+    const formValues = withdrawForm.getFieldsValue();
+    const finalReason =
+      withdrawReason === 'Other' ? formValues.customReason?.trim() : withdrawReason;
+    if (!finalReason) {
+      message.warning('Please pick a reason.');
+      return;
+    }
+    try {
+      await cancelAsStudent({ id: withdrawModalSessionId, comment: finalReason }).unwrap();
+      message.success('You have withdrawn from the session.');
+      // Refresh /users/me so joinedSessions drops the cancelled meeting.
+      await invalidateGetMe();
+      closeWithdrawModal();
+    } catch (e: any) {
+      message.error(e?.data?.message || 'Could not withdraw. Try again.');
+    }
+  };
   /** Map a raw joinedSession row to a normalized SessionItem. */
   const mapSession = (s: any, i: number): SessionItem => ({
     id: String(s.id ?? i),
@@ -559,6 +609,12 @@ const MyProgressEditorialView: React.FC = () => {
                 <li key={s.id} className="myprog__session-card">
                   {isUpcoming && (
                     <div className="myprog__session-top">
+                      {/* Google Meet icon — visual cue that the join
+                          link goes to Meet, mirrors the legacy
+                          UpcomingCard treatment. */}
+                      <span className="myprog__session-meet" aria-hidden>
+                        <GoogleMeetingSvg />
+                      </span>
                       {s.meetingLink ? (
                         <button
                           type="button"
@@ -576,6 +632,39 @@ const MyProgressEditorialView: React.FC = () => {
                       {/* Single pulsing live dot — was duplicated by an
                           emoji before the link; emoji removed. */}
                       <span className="myprog__session-live" aria-hidden />
+                      {/* 3-dot menu — mirrors the legacy UpcomingCard
+                          dropdown. Only "Withdraw from the meeting" is
+                          surfaced here (the rate/report flow lives in
+                          the Past tab via Chat / mentor profile). */}
+                      <Dropdown
+                        trigger={['click']}
+                        placement="bottomRight"
+                        menu={{
+                          items: [
+                            {
+                              key: 'withdraw',
+                              label: (
+                                <span className="myprog__session-withdraw-item">
+                                  Withdraw from the meeting
+                                </span>
+                              ),
+                              onClick: () => {
+                                setWithdrawModalSessionId(s.id);
+                                setWithdrawReason('');
+                                withdrawForm.resetFields();
+                              },
+                            },
+                          ],
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="myprog__session-more"
+                          aria-label="Session options"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                      </Dropdown>
                     </div>
                   )}
                   <div className="myprog__session-date">
@@ -756,6 +845,61 @@ const MyProgressEditorialView: React.FC = () => {
           )}
         </article>
       </section>
+
+      {/* Withdraw-from-meeting modal — opened from the 3-dot menu on
+          each upcoming session card. Mirrors the reason picker /
+          "Other" free-text used by the legacy UpcomingCard. */}
+      <Modal
+        title="Withdraw from the meeting"
+        open={!!withdrawModalSessionId}
+        onCancel={closeWithdrawModal}
+        onOk={handleWithdrawSubmit}
+        okText="Withdraw"
+        okButtonProps={{
+          danger: true,
+          loading: cancelingAsStudent,
+          style: { backgroundColor: '#7B1F2F', borderColor: '#7B1F2F' },
+        }}
+        cancelText="Keep meeting"
+      >
+        <p style={{ color: '#6b6258', marginBottom: 12 }}>
+          Pick a reason so your mentor knows why you can't attend.
+        </p>
+        <div className="myprog__withdraw-reasons">
+          {WITHDRAW_REASONS.map((reason) => (
+            <button
+              key={reason}
+              type="button"
+              className={`myprog__withdraw-reason ${
+                withdrawReason === reason ? 'is-active' : ''
+              }`}
+              onClick={() => setWithdrawReason(reason)}
+            >
+              {reason}
+            </button>
+          ))}
+        </div>
+        <Form form={withdrawForm} layout="vertical" style={{ marginTop: 14 }}>
+          <Form.Item
+            name="customReason"
+            label={withdrawReason === 'Other' ? 'Tell us more' : 'Add a note (optional)'}
+            rules={
+              withdrawReason === 'Other'
+                ? [
+                    {
+                      validator: (_, value) =>
+                        value?.trim()
+                          ? Promise.resolve()
+                          : Promise.reject(new Error('Please describe the reason.')),
+                    },
+                  ]
+                : []
+            }
+          >
+            <Input.TextArea rows={3} disabled={withdrawReason !== 'Other'} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

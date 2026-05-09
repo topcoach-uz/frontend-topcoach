@@ -615,9 +615,75 @@
   &__session-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
     margin-bottom: 4px;
+  }
+  /* Google Meet icon — small visual cue at the start of the row,
+     mirrors the legacy UpcomingCard treatment. */
+  &__session-meet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  /* 3-dot menu button. Pushed to the far right via `margin-left:
+     auto` so the live dot still sits next to the join link. */
+  &__session-more {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #6b6258;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: rgba(123, 31, 47, 0.06);
+      border-color: #e5e3da;
+      color: #7B1F2F;
+    }
+  }
+  &__session-withdraw-item {
+    color: #b04545;
+    font-weight: 600;
+  }
+
+  /* Withdraw modal reason picker chips. */
+  &__withdraw-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  &__withdraw-reason {
+    background: #faf8f3;
+    border: 1px solid #e5e3da;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    color: #1c1a17;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover { border-color: rgba(123, 31, 47, 0.4); }
+
+    &.is-active {
+      background: rgba(123, 31, 47, 0.08);
+      border-color: #7B1F2F;
+      color: #7B1F2F;
+      font-weight: 600;
+    }
   }
   &__session-join {
     background: none;

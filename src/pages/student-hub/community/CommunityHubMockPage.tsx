@@ -34,7 +34,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
-import Dashboard from '../Dashboard';
 import MyProgressEditorialView from '../MyProgressEditorialView';
 import styles from './communityHubMock.module.scss';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
@@ -1492,7 +1491,12 @@ export default function CommunityHubMockPage() {
 
           {activeSection === 'dashboard' && (
             <div className={styles.hubDashEmbed}>
-              <Dashboard />
+              {/* Non-community (Standard) mode used to render the legacy
+                  `<Dashboard />` here, which felt out-of-place next to the
+                  rest of the editorial pages. Both modes now share the
+                  same editorial My Progress view so Standard ≠ visually
+                  stale. */}
+              <MyProgressEditorialView />
             </div>
           )}
           {activeSection === 'myLearning' && (
