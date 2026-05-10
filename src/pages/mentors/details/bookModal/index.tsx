@@ -53,10 +53,6 @@ function BookModal({
     form,
 
     bookSessionLoading,
-    // Temporarily disabled - rethinking subscription plans
-    usageData,
-    usageLoading,
-    QuotaExceededModal,
   } = useBookModal({
     handleModalClose: handleClose,
     bookingInfo,
@@ -93,27 +89,6 @@ function BookModal({
         </Flex>
       )}
     >
-      {/* Temporarily hidden - rethinking subscription plans */}
-      {/* Quota display */}
-      {/* {!usageLoading && usageData && usageData.usage && (
-        <div style={{ marginBottom: 16 }}>
-          <b>Your included session quota this month:</b>
-          <ul style={{ margin: '8px 0 0 0', padding: 0, listStyle: 'none' }}>
-            {['juniorCoachSessions', 'proBonoSessions', 'seniorCoachSessions'].map((feature) => {
-              const u = usageData.usage.find((x: any) => x.feature === feature);
-              if (!u) return null;
-              return (
-                <li key={feature} style={{ color: u.used >= u.limit ? '#b02a37' : '#2e7d32', fontWeight: 500 }}>
-                  {feature === 'juniorCoachSessions' && 'Junior Coach Sessions'}
-                  {feature === 'proBonoSessions' && 'Pro Bono Sessions'}
-                  {feature === 'seniorCoachSessions' && 'Senior Coach Sessions'}
-                  : {u.limit - u.used} left (used {u.used} of {u.limit})
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )} */}
       <CustomCard bordered shadowed={false}>
         <Steps
           progressDot={CustomProgressDot}
@@ -164,8 +139,6 @@ function BookModal({
           ''
         )}
       </CustomCard>
-      {/* Temporarily hidden - rethinking subscription plans */}
-      {/* {QuotaExceededModal} */}
     </Modal>
   );
 }

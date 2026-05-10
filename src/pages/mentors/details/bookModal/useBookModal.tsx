@@ -1,11 +1,10 @@
-import { message, Modal, Button } from 'antd';
+import { message } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import dayjs, { Dayjs } from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import weekday from 'dayjs/plugin/weekday';
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MentorExperienceLevel } from 'src/app/api/Api';
 import { useBookSessionMutation } from 'src/app/services/sessions';
 import { useTypedSelector } from 'src/app/store';
 import { IBaseOption } from 'src/app/type';
@@ -15,7 +14,6 @@ import { useScreenSize } from 'src/hooks/useScreenSize';
 import useTimezone from 'src/hooks/useTimezone';
 import { PaymentTypeEnum } from 'src/pages/payment/sms';
 import { IHandleBookArgs } from '..';
-import { useGetSubscriptionUsageQuery } from 'src/app/services/api';
 import { useGetPlansQuery } from 'src/app/services/mentors';
 
 dayjs.extend(weekday);
@@ -93,13 +91,10 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     chosenIntervalId: null,
   });
 
-  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
-  const { data: usageData, isLoading: usageLoading, refetch: refetchUsage } = useGetSubscriptionUsageQuery(undefined, { skip: !isAuthenticated });
   const { data: plans } = useGetPlansQuery();
-
-  // Temporarily disabled - rethinking subscription plans
-  const [quotaModalVisible, setQuotaModalVisible] = useState(false);
-  const [quotaSessionId, setQuotaSessionId] = useState<string | null>(null);
+  // The legacy plan-quota gate (junior/senior/proBono session allotments)
+  // was removed when the Free/Standard/Premium tiers were retired. Every
+  // paid session goes through the one-time-payment path now.
 
   const handleOk = async () => {
     if (step === 0) {
@@ -285,83 +280,6 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
     });
   };
 
-  // Temporarily hidden - rethinking subscription plans
-  // Custom quota exceeded modal - commented out for future use
-  const QuotaExceededModal = (
-    <Modal
-      open={quotaModalVisible}
-      onCancel={() => setQuotaModalVisible(false)}
-      footer={null}
-      title="Session Quota Exceeded"
-      centered
-    >
-      <div style={{ marginBottom: 16 }}>
-        <p>You have used all included sessions for your plan.</p>
-        {mentorData?.mentorProfile?.level === MentorExperienceLevel.Probono ? (
-          <p>Please upgrade your plan to continue.</p>
-        ) : (
-          <p>Please upgrade your plan or pay for this session to continue.</p>
-        )}
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-        <Button onClick={() => setQuotaModalVisible(false)}>Cancel</Button>
-        <Button onClick={() => { setQuotaModalVisible(false); navigate('/'); }}>Upgrade Plan</Button>
-        {mentorData?.mentorProfile?.level !== MentorExperienceLevel.Probono && (
-          <Button type="primary" onClick={() => {
-            setQuotaModalVisible(false);
-            if (quotaSessionId && bookingInfo?.planId && mentorData && plans) {
-              // Calculate amount based on mentor level and plan type
-              const plan = plans.find(p => p.id === bookingInfo.planId);
-              const mentorLevel = mentorData?.mentorProfile?.level;
-              
-              if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
-                const sessionAmount = (plan.prices as any)[mentorLevel];
-                
-                // Determine currency based on amount size and plan currency
-                let currency = (plan.currency as any)?.name;
-                if (!currency) {
-                  // If no currency specified, determine based on amount size
-                  // Large amounts (>1000) are likely UZS, smaller amounts are likely USD
-                  currency = sessionAmount > 1000 ? 'UZS' : 'USD';
-                }
-                
-                // Dynamically build payment URL with all required params including amount
-                const params = new URLSearchParams();
-                params.set('mentorId', mentorId);
-                params.set('sessionId', quotaSessionId);
-                params.set('planId', bookingInfo.planId);
-                params.set('amount', sessionAmount.toString());
-                params.set('currencyName', currency);
-                params.set('buyType', bookingInfo?.planType || 'individual');
-                
-                console.log('Quota exceeded payment URL params:', {
-                  mentorId,
-                  sessionId: quotaSessionId,
-                  planId: bookingInfo.planId,
-                  amount: sessionAmount,
-                  currency,
-                  planType: bookingInfo?.planType
-                });
-                
-                navigate(`/payment?${params.toString()}`);
-              } else {
-                // Fallback without amount (will be calculated on payment page)
-                const params = new URLSearchParams();
-                params.set('mentorId', mentorId);
-                params.set('sessionId', quotaSessionId);
-                params.set('planId', bookingInfo.planId);
-                params.set('buyType', bookingInfo?.planType || 'individual');
-                navigate(`/payment?${params.toString()}`);
-              }
-            }
-          }}>
-            Pay for This Session
-          </Button>
-        )}
-      </div>
-    </Modal>
-  );
-
   return {
     colors,
     // timezone
@@ -394,11 +312,6 @@ export default function useBookModal({ handleModalClose, bookingInfo }: Props) {
 
     // Question input
     form,
-
-    usageData,
-    usageLoading,
-
-    QuotaExceededModal,
   };
 }
 

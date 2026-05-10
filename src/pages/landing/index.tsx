@@ -12,7 +12,6 @@ import styles from './landing.module.scss';
 import { useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
-import LandingPricing from './_components/LandingPricing';
 import LeadCapturePopup from 'src/components/lead-capture/LeadCapturePopup';
 import { useScrollTrigger } from 'src/hooks/useScrollTrigger';
 import { useTypedSelector } from 'src/app/store';
@@ -179,8 +178,8 @@ export default function LandingPage() {
       {/* <ReviewsSection />  // keep hidden for now */}
       <CareerAssessmentSection />
 
-      {/* Pricing towards the bottom of the page */}
-      <LandingPricing />
+      {/* Pricing block removed — Phase 2 will rebuild it against the new
+          Community plans (USD canonical, $11.99/mo and $129.99/yr). */}
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}

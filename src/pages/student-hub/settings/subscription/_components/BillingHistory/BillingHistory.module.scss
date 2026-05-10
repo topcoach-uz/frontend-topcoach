@@ -1,0 +1,123 @@
+/* BillingHistory — receipts table styled to match the editorial palette. */
+
+$bh-brand: #7a1f2b;
+$bh-ink: #1c1a17;
+$bh-muted: #6b6258;
+$bh-hairline: #e5e3da;
+$bh-success-bg: #e7f4ea;
+$bh-success-fg: #2d6a4f;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid $bh-hairline;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th,
+  td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid $bh-hairline;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #fafafa;
+    color: $bh-muted;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.12s ease;
+
+    &:hover {
+      background: rgba(122, 31, 43, 0.04);
+    }
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.amountUsd {
+  color: $bh-ink;
+  font-weight: 600;
+}
+
+.amountUzs {
+  color: $bh-muted;
+  font-size: 0.78rem;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.statusPaid {
+  background: $bh-success-bg;
+  color: $bh-success-fg;
+}
+
+.invoiceLink {
+  color: $bh-brand;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.85rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnGhost {
+  border-color: $bh-hairline !important;
+  color: $bh-ink !important;
+  background: #fff !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+
+  &:hover,
+  &:focus {
+    border-color: $bh-brand !important;
+    color: $bh-brand !important;
+  }
+}
+
+/* Subtle inline empty state — no boxed-card chrome, just a muted line
+   that reads as a status note rather than a placeholder feature. */
+.empty {
+  color: $bh-muted;
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 4px 0;
+}

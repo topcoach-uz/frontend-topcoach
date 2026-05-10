@@ -1,0 +1,210 @@
+/* AddCardModal — 2-step OTP card bind. Editorial brand-aware shell. */
+
+$mod-cream: #fdf6f4;
+$mod-ink: #1c1a17;
+$mod-muted: #6b6258;
+$mod-hairline: #e5e3da;
+$mod-brand: #7a1f2b;
+$mod-brand-soft: rgba(122, 31, 43, 0.08);
+$mod-success-bg: #e7f4ea;
+$mod-success-fg: #2d6a4f;
+
+/* Pull antd modal chrome closer to the brand without overriding everything. */
+.modal {
+  :global(.ant-modal-content) {
+    border-radius: 18px !important;
+    background: #fff !important;
+    padding: 24px 26px !important;
+  }
+  :global(.ant-modal-close) {
+    top: 14px !important;
+    right: 16px !important;
+  }
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $mod-muted;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $mod-ink;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  color: $mod-muted;
+  font-size: 0.9rem;
+  margin: 0 0 18px 0;
+  line-height: 1.45;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Step 1: card form */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.formRowFull {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $mod-ink;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Step 2: OTP */
+.otpHint {
+  text-align: center;
+  color: $mod-muted;
+  font-size: 0.92rem;
+  margin: 6px 0 18px;
+
+  b {
+    color: $mod-ink;
+    font-weight: 600;
+  }
+}
+
+.otpResendRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: $mod-muted;
+  margin-top: 16px;
+}
+
+.linkBtn {
+  background: transparent !important;
+  border: 0 !important;
+  color: $mod-brand !important;
+  padding: 0 !important;
+  height: auto !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  text-decoration: underline;
+
+  &:disabled {
+    color: $mod-muted !important;
+    text-decoration: none;
+    cursor: not-allowed;
+  }
+}
+
+/* Footer actions */
+.footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.btnGhost {
+  border-color: $mod-hairline !important;
+  color: $mod-ink !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+  height: 40px;
+  padding: 0 18px !important;
+
+  &:hover,
+  &:focus {
+    border-color: $mod-brand !important;
+    color: $mod-brand !important;
+  }
+}
+
+.btnFilled {
+  background: $mod-brand !important;
+  border-color: $mod-brand !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  height: 40px;
+  padding: 0 22px !important;
+
+  &:hover,
+  &:focus {
+    background: darken($mod-brand, 6%) !important;
+    border-color: darken($mod-brand, 6%) !important;
+  }
+}
+
+/* Success step */
+.successCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 4px;
+  text-align: center;
+}
+
+.checkBubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $mod-success-bg;
+  color: $mod-success-fg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorAlert {
+  border-radius: 10px !important;
+  margin-bottom: 4px !important;
+}
+
+/* Step indicator strip — minimal, just for orientation. */
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $mod-hairline;
+  &.active {
+    background: $mod-brand;
+  }
+  &.done {
+    background: $mod-success-fg;
+  }
+}
+
+.stepLine {
+  height: 1px;
+  flex: 1;
+  background: $mod-hairline;
+  &.done {
+    background: $mod-success-fg;
+  }
+}

@@ -1,0 +1,123 @@
+/* Subscription & billing tab — production-grade editorial layout. */
+
+$st-cream: #fdf6f4;
+$st-ink: #1c1a17;
+$st-muted: #6b6258;
+$st-hairline: #e5e3da;
+$st-brand: #7a1f2b;
+$st-brand-soft: rgba(122, 31, 43, 0.08);
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Hero plan picker — anchors the empty state with serif headline +
+   eyebrow, then drops the two cards below. */
+.heroPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.heroPickerHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 60ch;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $st-muted;
+}
+
+.heroPickerTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: $st-ink;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.heroPickerSubtitle {
+  color: $st-muted;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* Smaller heading used inside compact sections + non-empty plan picker. */
+.subSectionTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $st-ink;
+  margin: 0;
+}
+
+/* Bottom strip — payment methods + billing history side-by-side on
+   wide screens, stacked on narrow. Each section is light-weight (no
+   heavy card chrome) so empty states feel inline, not loud. */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  padding-top: 8px;
+  border-top: 1px solid $st-hairline;
+
+  @media (min-width: 980px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+.compactSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.compactHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compactHeadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.compactHint {
+  color: $st-muted;
+  font-size: 0.85rem;
+  margin: 0;
+  max-width: 50ch;
+}
+
+/* Banner shown above the add-card form when a plan-card CTA was the
+   trigger ("Add a card to start your Community · Yearly trial…"). */
+.trialBanner {
+  border-radius: 10px !important;
+  background: $st-brand-soft !important;
+  border: 1px solid rgba(122, 31, 43, 0.18) !important;
+
+  :global(.ant-alert-message) {
+    color: $st-ink !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+  }
+
+  :global(.ant-alert-icon) {
+    color: $st-brand !important;
+  }
+}

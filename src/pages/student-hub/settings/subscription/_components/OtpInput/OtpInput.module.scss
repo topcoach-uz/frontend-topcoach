@@ -1,0 +1,54 @@
+/* OtpInput — 6 digit boxes, monospace, brand-tinted focus + error states. */
+
+$otp-ink: #1c1a17;
+$otp-muted: #6b6258;
+$otp-hairline: #e5e3da;
+$otp-brand: #7a1f2b;
+$otp-error: #b3261e;
+
+.row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.box {
+  width: 44px;
+  height: 52px;
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+  font-size: 1.45rem;
+  font-weight: 600;
+  text-align: center;
+  color: $otp-ink;
+  background: #fff;
+  border: 1px solid $otp-hairline;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+
+  &:focus {
+    border-color: $otp-brand;
+    box-shadow: 0 0 0 3px rgba(122, 31, 43, 0.12);
+  }
+
+  &:disabled {
+    background: #f6f3ee;
+    color: $otp-muted;
+  }
+}
+
+.hasError .box {
+  border-color: $otp-error;
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
+  }
+}
+
+@media (max-width: 480px) {
+  .box {
+    width: 38px;
+    height: 46px;
+    font-size: 1.25rem;
+  }
+}

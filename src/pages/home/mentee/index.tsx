@@ -14,7 +14,6 @@ import BannerSection from '../_components/banner';
 import BookingsSection from '../_components/bookings';
 import EventsSection from '../_components/events';
 import FavoriteUniversitiesSection from '../_components/university';
-import SubscriptionPlans from 'src/components/subscriptions/SubscriptionPlans';
 import LearningProgramSection from '../_components/learningProgram';
 import SchoolCounselorDashboardSection from '../_components/schoolCounselorDashboard';
 import styles from '../mentor/_components/profile_status/profile_status.module.scss';
@@ -122,8 +121,6 @@ function MenteeHomePage() {
       <BookingsSection />
       <EventsSection />
       <FavoriteUniversitiesSection showOnlyFavorites={true} />
-      {/* Temporarily hidden - rethinking subscription plans */}
-      {/* <SubscriptionPlans /> */}
       <TelegramConnectionModal
         visible={showTelegramModal}
         onClose={() => {

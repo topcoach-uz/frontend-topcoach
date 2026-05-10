@@ -87,38 +87,10 @@ export const plansApi = RtkApi.injectEndpoints({
 
 export const { useGetPaymentPlansQuery } = plansApi;
 
-export const subscriptionPlansApi = RtkApi.injectEndpoints({
-  endpoints: (builder) => ({
-    getSubscriptionPlans: builder.query<any[], void>({
-      query: () => 'subscriptions/plans',
-    }),
-    getSubscriptionUsage: builder.query<any, void>({
-      query: () => `subscriptions/usage?ts=${Date.now()}`,
-      providesTags: ['SubscriptionUsage'],
-    }),
-    getCurrentSubscription: builder.query<any, void>({
-      query: () => `subscriptions/current?ts=${Date.now()}`,
-      providesTags: ['CurrentSubscription'],
-    }),
-    cancelSubscription: builder.mutation<any, void>({
-      query: () => ({
-        url: 'subscriptions/cancel',
-        method: 'POST',
-      }),
-      invalidatesTags: ['CurrentSubscription', 'SubscriptionUsage'],
-    }),
-    downgradeSubscription: builder.mutation<any, { planId: string }>({
-      query: (body) => ({
-        url: 'subscriptions/downgrade',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: ['CurrentSubscription', 'SubscriptionUsage'],
-    }),
-  }),
-});
-
-export const { useGetSubscriptionPlansQuery, useGetSubscriptionUsageQuery, useGetCurrentSubscriptionQuery, useCancelSubscriptionMutation, useDowngradeSubscriptionMutation } = subscriptionPlansApi;
+// Subscription RTK Query slice removed — the legacy plan-quota gate is
+// gone (sessions are paid per booking; AI search uses its own Redis
+// limiter via the backend). Phase 2+ will introduce a fresh slice for
+// the new Community-plan checkout under `/payments/*`.
 
 // ========================================
 // 🎓 STUDENT HUB API SERVICES

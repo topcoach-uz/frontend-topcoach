@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card, Button, Upload, Input, Typography, message, Avatar, Tag, Select, Modal } from 'antd';
+import { Card, Button, Upload, Input, Typography, message, Avatar, Select } from 'antd';
 import {
   User,
   Camera,
@@ -32,7 +32,7 @@ import {
 import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
-import BillingPlansModal from './BillingPlansModal';
+import SubscriptionTab from './subscription';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -72,9 +72,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     () => normalizeUsernameInput((profile?.profile as any)?.username || ''),
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [plan] = useState('Pro Plan');
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
-  const [billingManagerOpen, setBillingManagerOpen] = useState(false);
   const [studyBuddyInterests, setStudyBuddyInterests] = useState<StudyBuddyInterestProfile>(() =>
     ({ ...EMPTY_STUDY_BUDDY_INTEREST_PROFILE }),
   );
@@ -85,18 +82,13 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
    * happen via email today and there's no UI to manage 2FA yet, so
    * surfacing an empty tab would feel broken.
    */
-  type SettingsTabKey = 'profile' | 'studyBuddy' | 'experience' | 'notifications';
+  type SettingsTabKey =
+    | 'profile'
+    | 'studyBuddy'
+    | 'experience'
+    | 'notifications'
+    | 'subscription';
   const [activeTab, setActiveTab] = useState<SettingsTabKey>('profile');
-
-  const normalizedPlan = plan.toLowerCase();
-  const subscriptionPlanClass =
-    normalizedPlan.includes('pro') || normalizedPlan.includes('premium')
-      ? styles.subscriptionSummaryPremium
-      : normalizedPlan.includes('essential') || normalizedPlan.includes('free')
-        ? styles.subscriptionSummaryEssential
-        : normalizedPlan.includes('custom')
-          ? styles.subscriptionSummaryCustomised
-          : styles.subscriptionSummaryDefault;
 
   const email = profile?.email ?? 'you@example.com';
   const isSuperAdmin =
@@ -105,6 +97,16 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     () => getLatestCreatedImg(profile?.profile?.media || []),
     [profile?.profile?.media],
   );
+
+  // Guard against stale media URLs that 404 on prod (file deleted from
+  // /uploads/public but DB row still references it). Falls back to the
+  // <User /> icon instead of leaving a broken-image circle.
+  const [profileImageBroken, setProfileImageBroken] = useState(false);
+  useEffect(() => {
+    setProfileImageBroken(false);
+  }, [profileImage, avatarUrl]);
+  const avatarSrc =
+    !profileImageBroken ? (avatarUrl || profileImage || undefined) : undefined;
 
   useEffect(() => {
     const fullName = profile?.profile?.name || '';
@@ -179,75 +181,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
 
   return (
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
-      <BillingPlansModal open={billingModalOpen} onClose={() => setBillingModalOpen(false)} />
-      <Modal
-        open={billingManagerOpen}
-        onCancel={() => setBillingManagerOpen(false)}
-        onOk={() => setBillingManagerOpen(false)}
-        okText={t('common.done', 'Done')}
-        cancelButtonProps={{ style: { display: 'none' } }}
-        title={t('studentHub.settingsMock.manageBilling', 'Manage billing')}
-        width={640}
-      >
-        <div style={{ display: 'grid', gap: 14 }}>
-          <div>
-            <Text strong>{t('studentHub.settingsMock.paymentMethod', 'Payment method')}</Text>
-            <div style={{ marginTop: 6, color: '#64748b' }}>Visa ending in 4242 · Expires 10/28</div>
-          </div>
-          <div>
-            <Text strong>{t('studentHub.settingsMock.nextCharge', 'Next charge')}</Text>
-            <div style={{ marginTop: 6, color: '#64748b' }}>$7.00 on Apr 28, 2026</div>
-          </div>
-          <div>
-            <Text strong>{t('studentHub.settingsMock.recentInvoices', 'Recent invoices')}</Text>
-            <div style={{ marginTop: 8, display: 'grid', gap: 6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
-                <span>Mar 28, 2026</span>
-                <span>Paid · $7.00</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b' }}>
-                <span>Feb 28, 2026</span>
-                <span>Paid · $7.00</span>
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-            <Button onClick={() => message.info('Payment method update flow will be available soon.')}>
-              Update payment method
-            </Button>
-            <Button onClick={() => message.info('Invoice export will be available soon.')}>
-              Download invoices
-            </Button>
-          </div>
-          <div
-            style={{
-              borderTop: '1px dashed #e5e7eb',
-              paddingTop: 12,
-              marginTop: 4,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 10,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Text type="secondary" style={{ fontSize: 12, maxWidth: 360 }}>
-              {t(
-                'studentHub.settingsMock.cancelInfo',
-                'Need to cancel? This keeps your data until period end and you can reactivate anytime.',
-              )}
-            </Text>
-            <Button
-              danger
-              type="default"
-              onClick={() => message.warning(t('studentHub.settingsMock.cancelMock', 'Cancel plan flow is coming soon.'))}
-            >
-              {t('studentHub.settingsMock.cancelPlan', 'Cancel subscription')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
       {/* Editorial header — eyebrow + serif title + subtitle, mirrors
           My Rewards / My Progress so the Account section reads as one
           coherent magazine spread. Always renders (the previous variant
@@ -290,6 +223,13 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         >
           {t('studentHub.settingsMock.experience', 'Experience')}
         </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'subscription' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('subscription')}
+        >
+          {t('settings.subscription.tab', 'Subscription & billing')}
+        </button>
         {/* Notifications tab hidden until the per-channel toggle backend
             ships — surfacing static text felt half-baked. The render
             block below stays in place so re-enabling is a one-line flip. */}
@@ -301,9 +241,13 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           <div className={styles.avatarBlock}>
             <Avatar
               size={96}
-              src={avatarUrl || profileImage || undefined}
+              src={avatarSrc}
               icon={<User size={32} />}
               className={styles.avatar}
+              onError={() => {
+                setProfileImageBroken(true);
+                return true;
+              }}
             />
             <Upload showUploadList={false} beforeUpload={beforeUpload} accept="image/*">
               <Button icon={<Camera size={16} />} size="small" type="default">
@@ -363,50 +307,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       </Card>
       )}
 
-      {/* Subscription section hidden for this release */}
-      {false && (
-        <Card
-          className={styles.card}
-          title={<><CreditCard size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.subscription', 'Subscription')}</>}
-        >
-          <div className={styles.subRow}>
-            <div className={`${styles.subscriptionSummary} ${subscriptionPlanClass}`}>
-              <div className={styles.subscriptionSummaryTop}>
-                <Tag color="magenta" className={styles.planTag}>
-                  {plan}
-                </Tag>
-                <Text strong>{t('studentHub.settingsMock.active', 'Active')}</Text>
-              </div>
-              <div className={styles.subscriptionMeta}>
-                <Text type="secondary">
-                  {t('studentHub.settingsMock.billingCycle', 'Billing cycle')}: Monthly
-                </Text>
-                <Text type="secondary">
-                  {t('studentHub.settingsMock.nextRenewal', 'Next renewal')}: Apr 28, 2026
-                </Text>
-              </div>
-            </div>
-            <Paragraph type="secondary" style={{ marginBottom: 12 }}>
-              {t(
-                'studentHub.settingsMock.subscriptionDesc',
-                'View your current plan details and open dedicated flows to change plan or manage billing.',
-              )}
-            </Paragraph>
-
-            <div className={styles.planTierActionsClean}>
-              <Button
-                type="primary"
-                onClick={() => setBillingModalOpen(true)}
-              >
-                {t('studentHub.settingsMock.changePlan', 'Change plan')}
-              </Button>
-              <Button onClick={() => setBillingManagerOpen(true)}>
-                {t('studentHub.settingsMock.manageBilling', 'Manage billing')}
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
+      {/* The legacy "Subscription" card shown above used to live here; it
+          has been removed. The new Phase 1B "Subscription & billing" tab
+          (rendered below when activeTab === 'subscription') replaces it. */}
 
       {activeTab === 'studyBuddy' && (
       <Card
@@ -564,6 +467,11 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           </Paragraph>
         </Card>
       )}
+
+      {/* Subscription & billing — Phase 1B scaffold. All data is
+          mocked from `subscription/_mocks/subscription.fixtures.ts`;
+          flip states with `?state=active|trialing|past_due|canceled|none`. */}
+      {activeTab === 'subscription' && <SubscriptionTab />}
 
       {/* Notifications — placeholder card. The toggle matrix
           (Email / Push / SMS × event types) ships alongside the

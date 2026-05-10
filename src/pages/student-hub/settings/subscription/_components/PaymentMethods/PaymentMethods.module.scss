@@ -1,0 +1,223 @@
+/* PaymentMethods — list of cards + inline "Add a new card" form. */
+
+$pm-brand: #7a1f2b;
+$pm-ink: #1c1a17;
+$pm-muted: #6b6258;
+$pm-hairline: #e5e3da;
+$pm-success-bg: #e7f4ea;
+$pm-success-fg: #2d6a4f;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid $pm-hairline;
+  border-radius: 12px;
+  background: #fff;
+  flex-wrap: wrap;
+}
+
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.brandUzcard {
+  background: linear-gradient(135deg, #1f4a8a 0%, #2d6dbf 100%);
+}
+
+.brandHumo {
+  background: linear-gradient(135deg, #1c8b59 0%, #34c478 100%);
+}
+
+.brandVisa {
+  background: linear-gradient(135deg, #1a1f71 0%, #4956d6 100%);
+}
+
+.brandMastercard {
+  background: linear-gradient(135deg, #b8002a 0%, #f5a800 100%);
+}
+
+.cardInfo {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pan {
+  font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+  color: $pm-ink;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.cardSub {
+  color: $pm-muted;
+  font-size: 0.82rem;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.defaultPill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: $pm-success-bg;
+  color: $pm-success-fg;
+  text-transform: uppercase;
+}
+
+.makeDefaultBtn {
+  border: 1px solid $pm-hairline !important;
+  color: $pm-ink !important;
+  background: #fff !important;
+  border-radius: 999px !important;
+  font-size: 0.78rem !important;
+
+  &:hover,
+  &:focus {
+    border-color: $pm-brand !important;
+    color: $pm-brand !important;
+  }
+}
+
+.iconBtn {
+  background: transparent !important;
+  border: 0 !important;
+  color: $pm-muted !important;
+  padding: 4px 6px !important;
+  height: auto !important;
+
+  &:hover,
+  &:focus {
+    color: $pm-brand !important;
+  }
+}
+
+.addCardForm {
+  border: 1px solid $pm-hairline;
+  border-radius: 14px;
+  padding: 18px 20px;
+  background: #fdfdfb;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.addCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.addCardTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $pm-ink;
+  margin: 0;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.formRowFull {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $pm-ink;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  font-size: 0.85rem;
+  color: $pm-ink;
+}
+
+.btnGhost {
+  border-color: $pm-hairline !important;
+  color: $pm-ink !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  font-weight: 500 !important;
+
+  &:hover,
+  &:focus {
+    border-color: $pm-brand !important;
+    color: $pm-brand !important;
+  }
+}
+
+.btnFilled {
+  background: $pm-brand !important;
+  border-color: $pm-brand !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+
+  &:hover,
+  &:focus {
+    background: darken($pm-brand, 6%) !important;
+    border-color: darken($pm-brand, 6%) !important;
+  }
+}
+
+.emptyHint {
+  color: $pm-muted;
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 12px 0;
+}

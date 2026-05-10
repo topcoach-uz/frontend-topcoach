@@ -1,0 +1,139 @@
+/* CurrentPlanCard — warm off-white block with a maroon accent bar. */
+
+$cp-bg: #fdf6f4;
+$cp-brand: #7a1f2b;
+$cp-ink: #1c1a17;
+$cp-muted: #6b6258;
+$cp-hairline: #ecdfdc;
+
+.card {
+  position: relative;
+  background: $cp-bg;
+  border: 1px solid $cp-hairline;
+  border-left: 4px solid $cp-brand;
+  border-radius: 14px;
+  padding: 22px 24px 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $cp-brand;
+  margin: 0;
+}
+
+.priceLine {
+  color: $cp-ink;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.metaLine {
+  color: $cp-muted;
+  font-size: 0.85rem;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.statusActive {
+  background: #e7f4ea;
+  color: #2d6a4f;
+}
+
+.statusTrial {
+  background: #fff4e0;
+  color: #8a5a00;
+}
+
+.statusPastDue {
+  background: #fdecea;
+  color: #a73128;
+}
+
+.statusCanceled {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.paymentRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $cp-ink;
+  font-size: 0.9rem;
+}
+
+.paymentBrand {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(122, 31, 43, 0.1);
+  color: $cp-brand;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.btnGhost {
+  border-color: $cp-brand !important;
+  color: $cp-brand !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+
+  &:hover,
+  &:focus {
+    background: rgba(122, 31, 43, 0.06) !important;
+    color: $cp-brand !important;
+    border-color: $cp-brand !important;
+  }
+}
+
+.btnFilled {
+  background: $cp-brand !important;
+  border-color: $cp-brand !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+
+  &:hover,
+  &:focus {
+    background: darken($cp-brand, 6%) !important;
+    border-color: darken($cp-brand, 6%) !important;
+    color: #fff !important;
+  }
+}
