@@ -98,7 +98,11 @@ export default function AddCardModal({
     setErrorMsg(null);
     try {
       const res = await doInit({
-        provider: 'atmos',
+        // Click is the primary gateway for Uzcard/Humo cards (which is
+        // what virtually all UZ users have). Atmos is the fallback for
+        // Visa/MC, but until our Atmos partner-API permission is
+        // approved, Click handles 100% of bind traffic.
+        provider: 'click',
         cardNumber: cleanPan,
         expiryYyMm,
       }).unwrap();
@@ -156,7 +160,7 @@ export default function AddCardModal({
       // bind init with the same PAN+expiry, which yields a fresh OTP
       // and a new transaction_id (so we update paymentMethodId too).
       const res = await doInit({
-        provider: 'atmos',
+        provider: 'click',
         cardNumber: cleanPan,
         expiryYyMm,
       }).unwrap();
