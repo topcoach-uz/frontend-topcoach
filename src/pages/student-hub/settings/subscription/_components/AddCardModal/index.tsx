@@ -83,10 +83,12 @@ export default function AddCardModal({
 
   const cleanPan = useMemo(() => pan.replace(/\s+/g, ''), [pan]);
   const expiryYyMm = useMemo(() => mmYyToYyMm(expiry), [expiry]);
-  const formValid = cleanPan.length === 16 && expiryYyMm.length === 4;
+  const provider = useMemo(() => pickProvider(cleanPan), [cleanPan]);
+  const formValid =
+    cleanPan.length === 16 && expiryYyMm.length === 4 && provider !== null;
 
   const submitForm = async () => {
-    if (!formValid) {
+    if (!formValid || !provider) {
       setErrorMsg(
         t(
           'settings.subscription.addCard.invalidForm',
@@ -98,11 +100,7 @@ export default function AddCardModal({
     setErrorMsg(null);
     try {
       const res = await doInit({
-        // Click is the primary gateway for Uzcard/Humo cards (which is
-        // what virtually all UZ users have). Atmos is the fallback for
-        // Visa/MC, but until our Atmos partner-API permission is
-        // approved, Click handles 100% of bind traffic.
-        provider: 'click',
+        provider,
         cardNumber: cleanPan,
         expiryYyMm,
       }).unwrap();
@@ -152,7 +150,7 @@ export default function AddCardModal({
   };
 
   const resend = async () => {
-    if (resendIn > 0) return;
+    if (resendIn > 0 || !provider) return;
     setErrorMsg(null);
     setOtp('');
     try {
@@ -160,7 +158,7 @@ export default function AddCardModal({
       // bind init with the same PAN+expiry, which yields a fresh OTP
       // and a new transaction_id (so we update paymentMethodId too).
       const res = await doInit({
-        provider: 'click',
+        provider,
         cardNumber: cleanPan,
         expiryYyMm,
       }).unwrap();
@@ -269,6 +267,14 @@ export default function AddCardModal({
                   inputMode="numeric"
                   autoComplete="cc-number"
                 />
+                {cleanPan.length === 16 && provider === null && (
+                  <div className={styles.binHint}>
+                    {t(
+                      'settings.subscription.addCard.unsupportedBin',
+                      'This card type is not supported. Please use a Uzcard, Humo, Visa, or Mastercard.',
+                    )}
+                  </div>
+                )}
               </div>
               <div className={styles.formRowFull}>
                 <label className={styles.fieldLabel}>
@@ -414,6 +420,48 @@ function mmYyToYyMm(displayed: string): string {
   const yy = digits.slice(2, 4);
   // Atmos wants YYMM (e.g. "2510" for Oct 2025).
   return `${yy}${mm}`;
+}
+
+// BIN-based provider routing.
+//
+// Click handles the local UZ rails (Uzcard / Humo). Atmos handles the
+// international Visa / Mastercard rails. Co-brand cards have BINs that
+// belong to one of the local networks even though the card is also
+// branded Visa or Mastercard — those still go through Click on the
+// local rail (the user's bank issued it as a Uzcard or Humo card).
+//
+//   8600..  → Uzcard                          → Click
+//   9860..  → Humo                            → Click
+//   5614..  → Uzcard-Mastercard co-brand      → Click (charged on Uzcard rail)
+//   4...    → Visa (any, incl. Humo-Visa)     → Atmos
+//   51-55.. → Mastercard                      → Atmos
+//   2221-2720.. → Mastercard 2-series         → Atmos
+//
+// Anything else (Amex, Discover, JCB, Maestro 50/56-58, Mir, …) returns
+// null so we don't even hit the network with a card the providers will
+// reject. The 5614 check runs before the 51-55 check is irrelevant
+// (5614 starts with 56, not 51-55) but it's listed first for clarity.
+function pickProvider(cleanPan: string): 'click' | 'atmos' | null {
+  if (cleanPan.length < 4) return null;
+  if (
+    cleanPan.startsWith('8600') ||
+    cleanPan.startsWith('9860') ||
+    cleanPan.startsWith('5614')
+  ) {
+    return 'click';
+  }
+  if (cleanPan.startsWith('4')) return 'atmos';
+  if (/^5[1-5]/.test(cleanPan)) return 'atmos';
+  if (isMastercard2Series(cleanPan)) return 'atmos';
+  return null;
+}
+
+// Mastercard 2-series: BINs 222100–272099 (4-digit prefix 2221–2720).
+// Use the first 4 digits as a number for a clean range check.
+function isMastercard2Series(cleanPan: string): boolean {
+  if (cleanPan.length < 4) return false;
+  const head = Number(cleanPan.slice(0, 4));
+  return Number.isFinite(head) && head >= 2221 && head <= 2720;
 }
 
 /** Pull a user-friendly message out of an RTK error envelope. */

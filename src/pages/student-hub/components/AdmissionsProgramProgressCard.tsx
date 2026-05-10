@@ -85,8 +85,9 @@ export default function AdmissionsProgramProgressCard({
       canUseResearchPrepLive(
         profile?.email,
         profile?.managementRole as string | undefined,
+        isCommunityEnrolled,
       ),
-    [profile?.email, profile?.managementRole],
+    [profile?.email, profile?.managementRole, isCommunityEnrolled],
   );
   // Research Prep: mentees only fetch when Community mode; mentors with program access still call API when live.
   const skipResearchQuery =
