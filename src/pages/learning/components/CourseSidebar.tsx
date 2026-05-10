@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Collapse, Progress, Button } from 'antd';
-import { PlayCircle, FileText, Video, Clock, CheckCircle2, Menu, ChevronsLeft, BookOpen, X } from 'lucide-react';
+import { PlayCircle, FileText, Video, Clock, CheckCircle2, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './CourseSidebar.scss';
 
@@ -13,7 +13,10 @@ interface CourseSidebarProps {
   onLessonSelect: (lessonId: string) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  courseLabel?: string;
 }
+
+const ED_PROGRESS_STROKE = { from: '#7b1f2f', to: '#b45462' } as const;
 
 const CourseSidebar: React.FC<CourseSidebarProps> = ({
   courseStructure,
@@ -22,6 +25,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   onLessonSelect,
   collapsed,
   onToggleCollapse,
+  courseLabel,
 }) => {
   const { t } = useTranslation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['0']);
@@ -115,9 +119,15 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
       <>
         {/* Desktop collapsed sidebar */}
         <div className="course-sidebar-collapsed desktop-only">
-          <div className="course-icon" onClick={onToggleCollapse}>
-            <BookOpen size={16} />
-          </div>
+          <button
+            type="button"
+            className="course-icon"
+            onClick={onToggleCollapse}
+            aria-label={t('Open course sidebar') as string}
+            title={t('Open course sidebar') as string}
+          >
+            <PanelLeftOpen size={18} aria-hidden />
+          </button>
           
           <div className="progress-summary">
             <div className="progress-text">
@@ -150,23 +160,29 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
    <div className={`course-sidebar ${collapsed ? 'hidden' : ''}`}>
         {/* Header */}
         <div className="sidebar-header">
+          <div className="sidebar-eyebrow">
+            {courseLabel ? `${t('Course')} · ${courseLabel}` : t('Course')}
+          </div>
           <div className="header-content">
             <h2>{t('Course Content')}</h2>
-            <Button
-              type="text"
-              icon={<X size={16} className="mobile-only-icon" />}
+            {/* Native button (not antd) — keeps the icon perfectly
+                centered in the circle and avoids antd's padding quirks. */}
+            <button
+              type="button"
               onClick={onToggleCollapse}
               className="collapse-btn"
-              size="small"
+              aria-label={t('Collapse course sidebar') as string}
+              title={t('Collapse course sidebar') as string}
             >
-              <ChevronsLeft size={16} className="desktop-only-icon" />
-            </Button>
+              <X size={16} className="mobile-only-icon" aria-hidden />
+              <PanelLeftClose size={16} className="desktop-only-icon" aria-hidden />
+            </button>
           </div>
           <div className="overall-progress">
-            <Progress 
-              percent={overallProgress} 
+            <Progress
+              percent={overallProgress}
               size="small"
-              strokeColor="#667eea"
+              strokeColor={ED_PROGRESS_STROKE}
               showInfo={false}
             />
             <span className="progress-text">
@@ -190,10 +206,13 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                 header={
                   <div className="module-header">
                     <div className="module-info">
-                      <h3>Module {moduleIndex + 1}</h3>
+                      <div className="module-eyebrow">
+                        {t('Module')} {String(moduleIndex + 1).padStart(2, '0')}
+                      </div>
+                      <h3>{module.title || `Module ${moduleIndex + 1}`}</h3>
                       <div className="module-meta">
                         <span className="lesson-count">
-                          {(module.lessons?.filter((l: any) => !l.submoduleId).length || 0) + 
+                          {(module.lessons?.filter((l: any) => !l.submoduleId).length || 0) +
                            (module.submodules?.reduce((total: number, sub: any) => total + (sub.lessons?.length || 0), 0) || 0)} lessons
                         </span>
                         <span className="duration">
@@ -236,8 +255,11 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                             {lesson.isPremium && (
                               <span className="premium-tag">Premium</span>
                             )}
+                            {isCompleted && (
+                              <span className="done-pill">{t('Done')}</span>
+                            )}
                           </div>
-                          
+
                           <div className="lesson-meta">
                             <span className="lesson-duration">
                               <Clock size={16} />
@@ -253,11 +275,11 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 
                         {!isCompleted && progress > 0 && (
                           <div className="lesson-progress">
-                            <Progress 
-                              percent={progress} 
+                            <Progress
+                              percent={progress}
                               size="small"
                               showInfo={false}
-                              strokeColor="#52c41a"
+                              strokeColor={ED_PROGRESS_STROKE}
                             />
                           </div>
                         )}
@@ -312,8 +334,11 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
                                       {lesson.isPremium && (
                                         <span className="premium-tag">Premium</span>
                                       )}
+                                      {isCompleted && (
+                                        <span className="done-pill">{t('Done')}</span>
+                                      )}
                                     </div>
-                                    
+
                                     <div className="lesson-meta">
                                       <span className="lesson-duration">
                                         <Clock size={16} />
@@ -329,11 +354,11 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
 
                                   {!isCompleted && progress > 0 && (
                                     <div className="lesson-progress">
-                                      <Progress 
-                                        percent={progress} 
+                                      <Progress
+                                        percent={progress}
                                         size="small"
                                         showInfo={false}
-                                        strokeColor="#52c41a"
+                                        strokeColor={ED_PROGRESS_STROKE}
                                       />
                                     </div>
                                   )}

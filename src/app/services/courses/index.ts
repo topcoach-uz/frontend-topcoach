@@ -252,119 +252,97 @@ export const coursesApi = RtkApi.injectEndpoints({
       providesTags: ['CourseProgress'],
     }),
 
-    updateLessonProgress: builder.mutation<LessonProgressDto, { lessonId: string; data: UpdateProgressDto }>({
-      query: ({ lessonId, data }) => {
-        console.log('RTK Query sending request:', { lessonId, data });
-        return {
+    updateLessonProgress: builder.mutation<
+      LessonProgressDto,
+      { lessonId: string; courseName?: string; data: UpdateProgressDto }
+    >({
+      query: ({ lessonId, data }) => ({
         url: `courses/learning/progress/lesson/${lessonId}`,
         method: 'PUT',
         body: data,
-        };
-      },
-      async onQueryStarted({ lessonId, data }, { dispatch, queryFulfilled, getState }) {
-        console.log('Optimistic update started:', { lessonId, data });
-        
-        // Get current state to calculate total lessons
-        const currentState = getState();
-        const courseStructure = coursesApi.endpoints.getCourseStructure.select()(currentState as any);
-        const totalLessons = courseStructure.data?.reduce((total, module) => 
-          total + (module.lessons?.length || 0), 0
-        ) || 0;
+      }),
+      // Optimistic update keyed by the *active* courseName so the
+      // sidebar count flips to "completed" immediately, before the
+      // server round-trip. Without `courseName` the patch silently
+      // targets the wrong cache entry (was a no-op for years).
+      async onQueryStarted(
+        { lessonId, courseName, data },
+        { dispatch, queryFulfilled, getState },
+      ) {
+        if (!courseName) {
+          // Caller didn't tell us which course this lesson belongs
+          // to; we'll rely on `invalidatesTags` to refetch instead.
+          return;
+        }
 
-        // Optimistic update: immediately update the cache
-        const patchResult = dispatch(
-          coursesApi.util.updateQueryData('getUserProgress', undefined, (draft) => {
-            if (draft) {
-              console.log('Updating cache for lesson:', lessonId);
-              
-              const progressItem = draft.progress.find(p => p.lessonId === lessonId);
-              if (progressItem) {
-                // Update existing progress item
-                progressItem.isCompleted = data.isCompleted || progressItem.isCompleted;
-                progressItem.progressPercentage = data.progressPercentage || progressItem.progressPercentage;
-                progressItem.timeWatched = data.timeWatched || progressItem.timeWatched;
-                progressItem.lastWatchedAt = new Date().toISOString();
-                if (data.isCompleted) {
-                  progressItem.completedAt = new Date().toISOString();
-                }
-                console.log('Updated existing progress item:', progressItem);
-              } else {
-                // Add new progress item if it doesn't exist
-                const newProgressItem = {
-                  id: `temp-${lessonId}`,
-                  userId: 'current-user',
-                  lessonId,
-                  isCompleted: data.isCompleted || false,
-                  progressPercentage: data.progressPercentage || 0,
-                  timeWatched: data.timeWatched || 0,
-                  lastWatchedAt: new Date().toISOString(),
-                  completedAt: data.isCompleted ? new Date().toISOString() : undefined,
-                };
-                draft.progress.push(newProgressItem);
-                console.log('Added new progress item:', newProgressItem);
-              }
-              
-              // Recalculate overall progress using the actual total lessons
-              const completedLessons = draft.progress.filter(p => p.isCompleted).length;
-              draft.completedLessons = completedLessons;
-              draft.totalLessons = totalLessons;
-              draft.overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-              
-              // Update last watched timestamp
-              draft.lastWatchedAt = new Date().toISOString();
-              
-              console.log('Updated overall progress:', {
-                completedLessons,
-                totalLessons,
-                overallProgress: draft.overallProgress
+        const state = getState();
+        const structureSel = coursesApi.endpoints.getCourseStructure.select(courseName);
+        const structure = structureSel(state as any).data;
+        const totalLessons =
+          structure?.reduce((total, module) => {
+            const direct = module.lessons?.length || 0;
+            const sub =
+              module.submodules?.reduce(
+                (s: number, sm: any) => s + (sm.lessons?.length || 0),
+                0,
+              ) || 0;
+            return total + direct + sub;
+          }, 0) || 0;
+
+        const patch = dispatch(
+          coursesApi.util.updateQueryData('getUserProgress', courseName, (draft) => {
+            if (!draft) return;
+            const existing = draft.progress.find((p) => p.lessonId === lessonId);
+            if (existing) {
+              existing.isCompleted = data.isCompleted ?? existing.isCompleted;
+              existing.progressPercentage =
+                data.progressPercentage ?? existing.progressPercentage;
+              existing.timeWatched = data.timeWatched ?? existing.timeWatched;
+              existing.lastWatchedAt = new Date().toISOString();
+              if (data.isCompleted) existing.completedAt = new Date().toISOString();
+            } else {
+              draft.progress.push({
+                id: `temp-${lessonId}`,
+                userId: 'current-user',
+                lessonId,
+                isCompleted: !!data.isCompleted,
+                progressPercentage: data.progressPercentage || 0,
+                timeWatched: data.timeWatched || 0,
+                lastWatchedAt: new Date().toISOString(),
+                completedAt: data.isCompleted ? new Date().toISOString() : undefined,
               });
             }
-          })
+            const completed = draft.progress.filter((p) => p.isCompleted).length;
+            draft.completedLessons = completed;
+            if (totalLessons > 0) {
+              draft.totalLessons = totalLessons;
+              draft.overallProgress = Math.round((completed / totalLessons) * 100);
+            }
+            draft.lastWatchedAt = new Date().toISOString();
+          }),
         );
 
         try {
-          const result = await queryFulfilled;
-          console.log('Query fulfilled successfully, updating cache with server response:', result.data);
-          console.log('Server response details:', {
-            id: result.data.id,
-            lessonId: result.data.lessonId,
-            isCompleted: result.data.isCompleted,
-            progressPercentage: result.data.progressPercentage,
-            timeWatched: result.data.timeWatched,
-            completedAt: result.data.completedAt
-          });
-          
-          // Update cache with the actual server response data
-          dispatch(
-            coursesApi.util.updateQueryData('getUserProgress', undefined, (draft) => {
-              if (draft) {
-                const progressItem = draft.progress.find(p => p.lessonId === lessonId);
-                if (progressItem) {
-                  // Update with server response data
-                  progressItem.id = result.data.id;
-                  progressItem.userId = result.data.userId;
-                  progressItem.isCompleted = result.data.isCompleted;
-                  progressItem.progressPercentage = result.data.progressPercentage;
-                  progressItem.timeWatched = result.data.timeWatched;
-                  progressItem.lastWatchedAt = result.data.lastWatchedAt;
-                  progressItem.completedAt = result.data.completedAt;
-                  
-                  console.log('Updated cache with server response:', progressItem);
-                  console.log('Cache update details:', {
-                    lessonId: progressItem.lessonId,
-                    isCompleted: progressItem.isCompleted,
-                    completedAt: progressItem.completedAt
-                  });
-                }
-              }
-            })
-          );
+          await queryFulfilled;
         } catch (error) {
-          console.error('Query failed, reverting optimistic update:', error);
-          // If the mutation fails, revert the optimistic update
-          patchResult.undo();
+          patch.undo();
         }
       },
+      // We DO NOT invalidate `CourseProgress` here. Two reasons:
+      //   1) Progress ticks fire every few seconds while a video plays;
+      //      invalidating on each tick triggers a full GET refetch of
+      //      `/courses/learning/progress`, which on this backend has
+      //      occasional read-replica lag and can return stale data
+      //      (a recently-completed lesson missing from the response),
+      //      stomping our correct optimistic patch and dropping the
+      //      sidebar count. This caused the "count flickers on every
+      //      lesson change" bug.
+      //   2) The optimistic patch above is now correctly keyed by
+      //      `courseName` and recomputes `completedLessons` /
+      //      `overallProgress` itself, so the local cache is already
+      //      consistent with the server-confirmed mutation. The next
+      //      genuine refetch (page mount / course switch) will reconcile
+      //      against the server view if anything ever drifts.
     }),
 
     completeLesson: builder.mutation<LessonProgressDto, string>({

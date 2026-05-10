@@ -9,6 +9,7 @@ interface VdoCipherPlayerProps {
   title: string;
   onProgressUpdate: (progress: number) => void;
   onComplete: () => void;
+  isCompleted?: boolean;
 }
 
 const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
@@ -18,6 +19,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   title,
   onProgressUpdate,
   onComplete,
+  isCompleted = false,
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -328,14 +330,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     <div className="vdocipher-player-container">
   
 
-      {isSafari && (
-        <div className="safari-warning">
-          <div className="warning-content">
-            <h4>Browser Compatibility Notice</h4>
-            <p>Safari may have issues with this video player. For the best experience, please use Chrome, Firefox, or Edge.</p>
-          </div>
-        </div>
-      )}
+      {/* The Safari incompatibility hint now lives in the lesson header
+          as a compact badge; keeping the box here would duplicate it. */}
       
 <div 
   ref={playerRef} 
@@ -357,16 +353,29 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         </div>
       )}
 
-      {/* Complete Button */}
+      {/* Complete Button — flips to a disabled green "Completed" pill
+          once the parent confirms completion (mirrors the PDF viewer). */}
       <div className="video-actions">
-        <button 
-          className="complete-button"
-          onClick={onComplete}
-          style={{ backgroundColor: '#8b0000', borderColor: '#8b0000' }}
-        >
-          <CheckCircle2 size={16} />
-          Mark as Complete
-        </button>
+        {isCompleted ? (
+          <button
+            type="button"
+            className="complete-button is-completed"
+            disabled
+            aria-label="Lesson completed"
+          >
+            <CheckCircle2 size={16} />
+            Completed
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="complete-button"
+            onClick={onComplete}
+          >
+            <CheckCircle2 size={16} />
+            Mark as Complete
+          </button>
+        )}
       </div>
     </div>
   );

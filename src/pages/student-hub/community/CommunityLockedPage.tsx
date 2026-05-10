@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Button, message } from 'antd';
+import { Button } from 'antd';
 import { Lock, Users, MessageCircle, Sparkles, BookOpen, FlaskConical, Presentation, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,13 @@ export type CommunityLockVariant =
 
 type CommunityLockedPageProps = {
   variant?: CommunityLockVariant;
+  /**
+   * If provided, dismiss closes the popup via this callback instead of
+   * navigating back to the dashboard. Useful when the popup is opened
+   * from inside a page that should stay mounted after dismiss
+   * (e.g. the Admissions Program landing page).
+   */
+  onClose?: () => void;
 };
 
 type VariantCopy = {
@@ -50,7 +57,7 @@ function BulletIcon({ kind }: { kind: VariantCopy['bullets'][0]['icon'] }) {
 /**
  * Community enrollment — compact modal overlay (TopCoach crimson, neutral grays).
  */
-export default function CommunityLockedPage({ variant = 'feed' }: CommunityLockedPageProps) {
+export default function CommunityLockedPage({ variant = 'feed', onClose }: CommunityLockedPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -168,19 +175,22 @@ export default function CommunityLockedPage({ variant = 'feed' }: CommunityLocke
 
   const handleUpgrade = () => {
     if (isResearchComingSoon) return;
-    message.warning(
-      t(
-        'studentHub.communityLock.unlockComingSoon',
-        'Community unlock flow is coming soon. Please contact support for early access.',
-      ),
-    );
+    // Take the user to the subscription tab inside settings so they
+    // can pick a plan / enter card details. Settings is mounted under
+    // section=account&target=settings; the inner tabbed page reads
+    // `?tab=subscription` to land on the right tab.
+    navigate('/student-hub?section=account&target=settings&tab=subscription');
   };
 
   const backPath = '/student-hub?section=dashboard';
 
   const dismiss = useCallback(() => {
+    if (onClose) {
+      onClose();
+      return;
+    }
     navigate(backPath);
-  }, [navigate]);
+  }, [navigate, onClose]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

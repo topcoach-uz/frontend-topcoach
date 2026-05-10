@@ -936,6 +936,15 @@ export default function CommunityHubMockPage() {
             type="button"
             className={`${styles.navItem} ${activeSection === 'admissionsProgram' ? styles.navItemActive : ''}`}
             onClick={() => {
+              // Community-enrolled users skip the marketing landing
+              // page and jump straight into the lesson player. Non-
+              // enrolled users still see the landing page (with the
+              // free preview videos); the "Go to admissions lessons"
+              // button on that page triggers the unlock popup.
+              if (isCommunityEnrolled) {
+                navigate('/learning?course=admissions');
+                return;
+              }
               setActiveSection('admissionsProgram');
               navigate('/student-hub?section=admissions-program', { replace: true });
             }}

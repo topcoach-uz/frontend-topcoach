@@ -1,75 +1,129 @@
+// Editorial design tokens — kept inline to match the convention used by
+// MyProgressEditorialView.scss / MyRewardsEditorialView.scss (no shared
+// _variables file in this codebase).
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: #fbe9ec;
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-gold: #92581f;
+$ed-gold-bg: rgba(182, 130, 75, 0.15);
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
 .course-sidebar {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  background: $ed-cream-elev;
+  border-right: 1px solid $ed-hairline;
 
   .sidebar-header {
-    padding: 24px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 22px 22px 18px;
+    border-bottom: 1px solid $ed-hairline;
+    background: $ed-cream-elev;
+
+    .sidebar-eyebrow {
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: $ed-brand;
+      margin-bottom: 6px;
+    }
 
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
 
       h2 {
         margin: 0;
-        font-size: 20px;
-        font-weight: 700;
-        color: #1e293b;
-        letter-spacing: -0.025em;
+        font-family: $ed-serif;
+        font-size: 1.4rem;
+        font-weight: 500;
+        color: $ed-ink;
+        letter-spacing: -0.014em;
+        line-height: 1.2;
       }
 
       .collapse-btn {
-        color: #64748b;
-        border: none;
-        background: transparent;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        width: 32px;
-        height: 32px;
-        display: flex;
+        // Native button reset + perfect-circle layout.
+        appearance: none;
+        -webkit-appearance: none;
+        font: inherit;
+        line-height: 0;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+
+        color: $ed-brand;
+        border: 1px solid $ed-hairline;
+        background: #fff;
+        border-radius: 999px;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        transition: background 0.18s ease, color 0.18s ease,
+          border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 
-        &:hover {
-          color: #8b0000;
-          background: #f1f5f9;
-          transform: scale(1.05);
-          box-shadow: 0 2px 8px rgba(139, 0, 0, 0.15);
+        &:hover, &:focus-visible {
+          color: #fff;
+          background: $ed-brand;
+          border-color: $ed-brand;
+          box-shadow: 0 4px 10px rgba(123, 31, 47, 0.24);
+          transform: translateY(-1px);
+          outline: none;
         }
 
-        .anticon {
-          font-size: 14px;
-          font-weight: 500;
-          transition: transform 0.3s ease;
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
         }
 
-        &:hover .anticon {
-          transform: scale(1.1);
+        svg {
+          stroke-width: 2.2;
+          width: 16px;
+          height: 16px;
+          display: block;
         }
 
-        .mobile-only-icon {
-          display: none;
-        }
-
-        .desktop-only-icon {
-          display: inline-block;
-        }
+        .mobile-only-icon { display: none; }
+        .desktop-only-icon { display: block; }
       }
     }
 
     .overall-progress {
+      .ant-progress-line { line-height: 1; }
+      .ant-progress-inner {
+        background: $ed-hairline-inner;
+        height: 5px !important;
+        border-radius: 999px;
+      }
+      .ant-progress-bg {
+        height: 5px !important;
+      }
+
       .progress-text {
         display: block;
         margin-top: 8px;
-        font-size: 12px;
-        color: #64748b;
-        font-weight: 500;
+        font-size: 0.7rem;
+        color: $ed-muted;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-variant-numeric: tabular-nums;
       }
     }
   }
@@ -88,13 +142,13 @@
         margin-bottom: 0;
 
         .ant-collapse-header {
-          padding: 18px 20px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
-          transition: all 0.2s ease;
+          padding: 18px 22px;
+          background: $ed-cream-elev;
+          border-bottom: 1px solid $ed-hairline-inner;
+          transition: background 0.2s ease;
 
           &:hover {
-            background: #f1f5f9;
+            background: rgba($ed-brand, 0.03);
           }
 
           .module-header {
@@ -102,31 +156,48 @@
             justify-content: space-between;
             align-items: flex-start;
             width: 100%;
+            gap: 12px;
 
             .module-info {
               flex: 1;
+              min-width: 0;
+
+              .module-eyebrow {
+                font-size: 0.66rem;
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: $ed-muted;
+                margin-bottom: 4px;
+                font-variant-numeric: tabular-nums;
+              }
 
               h3 {
-                margin: 0 0 8px 0;
-                font-size: 16px;
-                font-weight: 600;
-                color: #1e293b;
-                letter-spacing: -0.025em;
+                margin: 0 0 6px 0;
+                font-family: $ed-serif;
+                font-size: 1.02rem;
+                font-weight: 500;
+                color: $ed-ink;
+                letter-spacing: -0.012em;
+                line-height: 1.3;
               }
 
               .module-meta {
                 display: flex;
-                gap: 12px;
-                font-size: 12px;
-                color: #64748b;
+                gap: 8px;
+                font-size: 0.74rem;
+                color: $ed-muted;
+                font-variant-numeric: tabular-nums;
 
                 .lesson-count {
                   font-weight: 600;
-                  color: #475569;
                 }
-
                 .duration {
-                  opacity: 0.8;
+                  &::before {
+                    content: '·';
+                    margin-right: 6px;
+                    color: rgba($ed-muted, 0.6);
+                  }
                 }
               }
             }
@@ -134,15 +205,20 @@
             .module-mentor {
               display: flex;
               align-items: center;
-              font-size: 12px;
-              color: #64748b;
 
               .mentor-name {
-                max-width: 80px;
+                max-width: 96px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                font-weight: 500;
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: $ed-ink-soft;
+                background: $ed-cream-page;
+                border: 1px solid $ed-hairline;
+                padding: 4px 9px;
+                border-radius: 999px;
+                letter-spacing: 0.04em;
               }
             }
           }
@@ -150,7 +226,7 @@
 
         .ant-collapse-content {
           border: none;
-          background: white;
+          background: $ed-cream-elev;
 
           .ant-collapse-content-box {
             padding: 0;
@@ -160,22 +236,22 @@
     }
 
     .submodules-collapse {
-      margin-top: 8px;
-      padding-left: 8px;
-      border-left: 2px solid #e5e7eb;
+      margin-top: 6px;
+      padding-left: 10px;
+      border-left: 1px solid $ed-hairline-inner;
 
       .ant-collapse-item {
         border: none;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
 
         .ant-collapse-header {
-          padding: 12px 16px;
-          background: #f8fafc;
+          padding: 10px 16px;
+          background: transparent;
+          border-bottom: none;
           border-radius: 6px;
-          transition: all 0.2s ease;
 
           &:hover {
-            background: #f1f5f9;
+            background: rgba($ed-brand, 0.04);
           }
 
           .submodule-header {
@@ -185,18 +261,19 @@
             width: 100%;
 
             .submodule-title {
-              font-size: 14px;
-              font-weight: 600;
-              color: #6b7280;
+              font-size: 0.66rem;
+              font-weight: 700;
+              color: $ed-muted;
               margin: 0;
               text-transform: uppercase;
-              letter-spacing: 0.5px;
+              letter-spacing: 0.12em;
             }
 
             .submodule-lesson-count {
-              font-size: 12px;
-              color: #9ca3af;
+              font-size: 0.7rem;
+              color: $ed-muted;
               font-weight: 500;
+              font-variant-numeric: tabular-nums;
             }
           }
         }
@@ -206,17 +283,17 @@
           background: transparent;
 
           .ant-collapse-content-box {
-            padding: 8px 0 0 0;
+            padding: 4px 0 0 0;
           }
         }
       }
 
       .submodule-lessons {
-        padding-left: 8px;
+        padding-left: 6px;
       }
 
       .submodule-lesson {
-        margin-left: 12px;
+        margin-left: 8px;
       }
     }
 
@@ -224,30 +301,30 @@
       .lesson-item {
         display: flex;
         align-items: center;
-        padding: 14px 20px;
+        padding: 12px 22px;
         cursor: pointer;
-        border-bottom: 1px solid #f1f5f9;
-        transition: all 0.2s ease;
+        border-bottom: 1px solid $ed-hairline-inner;
+        transition: background 0.2s ease;
         position: relative;
+        background: $ed-cream-elev;
 
         &:hover {
-          background: #f8fafc;
-          transform: translateX(2px);
+          background: rgba($ed-brand, 0.035);
         }
 
         &.selected {
-          background: #f0f0f0;
-          border-left: 3px solid #8b0000;
+          background: rgba($ed-brand, 0.05);
+          border-left: 3px solid $ed-brand;
+          padding-left: 19px;
         }
 
+        // Completed lessons keep ink title; the icon flips to a brand-red
+        // check and a small green "Done" pill is appended in JSX. No
+        // green-text-row rule (per the design decision).
         &.completed {
           .lesson-icon {
-            color: #16a34a;
-          }
-
-          .lesson-title .title {
-            color: #16a34a;
-            font-weight: 600;
+            background: $ed-brand-soft;
+            color: $ed-brand;
           }
         }
 
@@ -255,20 +332,21 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-          background: #f5f5f5;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          background: $ed-brand-soft;
+          color: $ed-brand;
           margin-right: 12px;
           flex-shrink: 0;
-          
-          .anticon {
-            font-size: 16px;
-            color: #666;
+
+          .anticon, svg {
+            font-size: 14px;
+            color: $ed-brand;
           }
 
           .completed-icon {
-            color: #16a34a;
+            color: $ed-brand;
           }
         }
 
@@ -277,27 +355,43 @@
           flex-direction: column;
           gap: 4px;
           flex: 1;
+          min-width: 0;
 
           .lesson-title {
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
 
             .title {
               font-weight: 500;
-              color: #1e293b;
+              color: $ed-ink;
+              font-size: 0.92rem;
               flex: 1;
+              line-height: 1.3;
+              min-width: 0;
             }
 
             .premium-tag {
-              background: #fbbf24;
-              color: #92400e;
-              padding: 2px 6px;
-              border-radius: 4px;
-              font-size: 10px;
-              font-weight: 600;
+              background: $ed-gold-bg;
+              color: $ed-gold;
+              padding: 2px 7px;
+              border-radius: 999px;
+              font-size: 0.6rem;
+              font-weight: 700;
               text-transform: uppercase;
-              letter-spacing: 0.05em;
+              letter-spacing: 0.08em;
+            }
+
+            .done-pill {
+              background: $ed-success-bg;
+              color: $ed-success;
+              padding: 2px 8px;
+              border-radius: 999px;
+              font-size: 0.6rem;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
             }
           }
         }
@@ -305,30 +399,38 @@
         .lesson-meta {
           display: flex;
           align-items: center;
-          gap: 12px;
-          font-size: 12px;
-          color: #64748b;
+          gap: 10px;
+          font-size: 0.66rem;
+          color: $ed-muted;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          font-variant-numeric: tabular-nums;
+          font-weight: 600;
 
           .lesson-duration {
             display: flex;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
           }
 
           .progress {
-            color: #52c41a;
-            font-weight: 500;
+            color: $ed-brand;
+            font-weight: 700;
           }
 
           .completed-text {
-            color: #16a34a;
-            font-weight: 600;
+            color: $ed-success;
+            font-weight: 700;
           }
         }
 
         .lesson-progress {
-          width: 40px;
-          margin-left: 8px;
+          width: 44px;
+          margin-left: 10px;
+
+          .ant-progress-inner {
+            background: $ed-hairline-inner;
+          }
         }
       }
     }
@@ -342,38 +444,58 @@
   align-items: center;
   justify-content: flex-start;
   padding: 0;
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  background: $ed-cream-elev;
+  border-right: 1px solid $ed-hairline;
   overflow: hidden;
   position: relative;
 
   .course-icon {
-    display: flex;
+    // Native button reset.
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    line-height: 0;
+    padding: 0;
+    margin: 18px 0 10px 0;
+    cursor: pointer;
+
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #8b0000 0%, #660000 100%);
-    color: white;
-    margin: 16px 0 8px 0;
-    box-shadow: 0 2px 4px rgba(139, 0, 0, 0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: $ed-brand-soft;
+    color: $ed-brand;
+    border: 1px solid rgba($ed-brand, 0.18);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    transition: background 0.18s ease, color 0.18s ease,
+      border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 
-    &:hover {
+    &:hover, &:focus-visible {
+      background: $ed-brand;
+      color: #fff;
+      border-color: $ed-brand;
+      box-shadow: 0 4px 10px rgba(123, 31, 47, 0.24);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    svg {
+      stroke-width: 2.2;
+      width: 18px;
+      height: 18px;
+      display: block;
+      transition: transform 0.18s ease;
+    }
+
+    &:hover svg {
       transform: scale(1.05);
-      box-shadow: 0 4px 8px rgba(139, 0, 0, 0.3);
-      background: linear-gradient(135deg, #660000 0%, #4a0000 100%);
-    }
-
-    .anticon {
-      font-size: 18px;
-      transition: transform 0.3s ease;
-    }
-
-    &:hover .anticon {
-      transform: scale(1.1);
     }
   }
 
@@ -382,14 +504,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 16px 8px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
+    padding: 14px 8px;
+    background: $ed-cream-page;
+    border-radius: 10px;
+    border: 1px solid $ed-hairline;
     width: 100%;
     max-width: 64px;
-    margin: 16px 8px;
-    min-height: 80px;
+    margin: 14px 8px;
+    min-height: 76px;
 
     .progress-text {
       text-align: center;
@@ -397,92 +519,83 @@
 
       .percentage {
         display: block;
-        font-size: 14px;
-        font-weight: 700;
-        color: #8b0000;
-        letter-spacing: -0.025em;
+        font-family: $ed-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: $ed-brand;
+        letter-spacing: -0.014em;
         line-height: 1;
         margin-bottom: 4px;
+        font-variant-numeric: tabular-nums;
       }
 
       .label {
         display: block;
-        font-size: 8px;
-        color: #64748b;
-        font-weight: 500;
+        font-size: 0.5rem;
+        color: $ed-muted;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.12em;
         line-height: 1;
       }
     }
   }
 }
 
-// Mobile floating button
 .mobile-sidebar-toggle {
   display: none;
 }
 
-// Mobile overlay
 .mobile-sidebar-overlay {
   display: none;
 }
 
-// Desktop only elements
 .desktop-only {
   display: flex;
 }
 
-// Mobile only elements
 .mobile-only {
   display: none;
 }
 
-// Responsive design - Mobile
 @media (max-width: 768px) {
-  // Hide desktop collapsed sidebar on mobile
   .course-sidebar-collapsed.desktop-only {
     display: none !important;
   }
-  .learning-sidebar{
+  .learning-sidebar {
     z-index: 10000 !important;
   }
- .course-sidebar.hidden{
+  .course-sidebar.hidden {
     .ant-layout-sider.learning-sidebar.ant-layout-sider-collapsed {
-    display: none !important;
+      display: none !important;
+    }
   }
-  }
-  // Show mobile floating button when collapsed
+
   .mobile-sidebar-toggle {
     display: flex;
     position: fixed;
-    bottom: 32px ;
+    bottom: 32px;
     left: 32px;
- z-index: 100000 !important;
-    border-radius: 50px;
-    height: 60px;
+    z-index: 100000 !important;
+    border-radius: 999px;
+    height: 56px;
     min-width: 120px;
-    padding: 0 8px;
-    background: linear-gradient(135deg, #8b0000 0%, #660000 100%);
-    border: none;
-    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    padding: 0 18px;
+    background: $ed-brand !important;
+    border: none !important;
+    box-shadow: 0 6px 18px rgba(123, 31, 47, 0.28);
     align-items: center;
     gap: 8px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(139, 0, 0, 0.4);
-      background: linear-gradient(135deg, #660000 0%, #4a0000 100%);
-    }
-
-    .anticon {
-      font-size: 18px;
+    &:hover, &:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(123, 31, 47, 0.34);
+      background: $ed-brand-hover !important;
     }
   }
 
-  // Mobile sidebar overlay
   .mobile-sidebar-overlay {
     display: block;
     position: fixed;
@@ -490,21 +603,16 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(28, 26, 23, 0.5);
     z-index: 998;
     animation: fadeIn 0.3s ease;
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  // Mobile sidebar - slide in from left
   .course-sidebar {
     position: fixed;
     top: 0;
@@ -512,26 +620,28 @@
     width: 85%;
     max-width: 320px;
     height: 100%;
- z-index: 100000 !important;
-    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    z-index: 100000 !important;
+    box-shadow: 4px 0 18px rgba(28, 26, 23, 0.14);
     animation: slideInLeft 0.3s ease;
 
     .sidebar-header {
-      padding: 16px 16px 16px 0; // Remove left padding to touch left edge
-      margin-left: 0; // Ensure no left margin
+      padding: 14px 16px 14px 0;
+      margin-left: 0;
+
+      .sidebar-eyebrow {
+        padding-left: 16px;
+      }
 
       .header-content {
-        padding-left: 16px; // Add padding to content instead of header
+        padding-left: 16px;
         h2 {
-          font-size: 18px;
+          font-size: 1.18rem;
         }
 
         .collapse-btn {
           .mobile-only-icon {
-            display: inline-block;
-            font-size: 16px;
+            display: block;
           }
-
           .desktop-only-icon {
             display: none;
           }
@@ -539,22 +649,8 @@
       }
 
       .overall-progress {
-        padding-left: 16px; // Align with header content
-        padding-right: 16px; // Add right padding for alignment
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end; // Align content to the right
-        
-        .ant-progress {
-          width: 100%; // Full width but aligned container
-          margin-bottom: 4px;
-        }
-        
-        .progress-text {
-          text-align: left; // Align text to the right
-          margin-top: 4px;
-          width: 100%; // Full width for right alignment
-        }
+        padding-left: 16px;
+        padding-right: 16px;
       }
     }
 
@@ -567,18 +663,17 @@
             .module-header {
               .module-info {
                 h3 {
-                  font-size: 14px;
+                  font-size: 0.92rem;
                 }
-
                 .module-meta {
-                  font-size: 11px;
+                  font-size: 0.66rem;
                 }
               }
 
               .module-mentor {
                 .mentor-name {
-                  max-width: 60px;
-                  font-size: 11px;
+                  max-width: 80px;
+                  font-size: 0.62rem;
                 }
               }
             }
@@ -590,35 +685,39 @@
         .lesson-item {
           padding: 10px 16px;
 
+          &.selected {
+            padding-left: 13px;
+          }
+
           .lesson-icon {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             margin-right: 10px;
 
-            .anticon {
-              font-size: 14px;
+            .anticon, svg {
+              font-size: 12px;
             }
           }
 
           .lesson-content {
             .lesson-title {
               .title {
-                font-size: 13px;
+                font-size: 0.84rem;
               }
-
-              .premium-tag {
-                font-size: 9px;
-                padding: 1px 4px;
+              .premium-tag,
+              .done-pill {
+                font-size: 0.55rem;
+                padding: 1px 6px;
               }
             }
 
             .lesson-meta {
-              font-size: 10px;
+              font-size: 0.6rem;
             }
           }
 
           .lesson-progress {
-            width: 30px;
+            width: 32px;
           }
         }
       }
@@ -626,31 +725,29 @@
   }
 
   @keyframes slideInLeft {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
   }
 }
 
-// Tablet adjustments
 @media (min-width: 769px) and (max-width: 1024px) {
   .course-sidebar {
-   
     .sidebar-header {
-      padding: 20px 16px;
+      padding: 18px 16px;
 
       h2 {
-        font-size: 18px;
+        font-size: 1.2rem;
       }
     }
 
     .course-structure {
       .lessons-list {
         .lesson-item {
-          padding: 12px 16px;
+          padding: 11px 16px;
+
+          &.selected {
+            padding-left: 13px;
+          }
         }
       }
     }

@@ -17,6 +17,8 @@ import { show } from 'src/app/slices/profilePopupSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
 import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
+import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
+import CommunityLockedPage from '../community/CommunityLockedPage';
 import './AdmissionsProgramPage.scss';
 
 // Local enums for course types and payment status
@@ -67,6 +69,8 @@ const AdmissionsProgramPage: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<CourseTypeEnum | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [showDetailedSections, setShowDetailedSections] = useState(false);
+  const [showCommunityLock, setShowCommunityLock] = useState(false);
+  const { isCommunityEnrolled } = useJourneyExperience();
   const dispatch = useAppDispatch();
 
   // Helper function to get translated plan type
@@ -231,6 +235,12 @@ const AdmissionsProgramPage: React.FC = () => {
   };
 
   const handleContinueLearning = () => {
+    if (!isCommunityEnrolled) {
+      // Non-Community users see a paywall popup; the popup's CTA
+      // routes to the subscription tab in settings.
+      setShowCommunityLock(true);
+      return;
+    }
     navigate('/learning?course=admissions');
   };
 
@@ -570,8 +580,8 @@ const AdmissionsProgramPage: React.FC = () => {
         <div className="cta-content">
           <h2>{t('pricing.readyToStart')}</h2>
           <p>{t('pricing.joinHundreds')}</p>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="large"
             onClick={() => navigate('/contact-form')}
             icon={<Rocket size={16} />}
@@ -580,6 +590,12 @@ const AdmissionsProgramPage: React.FC = () => {
           </Button>
         </div>
       </section>
+      {showCommunityLock && (
+        <CommunityLockedPage
+          variant="admissions-program"
+          onClose={() => setShowCommunityLock(false)}
+        />
+      )}
       </div>
   );
 };

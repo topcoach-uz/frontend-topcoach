@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Button, message, Spin } from 'antd';
-import { PanelLeftClose, PanelLeftOpen, Clock, Rocket, Video, FileText, ChevronLeft, ChevronRight, CheckCircle2, Target } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Clock, Rocket, Video, FileText, ChevronLeft, ChevronRight, CheckCircle2, Target, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery, useGetTasksByLessonQuery, useGetLessonTaskSubmissionsQuery } from 'src/app/services/courses';
@@ -42,6 +42,16 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   const [lastCompletionTime, setLastCompletionTime] = useState<number>(0);
   const [isCurrentLessonCompleted, setIsCurrentLessonCompleted] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
+
+  // Detect Safari for the small in-header browser-compat badge. The
+  // VdoCipher player has issues there; we surface the hint inline next
+  // to the lesson meta instead of a giant yellow banner above the
+  // video. Mirrors the detection logic in VdoCipherPlayer.
+  const isSafariBrowser = React.useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent;
+    return /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua);
+  }, []);
   const [hasShownEnrollmentMessage, setHasShownEnrollmentMessage] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isCompletingLesson, setIsCompletingLesson] = useState(false);
@@ -314,27 +324,28 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     try {
       setIsCompletingLesson(true);
       setIsCurrentLessonCompleted(true);
-      setForceUpdate(prev => prev + 1);
 
       const updateData = {
         isCompleted: true,
         progressPercentage: 100,
         timeWatched: (selectedLesson.duration || 0) * 60,
       };
-      
+
       await updateLessonProgress({
         lessonId: selectedLesson.id,
-        data: updateData
+        courseName,
+        data: updateData,
       }).unwrap();
-      
-      await refetchUserProgress();
+
+      // `invalidatesTags: ['CourseProgress']` on the mutation triggers
+      // an automatic refetch — no manual refetch needed.
       message.success('Lesson marked as completed!');
-      setIsCompletingLesson(false);
     } catch (error) {
       console.error('Error:', error);
       setIsCurrentLessonCompleted(false);
-      setIsCompletingLesson(false);
       message.error('Failed to mark lesson as completed');
+    } finally {
+      setIsCompletingLesson(false);
     }
   };
 
@@ -478,13 +489,19 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }, [selectedLessonId, isInitialized, courseName]);
 
   useEffect(() => {
+    // Skip syncing while a completion is in flight. Otherwise the
+    // optimistic `isCurrentLessonCompleted=true` we set in the click
+    // handler can be reverted to false the moment the cache is
+    // re-emitted with stale data, forcing the user to click twice.
+    if (isCompletingLesson) return;
+
     if (userProgress?.progress) {
       const currentLessonCompleted = userProgress.progress.find((p: any) => String(p.lessonId) === String(selectedLessonId))?.isCompleted || false;
       setIsCurrentLessonCompleted(currentLessonCompleted);
     }
     // Reset allTasksCorrectlyCompleted when lesson changes
     setAllTasksCorrectlyCompleted(false);
-  }, [userProgress?.progress, selectedLessonId]);
+  }, [userProgress?.progress, selectedLessonId, isCompletingLesson]);
 
   useEffect(() => {
     if (structureError) {
@@ -590,13 +607,14 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     if (progress > 0) {
       updateLessonProgress({
         lessonId: String(lessonId),
+        courseName,
         data: {
           progressPercentage: Math.round(progress),
           timeWatched: Math.round((progress / 100) * (duration * 60)),
         }
       }).catch(() => {});
     }
-  }, [updateLessonProgress]);
+  }, [updateLessonProgress, courseName]);
 
   // CONDITIONAL RENDERING
   if (!isAuthenticated) {
@@ -763,8 +781,8 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               localStorage.setItem(courseSpecificKey, JSON.stringify({ id: lessonIdStr, ts: Date.now() }));
             }}
             collapsed={collapsed}
-      
             onToggleCollapse={() => setCollapsed(!collapsed)}
+            courseLabel={courseName === 'sat' ? 'SAT Prep' : 'Admissions Program'}
           />
         ) : (
           <div className="sidebar-loading">
@@ -783,26 +801,59 @@ const LearningPage: React.FC<LearningPageProps> = () => {
             </div>
           ) : (
             <div className="lesson-container">
-              {/* Compact Mobile Header */}
-              <div className="lesson-header-mobile">
-                <div className="lesson-title-compact">
-                  <span className="lesson-type-badge">
-                    {selectedLesson.lessonType === 'video' ? <Video size={16} color="#FFF" /> : selectedLesson.lessonType === 'pdf' ? <FileText size={16} color="#FFF" /> : <Target size={16} color="#FFF" />}
-                  </span>
-                  <h1>{selectedLesson.title || 'Untitled Lesson'}</h1>
-                </div>
+              {/* Editorial lesson header — renders on all sizes. */}
+              <div className="lesson-header-editorial">
                 {selectedModule && (
-                  <div className="module-info-compact">
-                    <span className="module-label">Module:</span>
-                    <span className="module-name">{selectedModule.title || 'Untitled Module'}</span>
-                    <span className="module-separator">•</span>
-                    <span className="mentor-name">
-                      {selectedModule.mentorName || selectedModule.mentor?.email || 'Unknown'}
-                    </span>
+                  <div className="lh-eyebrow">
+                    {t('Module')} · {selectedModule.title || t('Untitled Module')}
                   </div>
                 )}
-                
-            
+                <h1 className="lh-title">
+                  {selectedLesson.title || t('Untitled Lesson')}
+                </h1>
+                <div className="lh-meta">
+                  <span className="lh-meta__icon">
+                    {selectedLesson.lessonType === 'video'
+                      ? <Video size={14} />
+                      : selectedLesson.lessonType === 'pdf'
+                        ? <FileText size={14} />
+                        : <Target size={14} />}
+                  </span>
+                  <span className="lh-meta__type">
+                    {selectedLesson.lessonType === 'video'
+                      ? t('Video')
+                      : selectedLesson.lessonType === 'pdf'
+                        ? t('PDF')
+                        : t('Live session')}
+                  </span>
+                  {typeof selectedLesson.duration === 'number' && selectedLesson.duration > 0 && (
+                    <>
+                      <span className="lh-meta__sep">·</span>
+                      <span className="lh-meta__dur">
+                        {selectedLesson.duration} {t('min')}
+                      </span>
+                    </>
+                  )}
+                  {selectedModule && (selectedModule.mentorName || selectedModule.mentor?.email) && (
+                    <>
+                      <span className="lh-meta__sep">·</span>
+                      <span className="lh-meta__mentor">
+                        {t('Mentor')}: {selectedModule.mentorName || selectedModule.mentor?.email?.split('@')[0]}
+                      </span>
+                    </>
+                  )}
+                  {isSafariBrowser && selectedLesson.lessonType === 'video' && (
+                    <span
+                      className="lh-meta__compat"
+                      title={t(
+                        'Safari may have issues with this video player. For the best experience, please use Chrome, Firefox, or Edge.',
+                      )}
+                    >
+                      <AlertTriangle size={12} strokeWidth={2.5} />
+                      {t('Best in Chrome / Firefox / Edge')}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="lesson-content">
@@ -819,6 +870,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         otp={vdocipherOTP}
                         playbackInfo={vdocipherPlaybackInfo}
                         title={selectedLesson.title || 'Untitled Video'}
+                        isCompleted={isSelectedLessonCompleted}
                         onProgressUpdate={(progress) => {
                           if (progress > 0 && selectedLesson.id && selectedLesson.duration) {
                             handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
@@ -847,27 +899,26 @@ const LearningPage: React.FC<LearningPageProps> = () => {
 
                             setIsCompletingLesson(true);
                             setIsCurrentLessonCompleted(true);
-                            setForceUpdate(prev => prev + 1);
 
                             const updateData = {
                               isCompleted: true,
                               progressPercentage: 100,
                               timeWatched: (selectedLesson.duration || 0) * 60,
                             };
-                            
+
                             await updateLessonProgress({
                               lessonId: selectedLesson.id,
-                              data: updateData
+                              courseName,
+                              data: updateData,
                             }).unwrap();
-                            
-                            await refetchUserProgress();
+
                             message.success('Lesson completed!');
-                            setIsCompletingLesson(false);
                           } catch (error) {
                             console.error('Error:', error);
                             setIsCurrentLessonCompleted(false);
-                            setIsCompletingLesson(false);
                             message.error('Failed to mark lesson as completed');
+                          } finally {
+                            setIsCompletingLesson(false);
                           }
                         }}
                       />
@@ -904,25 +955,26 @@ const LearningPage: React.FC<LearningPageProps> = () => {
 
                             setIsCompletingLesson(true);
                             setIsCurrentLessonCompleted(true);
-                            setForceUpdate(prev => prev + 1);
 
                             const updateData = {
                               isCompleted: true,
                               progressPercentage: 100,
                               timeWatched: (selectedLesson.duration || 0) * 60,
                             };
-                            
+
                             await updateLessonProgress({
                               lessonId: selectedLesson.id,
-                              data: updateData
+                              courseName,
+                              data: updateData,
                             }).unwrap();
-                            
-                            await refetchUserProgress();
+
                             message.success('PDF lesson completed!');
-                            setIsCompletingLesson(false);
                           } catch (error) {
                             console.error('Error:', error);
+                            setIsCurrentLessonCompleted(false);
                             message.error('Failed to mark lesson as completed');
+                          } finally {
+                            setIsCompletingLesson(false);
                           }
                         }}
                         isCompleted={isSelectedLessonCompleted}

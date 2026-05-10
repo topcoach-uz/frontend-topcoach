@@ -88,7 +88,45 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'experience'
     | 'notifications'
     | 'subscription';
-  const [activeTab, setActiveTab] = useState<SettingsTabKey>('profile');
+
+  // Read initial tab from URL `?tab=` so other pages can deep-link
+  // (e.g. the Community lock popup → subscription tab).
+  const initialTab: SettingsTabKey = (() => {
+    if (typeof window === 'undefined') return 'profile';
+    const fromUrl = new URLSearchParams(window.location.search).get('tab');
+    const allowed: SettingsTabKey[] = [
+      'profile',
+      'studyBuddy',
+      'experience',
+      'notifications',
+      'subscription',
+    ];
+    return allowed.includes(fromUrl as SettingsTabKey)
+      ? (fromUrl as SettingsTabKey)
+      : 'profile';
+  })();
+  const [activeTab, setActiveTab] = useState<SettingsTabKey>(initialTab);
+
+  // Re-sync on URL changes (in-app navigation between sections shares
+  // the same component tree, so `popstate` / pushState updates need
+  // to be reflected here).
+  useEffect(() => {
+    const onPop = () => {
+      const fromUrl = new URLSearchParams(window.location.search).get('tab');
+      const allowed: SettingsTabKey[] = [
+        'profile',
+        'studyBuddy',
+        'experience',
+        'notifications',
+        'subscription',
+      ];
+      if (allowed.includes(fromUrl as SettingsTabKey)) {
+        setActiveTab(fromUrl as SettingsTabKey);
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const email = profile?.email ?? 'you@example.com';
   const isSuperAdmin =
