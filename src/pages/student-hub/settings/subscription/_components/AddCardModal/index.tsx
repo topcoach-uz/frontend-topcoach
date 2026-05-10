@@ -265,7 +265,7 @@ export default function AddCardModal({
                         .trim(),
                     )
                   }
-                  placeholder="8600 4907 4431 3347"
+                  placeholder="8600 1234 5678 9012"
                   inputMode="numeric"
                   autoComplete="cc-number"
                 />
