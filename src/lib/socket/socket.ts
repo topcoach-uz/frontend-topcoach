@@ -29,12 +29,23 @@ class SocketManager {
 
     // Create new socket connection
     // hostName is already the base URL (e.g., http://localhost:3000)
-    // Socket.io connects to the /chat namespace
+    // Socket.io connects to the /chat namespace.
+    //
+    // WebSocket-only — DO NOT add 'polling' to transports. Production
+    // runs multiple backend replicas behind the Swarm VIP. Polling does
+    // a multi-request handshake (`?sid=xxx` follow-ups) and each request
+    // gets round-robin'd to a different replica. The replica that didn't
+    // issue the SID returns 400 → transport error → reconnect loop. The
+    // Redis adapter only shares broadcast events, NOT engine.io session
+    // state, so it doesn't fix this. Skipping polling makes the very
+    // first WS upgrade the only request — once established, that single
+    // long-lived connection naturally sticks to one backend.
     this.socket = io(`${hostName}/chat`, {
       auth: {
         token,
       },
-      transports: ['polling', 'websocket'],
+      transports: ['websocket'],
+      upgrade: false,
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.reconnectDelay,
