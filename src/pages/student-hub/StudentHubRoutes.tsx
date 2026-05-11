@@ -40,7 +40,10 @@ const PsychometricRouteShell = ({ children }: { children: React.ReactNode }) => 
  */
 const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const profile = useTypedSelector((s) => s.auth.profile);
-  const allowed = canUseSatPrep(profile?.managementRole as string | undefined);
+  const allowed = canUseSatPrep(
+    profile?.managementRole as string | undefined,
+    profile?.email,
+  );
   if (allowed) return children;
   return (
     <SatPrepLayout>

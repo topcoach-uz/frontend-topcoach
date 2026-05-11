@@ -421,8 +421,12 @@ export default function CommunityHubMockPage() {
     [profile?.email, profile?.managementRole, isCommunityEnrolled],
   );
   const satPrepLive = useMemo(
-    () => canUseSatPrep(profile?.managementRole as string | undefined),
-    [profile?.managementRole],
+    () =>
+      canUseSatPrep(
+        profile?.managementRole as string | undefined,
+        profile?.email,
+      ),
+    [profile?.managementRole, profile?.email],
   );
   // My Rewards editorial UI is gated to SuperAdmin/Owner during the
   // internal preview (see MY_REWARDS_SHOW_ALL). Everyone else sees the
