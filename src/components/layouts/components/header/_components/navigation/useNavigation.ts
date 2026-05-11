@@ -11,7 +11,6 @@ interface INavLink {
   children?: INavLink[];
 }
 
-const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 const MENTOR_EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
 
 export default function useNavigation() {
@@ -24,11 +23,21 @@ export default function useNavigation() {
   const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
   const isCEO = MENTOR_EXCEPTION_EMAILS.includes(userProfile?.email || '');
-  const isSuperAdmin = userProfile?.email === SUPER_ADMIN_EMAIL;
+  // Superadmin is now driven by managementRole, not a hardcoded email,
+  // so every SuperAdmin / Owner account gets the same treatment.
+  const role = (userProfile as { managementRole?: string } | null | undefined)
+    ?.managementRole;
+  const isSuperAdmin = role === 'SuperAdmin' || role === 'Owner';
   const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
-  // Counselors (non-superadmin): hide My Journey. Superadmins: full access.
+  // "My Journey" (the student/mentee hub) is for students only. Superadmins
+  // are operated as mentors (with the admin-console shortcut added inside
+  // the mentor sidebar), so they should not see the student hub link in
+  // the top nav. Counselors (non-superadmin) also hide it.
+  // Final rule: show My Journey only when the user is NOT a mentor AND
+  // NOT a counselor AND NOT a superadmin (CEO email override re-enables
+  // it for the legacy mentor exceptions, same as before).
   const shouldShowMyJourney =
-    isSuperAdmin || ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
+    !isSuperAdmin && ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
   // Mentors: Home. Counselors (non-superadmin): School Counselor as home.
   const showHome = isMentor && !(isCounselor && !isSuperAdmin);
   const showSchoolCounselor = isCounselor && !isSuperAdmin;

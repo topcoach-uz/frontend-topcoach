@@ -28,6 +28,7 @@ export const SAT_PREP_INTERNAL_TESTERS: ReadonlySet<string> = new Set([
   'adhamjanovbahmanyor@gmail.com',
   'dinararuzimuratova@gmail.com',
   'jamolovamadinabonu02@gmail.com',
+  'orzu@topcoach.uz'
 ]);
 
 /**

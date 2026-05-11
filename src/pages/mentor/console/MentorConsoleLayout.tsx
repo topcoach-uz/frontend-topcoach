@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   FlaskConical,
   Menu,
+  Shield,
 } from 'lucide-react';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
@@ -28,6 +29,7 @@ type NavKey =
   | 'milestones'
   | 'research-grading'
   | 'profile'
+  | 'admin-console'
   | 'admin-school-counselor'
   | 'admin-topcoach-management'
   | 'admin-course-content'
@@ -125,6 +127,31 @@ export default function MentorConsoleLayout() {
       );
     }
 
+    const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
+
+    const accountItems: NavItem[] = [
+      {
+        key: 'profile',
+        label: 'Profile',
+        icon: <UserCircle2 size={18} strokeWidth={1.75} />,
+        path: '/mentor/profile',
+      },
+    ];
+
+    // Surface the Admin Console shortcut inside the mentor sidebar for
+    // SuperAdmin / Owner accounts. They run a Mentor profile day-to-day
+    // (no separate "My Journey" student hub anymore) but still need a
+    // one-click jump into /new-admin/* without going through the avatar
+    // menu.
+    if (isSuperAdmin) {
+      accountItems.push({
+        key: 'admin-console',
+        label: 'Admin Console',
+        icon: <Shield size={18} strokeWidth={1.75} />,
+        path: '/new-admin/dashboard',
+      });
+    }
+
     const groups: NavGroup[] = [
       {
         id: 'overview',
@@ -146,21 +173,11 @@ export default function MentorConsoleLayout() {
       {
         id: 'account',
         label: 'Account',
-        items: [
-          {
-            key: 'profile',
-            label: 'Profile',
-            icon: <UserCircle2 size={18} strokeWidth={1.75} />,
-            path: '/mentor/profile',
-          },
-        ],
+        items: accountItems,
       },
     ];
 
     return groups;
-    // SuperAdmin lands here only via the role-toggle exception (admin who is
-    // also a mentor). They reach the admin console from the user menu, so we
-    // intentionally don't surface admin-only tools inside the mentor sidebar.
   }, [hasFullSupport, email, managementRole]);
 
   const activeKey = useMemo((): NavKey | null => {
@@ -173,6 +190,7 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/milestones')) return 'milestones';
     if (p.startsWith('/mentor/research-grading')) return 'research-grading';
     if (p.startsWith('/mentor/profile')) return 'profile';
+    if (p.startsWith('/new-admin') || p.startsWith('/admin')) return 'admin-console';
     return null;
   }, [location.pathname]);
 
