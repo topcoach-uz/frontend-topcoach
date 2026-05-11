@@ -1,4 +1,4 @@
-import { CustomCollapse, CustomText } from 'src/components/common';
+import { CustomCollapse } from 'src/components/common';
 import CustomSelect from 'src/components/common/select';
 import styles from './uniFilter.module.scss';
 import useUniversityFilter from './useUniversityFilter';
@@ -11,7 +11,6 @@ interface Props {
 
 export default function UniversityFilter({ checked }: Props) {
   const {
-    colors,
     degreeOptions,
     majorOptions,
     items,
@@ -27,25 +26,16 @@ export default function UniversityFilter({ checked }: Props) {
     <aside className={styles.aside}>
       <div className={styles.filter}>
         {screenSize > 1024 && (
-          <CustomText
-            fontSize={20}
-            fontWeight={600}
-            color={colors.colorTextBase}
-          >
-            {t('universities.filterTitle')}
-          </CustomText>
+          <div className={styles.heading}>
+            <div className={styles.eyebrow}>{t('universities.filterEyebrow', 'Filters')}</div>
+            <h2 className={styles.title}>{t('universities.filterTitle')}</h2>
+          </div>
         )}
-        <div className={styles.degree}>
-          <CustomText
-            fontSize={14}
-            fontWeight={400}
-            color={colors.colorText}
-            lineHeight="22px"
-            mb={4}
-          >
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>
             {t('universities.degree')}
-          </CustomText>
-          {/* <CustomSelect allowClear style={{ width: '100%' }} /> */}
+          </label>
           <CustomSelect
             allowClear
             placeholder={t('universities.degreePlaceholder')}
@@ -56,16 +46,11 @@ export default function UniversityFilter({ checked }: Props) {
             disabled={checked === true ? true : false}
           />
         </div>
-        <div className={styles.items}>
-          <CustomText
-            fontSize={14}
-            fontWeight={400}
-            color={colors.colorText}
-            lineHeight="22px"
-            mb={4}
-          >
+
+        <div className={styles.field}>
+          <label className={styles.fieldLabel}>
             {t('universities.major')}
-          </CustomText>
+          </label>
           <CustomSelect
             allowClear
             mode="multiple"
@@ -82,9 +67,10 @@ export default function UniversityFilter({ checked }: Props) {
             }
           />
         </div>
+
         <CustomCollapse
-          headerPadding="16px 0 0 0"
-          contentPadding="0"
+          headerPadding="8px 0"
+          contentPadding="0 0 6px 0"
           items={items}
           expandIconPosition="end"
           style={{ width: '100%' }}

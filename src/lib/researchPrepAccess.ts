@@ -24,6 +24,7 @@ export const RESEARCH_PREP_COMMUNITY_GATED_EMAILS = [
   'razhabbayevmirabror@gmail.com',
   'baxtiyorovbehzodbek8@gmail.com',
   'joldasbayevaanora@gmail.com',
+  'ruzimuratovadinara@gmail.com',
 ] as const;
 
 function normEmail(email: string | null | undefined): string {

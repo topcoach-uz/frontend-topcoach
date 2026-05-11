@@ -18,13 +18,16 @@ $mm-brand-soft: rgba(123, 31, 47, 0.08);
 $mm-amber: #b6824b;
 
 .majormatch {
-  background: $mm-cream;
+  // Same alignment fix as Full Support / My Progress / My Rewards: rely
+  // on the surrounding `.hubDashEmbed` for the cream backdrop and gutter
+  // instead of repeating them here. The previous `padding: 28px 32px` +
+  // outer `background` + `border-radius` made this page sit visibly
+  // lower and right of the canonical My-Journey alignment.
   color: $mm-ink;
-  border-radius: 14px;
-  padding: 28px 32px 40px;
+  padding: 4px 0 32px;
 
   @media (max-width: 768px) {
-    padding: 22px 18px 32px;
+    padding: 4px 0 24px;
   }
 
   /* — primitives ──────────────────────────────────────────────── */

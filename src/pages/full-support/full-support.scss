@@ -15,14 +15,18 @@ $fs-brand-soft: rgba(123, 31, 47, 0.08);
 $fs-amber: #b6824b;
 
 .fseditorial {
-  background: $fs-cream;
+  // The hub embed wrapper (`.hubDashEmbed` inside CommunityHubMockPage)
+  // already supplies the cream backdrop and the horizontal page gutter.
+  // Re-applying our own `padding: 28px 32px` + `max-width: 1200px` here
+  // made the title drift 28px down and 32px right vs My Progress /
+  // My Rewards / Settings — the exact misalignment users were reporting.
+  // Match those pages' canonical `padding: 4px 0 32px` so titles all
+  // start at the same y and the same x relative to the sidebar.
   color: $fs-ink;
-  padding: 28px 32px 56px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 4px 0 32px;
 
   @media (max-width: 768px) {
-    padding: 20px 16px 40px;
+    padding: 4px 0 24px;
   }
 
   /* — primitives ───────────────────────────────────────────────── */

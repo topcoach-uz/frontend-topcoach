@@ -16,13 +16,16 @@ $ap-hairline: #e5e3da;
 $ap-brand: #7B1F2F;
 
 .applications-page {
-  background: $ap-cream;
-  border-radius: 14px;
-  padding: 24px 28px 36px;
+  // Align with My Progress / My Rewards / Full Support / AI Major Match
+  // canonical layout: the hub embed wrapper supplies the cream backdrop
+  // and gutter, so this view stays edge-to-edge inside it instead of
+  // re-applying its own card chrome (which used to shift the title down
+  // and right relative to the other My-Journey pages).
   color: $ap-ink;
+  padding: 4px 0 32px;
 
   @media (max-width: 768px) {
-    padding: 18px 14px 28px;
+    padding: 4px 0 24px;
   }
 
   /* Page title (when rendered standalone) gets serif treatment. */

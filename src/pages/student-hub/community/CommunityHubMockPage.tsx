@@ -1484,7 +1484,13 @@ export default function CommunityHubMockPage() {
                 </div>
               )}
               {accountTarget === 'settings' && (
-                <div className={styles.settingsSectionOffset}>
+                // Same wrapper as every other in-hub page (Dashboard,
+                // My Rewards, AI Major Match, Full Support, …) so the
+                // title row lines up at the same y as My Progress.
+                // Previously this used `.settingsSectionOffset` with a
+                // bonus 18px top margin which made Settings visibly
+                // drift below the other tabs.
+                <div className={styles.hubDashEmbed}>
                   <MenteeSettingsPageMock embeddedInHub />
                 </div>
               )}
