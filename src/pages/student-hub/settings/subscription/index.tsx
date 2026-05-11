@@ -291,26 +291,27 @@ export default function SubscriptionTab() {
 
       {plans.length > 0 && (
         <section className={styles.heroPicker} ref={planPickerRef}>
-          {isEmpty ? (
-            <header className={styles.heroPickerHeader}>
-              <span className={styles.eyebrow}>
-                {t('settings.subscription.eyebrow', 'Subscription')}
-              </span>
-              <h2 className={styles.heroPickerTitle}>
-                {t('settings.subscription.choosePlanHeader', 'Choose your plan')}
-              </h2>
-              <p className={styles.heroPickerSubtitle}>
+          {/* One quiet subhead instead of the previous eyebrow + serif
+              title + subtitle stack. The page-level "Settings · Manage
+              your profile, subscription, and preferences" already
+              establishes the section, and the "Subscription & billing"
+              tab is active above — repeating the same eyebrow/title
+              again read as duplicated chrome. */}
+          <header className={styles.compactHead}>
+            <h3 className={styles.subSectionTitle}>
+              {isEmpty
+                ? t('settings.subscription.choosePlanHeader', 'Choose your plan')
+                : t('settings.subscription.availablePlans', 'Available plans')}
+            </h3>
+            {isEmpty && (
+              <p className={styles.compactHint}>
                 {t(
                   'settings.subscription.heroSubtitle',
                   'Switch anytime. Cancel anytime. 7-day free trial on every plan.',
                 )}
               </p>
-            </header>
-          ) : (
-            <h3 className={styles.subSectionTitle}>
-              {t('settings.subscription.availablePlans', 'Available plans')}
-            </h3>
-          )}
+            )}
+          </header>
           <AvailablePlans
             plans={plans}
             currentPlanId={subscription?.plan.id}

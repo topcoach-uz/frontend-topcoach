@@ -219,13 +219,11 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
 
   return (
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
-      {/* Editorial header — eyebrow + serif title + subtitle, mirrors
-          My Rewards / My Progress so the Account section reads as one
-          coherent magazine spread. Always renders (the previous variant
-          only showed it when standalone), since the hub's generic page
-          header is suppressed for the editorial settings view. */}
+      {/* Editorial header — single serif title + subtitle. The "Account"
+          eyebrow was redundant with the tab strip below, and every
+          per-tab body block has its own contextual heading, so a third
+          layer of label was just noise. */}
       <div className={styles.editorialHeader}>
-        <div className={styles.editorialEyebrow}>Account</div>
         <Title level={1} className={styles.editorialTitle}>
           {t('studentHub.settingsMock.title', 'Settings')}
         </Title>
