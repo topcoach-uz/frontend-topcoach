@@ -1,0 +1,225 @@
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+.card {
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 0;
+  margin-bottom: 48px;
+
+  @media (max-width: 880px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.media {
+  position: relative;
+  min-height: 260px;
+  background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
+}
+
+.media__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.body {
+  padding: 26px 28px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  background: $ed-brand-soft;
+  border: 1px solid rgba($ed-brand, 0.18);
+  color: $ed-brand;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-family: $ed-serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  line-height: 1.18;
+  color: $ed-ink;
+  margin: 0 0 8px 0;
+
+  em { font-style: italic; color: $ed-brand; }
+}
+
+.lede {
+  color: $ed-ink-soft;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  max-width: 56ch;
+}
+
+.facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px 0;
+  display: flex;
+  flex-direction: column;
+
+  li {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid $ed-hairline-inner;
+    font-size: 0.85rem;
+    color: $ed-ink-soft;
+
+    &:first-child { border-top: none; padding-top: 4px; }
+
+    svg { color: $ed-brand; margin-top: 3px; }
+
+    strong { display: block; color: $ed-ink; font-weight: 600; font-size: 0.88rem; }
+    span { display: block; color: $ed-muted; font-size: 0.78rem; }
+  }
+}
+
+.expect {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline-inner;
+  border-radius: 12px;
+  padding: 12px 14px 13px;
+  margin: 0 0 18px 0;
+}
+
+.expectEyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: $ed-muted;
+  margin-bottom: 8px;
+}
+
+.expectList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    align-items: start;
+    gap: 8px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: $ed-ink-soft;
+
+    svg { color: $ed-brand; margin-top: 2px; }
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.cta {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $ed-brand;
+  color: #fff;
+  border: 1px solid $ed-brand;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+
+  &:hover, &:focus {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}
+
+.ctaSecondary {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: $ed-ink-soft;
+  border: 1px solid $ed-hairline;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+
+  &:hover { color: $ed-brand; border-color: $ed-brand; }
+}
+
+.registeredPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $ed-success-bg;
+  color: $ed-success;
+  border: 1px solid rgba($ed-success, 0.2);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}

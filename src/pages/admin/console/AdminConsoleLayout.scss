@@ -900,10 +900,79 @@
     color: var(--ac-text) !important;
   }
 
+  .ant-input::placeholder,
+  .ant-input-affix-wrapper input::placeholder,
+  .ant-select-selection-placeholder {
+    color: var(--ac-text-muted) !important;
+  }
+
+  .ant-input-affix-wrapper .ant-input-prefix,
+  .ant-input-affix-wrapper .ant-input-suffix,
+  .ant-select-arrow,
+  .ant-select-clear {
+    color: var(--ac-text-muted) !important;
+  }
+
   .ant-btn-default {
     border-color: var(--ac-border-strong) !important;
     color: var(--ac-text-secondary) !important;
     background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .ant-btn-default:disabled,
+  .ant-btn-default[disabled] {
+    color: var(--ac-text-muted) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+  }
+
+  .ant-statistic-title {
+    color: var(--ac-text-muted) !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600 !important;
+  }
+
+  .ant-statistic-content,
+  .ant-statistic-content-value,
+  .ant-statistic-content-prefix,
+  .ant-statistic-content-suffix {
+    color: var(--ac-text) !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ant-empty-description {
+    color: var(--ac-text-muted) !important;
+  }
+
+  .ant-table-cell {
+    color: var(--ac-text) !important;
+    background: transparent !important;
+  }
+
+  .ant-table-tbody > tr:hover > td,
+  .ant-table-tbody > tr.ant-table-row-hover > td {
+    background: rgba(255, 255, 255, 0.03) !important;
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    background: transparent !important;
+    border-color: var(--ac-border) !important;
+  }
+
+  .ant-pagination-item a {
+    color: var(--ac-text-secondary) !important;
+  }
+
+  .ant-pagination-item-active {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border-color: rgba(16, 185, 129, 0.45) !important;
+  }
+
+  .ant-pagination-item-active a {
+    color: #ecfdf5 !important;
   }
 }
 

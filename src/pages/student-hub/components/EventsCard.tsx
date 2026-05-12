@@ -12,11 +12,23 @@ import EventCardComp from '../../../pages/home/_components/events/_component';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useNavigate } from 'react-router-dom';
 import { useGetCaafForumApplicationsMeQuery } from '../../../app/services/caafForumApi';
+import { useGetTopcoachLaunchEventMeQuery } from '../../../app/services/topcoachLaunchEventApi';
+import { useLaunchEventVisible } from '../../../lib/launchEventAccess';
 import {
   CAAF_FORUM_CARD_IMAGE,
   isPastCaafRegistrationDeadline,
 } from '../../events/central-asian-admissions-forum/constants';
 import './EventsCard.scss';
+
+/** Top Coach Launch Event hardcoded metadata. */
+const LAUNCH_EVENT_DATE_ISO = '2026-05-24T11:00:00+05:00';
+const LAUNCH_EVENT_TITLE = 'Top 100 Uni Launch Event';
+const LAUNCH_EVENT_IMG = '/img/casian_forum.jpeg'; // placeholder reuses CAAF artwork
+
+function isPastLaunchEvent(now: number = Date.now()): boolean {
+  const t = new Date(LAUNCH_EVENT_DATE_ISO).getTime();
+  return Number.isFinite(t) && now > t;
+}
 
 interface EventsCardProps {
   compact?: boolean;
@@ -28,6 +40,9 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   const navigate = useNavigate();
   const { menteeEventData, isLoading } = useMentee();
   const { data: caafMe, isLoading: isCaafLoading } = useGetCaafForumApplicationsMeQuery();
+  const launchEventVisible = useLaunchEventVisible();
+  const { data: launchMe, isLoading: isLaunchLoading } =
+    useGetTopcoachLaunchEventMeQuery(undefined, { skip: !launchEventVisible });
 
   const mapCaafStatus = (
     status: 'pending_payment' | 'paid' | 'refunded' | 'cancelled',
@@ -64,7 +79,31 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
         ]
       : [];
 
-  const allEvents = [...(Array.isArray(menteeEventData) ? menteeEventData : []), ...caafAsEvent];
+  // Top Coach Launch Event — only surface a confirmed registration,
+  // and only while the event hasn't passed AND the master feature flag
+  // is on (or the viewer is SuperAdmin / Owner).
+  const launchRegistration = launchMe?.registration;
+  const launchAsEvent =
+    launchEventVisible &&
+    launchRegistration?.status === 'confirmed' &&
+    !isPastLaunchEvent()
+      ? [
+          {
+            id: `topcoach-launch-${launchRegistration.id}`,
+            status: ApplicationStatusEnum.Successful,
+            isLaunchEvent: true,
+            title: LAUNCH_EVENT_TITLE,
+            date: LAUNCH_EVENT_DATE_ISO,
+            img: LAUNCH_EVENT_IMG,
+          },
+        ]
+      : [];
+
+  const allEvents = [
+    ...(Array.isArray(menteeEventData) ? menteeEventData : []),
+    ...caafAsEvent,
+    ...launchAsEvent,
+  ];
 
   const getEventStatusText = (item: any): string => {
     if (item.isCaaf) {
@@ -75,6 +114,9 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
         return t('caafForum.card.tag.registered', 'Registered');
       }
       return t('home.rejected');
+    }
+    if (item.isLaunchEvent) {
+      return t('topcoachLaunchEvent.card.tag.registered', 'Registered');
     }
     if (item.status === ApplicationStatusEnum.Pending) return t('home.reviewing');
     if (item.status === ApplicationStatusEnum.Successful) return t('home.accepted');
@@ -131,7 +173,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   ];
 
   function renderEvents(events: any[], showViewAll: boolean = false) {
-    if (isLoading || isCaafLoading) {
+    if (isLoading || isCaafLoading || isLaunchLoading) {
       return (
         <div style={{
           display: 'flex',
@@ -211,7 +253,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
           </Button>
         }
       >
-        {isLoading || isCaafLoading ? (
+        {isLoading || isCaafLoading || isLaunchLoading ? (
           <div style={{
             display: 'flex',
             flexDirection: 'column',

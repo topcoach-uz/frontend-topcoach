@@ -1,0 +1,618 @@
+/* Top Coach Launch Event — editorial registration page.
+ * Cream surface, hairline borders, serif headlines, brand-red accents.
+ * Mirrors My Progress / My Rewards / Settings card chrome.
+ */
+
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-warn: #92580f;
+$ed-warn-bg: #fdf3d7;
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+.page {
+  background: $ed-cream-page;
+  min-height: 100vh;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 18px;
+  padding: 30px 30px 26px;
+  box-shadow: 0 12px 36px rgba(74, 14, 26, 0.28);
+  color: #fff;
+  text-align: left;
+  overflow: hidden;
+
+  /* Subtle highlight glow on the upper-right so the gradient feels lit. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -40% -30% auto auto;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(
+      closest-side,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0) 70%
+    );
+    pointer-events: none;
+  }
+}
+
+.hero__eyebrow {
+  position: relative;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #fde2e6;
+  margin-bottom: 12px;
+  padding: 3px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  backdrop-filter: blur(2px);
+}
+
+.hero__title {
+  position: relative;
+  font-family: $ed-serif;
+  font-size: 2.2rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.14;
+  color: #fff;
+  margin: 0 0 8px 0;
+
+  em {
+    font-style: italic;
+    color: #f9c8cf;
+  }
+}
+
+.hero__lede {
+  position: relative;
+  margin: 0 0 18px 0;
+  font-size: 0.96rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+  max-width: 52ch;
+}
+
+.hero__pills {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 0;
+}
+
+.hero__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 13px;
+  white-space: nowrap;
+  backdrop-filter: blur(2px);
+
+  svg { color: #f9c8cf; }
+}
+
+/* ── Card primitive ─────────────────────────────────────────────── */
+
+.card {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 16px;
+  padding: 28px 28px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* ── Stepper ───────────────────────────────────────────────────── */
+
+.stepper {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 0;
+  margin: 0 0 22px 0;
+  position: relative;
+}
+
+.stepper__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  padding-bottom: 12px;
+  border-bottom: 2px solid $ed-hairline-inner;
+  color: $ed-muted;
+}
+
+.stepper__item--active {
+  color: $ed-brand;
+  border-bottom-color: $ed-brand;
+}
+
+.stepper__item--done {
+  color: $ed-success;
+  border-bottom-color: $ed-success-bg;
+}
+
+.stepper__dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1.5px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  .stepper__item--active & { background: $ed-brand; color: #fff; border-color: $ed-brand; }
+  .stepper__item--done & { background: $ed-success; color: #fff; border-color: $ed-success; }
+}
+
+.stepper__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ── Form sections ─────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-family: $ed-serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: $ed-ink;
+  margin: 0 0 6px 0;
+}
+
+.sectionDesc {
+  color: $ed-muted;
+  font-size: 0.86rem;
+  margin: 0 0 18px 0;
+}
+
+.fieldRow { margin-bottom: 12px; }
+
+.fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $ed-ink;
+  margin-bottom: 6px;
+
+  svg { color: $ed-brand; }
+}
+
+.fieldHint {
+  color: $ed-muted;
+  font-weight: 500;
+  font-size: 0.74rem;
+}
+
+.req { color: $ed-brand; }
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  color: $ed-ink;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  font-family: inherit;
+
+  &::placeholder { color: $ed-muted; }
+
+  &:focus {
+    border-color: $ed-brand;
+    box-shadow: 0 0 0 3px rgba($ed-brand, 0.08);
+  }
+}
+
+.textarea { resize: vertical; }
+
+.invalid {
+  border-color: #b91c1c;
+  &:focus { box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1); }
+}
+
+.errorMsg {
+  color: #b91c1c;
+  font-size: 0.76rem;
+  margin-top: 6px;
+}
+
+/* ── Chip grid (fields / countries / referral source) ─────────── */
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  color: $ed-ink-soft;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: rgba($ed-brand, 0.45);
+    color: $ed-ink;
+  }
+}
+
+.chipActive {
+  background: $ed-brand-soft;
+  border-color: $ed-brand;
+  color: $ed-brand;
+  font-weight: 600;
+
+  svg { color: $ed-brand; }
+}
+
+/* ── Option list (English level radio rows) ─────────────────── */
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionRow {
+  appearance: none;
+  text-align: left;
+  width: 100%;
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: rgba($ed-brand, 0.45);
+    background: #fff;
+  }
+
+  strong { font-size: 0.92rem; color: $ed-ink; font-weight: 600; display: block; }
+  span:not(.optionRow__radio) { font-size: 0.78rem; color: $ed-muted; display: block; }
+}
+
+.optionRowActive {
+  border-color: $ed-brand;
+  background: $ed-brand-soft;
+}
+
+.optionRow__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid $ed-hairline;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  flex-shrink: 0;
+
+  span {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: $ed-brand;
+  }
+  .optionRowActive & { border-color: $ed-brand; }
+}
+
+/* ── Attendance tiles (Yes / Can't) ─────────────────────────── */
+
+.attendanceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.attendanceTile {
+  appearance: none;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s ease;
+
+  strong { font-size: 0.9rem; color: $ed-ink; font-weight: 600; }
+  span { font-size: 0.78rem; color: $ed-muted; }
+
+  &:hover { border-color: rgba($ed-brand, 0.45); }
+}
+
+.attendanceTile__radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid $ed-hairline;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  margin-bottom: 4px;
+
+  span { width: 8px; height: 8px; border-radius: 50%; background: $ed-brand; }
+}
+
+.attendanceTileActive {
+  border-color: $ed-brand;
+  background: $ed-brand-soft;
+
+  .attendanceTile__radio { border-color: $ed-brand; }
+}
+
+/* ── Actions ─────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid $ed-hairline-inner;
+  gap: 12px;
+}
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  line-height: 1;
+
+  &:disabled { cursor: not-allowed; opacity: 0.6; }
+}
+
+.btnPrimary {
+  background: $ed-brand;
+  color: #fff;
+  border-color: $ed-brand;
+
+  &:hover, &:focus {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}
+
+.btnGhost {
+  background: transparent;
+  color: $ed-ink-soft;
+  border-color: $ed-hairline;
+
+  &:hover, &:focus {
+    color: $ed-brand;
+    border-color: $ed-brand;
+  }
+}
+
+/* ── Locked / loading / success card variants ────────────────── */
+
+.lockedCard {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 28px;
+}
+
+.lockedCard__icon { color: $ed-brand; margin-bottom: 4px; }
+
+.lockedCard__title {
+  font-family: $ed-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: $ed-ink;
+  margin: 0 0 4px 0;
+}
+
+.lockedCard__desc {
+  color: $ed-ink-soft;
+  font-size: 0.92rem;
+  max-width: 44ch;
+  line-height: 1.5;
+  margin: 0 0 14px 0;
+}
+
+.lockedCard__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.loadingCard {
+  text-align: center;
+  padding: 36px;
+
+  p {
+    margin-top: 12px;
+    color: $ed-muted;
+    font-size: 0.86rem;
+  }
+}
+
+.successCard {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 30px 28px;
+}
+
+.successCard__bubble {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: $ed-success-bg;
+  color: $ed-success;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.successCard__title {
+  font-family: $ed-serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: $ed-ink;
+  margin: 0;
+}
+
+.successCard__desc {
+  color: $ed-ink-soft;
+  font-size: 0.92rem;
+  max-width: 50ch;
+  line-height: 1.5;
+  margin: 6px 0 18px 0;
+}
+
+.successCard__actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Event-details grid on the success view ─────────────────── */
+
+.eventGrid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.eventGrid__item {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+
+  > svg { color: $ed-brand; margin-top: 2px; }
+  strong {
+    display: block;
+    font-size: 0.92rem;
+    color: $ed-ink;
+    font-weight: 600;
+  }
+  span {
+    display: block;
+    font-size: 0.8rem;
+    color: $ed-muted;
+  }
+  em {
+    display: block;
+    font-style: normal;
+    font-size: 0.72rem;
+    color: $ed-warn;
+    background: $ed-warn-bg;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 5px;
+    width: max-content;
+  }
+}
+
+.eventGrid__label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: $ed-muted;
+  margin-bottom: 2px;
+}
+
+.formCard { /* explicit hook for the form variant in case we restyle later */ }

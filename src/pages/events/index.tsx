@@ -16,6 +16,7 @@ import UpcomingEventsSection from './_components/UpcomingEventsSection';
 // Youth Leaders application entry — temporarily hidden on Events page
 // import YouthLeadersProgramCard from './_components/YouthLeadersProgramCard';
 import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
+import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
 import { CAMPS_LIST_QUERY } from './campsQuery';
 
@@ -232,6 +233,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
+        <TopcoachLaunchEventCard />
         <CentralAsianAdmissionsForumCard />
 
         <div className={styles.filter}>

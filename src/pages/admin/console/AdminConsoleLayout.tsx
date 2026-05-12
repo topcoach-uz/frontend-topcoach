@@ -198,6 +198,9 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/events/caaf')) {
       return [{ title: 'Admin' }, { title: 'Events' }, { title: 'CA Admissions Forum' }];
     }
+    if (p.startsWith('/new-admin/events/topcoach-launch-event')) {
+      return [{ title: 'Admin' }, { title: 'Events' }, { title: 'Top Coach Launch Event' }];
+    }
     if (p.startsWith('/new-admin/programs/')) {
       const slug = p.replace('/new-admin/programs/', '') || 'enrollments';
       const labels: Record<string, string> = {

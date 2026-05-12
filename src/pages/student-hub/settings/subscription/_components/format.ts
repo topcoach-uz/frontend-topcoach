@@ -23,7 +23,7 @@ export const formatPriceLine = (
 /** Just the USD amount — used in tables / receipt lines. */
 export const formatUsdInline = (value: number): string => `$${value.toFixed(2)}`;
 
-/** Compact "$11.99 USD" / "$129.99 USD" style. */
+/** Compact "$11.99 USD" / "$99.99 USD" style. */
 export const formatUsdLong = (value: number): string => `$${value.toFixed(2)} USD`;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

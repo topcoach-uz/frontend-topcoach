@@ -49,6 +49,8 @@ import {
   useGetCaafForumApplicationsMeQuery,
   useGetCaafForumRegistrationConfigQuery,
 } from 'src/app/services/caafForumApi';
+import { useGetTopcoachLaunchEventMeQuery } from 'src/app/services/topcoachLaunchEventApi';
+import { useLaunchEventVisible } from 'src/lib/launchEventAccess';
 import {
   REGISTRATION_FEE_USD_FALLBACK,
   formatCaafRegistrationFeeUsd,
@@ -319,6 +321,23 @@ const MyProgressEditorialView: React.FC = () => {
   //   - Registration is still open for new sign-ups.
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
+
+  // Top Coach Launch Event — free event on May 24, 2026. While the
+  // event hasn't passed, this card takes precedence over the CAAF
+  // promo because it's the nearest live event we want students to act
+  // on. After May 24 it disappears and CAAF (or the empty state) takes
+  // back the slot.
+  const LAUNCH_EVENT_DATE_ISO = '2026-05-24T11:00:00+05:00';
+  const launchEventVisible = useLaunchEventVisible();
+  const { data: launchMe, isLoading: launchMeLoading } =
+    useGetTopcoachLaunchEventMeQuery(undefined, { skip: !launchEventVisible });
+  const launchRegistration = launchMe?.registration ?? null;
+  const launchEventPast =
+    Date.now() > new Date(LAUNCH_EVENT_DATE_ISO).getTime();
+  // Gated by the master Launch-Event flag: while it's private, only
+  // SuperAdmin / Owner see the promo card (everyone else falls back to
+  // the existing CAAF / empty-state branches).
+  const showLaunchPromo = launchEventVisible && !launchEventPast;
 
   /**
    * Dynamic AI recommendations derived from the user's actual data.
@@ -761,15 +780,68 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </article>
 
-        {/* Top Coach Presents — pulls from the live CAAF Forum API.
-            State branches by application status:
-              • no application + open  → "Reserve your spot" + Register
-              • pending_payment        → "Pending payment" + Pay $X
-              • paid                   → "Registered" + View
-              • cancelled              → re-apply prompt
-            When there's no active event (registration closed, no
-            existing application) we render a quiet empty card instead. */}
-        {!showCaafPromo ? (
+        {/* Top Coach Presents — prefers the Launch Event while it's
+            upcoming (May 24, 2026), then falls back to the CAAF promo,
+            then to the quiet empty card. */}
+        {showLaunchPromo ? (
+          <article className="myprog__card myprog__promo">
+            <div className="myprog__promo-yr">2026</div>
+            <div className="myprog__promo-eyebrow">Top Coach presents</div>
+            <h3 className="myprog__promo-title">Top 100 Uni Launch Event</h3>
+            <div className="myprog__promo-meta">Sun, May 24 · 11:00 AM · Tashkent</div>
+            <p className="myprog__promo-desc">
+              Free offline launch at the Youth Affairs Agency of
+              Uzbekistan. Networking, real conversations, and the live
+              launch — apply by May 22.
+            </p>
+            <div className="myprog__promo-foot">
+              {launchRegistration?.status === 'confirmed' ? (
+                <>
+                  <div className="myprog__promo-foot-status">
+                    <span className="myprog__promo-tag myprog__promo-tag--paid">
+                      Registered
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="myprog__btn myprog__promo-cta"
+                    onClick={() => navigate('/events/topcoach-launch-event')}
+                  >
+                    View details
+                  </button>
+                </>
+              ) : launchRegistration?.status === 'cancelled' ? (
+                <>
+                  <div className="myprog__promo-foot-status">
+                    <span className="myprog__promo-tag myprog__promo-tag--cancelled">
+                      Cancelled
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="myprog__btn myprog__promo-cta"
+                    onClick={() => navigate('/events/topcoach-launch-event')}
+                  >
+                    Re-register
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="myprog__promo-foot-status">
+                    {launchMeLoading ? 'Loading…' : 'Free · limited seats'}
+                  </div>
+                  <button
+                    type="button"
+                    className="myprog__btn myprog__btn--primary myprog__promo-cta"
+                    onClick={() => navigate('/events/topcoach-launch-event')}
+                  >
+                    Register now
+                  </button>
+                </>
+              )}
+            </div>
+          </article>
+        ) : !showCaafPromo ? (
           <article className="myprog__card myprog__promo myprog__promo--empty">
             <div className="myprog__promo-empty-eyebrow">Top Coach presents</div>
             <div className="myprog__promo-empty-icon">📅</div>

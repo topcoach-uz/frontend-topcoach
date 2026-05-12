@@ -179,7 +179,7 @@ export default function LandingPage() {
       <CareerAssessmentSection />
 
       {/* Pricing block removed — Phase 2 will rebuild it against the new
-          Community plans (USD canonical, $11.99/mo and $129.99/yr). */}
+          Community plans (USD canonical, $11.99/mo and $99.99/yr). */}
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}

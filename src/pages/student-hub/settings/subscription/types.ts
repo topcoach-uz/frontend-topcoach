@@ -39,7 +39,7 @@ export type PlanDto = {
   priceUsd: number;
   /** Auto-synced UZS sibling, sourced from the FX-rate table. */
   priceUzs: number;
-  /** Optional sash on the card (e.g. "Save 10%"). */
+  /** Optional sash on the card (e.g. "SAVE 30%"). */
   saveBadge: string | null;
   /** Tag line shown below the price (e.g. "$10.83/month equivalent"). */
   subline: string | null;

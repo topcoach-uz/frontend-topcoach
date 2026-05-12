@@ -92,7 +92,24 @@ export default function AdminConsoleEventsPage() {
       <p className="ac-page-lead">Events catalog, registrations, and CA Admissions Forum administration.</p>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} md={12}>
+        <Col xs={24} md={8}>
+          <Card bordered={false} className="ac-panel" title="Top Coach Launch Event">
+            <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+              Free event · May 24, 2026 · Tashkent. Browse registrations,
+              search by name / email, export the attendee list.
+            </Paragraph>
+            <Button
+              type="primary"
+              size="large"
+              block
+              icon={<Sparkles size={18} />}
+              onClick={() => navigate('/new-admin/events/topcoach-launch-event')}
+            >
+              Open launch-event admin
+            </Button>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
           <Card bordered={false} className="ac-panel" title="CA Admissions Forum">
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
               Review registrations, manage payments, export applicant lists.
@@ -108,7 +125,7 @@ export default function AdminConsoleEventsPage() {
             </Button>
           </Card>
         </Col>
-        <Col xs={24} md={12}>
+        <Col xs={24} md={8}>
           <Card bordered={false} className="ac-panel" title="Quick stats">
             <Space direction="vertical" size="small" style={{ width: '100%' }}>
               <div>

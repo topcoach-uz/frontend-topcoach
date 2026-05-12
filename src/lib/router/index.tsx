@@ -44,6 +44,9 @@ const EventsPageLazy = lazy(() => import("src/pages/events"));
 const CentralAsianAdmissionsForumPageLazy = lazy(
   () => import("src/pages/events/central-asian-admissions-forum")
 );
+const TopcoachLaunchEventPageLazy = lazy(
+  () => import("src/pages/events/topcoach-launch-event")
+);
 const EventDetailsPageLazy = lazy(
   () => import("src/pages/events/detail")
 );
@@ -133,6 +136,9 @@ const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/
 const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
 const AdminConsoleMajorMatchLazy = lazy(() => import("src/pages/admin/console/pages/MajorMatchPage"));
 const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
+const TopcoachLaunchEventAdminRouteLazy = lazy(
+  () => import("src/pages/admin/console/TopcoachLaunchEventAdminRoute"),
+);
 const AdminProgramManagementLazy = lazy(() => import("src/pages/admin/console/pages/ProgramManagementPage"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
@@ -234,6 +240,10 @@ function RouterProvider() {
                 <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
                 <Route path="events" element={<AdminConsoleEventsLazy />} />
                 <Route path="events/caaf" element={<CaafAdminRouteLazy />} />
+                <Route
+                  path="events/topcoach-launch-event"
+                  element={<TopcoachLaunchEventAdminRouteLazy />}
+                />
 
                 {/* Insights + governance */}
                 <Route path="insights" element={<AdminConsoleInsightsLazy />} />
@@ -291,6 +301,14 @@ function RouterProvider() {
                 element={
                   <Suspense fallback={<Loader height="70vh" />}>
                     <CentralAsianAdmissionsForumPageLazy />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/events/topcoach-launch-event"
+                element={
+                  <Suspense fallback={<Loader height="70vh" />}>
+                    <TopcoachLaunchEventPageLazy />
                   </Suspense>
                 }
               />
