@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import {
   useCancelSubscriptionMutation,
-  useChangeSubscriptionPlanMutation,
   useReactivateSubscriptionMutation,
 } from 'src/app/services/subscription';
 import type {
@@ -74,8 +73,6 @@ export default function CurrentPlanCard({
   const [doCancel, { isLoading: cancelling }] = useCancelSubscriptionMutation();
   const [doReactivate, { isLoading: reactivating }] =
     useReactivateSubscriptionMutation();
-  const [doChangePlan, { isLoading: undoingChange }] =
-    useChangeSubscriptionPlanMutation();
 
   const periodLabel =
     plan.period === 'yearly'
@@ -116,6 +113,12 @@ export default function CurrentPlanCard({
 
   const periodEndDate = currentPeriodEnd ? formatLongDate(currentPeriodEnd) : '—';
 
+  // First-charge amount = the price the cron will actually attempt on
+  // trial-end day. When a plan switch is queued, that's the scheduled
+  // plan's price, not the current plan's. Showing $11.99 here while a
+  // Yearly switch is pending was the bug that triggered support tickets.
+  const firstChargeUsd = (scheduledPlan ?? plan).priceUsd;
+
   let metaLine: string;
   if (effectiveStatus === 'trial' && trialEndsAt) {
     metaLine = t(
@@ -123,7 +126,7 @@ export default function CurrentPlanCard({
       'Trial ends {{date}} · first charge ${{price}}',
       {
         date: formatLongDateTime(trialEndsAt),
-        price: plan.priceUsd.toFixed(2),
+        price: firstChargeUsd.toFixed(2),
       },
     );
   } else if (effectiveStatus === 'pastDue' && nextRetryAt) {
@@ -190,37 +193,6 @@ export default function CurrentPlanCard({
       );
   };
 
-  /**
-   * "Undo" the queued plan change by scheduling another change back to
-   * the currently-live plan. Backend semantics: most-recent
-   * `PLAN_CHANGED` event wins, and our DTO suppresses the banner once
-   * `scheduledPlan.toPlanId === sub.plan.id` again.
-   */
-  const handleUndoScheduledChange = async () => {
-    try {
-      await doChangePlan({
-        subscriptionId: id,
-        newPlanId: plan.id,
-      }).unwrap();
-      message.success(
-        t(
-          'settings.subscription.toast.planChangeUndone',
-          "Scheduled plan change undone — you'll stay on your current plan.",
-        ),
-      );
-    } catch (err) {
-      message.error(
-        extractError(
-          err,
-          t(
-            'settings.subscription.toast.planChangeUndoFailed',
-            "Couldn't undo the scheduled change.",
-          ),
-        ),
-      );
-    }
-  };
-
   const scheduledPlanLabel = scheduledPlan
     ? `${planDisplayName(scheduledPlan, i18n.language)} · ${
         scheduledPlan.period === 'yearly'
@@ -258,19 +230,11 @@ export default function CurrentPlanCard({
             <span className={styles.scheduledBannerNote}>
               {t(
                 'settings.subscription.scheduledChange.note',
-                "You'll be charged ${{price}} on that date.",
+                "You'll be charged ${{price}} on that date. To revert, pick your current plan in the picker below.",
                 { price: scheduledPlan.priceUsd.toFixed(2) },
               )}
             </span>
           </div>
-          <Button
-            className={styles.scheduledUndo}
-            type="link"
-            onClick={handleUndoScheduledChange}
-            loading={undoingChange}
-          >
-            {t('settings.subscription.scheduledChange.undo', 'Undo')}
-          </Button>
         </div>
       )}
 

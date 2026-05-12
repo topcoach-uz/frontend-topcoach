@@ -9,8 +9,15 @@ import styles from './AvailablePlans.module.scss';
 export interface AvailablePlansProps {
   /** Plans to render side-by-side (Monthly + Yearly). */
   plans: PlanDto[];
-  /** Plan id of the user's current plan, if any (drives the radio dot). */
+  /** Plan id of the user's live plan (used for the "switching back" path). */
   currentPlanId?: string;
+  /**
+   * Plan id queued for the next billing cycle, if any. When set, this
+   * becomes the *effective* current plan in the picker — its card shows
+   * "Current plan" and is non-clickable; the other card's CTA reverts to
+   * the live plan (an undo flow handled upstream).
+   */
+  scheduledPlanId?: string;
   /** Header context: 'choose' for empty state, 'switch' when already subscribed. */
   variant?: 'choose' | 'switch';
   /**
@@ -38,13 +45,26 @@ const planDisplayName = (plan: PlanDto, lang: string): string => {
 export default function AvailablePlans({
   plans,
   currentPlanId,
+  scheduledPlanId,
   variant = 'choose',
   onSelectPlan,
 }: AvailablePlansProps) {
   const { t, i18n } = useTranslation();
+
+  // The picker should reflect the plan the user has *chosen* — not just
+  // what's live today. While a switch is queued, the scheduled plan is
+  // the user's effective choice; the other card's CTA reverts that
+  // choice (handled by `handleSelectPlan` upstream — it detects the
+  // same-as-live target and forwards as an undo).
+  const effectiveCurrentId = scheduledPlanId ?? currentPlanId;
+  const hasScheduledSwitch =
+    !!scheduledPlanId &&
+    !!currentPlanId &&
+    scheduledPlanId !== currentPlanId;
+
   const [selected, setSelected] = useState<string>(
     () =>
-      currentPlanId ??
+      effectiveCurrentId ??
       plans.find((p) => p.period === 'yearly')?.id ??
       plans[0]?.id ??
       '',
@@ -53,8 +73,17 @@ export default function AvailablePlans({
   if (plans.length === 0) return null;
 
   const ctaLabel = (plan: PlanDto): string => {
-    if (currentPlanId === plan.id) {
+    if (effectiveCurrentId === plan.id) {
+      // The scheduled plan masquerades as "Current plan" (it's the
+      // user's chosen plan from this point forward).
       return t('settings.subscription.cta.currentPlan', 'Current plan');
+    }
+    if (hasScheduledSwitch && currentPlanId === plan.id) {
+      // Other card during a scheduled switch = undo affordance.
+      return t(
+        'settings.subscription.cta.undoSwitchTo',
+        'Switch back to this plan',
+      );
     }
     if (variant === 'switch') {
       return t('settings.subscription.cta.switchTo', 'Switch to this plan');
@@ -70,7 +99,10 @@ export default function AvailablePlans({
     <div className={styles.cards}>
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
-        const isCurrent = currentPlanId === plan.id;
+        // "isCurrent" drives the disabled state + the visual highlight.
+        // We mark the *effective* current (scheduled when set, else live)
+        // so the picker is consistent with the status block.
+        const isCurrent = effectiveCurrentId === plan.id;
         const rawFeatures = plan.features;
         const features = Array.isArray(rawFeatures)
           ? rawFeatures

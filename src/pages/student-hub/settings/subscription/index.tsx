@@ -220,10 +220,19 @@ export default function SubscriptionTab() {
 
     // Active subscription? Open the confirm modal instead of firing
     // change-plan immediately. The actual call lives in
-    // `confirmScheduledPlanChange`. Same-plan clicks are filtered by the
-    // disabled CTA on the card itself, but we double-guard here.
+    // `confirmScheduledPlanChange`.
+    //
+    // Effective-plan rule: while a switch is queued, the *scheduled*
+    // plan is what the user has chosen — that's what the picker labels
+    // "Current plan" and what the status banner reads. Clicking the
+    // other card during a scheduled switch is therefore an UNDO (the
+    // target equals the live plan id; the backend accepts same-plan
+    // when there's a pending change). Clicking the effective-current
+    // card (the scheduled one) is a no-op.
     if (subscription) {
-      if (subscription.plan.id === plan.id) return;
+      const effectiveCurrentId =
+        subscription.scheduledPlan?.id ?? subscription.plan.id;
+      if (effectiveCurrentId === plan.id) return;
       setPlanChangeConfirm(plan);
       return;
     }
@@ -260,6 +269,9 @@ export default function SubscriptionTab() {
    */
   const confirmScheduledPlanChange = async () => {
     if (!subscription || !planChangeConfirm) return;
+    const isUndoFlow =
+      !!subscription.scheduledPlan &&
+      planChangeConfirm.id === subscription.plan.id;
     setPlanChanging(true);
     try {
       await changePlan({
@@ -270,11 +282,16 @@ export default function SubscriptionTab() {
         ? formatLongDate(subscription.currentPeriodEnd)
         : '—';
       message.success(
-        t(
-          'settings.subscription.toast.planChangeScheduled',
-          'Plan change scheduled for {{date}}.',
-          { date: effective },
-        ),
+        isUndoFlow
+          ? t(
+              'settings.subscription.toast.planChangeUndone',
+              "Scheduled switch cancelled — you'll stay on your current plan.",
+            )
+          : t(
+              'settings.subscription.toast.planChangeScheduled',
+              'Plan change scheduled for {{date}}.',
+              { date: effective },
+            ),
       );
       setPlanChangeConfirm(null);
     } catch (err) {
@@ -380,6 +397,7 @@ export default function SubscriptionTab() {
           <AvailablePlans
             plans={plans}
             currentPlanId={subscription?.plan.id}
+            scheduledPlanId={subscription?.scheduledPlan?.id}
             variant={isEmpty ? 'choose' : 'switch'}
             onSelectPlan={handleSelectPlan}
           />
@@ -453,52 +471,109 @@ export default function SubscriptionTab() {
 
       {/* Confirm-before-change modal. Reached from the AvailablePlans
           picker only when the user already has a live subscription —
-          the empty-state "Start trial" path uses a different flow. */}
-      <Modal
-        open={!!planChangeConfirm}
-        title={t(
-          'settings.subscription.confirmChange.title',
-          'Switch to {{plan}}?',
-          {
-            plan: planChangeConfirm
-              ? `${planChangeConfirm.displayName.en} · ${
-                  planChangeConfirm.period === 'yearly' ? 'Yearly' : 'Monthly'
-                }`
-              : '',
-          },
-        )}
-        okText={t('settings.subscription.confirmChange.ok', 'Confirm switch')}
-        cancelText={t('settings.subscription.confirmChange.cancel', 'Keep current plan')}
-        okButtonProps={{ loading: planChanging, type: 'primary' }}
-        onOk={confirmScheduledPlanChange}
-        onCancel={() => setPlanChangeConfirm(null)}
-        destroyOnClose
-      >
-        {planChangeConfirm && subscription && (
-          <div style={{ lineHeight: 1.55, color: '#4b463f' }}>
-            <p style={{ marginBottom: 10 }}>
-              {t(
-                'settings.subscription.confirmChange.body',
-                'You will stay on your current plan until {{date}}. On that date your subscription will switch to {{plan}} ($​{{price}}/{{period}}) and you will be charged ${{price}} USD.',
-                {
-                  date: subscription.currentPeriodEnd
-                    ? formatLongDate(subscription.currentPeriodEnd)
-                    : '—',
-                  plan: planChangeConfirm.displayName.en,
-                  price: planChangeConfirm.priceUsd.toFixed(2),
-                  period: planChangeConfirm.period === 'yearly' ? 'year' : 'month',
-                },
-              )}
-            </p>
-            <p style={{ color: '#6b6258', fontSize: 13, margin: 0 }}>
-              {t(
-                'settings.subscription.confirmChange.note',
-                "You can undo this any time before the change takes effect.",
-              )}
-            </p>
-          </div>
-        )}
-      </Modal>
+          the empty-state "Start trial" path uses a different flow.
+          Copy adapts: clicking the LIVE plan while a switch is queued
+          is an UNDO (revert the scheduled switch); clicking any other
+          plan is a NEW switch. */}
+      {(() => {
+        const isUndoFlow =
+          !!subscription?.scheduledPlan &&
+          !!planChangeConfirm &&
+          planChangeConfirm.id === subscription.plan.id;
+        const periodEndLabel = subscription?.currentPeriodEnd
+          ? formatLongDate(subscription.currentPeriodEnd)
+          : '—';
+        return (
+          <Modal
+            open={!!planChangeConfirm}
+            title={
+              isUndoFlow
+                ? t(
+                    'settings.subscription.confirmChange.undoTitle',
+                    'Cancel the scheduled switch?',
+                  )
+                : t(
+                    'settings.subscription.confirmChange.title',
+                    'Switch to {{plan}}?',
+                    {
+                      plan: planChangeConfirm
+                        ? `${planChangeConfirm.displayName.en} · ${
+                            planChangeConfirm.period === 'yearly'
+                              ? 'Yearly'
+                              : 'Monthly'
+                          }`
+                        : '',
+                    },
+                  )
+            }
+            okText={
+              isUndoFlow
+                ? t(
+                    'settings.subscription.confirmChange.undoOk',
+                    'Cancel the switch',
+                  )
+                : t('settings.subscription.confirmChange.ok', 'Confirm switch')
+            }
+            cancelText={
+              isUndoFlow
+                ? t(
+                    'settings.subscription.confirmChange.undoCancel',
+                    'Keep the scheduled switch',
+                  )
+                : t(
+                    'settings.subscription.confirmChange.cancel',
+                    'Keep current plan',
+                  )
+            }
+            okButtonProps={{ loading: planChanging, type: 'primary' }}
+            onOk={confirmScheduledPlanChange}
+            onCancel={() => setPlanChangeConfirm(null)}
+            destroyOnClose
+          >
+            {planChangeConfirm && subscription && (
+              <div style={{ lineHeight: 1.55, color: '#4b463f' }}>
+                <p style={{ marginBottom: 10 }}>
+                  {isUndoFlow && subscription.scheduledPlan
+                    ? t(
+                        'settings.subscription.confirmChange.undoBody',
+                        'This cancels your scheduled switch to {{from}}. On {{date}} you will be charged ${{price}} and continue on {{to}}.',
+                        {
+                          from: subscription.scheduledPlan.displayName.en,
+                          to: planChangeConfirm.displayName.en,
+                          date: periodEndLabel,
+                          price: planChangeConfirm.priceUsd.toFixed(2),
+                        },
+                      )
+                    : t(
+                        'settings.subscription.confirmChange.body',
+                        'You will stay on your current plan until {{date}}. On that date your subscription will switch to {{plan}} (${{price}}/{{period}}) and you will be charged ${{price}} USD.',
+                        {
+                          date: periodEndLabel,
+                          plan: planChangeConfirm.displayName.en,
+                          price: planChangeConfirm.priceUsd.toFixed(2),
+                          period:
+                            planChangeConfirm.period === 'yearly'
+                              ? 'year'
+                              : 'month',
+                        },
+                      )}
+                </p>
+                <p style={{ color: '#6b6258', fontSize: 13, margin: 0 }}>
+                  {isUndoFlow
+                    ? t(
+                        'settings.subscription.confirmChange.undoNote',
+                        'You can switch to a different plan again at any time.',
+                      )
+                    : t(
+                        'settings.subscription.confirmChange.note',
+                        'You can undo this any time before the change takes effect.',
+                      )}
+                </p>
+              </div>
+            )}
+          </Modal>
+        );
+      })()}
     </div>
   );
 }
