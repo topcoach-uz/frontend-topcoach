@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Input, Modal, message } from 'antd';
-import { Check } from 'lucide-react';
+import { Alert, Button, Input, Modal, Spin, message } from 'antd';
+import { ArrowLeft, Check, CreditCard, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -20,6 +20,7 @@ export interface AddCardModalProps {
 }
 
 type Step = 'form' | 'otp' | 'done';
+type CardFamily = 'click' | 'atmos';
 
 const RESEND_COOLDOWN_S = 60;
 
@@ -47,6 +48,10 @@ export default function AddCardModal({
   const { t } = useTranslation();
 
   const [step, setStep] = useState<Step>('form');
+  // Which card family the user picked. `null` = the chooser screen is
+  // showing. Once chosen we render only the fields that flow actually
+  // needs (no PAN/expiry inputs for the Atmos hosted flow).
+  const [family, setFamily] = useState<CardFamily | null>(null);
   const [pan, setPan] = useState('');
   const [expiry, setExpiry] = useState(''); // displayed MM/YY
   const [otp, setOtp] = useState('');
@@ -67,6 +72,7 @@ export default function AddCardModal({
   useEffect(() => {
     if (!open) {
       setStep('form');
+      setFamily(null);
       setPan('');
       setExpiry('');
       setOtp('');
@@ -86,9 +92,50 @@ export default function AddCardModal({
 
   const cleanPan = useMemo(() => pan.replace(/\s+/g, ''), [pan]);
   const expiryYyMm = useMemo(() => mmYyToYyMm(expiry), [expiry]);
-  const provider = useMemo(() => pickProvider(cleanPan), [cleanPan]);
+  /** BIN-derived provider — only consulted in the Click branch to warn
+   *  the user if they typed a Visa/MC PAN into the Uzcard/Humo flow. */
+  const detectedProvider = useMemo(() => pickProvider(cleanPan), [cleanPan]);
+  /** Provider for the actual submission. Set by the family chooser. */
+  const provider = family;
+  /**
+   * Form validity per family:
+   *   Click  — 16-digit PAN + MM/YY expiry + BIN matches Click's accepted networks
+   *   Atmos  — no fields needed; the button alone is the action
+   */
   const formValid =
-    cleanPan.length === 16 && expiryYyMm.length === 4 && provider !== null;
+    family === 'atmos' ||
+    (family === 'click' &&
+      cleanPan.length === 16 &&
+      expiryYyMm.length === 4 &&
+      detectedProvider === 'click');
+
+  /**
+   * Fires the Atmos hosted-bind init and redirects the browser to the
+   * returned URL. Used both from the chooser tile (zero clicks before
+   * the redirect) and as a fallback if the Click flow ever needs to
+   * hand off to Atmos.
+   */
+  const goToAtmos = async () => {
+    setErrorMsg(null);
+    try {
+      const res = await doAtmosCheckoutInit().unwrap();
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
+      throw new Error('Missing redirect URL from server');
+    } catch (err) {
+      setErrorMsg(
+        extractError(
+          err,
+          t(
+            'settings.subscription.addCard.genericError',
+            'Something went wrong. Please try again.',
+          ),
+        ),
+      );
+    }
+  };
 
   const submitForm = async () => {
     if (!formValid || !provider) {
@@ -102,36 +149,10 @@ export default function AddCardModal({
     }
     setErrorMsg(null);
 
-    // Visa / Mastercard (and Uzcard-MC co-brand) go through Atmos's
-    // hosted checkout-bind page. There is no in-modal OTP step — the
-    // PAN/CVC are entered on Atmos's own page, and after success they
-    // redirect the user back to ?section=account&target=settings&tab=subscription
-    // with the new card already saved. The PAN the user typed here is
-    // a UX hint only (so the BIN router can decide which flow to use)
-    // and is NOT sent to our backend.
-    if (provider === 'atmos') {
-      try {
-        const res = await doAtmosCheckoutInit().unwrap();
-        if (res?.url) {
-          window.location.href = res.url;
-          return;
-        }
-        throw new Error('Missing redirect URL from server');
-      } catch (err) {
-        setErrorMsg(
-          extractError(
-            err,
-            t(
-              'settings.subscription.addCard.genericError',
-              'Something went wrong. Please try again.',
-            ),
-          ),
-        );
-      }
-      return;
-    }
-
-    // Click (Uzcard / Humo) — keep the legacy in-modal OTP flow.
+    // Atmos flow doesn't go through this submit handler anymore — it's
+    // wired directly to `goToAtmos` from the chooser tile so the user
+    // gets a 1-click redirect with no intermediate "Continue" screen.
+    // This handler is the Click (Uzcard / Humo) in-modal OTP path.
     try {
       const res = await doInit({
         provider,
@@ -255,18 +276,100 @@ export default function AddCardModal({
         />
       </div>
 
-      {step === 'form' && (
+      {step === 'form' && family === null && (
         <>
           <div className={styles.eyebrow}>
             {t('settings.subscription.addCard.eyebrow', 'Add a card')}
           </div>
           <h3 className={styles.title}>
-            {t('settings.subscription.addCard.formTitle', 'Card details')}
+            {t(
+              'settings.subscription.addCard.chooseTitle',
+              'Choose your card type',
+            )}
           </h3>
           <p className={styles.subtitle}>
             {t(
-              'settings.subscription.addCard.formSubtitle',
-              'We will send a confirmation code to the phone tied to your card. Uzcard, Humo, Visa, and Mastercard are accepted.',
+              'settings.subscription.addCard.chooseSubtitle',
+              "Uzcard / Humo binds inside this page. Visa / Mastercard binds securely on Atmos's page — we'll redirect you there.",
+            )}
+          </p>
+
+          {errorMsg && (
+            <Alert
+              type="error"
+              showIcon
+              message={errorMsg}
+              className={styles.errorAlert}
+            />
+          )}
+
+          <div className={styles.familyChooser}>
+            <button
+              type="button"
+              className={styles.familyOption}
+              disabled={atmosRedirectLoading}
+              onClick={() => {
+                setErrorMsg(null);
+                setFamily('click');
+              }}
+            >
+              <span className={styles.familyOption__icon}>
+                <CreditCard size={20} strokeWidth={2} />
+              </span>
+              <span className={styles.familyOption__title}>
+                {t('settings.subscription.addCard.uzcardHumo', 'Uzcard / Humo')}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={styles.familyOption}
+              disabled={atmosRedirectLoading}
+              onClick={goToAtmos}
+            >
+              <span className={styles.familyOption__icon}>
+                {atmosRedirectLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  <ShieldCheck size={20} strokeWidth={2} />
+                )}
+              </span>
+              <span className={styles.familyOption__title}>
+                {t(
+                  'settings.subscription.addCard.visaMastercard',
+                  'Visa / Mastercard',
+                )}
+              </span>
+            </button>
+          </div>
+
+          <div className={styles.footer}>
+            <Button
+              className={styles.btnGhost}
+              onClick={onClose}
+              disabled={atmosRedirectLoading}
+            >
+              {t('common.cancel', 'Cancel')}
+            </Button>
+          </div>
+        </>
+      )}
+
+      {step === 'form' && family === 'click' && (
+        <>
+          <div className={styles.eyebrow}>
+            {t('settings.subscription.addCard.eyebrow', 'Add a card')}
+          </div>
+          <h3 className={styles.title}>
+            {t(
+              'settings.subscription.addCard.clickTitle',
+              'Uzcard / Humo card details',
+            )}
+          </h3>
+          <p className={styles.subtitle}>
+            {t(
+              'settings.subscription.addCard.clickSubtitle',
+              "We'll send a confirmation code to the phone tied to your card.",
             )}
           </p>
 
@@ -301,14 +404,39 @@ export default function AddCardModal({
                   inputMode="numeric"
                   autoComplete="cc-number"
                 />
-                {cleanPan.length === 16 && provider === null && (
+                {cleanPan.length === 16 && detectedProvider === 'atmos' && (
                   <div className={styles.binHint}>
                     {t(
-                      'settings.subscription.addCard.unsupportedBin',
-                      'This card type is not supported. Please use a Uzcard, Humo, Visa, or Mastercard.',
+                      'settings.subscription.addCard.visaInClickFlow',
+                      'This looks like a Visa / Mastercard. ',
                     )}
+                    <button
+                      type="button"
+                      className={styles.binHintLink}
+                      onClick={() => {
+                        setPan('');
+                        setExpiry('');
+                        setErrorMsg(null);
+                        setFamily('atmos');
+                      }}
+                    >
+                      {t(
+                        'settings.subscription.addCard.switchToAtmos',
+                        'Switch to Visa / Mastercard',
+                      )}
+                    </button>
                   </div>
                 )}
+                {cleanPan.length === 16 &&
+                  detectedProvider !== 'click' &&
+                  detectedProvider !== 'atmos' && (
+                    <div className={styles.binHint}>
+                      {t(
+                        'settings.subscription.addCard.unsupportedBin',
+                        'This card type is not supported. Please use a Uzcard, Humo, Visa, or Mastercard.',
+                      )}
+                    </div>
+                  )}
               </div>
               <div className={styles.formRowFull}>
                 <label className={styles.fieldLabel}>
@@ -327,26 +455,29 @@ export default function AddCardModal({
           </div>
 
           <div className={styles.footer}>
-            <Button className={styles.btnGhost} onClick={onClose}>
-              {t('common.cancel', 'Cancel')}
+            <Button
+              className={styles.btnGhost}
+              onClick={() => {
+                setErrorMsg(null);
+                setFamily(null);
+              }}
+              icon={<ArrowLeft size={14} />}
+            >
+              {t('common.back', 'Back')}
             </Button>
             <Button
               type="primary"
               className={styles.btnFilled}
               onClick={submitForm}
-              loading={initLoading || atmosRedirectLoading}
+              loading={initLoading}
               disabled={!formValid}
             >
-              {provider === 'atmos'
-                ? t(
-                    'settings.subscription.addCard.continueAtmos',
-                    'Continue on Atmos',
-                  )
-                : t('settings.subscription.addCard.sendCode', 'Send code')}
+              {t('settings.subscription.addCard.sendCode', 'Send code')}
             </Button>
           </div>
         </>
       )}
+
 
       {step === 'otp' && (
         <>

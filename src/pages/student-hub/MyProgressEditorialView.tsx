@@ -29,6 +29,8 @@ import {
   LineChart,
   FileUp,
   MoreVertical,
+  Sparkles,
+  Lock,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
@@ -37,6 +39,7 @@ import dayjs from 'dayjs';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
+import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import {
   useGetEnrollmentStatusQuery,
   useGetUserProgressQuery,
@@ -86,6 +89,7 @@ const MyProgressEditorialView: React.FC = () => {
   const navigate = useNavigate();
   const { data: me } = useGetMeQuery(undefined);
   const profile = useTypedSelector((s) => s.auth.profile);
+  const { isCommunityEnrolled } = useJourneyExperience();
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -574,6 +578,44 @@ const MyProgressEditorialView: React.FC = () => {
           )}
         </article>
       </section>
+
+      {/* Community upsell — only renders for users who haven't joined
+          Community yet. Compact horizontal strip: pitch on the left,
+          brand-red CTA on the right. */}
+      {!isCommunityEnrolled && (
+        <section className="myprog__tracks-section">
+          <article className="myprog__card myprog__community-upsell">
+            <div className="myprog__community-upsell__pitch">
+              <span className="myprog__community-upsell__badge">
+                <Lock size={12} strokeWidth={2.5} />
+                Community
+              </span>
+              <h2 className="myprog__community-upsell__title">
+                Get the full TopCoach Journey with Community.
+              </h2>
+              <p className="myprog__community-upsell__desc">
+                SAT prep, AI Major Match, Research Prep, mentors &amp; study
+                buddies — 7-day free trial, cancel anytime.
+              </p>
+            </div>
+
+            <div className="myprog__community-upsell__action">
+              <button
+                type="button"
+                className="myprog__btn myprog__btn--primary"
+                onClick={() =>
+                  navigate(
+                    '/student-hub?section=account&target=settings&tab=subscription',
+                  )
+                }
+              >
+                <Sparkles size={13} />
+                Unlock Community
+              </button>
+            </div>
+          </article>
+        </section>
+      )}
 
 
       {/* Bottom row: Mentor sessions + Top Coach promo + AI recs */}

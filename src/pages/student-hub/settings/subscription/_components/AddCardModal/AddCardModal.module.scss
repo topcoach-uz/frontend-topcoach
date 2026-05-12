@@ -78,6 +78,97 @@ $mod-success-fg: #2d6a4f;
   color: #b91c1c;
 }
 
+.binHintLink {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: #7b1f2f;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: #5d1622;
+  }
+}
+
+/* ── Network chooser (step 1) ─────────────────────────────────────── */
+
+.familyChooser {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0 4px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.familyOption {
+  appearance: none;
+  text-align: left;
+  background: #fbfaf6;
+  border: 1px solid #e5e3da;
+  border-radius: 14px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease,
+    box-shadow 0.18s ease, transform 0.12s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(123, 31, 47, 0.45);
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(123, 31, 47, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.familyOption__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(123, 31, 47, 0.08);
+  color: #7b1f2f;
+  margin-bottom: 4px;
+}
+
+.familyOption__title {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #1c1a17;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Disabled state on the chooser tiles while the Atmos redirect is
+   in-flight — keeps users from double-clicking and queueing two
+   inits. */
+.familyOption {
+  &:disabled {
+    cursor: progress;
+    opacity: 0.72;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 /* Step 2: OTP */
 .otpHint {
   text-align: center;

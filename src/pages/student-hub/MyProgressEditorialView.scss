@@ -487,6 +487,82 @@
     margin-right: 1px;
   }
 
+  /* ── Community upsell (non-Community users only) ──────────────── */
+  /* Compact horizontal strip — pitch on the left, CTA on the right.
+     Collapses to a stack only on narrow phones. */
+  &__community-upsell {
+    padding: 16px 22px;
+    overflow: hidden;
+    background:
+      linear-gradient(
+        140deg,
+        rgba(255, 252, 247, 1) 0%,
+        rgba(251, 233, 236, 0.55) 100%
+      );
+    border: 1px solid #e5e3da;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    display: flex;
+    align-items: center;
+    gap: 22px;
+
+    @media (max-width: 700px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+  }
+
+  &__community-upsell__pitch {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__community-upsell__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    align-self: flex-start;
+    background: rgba(123, 31, 47, 0.08);
+    color: #7b1f2f;
+    border: 1px solid rgba(123, 31, 47, 0.18);
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+
+    svg { color: #7b1f2f; }
+  }
+
+  &__community-upsell__title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #1c1a17;
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  &__community-upsell__desc {
+    font-size: 0.82rem;
+    color: #4b463f;
+    line-height: 1.45;
+    margin: 0;
+    max-width: 78ch;
+  }
+
+  &__community-upsell__action {
+    flex: 0 0 auto;
+
+    .myprog__btn--primary { white-space: nowrap; }
+  }
+
   /* ── Bottom grid (3 cards) ────────────────────────────────────── */
   &__btmgrid {
     display: grid;
