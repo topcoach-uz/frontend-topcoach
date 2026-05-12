@@ -28,6 +28,11 @@ import {
 import { useAdminConsole } from './AdminConsoleContext';
 import './admin-console-tokens.scss';
 import './AdminConsoleLayout.scss';
+// Loads the dark-theme overrides for the embedded TopCoach Management
+// view + the Grant Access modal (rendered into a body portal). Without
+// this, the modal falls back to AntD's default light styles on top of
+// the dark admin canvas, which is why the text looked washed-out grey.
+import './admin-console-integrated-management.scss';
 import { getAdminConsoleAntdTheme } from './adminConsoleThemeConfig';
 import { initialsFromName } from './utils';
 

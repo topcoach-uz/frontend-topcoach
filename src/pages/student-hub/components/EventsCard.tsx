@@ -12,7 +12,10 @@ import EventCardComp from '../../../pages/home/_components/events/_component';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useNavigate } from 'react-router-dom';
 import { useGetCaafForumApplicationsMeQuery } from '../../../app/services/caafForumApi';
-import { CAAF_FORUM_CARD_IMAGE } from '../../events/central-asian-admissions-forum/constants';
+import {
+  CAAF_FORUM_CARD_IMAGE,
+  isPastCaafRegistrationDeadline,
+} from '../../events/central-asian-admissions-forum/constants';
 import './EventsCard.scss';
 
 interface EventsCardProps {
@@ -35,19 +38,31 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   };
 
   const caafApplication = caafMe?.application;
-  const caafAsEvent = caafApplication
-    ? [
-        {
-          id: `caaf-${caafApplication.id}`,
-          status: mapCaafStatus(caafApplication.status),
-          caafStatus: caafApplication.status,
-          isCaaf: true,
-          title: 'Central Asian Admissions Forum 2026',
-          date: caafApplication.submittedAt,
-          img: CAAF_FORUM_CARD_IMAGE,
-        },
-      ]
-    : [];
+
+  // Suppress the CAAF card once the forum date has passed AND the user
+  // never completed payment. Showing a stale "Pending payment" reminder
+  // for an event that already happened just confuses students and gives
+  // them a checkout flow that's been closed. Paid / refunded / cancelled
+  // applications still show (paid = historical record; refunded /
+  // cancelled = explicit terminal state worth surfacing).
+  const hideStaleCaaf =
+    caafApplication?.status === 'pending_payment' &&
+    isPastCaafRegistrationDeadline();
+
+  const caafAsEvent =
+    caafApplication && !hideStaleCaaf
+      ? [
+          {
+            id: `caaf-${caafApplication.id}`,
+            status: mapCaafStatus(caafApplication.status),
+            caafStatus: caafApplication.status,
+            isCaaf: true,
+            title: 'Central Asian Admissions Forum 2026',
+            date: caafApplication.submittedAt,
+            img: CAAF_FORUM_CARD_IMAGE,
+          },
+        ]
+      : [];
 
   const allEvents = [...(Array.isArray(menteeEventData) ? menteeEventData : []), ...caafAsEvent];
 

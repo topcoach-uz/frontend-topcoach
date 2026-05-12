@@ -301,11 +301,20 @@ const MyProgressEditorialView: React.FC = () => {
   const caafFeeUsd = caafConfig?.registrationFeeUsd ?? REGISTRATION_FEE_USD_FALLBACK;
   const caafFeeLabel = formatCaafRegistrationFeeUsd(caafFeeUsd);
   const caafRegistrationClosed = isPastCaafRegistrationDeadline();
+  // A "pending_payment" application that's already past the registration
+  // deadline is dead state — the user can no longer pay, the forum has
+  // happened. Treat those applications as if they don't exist so the
+  // promo falls back to the "no active event" empty card instead of
+  // showing a stale "Pay {fee}" button for a finished event.
+  const caafApplicationIsActionable =
+    !!caafApplication &&
+    !(caafApplication.status === 'pending_payment' && caafRegistrationClosed);
   // Promo only renders when there's something to act on:
-  //   - A current registration (any status), OR
-  //   - Registration is still open
+  //   - An actionable registration (paid history, cancelled, or
+  //     in-flight pending_payment before the deadline), OR
+  //   - Registration is still open for new sign-ups.
   // Otherwise we fall back to the "no active event" empty card.
-  const showCaafPromo = !!caafApplication || !caafRegistrationClosed;
+  const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
   /**
    * Dynamic AI recommendations derived from the user's actual data.
