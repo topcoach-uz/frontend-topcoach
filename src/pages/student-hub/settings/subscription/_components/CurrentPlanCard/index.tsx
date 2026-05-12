@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   useCancelSubscriptionMutation,
+  useChangeSubscriptionPlanMutation,
   useReactivateSubscriptionMutation,
 } from 'src/app/services/subscription';
 import type {
@@ -11,7 +12,7 @@ import type {
   PlanDto,
   SubscriptionDto,
 } from '../../types';
-import { formatPriceLine, formatLongDate } from '../format';
+import { formatPriceLine, formatLongDate, formatLongDateTime } from '../format';
 import styles from './CurrentPlanCard.module.scss';
 
 const { TextArea } = Input;
@@ -56,14 +57,25 @@ export default function CurrentPlanCard({
 }: CurrentPlanCardProps) {
   const { t, i18n } = useTranslation();
 
-  const { id, plan, status, currentPeriodEnd, cancelAtPeriodEnd, trialEndsAt, nextRetryAt } =
-    subscription;
+  const {
+    id,
+    plan,
+    status,
+    currentPeriodEnd,
+    cancelAtPeriodEnd,
+    trialEndsAt,
+    nextRetryAt,
+    scheduledPlan,
+    scheduledPlanEffectiveAt,
+  } = subscription;
 
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [doCancel, { isLoading: cancelling }] = useCancelSubscriptionMutation();
   const [doReactivate, { isLoading: reactivating }] =
     useReactivateSubscriptionMutation();
+  const [doChangePlan, { isLoading: undoingChange }] =
+    useChangeSubscriptionPlanMutation();
 
   const periodLabel =
     plan.period === 'yearly'
@@ -108,9 +120,9 @@ export default function CurrentPlanCard({
   if (effectiveStatus === 'trial' && trialEndsAt) {
     metaLine = t(
       'settings.subscription.meta.trial',
-      'Trial ends {{date}}, first charge ${{price}}',
+      'Trial ends {{date}} · first charge ${{price}}',
       {
-        date: formatLongDate(trialEndsAt),
+        date: formatLongDateTime(trialEndsAt),
         price: plan.priceUsd.toFixed(2),
       },
     );
@@ -178,6 +190,45 @@ export default function CurrentPlanCard({
       );
   };
 
+  /**
+   * "Undo" the queued plan change by scheduling another change back to
+   * the currently-live plan. Backend semantics: most-recent
+   * `PLAN_CHANGED` event wins, and our DTO suppresses the banner once
+   * `scheduledPlan.toPlanId === sub.plan.id` again.
+   */
+  const handleUndoScheduledChange = async () => {
+    try {
+      await doChangePlan({
+        subscriptionId: id,
+        newPlanId: plan.id,
+      }).unwrap();
+      message.success(
+        t(
+          'settings.subscription.toast.planChangeUndone',
+          "Scheduled plan change undone — you'll stay on your current plan.",
+        ),
+      );
+    } catch (err) {
+      message.error(
+        extractError(
+          err,
+          t(
+            'settings.subscription.toast.planChangeUndoFailed',
+            "Couldn't undo the scheduled change.",
+          ),
+        ),
+      );
+    }
+  };
+
+  const scheduledPlanLabel = scheduledPlan
+    ? `${planDisplayName(scheduledPlan, i18n.language)} · ${
+        scheduledPlan.period === 'yearly'
+          ? t('settings.subscription.period.yearly', 'Yearly')
+          : t('settings.subscription.period.monthly', 'Monthly')
+      } · $${scheduledPlan.priceUsd.toFixed(2)}`
+    : null;
+
   return (
     <div className={styles.card}>
       <div className={styles.head}>
@@ -190,6 +241,38 @@ export default function CurrentPlanCard({
         </div>
         <span className={`${styles.statusPill} ${statusClass}`}>{statusLabel}</span>
       </div>
+
+      {scheduledPlan && scheduledPlanLabel && (
+        <div className={styles.scheduledBanner}>
+          <div className={styles.scheduledBannerBody}>
+            {t(
+              'settings.subscription.scheduledChange.body',
+              'Switching to {{plan}} on {{date}}.',
+              {
+                plan: scheduledPlanLabel,
+                date: scheduledPlanEffectiveAt
+                  ? formatLongDate(scheduledPlanEffectiveAt)
+                  : periodEndDate,
+              },
+            )}
+            <span className={styles.scheduledBannerNote}>
+              {t(
+                'settings.subscription.scheduledChange.note',
+                "You'll be charged ${{price}} on that date.",
+                { price: scheduledPlan.priceUsd.toFixed(2) },
+              )}
+            </span>
+          </div>
+          <Button
+            className={styles.scheduledUndo}
+            type="link"
+            onClick={handleUndoScheduledChange}
+            loading={undoingChange}
+          >
+            {t('settings.subscription.scheduledChange.undo', 'Undo')}
+          </Button>
+        </div>
+      )}
 
       {paymentMethod && (
         <div className={styles.paymentRow}>

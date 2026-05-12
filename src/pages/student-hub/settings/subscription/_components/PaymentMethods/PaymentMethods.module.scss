@@ -221,3 +221,60 @@ $pm-success-fg: #2d6a4f;
   font-style: italic;
   padding: 12px 0;
 }
+
+/* ── Remove-card confirm (editorial chrome) ────────────────────────── */
+
+.removeModal {
+  :global(.ant-modal-content) {
+    border-radius: 14px !important;
+    background: #fdf6f4 !important;
+    border: 1px solid #ecdfdc !important;
+    box-shadow: 0 12px 36px rgba(122, 31, 43, 0.12) !important;
+  }
+
+  :global(.ant-modal-header) {
+    background: transparent !important;
+    border-bottom: 1px solid #ecdfdc !important;
+    padding-bottom: 12px !important;
+  }
+
+  :global(.ant-modal-title) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: $pm-brand !important;
+  }
+
+  :global(.ant-modal-footer) {
+    border-top: 1px solid #ecdfdc !important;
+    padding-top: 12px !important;
+  }
+
+  :global(.ant-modal-footer .ant-btn) {
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+  }
+}
+
+.removeModalBody {
+  color: $pm-ink;
+  font-size: 0.92rem;
+  line-height: 1.55;
+
+  p {
+    margin: 0 0 10px 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.removeModalWarn {
+  background: rgba(167, 49, 40, 0.08);
+  border: 1px dashed rgba(167, 49, 40, 0.32);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #8a2017;
+  font-size: 0.88rem;
+}

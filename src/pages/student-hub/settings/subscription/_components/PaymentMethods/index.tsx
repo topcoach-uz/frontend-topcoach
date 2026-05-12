@@ -7,9 +7,9 @@ import {
   useRemovePaymentMethodMutation,
   useSetDefaultPaymentMethodMutation,
 } from 'src/app/services/subscription';
-import type { PaymentMethodDto } from '../../types';
+import type { PaymentMethodDto, SubscriptionDto } from '../../types';
 import AddCardModal from '../AddCardModal';
-import { formatExpiry } from '../format';
+import { formatExpiry, formatLongDate } from '../format';
 import styles from './PaymentMethods.module.scss';
 
 const BRAND_LABEL: Record<NonNullable<PaymentMethodDto['cardBrand']>, string> = {
@@ -29,6 +29,9 @@ const BRAND_CLASS: Record<NonNullable<PaymentMethodDto['cardBrand']>, string> = 
 export interface PaymentMethodsProps {
   /** Saved cards to render (RTK-driven). */
   paymentMethods: PaymentMethodDto[];
+  /** Live subscription (null when no live sub). Drives trial-aware copy
+   *  in the remove-card modal. */
+  subscription?: SubscriptionDto | null;
   /** When true, the saved-cards list is suppressed (used for `?state=none`). */
   hideList?: boolean;
   /**
@@ -57,6 +60,7 @@ const formatPan = (last4: string): string => `•••• •••• ••�
  */
 export default function PaymentMethods({
   paymentMethods,
+  subscription,
   hideList = false,
   forceAddOpen = false,
   onAddCardClose,
@@ -70,6 +74,10 @@ export default function PaymentMethods({
     useSetDefaultPaymentMethodMutation();
   const [removeMethod] = useRemovePaymentMethodMutation();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  // Card the user clicked the X on; drives the styled remove-confirm modal.
+  const [pendingRemove, setPendingRemove] = useState<PaymentMethodDto | null>(
+    null,
+  );
 
   // Reflect the page-level "Start trial" CTA into the local modal.
   // Local "Add card" button still toggles independently.
@@ -116,45 +124,48 @@ export default function PaymentMethods({
   };
 
   const confirmRemove = (card: PaymentMethodDto) => {
-    Modal.confirm({
-      title: t(
-        'settings.subscription.removeCardTitle',
-        'Remove this card?',
-      ),
-      content: t(
-        'settings.subscription.removeCardBody',
-        'Card ending in {{last4}} will be removed. You can add it back later.',
-        { last4: card.last4 },
-      ),
-      okText: t('settings.subscription.removeCard', 'Remove card'),
-      okButtonProps: { danger: true },
-      cancelText: t('common.cancel', 'Cancel'),
-      onOk: async () => {
-        setRemovingId(card.id);
-        try {
-          await removeMethod(card.id).unwrap();
-          message.success(
-            t('settings.subscription.toast.removeCard', 'Card removed'),
-          );
-        } catch (err) {
-          // Backend returns 409 when this is the only card AND a live
-          // sub depends on it. Surface the server's message verbatim
-          // — it's already user-facing.
-          message.error(
-            extractError(
-              err,
-              t(
-                'settings.subscription.toast.removeFailed',
-                "Couldn't remove this card.",
-              ),
-            ),
-          );
-        } finally {
-          setRemovingId(null);
-        }
-      },
-    });
+    setPendingRemove(card);
   };
+
+  const doRemove = async () => {
+    if (!pendingRemove) return;
+    setRemovingId(pendingRemove.id);
+    try {
+      await removeMethod(pendingRemove.id).unwrap();
+      message.success(
+        t('settings.subscription.toast.removeCard', 'Card removed'),
+      );
+      setPendingRemove(null);
+    } catch (err) {
+      // Backend returns 409 when this is the only card AND a live sub
+      // depends on it. Surface the server's message verbatim — it's
+      // already user-facing.
+      message.error(
+        extractError(
+          err,
+          t(
+            'settings.subscription.toast.removeFailed',
+            "Couldn't remove this card.",
+          ),
+        ),
+      );
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  /**
+   * UX flags that drive the modal copy. The backend already enforces
+   * the only-card-during-live-sub guard (409); these are warnings, not
+   * blocks.
+   */
+  const inTrial = subscription?.status === 'trialing';
+  const subscriptionUsingCard =
+    subscription &&
+    pendingRemove &&
+    subscription.paymentMethodId === pendingRemove.id;
+  const trialEndDate =
+    subscription?.trialEndsAt && formatLongDate(subscription.trialEndsAt);
 
   return (
     <div className={styles.wrapper}>
@@ -244,6 +255,52 @@ export default function PaymentMethods({
         onClose={handleClose}
         onSuccess={handleSuccess}
       />
+
+      {/* Editorial-styled remove-card confirm. Replaces AntD's default
+          `Modal.confirm` so the page chrome stays consistent.  */}
+      <Modal
+        open={!!pendingRemove}
+        title={t('settings.subscription.removeCardTitle', 'Remove this card?')}
+        okText={t('settings.subscription.removeCard', 'Remove card')}
+        cancelText={t('common.cancel', 'Cancel')}
+        okButtonProps={{
+          danger: true,
+          loading: removingId === pendingRemove?.id,
+        }}
+        onOk={doRemove}
+        onCancel={() => setPendingRemove(null)}
+        destroyOnClose
+        className={styles.removeModal}
+      >
+        {pendingRemove && (
+          <div className={styles.removeModalBody}>
+            <p>
+              {t(
+                'settings.subscription.removeCardBody',
+                'Card ending in {{last4}} will be removed. You can add it back later.',
+                { last4: pendingRemove.last4 },
+              )}
+            </p>
+            {subscriptionUsingCard && inTrial && trialEndDate && (
+              <p className={styles.removeModalWarn}>
+                {t(
+                  'settings.subscription.removeCardTrialWarn',
+                  'Heads up: your trial ends {{date}} and the first charge is set to use this card. Add a new default card before then or the subscription will fall to past-due.',
+                  { date: trialEndDate },
+                )}
+              </p>
+            )}
+            {subscriptionUsingCard && !inTrial && (
+              <p className={styles.removeModalWarn}>
+                {t(
+                  'settings.subscription.removeCardActiveWarn',
+                  'This is the card your active subscription charges on. Add another default first or the next charge will fail.',
+                )}
+              </p>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

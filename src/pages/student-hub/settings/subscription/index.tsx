@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Skeleton, message } from 'antd';
+import { Alert, Modal, Skeleton, message } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,6 +29,7 @@ import PaymentMethods from './_components/PaymentMethods';
 import BillingHistory, {
   BillingHistoryHeaderActions,
 } from './_components/BillingHistory';
+import { formatLongDate } from './_components/format';
 import styles from './subscription.module.scss';
 
 const VALID_STATES: SubscriptionState[] = [
@@ -80,9 +81,23 @@ export default function SubscriptionTab() {
   // the new card to active may arrive a beat before the user's browser
   // returns, so we toast + refetch the cards list a couple of times to
   // catch up, then strip the query param so a refresh doesn't replay it.
+  //
+  // sessionStorage marker guards against the toast re-firing when the
+  // user switches tabs inside Settings (this component unmounts/remounts
+  // and React Router may surface a stale URL with the param still
+  // attached, leading to the toast appearing again).
   useEffect(() => {
     if (mockMode) return;
     if (searchParams.get('atmosBind') !== 'success') return;
+    const SEEN_KEY = 'atmosBind:returned-seen';
+    if (sessionStorage.getItem(SEEN_KEY)) {
+      // Already toasted in this session — just strip the param defensively.
+      const url = new URL(window.location.href);
+      url.searchParams.delete('atmosBind');
+      window.history.replaceState({}, '', url.toString());
+      return;
+    }
+    sessionStorage.setItem(SEEN_KEY, '1');
     message.success(
       t(
         'settings.subscription.toast.atmosBindReturned',
@@ -153,6 +168,12 @@ export default function SubscriptionTab() {
   //       plan in state across the modal's lifetime.
   const [pendingTrialPlan, setPendingTrialPlan] = useState<PlanDto | null>(null);
   const [addCardOpen, setAddCardOpen] = useState(false);
+  // Confirm-before-change modal: when set, we render a Modal asking the
+  // user to confirm the (irreversible-until-period-end) plan switch.
+  const [planChangeConfirm, setPlanChangeConfirm] = useState<PlanDto | null>(
+    null,
+  );
+  const [planChanging, setPlanChanging] = useState(false);
   const paymentMethodsRef = useRef<HTMLElement | null>(null);
   const planPickerRef = useRef<HTMLElement | null>(null);
 
@@ -197,39 +218,13 @@ export default function SubscriptionTab() {
       return;
     }
 
-    // Active subscription? Schedule a plan change for next period.
-    // The backend records a PLAN_CHANGED event; the cron applies it
-    // post-charge. Same-plan clicks are filtered by the disabled CTA on
-    // the card itself.
+    // Active subscription? Open the confirm modal instead of firing
+    // change-plan immediately. The actual call lives in
+    // `confirmScheduledPlanChange`. Same-plan clicks are filtered by the
+    // disabled CTA on the card itself, but we double-guard here.
     if (subscription) {
       if (subscription.plan.id === plan.id) return;
-      try {
-        await changePlan({
-          subscriptionId: subscription.id,
-          newPlanId: plan.id,
-        }).unwrap();
-        const periodEnd = subscription.currentPeriodEnd
-          ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
-          : '—';
-        message.success(
-          t(
-            'settings.subscription.toast.planChangeScheduled',
-            'Plan change scheduled for {{date}}.',
-            { date: periodEnd },
-          ),
-        );
-      } catch (err) {
-        const anyErr = err as { data?: { message?: string | string[] } };
-        const m = anyErr?.data?.message;
-        const text = Array.isArray(m) ? m.join(' • ') : m;
-        message.error(
-          text ??
-            t(
-              'settings.subscription.toast.planChangeFailed',
-              "Couldn't schedule the plan change.",
-            ),
-        );
-      }
+      setPlanChangeConfirm(plan);
       return;
     }
 
@@ -254,6 +249,48 @@ export default function SubscriptionTab() {
   const handleAddCardClose = () => {
     setAddCardOpen(false);
     setPendingTrialPlan(null);
+  };
+
+  /**
+   * Fires the actual `change-plan` mutation after the user clicks
+   * "Confirm switch" in the modal. Closes the modal on success and
+   * surfaces the next-charge date in the toast. The banner on
+   * CurrentPlanCard (driven by `subscription.scheduledPlan`) gives the
+   * user a persistent, reversible reminder afterwards.
+   */
+  const confirmScheduledPlanChange = async () => {
+    if (!subscription || !planChangeConfirm) return;
+    setPlanChanging(true);
+    try {
+      await changePlan({
+        subscriptionId: subscription.id,
+        newPlanId: planChangeConfirm.id,
+      }).unwrap();
+      const effective = subscription.currentPeriodEnd
+        ? formatLongDate(subscription.currentPeriodEnd)
+        : '—';
+      message.success(
+        t(
+          'settings.subscription.toast.planChangeScheduled',
+          'Plan change scheduled for {{date}}.',
+          { date: effective },
+        ),
+      );
+      setPlanChangeConfirm(null);
+    } catch (err) {
+      const anyErr = err as { data?: { message?: string | string[] } };
+      const m = anyErr?.data?.message;
+      const text = Array.isArray(m) ? m.join(' • ') : m;
+      message.error(
+        text ??
+          t(
+            'settings.subscription.toast.planChangeFailed',
+            "Couldn't schedule the plan change.",
+          ),
+      );
+    } finally {
+      setPlanChanging(false);
+    }
   };
 
   const handleCardAdded = async (card: { id: string }) => {
@@ -388,6 +425,7 @@ export default function SubscriptionTab() {
           )}
           <PaymentMethods
             paymentMethods={paymentMethods}
+            subscription={subscription}
             forceAddOpen={addCardOpen}
             onAddCardClose={handleAddCardClose}
             onCardAdded={handleCardAdded}
@@ -412,6 +450,55 @@ export default function SubscriptionTab() {
           <BillingHistory entries={billingHistory} hideRows={isEmpty} />
         </section>
       </div>
+
+      {/* Confirm-before-change modal. Reached from the AvailablePlans
+          picker only when the user already has a live subscription —
+          the empty-state "Start trial" path uses a different flow. */}
+      <Modal
+        open={!!planChangeConfirm}
+        title={t(
+          'settings.subscription.confirmChange.title',
+          'Switch to {{plan}}?',
+          {
+            plan: planChangeConfirm
+              ? `${planChangeConfirm.displayName.en} · ${
+                  planChangeConfirm.period === 'yearly' ? 'Yearly' : 'Monthly'
+                }`
+              : '',
+          },
+        )}
+        okText={t('settings.subscription.confirmChange.ok', 'Confirm switch')}
+        cancelText={t('settings.subscription.confirmChange.cancel', 'Keep current plan')}
+        okButtonProps={{ loading: planChanging, type: 'primary' }}
+        onOk={confirmScheduledPlanChange}
+        onCancel={() => setPlanChangeConfirm(null)}
+        destroyOnClose
+      >
+        {planChangeConfirm && subscription && (
+          <div style={{ lineHeight: 1.55, color: '#4b463f' }}>
+            <p style={{ marginBottom: 10 }}>
+              {t(
+                'settings.subscription.confirmChange.body',
+                'You will stay on your current plan until {{date}}. On that date your subscription will switch to {{plan}} ($​{{price}}/{{period}}) and you will be charged ${{price}} USD.',
+                {
+                  date: subscription.currentPeriodEnd
+                    ? formatLongDate(subscription.currentPeriodEnd)
+                    : '—',
+                  plan: planChangeConfirm.displayName.en,
+                  price: planChangeConfirm.priceUsd.toFixed(2),
+                  period: planChangeConfirm.period === 'yearly' ? 'year' : 'month',
+                },
+              )}
+            </p>
+            <p style={{ color: '#6b6258', fontSize: 13, margin: 0 }}>
+              {t(
+                'settings.subscription.confirmChange.note',
+                "You can undo this any time before the change takes effect.",
+              )}
+            </p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

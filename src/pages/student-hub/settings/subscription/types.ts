@@ -75,6 +75,13 @@ export type SubscriptionDto = {
   trialEndsAt: string | null;
   nextRetryAt: string | null;
   failedAttemptsInCycle: number;
+  /**
+   * Plan queued via `POST /:id/change-plan` and not yet applied by the
+   * cron. Drives the "Switching to X on Y" banner on CurrentPlanCard.
+   * Effective at `scheduledPlanEffectiveAt` (= the current period's end).
+   */
+  scheduledPlan: PlanDto | null;
+  scheduledPlanEffectiveAt: string | null;
 };
 
 export type BillingHistoryEntryDto = {

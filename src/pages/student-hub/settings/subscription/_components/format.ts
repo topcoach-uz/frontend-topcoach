@@ -28,20 +28,32 @@ export const formatUsdLong = (value: number): string => `$${value.toFixed(2)} US
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** "15 Apr 2027". Accepts ISO yyyy-mm-dd; tolerates invalid values. */
+/** "15 Apr 2027". Accepts either ISO `yyyy-mm-dd` or full ISO timestamp
+ *  like `2026-05-19T22:16:59.843Z`. Tolerates invalid values. */
 export const formatLongDate = (iso: string): string => {
-  const [year, month, day] = iso.split('-').map((part) => Number(part));
-  if (!year || !month || !day) return iso;
-  const monthLabel = MONTHS_SHORT[month - 1] ?? '';
-  return `${day} ${monthLabel} ${year}`;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()] ?? ''} ${d.getFullYear()}`;
+};
+
+/** "15 Apr 2027 · 10:16 PM" — for trial-end / next-charge lines where
+ *  the time of day matters. Accepts ISO date or full timestamp. */
+export const formatLongDateTime = (iso: string): string => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const date = `${d.getDate()} ${MONTHS_SHORT[d.getMonth()] ?? ''} ${d.getFullYear()}`;
+  const hours24 = d.getHours();
+  const hours12 = ((hours24 + 11) % 12) + 1;
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const meridiem = hours24 < 12 ? 'AM' : 'PM';
+  return `${date} · ${hours12}:${minutes} ${meridiem}`;
 };
 
 /** "Apr 15, 2026" — used in billing table rows. */
 export const formatTableDate = (iso: string): string => {
-  const [year, month, day] = iso.split('-').map((part) => Number(part));
-  if (!year || !month || !day) return iso;
-  const monthLabel = MONTHS_SHORT[month - 1] ?? '';
-  return `${monthLabel} ${day}, ${year}`;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${MONTHS_SHORT[d.getMonth()] ?? ''} ${d.getDate()}, ${d.getFullYear()}`;
 };
 
 /** Pads "MM/YY" from numeric expiry month + 2-digit year. */

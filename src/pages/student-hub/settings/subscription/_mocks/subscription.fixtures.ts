@@ -162,6 +162,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: null,
     nextRetryAt: null,
     failedAttemptsInCycle: 0,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   active: {
     id: 'sub-active',
@@ -174,6 +176,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: null,
     nextRetryAt: null,
     failedAttemptsInCycle: 0,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   trialing: {
     id: 'sub-trialing',
@@ -186,6 +190,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: isoDateOffset(7),
     nextRetryAt: null,
     failedAttemptsInCycle: 0,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   past_due: {
     id: 'sub-past-due',
@@ -198,6 +204,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: null,
     nextRetryAt: isoDateOffset(1),
     failedAttemptsInCycle: 1,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   canceled: {
     id: 'sub-canceled',
@@ -210,6 +218,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: null,
     nextRetryAt: null,
     failedAttemptsInCycle: 0,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   expired: {
     id: 'sub-expired',
@@ -222,6 +232,8 @@ export const FIXTURES_BY_STATE: Record<SubscriptionState, SubscriptionDto | null
     trialEndsAt: null,
     nextRetryAt: null,
     failedAttemptsInCycle: 0,
+    scheduledPlan: null,
+    scheduledPlanEffectiveAt: null,
   },
   none: null,
 };
