@@ -105,6 +105,23 @@ export const subscriptionApi = RtkApi.injectEndpoints({
       // (isActive=false) until /confirm flips it.
     }),
 
+    /**
+     * Atmos hosted card-bind (Visa / Mastercard, non-PCI). Returns an
+     * Atmos URL we redirect the user to — Atmos collects PAN/CVC on
+     * their own page, then server-pings our callback with the resulting
+     * card_id which flips the pending row to active. The user lands
+     * back on `?section=account&target=settings&tab=subscription` after.
+     */
+    initCheckoutBindAtmos: builder.mutation<
+      { paymentMethodId: string; url: string },
+      void
+    >({
+      query: () => ({
+        url: 'payment-methods/checkout-bind/init',
+        method: 'POST',
+      }),
+    }),
+
     /** Step 2 of OTP bind. Verifies OTP, returns the now-confirmed card. */
     confirmPaymentMethod: builder.mutation<
       PaymentMethodDto,
@@ -195,6 +212,7 @@ export const {
   useGetBillingHistoryQuery,
   useGetPaymentMethodsQuery,
   useInitPaymentMethodMutation,
+  useInitCheckoutBindAtmosMutation,
   useConfirmPaymentMethodMutation,
   useSetDefaultPaymentMethodMutation,
   useRemovePaymentMethodMutation,

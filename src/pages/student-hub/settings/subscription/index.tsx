@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Skeleton, message } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -74,6 +74,34 @@ export default function SubscriptionTab() {
   const subscriptionQuery = useGetCurrentSubscriptionQuery(undefined, { skip: mockMode });
   const paymentMethodsQuery = useGetPaymentMethodsQuery(undefined, { skip: mockMode });
   const billingHistoryQuery = useGetBillingHistoryQuery(undefined, { skip: mockMode });
+
+  // After Atmos's hosted bind page finishes, the user lands back here
+  // with `?atmosBind=success`. The server-to-server callback that flips
+  // the new card to active may arrive a beat before the user's browser
+  // returns, so we toast + refetch the cards list a couple of times to
+  // catch up, then strip the query param so a refresh doesn't replay it.
+  useEffect(() => {
+    if (mockMode) return;
+    if (searchParams.get('atmosBind') !== 'success') return;
+    message.success(
+      t(
+        'settings.subscription.toast.atmosBindReturned',
+        'Card added. Finishing up…',
+      ),
+    );
+    let tries = 0;
+    const refresh = () => {
+      paymentMethodsQuery.refetch();
+      tries += 1;
+      if (tries < 5) setTimeout(refresh, 1500);
+    };
+    refresh();
+    // Drop the marker so reloading the page doesn't re-toast.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('atmosBind');
+    window.history.replaceState({}, '', url.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mockMode]);
 
   const isLoading =
     !mockMode &&

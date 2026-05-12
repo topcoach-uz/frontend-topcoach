@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   useConfirmPaymentMethodMutation,
+  useInitCheckoutBindAtmosMutation,
   useInitPaymentMethodMutation,
 } from 'src/app/services/subscription';
 import type { PaymentMethodDto } from '../../types';
@@ -58,6 +59,8 @@ export default function AddCardModal({
   const [doInit, { isLoading: initLoading }] = useInitPaymentMethodMutation();
   const [doConfirm, { isLoading: confirmLoading }] =
     useConfirmPaymentMethodMutation();
+  const [doAtmosCheckoutInit, { isLoading: atmosRedirectLoading }] =
+    useInitCheckoutBindAtmosMutation();
 
   // Reset everything whenever the modal closes — leaving stale OTP /
   // PAN around between opens is a footgun.
@@ -98,6 +101,37 @@ export default function AddCardModal({
       return;
     }
     setErrorMsg(null);
+
+    // Visa / Mastercard (and Uzcard-MC co-brand) go through Atmos's
+    // hosted checkout-bind page. There is no in-modal OTP step — the
+    // PAN/CVC are entered on Atmos's own page, and after success they
+    // redirect the user back to ?section=account&target=settings&tab=subscription
+    // with the new card already saved. The PAN the user typed here is
+    // a UX hint only (so the BIN router can decide which flow to use)
+    // and is NOT sent to our backend.
+    if (provider === 'atmos') {
+      try {
+        const res = await doAtmosCheckoutInit().unwrap();
+        if (res?.url) {
+          window.location.href = res.url;
+          return;
+        }
+        throw new Error('Missing redirect URL from server');
+      } catch (err) {
+        setErrorMsg(
+          extractError(
+            err,
+            t(
+              'settings.subscription.addCard.genericError',
+              'Something went wrong. Please try again.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Click (Uzcard / Humo) — keep the legacy in-modal OTP flow.
     try {
       const res = await doInit({
         provider,
@@ -300,10 +334,15 @@ export default function AddCardModal({
               type="primary"
               className={styles.btnFilled}
               onClick={submitForm}
-              loading={initLoading}
+              loading={initLoading || atmosRedirectLoading}
               disabled={!formValid}
             >
-              {t('settings.subscription.addCard.sendCode', 'Send code')}
+              {provider === 'atmos'
+                ? t(
+                    'settings.subscription.addCard.continueAtmos',
+                    'Continue on Atmos',
+                  )
+                : t('settings.subscription.addCard.sendCode', 'Send code')}
             </Button>
           </div>
         </>
