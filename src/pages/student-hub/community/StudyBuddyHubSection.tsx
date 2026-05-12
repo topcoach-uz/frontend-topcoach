@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Button, Card, Pagination, Segmented, Space, Spin, Tag, Tabs, Typography, message } from 'antd';
-import { UserPlus } from 'lucide-react';
+import { Avatar, Button, Card, Input, Pagination, Segmented, Space, Spin, Tag, Tabs, Typography, message } from 'antd';
+import { Search, UserPlus, X } from 'lucide-react';
 import {
   useStudyBuddyAcceptRequestMutation,
   useStudyBuddyCancelRequestMutation,
@@ -26,6 +26,10 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const [discoverPage, setDiscoverPage] = useState(1);
   const [reqPage, setReqPage] = useState(1);
   const [connectedPage, setConnectedPage] = useState(1);
+  // Search query (name + username, case-insensitive). Stays the same
+  // when the user flips tabs so they can scan the same query across
+  // Discover / Requests / Connected without retyping.
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     data: discoverData,
@@ -51,16 +55,35 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const items = discoverData?.items ?? [];
   const requestList = requestsData?.requests ?? [];
 
+  // Normalised search needle. Empty string = no filter.
+  const searchNeedle = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
+
+  /** Case-insensitive match against display name + @handle. */
+  const matchesSearch = (name?: string | null, username?: string | null) => {
+    if (!searchNeedle) return true;
+    const hay = `${name ?? ''} ${username ?? ''}`.toLowerCase();
+    return hay.includes(searchNeedle);
+  };
+
   // Split the discover list into "still to discover" and "already
   // connected" so each tab gets its own subset (and its own pagination).
-  // Connected peers should only appear under the Connected tab.
+  // Connected peers should only appear under the Connected tab. Search
+  // narrows each list by display name or @handle.
   const discoverItems = useMemo(
-    () => items.filter((r) => r.requestStatus !== 'connected'),
-    [items],
+    () =>
+      items
+        .filter((r) => r.requestStatus !== 'connected')
+        .filter((r) => matchesSearch(r.name, r.username)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, searchNeedle],
   );
   const connectedItems = useMemo(
-    () => items.filter((r) => r.requestStatus === 'connected'),
-    [items],
+    () =>
+      items
+        .filter((r) => r.requestStatus === 'connected')
+        .filter((r) => matchesSearch(r.name, r.username)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, searchNeedle],
   );
 
   useEffect(() => {
@@ -73,15 +96,39 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
     setReqPage(1);
   }, [reqDirection]);
 
+  // Reset pagination back to page 1 whenever the user types a new
+  // search — otherwise they can land on an empty page (e.g. were on
+  // page 3 of 5, then a search narrows the result set to 2 items).
+  useEffect(() => {
+    setDiscoverPage(1);
+    setReqPage(1);
+    setConnectedPage(1);
+  }, [searchNeedle]);
+
+  // Requests tab uses the requester/addressee profile depending on
+  // direction — filter by whichever is being shown.
+  const filteredRequests = useMemo(
+    () =>
+      requestList.filter((r) => {
+        const other = reqDirection === 'in' ? r.requester : r.addressee;
+        return matchesSearch(
+          other?.profile?.name,
+          (other?.profile as { username?: string | null } | undefined)?.username,
+        );
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [requestList, reqDirection, searchNeedle],
+  );
+
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(discoverItems.length / PAGE_SIZE) || 1);
     if (discoverPage > maxPage) setDiscoverPage(maxPage);
   }, [discoverItems.length, discoverPage]);
 
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(requestList.length / PAGE_SIZE) || 1);
+    const maxPage = Math.max(1, Math.ceil(filteredRequests.length / PAGE_SIZE) || 1);
     if (reqPage > maxPage) setReqPage(maxPage);
-  }, [requestList.length, reqPage]);
+  }, [filteredRequests.length, reqPage]);
 
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(connectedItems.length / PAGE_SIZE) || 1);
@@ -99,8 +146,8 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   );
 
   const requestPageItems = useMemo(
-    () => requestList.slice((reqPage - 1) * PAGE_SIZE, reqPage * PAGE_SIZE),
-    [requestList, reqPage],
+    () => filteredRequests.slice((reqPage - 1) * PAGE_SIZE, reqPage * PAGE_SIZE),
+    [filteredRequests, reqPage],
   );
 
   const handleSend = async (targetUserId: string) => {
@@ -241,6 +288,19 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
 
   return (
     <div className={styles.studyBuddyHub}>
+      <div className={styles.studyBuddySearchRow}>
+        <Input
+          allowClear={{
+            clearIcon: <X size={14} aria-label="Clear search" />,
+          }}
+          prefix={<Search size={16} style={{ color: 'rgba(0,0,0,0.45)' }} />}
+          placeholder="Search by name or @handle"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          size="large"
+          aria-label="Search study buddies by name"
+        />
+      </div>
       <Tabs
         activeKey={mainTab}
         onChange={(k) => setMainTab(k as 'discover' | 'requests' | 'connected')}
@@ -257,7 +317,9 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                 ) : discoverItems.length === 0 ? (
                   <Card bordered={false} className={styles.sectionCard}>
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                      No community peers to show yet. Check back as more students enable Community mode.
+                      {searchNeedle
+                        ? `No peers match “${searchQuery}”.`
+                        : 'No community peers to show yet. Check back as more students enable Community mode.'}
                     </Paragraph>
                   </Card>
                 ) : (
@@ -280,7 +342,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
           },
           {
             key: 'requests',
-            label: `Requests${requestList.length ? ` · ${requestList.length}` : ''}`,
+            label: `Requests${filteredRequests.length ? ` · ${filteredRequests.length}` : ''}`,
             children: (
               <>
                 <Segmented
@@ -363,18 +425,22 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                         </Card>
                       );
                     })}
-                    {requestList.length > PAGE_SIZE && (
+                    {filteredRequests.length > PAGE_SIZE && (
                       <Pagination
                         className={styles.studyBuddyPagination}
                         current={reqPage}
                         pageSize={PAGE_SIZE}
-                        total={requestList.length}
+                        total={filteredRequests.length}
                         onChange={(p) => setReqPage(p)}
                         showSizeChanger={false}
                       />
                     )}
-                    {requestList.length === 0 && (
-                      <Paragraph type="secondary">No requests in this tab.</Paragraph>
+                    {filteredRequests.length === 0 && (
+                      <Paragraph type="secondary">
+                        {searchNeedle
+                          ? `No requests match “${searchQuery}”.`
+                          : 'No requests in this tab.'}
+                      </Paragraph>
                     )}
                   </Space>
                 )}
@@ -393,9 +459,15 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                 ) : connectedItems.length === 0 ? (
                   <Card bordered={false} className={styles.sectionCard}>
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                      No study buddies yet. Send a request from{' '}
-                      <a onClick={() => setMainTab('discover')} style={{ cursor: 'pointer' }}>Discover</a>{' '}
-                      and we'll show your connections here once they accept.
+                      {searchNeedle ? (
+                        <>No connected buddies match “{searchQuery}”.</>
+                      ) : (
+                        <>
+                          No study buddies yet. Send a request from{' '}
+                          <a onClick={() => setMainTab('discover')} style={{ cursor: 'pointer' }}>Discover</a>{' '}
+                          and we'll show your connections here once they accept.
+                        </>
+                      )}
                     </Paragraph>
                   </Card>
                 ) : (
