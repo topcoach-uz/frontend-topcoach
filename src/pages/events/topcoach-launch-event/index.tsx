@@ -32,6 +32,7 @@ import {
 import styles from './TopcoachLaunchEvent.module.scss';
 
 // ── Static event metadata (single-event hardcoded module) ────────────────
+const TELEGRAM_INVITE_URL = 'https://t.me/+LXj0FDnI6ow3YTBi';
 const EVENT_DATE_LABEL = 'Sunday, May 24, 2026';
 const EVENT_DOORS_LABEL = 'Registration 10:00 AM · Starts 11:00 AM · Apply by May 22';
 const EVENT_VENUE_PRIMARY = 'Youth Affairs Agency of Uzbekistan';
@@ -333,6 +334,32 @@ export default function TopcoachLaunchEventPage() {
               </div>
             </div>
           </div>
+
+          {/* Pre-event community channel. Telegram is where attendees
+              get speaker announcements, schedule updates, and meet
+              each other before May 24. */}
+          <a
+            className={styles.telegramCard}
+            href={TELEGRAM_INVITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div className={styles.telegramCard__icon} aria-hidden>
+              <Send size={20} />
+            </div>
+            <div className={styles.telegramCard__body}>
+              <div className={styles.telegramCard__title}>
+                Join our community channel
+              </div>
+              <div className={styles.telegramCard__desc}>
+                Get event updates, speaker announcements, and connect with
+                other attendees before the big day.
+              </div>
+            </div>
+            <span className={styles.telegramCard__cta}>
+              <Send size={14} /> Join on Telegram
+            </span>
+          </a>
 
           <div className={styles.successCard__actions}>
             <button

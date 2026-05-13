@@ -561,6 +561,87 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   justify-content: center;
 }
 
+/* ── Telegram community channel CTA ─────────────────────────── */
+/* Sits below the event-details grid on the success view. Telegram-blue
+ * gradient (#0088cc → #229ED9) so it reads as a recognisable channel
+ * invitation rather than another generic CTA, but the radius + spacing
+ * match the rest of the editorial chrome. The whole card is clickable. */
+.telegramCard {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #1d5b8c 0%, #229ed9 100%);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  text-decoration: none;
+  color: #fff;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 6px 18px rgba(34, 158, 217, 0.22);
+
+  &:hover,
+  &:focus {
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(34, 158, 217, 0.32);
+    text-decoration: none;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 44px 1fr;
+    grid-template-rows: auto auto;
+  }
+}
+
+.telegramCard__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.telegramCard__body {
+  text-align: left;
+  min-width: 0;
+}
+
+.telegramCard__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.telegramCard__desc {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.4;
+}
+
+.telegramCard__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.84rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  @media (max-width: 640px) {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
+
 /* ── Event-details grid on the success view ─────────────────── */
 
 .eventGrid {
