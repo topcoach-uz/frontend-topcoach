@@ -12,7 +12,7 @@ import { useGetMeQuery } from 'src/app/services/users';
  * To launch publicly: flip this to `true`, redeploy. No other code
  * needs to change.
  */
-export const LAUNCH_EVENT_PUBLIC = false;
+export const LAUNCH_EVENT_PUBLIC = true;
 
 /**
  * Hook: should the current user see the Launch Event UI?
