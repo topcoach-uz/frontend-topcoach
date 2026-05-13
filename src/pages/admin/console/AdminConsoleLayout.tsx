@@ -199,7 +199,7 @@ export default function AdminConsoleLayout() {
       return [{ title: 'Admin' }, { title: 'Events' }, { title: 'CA Admissions Forum' }];
     }
     if (p.startsWith('/new-admin/events/topcoach-launch-event')) {
-      return [{ title: 'Admin' }, { title: 'Events' }, { title: 'Top Coach Launch Event' }];
+      return [{ title: 'Admin' }, { title: 'Events' }, { title: 'New Feature Launch' }];
     }
     if (p.startsWith('/new-admin/programs/')) {
       const slug = p.replace('/new-admin/programs/', '') || 'enrollments';

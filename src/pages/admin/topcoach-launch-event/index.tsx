@@ -206,7 +206,7 @@ export default function TopcoachLaunchEventAdminPage() {
         </Button>
       </Space>
 
-      <h1 className="ac-page-title">Top Coach Launch Event</h1>
+      <h1 className="ac-page-title">New Feature Launch</h1>
       <p className="ac-page-lead">
         Free event · Sunday, May 24, 2026 · Youth Affairs Agency,
         Tashkent. Registrations are captured here. Use the search to

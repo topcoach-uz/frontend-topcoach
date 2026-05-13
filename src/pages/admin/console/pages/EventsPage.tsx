@@ -93,7 +93,7 @@ export default function AdminConsoleEventsPage() {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} md={8}>
-          <Card bordered={false} className="ac-panel" title="Top Coach Launch Event">
+          <Card bordered={false} className="ac-panel" title="New Feature Launch">
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
               Free event · May 24, 2026 · Tashkent. Browse registrations,
               search by name / email, export the attendee list.

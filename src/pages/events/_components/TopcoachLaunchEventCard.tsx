@@ -43,9 +43,11 @@ const TopcoachLaunchEventCard: React.FC = () => {
   return (
     <article className={styles.card}>
       <div className={styles.media} aria-hidden>
-        {/* <div className={styles.media__placeholder}>
-          <Sparkles size={28} />
-        </div> */}
+        <img
+          src="/img/new-feature-event.jpeg"
+          alt=""
+          className={styles.mediaImg}
+        />
       </div>
 
       <div className={styles.body}>
@@ -53,7 +55,7 @@ const TopcoachLaunchEventCard: React.FC = () => {
           <Sparkles size={11} /> Top Coach · Featured event
         </span>
         <h2 className={styles.title}>
-          Top 100 Uni <em>Launch Event</em>
+          New <em>Feature Launch</em>
         </h2>
         <p className={styles.lede}>
           Something big is about to change college admissions in Central

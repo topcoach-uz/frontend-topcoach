@@ -787,7 +787,7 @@ const MyProgressEditorialView: React.FC = () => {
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
-            <h3 className="myprog__promo-title">Top 100 Uni Launch Event</h3>
+            <h3 className="myprog__promo-title">New Feature Launch</h3>
             <div className="myprog__promo-meta">Sun, May 24 · 11:00 AM · Tashkent</div>
             <p className="myprog__promo-desc">
               Free offline launch at the Youth Affairs Agency of

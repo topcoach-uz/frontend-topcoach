@@ -18,20 +18,35 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   border-radius: 18px;
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
   overflow: hidden;
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: 0;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 48px;
-
-  @media (max-width: 880px) {
-    grid-template-columns: 1fr;
-  }
 }
 
+/* Image is a top banner — proper editorial proportion (2.4:1), capped
+   so it doesn't dominate the card. `object-position: center 30%` biases
+   the crop toward the upper-middle of the artwork where the "NEW
+   FEATURE LAUNCH" lockup sits; the date in the bottom of the source
+   image is intentionally cropped because the card body already shows
+   "Sunday, May 24, 2026 · 11:00 AM" beneath the banner. The crimson
+   gradient stays as a fallback while the image loads. */
 .media {
   position: relative;
-  min-height: 260px;
+  width: 100%;
+  aspect-ratio: 2.1 / 1;
+  max-height: 420px;
   background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
+  overflow: hidden;
+}
+
+.mediaImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
 }
 
 .media__placeholder {

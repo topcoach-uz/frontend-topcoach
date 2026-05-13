@@ -299,7 +299,7 @@ export default function TopcoachLaunchEventPage() {
           </div>
           <h2 className={styles.successCard__title}>You're in! 🎉</h2>
           <p className={styles.successCard__desc}>
-            Your spot is reserved for the Top Coach Launch Event. Here's
+            Your spot is reserved for the New Feature Launch. Here's
             everything you need to know.
           </p>
 
@@ -695,9 +695,9 @@ export default function TopcoachLaunchEventPage() {
 function Hero() {
   return (
     <header className={styles.hero}>
-      <span className={styles.hero__eyebrow}>Top Coach Platform</span>
+      <span className={styles.hero__eyebrow}>Top Coach · Featured event</span>
       <h1 className={styles.hero__title}>
-        Top 100 Uni <em>Launch Event</em>
+        New <em>Feature Launch</em>
       </h1>
       <p className={styles.hero__lede}>
         Your path to the world's best universities starts here.

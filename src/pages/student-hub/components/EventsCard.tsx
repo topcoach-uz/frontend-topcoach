@@ -20,10 +20,11 @@ import {
 } from '../../events/central-asian-admissions-forum/constants';
 import './EventsCard.scss';
 
-/** Top Coach Launch Event hardcoded metadata. */
+/** New Feature Launch event metadata (event module is still named
+ *  `topcoach-launch-event` in code — only the display label changed). */
 const LAUNCH_EVENT_DATE_ISO = '2026-05-24T11:00:00+05:00';
-const LAUNCH_EVENT_TITLE = 'Top 100 Uni Launch Event';
-const LAUNCH_EVENT_IMG = '/img/casian_forum.jpeg'; // placeholder reuses CAAF artwork
+const LAUNCH_EVENT_TITLE = 'New Feature Launch';
+const LAUNCH_EVENT_IMG = '/img/new-feature-event.jpeg';
 
 function isPastLaunchEvent(now: number = Date.now()): boolean {
   const t = new Date(LAUNCH_EVENT_DATE_ISO).getTime();
