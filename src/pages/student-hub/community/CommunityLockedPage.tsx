@@ -4,6 +4,9 @@ import { Button } from 'antd';
 import { Lock, Users, MessageCircle, Sparkles, BookOpen, FlaskConical, Presentation, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+import { useCommunityAccessGate } from 'src/lib/communityAccess';
+
 import styles from './CommunityLockedPage.module.scss';
 
 export type CommunityLockVariant =
@@ -173,13 +176,16 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
 
   const isResearchComingSoon = variant === 'research-prep-coming-soon';
 
+  // Funnel-aware destination. The gate decides whether to send the user
+  // to the placement test, the profile wizard, the roadmap preview, or
+  // the subscription tab — based on how far they've made it through the
+  // Community-membership funnel. Admin-granted users land back in
+  // /student-hub (the gate's "eligible" branch).
+  const gate = useCommunityAccessGate();
+
   const handleUpgrade = () => {
     if (isResearchComingSoon) return;
-    // Take the user to the subscription tab inside settings so they
-    // can pick a plan / enter card details. Settings is mounted under
-    // section=account&target=settings; the inner tabbed page reads
-    // `?tab=subscription` to land on the right tab.
-    navigate('/student-hub?section=account&target=settings&tab=subscription');
+    navigate(gate.destination);
   };
 
   const backPath = '/student-hub?section=dashboard';

@@ -8,6 +8,7 @@ import {
   Users as UsersIcon,
   Bell,
   Target,
+  Map as MapIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -33,6 +34,7 @@ import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
+import { RoadmapTab } from './roadmap/RoadmapTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -87,7 +89,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'studyBuddy'
     | 'experience'
     | 'notifications'
-    | 'subscription';
+    | 'subscription'
+    | 'roadmap';
 
   // Read initial tab from URL `?tab=` so other pages can deep-link
   // (e.g. the Community lock popup → subscription tab).
@@ -100,6 +103,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       'experience',
       'notifications',
       'subscription',
+      'roadmap',
     ];
     return allowed.includes(fromUrl as SettingsTabKey)
       ? (fromUrl as SettingsTabKey)
@@ -119,6 +123,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         'experience',
         'notifications',
         'subscription',
+        'roadmap',
       ];
       if (allowed.includes(fromUrl as SettingsTabKey)) {
         setActiveTab(fromUrl as SettingsTabKey);
@@ -265,6 +270,14 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => setActiveTab('subscription')}
         >
           {t('settings.subscription.tab', 'Subscription & billing')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'roadmap' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('roadmap')}
+        >
+          <MapIcon size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+          {t('settings.roadmap.tab', 'Roadmap')}
         </button>
         {/* Notifications tab hidden until the per-channel toggle backend
             ships — surfacing static text felt half-baked. The render
@@ -508,6 +521,12 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           mocked from `subscription/_mocks/subscription.fixtures.ts`;
           flip states with `?state=active|trialing|past_due|canceled|none`. */}
       {activeTab === 'subscription' && <SubscriptionTab />}
+
+      {/* Roadmap — same content as `/placement-test/roadmap`, but in
+          the persistent settings surface. Handles the "I passed but
+          haven't paid yet" returning-visitor state with a blurred
+          preview + paywall. */}
+      {activeTab === 'roadmap' && <RoadmapTab />}
 
       {/* Notifications — placeholder card. The toggle matrix
           (Email / Push / SMS × event types) ships alongside the

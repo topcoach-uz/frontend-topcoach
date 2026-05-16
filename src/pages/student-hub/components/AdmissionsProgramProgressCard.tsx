@@ -22,6 +22,7 @@ import {
 } from '../../../app/services/fullSupportApi';
 import { useGetResearchProgressSummaryQuery } from '../../../app/services/research-prep';
 import { useJourneyExperience } from '../../../contexts/JourneyExperienceContext';
+import { useCommunityAccessGate } from '../../../lib/communityAccess';
 import { useTypedSelector } from '../../../app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './AdmissionsProgramProgressCard.scss';
@@ -78,7 +79,10 @@ export default function AdmissionsProgramProgressCard({
   const { data: fullSupportSatProgress } = useGetMenteeSatProgressQuery(undefined, {
     skip: !!skip || !enrollmentMe?.data?.enrolled,
   });
-  const { isCommunityEnrolled, setCommunityEnrolled } = useJourneyExperience();
+  const { isCommunityEnrolled } = useJourneyExperience();
+  // Funnel-aware Community CTA — routes through placement-test → profile
+  // → roadmap → subscription rather than flipping the dev-mode flag.
+  const communityGate = useCommunityAccessGate();
   const profile = useTypedSelector((s) => s.auth.profile);
   const researchPrepLive = useMemo(
     () =>
@@ -379,7 +383,8 @@ export default function AdmissionsProgramProgressCard({
                 type="primary"
                 size="middle"
                 icon={<FlaskConical size={16} />}
-                onClick={() => setCommunityEnrolled(true)}
+                onClick={() => navigate(communityGate.destination)}
+                disabled={communityGate.state === 'loading'}
                 className="admissions-progress-btn"
               >
                 Join the community to unlock

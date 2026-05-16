@@ -47,6 +47,11 @@ import EssaysPage from '../essays/EssaysPage';
 import DocumentsPage from '../documents/DocumentsPage';
 import ProfilePage from '../profile/ProfilePage';
 import MenteeSettingsPageMock from '../settings/MenteeSettingsPageMock';
+// Community-membership funnel pages — mounted as internal hub sections
+// so they inherit the COMMUNITY/LEARNING/ACCOUNT sidebar.
+import PlacementTestPage from '../../placement-test';
+import PlacementProfileWizardPage from '../../placement-test/profile';
+import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
 import MessengerExperience from '../../../components/chat/MessengerExperience';
@@ -75,7 +80,12 @@ type CommunitySectionKey =
   | 'aiMajorMatch'
   | 'admissionsProgram'
   | 'satCourse'
-  | 'researchProgram';
+  | 'researchProgram'
+  // Community-membership funnel — pre-subscription gate.
+  // URLs: ?section=placement-test, ?section=placement-profile, ?section=placement-roadmap
+  | 'placementTest'
+  | 'placementProfile'
+  | 'placementRoadmap';
 type CommunityNavItem = {
   key: CommunitySectionKey;
   label: string;
@@ -565,7 +575,10 @@ export default function CommunityHubMockPage() {
       section === 'ai-major-match' ||
       section === 'admissions-program' ||
       section === 'sat-course' ||
-      section === 'research-program'
+      section === 'research-program' ||
+      section === 'placement-test' ||
+      section === 'placement-profile' ||
+      section === 'placement-roadmap'
     ) {
       if (section === 'my-learning') setActiveSection('myLearning');
       else if (section === 'ai-major-match') setActiveSection('aiMajorMatch');
@@ -573,6 +586,9 @@ export default function CommunityHubMockPage() {
       else if (section === 'sat-course') setActiveSection('satCourse');
       else if (section === 'research-program') setActiveSection('researchProgram');
       else if (section === 'messages') setActiveSection('messages');
+      else if (section === 'placement-test') setActiveSection('placementTest');
+      else if (section === 'placement-profile') setActiveSection('placementProfile');
+      else if (section === 'placement-roadmap') setActiveSection('placementRoadmap');
       else setActiveSection(section as CommunitySectionKey);
     }
 
@@ -1540,6 +1556,32 @@ export default function CommunityHubMockPage() {
                 onConversationChange={setMessagesConversationId}
                 onThreadChange={setMessagesThreadId}
               />
+            </div>
+          )}
+
+          {/* Community-membership funnel — Step 1: English placement test.
+              Mounted inside the hub so users keep the sidebar context
+              while filling the gate. The page handles its own redirects
+              (passed → profile → roadmap). */}
+          {activeSection === 'placementTest' && (
+            <div className={styles.hubDashEmbed}>
+              <PlacementTestPage />
+            </div>
+          )}
+
+          {/* Funnel — Step 2: admissions profile wizard. */}
+          {activeSection === 'placementProfile' && (
+            <div className={styles.hubDashEmbed}>
+              <PlacementProfileWizardPage />
+            </div>
+          )}
+
+          {/* Funnel — Step 3: roadmap preview (or unlocked content if
+              subscribed). The plan picker on the preview routes to the
+              subscription tab. */}
+          {activeSection === 'placementRoadmap' && (
+            <div className={styles.hubDashEmbed}>
+              <PlacementRoadmapPage />
             </div>
           )}
 

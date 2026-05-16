@@ -1,0 +1,684 @@
+/* Placement Test — editorial English assessment for Community access.
+ * Cream surface, hairline borders, serif headlines, brand-maroon accents.
+ * Mirrors Top Coach Launch Event / My Rewards / Settings card chrome.
+ */
+
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-brand-softer: rgba(123, 31, 47, 0.04);
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-warn: #92580f;
+$ed-warn-bg: #fdf3d7;
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+
+/* Renders inside the student-hub `.centerCol` (mounted as a section of
+ * CommunityHubMockPage). The cream backdrop fills the available space
+ * — height comes from content + container, not the viewport. */
+.page {
+  background: $ed-cream-page;
+  min-height: 100%;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.shell {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: $ed-brand;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover {
+    color: $ed-brand-hover;
+    text-decoration: underline;
+  }
+}
+
+/* ── Hero (intro) ───────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 18px;
+  padding: 32px 32px 28px;
+  box-shadow: 0 12px 36px rgba(74, 14, 26, 0.28);
+  color: #fff;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -40% -30% auto auto;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(
+      closest-side,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0) 70%
+    );
+    pointer-events: none;
+  }
+}
+
+.hero__eyebrow {
+  position: relative;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #fde2e6;
+  margin-bottom: 14px;
+  padding: 3px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.hero__title {
+  position: relative;
+  font-family: $ed-serif;
+  font-size: 2.2rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.14;
+  color: #fff;
+  margin: 0 0 8px 0;
+
+  em {
+    font-style: italic;
+    font-weight: 500;
+    color: #fde2e6;
+  }
+}
+
+.hero__lede {
+  position: relative;
+  font-family: $ed-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 20px 0;
+  max-width: 56ch;
+}
+
+.hero__metaRow {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.hero__metaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+}
+
+.hero__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: $ed-brand;
+  border: 1px solid #fff;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-family: $ed-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover,
+  &:focus {
+    background: #fde2e6;
+    color: $ed-brand-hover;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.hero__footnote {
+  position: relative;
+  margin: 14px 0 0 0;
+  font-family: $ed-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+/* ── Quiz card ──────────────────────────────────────────────────── */
+
+.card {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 28px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: $ed-serif;
+  font-size: 0.88rem;
+  color: $ed-muted;
+}
+
+.progressLabel {
+  letter-spacing: 0.04em;
+}
+
+.progressBar {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: $ed-hairline;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBar__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: $ed-brand;
+  transition: width 0.25s ease;
+}
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid $ed-hairline;
+  border-radius: 999px;
+  background: #fff;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: $ed-ink-soft;
+  font-variant-numeric: tabular-nums;
+}
+
+.timerLow {
+  color: $ed-warn;
+  border-color: rgba(146, 88, 15, 0.3);
+  background: $ed-warn-bg;
+}
+
+.categoryEyebrow {
+  font-family: $ed-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-brand;
+  font-weight: 700;
+}
+
+.questionText {
+  font-family: $ed-serif;
+  font-size: 1.35rem;
+  line-height: 1.4;
+  color: $ed-ink;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  font-family: $ed-serif;
+  font-size: 1rem;
+  color: $ed-ink;
+  transition: border-color 0.12s, background 0.12s, transform 0.06s;
+
+  &:hover {
+    border-color: rgba(123, 31, 47, 0.35);
+    background: $ed-brand-softer;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.optionActive {
+  border-color: $ed-brand;
+  background: $ed-brand-soft;
+}
+
+.option__letter {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid $ed-hairline;
+  background: $ed-cream-page;
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $ed-ink-soft;
+  letter-spacing: 0;
+}
+
+.optionActive .option__letter {
+  border-color: $ed-brand;
+  background: $ed-brand;
+  color: #fff;
+}
+
+.option__text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  border-top: 1px solid $ed-hairline-inner;
+  padding-top: 18px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  background: $ed-brand;
+  color: #fff;
+  border-color: $ed-brand;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}
+
+.btnGhost {
+  background: transparent;
+  color: $ed-ink-soft;
+  border-color: $ed-hairline;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    color: $ed-brand;
+    border-color: $ed-brand;
+  }
+}
+
+/* ── Result page ────────────────────────────────────────────────── */
+
+.resultCard {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 16px;
+  padding: 40px 32px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.scoreDisc {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $ed-serif;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.02em;
+  background: radial-gradient(
+    circle at 32% 30%,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0) 35%
+  ),
+    radial-gradient(
+      circle at 50% 50%,
+      #9c2a3c 0%,
+      $ed-brand 55%,
+      #4a0e1a 100%
+    );
+  box-shadow:
+    inset 0 -8px 18px rgba(0, 0, 0, 0.28),
+    inset 0 6px 14px rgba(255, 255, 255, 0.12),
+    0 14px 30px rgba(74, 14, 26, 0.26);
+}
+
+.scoreDiscFail {
+  background: radial-gradient(
+    circle at 32% 30%,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0) 35%
+  ),
+    radial-gradient(
+      circle at 50% 50%,
+      #6e6256 0%,
+      #4b463f 55%,
+      #2a2520 100%
+    );
+  box-shadow:
+    inset 0 -8px 18px rgba(0, 0, 0, 0.28),
+    inset 0 6px 14px rgba(255, 255, 255, 0.08),
+    0 12px 28px rgba(28, 26, 23, 0.22);
+}
+
+.resultTitle {
+  font-family: $ed-serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: $ed-ink;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.resultLevel {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  color: $ed-muted;
+  margin: 0;
+
+  strong {
+    color: $ed-brand;
+    font-weight: 600;
+  }
+}
+
+.resultBreakdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 8px;
+  font-family: $ed-serif;
+  font-size: 0.92rem;
+  color: $ed-ink-soft;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    strong {
+      font-weight: 600;
+      color: $ed-ink;
+    }
+  }
+}
+
+.resultBlurb {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: $ed-ink-soft;
+  max-width: 52ch;
+  margin: 8px 0 0 0;
+}
+
+.divider {
+  width: 60px;
+  height: 1px;
+  background: $ed-hairline;
+  margin: 8px 0;
+}
+
+/* ── Plan cards (post-pass) ─────────────────────────────────────── */
+
+.plans {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planCard {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 22px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  position: relative;
+}
+
+.planCardFeatured {
+  border-color: $ed-brand;
+  box-shadow: 0 6px 20px rgba(123, 31, 47, 0.08);
+}
+
+.planCard__ribbon {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  background: $ed-brand;
+  color: #fff;
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.planCard__eyebrow {
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-muted;
+  font-weight: 700;
+}
+
+.planCard__price {
+  font-family: $ed-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: $ed-ink;
+  letter-spacing: -0.02em;
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: $ed-muted;
+    margin-left: 4px;
+  }
+}
+
+.planCard__features {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: $ed-serif;
+  font-size: 0.9rem;
+  color: $ed-ink-soft;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+.planCard__cta {
+  margin-top: auto;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Retake CTA (fail state) ───────────────────────────────────── */
+
+.retakeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.retakeNote {
+  font-family: $ed-serif;
+  font-size: 0.88rem;
+  color: $ed-muted;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Empty / loading / error states ─────────────────────────────── */
+
+.centered {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 10px;
+  font-family: $ed-serif;
+  color: $ed-muted;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 540px) {
+  .page {
+    padding: 20px 14px 48px;
+    gap: 16px;
+  }
+
+  .hero {
+    padding: 24px 22px 22px;
+  }
+
+  .hero__title {
+    font-size: 1.8rem;
+  }
+
+  .card {
+    padding: 22px 20px 24px;
+  }
+
+  .questionText {
+    font-size: 1.18rem;
+  }
+
+  .option {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .resultCard {
+    padding: 30px 22px 28px;
+  }
+
+  .scoreDisc {
+    width: 112px;
+    height: 112px;
+    font-size: 2.15rem;
+  }
+}

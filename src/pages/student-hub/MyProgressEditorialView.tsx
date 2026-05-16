@@ -35,6 +35,7 @@ import {
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
 import { useInvalidateGetMeMutation } from 'src/app/services/users';
+import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import dayjs from 'dayjs';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -92,6 +93,10 @@ const MyProgressEditorialView: React.FC = () => {
   const { data: me } = useGetMeQuery(undefined);
   const profile = useTypedSelector((s) => s.auth.profile);
   const { isCommunityEnrolled } = useJourneyExperience();
+  // Funnel-aware Community CTA — sends the user to the right next-step
+  // (placement test → profile → roadmap → subscription) based on how
+  // far they've made it through the funnel.
+  const communityGate = useCommunityAccessGate();
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -622,11 +627,8 @@ const MyProgressEditorialView: React.FC = () => {
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary"
-                onClick={() =>
-                  navigate(
-                    '/student-hub?section=account&target=settings&tab=subscription',
-                  )
-                }
+                onClick={() => navigate(communityGate.destination)}
+                disabled={communityGate.state === 'loading'}
               >
                 <Sparkles size={13} />
                 Unlock Community

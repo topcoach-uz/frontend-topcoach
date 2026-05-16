@@ -1,0 +1,404 @@
+/* Admissions profile wizard — editorial form controls.
+ * Same tokens as PlacementTest.module.scss; this file adds form-control
+ * primitives (inputs, selects, chip multiselect, sub-step stepper).
+ */
+
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-brand-softer: rgba(123, 31, 47, 0.04);
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+/* ── Layout (mirrors PlacementTest .page / .shell) ──────────────── */
+
+/* Renders inside StudentHubLayout's <Content>. No full-viewport
+ * min-height — the layout owns vertical sizing. */
+.page {
+  background: $ed-cream-page;
+  min-height: 100%;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.shell {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: $ed-brand;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover {
+    color: $ed-brand-hover;
+    text-decoration: underline;
+  }
+}
+
+/* ── Sub-step stepper (Basic · Academic · Goals · Needs) ────────── */
+
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.stepper__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 10px;
+  border-bottom: 2px solid $ed-hairline;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.stepper__cellActive {
+  border-bottom-color: $ed-brand;
+}
+
+.stepper__cellDone {
+  border-bottom-color: $ed-success;
+}
+
+.stepper__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $ed-hairline;
+  background: $ed-cream-page;
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $ed-muted;
+}
+
+.stepper__cellActive .stepper__dot {
+  border-color: $ed-brand;
+  background: $ed-brand;
+  color: #fff;
+}
+
+.stepper__cellDone .stepper__dot {
+  border-color: $ed-success;
+  background: $ed-success;
+  color: #fff;
+}
+
+.stepper__label {
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  color: $ed-muted;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.stepper__cellActive .stepper__label {
+  color: $ed-brand;
+  font-weight: 600;
+}
+
+.stepper__cellDone .stepper__label {
+  color: $ed-success;
+}
+
+/* ── Card ───────────────────────────────────────────────────────── */
+
+.card {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 28px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card__eyebrow {
+  font-family: $ed-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-brand;
+  font-weight: 700;
+}
+
+.card__title {
+  font-family: $ed-serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: $ed-ink;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.card__lede {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  color: $ed-muted;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Score badge on the profile pages — a quiet breadcrumb that the test
+   was already passed. Sits at the top of every sub-step. */
+.placementChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $ed-success-bg;
+  border: 1px solid rgba(4, 120, 87, 0.25);
+  border-radius: 999px;
+  padding: 5px 14px 5px 10px;
+  font-family: $ed-serif;
+  font-size: 0.88rem;
+  color: $ed-success;
+  align-self: flex-start;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+/* ── Form primitives ────────────────────────────────────────────── */
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.label {
+  font-family: $ed-serif;
+  font-size: 0.92rem;
+  color: $ed-ink;
+  font-weight: 500;
+}
+
+.labelHelp {
+  font-family: $ed-serif;
+  font-size: 0.82rem;
+  color: $ed-muted;
+  font-style: italic;
+  margin-top: -2px;
+}
+
+.input,
+.select,
+.textarea {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  color: $ed-ink;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 10px;
+  padding: 11px 14px;
+  width: 100%;
+  transition: border-color 0.12s, box-shadow 0.12s;
+
+  &::placeholder {
+    color: $ed-muted;
+    font-style: italic;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $ed-brand;
+    box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: $ed-cream-page;
+  }
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b6258' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 36px;
+}
+
+/* ── Chip group (single/multi-select chips) ─────────────────────── */
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid $ed-hairline;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: $ed-serif;
+  font-size: 0.92rem;
+  color: $ed-ink-soft;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(123, 31, 47, 0.4);
+    color: $ed-brand;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.chipActive {
+  border-color: $ed-brand;
+  background: $ed-brand-soft;
+  color: $ed-brand;
+  font-weight: 600;
+}
+
+/* "Add other" inline input for free-form additions to the chip set. */
+.chipAddInputRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+
+  input {
+    flex: 1;
+  }
+}
+
+/* ── Sub-step actions ───────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  border-top: 1px solid $ed-hairline-inner;
+  padding-top: 18px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  background: $ed-brand;
+  color: #fff;
+  border-color: $ed-brand;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}
+
+.btnGhost {
+  background: transparent;
+  color: $ed-ink-soft;
+  border-color: $ed-hairline;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    color: $ed-brand;
+    border-color: $ed-brand;
+  }
+}
+
+/* Autosave indicator next to the title. */
+.savingBadge {
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  color: $ed-muted;
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 540px) {
+  .page {
+    padding: 20px 14px 48px;
+    gap: 16px;
+  }
+  .card {
+    padding: 22px 20px 24px;
+  }
+  .card__title {
+    font-size: 1.4rem;
+  }
+  .stepper__label {
+    font-size: 0.7rem;
+  }
+}

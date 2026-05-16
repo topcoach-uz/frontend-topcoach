@@ -5,6 +5,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Navigate,
+  useParams,
   useSearchParams,
 } from "react-router-dom";
 import { Spin } from "antd";
@@ -47,6 +48,20 @@ const CentralAsianAdmissionsForumPageLazy = lazy(
 const TopcoachLaunchEventPageLazy = lazy(
   () => import("src/pages/events/topcoach-launch-event")
 );
+/**
+ * The placement-test funnel pages are mounted as internal sections of
+ * `CommunityHubMockPage` at `/student-hub?section=placement-*` so they
+ * inherit the COMMUNITY/LEARNING/ACCOUNT sidebar. The old top-level
+ * URLs below redirect to those new section URLs for backwards
+ * compatibility — bookmarks and shared links keep working.
+ */
+function PlacementProfileRedirect() {
+  const { step } = useParams<{ step?: string }>();
+  const target = step
+    ? `/student-hub?section=placement-profile&step=${encodeURIComponent(step)}`
+    : '/student-hub?section=placement-profile';
+  return <Navigate to={target} replace />;
+}
 const EventDetailsPageLazy = lazy(
   () => import("src/pages/events/detail")
 );
@@ -310,6 +325,41 @@ function RouterProvider() {
                   <Suspense fallback={<Loader height="70vh" />}>
                     <TopcoachLaunchEventPageLazy />
                   </Suspense>
+                }
+              />
+              {/* Legacy placement-test URLs — redirect to the hub
+                  sections where the pages now live (so the sidebar
+                  shows). Direct deep-links + external bookmarks stay
+                  functional. */}
+              <Route
+                path="/placement-test"
+                element={
+                  <Navigate
+                    to="/student-hub?section=placement-test"
+                    replace
+                  />
+                }
+              />
+              <Route
+                path="/placement-test/profile"
+                element={
+                  <Navigate
+                    to="/student-hub?section=placement-profile"
+                    replace
+                  />
+                }
+              />
+              <Route
+                path="/placement-test/profile/:step"
+                element={<PlacementProfileRedirect />}
+              />
+              <Route
+                path="/placement-test/roadmap"
+                element={
+                  <Navigate
+                    to="/student-hub?section=placement-roadmap"
+                    replace
+                  />
                 }
               />
               <Route

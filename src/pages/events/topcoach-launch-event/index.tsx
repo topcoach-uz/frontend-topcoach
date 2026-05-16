@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { useTypedSelector } from 'src/app/store';
+import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import { useLaunchEventVisible } from 'src/lib/launchEventAccess';
 import { Navigate } from 'react-router-dom';
 import {
@@ -166,6 +167,12 @@ export default function TopcoachLaunchEventPage() {
     useSubmitTopcoachLaunchEventMutation();
 
   const alreadyRegistered = data?.registration?.status === 'confirmed';
+
+  // Funnel-aware Community CTA (shown on the registration success screen).
+  // The gate routes registrants to the right next-step — placement test,
+  // profile wizard, roadmap preview, or subscription tab — based on how
+  // far through the Community membership funnel they are.
+  const communityGate = useCommunityAccessGate();
 
   const [step, setStep] = useState<Step>('about');
   const [draft, setDraft] = useState<Draft>(() => ({
@@ -365,9 +372,26 @@ export default function TopcoachLaunchEventPage() {
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={() => navigate(communityGate.destination)}
+              disabled={communityGate.state === 'loading'}
+            >
+              {communityGate.state === 'eligible'
+                ? 'Open Community'
+                : communityGate.state === 'needs_placement_test'
+                  ? 'Join the Community'
+                  : communityGate.state === 'needs_profile'
+                    ? 'Finish your profile'
+                    : communityGate.state === 'needs_subscription'
+                      ? 'See your roadmap'
+                      : 'Join the Community'}
+              <ArrowRight size={14} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnGhost}`}
               onClick={() => navigate('/student-hub')}
             >
-              Back to My Journey <ArrowRight size={14} />
+              Back to My Journey
             </button>
           </div>
         </article>

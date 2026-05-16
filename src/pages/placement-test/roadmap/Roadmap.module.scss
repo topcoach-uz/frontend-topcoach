@@ -1,0 +1,730 @@
+/* Personalized admissions roadmap — editorial.
+ * Maroon banner header → student-strip → timeline → action plan
+ * (with locked items blurred for non-subscribers) → plan picker.
+ * Cream/maroon/serif tokens consistent with PlacementTest + Profile.
+ */
+
+$ed-cream-page: #faf8f3;
+$ed-cream-elev: #fbfaf6;
+$ed-paper: #ffffff;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-hairline-inner: #ece9df;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-success: #047857;
+$ed-success-bg: #dcfce7;
+$ed-gold: #b6824b;
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+
+/* Renders inside StudentHubLayout's <Content>. No full-viewport
+ * min-height — the layout owns vertical sizing. */
+.page {
+  background: $ed-cream-page;
+  min-height: 100%;
+  padding: 32px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.shell {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: $ed-brand;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover {
+    color: $ed-brand-hover;
+    text-decoration: underline;
+  }
+}
+
+/* ── Banner (maroon) ────────────────────────────────────────────── */
+
+.banner {
+  background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
+  border-radius: 18px 18px 0 0;
+  padding: 24px 30px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -40% -30% auto auto;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(
+      closest-side,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0) 70%
+    );
+    pointer-events: none;
+  }
+}
+
+.banner__eyebrow {
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #fde2e6;
+  margin-bottom: 4px;
+}
+
+.banner__title {
+  position: relative;
+  font-family: $ed-serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.banner__date {
+  position: relative;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: right;
+
+  small {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.62rem;
+    color: #fde2e6;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+}
+
+/* ── Student strip ──────────────────────────────────────────────── */
+
+.studentStrip {
+  background: $ed-paper;
+  border: 1px solid $ed-hairline;
+  border-top: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  padding: 18px 30px 18px;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px 18px;
+  }
+}
+
+.studentStrip__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  small {
+    font-family: $ed-serif;
+    font-size: 0.74rem;
+    color: $ed-muted;
+    letter-spacing: 0.04em;
+  }
+
+  strong {
+    font-family: $ed-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: $ed-ink;
+  }
+}
+
+.studentStrip__strengthStrong {
+  color: $ed-success !important;
+}
+.studentStrip__strengthCompetitive {
+  color: $ed-gold !important;
+}
+.studentStrip__strengthDeveloping {
+  color: $ed-muted !important;
+}
+
+/* ── Card primitive ─────────────────────────────────────────────── */
+
+.card {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 24px 30px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionEyebrow {
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-brand;
+  font-weight: 700;
+}
+
+.summary {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: $ed-ink-soft;
+  margin: 0;
+}
+
+/* ── Timeline ───────────────────────────────────────────────────── */
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.timelineCard {
+  background: $ed-paper;
+  border: 1px solid $ed-hairline;
+  border-left: 3px solid $ed-brand;
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &:nth-child(2) {
+    border-left-color: $ed-gold;
+  }
+  &:nth-child(3) {
+    border-left-color: $ed-success;
+  }
+}
+
+.timelineCard__phase {
+  font-family: $ed-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: $ed-ink;
+}
+
+.timelineCard__period {
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: $ed-brand;
+
+  .timelineCard:nth-child(2) & {
+    color: $ed-gold;
+  }
+  .timelineCard:nth-child(3) & {
+    color: $ed-success;
+  }
+}
+
+.timelineCard__focus {
+  font-family: $ed-serif;
+  font-size: 0.88rem;
+  color: $ed-muted;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ── Action plan ────────────────────────────────────────────────── */
+
+.actionList {
+  display: flex;
+  flex-direction: column;
+}
+
+.actionItem {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 0 16px 0;
+  border-bottom: 1px solid $ed-hairline-inner;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.actionItem__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $ed-brand;
+  margin-top: 9px;
+}
+
+.actionItem__dotMedium {
+  background: $ed-gold;
+}
+
+.actionItem__dotLow {
+  background: $ed-muted;
+}
+
+.actionItem__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.actionItem__title {
+  font-family: $ed-serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: $ed-ink;
+  margin: 0;
+}
+
+.actionItem__desc {
+  font-family: $ed-serif;
+  font-size: 0.9rem;
+  color: $ed-muted;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.actionItem__timeline {
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: $ed-brand;
+  font-weight: 600;
+  white-space: nowrap;
+  padding-top: 6px;
+}
+
+.actionItem__resources {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-left: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    a {
+      color: $ed-brand;
+      font-family: $ed-serif;
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    span {
+      font-family: $ed-serif;
+      font-size: 0.8rem;
+      color: $ed-muted;
+      line-height: 1.4;
+    }
+  }
+}
+
+.actionItem__topcoachBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: $ed-brand-soft;
+  border: 1px solid rgba(123, 31, 47, 0.18);
+  color: $ed-brand;
+  font-family: $ed-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(123, 31, 47, 0.14);
+  }
+}
+
+/* ── Lock overlay (for non-subscribers) ─────────────────────────── */
+
+.lockedZone {
+  position: relative;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.lockedItems {
+  filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.6;
+  /* Synthetic placeholder rows since we never send the locked content
+     from the server — just hint at structure with these blurred bars. */
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 6px 0;
+}
+
+.lockedItem {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.lockedItem__bar {
+  background: $ed-hairline;
+  border-radius: 4px;
+  height: 14px;
+
+  &:first-of-type {
+    width: 60%;
+    margin-bottom: 6px;
+  }
+
+  &:last-of-type {
+    width: 85%;
+    height: 10px;
+  }
+}
+
+.lockedItem__col {
+  display: flex;
+  flex-direction: column;
+}
+
+.lockedOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lockedCard {
+  background: $ed-paper;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 8px 28px rgba(28, 26, 23, 0.12);
+}
+
+.lockedCard__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: $ed-brand-soft;
+  color: $ed-brand;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lockedCard__title {
+  font-family: $ed-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $ed-ink;
+  margin: 0;
+}
+
+.lockedCard__sub {
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: $ed-muted;
+  margin: 0;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  background: $ed-brand;
+  color: #fff;
+  border-color: $ed-brand;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}
+
+.btnGhost {
+  background: transparent;
+  color: $ed-ink-soft;
+  border-color: $ed-hairline;
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled) {
+    color: $ed-brand;
+    border-color: $ed-brand;
+  }
+}
+
+/* ── Plan picker (post-preview) ─────────────────────────────────── */
+
+.plansHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.plansHeader__title {
+  font-family: $ed-serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: $ed-ink;
+  margin: 0;
+}
+
+.plansHeader__lede {
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  color: $ed-muted;
+  margin: 0;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planCard {
+  background: $ed-cream-elev;
+  border: 1px solid $ed-hairline;
+  border-radius: 14px;
+  padding: 22px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.planCardFeatured {
+  border-color: $ed-brand;
+  box-shadow: 0 6px 20px rgba(123, 31, 47, 0.08);
+}
+
+.planCard__ribbon {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  background: $ed-brand;
+  color: #fff;
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.planCard__eyebrow {
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-muted;
+  font-weight: 700;
+}
+
+.planCard__price {
+  font-family: $ed-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: $ed-ink;
+  letter-spacing: -0.02em;
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: $ed-muted;
+    margin-left: 4px;
+  }
+}
+
+.planCard__features {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: $ed-serif;
+  font-size: 0.9rem;
+  color: $ed-ink-soft;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+.planCard__cta {
+  margin-top: auto;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Footer row ─────────────────────────────────────────────────── */
+
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.regenInfo {
+  font-family: $ed-serif;
+  font-size: 0.82rem;
+  color: $ed-muted;
+  font-style: italic;
+}
+
+.profileChangedBanner {
+  background: #fdf3d7;
+  border: 1px solid rgba(146, 88, 15, 0.25);
+  color: #92580f;
+  font-family: $ed-serif;
+  font-size: 0.88rem;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Empty + loading ────────────────────────────────────────────── */
+
+.centered {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 10px;
+  font-family: $ed-serif;
+  color: $ed-muted;
+  text-align: center;
+}
+
+@media (max-width: 540px) {
+  .page {
+    padding: 20px 14px 48px;
+    gap: 16px;
+  }
+
+  .banner {
+    padding: 22px 22px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .banner__date {
+    text-align: left;
+  }
+
+  .banner__title {
+    font-size: 1.45rem;
+  }
+
+  .card {
+    padding: 20px 18px;
+  }
+
+  .actionItem {
+    grid-template-columns: 12px 1fr;
+
+    .actionItem__timeline {
+      grid-column: 2;
+      padding-top: 0;
+    }
+  }
+}

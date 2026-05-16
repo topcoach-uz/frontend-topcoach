@@ -1,0 +1,97 @@
+/* Settings · Roadmap tab — thin wrapper around the shared RoadmapBody.
+ * The shared body already carries the editorial chrome (cream cards,
+ * maroon banner, hairlines); this stylesheet only provides:
+ *   - "host" container width matching the rest of the settings page
+ *   - "locked card" body for the gating states
+ *   - centered loading copy
+ */
+
+$ed-cream-elev: #fbfaf6;
+$ed-ink: #1c1a17;
+$ed-ink-soft: #4b463f;
+$ed-muted: #6b6258;
+$ed-hairline: #e5e3da;
+$ed-brand: #7b1f2f;
+$ed-brand-hover: #5d1622;
+$ed-brand-soft: rgba(123, 31, 47, 0.08);
+$ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+.host {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.card {
+  margin-top: 0;
+}
+
+.centered {
+  font-family: $ed-serif;
+  color: $ed-muted;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px 12px 12px;
+}
+
+.gate__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $ed-brand-soft;
+  color: $ed-brand;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gate__title {
+  font-family: $ed-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $ed-ink;
+  margin: 0;
+}
+
+.gate__body {
+  font-family: $ed-serif;
+  font-size: 0.95rem;
+  color: $ed-muted;
+  max-width: 44ch;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gate__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $ed-brand;
+  color: #fff;
+  border: 1px solid $ed-brand;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-family: $ed-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover,
+  &:focus {
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+  }
+}

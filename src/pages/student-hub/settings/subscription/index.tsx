@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Skeleton, message } from 'antd';
-import { useSearchParams } from 'react-router-dom';
+import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useChangeSubscriptionPlanMutation,
@@ -10,6 +11,7 @@ import {
   useGetSubscriptionPlansQuery,
   useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
+import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import {
   FIXTURE_BILLING_HISTORY,
   FIXTURE_PAYMENT_METHODS,
@@ -57,8 +59,15 @@ const isSubscriptionState = (value: string | null): value is SubscriptionState =
  */
 export default function SubscriptionTab() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stateParam = searchParams.get('state');
+
+  // Funnel gate. Users who haven't passed the placement test (or who
+  // haven't completed the admissions profile) can't enter the Community
+  // subscription flow. Admin-granted users + already-subscribed users
+  // are `eligible` and see the normal tab below.
+  const communityGate = useCommunityAccessGate();
 
   // Mock mode: `?state=mock` always pulls fixtures (defaults to 'active').
   // Any explicit known state name (`active`, `none`, …) is also treated
@@ -334,6 +343,73 @@ export default function SubscriptionTab() {
         <div className={styles.section}>
           <Skeleton active paragraph={{ rows: 4 }} />
         </div>
+      </div>
+    );
+  }
+
+  // Funnel gate. Before the user is allowed to subscribe (or even see
+  // the plan picker / card-add CTA), they must pass the English
+  // placement test and complete the admissions profile. Show a focused
+  // "complete this first" card instead of the full tab.
+  //
+  // Mock mode (`?state=...`) bypasses the gate so designers can still
+  // flip through every fixture variant offline.
+  const showGate =
+    !mockMode &&
+    (communityGate.state === 'needs_placement_test' ||
+      communityGate.state === 'needs_profile');
+
+  if (showGate) {
+    return (
+      <div className={styles.page}>
+        <Alert
+          type="success"
+          showIcon
+          icon={<Sparkles size={18} />}
+          message={t(
+            'settings.subscription.gate.title',
+            'One quick step before you can subscribe',
+          )}
+          description={
+            communityGate.state === 'needs_placement_test'
+              ? t(
+                  'settings.subscription.gate.descPlacement',
+                  'Pass the short English placement test to unlock the Community subscription. It takes about 10 minutes and you can retake it as many times as you need.',
+                )
+              : t(
+                  'settings.subscription.gate.descProfile',
+                  'Finish your admissions profile (a few quick questions) so we can personalize your roadmap before you start your trial.',
+                )
+          }
+          action={
+            <button
+              type="button"
+              onClick={() => navigate(communityGate.destination)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                background: '#7b1f2f',
+                color: '#fff',
+                border: '1px solid #7b1f2f',
+                padding: '8px 16px',
+                borderRadius: 10,
+                fontFamily:
+                  "'Iowan Old Style', 'Charter', 'Georgia', serif",
+                fontSize: '0.92rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <BookOpen size={14} />
+              {communityGate.state === 'needs_placement_test'
+                ? t('settings.subscription.gate.ctaPlacement', 'Take the test')
+                : t('settings.subscription.gate.ctaProfile', 'Continue profile')}
+              <ArrowRight size={14} />
+            </button>
+          }
+        />
       </div>
     );
   }
