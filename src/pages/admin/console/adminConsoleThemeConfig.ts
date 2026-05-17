@@ -53,10 +53,33 @@ export function getAdminConsoleAntdTheme(): ThemeConfig {
       },
       Select: {
         optionSelectedBg: 'rgba(16, 185, 129, 0.2)',
+        selectorBg: '#2d3340',
+        colorTextPlaceholder: '#a8b4c8',
+        colorBgElevated: '#252a35',
       },
       Input: {
         activeBorderColor: '#10b981',
         hoverBorderColor: 'rgba(16, 185, 129, 0.5)',
+        colorTextPlaceholder: '#a8b4c8',
+      },
+      DatePicker: {
+        colorBgContainer: '#2d3340',
+        colorTextPlaceholder: '#a8b4c8',
+        colorBgElevated: '#252a35',
+        cellHoverBg: 'rgba(16, 185, 129, 0.12)',
+        cellActiveWithRangeBg: 'rgba(16, 185, 129, 0.18)',
+      },
+      Modal: {
+        contentBg: '#252a35',
+        headerBg: '#252a35',
+        titleColor: '#f4f4f5',
+        titleFontSize: 16,
+        colorIcon: '#a8b4c8',
+        colorIconHover: '#f4f4f5',
+      },
+      Empty: {
+        colorText: '#d1d5e0',
+        colorTextDisabled: '#a8b4c8',
       },
       Breadcrumb: {
         itemColor: '#9aa3b2',

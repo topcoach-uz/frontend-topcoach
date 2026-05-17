@@ -1,0 +1,168 @@
+// Canonical editorial design tokens for TopCoach.
+//
+// Used by the placement test, profile wizard, roadmap, course-learning
+// pages and several other surfaces. Originally defined inline in each
+// SCSS module; this file is the single source of truth going forward.
+//
+// New code SHOULD `@use 'src/styles/editorial-tokens' as ed;` and reference
+// values as `ed.$cream-page` etc. Legacy `$ed-*` aliases at the bottom of
+// this file exist so existing call sites can switch over by replacing
+// their inline token block with `@import 'src/styles/editorial-tokens';`.
+
+// ──────────────────────────────────────────────────────────────
+// Colors — paper, ink, brand
+// ──────────────────────────────────────────────────────────────
+
+$cream-page:      #faf8f3; // page background
+$cream-elev:      #fbfaf6; // raised card / sidebar rail
+$cream-sidebar:   #f6f4ed; // course sidebar rail (slightly cooler)
+$cream-soft:      #fdf8ef; // advisory / footnote bg
+
+$ink:             #1c1a17; // primary text
+$ink-soft:        #4b463f; // secondary text
+$muted:           #6b6258; // tertiary text / captions
+$muted-2:         #8a8378; // future-state lesson rows, etc.
+
+$hairline:        #e5e3da; // standard 1px divider
+$hairline-inner:  #ece9df; // subtler inner divider
+
+$brand:           #7b1f2f; // primary maroon — state + accent only
+$brand-hover:     #5d1622;
+$brand-soft:      #fbe9ec; // hover bg for maroon links
+$brand-tint:      rgba(123, 31, 47, 0.08); // current-row background
+
+$success:         #047857;
+$success-bg:      #dcfce7;
+$success-rule:    rgba(4, 120, 87, 0.4);
+
+$warn:            #b45309;
+
+// ──────────────────────────────────────────────────────────────
+// Typography
+// ──────────────────────────────────────────────────────────────
+
+$serif:           'Iowan Old Style', 'Charter', 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+$sans:            'Inter Tight', 'Inter', 'Söhne', ui-sans-serif, system-ui, -apple-system, sans-serif;
+$mono:            'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+// Editorial uses two scales — display (serif) for content, small-caps for labels.
+$display-xs:      1.0625rem;   // 17px
+$display-sm:      1.25rem;     // 20px
+$display-md:      1.5rem;      // 24px
+$display-lg:      2rem;        // 32px
+$display-xl:      2.5rem;      // 40px
+
+$smcaps-size:     0.72rem;     // 11.5px — eyebrows
+$smcaps-tracking: 0.14em;
+
+// ──────────────────────────────────────────────────────────────
+// Geometry
+// ──────────────────────────────────────────────────────────────
+
+$column-max:      720px;       // reading column max-width
+$sidebar-w:       300px;
+$sidebar-w-collapsed: 64px;
+
+$radius-sm:       6px;
+$radius-md:       10px;
+$radius-lg:       14px;
+
+// ──────────────────────────────────────────────────────────────
+// Reusable mixins
+// ──────────────────────────────────────────────────────────────
+
+@mixin eyebrow {
+  font-family: $sans;
+  font-size: $smcaps-size;
+  font-weight: 700;
+  letter-spacing: $smcaps-tracking;
+  text-transform: uppercase;
+  color: $brand;
+}
+
+@mixin label-smcaps {
+  font-family: $sans;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: $smcaps-tracking;
+  text-transform: uppercase;
+  color: $muted;
+}
+
+@mixin advisory-card {
+  background: $cream-soft;
+  border: 1px dashed #d6d3c8;
+  border-radius: $radius-lg;
+  padding: 22px 24px;
+  text-align: left;
+  color: $ink-soft;
+}
+
+@mixin column {
+  max-width: $column-max;
+  margin: 0 auto;
+}
+
+@mixin hairline-divider {
+  border: 0;
+  border-top: 1px solid $hairline;
+  margin: 0;
+}
+
+// Typographic link — maroon text, underline on hover, no boxes.
+@mixin ed-link {
+  font-family: $sans;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $brand;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    color: $brand-hover;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  &:disabled {
+    color: $muted-2;
+    cursor: not-allowed;
+    &:hover { text-decoration: none; }
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// Legacy aliases — for files migrating off inline tokens.
+// Drop these once nothing references `$ed-*`.
+// ──────────────────────────────────────────────────────────────
+
+$ed-cream-page: $cream-page;
+$ed-cream-elev: $cream-elev;
+$ed-ink: $ink;
+$ed-ink-soft: $ink-soft;
+$ed-muted: $muted;
+$ed-hairline: $hairline;
+$ed-hairline-inner: $hairline-inner;
+$ed-brand: $brand;
+$ed-brand-hover: $brand-hover;
+$ed-brand-soft: $brand-soft;
+$ed-success: $success;
+$ed-success-bg: $success-bg;
+$ed-serif: $serif;
+
+@mixin ed-advisory-card { @include advisory-card; }
+@mixin ed-eyebrow { @include eyebrow; }
+@mixin ed-card {
+  background: #fff;
+  border: 1px solid $hairline;
+  border-radius: $radius-lg;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}

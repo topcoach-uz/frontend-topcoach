@@ -1,0 +1,291 @@
+/**
+ * Dark-theme overrides for the unified Manage Access modal and any
+ * popconfirms it spawns. Scoped by `rootClassName` so the styles only
+ * apply when these surfaces are rendered from the admin console.
+ *
+ * Ant Design renders Modal / Popconfirm / Popover into portals at <body>,
+ * so the `.admin-console-app` wrapper does not reach them. These rules
+ * pick them up via the explicit rootClassName on each surface.
+ */
+
+/* ───────────────────────── Modal ───────────────────────── */
+
+/* Antd v5's ConfigProvider + theme.darkAlgorithm generates CSS-in-JS
+   for .ant-modal-content / .ant-modal-title / .ant-modal-header. Those
+   styles are injected late and tie with our specificity, so we need
+   !important to win and force the admin-console dark surface. */
+
+.ac-manage-access-modal {
+  .ant-modal-content {
+    background: var(--ac-bg-surface) !important;
+    border: 1px solid var(--ac-border-strong) !important;
+    border-radius: var(--ac-radius) !important;
+    box-shadow: var(--ac-shadow-md) !important;
+    color: var(--ac-text) !important;
+    padding: 0 !important;
+  }
+
+  .ant-modal-header {
+    background: var(--ac-bg-surface) !important;
+    border-bottom: 1px solid var(--ac-border) !important;
+    padding: 18px 24px 14px !important;
+    margin: 0 !important;
+    color: var(--ac-text) !important;
+  }
+
+  .ant-modal-title {
+    color: var(--ac-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+  }
+
+  .ant-modal-body {
+    padding: 20px 24px 24px !important;
+    color: var(--ac-text) !important;
+    background: transparent !important;
+  }
+
+  .ant-modal-body p,
+  .ant-modal-body span,
+  .ant-modal-body label,
+  .ant-modal-body strong {
+    color: var(--ac-text);
+  }
+
+  .ant-modal-close,
+  .ant-modal-close-x {
+    color: var(--ac-text-muted) !important;
+  }
+  .ant-modal-close:hover {
+    color: var(--ac-text) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* No global footer — actions live inside the body next to each row. */
+  .ant-modal-footer {
+    display: none !important;
+  }
+}
+
+/* Mask: dark and opaque so the page behind genuinely recedes. */
+.ac-manage-access-mask {
+  background: rgba(6, 8, 12, 0.78) !important;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* ───────────────────── Modal body content ───────────────────── */
+
+.ac-manage-access {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &__subject {
+    font-size: 13px;
+    color: var(--ac-text-muted);
+  }
+  &__subject strong {
+    color: var(--ac-text);
+    font-weight: 600;
+  }
+
+  /* Tabs */
+  .ant-tabs-nav {
+    margin: 0 0 12px;
+  }
+  .ant-tabs-nav::before {
+    border-bottom-color: var(--ac-border) !important;
+  }
+  .ant-tabs-tab {
+    color: var(--ac-text-muted) !important;
+    padding: 8px 0 !important;
+    font-size: 13px;
+  }
+  .ant-tabs-tab + .ant-tabs-tab {
+    margin-left: 22px !important;
+  }
+  .ant-tabs-tab:hover {
+    color: var(--ac-text) !important;
+  }
+  .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--ac-accent) !important;
+    font-weight: 600;
+  }
+  .ant-tabs-ink-bar {
+    background: var(--ac-accent) !important;
+  }
+
+  /* Program rows */
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--ac-bg-elevated);
+    border: 1px solid var(--ac-border);
+    border-radius: var(--ac-radius-sm);
+  }
+
+  &__row-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__row-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ac-text);
+  }
+
+  &__row-sub {
+    font-size: 12px;
+    color: var(--ac-text-muted);
+  }
+
+  &__row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Plan picker shown when granting Admissions */
+  &__plan {
+    display: flex;
+    gap: 6px;
+  }
+  &__plan-btn {
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ac-border-strong);
+    background: transparent;
+    color: var(--ac-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+  &__plan-btn:hover {
+    color: var(--ac-text);
+    border-color: var(--ac-text-muted);
+  }
+  &__plan-btn--active {
+    color: #04120c;
+    background: var(--ac-accent);
+    border-color: var(--ac-accent);
+  }
+
+  /* Action buttons (Grant / Revoke) */
+  &__btn {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+  &__btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  &__btn--grant {
+    background: var(--ac-accent);
+    color: #04120c;
+  }
+  &__btn--grant:not([disabled]):hover {
+    filter: brightness(1.08);
+  }
+  &__btn--revoke {
+    background: transparent;
+    color: var(--ac-danger);
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+  &__btn--revoke:not([disabled]):hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--ac-danger);
+  }
+
+  /* Confirm step (replaces tab content) */
+  &__confirm {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    background: var(--ac-bg-elevated);
+    border: 1px solid var(--ac-border);
+    border-radius: var(--ac-radius-sm);
+  }
+  &__confirm-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+  }
+  &__confirm-icon--warn {
+    background: rgba(239, 68, 68, 0.14);
+    color: var(--ac-danger);
+  }
+  &__confirm-icon--ok {
+    background: rgba(16, 185, 129, 0.16);
+    color: var(--ac-accent);
+  }
+  &__confirm-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ac-text);
+  }
+  &__confirm-body {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ac-text-secondary);
+  }
+  &__confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  &__btn--cancel {
+    background: transparent;
+    color: var(--ac-text);
+    border-color: var(--ac-border-strong);
+  }
+  &__btn--cancel:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--ac-text-muted);
+  }
+
+  /* Community tab uses a single centered card */
+  &__community {
+    padding: 18px;
+    background: var(--ac-bg-elevated);
+    border: 1px solid var(--ac-border);
+    border-radius: var(--ac-radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  &__community-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ac-text);
+  }
+  &__community-body {
+    font-size: 13px;
+    color: var(--ac-text-secondary);
+    line-height: 1.5;
+  }
+  &__community-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

@@ -896,9 +896,20 @@ const CourseManagementAdmin: React.FC = () => {
       title: 'Tasks',
       dataIndex: 'tasks',
       key: 'tasks',
-      render: (tasks: any[]) => (
-        <Tag color="blue">{(tasks || []).length} tasks</Tag>
-      ),
+      render: (tasks: Array<{ isLocked?: boolean }> | undefined) => {
+        const list = tasks ?? [];
+        const lockedCount = list.filter((t) => t?.isLocked).length;
+        return (
+          <Space size={4} wrap>
+            <Tag color="blue">{list.length} tasks</Tag>
+            {lockedCount > 0 && (
+              <Tag color="default" title="Seeded from the admissions quiz bank — edit the seeder file in source to change.">
+                🔒 {lockedCount} locked
+              </Tag>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: 'Actions',
@@ -971,7 +982,6 @@ const CourseManagementAdmin: React.FC = () => {
           <Segmented
             options={[
               { label: 'Admissions', value: 'admissions' },
-              { label: 'SAT', value: 'sat' },
               { label: 'Research Prep', value: 'research' },
             ]}
             value={courseName}
@@ -1208,7 +1218,6 @@ const CourseManagementAdmin: React.FC = () => {
           >
             <Select placeholder="Select course">
               <Option value="admissions">Admissions</Option>
-              <Option value="sat">SAT</Option>
             </Select>
           </Form.Item>
 

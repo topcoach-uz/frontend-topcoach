@@ -1,11 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Radio, Button, message, Space, Typography, Progress } from 'antd';
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
-import { useGetTasksByLessonQuery, useSubmitTaskMutation, useGetTaskResultsQuery, useGetLessonTaskSubmissionsQuery, useRetakeTaskMutation } from 'src/app/services/courses';
+import React, { useEffect, useState } from 'react';
+import { message } from 'antd';
+import { RefreshCw } from 'lucide-react';
+import {
+  useGetTasksByLessonQuery,
+  useSubmitTaskMutation,
+  useGetLessonTaskSubmissionsQuery,
+  useRetakeTaskMutation,
+} from 'src/app/services/courses';
 import type { CourseTaskDto, TaskResultDto } from 'src/app/services/courses';
 import './TaskSubmission.scss';
 
-const { Title, Text, Paragraph } = Typography;
+/**
+ * Editorial-style practice-question runner.
+ *
+ * The previous implementation rendered each question as a card with
+ * tinted backgrounds and Slack-style success/error chrome. This version
+ * treats each question as a typographic page: numbered Q.NN heading,
+ * serif body, lettered options with thin rules for state.
+ *
+ * Functional contract is unchanged — submit / retake / 80% threshold
+ * behavior is preserved; only chrome was rewritten.
+ */
 
 interface TaskSubmissionProps {
   lessonId: string;
@@ -14,17 +29,18 @@ interface TaskSubmissionProps {
   onTasksScoreUpdate?: (correctCount: number, totalCount: number, percentage: number) => void;
 }
 
-const TaskSubmission: React.FC<TaskSubmissionProps> = ({ 
-  lessonId, 
-  onTaskComplete, 
+const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+const TaskSubmission: React.FC<TaskSubmissionProps> = ({
+  lessonId,
+  onTaskComplete,
   onAllTasksCorrectlyCompleted,
-  onTasksScoreUpdate 
+  onTasksScoreUpdate,
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [submittedTasks, setSubmittedTasks] = useState<Set<string>>(new Set());
   const [taskResults, setTaskResults] = useState<Record<string, TaskResultDto>>({});
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
   const [allTasksSubmitted, setAllTasksSubmitted] = useState(false);
 
@@ -37,431 +53,266 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   const [submitTask, { isLoading: isSubmitting }] = useSubmitTaskMutation();
   const [retakeTask, { isLoading: isRetaking }] = useRetakeTaskMutation();
 
-  // Load existing submissions and mark tasks as completed
+  // Hydrate from server submissions
   useEffect(() => {
-    if (existingSubmissions && tasks) {
-      const submittedTaskIds = new Set(existingSubmissions.map((sub: any) => sub.taskId));
-      setSubmittedTasks(submittedTaskIds);
-      
-      // Load results for already submitted tasks
-      const results: Record<string, TaskResultDto> = {};
-      existingSubmissions.forEach((sub: any) => {
-        const task = tasks.find((t: CourseTaskDto) => t.id === sub.taskId);
-        results[sub.taskId] = {
-          submission: {
-            id: sub.id || '',
-            taskId: sub.taskId,
-            userId: sub.userId || '',
-            selectedAnswerIndex: sub.submittedAnswerIndex || 0,
-            isCorrect: sub.isCorrect,
-            score: sub.isCorrect ? 1 : 0,
-            attemptNumber: 1,
-            submittedAt: sub.submittedAt || new Date().toISOString(),
-          },
+    if (!existingSubmissions || !tasks) return;
+    const submittedTaskIds = new Set(existingSubmissions.map((sub: any) => sub.taskId));
+    setSubmittedTasks(submittedTaskIds);
+
+    const results: Record<string, TaskResultDto> = {};
+    existingSubmissions.forEach((sub: any) => {
+      const task = tasks.find((t: CourseTaskDto) => t.id === sub.taskId);
+      results[sub.taskId] = {
+        submission: {
+          id: sub.id || '',
+          taskId: sub.taskId,
+          userId: sub.userId || '',
+          selectedAnswerIndex: sub.submittedAnswerIndex || 0,
           isCorrect: sub.isCorrect,
           score: sub.isCorrect ? 1 : 0,
-          correctAnswerIndex: task?.correctAnswerIndex || 0,
-          explanation: task?.explanation || '',
-        };
-      });
-      setTaskResults(results);
-      
-      // Check if all tasks are already submitted
-      // Only set to true if there are actual submissions (not just empty array)
-      if (existingSubmissions.length > 0 && submittedTaskIds.size === tasks.length) {
-        setAllTasksSubmitted(true);
-        setReviewMode(true);
-      } else {
-        // Reset if no submissions exist
-        setAllTasksSubmitted(false);
-        setReviewMode(false);
-      }
+          attemptNumber: 1,
+          submittedAt: sub.submittedAt || new Date().toISOString(),
+        },
+        isCorrect: sub.isCorrect,
+        score: sub.isCorrect ? 1 : 0,
+        correctAnswerIndex: task?.correctAnswerIndex || 0,
+        explanation: task?.explanation || '',
+      };
+    });
+    setTaskResults(results);
+
+    if (existingSubmissions.length > 0 && submittedTaskIds.size === tasks.length) {
+      setAllTasksSubmitted(true);
+      setReviewMode(true);
+    } else {
+      setAllTasksSubmitted(false);
+      setReviewMode(false);
     }
   }, [existingSubmissions, tasks]);
 
-  // Calculate score and notify parent
+  // Propagate score upward (unchanged contract)
   useEffect(() => {
-    if (tasks && tasks.length > 0 && allTasksSubmitted) {
-      const correctCount = tasks.filter((task) => {
-        const result = taskResults[task.id];
-        return result && result.isCorrect;
-      }).length;
-      
-      const totalCount = tasks.length;
-      const percentage = Math.round((correctCount / totalCount) * 100);
-      
-      if (onTasksScoreUpdate) {
-        onTasksScoreUpdate(correctCount, totalCount, percentage);
-      }
-      
-      // Check if at least 80% are correct
-      if (percentage >= 80 && onAllTasksCorrectlyCompleted) {
-        onAllTasksCorrectlyCompleted();
-      }
-    }
+    if (!tasks || tasks.length === 0 || !allTasksSubmitted) return;
+    const correctCount = tasks.filter((task) => {
+      const result = taskResults[task.id];
+      return !!(result && result.isCorrect);
+    }).length;
+    const totalCount = tasks.length;
+    const percentage = Math.round((correctCount / totalCount) * 100);
+
+    if (onTasksScoreUpdate) onTasksScoreUpdate(correctCount, totalCount, percentage);
+    if (percentage >= 80 && onAllTasksCorrectlyCompleted) onAllTasksCorrectlyCompleted();
   }, [taskResults, tasks, allTasksSubmitted, onTasksScoreUpdate, onAllTasksCorrectlyCompleted]);
 
-  const handleAnswerSelect = (taskId: string, answerIndex: number) => {
-    if (submittedTasks.has(taskId) || reviewMode) {
-      return; // Don't allow changing answer after submission or in review mode
-    }
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [taskId]: answerIndex,
-    }));
+  if (isLoading) {
+    return (
+      <section className="ts-shell">
+        <p className="ts-shell__loading">Loading questions…</p>
+      </section>
+    );
+  }
+
+  if (error || !tasks || tasks.length === 0) {
+    return null;
+  }
+
+  const currentTask = tasks[currentTaskIndex];
+  if (!currentTask?.id) return null;
+
+  const isSubmitted = submittedTasks.has(currentTask.id);
+  const result = taskResults[currentTask.id];
+  const selectedAnswer = selectedAnswers[currentTask.id];
+
+  const correctCount = tasks.filter((t) => taskResults[t.id]?.isCorrect).length;
+  const incorrectCount = tasks.filter((t) => {
+    const r = taskResults[t.id];
+    return r && !r.isCorrect;
+  }).length;
+  const percentage = tasks.length > 0 ? Math.round((correctCount / tasks.length) * 100) : 0;
+  const canCompleteLesson = percentage >= 80;
+
+  const onPickAnswer = (taskId: string, idx: number) => {
+    if (submittedTasks.has(taskId) || reviewMode) return;
+    setSelectedAnswers((prev) => ({ ...prev, [taskId]: idx }));
   };
 
-  const handleSubmitTask = async (task: CourseTaskDto) => {
-    if (selectedAnswers[task.id] === undefined) {
-      message.warning('Please select an answer before submitting');
+  const onSubmit = async () => {
+    if (selectedAnswers[currentTask.id] === undefined) {
+      message.warning('Choose an answer first.');
       return;
     }
-
-    // Validate taskId is a valid UUID
-    if (!task.id || typeof task.id !== 'string') {
-      message.error('Invalid task ID. Please refresh the page and try again.');
-      console.error('Invalid task ID:', task.id, 'Task:', task);
-      return;
-    }
-
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(task.id)) {
-      message.error('Invalid task ID format. Please refresh the page and try again.');
-      console.error('Task ID is not a valid UUID:', task.id, 'Task:', task);
-      return;
-    }
-
     try {
-      const selectedIndex = selectedAnswers[task.id];
-      
-      if (typeof selectedIndex !== 'number' || selectedIndex < 0) {
-        message.error('Invalid answer selection. Please select an answer and try again.');
-        console.error('Invalid selectedAnswerIndex:', selectedIndex, 'Task:', task);
-        return;
-      }
-
       const result = await submitTask({
-        taskId: task.id,
-        selectedAnswerIndex: selectedIndex,
+        taskId: currentTask.id,
+        selectedAnswerIndex: selectedAnswers[currentTask.id],
       }).unwrap();
+      setSubmittedTasks((prev) => new Set(prev).add(currentTask.id));
+      setTaskResults((prev) => ({ ...prev, [currentTask.id]: result }));
 
-      setSubmittedTasks((prev) => new Set(prev).add(task.id));
-      setTaskResults((prev) => ({
-        ...prev,
-        [task.id]: result,
-      }));
-
-      // Show simple feedback
-      if (result.isCorrect) {
-        message.success('Correct!');
+      const allCompleted = tasks.every((t) => submittedTasks.has(t.id) || t.id === currentTask.id);
+      if (allCompleted) {
+        setAllTasksSubmitted(true);
+        setReviewMode(true);
+        onTaskComplete?.();
       } else {
-        message.error('Incorrect');
+        setTimeout(() => {
+          if (currentTaskIndex < tasks.length - 1) setCurrentTaskIndex((i) => i + 1);
+        }, 700);
       }
-
-      // Check if all tasks are now submitted
-      if (tasks && tasks.length > 0) {
-        const allCompleted = tasks.every((t) => submittedTasks.has(t.id) || t.id === task.id);
-        if (allCompleted) {
-          setAllTasksSubmitted(true);
-          setReviewMode(true);
-          if (onTaskComplete) {
-            onTaskComplete();
-          }
-        } else {
-          // Auto-advance to next question after a short delay
-          setTimeout(() => {
-            if (currentTaskIndex < tasks.length - 1) {
-              handleNext();
-            }
-          }, 1000);
-        }
-      }
-    } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to submit task');
+    } catch (err: any) {
+      message.error(err?.data?.message || 'Failed to submit answer.');
     }
   };
 
-  const handleRetryAll = async () => {
-    if (!tasks || tasks.length === 0) return;
-
+  const onRetryAll = async () => {
     try {
-      // Retake all tasks
-      const retakePromises = tasks.map((task) => retakeTask(task.id).unwrap());
-      await Promise.all(retakePromises);
-
-      // Reset all state
+      await Promise.all(tasks.map((t) => retakeTask(t.id).unwrap()));
       setSubmittedTasks(new Set());
       setTaskResults({});
       setSelectedAnswers({});
       setAllTasksSubmitted(false);
       setReviewMode(false);
       setCurrentTaskIndex(0);
-      
-      message.success('All questions reset. You can start over.');
-    } catch (error: any) {
-      message.error(error?.data?.message || 'Failed to retake tasks');
+      message.success('Questions reset.');
+    } catch (err: any) {
+      message.error(err?.data?.message || 'Failed to reset questions.');
     }
   };
 
-  const handlePrevious = () => {
-    if (currentTaskIndex > 0) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentTaskIndex(currentTaskIndex - 1);
-        setIsTransitioning(false);
-      }, 200);
-    }
-  };
-
-  const handleNext = () => {
-    if (tasks && currentTaskIndex < tasks.length - 1) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentTaskIndex(currentTaskIndex + 1);
-        setIsTransitioning(false);
-      }, 200);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="task-submission-loading">
-        <p>Loading tasks...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="task-submission-error">
-        <p>Failed to load tasks</p>
-      </div>
-    );
-  }
-
-  if (!tasks || tasks.length === 0) {
-    return null;
-  }
-
-  const currentTask = tasks[currentTaskIndex];
-  
-  if (currentTask && (!currentTask.id || typeof currentTask.id !== 'string')) {
-    console.error('Invalid task structure:', currentTask);
-    return (
-      <div className="task-submission-error">
-        <p>Invalid task data. Please refresh the page.</p>
-      </div>
-    );
-  }
-
-  const isSubmitted = submittedTasks.has(currentTask.id);
-  const result = taskResults[currentTask.id];
-  const selectedAnswer = selectedAnswers[currentTask.id];
-  
-  // Calculate statistics - only count submitted tasks
-  const correctCount = tasks.filter((task) => {
-    const taskResult = taskResults[task.id];
-    return taskResult && taskResult.isCorrect;
-  }).length;
-  
-  const incorrectCount = tasks.filter((task) => {
-    const taskResult = taskResults[task.id];
-    return taskResult && !taskResult.isCorrect;
-  }).length;
-  
-  const submittedCount = correctCount + incorrectCount;
-  const percentage = tasks.length > 0 ? Math.round((correctCount / tasks.length) * 100) : 0;
-  const canCompleteLesson = percentage >= 80;
+  const goPrev = () => setCurrentTaskIndex((i) => Math.max(0, i - 1));
+  const goNext = () =>
+    setCurrentTaskIndex((i) => Math.min(tasks.length - 1, i + 1));
 
   return (
-    <div className="task-submission-container">
-      <div className="tasks-header">
-        <Title level={3} className="tasks-section-title">
-          Practice Questions
-        </Title>
-        {!allTasksSubmitted || submittedCount === 0 ? (
-          <Text type="secondary" className="tasks-section-description">
-            Answer all questions. You'll see your results at the end.
-          </Text>
-        ) : (
-          <div className="tasks-summary">
-            <div className="summary-stats">
-              <div className="stat-item correct">
-                <CheckCircle2 size={20} color="#52c41a" />
-                <Text strong style={{ color: '#52c41a', marginLeft: 8 }}>
-                  {correctCount} Correct
-                </Text>
-              </div>
-              <div className="stat-item incorrect">
-                <XCircle size={20} color="#ff4d4f" />
-                <Text strong style={{ color: '#ff4d4f', marginLeft: 8 }}>
-                  {incorrectCount} Incorrect
-                </Text>
-              </div>
-            </div>
-            <Progress 
-              percent={percentage} 
-              strokeColor={canCompleteLesson ? '#52c41a' : '#ff4d4f'}
-              style={{ marginTop: 16 }}
-              format={(percent) => `${Math.round(percent || 0)}%`}
-            />
-            {canCompleteLesson ? (
-              <Text type="success" style={{ display: 'block', marginTop: 12, fontSize: '14px' }}>
-                <CheckCircle2 size={16} /> Great job! You can now complete this lesson.
-              </Text>
-            ) : (
-              <Text type="warning" style={{ display: 'block', marginTop: 12, fontSize: '14px' }}>
-                You need at least 80% correct to complete this lesson. Review your answers and retry.
-              </Text>
-            )}
-            <Button
-              type="default"
-              icon={<RefreshCw size={16} />}
-              onClick={handleRetryAll}
-              loading={isRetaking}
-              size="large"
-              style={{ marginTop: 16 }}
-            >
-              Retry All Questions
-            </Button>
+    <section className="ts-shell">
+      {/* Header — eyebrow + progress rule */}
+      <header className="ts-header">
+        <div className="ts-header__eyebrow">Practice</div>
+        <h2 className="ts-header__title">
+          {reviewMode ? 'Review' : 'Question'} {currentTaskIndex + 1} of {tasks.length}
+        </h2>
+        <div className="ts-progress-rule">
+          <span style={{ width: `${((currentTaskIndex + 1) / tasks.length) * 100}%` }} />
+        </div>
+        {allTasksSubmitted && (
+          <div className="ts-header__summary">
+            <span>
+              <strong>{correctCount}</strong> correct
+              <span className="ts-header__dot" aria-hidden> · </span>
+              <strong>{incorrectCount}</strong> incorrect
+              <span className="ts-header__dot" aria-hidden> · </span>
+              <strong>{percentage}%</strong>
+            </span>
           </div>
         )}
-        <div className="tasks-progress">
-          <Text type="secondary">
-            {reviewMode ? 'Review Mode' : 'Question'} {currentTaskIndex + 1} of {tasks.length}
-          </Text>
-        </div>
-      </div>
+      </header>
 
-      <div className="task-navigation-container">
-        <div className={`task-card-wrapper ${isTransitioning ? 'transitioning' : ''}`}>
-          <Card
-            key={currentTask.id}
-            className={`task-card ${reviewMode && result ? (result.isCorrect ? 'task-correct' : 'task-incorrect') : ''}`}
-            title={
-              <Space>
-                <span>Question {currentTaskIndex + 1}</span>
-                {reviewMode && result && (
-                  <>
-                    {result.isCorrect ? (
-                      <CheckCircle2 size={16} color="#52c41a" />
-                    ) : (
-                      <XCircle size={16} color="#ff4d4f" />
-                    )}
-                  </>
-                )}
-              </Space>
+      {/* Question body */}
+      <article className="ts-question">
+        <p className="ts-question__text">{currentTask.question}</p>
+
+        <ol className="ts-options">
+          {currentTask.options.map((option, idx) => {
+            const isSelected = selectedAnswer === idx;
+            const isCorrect = idx === currentTask.correctAnswerIndex;
+            const isUserAnswer = result?.submission.selectedAnswerIndex === idx;
+            const showReveal = reviewMode && !!result;
+
+            let stateClass = '';
+            if (showReveal) {
+              if (isCorrect) stateClass = 'ts-option--correct';
+              else if (isUserAnswer && !isCorrect) stateClass = 'ts-option--wrong';
+            } else if (isSelected) {
+              stateClass = 'ts-option--picked';
             }
-          >
-            <Paragraph strong className="task-question">
-              {currentTask.question}
-            </Paragraph>
 
-            <Radio.Group
-              value={selectedAnswer}
-              onChange={(e) => handleAnswerSelect(currentTask.id, e.target.value)}
-              disabled={isSubmitted || reviewMode}
-              className="task-options"
-            >
-              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                {currentTask.options.map((option, optionIndex) => {
-                  const isSelected = selectedAnswer === optionIndex;
-                  const isCorrect = optionIndex === currentTask.correctAnswerIndex;
-                  const showReviewDetails = reviewMode && result;
-
-                  let optionClass = 'task-option';
-                  if (showReviewDetails) {
-                    if (isCorrect) {
-                      optionClass += ' option-correct';
-                    } else if (isSelected && !isCorrect) {
-                      optionClass += ' option-incorrect';
-                    }
-                  }
-
-                  return (
-                    <Radio key={optionIndex} value={optionIndex} className={optionClass}>
-                      <span className="option-label">
-                        {String.fromCharCode(65 + optionIndex)}. {option.text}
-                      </span>
-                      {showReviewDetails && isCorrect && (
-                        <CheckCircle2 size={16} color="#52c41a" style={{ marginLeft: 8 }} />
-                      )}
-                      {showReviewDetails && isSelected && !isCorrect && (
-                        <XCircle size={16} color="#ff4d4f" style={{ marginLeft: 8 }} />
-                      )}
-                      {showReviewDetails && isSelected && (
-                        <Text type="secondary" style={{ marginLeft: 8, fontSize: '12px' }}>
-                          (Your answer)
-                        </Text>
-                      )}
-                    </Radio>
-                  );
-                })}
-              </Space>
-            </Radio.Group>
-
-            {reviewMode && result?.explanation && (
-              <div className="task-explanation">
-                <Text strong>Explanation: </Text>
-                <Text>{result.explanation}</Text>
-              </div>
-            )}
-
-            {!reviewMode && !isSubmitted && (
-              <div className="task-actions">
-                <Button
-                  type="primary"
-                  onClick={() => handleSubmitTask(currentTask)}
-                  disabled={selectedAnswer === undefined}
-                  loading={isSubmitting}
-                  size="large"
+            return (
+              <li key={idx} className={`ts-option ${stateClass}`}>
+                <button
+                  type="button"
+                  className="ts-option__btn"
+                  onClick={() => onPickAnswer(currentTask.id, idx)}
+                  disabled={isSubmitted || reviewMode}
                 >
-                  Submit Answer
-                </Button>
-              </div>
-            )}
+                  <span className="ts-option__letter">{LETTERS[idx] ?? '?'}</span>
+                  <span className="ts-option__text">{option.text}</span>
+                  {showReveal && isCorrect && <span className="ts-option__tag">correct</span>}
+                  {showReveal && isUserAnswer && !isCorrect && (
+                    <span className="ts-option__tag ts-option__tag--wrong">your answer</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
 
-            {!reviewMode && isSubmitted && (
-              <div className="task-feedback">
-                {result?.isCorrect ? (
-                  <Text type="success" style={{ fontSize: '16px' }}>
-                    <CheckCircle2 size={16} /> Correct!
-                  </Text>
-                ) : (
-                  <Text type="danger" style={{ fontSize: '16px' }}>
-                    <XCircle size={16} /> Incorrect
-                  </Text>
-                )}
-              </div>
-            )}
-          </Card>
-        </div>
+        {reviewMode && result?.explanation && (
+          <aside className="ts-explanation">
+            <span className="ts-explanation__label">Explanation</span>
+            <p>{result.explanation}</p>
+          </aside>
+        )}
 
-        <div className="task-navigation">
-          <Button
-            icon={<ChevronLeft size={16} />}
-            onClick={handlePrevious}
-            disabled={currentTaskIndex === 0}
-            className="nav-button"
-          >
-            Previous
-          </Button>
-          <div className="task-counter">
-            <Text style={{ fontSize: '18px', color: '#1f2937' }}>
-              {currentTaskIndex + 1} / {tasks.length}
-            </Text>
+        {!reviewMode && !isSubmitted && (
+          <div className="ts-actions">
+            <button
+              type="button"
+              className="ts-btn-primary"
+              onClick={onSubmit}
+              disabled={selectedAnswer === undefined || isSubmitting}
+            >
+              {isSubmitting ? 'Submitting…' : 'Submit answer →'}
+            </button>
           </div>
-          <Button
-            icon={<ChevronRight size={16} />}
-            onClick={handleNext}
-            disabled={currentTaskIndex === tasks.length - 1}
-            className="nav-button"
+        )}
+      </article>
+
+      {/* Footer — score footnote + nav */}
+      {allTasksSubmitted && (
+        <div className="ts-footnote">
+          {canCompleteLesson ? (
+            <span>
+              <em>Great work — you cleared the 80% threshold.</em> You can complete this lesson.
+            </span>
+          ) : (
+            <span>
+              <em>You need 80% correct to complete this lesson.</em>{' '}
+              You scored <strong>{percentage}%</strong>.
+            </span>
+          )}
+          <button
+            type="button"
+            className="ts-link-btn"
+            onClick={onRetryAll}
+            disabled={isRetaking}
           >
-            Next
-          </Button>
+            <RefreshCw size={13} /> {isRetaking ? 'Resetting…' : 'Retry questions'}
+          </button>
         </div>
-      </div>
-    </div>
+      )}
+
+      <nav className="ts-nav" aria-label="Question navigation">
+        <button
+          type="button"
+          className="ts-nav__btn"
+          onClick={goPrev}
+          disabled={currentTaskIndex === 0}
+        >
+          ← Previous
+        </button>
+        <span className="ts-nav__counter">
+          {currentTaskIndex + 1} / {tasks.length}
+        </span>
+        <button
+          type="button"
+          className="ts-nav__btn ts-nav__btn--right"
+          onClick={goNext}
+          disabled={currentTaskIndex === tasks.length - 1}
+        >
+          Next →
+        </button>
+      </nav>
+    </section>
   );
 };
 

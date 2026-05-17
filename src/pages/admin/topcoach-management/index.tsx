@@ -8,31 +8,29 @@ import {
   message,
   Alert,
   Spin,
-  Modal,
-  Radio,
   Tabs,
   Row,
   Col,
   Progress,
   Select,
-  Popconfirm,
   Tooltip,
   Typography,
 } from 'antd';
-import { Search as SearchIcon, CheckCircle2 } from 'lucide-react';
+import { Search as SearchIcon, Settings2 } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
-import { useGetAdminStudentsQuery, useAdminEnrollMutation, useAdminUnenrollMutation } from 'src/app/services/fullSupportApi';
+import { useGetAdminStudentsQuery } from 'src/app/services/fullSupportApi';
 import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
 import ProgramManagementAnalyticsTab, { type AnalyticsProgramScope } from './ProgramManagementAnalyticsTab';
 import ProgramManagementOrganizationsTab from './ProgramManagementOrganizationsTab';
 import ResearchPrepProgressTab from './ResearchPrepProgressTab';
-import useColors from 'src/hooks/useColors';
+import PlacementTestPassesTab from './PlacementTestPassesTab';
 import type { ColumnsType } from 'antd/es/table';
 import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
 import { cleanUserName } from 'src/pages/admin/console/utils';
+import { ManageAccessModal, type ManageAccessRow } from './ManageAccessModal';
 import './index.scss';
 
 const { Search } = Input;
@@ -73,6 +71,7 @@ const MANAGEMENT_TAB_KEYS = new Set([
   'organizations',
   'full_support',
   'research_prep',
+  'placement_test',
 ]);
 
 const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
@@ -100,10 +99,7 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
-  const [grantAccessModalVisible, setGrantAccessModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<{ id: string | null; userId: string; userName: string } | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'premium'>('standard');
-  const [selectedCourseName, setSelectedCourseName] = useState<'admissions' | 'sat' | 'full_support'>('admissions');
+  const [manageAccessRow, setManageAccessRow] = useState<ManageAccessRow | null>(null);
   const [activeTab, setActiveTab] = useState(() => {
     if (embedInAdminConsole && routeTab && MANAGEMENT_TAB_KEYS.has(routeTab)) {
       return routeTab;
@@ -119,12 +115,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   const [communityFilter, setCommunityFilter] = useState<'all' | 'community' | 'standard'>('all');
   const { data: fullSupportStudentsData, isLoading: fullSupportStudentsLoading } = useGetAdminStudentsQuery(undefined, { skip: activeTab !== 'full_support' });
   const fullSupportEnrolledUsers = fullSupportStudentsData?.data ?? [];
-  const [adminEnroll, { isLoading: adminEnrollLoading }] = useAdminEnrollMutation();
-  const [adminUnenroll, { isLoading: adminUnenrollLoading }] = useAdminUnenrollMutation();
-  const [removeFullSupportStudent, setRemoveFullSupportStudent] = useState<{ id: string; name: string } | null>(null);
-  const colors = useColors();
-  const primaryRed = colors?.colorPrimary ?? '#8b0000';
-  const actionAccent = embedInAdminConsole ? '#10b981' : primaryRed;
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsCourseFilter, setAnalyticsCourseFilter] = useState<AnalyticsProgramScope>('all');
@@ -202,58 +192,16 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     }
   };
 
-  const handleGrantAccess = (enrollmentId: string | null, userId: string, userName?: string, courseName?: 'admissions' | 'sat' | 'full_support') => {
-    setSelectedUser({ id: enrollmentId, userId, userName: cleanUserName(userName, undefined) || 'this student' });
-    setSelectedPlan('standard'); // Reset to default
-    setSelectedCourseName(courseName || 'admissions');
-    setGrantAccessModalVisible(true);
-  };
-
-  const handleConfirmGrantAccess = async () => {
-    if (!selectedUser) return;
-
-    if (selectedCourseName === 'full_support') {
-      try {
-        await adminEnroll({ userId: selectedUser.userId }).unwrap();
-        message.success(`${selectedUser.userName} enrolled in Full Support.`);
-        setGrantAccessModalVisible(false);
-        setSelectedUser(null);
-        fetchData();
-      } catch (err: any) {
-        message.error(err?.data?.message ?? 'Failed to enroll in Full Support.');
-      }
-      return;
-    }
-
-    try {
-      // Build query params
-      const params = new URLSearchParams();
-      params.append('courseName', selectedCourseName);
-      // For SAT, courseType is ignored (always standard), but we still send it for consistency
-      if (selectedCourseName === 'admissions') {
-        params.append('courseType', selectedPlan);
-      } else {
-        params.append('courseType', 'standard'); // SAT always uses standard
-      }
-      
-      // If user has enrollment, use enrollment endpoint; otherwise use user endpoint
-      const path = selectedUser.id 
-        ? `/program-dashboard/enrollments/${selectedUser.id}/grant-access?${params.toString()}`
-        : `/program-dashboard/users/${selectedUser.userId}/grant-access?${params.toString()}`;
-      
-      await api.request({
-        path,
-        method: 'POST',
-        secure: true,
-      });
-      message.success('Access granted successfully');
-      setGrantAccessModalVisible(false);
-      setSelectedUser(null);
-      fetchData(); // Refresh data
-    } catch (error: any) {
-      console.error('Error granting access:', error);
-      message.error(error.response?.data?.message || 'Failed to grant access');
-    }
+  const openManageAccess = (record: DashboardData) => {
+    setManageAccessRow({
+      id: record.id,
+      userId: record.userId,
+      userName: record.userName,
+      userEmail: record.userEmail,
+      courseName: record.courseName,
+      telegramStatus: record.telegramStatus,
+      communityAccessEnabled: record.communityAccessEnabled,
+    });
   };
 
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
@@ -263,22 +211,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     } else {
       setSortBy('');
       setSortOrder('DESC');
-    }
-  };
-
-  const handleToggleCommunityAccess = async (userId: string, enabled: boolean) => {
-    try {
-      await api.request({
-        path: `/program-dashboard/users/${userId}/community-access`,
-        method: 'POST',
-        secure: true,
-        body: { enabled },
-      });
-      message.success(enabled ? 'Community access granted' : 'Community access revoked');
-      fetchData();
-    } catch (error: any) {
-      console.error('Error updating community access:', error);
-      message.error(error.response?.data?.message || 'Failed to update community access');
     }
   };
 
@@ -634,15 +566,11 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 220,
+      width: 200,
       fixed: 'right',
       render: (_: any, record: DashboardData) => {
         const hasAccess = record.paymentStatus === 'completed' && record.status === 'completed';
-        const isTelegramConnected = record.telegramStatus === 'connected';
         const communityEnabled = Boolean(record.communityAccessEnabled);
-        const telegramHint = !isTelegramConnected
-          ? 'User must have Telegram connected.'
-          : '';
 
         return (
           <div className="enrollment-actions">
@@ -656,50 +584,14 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
             </div>
 
             <div className="enrollment-actions__links">
-              {!hasAccess && (
-                <Tooltip title={telegramHint}>
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<CheckCircle2 size={14} />}
-                    onClick={() =>
-                      handleGrantAccess(record.id, record.userId, record.userName, record.courseName)
-                    }
-                    disabled={!isTelegramConnected}
-                  >
-                    Grant access
-                  </Button>
-                </Tooltip>
-              )}
-              <Tooltip title={telegramHint || 'Grant access to another program'}>
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() =>
-                    handleGrantAccess(null, record.userId, record.userName, undefined)
-                  }
-                  disabled={!isTelegramConnected}
-                >
-                  Add program
-                </Button>
-              </Tooltip>
-              <Popconfirm
-                title={communityEnabled ? 'Revoke community access?' : 'Grant community access?'}
-                description={
-                  communityEnabled
-                    ? `This will move ${cleanUserName(record.userName, record.userEmail)} to standard experience mode.`
-                    : `This will unlock Community features for ${cleanUserName(record.userName, record.userEmail)}.`
-                }
-                onConfirm={() => handleToggleCommunityAccess(record.userId, !communityEnabled)}
-                okText={communityEnabled ? 'Revoke' : 'Grant'}
-                cancelText="Cancel"
-                placement="topRight"
-                getPopupContainer={(trigger) => trigger.parentElement || document.body}
+              <Button
+                type="link"
+                size="small"
+                icon={<Settings2 size={14} />}
+                onClick={() => openManageAccess(record)}
               >
-                <Button type="link" size="small" danger={communityEnabled}>
-                  {communityEnabled ? 'Revoke community' : 'Grant community'}
-                </Button>
-              </Popconfirm>
+                Manage access
+              </Button>
             </div>
           </div>
         );
@@ -897,15 +789,24 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
                     {
                       title: 'Actions',
                       key: 'actions',
-                      width: 120,
-                      render: (_: unknown, record: { id: string; name: string }) => (
+                      width: 160,
+                      render: (_: unknown, record: { id: string; name: string; email?: string }) => (
                         <Button
                           type="link"
-                          danger
                           size="small"
-                          onClick={() => setRemoveFullSupportStudent({ id: record.id, name: record.name })}
+                          icon={<Settings2 size={14} />}
+                          onClick={() =>
+                            setManageAccessRow({
+                              id: null,
+                              userId: record.id,
+                              userName: record.name,
+                              userEmail: record.email ?? '',
+                              courseName: 'full_support',
+                              telegramStatus: 'connected',
+                            })
+                          }
                         >
-                          Remove from Full Support
+                          Manage access
                         </Button>
                       ),
                     },
@@ -919,131 +820,20 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
             label: 'Research Prep',
             children: <ResearchPrepProgressTab />,
           },
+          {
+            key: 'placement_test',
+            label: 'Placement Test',
+            children: <PlacementTestPassesTab />,
+          },
         ]}
       />
 
-      <Modal
-        title="Remove from Full Support"
-        open={!!removeFullSupportStudent}
-        onCancel={() => setRemoveFullSupportStudent(null)}
-        footer={[
-          <Button key="cancel" onClick={() => setRemoveFullSupportStudent(null)}>Cancel</Button>,
-          <Button
-            key="remove"
-            type="primary"
-            loading={adminUnenrollLoading}
-            style={{ backgroundColor: actionAccent, borderColor: actionAccent, color: embedInAdminConsole ? '#04120c' : undefined }}
-            onClick={() => {
-              if (!removeFullSupportStudent) return;
-              adminUnenroll(removeFullSupportStudent.id)
-                .unwrap()
-                .then(() => {
-                  message.success(`${removeFullSupportStudent.name} has been removed from Full Support.`);
-                  setRemoveFullSupportStudent(null);
-                })
-                .catch(() => message.error('Failed to remove from Full Support.'));
-            }}
-          >
-            Remove
-          </Button>,
-        ]}
-      >
-        {removeFullSupportStudent && (
-          <p style={{ marginBottom: 0 }}>Remove {removeFullSupportStudent.name}? They will lose access.</p>
-        )}
-      </Modal>
-
-      <Modal
-        title="Grant Access"
-        open={grantAccessModalVisible}
-        width={560}
-        onOk={handleConfirmGrantAccess}
-        onCancel={() => {
-          setGrantAccessModalVisible(false);
-          setSelectedUser(null);
-        }}
-        okText="Grant Access"
-        cancelText="Cancel"
-        className={embedInAdminConsole ? 'ac-grant-access-modal' : undefined}
-        okButtonProps={{
-          type: 'primary',
-          loading: adminEnrollLoading,
-          ...(embedInAdminConsole
-            ? { style: { backgroundColor: actionAccent, borderColor: actionAccent, color: '#04120c' } }
-            : {}),
-        }}
-      >
-        {selectedUser && (
-          <div>
-            <p>
-              Are you sure you want to grant access to <strong>{selectedUser.userName}</strong>?
-            </p>
-            <p style={{ marginBottom: 16 }}>
-              {selectedCourseName === 'full_support'
-                ? `This will enroll ${selectedUser.userName} in the Full Support Mentorship Program.`
-                : selectedUser.id 
-                  ? `This will update the existing ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
-                  : `This will create a new ${selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'} enrollment and grant access.`
-              }
-              {selectedUser.id && selectedCourseName !== 'full_support' && (
-                <span style={{ display: 'block', marginTop: 8, color: '#666', fontSize: '13px' }}>
-                  Note: If the user already has access to {selectedCourseName === 'admissions' ? 'Admissions' : 'SAT'}, this will update that enrollment. 
-                  If they have access to the other course, a separate enrollment will be created for this course.
-                </span>
-              )}
-            </p>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
-                Select Course:
-              </label>
-              <Radio.Group
-                value={selectedCourseName}
-                onChange={(e) => {
-                  setSelectedCourseName(e.target.value);
-                  // Reset plan to standard when switching courses
-                  setSelectedPlan('standard');
-                }}
-                style={{ width: '100%' }}
-              >
-                <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Radio value="admissions"><strong>Admissions Program</strong></Radio>
-                  <Radio value="sat"><strong>SAT Prep Course</strong></Radio>
-                  <Radio value="full_support"><strong>Full Support Mentorship Program</strong></Radio>
-                </Space>
-              </Radio.Group>
-            </div>
-            {selectedCourseName === 'full_support' && (
-              <div style={{ padding: '8px 12px', background: '#f0f9ff', borderRadius: 4, marginTop: 8 }}>
-                <span style={{ fontSize: 12, color: '#666' }}>
-                  Enrolls the student in the Full Support program. They will get access to the mentee dashboard, session tracking, and task assignments.
-                </span>
-              </div>
-            )}
-            {selectedCourseName === 'admissions' && (
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
-                Select Course Plan:
-              </label>
-              <Radio.Group
-                value={selectedPlan}
-                onChange={(e) => setSelectedPlan(e.target.value)}
-                style={{ width: '100%' }}
-              >
-                <Radio value="standard">Standard</Radio>
-                <Radio value="premium">Premium</Radio>
-              </Radio.Group>
-            </div>
-            )}
-            {selectedCourseName === 'sat' && (
-              <div style={{ padding: '8px 12px', background: '#f0f9ff', borderRadius: 4, marginTop: 8 }}>
-                <span style={{ fontSize: 12, color: '#666' }}>
-                  Note: SAT Prep Course has a single tier (no standard/premium distinction)
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
+      <ManageAccessModal
+        open={!!manageAccessRow}
+        row={manageAccessRow}
+        onClose={() => setManageAccessRow(null)}
+        onMutated={() => fetchData()}
+      />
     </>
   );
 

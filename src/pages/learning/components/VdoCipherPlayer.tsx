@@ -10,6 +10,10 @@ interface VdoCipherPlayerProps {
   onProgressUpdate: (progress: number) => void;
   onComplete: () => void;
   isCompleted?: boolean;
+  /** Mark-as-complete disabled until quiz threshold met. */
+  canComplete?: boolean;
+  /** Tooltip + footnote shown when canComplete is false. */
+  completeLockReason?: string;
 }
 
 const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
@@ -20,6 +24,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   onProgressUpdate,
   onComplete,
   isCompleted = false,
+  canComplete = true,
+  completeLockReason,
 }) => {
   const playerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -353,8 +359,8 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         </div>
       )}
 
-      {/* Complete Button — flips to a disabled green "Completed" pill
-          once the parent confirms completion (mirrors the PDF viewer). */}
+      {/* Complete Button — disabled while quiz threshold isn't met,
+          flips to an italic "completed" note once the parent confirms. */}
       <div className="video-actions">
         {isCompleted ? (
           <button
@@ -371,10 +377,17 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             type="button"
             className="complete-button"
             onClick={onComplete}
+            disabled={!canComplete}
+            title={!canComplete ? (completeLockReason ?? 'Complete the practice questions first.') : undefined}
           >
             <CheckCircle2 size={16} />
             Mark as Complete
           </button>
+        )}
+        {!isCompleted && !canComplete && (
+          <span className="complete-lock-note">
+            <em>{completeLockReason ?? 'Complete the practice questions (80%) to unlock.'}</em>
+          </span>
         )}
       </div>
     </div>

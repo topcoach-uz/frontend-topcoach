@@ -18,6 +18,7 @@ import {
   Sparkles,
   Shield,
   CreditCard,
+  Repeat,
   LineChart,
   ChevronLeft,
   BookOpen,
@@ -44,6 +45,7 @@ type NavKey =
   | 'users'
   | 'programs'
   | 'payments'
+  | 'subscriptions'
   | 'sessions'
   | 'events'
   | 'insights'
@@ -112,6 +114,12 @@ export default function AdminConsoleLayout() {
             label: 'Payments',
             icon: <CreditCard size={18} strokeWidth={1.75} />,
             path: '/new-admin/payments',
+          },
+          {
+            key: 'subscriptions',
+            label: 'Subscriptions',
+            icon: <Repeat size={18} strokeWidth={1.75} />,
+            path: '/new-admin/subscriptions',
           },
           {
             key: 'sessions',
@@ -185,6 +193,7 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/users')) return 'users';
     if (p.startsWith('/new-admin/programs')) return 'programs';
     if (p.startsWith('/new-admin/payments')) return 'payments';
+    if (p.startsWith('/new-admin/subscriptions')) return 'subscriptions';
     if (p.startsWith('/new-admin/sessions')) return 'sessions';
     if (p.startsWith('/new-admin/events')) return 'events';
     if (p.startsWith('/new-admin/insights')) return 'insights';
@@ -220,6 +229,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/dashboard': 'Dashboard',
       '/new-admin/users': 'Users',
       '/new-admin/payments': 'Payments',
+      '/new-admin/subscriptions': 'Subscriptions',
       '/new-admin/sessions': 'Sessions',
       '/new-admin/events': 'Events',
       '/new-admin/insights': 'Insights',

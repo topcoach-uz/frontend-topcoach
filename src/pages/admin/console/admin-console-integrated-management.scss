@@ -59,10 +59,57 @@
 
 .admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input,
 .admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input-affix-wrapper,
-.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-selector {
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-selector,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-picker {
   background: var(--ac-bg-elevated) !important;
   border-color: var(--ac-border-strong) !important;
   color: var(--ac-text) !important;
+}
+
+/* Inner input element inside affix wrappers + picker needs explicit text color
+   so that typed values + placeholders render against the dark bg. */
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input-affix-wrapper .ant-input,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-picker-input > input {
+  color: var(--ac-text) !important;
+  background: transparent !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input::placeholder,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input-affix-wrapper .ant-input::placeholder,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-picker-input > input::placeholder,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-selection-placeholder {
+  color: var(--ac-text-muted) !important;
+  opacity: 1;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-selection-item,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-select-arrow,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-picker-suffix,
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-picker-separator {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-input-prefix svg {
+  color: var(--ac-text-muted);
+}
+
+/* Empty state — Antd's dark theme uses very low-contrast text by default.
+   Scoped to the whole admin shell so it covers every admin page + any
+   table "no data" placeholder, not just the program dashboard. */
+.admin-console-app .ant-empty-description {
+  color: var(--ac-text-secondary) !important;
+}
+
+.admin-console-app .ant-empty-img-simple-ellipse {
+  fill: rgba(255, 255, 255, 0.04) !important;
+}
+
+.admin-console-app .ant-empty-img-simple-g {
+  stroke: var(--ac-text-muted) !important;
+}
+
+.admin-console-app .ant-empty-img-simple-path {
+  fill: var(--ac-bg-elevated) !important;
 }
 
 .admin-console-app .program-dashboard.program-dashboard--admin-dark .ant-table {

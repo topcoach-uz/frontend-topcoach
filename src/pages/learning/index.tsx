@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Button, message, Spin } from 'antd';
-import { PanelLeftClose, PanelLeftOpen, Clock, Rocket, Video, FileText, ChevronLeft, ChevronRight, CheckCircle2, Target, AlertTriangle } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Clock, Rocket, Video, FileText, ChevronLeft, ChevronRight, CheckCircle2, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useGetCourseStructureQuery, useGetUserProgressQuery, useUpdateLessonProgressMutation, useGetEnrollmentStatusQuery, useGetTasksByLessonQuery, useGetLessonTaskSubmissionsQuery } from 'src/app/services/courses';
@@ -299,6 +299,22 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     
     return allCorrect;
   }, [lessonTasks, taskSubmissions]);
+
+  // Single source of truth for whether the lesson body's Mark-as-complete
+  // button should be enabled. Mirrors the runtime guard inside the
+  // onComplete handlers, so the FE doesn't even let users click when the
+  // 80% quiz threshold hasn't been met.
+  const canCompleteLesson = React.useMemo(
+    () => !lessonTasks || lessonTasks.length === 0 || areAllTasksCompleted,
+    [lessonTasks, areAllTasksCompleted],
+  );
+  const completeLockReason = React.useMemo(() => {
+    if (canCompleteLesson) return undefined;
+    if (tasksScore) {
+      return `You need 80% on the practice questions — you're at ${Math.round(tasksScore.percentage)}%.`;
+    }
+    return 'Complete the practice questions (80%) to unlock.';
+  }, [canCompleteLesson, tasksScore]);
 
   // Handle manual mark as complete
   const handleMarkAsComplete = async () => {
@@ -842,17 +858,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                       </span>
                     </>
                   )}
-                  {isSafariBrowser && selectedLesson.lessonType === 'video' && (
-                    <span
-                      className="lh-meta__compat"
-                      title={t(
-                        'Safari may have issues with this video player. For the best experience, please use Chrome, Firefox, or Edge.',
-                      )}
-                    >
-                      <AlertTriangle size={12} strokeWidth={2.5} />
-                      {t('Best in Chrome / Firefox / Edge')}
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -864,6 +869,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   </div>
                 ) : selectedLesson.lessonType === 'video' ? (
                   <div className="video-content">
+                    {isSafariBrowser && (
+                      <p className="video-browser-footnote" role="note">
+                        <em>
+                          {t(
+                            'Best viewed in Chrome, Firefox, or Edge — Safari may have issues with the player.',
+                          )}
+                        </em>
+                      </p>
+                    )}
                     {selectedLesson.useVdoCipher && selectedLesson.vdocipherVideoId && vdocipherOTP && vdocipherPlaybackInfo && (
                       <VdoCipherPlayer
                         videoId={selectedLesson.vdocipherVideoId}
@@ -871,6 +885,8 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         playbackInfo={vdocipherPlaybackInfo}
                         title={selectedLesson.title || 'Untitled Video'}
                         isCompleted={isSelectedLessonCompleted}
+                        canComplete={canCompleteLesson}
+                        completeLockReason={completeLockReason}
                         onProgressUpdate={(progress) => {
                           if (progress > 0 && selectedLesson.id && selectedLesson.duration) {
                             handleProgressUpdate(progress, selectedLesson.id, selectedLesson.duration);
@@ -932,6 +948,8 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                         pdfUrl={selectedLesson.contentUrl}
                         lessonId={selectedLesson.id || ''}
                         title={selectedLesson.title || 'Untitled PDF'}
+                        canComplete={canCompleteLesson}
+                        completeLockReason={completeLockReason}
                         onComplete={async () => {
                           try {
                             if (!enrollmentStatus?.isEnrolled) {
@@ -987,10 +1005,33 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                     </div>
                   )
                 ) : selectedLesson.lessonType === 'live_session' ? (
-                  <div className="live-session-placeholder">
-                    <h3>Live Session</h3>
-                    <p>This is a live session. Please check your email for meeting details.</p>
-                  </div>
+                  <section className="live-session-card" aria-label="Live session details">
+                    <div className="live-session-card__label">
+                      {t('Scheduled session')}
+                    </div>
+                    <p className="live-session-card__lead">
+                      {t(
+                        'This lesson is delivered live with your mentor. The join link is sent to your email a few minutes before the session.',
+                      )}
+                    </p>
+                    {selectedLesson.contentUrl && (
+                      <a
+                        href={selectedLesson.contentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="live-session-card__link"
+                      >
+                        {t('Open meeting room')} →
+                      </a>
+                    )}
+                    <p className="live-session-card__footnote">
+                      <em>
+                        {t(
+                          'Check your inbox for the calendar invite. Reach out to your mentor if you don\'t receive it 30 minutes before the start.',
+                        )}
+                      </em>
+                    </p>
+                  </section>
                 ) : (
                   <div className="unknown-lesson-type">
                     <h3>Unknown Lesson Type</h3>

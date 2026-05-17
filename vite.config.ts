@@ -21,6 +21,15 @@ export default defineConfig({
     include: ['socket.io-client'],
     force: false,
   },
+  css: {
+    // Allow SCSS files to `@import 'src/...';` without relative-path noise.
+    // Mirrors the TS `paths` alias `src/* → ./src/*`.
+    preprocessorOptions: {
+      scss: {
+        includePaths: ['.'],
+      },
+    },
+  },
   build: {
     // Modern browsers only — smaller output, no legacy polyfills.
     target: 'es2020',

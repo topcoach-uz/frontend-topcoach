@@ -1,129 +1,273 @@
-.pdf-viewer-card {
-  .pdf-container {
-    .pdf-actions {
+@import 'src/styles/editorial-tokens';
+
+// Editorial PDF chrome.
+// react-pdf renders each page as a canvas; we stack them vertically in
+// the reading column with hairline borders. The toolbar above is a thin
+// strip of typographic controls.
+
+.pdf-frame {
+  font-family: $serif;
+  color: $ink;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  // ─────────────── Toolbar ───────────────
+
+  .pdf-toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+    border-top: 1px solid $hairline;
+    border-bottom: 1px solid $hairline;
+    background: $cream-elev;
+
+    &__group {
       display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+
+      &--center { justify-content: center; }
+      &--right { justify-content: flex-end; }
+    }
+
+    &__icon-btn {
+      all: unset;
+      width: 26px;
+      height: 26px;
+      border-radius: $radius-sm;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      color: $ink-soft;
+      cursor: pointer;
+      transition: color 120ms ease, background 120ms ease;
 
-      .view-button {
-        background: #8b0000;
-        border-color: #8b0000;
-        
-        &:hover {
-          background: #660000;
-          border-color: #660000;
-        }
+      &:hover:not(:disabled) {
+        color: $brand;
+        background: rgba(0, 0, 0, 0.04);
       }
 
-      .download-button {
-        border-color: #8b0000;
-        color: #8b0000;
-        
-        &:hover {
-          background: #8b0000;
-          border-color: #8b0000;
-          color: white;
-        }
-      }
-
-      .complete-button {
-        background: #8b0000;
-        border-color: #8b0000;
-        
-        &:hover {
-          background: #660000;
-          border-color: #660000;
-        }
-      }
-
-      .completed-button {
-        background: #16a34a;
-        border-color: #16a34a;
-        color: white;
+      &:disabled {
+        color: $muted-2;
+        cursor: not-allowed;
       }
     }
 
-    .pdf-content {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 16px;
-      border: 1px solid #e9ecef;
-      
-      iframe {
-        background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    &__counter {
+      font-family: $sans;
+      font-size: 0.74rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: $muted;
+      font-variant-numeric: tabular-nums;
+      padding: 0 4px;
+
+      strong {
+        font-weight: 600;
+        color: $ink;
       }
+    }
 
-      .pdf-error-fallback {
-        text-align: center;
-        padding: 40px 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    &__zoom-pct {
+      all: unset;
+      font-family: $sans;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: $ink-soft;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: $radius-sm;
+      font-variant-numeric: tabular-nums;
+      min-width: 44px;
+      text-align: center;
+      transition: color 120ms ease, background 120ms ease;
 
-        .pdf-icon {
-          font-size: 48px;
-          color: #dc3545;
-          margin-bottom: 16px;
-        }
-
-        h3 {
-          margin: 0 0 12px 0;
-          font-size: 18px;
-          color: #333;
-        }
-
-        p {
-          margin: 0 0 20px 0;
-          color: #666;
-          font-size: 14px;
-          line-height: 1.5;
-        }
+      &:hover {
+        color: $brand;
+        background: rgba(0, 0, 0, 0.04);
       }
+    }
+
+    &__link {
+      @include ed-link;
+      & {
+        color: $ink-soft;
+        font-size: 0.72rem;
+      }
+      &:hover { color: $brand-hover; }
+    }
+  }
+
+  // ─────────────── Page renderer ───────────────
+
+  &__pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 0 12px;
+    // Sized so roughly one US-Letter page sits in the viewport at scale 1
+    // — student scrolls within the column rather than the whole page.
+    max-height: 68vh;
+    overflow-y: auto;
+
+    // Subtle scrollbar
+    scrollbar-width: thin;
+    scrollbar-color: $hairline transparent;
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-thumb {
+      background: $hairline;
+      border-radius: 3px;
+    }
+  }
+
+  &__page {
+    display: flex;
+    justify-content: center;
+
+    // react-pdf renders pages as .react-pdf__Page
+    .react-pdf__Page {
+      background: #fff;
+      border: 1px solid $hairline;
+      border-radius: $radius-sm;
+      overflow: hidden;
+      box-shadow: none;
+      max-width: 100%;
+    }
+
+    .react-pdf__Page__canvas {
+      max-width: 100%;
+      height: auto !important;
+      display: block;
+    }
+
+    // Text layer kept for selection/copy; positioned absolutely over the canvas
+    .react-pdf__Page__textContent {
+      user-select: text;
+    }
+  }
+
+  &__loading {
+    font-family: $serif;
+    font-style: italic;
+    color: $muted;
+    text-align: center;
+    margin: 32px 0;
+  }
+
+  // ─────────────── Action row (mark complete) ───────────────
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    align-items: center;
+    padding: 4px 0 6px;
+    border-bottom: 1px solid $hairline;
+    padding-bottom: 14px;
+  }
+
+  &__link {
+    @include ed-link;
+    & { color: $ink-soft; }
+    &--primary { color: $brand; }
+    &:hover { color: $brand-hover; }
+  }
+
+  &__done {
+    font-family: $serif;
+    font-style: italic;
+    font-size: 0.86rem;
+    color: $success;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    em {
+      color: $ink-soft;
+      font-style: italic;
+    }
+  }
+
+  &__lock-note {
+    font-family: $serif;
+    font-style: italic;
+    font-size: 0.86rem;
+    color: $muted;
+    line-height: 1.5;
+
+    em { font-style: italic; }
+  }
+
+  // ─────────────── Fallback (load error / unreachable Drive) ───────────────
+
+  &__fallback {
+    padding: 36px 28px;
+    background: $cream-elev;
+    border: 1px dashed $hairline;
+    border-radius: $radius-md;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    color: $ink-soft;
+
+    &-icon { color: $brand; }
+
+    h3 {
+      font-family: $serif;
+      font-size: $display-sm;
+      font-weight: 600;
+      color: $ink;
+      margin: 0;
+    }
+
+    p {
+      font-family: $serif;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: $ink-soft;
+      margin: 0;
+      max-width: 580px;
+    }
+
+    &-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      margin-top: 6px;
     }
   }
 }
 
-// Responsive design
+// ─────────────── Mobile ───────────────
+
 @media (max-width: 768px) {
-  .pdf-viewer-card {
-    padding: 0px;
-    .pdf-container {
-      .pdf-preview {
-        padding: 0px;
+  .pdf-frame {
+    .pdf-toolbar {
+      grid-template-columns: auto 1fr auto;
+      gap: 4px;
+      padding: 6px 2px;
 
-        .pdf-icon {
-          font-size: 36px;
-        }
-
-        h3 {
-          font-size: 16px;
-        }
+      &__group--center {
+        gap: 4px;
       }
+    }
 
-      /* Mobile: place first two buttons in a single row and make the "complete" button full width below them */
-      .pdf-actions {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        align-items: center;
-        justify-items: stretch;
-        margin-bottom: 16px;
+    &__pages {
+      max-height: 70vh;
+      gap: 8px;
+    }
 
-        .ant-btn {
-          width: 100%;
-        }
-
-        /* Ensure the mark/completed button spans both columns and sits on its own row */
-        .complete-button,
-        .completed-button {
-          grid-column: 1 / -1;
-        }
-      }
+    &__actions {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
     }
   }
 }
-
-

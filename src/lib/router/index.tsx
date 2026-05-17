@@ -146,6 +146,7 @@ const AdminConsoleAdministrationLazy = lazy(
   () => import("src/pages/admin/console/pages/AdministrationPage"),
 );
 const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/pages/PaymentsPage"));
+const AdminConsoleSubscriptionsLazy = lazy(() => import("src/pages/admin/console/pages/SubscriptionsPage"));
 const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
 const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
 const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
@@ -252,6 +253,7 @@ function RouterProvider() {
 
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
+                <Route path="subscriptions" element={<AdminConsoleSubscriptionsLazy />} />
                 <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
                 <Route path="events" element={<AdminConsoleEventsLazy />} />
                 <Route path="events/caaf" element={<CaafAdminRouteLazy />} />

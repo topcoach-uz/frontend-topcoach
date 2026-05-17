@@ -1,98 +1,109 @@
-.video-player-container.youtube-embed {
+@import 'src/styles/editorial-tokens';
+
+// Editorial video chrome.
+// The player itself (HTML5 / YouTube / Google Drive embed) keeps its
+// native controls; this SCSS only restyles the WRAPPER around it.
+// Goal: 16:9 frame sitting flush in the reading column, hairline border,
+// no drop shadows, no loud maroon buttons.
+
+.video-player-container.youtube-embed,
+.video-player-container.google-drive-video,
+.video-player-container {
   background: transparent;
   border: none;
-  border-radius: 8px;
   position: relative;
-  /* remove height forcing that can cause awkward crops */
   height: auto;
-  min-height: unset;             /* was 500px */
-  overflow: visible;             /* so YT controls aren't cut */
+  min-height: unset;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  font-family: $serif;
+  color: $ink;
 }
 
+// 16:9 frame for embedded players
 .video-player-container.youtube-embed .youtube-embed-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;          /* replaces padding-bottom trick */
+  aspect-ratio: 16 / 9;
   height: auto;
   background: #000;
-  border-radius: 8px 8px 0 0;
-  overflow: visible;             /* was hidden; caused clipping */
+  border: 1px solid $hairline;
+  border-radius: $radius-md;
+  overflow: hidden;
+
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #000;
+    border-radius: inherit;
+  }
 }
 
-.video-player-container.youtube-embed .youtube-embed-container iframe {
-  position: absolute;
-  inset: 0;
+// Video element wrapper (HTML5 <video>) — same hairline frame
+.video-player-container .video-element {
   width: 100%;
-  height: 100%;
-  border: 0;
   display: block;
   background: #000;
-  /* keep the rounded corners visually intact without clipping controls */
-  border-radius: inherit;
-  object-fit: cover;
+  border: 1px solid $hairline;
+  border-radius: $radius-md;
+  aspect-ratio: 16 / 9;
 }
 
-/* keep the actions clearly below the player */
-.video-player-container.youtube-embed .video-actions {
-  position: static;              /* don't overlay the iframe */
-  display: flex !important;
-  justify-content: center;
-  padding: 20px 20px 32px;
+// "Complete" / "Watch on Drive" — typographic actions below the player
+.video-player-container .video-actions {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: flex-start;
+  padding: 18px 0 8px;
   margin: 0;
   background: transparent;
   border-top: none;
   z-index: 1;
 
-  .complete-button {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 28px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: #8b0000 !important;
-    border-color: #8b0000 !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    box-shadow: 0 3px 10px rgba(139, 0, 0, 0.3);
-
-    &:hover {
-      background: #660000 !important;
-      border-color: #660000 !important;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(139, 0, 0, 0.4);
+  .complete-button,
+  .watch-button {
+    @include ed-link;
+    & {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: $brand !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      transform: none !important;
     }
-
-    .anticon { font-size: 18px; }
+    &:hover {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: $brand-hover !important;
+      transform: none !important;
+    }
+    .anticon,
+    svg { font-size: 13px; width: 14px; height: 14px; }
   }
 }
 
-/* Google Drive Video Interface */
-.video-player-container.google-drive-video {
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  position: relative;
-  height: auto;
-  min-height: 400px;
-  overflow: visible;
-  box-shadow: none;
-  display: flex;
-  flex-direction: column;
+// ─────────────── Google Drive fallback panel ───────────────
+// Shown when the video is a Drive embed — restyle as a quiet card.
 
+.video-player-container.google-drive-video {
   .video-title {
-    padding: 24px 24px 0 24px;
-    
+    padding: 0 0 12px;
+
     h3 {
       margin: 0;
-      font-size: 20px;
+      font-family: $serif;
+      font-size: $display-sm;
       font-weight: 600;
-      color: #333;
+      color: $ink;
     }
   }
 
@@ -100,90 +111,86 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    text-align: center;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 22px 24px;
+    background: $cream-elev;
+    border: 1px solid $hairline;
+    border-radius: $radius-md;
+    text-align: left;
+    gap: 14px;
 
     .video-icon {
-      font-size: 64px;
-      color: #8b0000;
-      margin-bottom: 24px;
+      font-size: 28px;
+      color: $brand;
+      margin: 0;
     }
 
     h3 {
-      font-size: 24px;
+      font-family: $serif;
+      font-size: $display-sm;
       font-weight: 600;
-      color: #333;
-      margin: 0 0 16px 0;
+      color: $ink;
+      margin: 0;
     }
 
     p {
-      font-size: 16px;
-      color: #666;
+      font-family: $serif;
+      font-size: 0.95rem;
+      color: $ink-soft;
       line-height: 1.6;
-      margin: 0 0 32px 0;
-      max-width: 500px;
+      margin: 0;
+      max-width: 540px;
     }
 
     .google-drive-buttons {
       display: flex;
-      gap: 16px;
+      gap: 22px;
       flex-wrap: wrap;
-      justify-content: center;
+      justify-content: flex-start;
+      margin-top: 6px;
 
-      .watch-button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 28px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        color: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #8b0000;
-        box-shadow: 0 3px 10px rgba(139, 0, 0, 0.3);
-
-        &:hover {
-          background: #660000;
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(139, 0, 0, 0.4);
-        }
-
-        .anticon { font-size: 18px; }
-      }
-
+      .watch-button,
       .complete-button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 28px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        color: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        background: #8b0000;
-        box-shadow: 0 3px 10px rgba(139, 0, 0, 0.3);
-
-        &:hover {
-          background: #660000;
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(139, 0, 0, 0.4);
+        @include ed-link;
+        & {
+          background: transparent !important;
+          border: 0 !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+          transform: none !important;
+          color: $brand !important;
         }
-
-        .anticon { font-size: 18px; }
+        &:hover {
+          background: transparent !important;
+          border: 0 !important;
+          box-shadow: none !important;
+          color: $brand-hover !important;
+          transform: none !important;
+        }
       }
     }
   }
 }
 
-/* mobile: ensure no weird squish */
+// ─────────────── Browser-compat footnote ───────────────
+// Replaces the amber chip that used to sit in the lesson header.
+
+.video-browser-footnote {
+  margin-top: 14px;
+  font-family: $serif;
+  font-style: italic;
+  font-size: 0.86rem;
+  color: $muted;
+  line-height: 1.5;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+// ─────────────── Mobile ───────────────
+
 @media (max-width: 768px) {
   .video-player-container.youtube-embed .youtube-embed-container {
     aspect-ratio: 16 / 9;

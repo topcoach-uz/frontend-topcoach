@@ -1,305 +1,330 @@
+@import 'src/styles/editorial-tokens';
+
+// Editorial VdoCipher player chrome.
+// Frame: 16:9 hairline-bordered, no shadows. Loading + error overlays
+// keep dark backgrounds (they sit ON the player). Safari warning becomes
+// an italic footnote below the player rather than an amber pill.
+
 .vdocipher-player-container {
   background: transparent;
   border: none;
-  border-radius: 8px;
   position: relative;
   height: auto;
-  min-height: 400px;
-  overflow: visible;
+  min-height: auto;
   box-shadow: none;
   display: flex;
   flex-direction: column;
+  font-family: $serif;
+  color: $ink;
+  gap: 14px;
 
   .video-title {
-    padding: 24px 24px 0 24px;
+    padding: 0;
 
     h3 {
       margin: 0;
-      font-size: 20px;
+      font-family: $serif;
+      font-size: $display-sm;
       font-weight: 600;
-      color: #333;
+      color: $ink;
     }
   }
 
+  // ─────────────── Safari footnote (was an amber alert) ───────────────
+
   .safari-warning {
-    margin: 16px 24px;
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 8px;
-    padding: 16px;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
 
     .warning-content {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
+      align-items: flex-start;
+      text-align: left;
+      gap: 8px;
 
-      .warning-icon {
-        font-size: 24px;
-        margin-bottom: 8px;
-      }
+      .warning-icon { display: none; }
 
       h4 {
-        margin: 0 0 8px 0;
-        font-size: 16px;
+        margin: 0;
+        font-family: $serif;
+        font-size: 0.95rem;
         font-weight: 600;
-        color: #856404;
+        color: $ink;
       }
 
       p {
-        margin: 0 0 12px 0;
-        font-size: 14px;
-        color: #856404;
-        line-height: 1.4;
+        margin: 0;
+        font-family: $serif;
+        font-style: italic;
+        font-size: 0.86rem;
+        color: $muted;
+        line-height: 1.55;
       }
 
       .browser-suggestions {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        margin-top: 4px;
 
         span {
-          font-size: 12px;
-          color: #856404;
-          font-weight: 500;
+          font-family: $sans;
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: $muted;
         }
 
         .browser-icons {
           display: flex;
-          gap: 16px;
+          gap: 14px;
           flex-wrap: wrap;
-          justify-content: center;
+          justify-content: flex-start;
 
           span {
-            font-size: 12px;
-            color: #856404;
+            font-family: $sans;
+            font-size: 0.7rem;
             font-weight: 500;
+            color: $ink-soft;
           }
         }
       }
     }
   }
 
+  // ─────────────── The actual player frame ───────────────
+
   .vdocipher-player {
     flex: 1;
-    min-height: 500px;
-   
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: unset;
     overflow: hidden;
     background: #000;
     position: relative;
+    border: 1px solid $hairline;
+    border-radius: $radius-md;
 
-    // VdoCipher player will be injected here
     iframe {
       width: 100%;
       height: 100%;
       border: none;
-    
       background: #000;
       display: block;
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
     }
   }
 
   .loading-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    border-radius: 8px;
+    border-radius: inherit;
 
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid #8b0000;
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+      border-top: 3px solid $brand;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
+      animation: vdc-spin 1s linear infinite;
+      margin-bottom: 14px;
     }
 
     span {
-      color: white;
-      font-size: 16px;
-      font-weight: 500;
+      color: #fff;
+      font-family: $sans;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
     }
   }
 
   .error-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    border-radius: 8px;
+    border-radius: inherit;
 
     .error-content {
       text-align: center;
-      color: white;
-      padding: 40px;
+      color: #fff;
+      padding: 32px;
+      max-width: 420px;
 
       .error-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
+        font-size: 36px;
+        margin-bottom: 14px;
+        color: #f3a4a4;
       }
 
       h3 {
-        font-size: 24px;
+        font-family: $serif;
+        font-size: $display-sm;
         font-weight: 600;
-        margin: 0 0 16px 0;
-        color: white;
+        margin: 0 0 12px 0;
+        color: #fff;
       }
 
       p {
-        font-size: 16px;
-        margin: 0 0 24px 0;
-        color: #ccc;
-        max-width: 400px;
+        font-family: $serif;
+        font-size: 0.92rem;
+        margin: 0 0 22px 0;
+        color: #d6d3cc;
+        line-height: 1.55;
       }
 
       .retry-button {
-        background: #8b0000;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-size: 16px;
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 8px 18px;
+        border-radius: $radius-sm;
+        font-family: $sans;
+        font-size: 0.78rem;
         font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: background 120ms ease, border-color 120ms ease;
 
         &:hover {
-          background: #660000;
-          transform: translateY(-1px);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: #fff;
         }
       }
     }
   }
 
+  // ─────────────── Progress + actions ───────────────
+
   .progress-display {
-    padding: 16px 24px;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    padding: 12px 0 0;
+    background: transparent;
+    border-top: 1px solid $hairline;
 
     .time-display {
-      font-size: 14px;
-      color: #666;
-      font-weight: 500;
+      font-family: $sans;
+      font-size: 0.78rem;
+      color: $muted;
+      letter-spacing: 0.02em;
     }
   }
 
   .video-actions {
-    padding: 24px;
+    padding: 18px 0 8px;
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-start;
     background: transparent;
     border-top: none;
 
     .complete-button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 999px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: #7b1f2f;
-      box-shadow: 0 3px 10px rgba(123, 31, 47, 0.28);
-
-      &:hover {
-        background: #5d1622;
-        transform: translateY(-1px);
-        box-shadow: 0 5px 14px rgba(123, 31, 47, 0.34);
+      @include ed-link;
+      & {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        color: $brand;
+        transform: none;
+        font-size: 0.85rem;
+      }
+      &:hover:not(:disabled) {
+        background: transparent;
+        color: $brand-hover;
+        transform: none;
+        box-shadow: none;
       }
 
-      .anticon { font-size: 18px; }
+      &:disabled {
+        color: $muted-2;
+        cursor: not-allowed;
+        text-decoration: none;
+        svg { color: $muted-2; }
+      }
+
+      .anticon,
+      svg { font-size: 13px; width: 14px; height: 14px; }
 
       &.is-completed,
       &.is-completed:hover {
-        background: #dcfce7;
-        color: #047857;
-        box-shadow: none;
+        background: transparent;
+        color: $success;
         cursor: default;
         transform: none;
+        box-shadow: none;
+        text-decoration: none;
 
-        svg {
-          color: #047857;
-        }
+        svg { color: $success; }
       }
+    }
+
+    .complete-lock-note {
+      font-family: $serif;
+      font-style: italic;
+      font-size: 0.86rem;
+      color: $muted;
+      line-height: 1.5;
+
+      em { font-style: italic; }
     }
   }
 }
 
-@keyframes spin {
+@keyframes vdc-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-// Security warning styles
+// Legacy `.security-warning` (top-of-page banner) — convert to footnote tone
 .security-warning {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 6px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 12px;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: baseline;
+  gap: 8px;
+  font-family: $serif;
+  font-style: italic;
+  color: $muted;
 
   .warning-icon {
-    color: #856404;
-    font-size: 18px;
+    color: $muted;
+    font-size: 13px;
   }
 
   .warning-text {
-    color: #856404;
-    font-size: 14px;
-    font-weight: 500;
+    color: $muted;
+    font-size: 0.86rem;
+    font-weight: 400;
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .vdocipher-player-container {
-    .video-title {
-      padding: 16px 16px 0 16px;
-
-      h3 {
-        font-size: 18px;
-      }
-    }
-
-    .vdocipher-player {
-      min-height: 300px;
-    }
-
-    .video-actions {
-      padding: 16px;
-
-      .complete-button {
-        padding: 12px 24px;
-        font-size: 14px;
-      }
-    }
+    .video-title h3 { font-size: 1.1rem; }
+    .vdocipher-player { min-height: unset; aspect-ratio: 16 / 9; }
+    .video-actions { padding: 14px 0 6px; }
   }
-} 
+}

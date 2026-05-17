@@ -77,6 +77,113 @@ export type AdminPaymentRow = {
   user?: { id: string; email: string; profile?: { name?: string | null } } | null;
 };
 
+// ─────────────── Subscriptions ───────────────
+
+export type AdminSubscriptionStatus =
+  | 'pending'
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'expired';
+
+export type AdminSubscriptionRow = {
+  id: string;
+  status: AdminSubscriptionStatus;
+  planName: string | null;
+  planPeriod: 'monthly' | 'yearly' | null;
+  userId: string;
+  userEmail: string | null;
+  paymentMethodId: string | null;
+  cardLast4: string | null;
+  cardProvider: string | null;
+  startDate: string;
+  currentPeriodEnd: string | null;
+  trialEndsAt: string | null;
+  cancelAtPeriodEnd: boolean;
+  failedAttemptsInCycle: number;
+  nextRetryAt: string | null;
+  createdAt: string;
+};
+
+export type AdminSubscriptionAttempt = {
+  id: string;
+  status: 'pending' | 'success' | 'failed';
+  provider: string | null;
+  amountUzs: number;
+  amountUsd: number | null;
+  attemptNumber: number;
+  idempotencyKey: string;
+  providerPaymentId: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  completedAt: string | null;
+};
+
+export type AdminSubscriptionEvent = {
+  id: string;
+  type: string;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+};
+
+export type AdminSubscriptionDetail = AdminSubscriptionRow & {
+  attempts: AdminSubscriptionAttempt[];
+  events: AdminSubscriptionEvent[];
+};
+
+export type AdminSubscriptionsQuery = {
+  status?: AdminSubscriptionStatus[] | AdminSubscriptionStatus;
+  planId?: string;
+  userId?: string;
+  createdSince?: string;
+  createdUntil?: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type AdminSubscriptionStats = {
+  byStatus: Partial<Record<AdminSubscriptionStatus, number>>;
+  mrrUsd: number;
+  mrrUzs: number;
+  charges24h: number;
+  failures24h: number;
+  pastDueOverdue: number;
+  generatedAt: string;
+};
+
+export type AdminSubscriptionPlanRow = {
+  id: string;
+  name: string;
+  period: 'monthly' | 'yearly';
+  billingPeriodDays: number;
+  trialDays: number;
+  price: number;
+  isActive: boolean;
+  displayName?: Record<string, string> | null;
+  descriptionI18n?: Record<string, string> | null;
+  description?: string | null;
+  features?: Record<string, unknown> | null;
+  currency?: { id: string; code: string; symbol?: string | null } | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type AdminSubscriptionPlanInput = {
+  name: string;
+  period: 'monthly' | 'yearly';
+  billingPeriodDays: number;
+  trialDays: number;
+  price: number;
+  isActive?: boolean;
+  displayName?: Record<string, string>;
+  descriptionI18n?: Record<string, string>;
+  description?: string;
+  features?: Record<string, unknown>;
+};
+
 export type AdminSessionsOverview = {
   kpis: {
     upcomingCount: number;
@@ -417,6 +524,114 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
       },
       providesTags: ['AdminConsoleEvents'],
     }),
+
+    // ─────────────── Subscriptions ───────────────
+
+    getAdminSubscriptions: builder.query<
+      { items: AdminSubscriptionRow[]; total: number; page: number; limit: number },
+      AdminSubscriptionsQuery | void
+    >({
+      query: (params) => ({
+        url: '/admin/subscriptions',
+        method: 'GET',
+        params: params ?? undefined,
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = unwrap<Partial<{ items: AdminSubscriptionRow[]; total: number; page: number; limit: number }>>(res);
+        return {
+          items: raw.items ?? [],
+          total: raw.total ?? 0,
+          page: raw.page ?? 1,
+          limit: raw.limit ?? 25,
+        };
+      },
+      providesTags: ['AdminConsoleSubscriptions'],
+    }),
+
+    getAdminSubscriptionStats: builder.query<AdminSubscriptionStats, void>({
+      query: () => ({ url: '/admin/subscriptions/stats', method: 'GET' }),
+      transformResponse: (res: unknown) => unwrap<AdminSubscriptionStats>(res),
+      providesTags: ['AdminConsoleSubscriptionStats'],
+    }),
+
+    getAdminSubscriptionDetail: builder.query<AdminSubscriptionDetail, string>({
+      query: (id) => ({ url: `/admin/subscriptions/${id}`, method: 'GET' }),
+      transformResponse: (res: unknown) => unwrap<AdminSubscriptionDetail>(res),
+      providesTags: (_r, _e, id) => [{ type: 'AdminConsoleSubscriptions', id }],
+    }),
+
+    extendAdminSubscription: builder.mutation<unknown, { id: string; days: number }>({
+      query: ({ id, days }) => ({
+        url: `/admin/subscriptions/${id}/extend`,
+        method: 'POST',
+        body: { days },
+      }),
+      invalidatesTags: ['AdminConsoleSubscriptions', 'AdminConsoleSubscriptionStats'],
+    }),
+
+    forceChargeAdminSubscription: builder.mutation<unknown, { id: string }>({
+      query: ({ id }) => ({
+        url: `/admin/subscriptions/${id}/force-charge`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['AdminConsoleSubscriptions', 'AdminConsoleSubscriptionStats'],
+    }),
+
+    cancelAdminSubscription: builder.mutation<
+      unknown,
+      { id: string; reason?: string; immediate?: boolean }
+    >({
+      query: ({ id, reason, immediate }) => ({
+        url: `/admin/subscriptions/${id}/cancel`,
+        method: 'POST',
+        body: { reason, immediate },
+      }),
+      invalidatesTags: ['AdminConsoleSubscriptions', 'AdminConsoleSubscriptionStats'],
+    }),
+
+    // ─────────────── Subscription Plans (CRUD) ───────────────
+    // Uses the generic /admin/subscription-plans endpoints (Crud decorator
+    // on the backend — list/create/update/delete shapes are standard).
+
+    getAdminSubscriptionPlans: builder.query<
+      { items: AdminSubscriptionPlanRow[]; total: number },
+      void
+    >({
+      query: () => ({ url: '/admin/subscription-plans', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res as
+          | { data?: AdminSubscriptionPlanRow[]; total?: number }
+          | AdminSubscriptionPlanRow[];
+        if (Array.isArray(raw)) return { items: raw, total: raw.length };
+        return { items: raw?.data ?? [], total: raw?.total ?? 0 };
+      },
+      providesTags: ['AdminConsoleSubscriptionPlans'],
+    }),
+
+    createAdminSubscriptionPlan: builder.mutation<
+      AdminSubscriptionPlanRow,
+      AdminSubscriptionPlanInput
+    >({
+      query: (body) => ({ url: '/admin/subscription-plans', method: 'POST', body }),
+      invalidatesTags: ['AdminConsoleSubscriptionPlans'],
+    }),
+
+    updateAdminSubscriptionPlan: builder.mutation<
+      AdminSubscriptionPlanRow,
+      { id: string; patch: Partial<AdminSubscriptionPlanInput> }
+    >({
+      query: ({ id, patch }) => ({
+        url: `/admin/subscription-plans/${id}`,
+        method: 'PATCH',
+        body: patch,
+      }),
+      invalidatesTags: ['AdminConsoleSubscriptionPlans'],
+    }),
+
+    deleteAdminSubscriptionPlan: builder.mutation<unknown, string>({
+      query: (id) => ({ url: `/admin/subscription-plans/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['AdminConsoleSubscriptionPlans'],
+    }),
   }),
 });
 
@@ -434,4 +649,14 @@ export const {
   useResetAdminMajorMatchAllMutation,
   useGetAdminMajorMatchHistoryQuery,
   useGetAdminMajorMatchHistoryDetailQuery,
+  useGetAdminSubscriptionsQuery,
+  useGetAdminSubscriptionStatsQuery,
+  useGetAdminSubscriptionDetailQuery,
+  useExtendAdminSubscriptionMutation,
+  useForceChargeAdminSubscriptionMutation,
+  useCancelAdminSubscriptionMutation,
+  useGetAdminSubscriptionPlansQuery,
+  useCreateAdminSubscriptionPlanMutation,
+  useUpdateAdminSubscriptionPlanMutation,
+  useDeleteAdminSubscriptionPlanMutation,
 } = adminConsoleApi;
