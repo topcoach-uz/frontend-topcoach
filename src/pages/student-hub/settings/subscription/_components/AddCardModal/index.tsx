@@ -586,10 +586,11 @@ function formatMmYy(raw: string): string {
 function mmYyToYyMm(displayed: string): string {
   const digits = displayed.replace(/\D/g, '');
   if (digits.length !== 4) return '';
-  const mm = digits.slice(0, 2);
-  const yy = digits.slice(2, 4);
-  // Atmos wants YYMM (e.g. "2510" for Oct 2025).
-  return `${yy}${mm}`;
+  // Click + Atmos both accept the user-typed MM/YY format directly as
+  // a 4-digit MMYY string (e.g. "1230" = Dec 2030). The previous swap
+  // here flipped to YYMM which made the form label inverted: users had
+  // to type YY/MM to get a valid date. Strip the slash, keep the order.
+  return digits;
 }
 
 // BIN-based provider routing.
