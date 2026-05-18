@@ -158,8 +158,20 @@ export default function PaymentMethods({
    * UX flags that drive the modal copy. The backend already enforces
    * the only-card-during-live-sub guard (409); these are warnings, not
    * blocks.
+   *
+   * A sub with `cancelAtPeriodEnd=true` will not charge again — the
+   * period is winding down to its natural end. So we suppress the
+   * "first charge will hit this card" warnings entirely in that case.
    */
-  const inTrial = subscription?.status === 'trialing';
+  const isCanceled =
+    !!subscription?.cancelAtPeriodEnd ||
+    subscription?.status === 'canceled' ||
+    subscription?.status === 'expired';
+  const inTrial = subscription?.status === 'trialing' && !isCanceled;
+  const inActiveCharging =
+    (subscription?.status === 'active' ||
+      subscription?.status === 'past_due') &&
+    !isCanceled;
   const subscriptionUsingCard =
     subscription &&
     pendingRemove &&
@@ -290,7 +302,7 @@ export default function PaymentMethods({
                 )}
               </p>
             )}
-            {subscriptionUsingCard && !inTrial && (
+            {subscriptionUsingCard && inActiveCharging && (
               <p className={styles.removeModalWarn}>
                 {t(
                   'settings.subscription.removeCardActiveWarn',

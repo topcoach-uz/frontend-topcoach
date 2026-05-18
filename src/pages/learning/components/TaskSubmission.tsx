@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { message } from 'antd';
+import { Modal, message } from 'antd';
 import { RefreshCw } from 'lucide-react';
 import {
   useGetTasksByLessonQuery,
@@ -13,13 +13,17 @@ import './TaskSubmission.scss';
 /**
  * Editorial-style practice-question runner.
  *
- * The previous implementation rendered each question as a card with
- * tinted backgrounds and Slack-style success/error chrome. This version
- * treats each question as a typographic page: numbered Q.NN heading,
- * serif body, lettered options with thin rules for state.
+ * Flow: the student picks an answer per question, walks back and forth
+ * via Prev/Next buttons (or ← / → arrow keys), then hits a single
+ * "Submit quiz" button. If they try to submit with unanswered
+ * questions, a confirmation modal offers "Resume" (jumps to the first
+ * unanswered) or "Submit anyway" (scores blanks as wrong). On submit
+ * the answers fan out in parallel to the per-task endpoint, then the
+ * UI flips to review mode with correct/wrong markers, explanations,
+ * and a retry. ≥80% unlocks lesson completion.
  *
- * Functional contract is unchanged — submit / retake / 80% threshold
- * behavior is preserved; only chrome was rewritten.
+ * The backend submit endpoint upserts, so partial-then-full re-submits
+ * just bump attemptNumber on the prior rows.
  */
 
 interface TaskSubmissionProps {
@@ -38,11 +42,11 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   onTasksScoreUpdate,
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const [submittedTasks, setSubmittedTasks] = useState<Set<string>>(new Set());
   const [taskResults, setTaskResults] = useState<Record<string, TaskResultDto>>({});
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
-  const [allTasksSubmitted, setAllTasksSubmitted] = useState(false);
+  const [isSubmittingAll, setIsSubmittingAll] = useState(false);
+  const [partialConfirmOpen, setPartialConfirmOpen] = useState(false);
 
   const { data: tasks, isLoading, error } = useGetTasksByLessonQuery(lessonId, {
     skip: !lessonId,
@@ -50,18 +54,21 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   const { data: existingSubmissions } = useGetLessonTaskSubmissionsQuery(lessonId, {
     skip: !lessonId,
   });
-  const [submitTask, { isLoading: isSubmitting }] = useSubmitTaskMutation();
+  const [submitTask] = useSubmitTaskMutation();
   const [retakeTask, { isLoading: isRetaking }] = useRetakeTaskMutation();
 
-  // Hydrate from server submissions
+  // Hydrate from server-side submissions. If every task already has a
+  // submission, we land straight in review mode. If only some do (legacy
+  // per-question submissions from the old flow), we just pre-fill those
+  // answer picks so the user can finish and submit the rest in one shot.
   useEffect(() => {
     if (!existingSubmissions || !tasks) return;
-    const submittedTaskIds = new Set(existingSubmissions.map((sub: any) => sub.taskId));
-    setSubmittedTasks(submittedTaskIds);
 
+    const picks: Record<string, number> = {};
     const results: Record<string, TaskResultDto> = {};
     existingSubmissions.forEach((sub: any) => {
       const task = tasks.find((t: CourseTaskDto) => t.id === sub.taskId);
+      picks[sub.taskId] = sub.submittedAnswerIndex ?? 0;
       results[sub.taskId] = {
         submission: {
           id: sub.id || '',
@@ -79,30 +86,50 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         explanation: task?.explanation || '',
       };
     });
-    setTaskResults(results);
 
-    if (existingSubmissions.length > 0 && submittedTaskIds.size === tasks.length) {
-      setAllTasksSubmitted(true);
+    setSelectedAnswers(picks);
+
+    if (existingSubmissions.length > 0 && existingSubmissions.length === tasks.length) {
+      setTaskResults(results);
       setReviewMode(true);
     } else {
-      setAllTasksSubmitted(false);
+      setTaskResults({});
       setReviewMode(false);
     }
   }, [existingSubmissions, tasks]);
 
-  // Propagate score upward (unchanged contract)
+  // Propagate score upward (unchanged contract).
   useEffect(() => {
-    if (!tasks || tasks.length === 0 || !allTasksSubmitted) return;
+    if (!tasks || tasks.length === 0 || !reviewMode) return;
     const correctCount = tasks.filter((task) => {
-      const result = taskResults[task.id];
-      return !!(result && result.isCorrect);
+      const r = taskResults[task.id];
+      return !!(r && r.isCorrect);
     }).length;
     const totalCount = tasks.length;
     const percentage = Math.round((correctCount / totalCount) * 100);
 
     if (onTasksScoreUpdate) onTasksScoreUpdate(correctCount, totalCount, percentage);
     if (percentage >= 80 && onAllTasksCorrectlyCompleted) onAllTasksCorrectlyCompleted();
-  }, [taskResults, tasks, allTasksSubmitted, onTasksScoreUpdate, onAllTasksCorrectlyCompleted]);
+  }, [taskResults, tasks, reviewMode, onTasksScoreUpdate, onAllTasksCorrectlyCompleted]);
+
+  // ← / → arrow-key navigation. Skip when focus is inside a form field
+  // or when a modal is open so we don't steal keys from typing/dialogs.
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (partialConfirmOpen) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+      if (e.key === 'ArrowLeft') {
+        setCurrentTaskIndex((i) => Math.max(0, i - 1));
+      } else if (e.key === 'ArrowRight') {
+        setCurrentTaskIndex((i) => Math.min(tasks.length - 1, i + 1));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [tasks, partialConfirmOpen]);
 
   if (isLoading) {
     return (
@@ -119,9 +146,12 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   const currentTask = tasks[currentTaskIndex];
   if (!currentTask?.id) return null;
 
-  const isSubmitted = submittedTasks.has(currentTask.id);
   const result = taskResults[currentTask.id];
   const selectedAnswer = selectedAnswers[currentTask.id];
+
+  const answeredCount = tasks.filter((t) => selectedAnswers[t.id] !== undefined).length;
+  const allAnswered = answeredCount === tasks.length;
+  const unansweredCount = tasks.length - answeredCount;
 
   const correctCount = tasks.filter((t) => taskResults[t.id]?.isCorrect).length;
   const incorrectCount = tasks.filter((t) => {
@@ -132,45 +162,64 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   const canCompleteLesson = percentage >= 80;
 
   const onPickAnswer = (taskId: string, idx: number) => {
-    if (submittedTasks.has(taskId) || reviewMode) return;
+    if (reviewMode) return;
     setSelectedAnswers((prev) => ({ ...prev, [taskId]: idx }));
   };
 
-  const onSubmit = async () => {
-    if (selectedAnswers[currentTask.id] === undefined) {
-      message.warning('Choose an answer first.');
+  const runSubmit = async () => {
+    setIsSubmittingAll(true);
+    try {
+      // Only submit tasks that actually have a pick. Unanswered ones
+      // stay unsubmitted; in review mode they render with the correct
+      // answer revealed but no user-answer tag.
+      const answered = tasks.filter((t) => selectedAnswers[t.id] !== undefined);
+      const responses = await Promise.all(
+        answered.map((task) =>
+          submitTask({
+            taskId: task.id,
+            selectedAnswerIndex: selectedAnswers[task.id],
+          }).unwrap(),
+        ),
+      );
+      const results: Record<string, TaskResultDto> = {};
+      answered.forEach((task, i) => {
+        results[task.id] = responses[i];
+      });
+      setTaskResults(results);
+      setReviewMode(true);
+      setCurrentTaskIndex(0);
+      onTaskComplete?.();
+    } catch (err: any) {
+      message.error(err?.data?.message || 'Failed to submit quiz.');
+    } finally {
+      setIsSubmittingAll(false);
+    }
+  };
+
+  const onSubmitClick = () => {
+    if (allAnswered) {
+      runSubmit();
       return;
     }
-    try {
-      const result = await submitTask({
-        taskId: currentTask.id,
-        selectedAnswerIndex: selectedAnswers[currentTask.id],
-      }).unwrap();
-      setSubmittedTasks((prev) => new Set(prev).add(currentTask.id));
-      setTaskResults((prev) => ({ ...prev, [currentTask.id]: result }));
+    setPartialConfirmOpen(true);
+  };
 
-      const allCompleted = tasks.every((t) => submittedTasks.has(t.id) || t.id === currentTask.id);
-      if (allCompleted) {
-        setAllTasksSubmitted(true);
-        setReviewMode(true);
-        onTaskComplete?.();
-      } else {
-        setTimeout(() => {
-          if (currentTaskIndex < tasks.length - 1) setCurrentTaskIndex((i) => i + 1);
-        }, 700);
-      }
-    } catch (err: any) {
-      message.error(err?.data?.message || 'Failed to submit answer.');
-    }
+  const handleResume = () => {
+    setPartialConfirmOpen(false);
+    const nextIdx = tasks.findIndex((t) => selectedAnswers[t.id] === undefined);
+    if (nextIdx >= 0) setCurrentTaskIndex(nextIdx);
+  };
+
+  const handleSubmitAnyway = () => {
+    setPartialConfirmOpen(false);
+    runSubmit();
   };
 
   const onRetryAll = async () => {
     try {
       await Promise.all(tasks.map((t) => retakeTask(t.id).unwrap()));
-      setSubmittedTasks(new Set());
       setTaskResults({});
       setSelectedAnswers({});
-      setAllTasksSubmitted(false);
       setReviewMode(false);
       setCurrentTaskIndex(0);
       message.success('Questions reset.');
@@ -194,7 +243,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         <div className="ts-progress-rule">
           <span style={{ width: `${((currentTaskIndex + 1) / tasks.length) * 100}%` }} />
         </div>
-        {allTasksSubmitted && (
+        {reviewMode && (
           <div className="ts-header__summary">
             <span>
               <strong>{correctCount}</strong> correct
@@ -232,7 +281,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
                   type="button"
                   className="ts-option__btn"
                   onClick={() => onPickAnswer(currentTask.id, idx)}
-                  disabled={isSubmitted || reviewMode}
+                  disabled={reviewMode}
                 >
                   <span className="ts-option__letter">{LETTERS[idx] ?? '?'}</span>
                   <span className="ts-option__text">{option.text}</span>
@@ -253,22 +302,25 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
           </aside>
         )}
 
-        {!reviewMode && !isSubmitted && (
+        {/* Submit lives on every question while taking the quiz. The
+            partial-answer warning modal handles incomplete state, so
+            the button itself stays clickable. */}
+        {!reviewMode && (
           <div className="ts-actions">
             <button
               type="button"
               className="ts-btn-primary"
-              onClick={onSubmit}
-              disabled={selectedAnswer === undefined || isSubmitting}
+              onClick={onSubmitClick}
+              disabled={isSubmittingAll}
             >
-              {isSubmitting ? 'Submitting…' : 'Submit answer →'}
+              {isSubmittingAll ? 'Submitting…' : 'Submit quiz →'}
             </button>
           </div>
         )}
       </article>
 
-      {/* Footer — score footnote + nav */}
-      {allTasksSubmitted && (
+      {/* Footer — score footnote + retry (review mode only) */}
+      {reviewMode && (
         <div className="ts-footnote">
           {canCompleteLesson ? (
             <span>
@@ -301,7 +353,9 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
           ← Previous
         </button>
         <span className="ts-nav__counter">
-          {currentTaskIndex + 1} / {tasks.length}
+          {reviewMode
+            ? `${currentTaskIndex + 1} / ${tasks.length}`
+            : `${answeredCount}/${tasks.length} answered`}
         </span>
         <button
           type="button"
@@ -312,6 +366,29 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
           Next →
         </button>
       </nav>
+
+      <Modal
+        open={partialConfirmOpen}
+        onCancel={handleResume}
+        onOk={handleSubmitAnyway}
+        title="Submit quiz?"
+        okText="Submit anyway"
+        cancelText="Resume"
+        okButtonProps={{ danger: true }}
+        destroyOnClose
+      >
+        <p>
+          You haven't answered all questions. You still have{' '}
+          <strong>
+            {unansweredCount} {unansweredCount === 1 ? 'question' : 'questions'}
+          </strong>{' '}
+          left.
+        </p>
+        <p style={{ marginTop: 8, opacity: 0.75 }}>
+          <em>Resume</em> jumps to your first unanswered question.{' '}
+          <em>Submit anyway</em> scores blanks as incorrect.
+        </p>
+      </Modal>
     </section>
   );
 };
