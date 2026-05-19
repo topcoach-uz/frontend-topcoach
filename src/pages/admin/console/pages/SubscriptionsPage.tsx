@@ -1,29 +1,21 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  Button,
   Card,
   Col,
   Drawer,
   Input,
-  InputNumber,
-  Popconfirm,
   Row,
   Segmented,
-  Space,
   Spin,
   Table,
   Tabs,
   Tag,
   Typography,
-  message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Search as SearchIcon } from 'lucide-react';
 import {
-  useCancelAdminSubscriptionMutation,
-  useExtendAdminSubscriptionMutation,
-  useForceChargeAdminSubscriptionMutation,
   useGetAdminSubscriptionDetailQuery,
   useGetAdminSubscriptionStatsQuery,
   useGetAdminSubscriptionsQuery,
@@ -77,7 +69,7 @@ function SubscriptionsTab() {
   const [pageSize, setPageSize] = useState(25);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const { data, isLoading, isError, refetch } = useGetAdminSubscriptionsQuery({
+  const { data, isLoading, isError } = useGetAdminSubscriptionsQuery({
     q: search.trim() || undefined,
     status: statusFilter === 'all' ? undefined : statusFilter,
     page,
@@ -233,7 +225,6 @@ function SubscriptionsTab() {
       <SubscriptionDetailDrawer
         id={openId}
         onClose={() => setOpenId(null)}
-        onMutated={() => { void refetch(); }}
       />
     </>
   );
@@ -246,51 +237,11 @@ function SubscriptionsTab() {
 function SubscriptionDetailDrawer({
   id,
   onClose,
-  onMutated,
 }: {
   id: string | null;
   onClose: () => void;
-  onMutated: () => void;
 }) {
   const { data, isFetching } = useGetAdminSubscriptionDetailQuery(id ?? '', { skip: !id });
-  const [extend, { isLoading: extending }] = useExtendAdminSubscriptionMutation();
-  const [forceCharge, { isLoading: charging }] = useForceChargeAdminSubscriptionMutation();
-  const [cancel, { isLoading: canceling }] = useCancelAdminSubscriptionMutation();
-  const [extendDays, setExtendDays] = useState<number>(7);
-
-  const handleExtend = async () => {
-    if (!id) return;
-    try {
-      await extend({ id, days: extendDays }).unwrap();
-      message.success(`Period extended by ${extendDays} day${extendDays === 1 ? '' : 's'}.`);
-      onMutated();
-    } catch {
-      message.error('Extend failed.');
-    }
-  };
-
-  const handleCharge = async () => {
-    if (!id) return;
-    try {
-      await forceCharge({ id }).unwrap();
-      message.success('Charge triggered.');
-      onMutated();
-    } catch {
-      message.error('Charge failed.');
-    }
-  };
-
-  const handleCancel = async (immediate: boolean) => {
-    if (!id) return;
-    try {
-      await cancel({ id, immediate }).unwrap();
-      message.success(immediate ? 'Canceled immediately.' : 'Will cancel at period end.');
-      onMutated();
-      onClose();
-    } catch {
-      message.error('Cancel failed.');
-    }
-  };
 
   return (
     <Drawer
@@ -334,46 +285,6 @@ function SubscriptionDetailDrawer({
             label="Card"
             value={data.cardLast4 ? `•••• ${data.cardLast4} (${data.cardProvider ?? '—'})` : '—'}
           />
-
-          <div style={{ borderTop: '1px solid var(--ac-border)', paddingTop: 16, marginTop: 4 }}>
-            <Typography.Text strong style={{ color: 'var(--ac-text)', display: 'block', marginBottom: 12 }}>
-              Support actions
-            </Typography.Text>
-
-            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-              <Space>
-                <InputNumber
-                  min={1}
-                  max={365}
-                  value={extendDays}
-                  onChange={(v) => setExtendDays(Number(v ?? 7))}
-                  style={{ width: 90 }}
-                />
-                <Button onClick={handleExtend} loading={extending}>Extend by N days</Button>
-              </Space>
-
-              <Button onClick={handleCharge} loading={charging}>Force charge now</Button>
-
-              <Popconfirm
-                title="Cancel this subscription?"
-                description="Sets cancel_at_period_end so access continues until the current period ends."
-                onConfirm={() => void handleCancel(false)}
-                okText="Cancel at period end"
-              >
-                <Button loading={canceling}>Cancel at period end</Button>
-              </Popconfirm>
-
-              <Popconfirm
-                title="Cancel immediately?"
-                description="Access is revoked right now. No refund is issued."
-                onConfirm={() => void handleCancel(true)}
-                okText="Yes, cancel now"
-                okButtonProps={{ danger: true }}
-              >
-                <Button danger loading={canceling}>Cancel immediately</Button>
-              </Popconfirm>
-            </Space>
-          </div>
         </div>
       )}
     </Drawer>

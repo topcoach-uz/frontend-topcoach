@@ -141,7 +141,13 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
       } else if (confirm.kind === 'grant') {
         if (confirm.program === 'full_support') {
           await adminEnroll({ userId: row.userId }).unwrap();
-          message.success(`${subjectName} enrolled in Full Support.`);
+          // Backend's enroll() auto-grants community access too — reflect
+          // that in the modal so the Community tab flips without the
+          // admin having to re-open the row.
+          setCommunityEnabled(true);
+          message.success(
+            `${subjectName} enrolled in Full Support — Community access unlocked.`,
+          );
         } else {
           // admissions
           const params = new URLSearchParams();
@@ -209,6 +215,9 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
               <>Active{plan && program === 'admissions' ? ` · ${plan.toUpperCase()}` : ''}</>
             ) : (
               'No access'
+            )}
+            {program === 'full_support' && (
+              <> · Includes Community access automatically</>
             )}
           </span>
         </div>
@@ -284,7 +293,11 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
         : confirm.kind === 'grant'
           ? `${subjectName} will get access to ${programLabel}${
               confirm.kind === 'grant' && confirm.plan ? ` on the ${confirm.plan.toUpperCase()} plan` : ''
-            }. They must have Telegram connected for course content.`
+            }.${
+              confirm.program === 'full_support'
+                ? ' Community access is unlocked automatically — no placement test or subscription required.'
+                : ' They must have Telegram connected for course content.'
+            }`
           : `${subjectName} will lose access to ${programLabel}. The enrollment row is removed; you can re-grant later.`;
 
     return (
@@ -352,7 +365,7 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
       title={
         <span
           style={{
-            color: 'var(--ac-text)',
+            color: '#f4f4f5',
             fontSize: 16,
             fontWeight: 600,
             letterSpacing: '-0.01em',
@@ -366,23 +379,27 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
       destroyOnClose
       rootClassName="ac-manage-access-modal"
       classNames={{ mask: 'ac-manage-access-mask' }}
+      // Hex literals (not CSS vars) — the Modal portals to <body>, where
+      // --ac-* variable resolution is unreliable (admin-console-tokens.scss
+      // is scoped via :root but AntD v5's runtime CSS can win at the same
+      // specificity layer). Hardcoded hexes match var(--ac-bg-surface).
       styles={{
         content: {
-          background: 'var(--ac-bg-surface)',
-          border: '1px solid var(--ac-border-strong)',
+          background: '#252a35',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
           padding: 0,
-          color: 'var(--ac-text)',
+          color: '#f4f4f5',
         },
         header: {
-          background: 'var(--ac-bg-surface)',
-          borderBottom: '1px solid var(--ac-border)',
+          background: '#252a35',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
           padding: '18px 24px 14px',
           margin: 0,
-          color: 'var(--ac-text)',
+          color: '#f4f4f5',
         },
         body: {
           background: 'transparent',
-          color: 'var(--ac-text)',
+          color: '#f4f4f5',
           padding: '20px 24px 24px',
         },
         mask: {

@@ -15,26 +15,41 @@
    styles are injected late and tie with our specificity, so we need
    !important to win and force the admin-console dark surface. */
 
+// Hex literals (not CSS variables) because the Modal renders into a
+// portal at <body>. The --ac-* variables are scoped via `:root` from
+// admin-console-tokens.scss, but AntD v5's CSS-in-JS for .ant-modal-header
+// is injected later and ties with our specificity at the variable layer,
+// so the resolved background can fall back to AntD's white default.
+// Pinning hex values makes this bulletproof regardless of variable load
+// order, ConfigProvider scope, or where the portal lands.
 .ac-manage-access-modal {
   .ant-modal-content {
-    background: var(--ac-bg-surface) !important;
-    border: 1px solid var(--ac-border-strong) !important;
-    border-radius: var(--ac-radius) !important;
-    box-shadow: var(--ac-shadow-md) !important;
-    color: var(--ac-text) !important;
+    background: #252a35 !important;
+    background-color: #252a35 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    color: #f4f4f5 !important;
     padding: 0 !important;
   }
 
-  .ant-modal-header {
-    background: var(--ac-bg-surface) !important;
-    border-bottom: 1px solid var(--ac-border) !important;
+  // Header — the row that hosts the "Manage access" title. Both `.ant-modal-header`
+  // AND `.ant-modal-title` get the dark background so even if AntD wraps the
+  // title in its own filled element, we paint over it.
+  .ant-modal-header,
+  .ant-modal-content > .ant-modal-header {
+    background: #252a35 !important;
+    background-color: #252a35 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
     padding: 18px 24px 14px !important;
     margin: 0 !important;
-    color: var(--ac-text) !important;
+    color: #f4f4f5 !important;
   }
 
   .ant-modal-title {
-    color: var(--ac-text) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #f4f4f5 !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     letter-spacing: -0.01em;
@@ -42,23 +57,24 @@
 
   .ant-modal-body {
     padding: 20px 24px 24px !important;
-    color: var(--ac-text) !important;
+    color: #f4f4f5 !important;
     background: transparent !important;
+    background-color: transparent !important;
   }
 
   .ant-modal-body p,
   .ant-modal-body span,
   .ant-modal-body label,
   .ant-modal-body strong {
-    color: var(--ac-text);
+    color: #f4f4f5;
   }
 
   .ant-modal-close,
   .ant-modal-close-x {
-    color: var(--ac-text-muted) !important;
+    color: #a8b4c8 !important;
   }
   .ant-modal-close:hover {
-    color: var(--ac-text) !important;
+    color: #f4f4f5 !important;
     background: rgba(255, 255, 255, 0.06) !important;
   }
 
