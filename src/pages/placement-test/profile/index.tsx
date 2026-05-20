@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 
 import {
+  AdmissionsProfileDto,
   PatchAdmissionsProfileBody,
   useCompleteAdmissionsProfileMutation,
   useGetAdmissionsProfileQuery,
@@ -94,8 +95,15 @@ export default function ProfileWizardPage() {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.placementTest} replace />;
   }
 
-  // After the user completes the profile, send them to the roadmap step.
-  if (status?.profile.completed) {
+  // After the user completes the profile, the default behavior is to
+  // bounce them to the roadmap — there's no point landing them back on
+  // a wizard they already finished. The exception is when they
+  // intentionally clicked "Edit profile" from the roadmap, which adds
+  // `?edit=1` to the URL; in that case we keep the wizard mounted so
+  // they can refine their answers, and the roadmap's "profile changed"
+  // banner picks up the change when they're done.
+  const editIntent = searchParams.get('edit') === '1';
+  if (status?.profile.completed && !editIntent) {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.roadmap} replace />;
   }
 
@@ -109,7 +117,15 @@ export default function ProfileWizardPage() {
       status?.profile.lastEditedStep ??
       profile?.lastEditedStep ??
       'basic';
-    return <Navigate to={profilePath(resume)} replace />;
+    // Preserve every other search param (notably `edit=1` from the
+    // roadmap's "Edit profile" CTA). Without this, the resume-redirect
+    // strips `edit=1`, the wizard re-mounts with editIntent=false, the
+    // `profile.completed` guard fires, and the user gets bounced back
+    // to the roadmap — visually indistinguishable from a page reload.
+    const merged = new URLSearchParams(searchParams);
+    merged.set('section', 'placement-profile');
+    merged.set('step', resume);
+    return <Navigate to={`/student-hub?${merged.toString()}`} replace />;
   }
 
   return (
@@ -204,19 +220,112 @@ function ProfileWizardInner({
     return done;
   }, [profile]);
 
-  // Reset local draft when the user changes step.
+  // Per-field error map, populated when the user clicks `Next` with
+  // missing required fields and cleared as soon as they edit the
+  // offending field. Reset between steps so prior-step errors don't
+  // leak into the next form.
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Reset local draft + errors when the user changes step.
   useEffect(() => {
     setDraft({});
+    setErrors({});
   }, [step, setDraft]);
 
   const mergeDraft = useCallback(
     (patch_: PatchAdmissionsProfileBody) => {
       setDraft({ ...draft, ...patch_ });
+      // Clear errors on the fields the user just edited — they're
+      // actively addressing the issue, no point keeping the red label.
+      const touchedKeys = Object.keys(patch_);
+      if (touchedKeys.length > 0) {
+        setErrors((prev) => {
+          let changed = false;
+          const next = { ...prev };
+          for (const k of touchedKeys) {
+            if (next[k]) {
+              delete next[k];
+              changed = true;
+            }
+          }
+          return changed ? next : prev;
+        });
+      }
     },
     [draft, setDraft],
   );
 
+  /**
+   * Required-field check for the current step. Returns a map keyed by
+   * field name so the step components can highlight each missing input.
+   * Empty result == OK to advance.
+   */
+  const validateCurrentStep = useCallback((): Record<string, string> => {
+    const e: Record<string, string> = {};
+    const valueOf = <K extends keyof PatchAdmissionsProfileBody>(key: K) =>
+      (draft[key] ?? (profile?.[key as keyof AdmissionsProfileDto] as never)) as
+        | PatchAdmissionsProfileBody[K]
+        | undefined;
+
+    if (step === 'basic') {
+      const fullName = ((valueOf('fullName') as string | undefined) ?? '').trim();
+      const gradeLevel = valueOf('gradeLevel') as number | undefined;
+      const country = ((valueOf('country') as string | undefined) ?? '').trim();
+      const currentSchool = ((valueOf('currentSchool') as string | undefined) ?? '').trim();
+      const parentInvolvement = valueOf('parentInvolvement') ?? null;
+      if (!fullName) e.fullName = 'Please enter your full name.';
+      if (gradeLevel == null) e.gradeLevel = 'Pick your grade level.';
+      if (!country) e.country = 'Tell us which country you\'re applying from.';
+      if (!currentSchool) e.currentSchool = 'Add the school you currently attend.';
+      if (!parentInvolvement) e.parentInvolvement = 'Pick one option.';
+    }
+    if (step === 'academic') {
+      // SAT score stays optional ("if taken"). SAT plan is required so
+      // the roadmap can slot prep into the timeline; extracurriculars
+      // are required because Gemini personalizes the entire summary
+      // and action plan off them — a blank field produces a generic
+      // roadmap and defeats the point of running the wizard at all.
+      const satPlan = valueOf('satPlan') ?? null;
+      const extracurriculars = ((valueOf('extracurriculars') as string | undefined) ?? '').trim();
+      if (!satPlan) e.satPlan = 'Pick your SAT plan.';
+      if (extracurriculars.length < 20) {
+        e.extracurriculars =
+          'Add a few sentences — clubs, sports, awards, or volunteer work. We use this to personalize your roadmap.';
+      }
+    }
+    if (step === 'goals') {
+      const goals = (valueOf('goals') as string[] | undefined) ?? [];
+      const interests = (valueOf('academicInterests') as string[] | undefined) ?? [];
+      const targets = (valueOf('targetUniversities') as string[] | undefined) ?? [];
+      if (goals.length === 0) e.goals = 'Pick at least one goal.';
+      if (interests.length === 0)
+        e.academicInterests = 'Pick at least one academic interest.';
+      if (targets.length === 0)
+        e.targetUniversities = 'Add at least one target university.';
+    }
+    if (step === 'needs') {
+      // `challenges` stays optional — copy explicitly says so. Timeline
+      // + budget are required because the roadmap can't be paced or
+      // priced without them.
+      const timeline = valueOf('applicationTimeline') ?? null;
+      const budget = valueOf('budgetRange') ?? null;
+      if (!timeline) e.applicationTimeline = 'Pick when you plan to apply.';
+      if (!budget) e.budgetRange = 'Pick a monthly budget range.';
+    }
+    return e;
+  }, [step, draft, profile]);
+
   const handleNext = async () => {
+    // Block the advance if required fields are missing — surface red
+    // labels on the offending inputs instead of silently sending a
+    // half-baked PATCH or letting the user move past a broken form.
+    const fieldErrors = validateCurrentStep();
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
+
     // Autosave whatever's pending + advance the lastEditedStep marker
     // to the next step so resume routing picks the right page.
     const payload: PatchAdmissionsProfileBody = {
@@ -249,7 +358,7 @@ function ProfileWizardInner({
   };
 
   const stepNode = (() => {
-    const shared = { draft, onChange: mergeDraft, profile };
+    const shared = { draft, onChange: mergeDraft, profile, errors };
     if (step === 'basic') return <StepBasic {...shared} />;
     if (step === 'academic') return <StepAcademic {...shared} />;
     if (step === 'goals') return <StepGoals {...shared} />;

@@ -1,6 +1,7 @@
-import { AlertTriangle, Pencil, RotateCcw, Sparkles } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 import type { RoadmapResponse } from 'src/app/services/roadmapApi';
+import { generatePlacementRoadmapPdf } from 'src/utils/placementRoadmapPdf';
 
 import styles from '../Roadmap.module.scss';
 import { ActionItemRow } from './ActionItemRow';
@@ -11,13 +12,8 @@ type Props = {
   data: RoadmapResponse;
   /** Where the in-page "Choose a plan" CTA should route to. */
   onChoosePlan: () => void;
-  /** Where the "Edit your profile" links should route to. */
-  onEditProfile: () => void;
   /** Resource-link click handler for the unlocked TopCoach buttons. */
   onOpenTopcoach: (path: string) => void;
-  /** Subscriber-only Regenerate handler. Disabled if cooldown not elapsed. */
-  onRegenerate?: () => void;
-  regenBusy?: boolean;
 };
 
 /**
@@ -25,14 +21,15 @@ type Props = {
  * action plan → paywall/plan picker if preview). No outer `.page`
  * background — the caller decides whether to wrap in the editorial
  * cream background or render inside an existing layout (settings tab).
+ *
+ * Read-only by design: no Edit / Regenerate affordances. The roadmap
+ * is the report; profile lives elsewhere. Users return to the hub via
+ * the parent page's top "Back to dashboard" link.
  */
 export function RoadmapBody({
   data,
   onChoosePlan,
-  onEditProfile,
   onOpenTopcoach,
-  onRegenerate,
-  regenBusy,
 }: Props) {
   const { meta, roadmap } = data;
   const hiddenCount = Math.max(
@@ -42,14 +39,6 @@ export function RoadmapBody({
 
   return (
     <>
-      {meta.profileChangedSinceLastRoadmap ? (
-        <div className={styles.profileChangedBanner}>
-          <AlertTriangle size={14} />
-          Your profile has changed since this roadmap was generated.
-          {meta.canRegenerate ? ' Regenerate to refresh.' : ''}
-        </div>
-      ) : null}
-
       {/* Banner */}
       <section>
         <header className={styles.banner}>
@@ -145,47 +134,23 @@ export function RoadmapBody({
                 : 'AI-generated. '}
               Generated {formatDate(meta.generatedAt)}.
             </span>
-            {onRegenerate ? (
-              <button
-                type="button"
-                className={`${styles.btn} ${styles.btnGhost}`}
-                disabled={!meta.canRegenerate || regenBusy}
-                onClick={onRegenerate}
-                title={
-                  meta.canRegenerate
-                    ? 'Regenerate from your latest profile'
-                    : `Available again ${formatDate(
-                        meta.regenerateAvailableAt ?? meta.generatedAt,
-                      )}`
-                }
-              >
-                <RotateCcw size={14} />
-                {regenBusy ? 'Regenerating…' : 'Regenerate'}
-              </button>
-            ) : null}
+            {/* Download as PDF — only for unlocked users; the helper
+                bakes the same header + timeline + action plan the page
+                renders, so what they see is what they save. */}
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnGhost}`}
+              onClick={() => generatePlacementRoadmapPdf(data)}
+              title="Download a printable copy of your roadmap"
+            >
+              <Download size={14} />
+              Download PDF
+            </button>
           </div>
         ) : null}
       </section>
 
       {meta.isPreview ? <PlanPicker onChoose={onChoosePlan} /> : null}
-
-      {/* Edit profile shortcut */}
-      <div className={styles.footerRow}>
-        <button
-          type="button"
-          className={styles.backLink}
-          onClick={onEditProfile}
-        >
-          <Pencil size={14} />
-          Edit your profile
-        </button>
-        {!meta.isPreview ? (
-          <span className={styles.regenInfo}>
-            <Sparkles size={12} /> Keep your profile fresh — regenerate
-            after meaningful changes.
-          </span>
-        ) : null}
-      </div>
     </>
   );
 }

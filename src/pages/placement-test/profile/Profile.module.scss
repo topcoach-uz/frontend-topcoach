@@ -253,6 +253,28 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   }
 }
 
+// Validation error visuals. The input gets a red border + faint red
+// halo; the .errorText line sits directly under the field with the
+// reason. Applied via class toggling from the step components when a
+// "Next" click reveals missing/invalid data.
+.inputError {
+  border-color: #c0392b !important;
+  background: #fff5f4;
+
+  &:focus {
+    border-color: #c0392b !important;
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.18) !important;
+  }
+}
+
+.errorText {
+  color: #c0392b;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  font-style: italic;
+}
+
 .textarea {
   min-height: 100px;
   resize: vertical;

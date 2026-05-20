@@ -32,6 +32,7 @@ import BillingHistory, {
   BillingHistoryHeaderActions,
 } from './_components/BillingHistory';
 import { formatLongDate } from './_components/format';
+import ConfettiCelebration from 'src/components/confetti';
 import styles from './subscription.module.scss';
 
 const VALID_STATES: SubscriptionState[] = [
@@ -188,10 +189,20 @@ export default function SubscriptionTab() {
 
   const [startSubscription] = useStartSubscriptionMutation();
   const [changePlan] = useChangeSubscriptionPlanMutation();
+  // Celebration overlay: appears for ~7s after the trial actually starts
+  // (i.e. the /subscriptions/start call returns 2xx). Drives the
+  // "card added → trial active → community unlocked" feel that was
+  // missing before — the silent message.success toast was the only
+  // signal of success and the sidebar locks confused users into
+  // thinking nothing had happened.
+  const [showTrialCelebration, setShowTrialCelebration] = useState(false);
 
   const startTrialWithCard = async (planId: string, paymentMethodId: string) => {
     try {
       await startSubscription({ planId, paymentMethodId }).unwrap();
+      // Fire the confetti before the toast — the toast disappears in 3s
+      // but the celebration runs ~7s so the user actually notices.
+      setShowTrialCelebration(true);
       message.success(
         t(
           'settings.subscription.toast.trialStarted',
@@ -416,6 +427,15 @@ export default function SubscriptionTab() {
 
   return (
     <div className={styles.page}>
+      <ConfettiCelebration
+        show={showTrialCelebration}
+        onComplete={() => setShowTrialCelebration(false)}
+        title={t('settings.subscription.celebration.title', '🎉 You\'re in! 🎉')}
+        subtitle={t(
+          'settings.subscription.celebration.subtitle',
+          'Welcome to Community — your free trial is active and the full TopCoach journey is unlocked.',
+        )}
+      />
       {errorAny && (
         <Alert
           type="error"

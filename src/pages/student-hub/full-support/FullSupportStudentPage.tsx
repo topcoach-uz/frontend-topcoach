@@ -169,37 +169,7 @@ export default function FullSupportStudentPage() {
   }
 
   if (!isEnrolled) {
-    return (
-      <div className="fseditorial fseditorial--gated">
-        <div className="fseditorial__gated-card">
-          <div className="fseditorial__eyebrow">Full Support</div>
-          <h1 className="fseditorial__title">
-            {t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
-          </h1>
-          <Alert
-            type="info"
-            showIcon
-            message={t('fullSupport.enrollFirstTitle', "Full Support isn't active on your account yet")}
-            description={
-              <>
-                <p style={{ marginBottom: 12 }}>
-                  {t(
-                    'fullSupport.onlyAdminEnrollDesc',
-                    "The Full Support Mentorship Program is available after enrollment. If you'd like to join or have questions, email our team at support@topcoach.uz and we'll walk you through the next steps.",
-                  )}
-                </p>
-                <p style={{ color: '#6b6258', fontSize: 13, marginBottom: 0 }}>
-                  {t(
-                    'fullSupport.contactAdmin',
-                    'Prefer email? Reach us at support@topcoach.uz. Include your TopCoach account email if you have one so we can assist you faster.',
-                  )}
-                </p>
-              </>
-            }
-          />
-        </div>
-      </div>
-    );
+    return <FullSupportNotEnrolled />;
   }
 
   const mentorName = enrollmentData?.data?.mentorName ?? 'your mentor';
@@ -661,6 +631,149 @@ export default function FullSupportStudentPage() {
           </>
         )}
       </Modal>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Not-yet-enrolled view.
+//
+// Important: Community enrollment does NOT grant Full Support. Full
+// Support is a separate, admin-managed program (12-month intensive
+// mentorship). Even community-subscribed users land on this page if
+// they haven't been individually enrolled by an admin. Surfacing a
+// marketing-style overview was misleading — students read it as if
+// they were already inside. Keep this as a short, honest contact
+// notice with one clear next step.
+// ─────────────────────────────────────────────────────────────────────
+
+const PROGRAMS_PAGE_URL = 'https://topcoachuni.com/programs';
+const SUPPORT_EMAIL = 'support@topcoach.uz';
+
+/**
+ * Compact editorial "not enrolled" card. One card, centered, ~520px
+ * max — readable in a single scroll without the page feeling empty.
+ * Replaces the wide magazine spread which was looking broken at narrow
+ * widths and too sparse at desktop.
+ */
+function FullSupportNotEnrolled() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="fseditorial fseditorial--gated" style={{ paddingBottom: 48 }}>
+      <div
+        style={{
+          maxWidth: 560,
+          margin: '8px auto 0',
+          background: '#fff',
+          border: '1px solid #e8e3d4',
+          borderRadius: 16,
+          padding: '32px 32px 28px',
+          boxShadow: '0 1px 0 rgba(15, 23, 42, 0.02)',
+        }}
+      >
+        {/* Eyebrow */}
+        <div
+          style={{
+            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
+            fontSize: 11,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#8a7f70',
+            fontWeight: 600,
+            marginBottom: 10,
+          }}
+        >
+          Full Support · Mentorship
+        </div>
+
+        {/* Title */}
+        <h1
+          style={{
+            margin: 0,
+            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
+            fontSize: '1.75rem',
+            fontWeight: 600,
+            lineHeight: 1.18,
+            letterSpacing: '-0.015em',
+            color: '#1a1a1a',
+          }}
+        >
+          You're not enrolled in Full Support yet.
+        </h1>
+
+        {/* Short hairline */}
+        <div
+          aria-hidden
+          style={{
+            width: 36,
+            height: 2,
+            background: '#7b1f2f',
+            borderRadius: 1,
+            margin: '16px 0 14px',
+          }}
+        />
+
+        {/* Body */}
+        <p
+          style={{
+            margin: 0,
+            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
+            fontSize: '0.98rem',
+            lineHeight: 1.6,
+            color: '#4a4438',
+          }}
+        >
+          Full Support is a separate, year-long admissions mentorship —{' '}
+          <em>not</em> included with Community. Pairing, essay reviews, and
+          weekly check-ins are admitted by application; the team reviews
+          every request individually.
+        </p>
+
+        {/* CTAs */}
+        <div
+          style={{
+            marginTop: 22,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 10,
+          }}
+        >
+          <a
+            href={`mailto:${SUPPORT_EMAIL}?subject=Full%20Support%20Mentorship%20Program`}
+            className="fseditorial__btn fseditorial__btn--primary"
+          >
+            <MessageCircle size={14} />
+            Write to {SUPPORT_EMAIL}
+          </a>
+          <a
+            href={PROGRAMS_PAGE_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="fseditorial__btn fseditorial__btn--ghost"
+          >
+            Read the full program
+            <ArrowUpRight size={14} />
+          </a>
+        </div>
+
+        {/* Footnote */}
+        <p
+          style={{
+            marginTop: 16,
+            marginBottom: 0,
+            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
+            fontStyle: 'italic',
+            fontSize: 13,
+            color: '#8a7f70',
+          }}
+        >
+          {t(
+            'fullSupport.notEnrolledFooter',
+            'A short note works — tell us your grade and target year. We reply within a working day.',
+          )}
+        </p>
+      </div>
     </div>
   );
 }

@@ -217,7 +217,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // (matches the Research Prep treatment). Hide the My Journey sidebar
   // and let the page render edge-to-edge.
   const isSatPrep = location.pathname.startsWith('/student-hub/sat-prep');
-  const hideSidebar = isCommunityLanding || isSatPrep;
+  // Research Prep standalone locked surface (non-community users) — same
+  // edge-to-edge treatment as SAT Prep so the blurred preview shows the
+  // full dashboard silhouette behind the unlock modal.
+  const isResearchPrep = location.pathname.startsWith('/student-hub/research-prep');
+  const hideSidebar = isCommunityLanding || isSatPrep || isResearchPrep;
 
   return (
     <Layout className="student-hub-layout">

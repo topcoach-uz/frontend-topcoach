@@ -679,6 +679,155 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   gap: 8px;
 }
 
+/* ── Generating-roadmap state ─────────────────────────────────────
+   Replaces the old static "Generating your roadmap…" line with an
+   engaging silhouette of progress: pulsing sparkle halo, rotating
+   real-step messages, and a step-pip strip so the user sees motion
+   while the Gemini call (8–15s) finishes. */
+
+.generating {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: $ed-serif;
+  color: $ed-ink;
+  gap: 14px;
+}
+
+.generatingHalo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(123, 31, 47, 0.08);
+  color: $ed-brand;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  // Soft pulsing ring that radiates outward — gives the icon a sense
+  // of "working" without resorting to a clinical spinner.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(123, 31, 47, 0.22);
+    animation: roadmap-pulse 2.4s ease-out infinite;
+  }
+  &::after { animation-delay: 1.2s; }
+}
+
+@keyframes roadmap-pulse {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  80% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.generatingEyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $ed-muted;
+  margin-top: 8px;
+}
+
+.generatingTitle {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  color: $ed-ink;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+  // Subtle fade-in each time the message swaps. The key is the text
+  // itself, so React remounts the heading and the animation re-fires
+  // on every step change.
+  animation: roadmap-fade 360ms ease-out;
+}
+
+@keyframes roadmap-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.generatingLede {
+  margin: 0;
+  font-size: 0.95rem;
+  color: $ed-muted;
+  max-width: 52ch;
+  line-height: 1.55;
+}
+
+.generatingSteps {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: center;
+  font-family: $ed-serif;
+}
+
+.generatingStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: $ed-muted;
+  transition: color 0.2s ease;
+}
+
+.generatingStepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $ed-hairline;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.generatingStepActive {
+  color: $ed-ink;
+  font-weight: 600;
+  .generatingStepDot {
+    background: $ed-brand;
+    box-shadow: 0 0 0 4px rgba(123, 31, 47, 0.16);
+    // Tiny breathing pulse so the active step doesn't read as flat.
+    animation: roadmap-dot 1.2s ease-in-out infinite;
+  }
+}
+
+.generatingStepDone {
+  color: $ed-ink;
+  .generatingStepDot {
+    background: $ed-brand;
+  }
+}
+
+@keyframes roadmap-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+@media (max-width: 600px) {
+  .generating {
+    padding: 40px 16px 48px;
+  }
+  .generatingTitle { font-size: 1.35rem; }
+  .generatingSteps {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
 /* ── Empty + loading ────────────────────────────────────────────── */
 
 .centered {

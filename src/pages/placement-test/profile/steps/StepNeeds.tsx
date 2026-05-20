@@ -15,13 +15,15 @@ type Props = {
   draft: PatchAdmissionsProfileBody;
   onChange: (patch: PatchAdmissionsProfileBody) => void;
   profile: AdmissionsProfileDto | null;
+  /** Per-field error map populated by the wizard on `Next` click. */
+  errors?: Record<string, string>;
 };
 
 /**
  * Final step. No GPA-based challenge offered — keep the list focused
  * on signals the AI roadmap can act on without surfacing the GPA topic.
  */
-export function StepNeeds({ draft, onChange, profile }: Props) {
+export function StepNeeds({ draft, onChange, profile, errors = {} }: Props) {
   const getArr = (key: 'challenges'): string[] =>
     draft[key] ?? profile?.[key] ?? [];
 
@@ -51,6 +53,9 @@ export function StepNeeds({ draft, onChange, profile }: Props) {
           value={timeline}
           onChange={(v) => onChange({ applicationTimeline: v ?? undefined })}
         />
+        {errors.applicationTimeline && (
+          <div className={styles.errorText}>{errors.applicationTimeline}</div>
+        )}
       </div>
 
       <div className={styles.fieldGroup}>
@@ -64,6 +69,9 @@ export function StepNeeds({ draft, onChange, profile }: Props) {
           value={budget}
           onChange={(v) => onChange({ budgetRange: v ?? undefined })}
         />
+        {errors.budgetRange && (
+          <div className={styles.errorText}>{errors.budgetRange}</div>
+        )}
       </div>
     </>
   );

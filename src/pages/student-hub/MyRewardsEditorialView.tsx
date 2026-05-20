@@ -28,7 +28,6 @@ import {
   GraduationCap,
   Headphones,
   History,
-  Home,
   MessageCircle,
   PenLine,
   Pencil,
@@ -457,18 +456,19 @@ export const MyRewardsComingSoon: React.FC = () => (
       </div>
       <h1 className="rewards__title">My Rewards is coming soon.</h1>
       <p className="rewards__subtitle">
-        TopCoach coins, missions, and the marketplace are in internal preview right now.
-        We'll open it up once we've finished tuning the earn rates and stocking the store.
+        We're building a coin-based rewards system so the work you put into
+        TopCoach actually pays off — earn for the habits that move your
+        journey forward, then redeem for perks that help you go further.
       </p>
       <div className="rewards__coming-list">
         <div className="rewards__coming-row">
-          <CheckCircle2 size={14} /> Earn coins for studying, posting, and hitting goals.
+          <CheckCircle2 size={14} /> Earn coins for studying, completing lessons, and hitting milestones.
         </div>
         <div className="rewards__coming-row">
-          <CheckCircle2 size={14} /> Spend on swag, study gear, and bonus mentor hours.
+          <CheckCircle2 size={14} /> Redeem for essay reviews, bonus mentor sessions, and prep credits.
         </div>
         <div className="rewards__coming-row">
-          <Home size={14} /> Ships to Uzbekistan and 14 partner countries at launch.
+          <CheckCircle2 size={14} /> Streaks and seasonal challenges to keep momentum through application season.
         </div>
       </div>
     </div>

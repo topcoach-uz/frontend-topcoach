@@ -16,6 +16,21 @@
   cursor: pointer;
 }
 
+/*
+ * Used by variants that render their own blurred preview behind the
+ * modal (sat-course, research-program). The default overlay's heavy
+ * scrim + viewport-wide backdrop-filter would re-blur the sidebar and
+ * the already-blurred preview, defeating the whole "peek at what
+ * you'll unlock" effect. This variant drops the scrim entirely so the
+ * sidebar/header stay crisp and the blurred content shows through; the
+ * modal card's own shadow does the visual lift.
+ */
+.overlayTransparent {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .panel {
   cursor: default;
   width: 100%;

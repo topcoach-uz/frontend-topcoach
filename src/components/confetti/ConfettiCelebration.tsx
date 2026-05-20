@@ -7,11 +7,19 @@ import styles from './confetti.module.scss';
 interface ConfettiProps {
   show: boolean;
   onComplete: () => void;
+  /** Headline shown above the confetti. Defaults to "🎉 Congrats! 🎉" so
+   *  the existing application-accepted use-site keeps working. */
+  title?: React.ReactNode;
+  /** Sub-line shown below the headline. Defaults to the
+   *  application-accepted copy for backward compatibility. */
+  subtitle?: React.ReactNode;
 }
 
 export default function ConfettiCelebration({
   show,
   onComplete,
+  title = '🎉 Congrats! 🎉',
+  subtitle = 'You are in! Your application has been accepted!',
 }: ConfettiProps) {
   const { colors: themeColors } = useTypedSelector((state) => state.layout);
   const [showMessage, setShowMessage] = useState(false);
@@ -121,14 +129,14 @@ export default function ConfettiCelebration({
               color={themeColors.colorPrimary}
               className={styles.congratsText}
             >
-              🎉 Congrats! 🎉
+              {title}
             </CustomText>
             <CustomText
               fontSize={18}
               color={themeColors.colorTextBase}
               className={styles.acceptedText}
             >
-              You are in! Your application has been accepted!
+              {subtitle}
             </CustomText>
           </div>
         </div>

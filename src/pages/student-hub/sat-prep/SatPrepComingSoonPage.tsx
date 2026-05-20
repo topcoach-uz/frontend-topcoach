@@ -4,64 +4,40 @@
  * SAT_PREP_SHOW_ALL = false. Sits inside the existing SatPrepLayout so
  * the breadcrumb + tabs still render — keeps the user oriented and lets
  * them go back without a separate top bar.
+ *
+ * Visual: the real Test Packs page is rendered behind a heavy blur as a
+ * teaser, with the CommunityLockedPage (sat-course variant) portaled on
+ * top to drive the unlock funnel. We deliberately do NOT list product
+ * specifics like question counts in the lock copy — that lives in the
+ * unblurred page once the user is enrolled.
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, GraduationCap, Sparkles } from 'lucide-react';
-import 'src/components/sat-prep/sat-prep-shell.scss';
+import SatTestPacksPage from './SatTestPacksPage';
+import CommunityLockedPage from '../community/CommunityLockedPage';
 import './sat-prep-coming-soon.scss';
 
 const SatPrepComingSoonPage: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="sat-soon">
-      <div className="sat-soon__card">
-        <div className="sat-soon__glyph">
-          <GraduationCap size={28} />
-        </div>
-        <div className="sat-soon__eyebrow">
-          <span className="sat-soon__eyebrow-dot" />
-          In private preview
-        </div>
-        <h1 className="sat-soon__title">SAT Prep is coming soon.</h1>
-        <p className="sat-soon__desc">
-          We're putting the finishing touches on a Bluebook-style mock-test
-          simulator, an adaptive question bank with 3,400+ College Board items,
-          and per-skill mastery tracking. It will land in your dashboard soon
-          — sit tight.
-        </p>
-
-        <ul className="sat-soon__features">
-          <li>
-            <Sparkles size={14} />
-            <span>Bluebook-style timed mock tests with section scoring</span>
-          </li>
-          <li>
-            <Sparkles size={14} />
-            <span>Practice by domain, skill, and difficulty</span>
-          </li>
-          <li>
-            <Sparkles size={14} />
-            <span>Vocabulary builder + Mark-for-Review across sessions</span>
-          </li>
-          <li>
-            <Sparkles size={14} />
-            <span>Projected SAT score with progress over time</span>
-          </li>
-        </ul>
-
-        <button
-          type="button"
-          className="sat-soon__cta"
-          onClick={() => navigate('/student-hub')}
-        >
-          Back to My Journey
-          <ArrowRight size={14} />
-        </button>
+    <>
+      {/* Blurred, non-interactive preview of the real Test Packs page so
+          the user sees what they'd unlock — not a generic stub. */}
+      <div
+        className="sat-soon__preview"
+        aria-hidden
+        // inert keeps focus/tab navigation out of the blurred subtree;
+        // pointer-events is also belt-and-braces in case a browser ignores
+        // the attribute (Safari < 17).
+        // @ts-expect-error — `inert` is valid HTML; React types lag.
+        inert=""
+      >
+        <SatTestPacksPage />
       </div>
-    </div>
+
+      {/* The lock modal portals to <body>, so it overlays the blurred page
+          and the layout chrome above it. */}
+      <CommunityLockedPage variant="sat-course" />
+    </>
   );
 };
 

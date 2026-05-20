@@ -11,13 +11,16 @@ type Props = {
   draft: PatchAdmissionsProfileBody;
   onChange: (patch: PatchAdmissionsProfileBody) => void;
   profile: AdmissionsProfileDto | null;
+  /** Per-field error map populated by the wizard on `Next` click. */
+  errors?: Record<string, string>;
 };
 
 /**
- * Academic step — explicitly NO GPA field. SAT is optional; users who
- * haven't taken it pick "Haven't taken yet".
+ * Academic step — explicitly NO GPA field. SAT score is optional (users
+ * who haven't taken it leave it empty); SAT plan is required so the
+ * roadmap can place prep on the timeline.
  */
-export function StepAcademic({ draft, onChange, profile }: Props) {
+export function StepAcademic({ draft, onChange, profile, errors = {} }: Props) {
   const get = <K extends keyof PatchAdmissionsProfileBody>(
     key: K,
   ): PatchAdmissionsProfileBody[K] | undefined =>
@@ -65,16 +68,18 @@ export function StepAcademic({ draft, onChange, profile }: Props) {
             value={satPlan ?? null}
             onChange={(v) => onChange({ satPlan: v ?? undefined })}
           />
+          {errors.satPlan && <div className={styles.errorText}>{errors.satPlan}</div>}
         </div>
       </div>
 
       <div className={styles.fieldGroup}>
         <label className={styles.label} htmlFor="extracurriculars">
-          Extracurriculars &amp; achievements
+          Extracurriculars &amp; achievements{' '}
+          <span style={{ color: '#7b1f2f' }}>*</span>
         </label>
         <textarea
           id="extracurriculars"
-          className={styles.textarea}
+          className={`${styles.textarea} ${errors.extracurriculars ? styles.inputError : ''}`}
           placeholder="Clubs, sports, competitions, awards, volunteer work…"
           value={extracurriculars}
           onChange={(e) =>
@@ -85,6 +90,9 @@ export function StepAcademic({ draft, onChange, profile }: Props) {
         <p className={styles.labelHelp}>
           A few sentences is plenty. We use this to personalize your roadmap.
         </p>
+        {errors.extracurriculars && (
+          <div className={styles.errorText}>{errors.extracurriculars}</div>
+        )}
       </div>
     </>
   );

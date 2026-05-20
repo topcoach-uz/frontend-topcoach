@@ -206,6 +206,12 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
     return () => document.removeEventListener('keydown', onKey);
   }, [dismiss]);
 
+  // Variants that already render a blurred-preview of the real page
+  // behind the modal don't want the default heavy scrim — it would
+  // re-blur the sidebar and double-blur the preview. The modal card's
+  // own shadow does the visual lift for these.
+  const usesBlurredPreview = variant === 'sat-course' || variant === 'research-program';
+
   /**
    * Portal to document.body: the hub wraps content in `.sectionSwap`, which uses a CSS
    * animation with `transform`. Transformed ancestors break `position: fixed` (modal
@@ -213,7 +219,7 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
    */
   const modal = (
     <div
-      className={styles.overlay}
+      className={`${styles.overlay} ${usesBlurredPreview ? styles.overlayTransparent : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="community-lock-headline"

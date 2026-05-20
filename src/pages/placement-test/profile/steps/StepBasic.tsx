@@ -14,9 +14,16 @@ type Props = {
   draft: PatchAdmissionsProfileBody;
   onChange: (patch: PatchAdmissionsProfileBody) => void;
   profile: AdmissionsProfileDto | null;
+  /**
+   * Per-field error map. Keys mirror DTO field names
+   * (`fullName` | `gradeLevel` | `country` | `currentSchool` | `parentInvolvement`).
+   * Populated by the wizard's `Next`-click validator and cleared as the
+   * user edits each field.
+   */
+  errors?: Record<string, string>;
 };
 
-export function StepBasic({ draft, onChange, profile }: Props) {
+export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
   const get = <K extends keyof PatchAdmissionsProfileBody>(
     key: K,
   ): PatchAdmissionsProfileBody[K] | undefined =>
@@ -28,6 +35,11 @@ export function StepBasic({ draft, onChange, profile }: Props) {
   const currentSchool = (get('currentSchool') as string | undefined) ?? '';
   const parentInvolvement = get('parentInvolvement') ?? null;
 
+  const inputCls = (field: string) =>
+    `${styles.input} ${errors[field] ? styles.inputError : ''}`;
+  const selectCls = (field: string) =>
+    `${styles.select} ${errors[field] ? styles.inputError : ''}`;
+
   return (
     <>
       <div className={styles.fieldGroup}>
@@ -36,12 +48,13 @@ export function StepBasic({ draft, onChange, profile }: Props) {
         </label>
         <input
           id="fullName"
-          className={styles.input}
+          className={inputCls('fullName')}
           placeholder="Your name as it appears in your records"
           value={fullName}
           onChange={(e) => onChange({ fullName: e.target.value })}
           maxLength={120}
         />
+        {errors.fullName && <div className={styles.errorText}>{errors.fullName}</div>}
       </div>
 
       <div className={styles.fieldRow}>
@@ -51,7 +64,7 @@ export function StepBasic({ draft, onChange, profile }: Props) {
           </label>
           <select
             id="gradeLevel"
-            className={styles.select}
+            className={selectCls('gradeLevel')}
             value={gradeLevel === '' ? '' : String(gradeLevel)}
             onChange={(e) => {
               const v = e.target.value;
@@ -67,6 +80,9 @@ export function StepBasic({ draft, onChange, profile }: Props) {
               </option>
             ))}
           </select>
+          {errors.gradeLevel && (
+            <div className={styles.errorText}>{errors.gradeLevel}</div>
+          )}
         </div>
 
         <div className={styles.fieldGroup}>
@@ -75,12 +91,13 @@ export function StepBasic({ draft, onChange, profile }: Props) {
           </label>
           <input
             id="country"
-            className={styles.input}
-            placeholder="Uzbekistan"
+            className={inputCls('country')}
+            placeholder="Your country"
             value={country}
             onChange={(e) => onChange({ country: e.target.value })}
             maxLength={120}
           />
+          {errors.country && <div className={styles.errorText}>{errors.country}</div>}
         </div>
       </div>
 
@@ -90,12 +107,15 @@ export function StepBasic({ draft, onChange, profile }: Props) {
         </label>
         <input
           id="currentSchool"
-          className={styles.input}
+          className={inputCls('currentSchool')}
           placeholder="Your school name"
           value={currentSchool}
           onChange={(e) => onChange({ currentSchool: e.target.value })}
           maxLength={200}
         />
+        {errors.currentSchool && (
+          <div className={styles.errorText}>{errors.currentSchool}</div>
+        )}
       </div>
 
       <div className={styles.fieldGroup}>
@@ -108,6 +128,9 @@ export function StepBasic({ draft, onChange, profile }: Props) {
           value={parentInvolvement ?? null}
           onChange={(v) => onChange({ parentInvolvement: v ?? undefined })}
         />
+        {errors.parentInvolvement && (
+          <div className={styles.errorText}>{errors.parentInvolvement}</div>
+        )}
       </div>
     </>
   );

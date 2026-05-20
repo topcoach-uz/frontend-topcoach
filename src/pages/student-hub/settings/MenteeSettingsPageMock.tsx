@@ -257,13 +257,22 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         >
           {t('studentHub.settingsMock.studyBuddy', 'Study buddy')}
         </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'experience' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('experience')}
-        >
-          {t('studentHub.settingsMock.experience', 'Experience')}
-        </button>
+        {/* Experience tab is the SuperAdmin/Owner toggle between the
+            standard and community experiences. Regular students never
+            need it — their experience is driven by their actual
+            subscription / Full Support enrollment — so we hide the tab
+            button entirely for non-admin users. The render block below
+            still has a friendly fallback for the rare case a non-admin
+            lands on `?tab=experience` via a stale link. */}
+        {isSuperAdmin && (
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === 'experience' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('experience')}
+          >
+            {t('studentHub.settingsMock.experience', 'Experience')}
+          </button>
+        )}
         <button
           type="button"
           className={`${styles.tab} ${activeTab === 'subscription' ? styles.tabActive : ''}`}

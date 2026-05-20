@@ -1,14 +1,10 @@
 import { Card } from 'antd';
-import { message } from 'antd';
 import { ArrowRight, Lock, Map as MapIcon } from 'lucide-react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
-import {
-  useGetRoadmapQuery,
-  useRegenerateRoadmapMutation,
-} from 'src/app/services/roadmapApi';
+import { useGetRoadmapQuery } from 'src/app/services/roadmapApi';
 
 import { RoadmapBody } from 'src/pages/placement-test/roadmap/_components/RoadmapBody';
 import roadmapStyles from 'src/pages/placement-test/roadmap/Roadmap.module.scss';
@@ -44,28 +40,9 @@ export function RoadmapTab() {
     skip: !profileReady,
   });
 
-  const [regenerate, { isLoading: regenBusy }] =
-    useRegenerateRoadmapMutation();
-
   const handleChoosePlan = useCallback(() => {
     navigate(SUBSCRIPTION_TAB_PATH);
   }, [navigate]);
-
-  const handleEditProfile = useCallback(() => {
-    navigate('/placement-test/profile');
-  }, [navigate]);
-
-  const handleRegenerate = useCallback(async () => {
-    try {
-      await regenerate().unwrap();
-      message.success('Roadmap regenerated.');
-    } catch (err) {
-      message.error(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.data?.message ?? 'Couldn’t regenerate. Please try again.',
-      );
-    }
-  }, [regenerate]);
 
   // ── Gates before content ───────────────────────────────────────────────
 
@@ -118,10 +95,7 @@ export function RoadmapTab() {
       <RoadmapBody
         data={data}
         onChoosePlan={handleChoosePlan}
-        onEditProfile={handleEditProfile}
         onOpenTopcoach={(path) => navigate(path)}
-        onRegenerate={handleRegenerate}
-        regenBusy={regenBusy}
       />
     </div>
   );

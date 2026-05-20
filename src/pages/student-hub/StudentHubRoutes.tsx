@@ -6,6 +6,7 @@ import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErro
 import CommunityHubMockPage from './community/CommunityHubMockPage';
 import { useTypedSelector } from 'src/app/store';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
+import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
 const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
@@ -18,6 +19,8 @@ const SatMockTestsPage = lazy(() => import('./sat-prep/SatMockTestsPage'));
 const SatTestRunnerPage = lazy(() => import('./sat-prep/SatMockTestPage'));
 const SatLibraryPage = lazy(() => import('./sat-prep/SatLibraryPage'));
 const SatPrepComingSoonPage = lazy(() => import('./sat-prep/SatPrepComingSoonPage'));
+const ResearchPrepLockedPreview = lazy(() => import('./research/ResearchPrepLockedPreview'));
+const CommunityLockedPage = lazy(() => import('./community/CommunityLockedPage'));
 
 const RouteFallback = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 240, padding: 48 }}>
@@ -40,15 +43,55 @@ const PsychometricRouteShell = ({ children }: { children: React.ReactNode }) => 
  */
 const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const profile = useTypedSelector((s) => s.auth.profile);
-  const allowed = canUseSatPrep(
-    profile?.managementRole as string | undefined,
-    profile?.email,
-  );
+  const { isCommunityEnrolled } = useJourneyExperience();
+  // SAT Prep is unlocked by: (a) admin/tester via canUseSatPrep, OR
+  // (b) Community enrollment. Non-community users see the blurred-
+  // preview + sat-course lock modal until they enroll.
+  const allowed =
+    canUseSatPrep(profile?.managementRole as string | undefined, profile?.email) ||
+    isCommunityEnrolled;
   if (allowed) return children;
   return (
     <SatPrepLayout>
       <SatPrepComingSoonPage />
     </SatPrepLayout>
+  );
+};
+
+/**
+ * Standalone Research Prep surface. Community-enrolled users get the
+ * real ResearchPrepPage. Everyone else lands on the locked-preview
+ * silhouette overlaid with the research-program community-lock modal.
+ * No in-app hub sidebar — StudentHubLayout's `hideSidebar` covers
+ * `/student-hub/research-prep` so the preview spans the full width
+ * (matches the SAT Prep treatment).
+ */
+const ResearchPrepLockedSurface: React.FC = () => {
+  const { isCommunityEnrolled } = useJourneyExperience();
+  if (isCommunityEnrolled) {
+    // Defer to a redirect into the in-hub research section, which has
+    // the real ResearchPrepPage wired up with mentor/Full-Support context.
+    return <Navigate to="/student-hub?section=research-program" replace />;
+  }
+  return (
+    <>
+      <div
+        aria-hidden
+        // @ts-expect-error — `inert` is valid HTML; React types lag.
+        inert=""
+        style={{
+          filter: 'blur(6px)',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        <ResearchPrepLockedPreview />
+      </div>
+      {/* Portaled to body — overlays the blurred surface with the
+          research-program unlock modal (transparent backdrop so the
+          preview reads through). */}
+      <CommunityLockedPage variant="research-program" />
+    </>
   );
 };
 
@@ -134,6 +177,16 @@ const StudentHubRoutes: React.FC = () => {
           />
           {/* Back-compat for the old /mock-test path */}
           <Route path="/sat-prep/mock-test" element={<Navigate to="/student-hub/sat-prep/runner" replace />} />
+
+          {/* Research Prep — own self-contained surface, same treatment
+              as SAT Prep. Non-community users see a blurred preview +
+              community-lock modal; community users get the real page.
+              StudentHubLayout hides its Ant sidebar on this path so the
+              preview renders edge-to-edge (no in-app hub sidebar). */}
+          <Route
+            path="/research-prep"
+            element={withSuspense(<ResearchPrepLockedSurface />)}
+          />
 
           <Route path="/opportunities" element={<Navigate to="/student-hub?section=others&target=opportunities" replace />} />
           <Route path="/opportunities/*" element={<Navigate to="/student-hub?section=others&target=opportunities" replace />} />

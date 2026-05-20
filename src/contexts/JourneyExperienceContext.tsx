@@ -4,6 +4,7 @@ import {
   useGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
 } from 'src/app/services/student-hub/dashboardApi';
+import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { useTypedSelector } from 'src/app/store';
 
 const LEGACY_PREMIUM_KEY = 'topcoach_journey_premium';
@@ -33,10 +34,20 @@ function readCommunityEnrolled(): boolean {
 
 export function JourneyExperienceProvider({ children }: { children: React.ReactNode }) {
   const profile = useTypedSelector((s) => s.auth.profile);
+  const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
   const { data: rawPreferences } = useGetUserPreferencesQuery();
+  // Subscription state is the second source of community entitlement.
+  // Anyone whose current subscription is `trialing` or `active` must
+  // be treated as community-enrolled — that's the whole point of the
+  // trial: pay (or card-on-file) → instant access. We still keep the
+  // user_preferences flag for admin/Full-Support grants and as the
+  // explicit "switch back to standard" override.
+  const { data: subscription } = useGetCurrentSubscriptionQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
-  const [isCommunityEnrolled, setState] = useState(readCommunityEnrolled);
+  const [preferenceMode, setState] = useState(readCommunityEnrolled);
   const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
   const isSuperAdmin =
     profile?.managementRole === 'SuperAdmin' || (profile?.managementRole as string) === 'Owner';
@@ -46,6 +57,15 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     if (mode === 'community') setState(true);
     if (mode === 'standard') setState(false);
   }, [preferences?.applicationSettings?.communityExperienceMode]);
+
+  // A `trialing` / `active` subscription with `cancelAtPeriodEnd=true`
+  // still grants access until the period actually ends — Stripe / Apple
+  // both work this way. The cron transitions status → canceled / expired
+  // at period end, at which point this gate flips closed automatically.
+  const hasEntitlingSubscription =
+    subscription?.status === 'active' || subscription?.status === 'trialing';
+
+  const isCommunityEnrolled = preferenceMode || hasEntitlingSubscription;
 
   const setCommunityEnrolled = useCallback((value: boolean) => {
     setState(value);

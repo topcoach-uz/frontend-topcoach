@@ -1,111 +1,13 @@
-.sat-soon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 16px;
-  min-height: calc(100vh - 240px);
-}
-
-.sat-soon__card {
-  max-width: 600px;
-  width: 100%;
-  background: white;
-  border: 1px solid #e5e3da;
-  border-radius: 18px;
-  padding: 40px 36px;
-  text-align: left;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-}
-
-.sat-soon__glyph {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: #fbe9ec;
-  color: #7B1F2F;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 18px;
-}
-
-.sat-soon__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #b45309;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-.sat-soon__eyebrow-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #f59e0b;
-  box-shadow: 0 0 0 3px #fef3c7;
-}
-
-.sat-soon__title {
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 2rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.18;
-  color: #111827;
-  margin: 0 0 12px;
-
-  @media (max-width: 600px) { font-size: 1.6rem; }
-}
-
-.sat-soon__desc {
-  font-size: 0.98rem;
-  color: #4b5563;
-  line-height: 1.6;
-  margin: 0 0 22px;
-}
-
-.sat-soon__features {
-  list-style: none;
-  margin: 0 0 26px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: #1f2937;
-    font-size: 0.92rem;
-    line-height: 1.5;
-
-    svg {
-      margin-top: 4px;
-      color: #7B1F2F;
-      flex-shrink: 0;
-    }
-  }
-}
-
-.sat-soon__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 20px;
-  border-radius: 999px;
-  background: #7B1F2F;
-  color: white;
-  border: 1px solid #7B1F2F;
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.08s;
-
-  &:hover { background: #5d1622; border-color: #5d1622; }
-  &:active { transform: translateY(1px); }
+// Blurred preview of the real Test Packs page that sits underneath the
+// community-lock modal. The blur is intentionally heavy enough that
+// copy stays unreadable (no leaking of practice-question content), but
+// the layout silhouette is still recognizable so the user understands
+// what they'd unlock.
+.sat-soon__preview {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+  // Pull the saturation down a touch so the blur doesn't look like a
+  // failed-render flash of color.
+  opacity: 0.85;
 }

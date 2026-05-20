@@ -15,9 +15,11 @@ type Props = {
   draft: PatchAdmissionsProfileBody;
   onChange: (patch: PatchAdmissionsProfileBody) => void;
   profile: AdmissionsProfileDto | null;
+  /** Per-field error map populated by the wizard on `Next` click. */
+  errors?: Record<string, string>;
 };
 
-export function StepGoals({ draft, onChange, profile }: Props) {
+export function StepGoals({ draft, onChange, profile, errors = {} }: Props) {
   const getArr = (key: 'goals' | 'academicInterests' | 'targetUniversities'): string[] =>
     draft[key] ?? profile?.[key] ?? [];
 
@@ -34,6 +36,7 @@ export function StepGoals({ draft, onChange, profile }: Props) {
           value={getArr('goals')}
           onChange={(v) => onChange({ goals: v })}
         />
+        {errors.goals && <div className={styles.errorText}>{errors.goals}</div>}
       </div>
 
       <div className={styles.fieldGroup}>
@@ -46,6 +49,9 @@ export function StepGoals({ draft, onChange, profile }: Props) {
           value={getArr('academicInterests')}
           onChange={(v) => onChange({ academicInterests: v })}
         />
+        {errors.academicInterests && (
+          <div className={styles.errorText}>{errors.academicInterests}</div>
+        )}
       </div>
 
       <div className={styles.fieldGroup}>
@@ -63,6 +69,9 @@ export function StepGoals({ draft, onChange, profile }: Props) {
           allowOther
           max={30}
         />
+        {errors.targetUniversities && (
+          <div className={styles.errorText}>{errors.targetUniversities}</div>
+        )}
       </div>
     </>
   );

@@ -39,6 +39,9 @@ import styles from './communityHubMock.module.scss';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
 import ResearchPrepPage from '../research/ResearchPrepPage';
+// ResearchPrepLockedPreview is now imported by StudentHubRoutes for the
+// standalone /student-hub/research-prep surface (non-community users).
+// The in-hub branch no longer renders the blurred preview.
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import PsychometricAssessmentPage from '../psychometric-assessment/PsychometricAssessmentPage';
@@ -435,8 +438,8 @@ export default function CommunityHubMockPage() {
       canUseSatPrep(
         profile?.managementRole as string | undefined,
         profile?.email,
-      ),
-    [profile?.managementRole, profile?.email],
+      ) || isCommunityEnrolled,
+    [profile?.managementRole, profile?.email, isCommunityEnrolled],
   );
   // My Rewards editorial UI is gated to SuperAdmin/Owner during the
   // internal preview (see MY_REWARDS_SHOW_ALL). Everyone else sees the
@@ -473,6 +476,11 @@ export default function CommunityHubMockPage() {
   const [extraCommentCounts, setExtraCommentCounts] = useState<Record<string, number>>({});
   const [satSampleQuizChoice, setSatSampleQuizChoice] = useState<string | null>(null);
   const [admissionsVideoModal, setAdmissionsVideoModal] = useState<AdmissionsYoutubePreviewSpec | null>(null);
+  // Ad-hoc CommunityLockedPage variant — set when a CTA needs to surface
+  // the unlock modal on-demand (e.g. "Go to admissions lessons" while not
+  // community-enrolled). Distinct from `communityLockVariant`, which is
+  // derived from section state and auto-renders for whole-section locks.
+  const [adHocLockVariant, setAdHocLockVariant] = useState<CommunityLockVariant | null>(null);
   const [messagesConversationId, setMessagesConversationId] = useState<string | null>(null);
   const [messagesThreadId, setMessagesThreadId] = useState<string | null>(null);
   const defaultHubSectionPath = isCommunityEnrolled
@@ -487,6 +495,21 @@ export default function CommunityHubMockPage() {
     if (location.search && location.search.length > 1) return;
     navigate(defaultHubSectionPath, { replace: true });
   }, [location.pathname, location.search, defaultHubSectionPath, navigate]);
+
+  /**
+   * Scroll-to-top on in-hub section change.
+   *
+   * The hub keeps the same `/student-hub` pathname across all sidebar
+   * tabs — what changes is the `?section=…&target=…` query string. The
+   * global `RootLayout` only re-scrolls on `pathname` changes, so without
+   * this effect the new page renders at whatever scroll offset the
+   * previous page was at (e.g. half-cut Settings card when arriving from
+   * a long-scrolled Dashboard). Re-scrolling on `search` change here
+   * keeps every sidebar click landing the user at the top of the column.
+   */
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [location.search]);
 
   /** Community mode: no Dashboard route — send to feed/my-progress default. */
   useEffect(() => {
@@ -973,12 +996,20 @@ export default function CommunityHubMockPage() {
               <UnifiedIcon name="admissions" size="md" color="primary" />
             </span>
             <span className={styles.navLabel}>{t('studentHub.hub.admissions', 'Admissions')}</span>
+            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
           <button
             type="button"
             className={`${styles.navItem} ${activeSection === 'researchProgram' ? styles.navItemActive : ''}`}
             onClick={() => {
+              // Non-community users go to the standalone, edge-to-edge
+              // locked surface (blurred preview + unlock modal, no hub
+              // sidebar). Community users stay in-hub on the real page.
+              if (!isCommunityEnrolled) {
+                navigate('/student-hub/research-prep');
+                return;
+              }
               setActiveSection('researchProgram');
               navigate('/student-hub?section=research-program', { replace: true });
             }}
@@ -1169,6 +1200,12 @@ export default function CommunityHubMockPage() {
               <div className={styles.feedLockedWrap}>
                 <CommunityLockedPage variant={communityLockVariant} />
               </div>
+            )}
+            {adHocLockVariant && (
+              <CommunityLockedPage
+                variant={adHocLockVariant}
+                onClose={() => setAdHocLockVariant(null)}
+              />
             )}
 
             {activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED && (
@@ -1547,6 +1584,12 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
+          {/* Non-community users never land in this in-hub branch for
+              `researchProgram` anymore — the sidebar button routes them
+              to the standalone `/student-hub/research-prep` surface
+              (edge-to-edge, no hub sidebar, full-width blurred preview
+              behind the unlock modal — same shape as SAT Prep). */}
+
           {activeSection === 'messages' && (
             <div className={styles.messengerHubWrap}>
               <MessengerExperience
@@ -1645,7 +1688,16 @@ export default function CommunityHubMockPage() {
                     type="primary"
                     size="large"
                     className={styles.programShortcutCta}
-                    onClick={() => navigate('/learning?course=admissions')}
+                    onClick={() => {
+                      if (isCommunityEnrolled) {
+                        navigate('/learning?course=admissions');
+                      } else {
+                        // Show the admissions-tailored unlock modal
+                        // instead of bouncing through /learning, which
+                        // would only surface a generic "enroll first" toast.
+                        setAdHocLockVariant('admissions-program');
+                      }
+                    }}
                   >
                     {t('studentHub.hub.goToAdmissionsLessons', 'Go to admissions lessons')}
                   </Button>
