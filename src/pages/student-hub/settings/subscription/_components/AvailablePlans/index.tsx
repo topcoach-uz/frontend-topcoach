@@ -78,13 +78,12 @@ export default function AvailablePlans({
 
   if (plans.length === 0) return null;
 
-  // "If billed monthly" anchor for the yearly card. Dynamic from
-  // admin-edited prices: anchor = monthly × 12. The yearly card
-  // already shows a SAVE 30% pill in the header, so the price block
-  // just needs the struck-through anchor — no second savings badge
-  // (avoids the "trying too hard" feel of triple-signaling the same
-  // discount). Only render the anchor when there's an actual saving,
-  // i.e. yearly < monthly × 12.
+  // Live-derived yearly savings — both the anchor and the percent pill
+  // come from the admin-edited prices, computed in lockstep so they
+  // never disagree. Backend still returns a hardcoded "SAVE 30%" as a
+  // fallback for older clients; we always prefer the live calc when we
+  // can do it. Floor the % per UX request (31.7% reads as 31%, not 32%
+  // — never over-promise the discount).
   const monthlyPlan = plans.find((p) => p.period === 'monthly');
   const yearlyPlan = plans.find((p) => p.period === 'yearly');
   const monthlyPriceRaw = monthlyPlan?.priceUsd ?? 0;
@@ -97,6 +96,13 @@ export default function AvailablePlans({
   const anchorYearlyPrice = hasGenuineYearlySaving
     ? Math.round(monthlyTimes12)
     : null;
+  const yearlySavePercent = hasGenuineYearlySaving
+    ? Math.floor((1 - yearlyPriceRaw / monthlyTimes12) * 100)
+    : null;
+  const liveSaveBadge =
+    yearlySavePercent && yearlySavePercent > 0
+      ? `SAVE ${yearlySavePercent}%`
+      : null;
 
   const ctaLabel = (plan: PlanDto): string => {
     if (effectiveCurrentId === plan.id) {
@@ -149,9 +155,17 @@ export default function AvailablePlans({
                     ? t('settings.subscription.period.yearly', 'Yearly')
                     : t('settings.subscription.period.monthly', 'Monthly')}
                 </span>
-                {plan.saveBadge && (
-                  <span className={styles.saveBadge}>{plan.saveBadge}</span>
-                )}
+                {(() => {
+                  // Yearly card: prefer the live-computed percent.
+                  // Other cards / fallback: whatever the backend sent.
+                  const badge =
+                    plan.period === 'yearly' && liveSaveBadge
+                      ? liveSaveBadge
+                      : plan.saveBadge;
+                  return badge ? (
+                    <span className={styles.saveBadge}>{badge}</span>
+                  ) : null;
+                })()}
               </div>
               <h3 className={styles.planName}>{planTitle(plan, t)}</h3>
             </header>

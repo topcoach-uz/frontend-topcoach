@@ -102,7 +102,7 @@ export function useCommunityAccessGate(): CommunityGateResult {
       };
     }
 
-    if (subscription && isEntitled(subscription.status)) {
+    if (subscription && isEntitled(subscription)) {
       return {
         state: 'eligible' as const,
         destination: COMMUNITY_FUNNEL_PATHS.community,
@@ -159,6 +159,39 @@ export function useCommunityAccessGate(): CommunityGateResult {
   }, [isAuthenticated, isCommunityEnrolled, status, statusLoading, subscription, subLoading]);
 }
 
-function isEntitled(s: string | null | undefined): boolean {
-  return s === 'active' || s === 'trialing';
+/**
+ * Defense-in-depth entitlement check: status alone isn't trusted.
+ * Even if the backend's lazy reconciliation hasn't run (e.g. a stale
+ * cached response), an `active`/`trialing` row whose `currentPeriodEnd`
+ * is already in the past doesn't count as live. Same rule as Stripe /
+ * Netflix — time is the ground truth, status is just the intent.
+ */
+function isEntitled(
+  sub:
+    | {
+        status: string | null | undefined;
+        currentPeriodEnd?: string | null;
+        trialEndsAt?: string | null;
+      }
+    | null
+    | undefined,
+): boolean {
+  if (!sub) return false;
+  if (sub.status !== 'active' && sub.status !== 'trialing') return false;
+
+  const now = Date.now();
+  // The trial uses `trialEndsAt`; recurring billing extends `currentPeriodEnd`.
+  // For a trialing sub both are equal, but we check both for safety.
+  const periodEnd = sub.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).getTime()
+    : null;
+  const trialEnd = sub.trialEndsAt
+    ? new Date(sub.trialEndsAt).getTime()
+    : null;
+
+  // Whichever extends access furthest wins; if neither is set, fall
+  // back to status-only (e.g. PENDING rows shouldn't be live anyway).
+  const accessUntil = Math.max(periodEnd ?? 0, trialEnd ?? 0);
+  if (accessUntil === 0) return true;
+  return accessUntil > now;
 }

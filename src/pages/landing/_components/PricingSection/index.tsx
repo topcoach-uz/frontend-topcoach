@@ -39,11 +39,9 @@ export default function PricingSection() {
     [plans],
   );
 
-  // "If billed monthly" anchor for the yearly card. Dynamic from
-  // admin-edited prices: anchor = monthly × 12. Pairs with the SAVE
-  // 30% header pill — no second savings badge to avoid triple-
-  // signaling the same discount. Same calc as the settings tab so the
-  // two surfaces agree.
+  // Live-derived yearly savings — anchor + percent pill both computed
+  // from admin-edited prices, in lockstep so they never disagree.
+  // Floor the % so we never over-promise (31.7 → 31, never 32).
   const monthlyPlan = plans.find((p) => p.period === 'monthly');
   const yearlyPlan = plans.find((p) => p.period === 'yearly');
   const monthlyPriceRaw = monthlyPlan?.priceUsd ?? 0;
@@ -56,6 +54,13 @@ export default function PricingSection() {
   const anchorYearlyPrice = hasGenuineYearlySaving
     ? Math.round(monthlyTimes12)
     : null;
+  const yearlySavePercent = hasGenuineYearlySaving
+    ? Math.floor((1 - yearlyPriceRaw / monthlyTimes12) * 100)
+    : null;
+  const liveSaveBadge =
+    yearlySavePercent && yearlySavePercent > 0
+      ? `SAVE ${yearlySavePercent}%`
+      : null;
 
   const handleStart = () => {
     if (isAuthenticated) {
@@ -118,9 +123,15 @@ export default function PricingSection() {
                 >
                   <header className={styles.cardHead}>
                     <h3 className={styles.cardTitle}>{planTitle(plan, t)}</h3>
-                    {plan.saveBadge && (
-                      <span className={styles.saveBadge}>{plan.saveBadge}</span>
-                    )}
+                    {(() => {
+                      const badge =
+                        isYearly && liveSaveBadge
+                          ? liveSaveBadge
+                          : plan.saveBadge;
+                      return badge ? (
+                        <span className={styles.saveBadge}>{badge}</span>
+                      ) : null;
+                    })()}
                   </header>
 
                   <div className={styles.priceRow}>

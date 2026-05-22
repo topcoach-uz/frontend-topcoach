@@ -13,7 +13,7 @@ import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { useNavigate } from 'react-router-dom';
 import { useGetCaafForumApplicationsMeQuery } from '../../../app/services/caafForumApi';
 import { useGetTopcoachLaunchEventMeQuery } from '../../../app/services/topcoachLaunchEventApi';
-import { useLaunchEventVisible } from '../../../lib/launchEventAccess';
+import { useLaunchEventPromoVisible } from '../../../lib/launchEventAccess';
 import {
   CAAF_FORUM_CARD_IMAGE,
   isPastCaafRegistrationDeadline,
@@ -21,15 +21,12 @@ import {
 import './EventsCard.scss';
 
 /** New Feature Launch event metadata (event module is still named
- *  `topcoach-launch-event` in code — only the display label changed). */
+ *  `topcoach-launch-event` in code — only the display label changed).
+ *  The auto-hide cutoff lives in `launchEventAccess.ts` so both this
+ *  legacy card and the new editorial promo agree. */
 const LAUNCH_EVENT_DATE_ISO = '2026-05-24T11:00:00+05:00';
 const LAUNCH_EVENT_TITLE = 'New Feature Launch';
 const LAUNCH_EVENT_IMG = '/img/new-feature-event.jpeg';
-
-function isPastLaunchEvent(now: number = Date.now()): boolean {
-  const t = new Date(LAUNCH_EVENT_DATE_ISO).getTime();
-  return Number.isFinite(t) && now > t;
-}
 
 interface EventsCardProps {
   compact?: boolean;
@@ -41,7 +38,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   const navigate = useNavigate();
   const { menteeEventData, isLoading } = useMentee();
   const { data: caafMe, isLoading: isCaafLoading } = useGetCaafForumApplicationsMeQuery();
-  const launchEventVisible = useLaunchEventVisible();
+  const launchEventVisible = useLaunchEventPromoVisible();
   const { data: launchMe, isLoading: isLaunchLoading } =
     useGetTopcoachLaunchEventMeQuery(undefined, { skip: !launchEventVisible });
 
@@ -86,8 +83,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ compact = true, maxItems = 3 })
   const launchRegistration = launchMe?.registration;
   const launchAsEvent =
     launchEventVisible &&
-    launchRegistration?.status === 'confirmed' &&
-    !isPastLaunchEvent()
+    launchRegistration?.status === 'confirmed'
       ? [
           {
             id: `topcoach-launch-${launchRegistration.id}`,

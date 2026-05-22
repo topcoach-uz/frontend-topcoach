@@ -30,7 +30,6 @@ import {
   FileUp,
   MoreVertical,
   Sparkles,
-  Lock,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
@@ -51,7 +50,7 @@ import {
   useGetCaafForumRegistrationConfigQuery,
 } from 'src/app/services/caafForumApi';
 import { useGetTopcoachLaunchEventMeQuery } from 'src/app/services/topcoachLaunchEventApi';
-import { useLaunchEventVisible } from 'src/lib/launchEventAccess';
+import { useLaunchEventPromoVisible } from 'src/lib/launchEventAccess';
 import {
   REGISTRATION_FEE_USD_FALLBACK,
   formatCaafRegistrationFeeUsd,
@@ -332,17 +331,16 @@ const MyProgressEditorialView: React.FC = () => {
   // promo because it's the nearest live event we want students to act
   // on. After May 24 it disappears and CAAF (or the empty state) takes
   // back the slot.
-  const LAUNCH_EVENT_DATE_ISO = '2026-05-24T11:00:00+05:00';
-  const launchEventVisible = useLaunchEventVisible();
+  // The promo card has its own auto-hide cutoff (noon on event day,
+  // a day later than the public-page cutoff) so already-registered
+  // users keep their reminder up until the event itself. Both cutoffs
+  // are defined in `launchEventAccess.ts` so there's a single source
+  // of truth for "is this event still alive on the site."
+  const launchPromoVisible = useLaunchEventPromoVisible();
   const { data: launchMe, isLoading: launchMeLoading } =
-    useGetTopcoachLaunchEventMeQuery(undefined, { skip: !launchEventVisible });
+    useGetTopcoachLaunchEventMeQuery(undefined, { skip: !launchPromoVisible });
   const launchRegistration = launchMe?.registration ?? null;
-  const launchEventPast =
-    Date.now() > new Date(LAUNCH_EVENT_DATE_ISO).getTime();
-  // Gated by the master Launch-Event flag: while it's private, only
-  // SuperAdmin / Owner see the promo card (everyone else falls back to
-  // the existing CAAF / empty-state branches).
-  const showLaunchPromo = launchEventVisible && !launchEventPast;
+  const showLaunchPromo = launchPromoVisible;
 
   /**
    * Dynamic AI recommendations derived from the user's actual data.
@@ -523,34 +521,99 @@ const MyProgressEditorialView: React.FC = () => {
           the tracking telegram bot still pings notifications elsewhere. */}
       <TelegramConnectionChecklist />
 
-      {/* Your Learning Progress — all enrolled tracks in a row.
-          Switched from a single "Active track" highlight to the 3-up
-          layout so users see every program they're enrolled in. */}
-      <section className="myprog__tracks-section">
-        <article className="myprog__card myprog__tracks">
-          <div className="myprog__tracks-head">
-            <div>
-              <div className="myprog__card-eyebrow">Your learning progress</div>
-              <h2 className="myprog__card-title">
-                {tracks.length} program{tracks.length === 1 ? '' : 's'} enrolled
+      {/* Non-Community users see a two-column "Join Community" hero in
+          place of the learning-progress card — the progress card is
+          useless when they're enrolled in nothing AND we have a better
+          story to tell about Community. Community users see the real
+          progress card below. The standalone community upsell strip is
+          retired since this hero replaces it. */}
+      {!isCommunityEnrolled ? (
+        <section className="myprog__tracks-section">
+          <article className="myprog__card myprog__joinhero">
+            <div className="myprog__joinhero__left">
+              <h2 className="myprog__joinhero__title">
+                Your admissions journey,
+                <br />
+                starts here.
               </h2>
-            </div>
-          </div>
-          {tracks.length === 0 ? (
-            <div className="myprog__tracks-empty">
-              <p>
-                Enroll in the Admissions Program, SAT Prep, or Research Prep to start
-                tracking your progress here.
+              <p className="myprog__joinhero__lede">
+                The full Community unlocks every tool to get into your
+                dream university.
               </p>
+              <ul className="myprog__joinhero__chips" aria-label="Community unlocks">
+                <li>Full SAT Prep</li>
+                <li>AI Major Match</li>
+                <li>Research Prep · 8 weeks</li>
+                <li>1:1 Mentors</li>
+                <li>Study Buddies</li>
+                <li>Live Workshops</li>
+              </ul>
               <button
                 type="button"
-                className="myprog__btn myprog__btn--primary"
-                onClick={() => navigate('/programs')}
+                className="myprog__btn myprog__btn--primary myprog__joinhero__cta"
+                onClick={() => navigate(communityGate.destination)}
+                disabled={communityGate.state === 'loading'}
               >
-                Browse programs <ArrowRight size={13} />
+               
+                Join the Community
+                <ArrowRight size={14} />
               </button>
+              <p className="myprog__joinhero__micro">
+                7-day free trial · cancel anytime
+              </p>
             </div>
-          ) : (
+
+            {/* Trailer — temporary YouTube embed; swap the videoId
+                once the real trailer ships. The iframe lives inside
+                a 16:9 wrapper so it's never cropped or stretched —
+                the surrounding cell gets a soft brand-dark "screen
+                frame" background that fills whatever empty space the
+                editorial content on the left leaves. */}
+            <div className="myprog__joinhero__video">
+              <div className="myprog__joinhero__video-frame">
+                <iframe
+                  className="myprog__joinhero__video-iframe"
+                  src="https://www.youtube-nocookie.com/embed/wtIMtMxMGXA?rel=0&modestbranding=1&playsinline=1"
+                  title="Top Coach Community"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {/* Your Learning Progress — only for Community-enrolled users.
+          For non-community users the hero card above replaces it (an
+          empty "0 programs enrolled" card was pure visual noise). */}
+      {isCommunityEnrolled ? (
+        <section className="myprog__tracks-section">
+          <article className="myprog__card myprog__tracks">
+            <div className="myprog__tracks-head">
+              <div>
+                <div className="myprog__card-eyebrow">Your learning progress</div>
+                <h2 className="myprog__card-title">
+                  {tracks.length} program{tracks.length === 1 ? '' : 's'} enrolled
+                </h2>
+              </div>
+            </div>
+            {tracks.length === 0 ? (
+              <div className="myprog__tracks-empty">
+                <p>
+                  Enroll in the Admissions Program, SAT Prep, or Research Prep to start
+                  tracking your progress here.
+                </p>
+                <button
+                  type="button"
+                  className="myprog__btn myprog__btn--primary"
+                  onClick={() => navigate('/programs')}
+                >
+                  Browse programs <ArrowRight size={13} />
+                </button>
+              </div>
+            ) : (
             <div className="myprog__tracks-grid">
               {tracks.map((t) => {
                 const stateLabel =
@@ -600,44 +663,9 @@ const MyProgressEditorialView: React.FC = () => {
               })}
             </div>
           )}
-        </article>
-      </section>
-
-      {/* Community upsell — only renders for users who haven't joined
-          Community yet. Compact horizontal strip: pitch on the left,
-          brand-red CTA on the right. */}
-      {!isCommunityEnrolled && (
-        <section className="myprog__tracks-section">
-          <article className="myprog__card myprog__community-upsell">
-            <div className="myprog__community-upsell__pitch">
-              <span className="myprog__community-upsell__badge">
-                <Lock size={12} strokeWidth={2.5} />
-                Community
-              </span>
-              <h2 className="myprog__community-upsell__title">
-                Get the full TopCoach Journey with Community.
-              </h2>
-              <p className="myprog__community-upsell__desc">
-                SAT prep, AI Major Match, Research Prep, mentors &amp; study
-                buddies — 7-day free trial, cancel anytime.
-              </p>
-            </div>
-
-            <div className="myprog__community-upsell__action">
-              <button
-                type="button"
-                className="myprog__btn myprog__btn--primary"
-                onClick={() => navigate(communityGate.destination)}
-                disabled={communityGate.state === 'loading'}
-              >
-                <Sparkles size={13} />
-                Unlock Community
-              </button>
-            </div>
           </article>
         </section>
-      )}
-
+      ) : null}
 
       {/* Bottom row: Mentor sessions + Top Coach promo + AI recs */}
       <section className="myprog__btmgrid">
