@@ -3,6 +3,7 @@ import { ArrowRight, ExternalLink } from 'lucide-react';
 import type { RoadmapActionItem } from 'src/app/services/roadmapApi';
 
 import styles from '../Roadmap.module.scss';
+import { pickTopcoachLink } from './categoryTopcoachLinks';
 
 type Props = {
   item: RoadmapActionItem;
@@ -20,6 +21,7 @@ export function ActionItemRow({ item, redactLinks, onOpenTopcoach }: Props) {
         : '';
 
   const showLinks = !redactLinks;
+  const topcoachLink = pickTopcoachLink(item);
 
   return (
     <article className={styles.actionItem}>
@@ -28,16 +30,13 @@ export function ActionItemRow({ item, redactLinks, onOpenTopcoach }: Props) {
         <h3 className={styles.actionItem__title}>{item.title}</h3>
         <p className={styles.actionItem__desc}>{item.description}</p>
 
-        {showLinks && item.topcoachResource ? (
+        {showLinks && topcoachLink ? (
           <button
             type="button"
             className={styles.actionItem__topcoachBtn}
-            onClick={() =>
-              item.topcoachResource &&
-              onOpenTopcoach?.(item.topcoachResource.path)
-            }
+            onClick={() => onOpenTopcoach?.(topcoachLink.path)}
           >
-            {item.topcoachResource.action}
+            {topcoachLink.action}
             <ArrowRight size={12} />
           </button>
         ) : null}

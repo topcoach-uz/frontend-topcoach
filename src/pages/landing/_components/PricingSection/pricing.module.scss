@@ -1,0 +1,321 @@
+/* Landing-page pricing — editorial cards that match the settings &
+   roadmap surfaces (no icon checkmarks, stacked title + description),
+   sized for marketing context. */
+
+$pl-brand: #7a1f2b;
+$pl-brand-soft: rgba(122, 31, 43, 0.06);
+$pl-brand-bg: #fdf6f4;
+$pl-ink: #1c1a17;
+$pl-muted: #6b6258;
+$pl-hairline: #e8e4dd;
+
+.section {
+  width: 100%;
+  background: #fbfaf7;
+  padding: 80px 0 96px;
+
+  @media (max-width: 768px) {
+    padding: 56px 0 72px;
+  }
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 48px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 32px;
+  }
+}
+
+.kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: $pl-brand;
+  margin-bottom: 14px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}
+
+.card {
+  position: relative;
+  border: 1px solid $pl-hairline;
+  border-radius: 18px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Subtle warm cream-to-blush gradient — gives the card a soft
+     "ice cream" finish without overwhelming the editorial feel. */
+  background:
+    linear-gradient(155deg, #ffffff 0%, #fffaf6 55%, #fdeee6 100%);
+  box-shadow: 0 1px 2px rgba(28, 26, 23, 0.04);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+
+  &:hover {
+    border-color: $pl-brand;
+    box-shadow: 0 14px 32px rgba(122, 31, 43, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.cardFeatured {
+  border-color: $pl-brand;
+  /* Featured card leans a touch warmer — peachy blush sweep top-left
+     fading into a cream lower-right for the scoop-of-ice-cream feel. */
+  background:
+    linear-gradient(150deg, #fce5dc 0%, #fdf2ec 45%, #fff8f4 100%);
+  box-shadow: 0 10px 28px rgba(122, 31, 43, 0.12);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $pl-ink;
+  margin: 0;
+}
+
+.saveBadge {
+  display: inline-flex;
+  align-items: center;
+  background: $pl-brand;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.priceRow {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  color: $pl-ink;
+  line-height: 1;
+  padding-bottom: 14px;
+  border-bottom: 1px solid $pl-hairline;
+}
+
+.priceCurrency {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-right: 2px;
+}
+
+.priceAmount {
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.pricePer {
+  font-size: 1rem;
+  font-weight: 500;
+  color: $pl-muted;
+  margin-left: 6px;
+}
+
+/* Anchor price — single struck-through "$144" next to "$99". Pairs
+   with the SAVE 30% header pill (two signals max). The strike is a
+   custom angled pseudo-element so we can color/weight it ourselves
+   rather than relying on the browser's `line-through`. */
+.priceAnchor {
+  margin-left: 16px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  align-self: baseline;
+}
+
+.priceAnchor__was {
+  position: relative;
+  display: inline-block;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: $pl-muted;
+  padding: 0 4px;
+  letter-spacing: -0.01em;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    top: 52%;
+    height: 2px;
+    border-radius: 2px;
+    background: $pl-brand;
+    transform: rotate(-10deg);
+    transform-origin: center;
+    opacity: 0.9;
+  }
+}
+
+.subline {
+  margin: -8px 0 0;
+  color: $pl-muted;
+  font-size: 0.86rem;
+  font-style: italic;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex-grow: 1;
+}
+
+.featureItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 11px;
+}
+
+.featureTick {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(122, 31, 43, 0.1);
+  color: $pl-brand;
+  margin-top: 1px;
+}
+
+.featureCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.featureTitle {
+  color: $pl-ink;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.featureDesc {
+  color: $pl-muted;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.cta {
+  margin-top: 12px;
+  width: 100%;
+  height: 48px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.ctaPrimary {
+  background: $pl-brand;
+  border: 1px solid $pl-brand;
+  color: #fff;
+
+  &:hover,
+  &:focus {
+    background: darken($pl-brand, 6%);
+    border-color: darken($pl-brand, 6%);
+  }
+}
+
+.ctaGhost {
+  background: #fff;
+  border: 1px solid $pl-brand;
+  color: $pl-brand;
+
+  &:hover,
+  &:focus {
+    background: $pl-brand-soft;
+  }
+}
+
+/* Skeleton — keeps the layout from jumping while plans load. */
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}
+
+.skeletonCard {
+  height: 440px;
+  border-radius: 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.07) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: pricingShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pricingShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

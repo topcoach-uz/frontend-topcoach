@@ -5,6 +5,7 @@ import LandingEventsSection from './_components/events';
 import ReviewsSection from './_components/reviews';
 import MentorsSectionLanding from './_components/mentors';
 import CareerAssessmentSection from './_components/CareerAssessmentSection';
+import PricingSection from './_components/PricingSection';
 import FaqSection from './_components/FAQ';
 import WhatWeOfferSection from './_components/WhatWeOfferSection';
 import HowItWorksSection from './_components/HowItWorksSection';
@@ -178,8 +179,7 @@ export default function LandingPage() {
       {/* <ReviewsSection />  // keep hidden for now */}
       <CareerAssessmentSection />
 
-      {/* Pricing block removed — Phase 2 will rebuild it against the new
-          Community plans (USD canonical, $11.99/mo and $99.99/yr). */}
+      <PricingSection />
       <FaqSection />
       <LeadCapturePopup
         visible={popupVisible}

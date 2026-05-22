@@ -3,7 +3,7 @@ import { Button } from 'antd';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { PlanDto } from '../../types';
-import { FEATURE_FALLBACK } from '../feature-meta';
+import { COMMUNITY_PLAN_FEATURES } from '../plan-features';
 import styles from './AvailablePlans.module.scss';
 
 export interface AvailablePlansProps {
@@ -30,10 +30,16 @@ export interface AvailablePlansProps {
   onSelectPlan?: (plan: PlanDto) => void;
 }
 
-const planDisplayName = (plan: PlanDto, lang: string): string => {
-  const key = (lang || 'en').slice(0, 2) as keyof typeof plan.displayName;
-  return plan.displayName[key] ?? plan.displayName.en;
-};
+/**
+ * Plan card title. We intentionally use period-driven copy ("Monthly
+ * Plan" / "Yearly Plan") instead of the backend `displayName` ("Community")
+ * — the period is what users actually compare across cards, and the
+ * brand name is already obvious from the page context.
+ */
+const planTitle = (plan: PlanDto, t: (k: string, d: string) => string): string =>
+  plan.period === 'yearly'
+    ? t('settings.subscription.plan.yearly', 'Yearly Plan')
+    : t('settings.subscription.plan.monthly', 'Monthly Plan');
 
 /**
  * Plan picker — two cards side-by-side, each fully self-contained:
@@ -49,7 +55,7 @@ export default function AvailablePlans({
   variant = 'choose',
   onSelectPlan,
 }: AvailablePlansProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // The picker should reflect the plan the user has *chosen* — not just
   // what's live today. While a switch is queued, the scheduled plan is
@@ -71,6 +77,26 @@ export default function AvailablePlans({
   );
 
   if (plans.length === 0) return null;
+
+  // "If billed monthly" anchor for the yearly card. Dynamic from
+  // admin-edited prices: anchor = monthly × 12. The yearly card
+  // already shows a SAVE 30% pill in the header, so the price block
+  // just needs the struck-through anchor — no second savings badge
+  // (avoids the "trying too hard" feel of triple-signaling the same
+  // discount). Only render the anchor when there's an actual saving,
+  // i.e. yearly < monthly × 12.
+  const monthlyPlan = plans.find((p) => p.period === 'monthly');
+  const yearlyPlan = plans.find((p) => p.period === 'yearly');
+  const monthlyPriceRaw = monthlyPlan?.priceUsd ?? 0;
+  const yearlyPriceRaw = yearlyPlan?.priceUsd ?? 0;
+  const monthlyTimes12 = monthlyPriceRaw * 12;
+  const hasGenuineYearlySaving =
+    monthlyPriceRaw > 0 &&
+    yearlyPriceRaw > 0 &&
+    monthlyTimes12 - yearlyPriceRaw > 0;
+  const anchorYearlyPrice = hasGenuineYearlySaving
+    ? Math.round(monthlyTimes12)
+    : null;
 
   const ctaLabel = (plan: PlanDto): string => {
     if (effectiveCurrentId === plan.id) {
@@ -103,12 +129,6 @@ export default function AvailablePlans({
         // We mark the *effective* current (scheduled when set, else live)
         // so the picker is consistent with the status block.
         const isCurrent = effectiveCurrentId === plan.id;
-        const rawFeatures = plan.features;
-        const features = Array.isArray(rawFeatures)
-          ? rawFeatures
-          : rawFeatures && typeof rawFeatures === 'object'
-            ? Object.keys(rawFeatures).map((key) => ({ key }))
-            : [];
 
         return (
           <article
@@ -133,9 +153,7 @@ export default function AvailablePlans({
                   <span className={styles.saveBadge}>{plan.saveBadge}</span>
                 )}
               </div>
-              <h3 className={styles.planName}>
-                {planDisplayName(plan, i18n.language)}
-              </h3>
+              <h3 className={styles.planName}>{planTitle(plan, t)}</h3>
             </header>
 
             <div className={styles.priceBlock}>
@@ -147,6 +165,16 @@ export default function AvailablePlans({
                 <span className={styles.pricePer}>
                   {plan.period === 'yearly' ? '/ yr' : '/ mo'}
                 </span>
+                {plan.period === 'yearly' && anchorYearlyPrice != null ? (
+                  <span
+                    className={styles.priceAnchor}
+                    aria-label={`Billed monthly would be $${anchorYearlyPrice} per year`}
+                  >
+                    <span className={styles.priceAnchor__was}>
+                      ${anchorYearlyPrice}
+                    </span>
+                  </span>
+                ) : null}
               </div>
               {plan.subline && (
                 <div className={styles.subline}>{plan.subline}</div>
@@ -154,20 +182,15 @@ export default function AvailablePlans({
             </div>
 
             <ul className={styles.featureList}>
-              {features.map((feature) => (
+              {COMMUNITY_PLAN_FEATURES.map((feature) => (
                 <li key={feature.key} className={styles.featureItem}>
                   <Check
                     className={styles.featureTick}
                     size={14}
-                    strokeWidth={2.25}
+                    strokeWidth={2.5}
                     aria-hidden
                   />
-                  <span className={styles.featureLabel}>
-                    {t(
-                      `settings.subscription.features.${feature.key}`,
-                      FEATURE_FALLBACK[feature.key] ?? feature.key,
-                    )}
-                  </span>
+                  <span className={styles.featureTitle}>{feature.title}</span>
                 </li>
               ))}
             </ul>

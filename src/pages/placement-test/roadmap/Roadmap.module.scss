@@ -36,10 +36,10 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 
 .shell {
   width: 100%;
-  max-width: 760px;
+  max-width: 1180px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
 }
 
 .backLink {
@@ -61,12 +61,61 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   }
 }
 
-/* ── Banner (maroon) ────────────────────────────────────────────── */
+/* ── Unified report card ────────────────────────────────────────── */
+
+/* One continuous rounded container that holds banner → strip →
+   summary → timeline → action plan → mentors → footer. Each interior
+   section is separated by a hairline rather than its own border so
+   the whole thing reads as one editorial report. */
+.report {
+  background: $ed-paper;
+  border: 1px solid $ed-hairline;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(28, 26, 23, 0.04),
+    0 18px 40px rgba(28, 26, 23, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.reportSection {
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid $ed-hairline-inner;
+
+  @media (max-width: 720px) {
+    padding: 24px 22px;
+  }
+}
+
+.reportFooter {
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: $ed-cream-elev;
+  border-top: 1px solid $ed-hairline-inner;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: $ed-muted;
+
+  @media (max-width: 720px) {
+    padding: 16px 22px;
+  }
+}
+
+/* ── Banner (maroon header inside the report) ───────────────────── */
 
 .banner {
-  background: linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 60%, #2a0810 100%);
-  border-radius: 18px 18px 0 0;
-  padding: 24px 30px 22px;
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(255, 255, 255, 0.14), transparent 55%),
+    linear-gradient(160deg, #4a0e1a 0%, #7b1f2f 55%, #2a0810 100%);
+  padding: 34px 40px 30px;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -74,6 +123,11 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   color: #fff;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+
+  @media (max-width: 720px) {
+    padding: 26px 22px 22px;
+  }
 
   &::after {
     content: '';
@@ -103,11 +157,15 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 .banner__title {
   position: relative;
   font-family: $ed-serif;
-  font-size: 1.7rem;
+  font-size: 1.95rem;
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.05;
+
+  @media (max-width: 640px) {
+    font-size: 1.55rem;
+  }
 }
 
 .banner__date {
@@ -132,37 +190,60 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 
 .studentStrip {
   background: $ed-paper;
-  border: 1px solid $ed-hairline;
-  border-top: none;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  padding: 18px 30px 18px;
-  align-items: center;
+  gap: 4px;
+  padding: 24px 40px;
+  align-items: stretch;
+  position: relative;
+
+  @media (max-width: 720px) {
+    padding: 20px 22px;
+  }
 
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
-    padding: 16px 18px;
+    gap: 0;
   }
 }
 
 .studentStrip__cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+  padding: 4px 14px;
+  border-left: 1px solid $ed-hairline-inner;
+
+  &:first-child {
+    border-left: none;
+    padding-left: 0;
+  }
 
   small {
     font-family: $ed-serif;
-    font-size: 0.74rem;
+    font-size: 0.7rem;
     color: $ed-muted;
-    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
   }
 
   strong {
     font-family: $ed-serif;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: $ed-ink;
+    letter-spacing: -0.005em;
+  }
+
+  @media (max-width: 640px) {
+    padding: 10px 0;
+    border-left: none;
+    border-top: 1px solid $ed-hairline-inner;
+
+    &:nth-child(-n + 2) {
+      border-top: none;
+    }
   }
 }
 
@@ -178,34 +259,51 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 
 /* ── Card primitive ─────────────────────────────────────────────── */
 
-.card {
-  background: $ed-cream-elev;
-  border: 1px solid $ed-hairline;
-  border-radius: 14px;
-  padding: 24px 30px;
-}
-
-.section {
+.sectionHead {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .sectionEyebrow {
   font-family: $ed-serif;
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   color: $ed-brand;
   font-weight: 700;
 }
 
+.sectionTag {
+  font-family: $ed-serif;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: $ed-muted;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: $ed-brand-soft;
+  color: $ed-brand;
+}
+
+.sectionLede {
+  font-family: $ed-serif;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: $ed-muted;
+  margin: -4px 0 4px;
+}
+
 .summary {
   font-family: $ed-serif;
-  font-size: 1rem;
-  line-height: 1.55;
+  font-size: 1.05rem;
+  line-height: 1.6;
   color: $ed-ink-soft;
   margin: 0;
+  letter-spacing: -0.002em;
 }
 
 /* ── Timeline ───────────────────────────────────────────────────── */
@@ -213,7 +311,7 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 .timeline {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 14px;
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
@@ -221,34 +319,55 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 }
 
 .timelineCard {
-  background: $ed-paper;
+  background: $ed-cream-elev;
   border: 1px solid $ed-hairline;
-  border-left: 3px solid $ed-brand;
-  border-radius: 10px;
-  padding: 14px 16px 16px;
+  border-radius: 12px;
+  padding: 18px 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
 
-  &:nth-child(2) {
-    border-left-color: $ed-gold;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: $ed-brand;
   }
-  &:nth-child(3) {
-    border-left-color: $ed-success;
+
+  &:nth-child(2)::before {
+    background: $ed-gold;
   }
+  &:nth-child(3)::before {
+    background: $ed-success;
+  }
+}
+
+.timelineCard__phaseNum {
+  font-family: $ed-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: $ed-muted;
+  margin-top: 6px;
 }
 
 .timelineCard__phase {
   font-family: $ed-serif;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: $ed-ink;
+  letter-spacing: -0.005em;
 }
 
 .timelineCard__period {
   font-family: $ed-serif;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: $ed-brand;
+  font-weight: 600;
 
   .timelineCard:nth-child(2) & {
     color: $ed-gold;
@@ -263,7 +382,7 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   font-size: 0.88rem;
   color: $ed-muted;
   margin: 6px 0 0 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* ── Action plan ────────────────────────────────────────────────── */
@@ -275,64 +394,89 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 
 .actionItem {
   display: grid;
-  grid-template-columns: 12px 1fr auto;
-  gap: 14px;
+  grid-template-columns: 14px 1fr auto;
+  gap: 18px;
   align-items: start;
-  padding: 16px 0 16px 0;
+  padding: 20px 0 22px;
   border-bottom: 1px solid $ed-hairline-inner;
 
   &:last-of-type {
     border-bottom: none;
+    padding-bottom: 4px;
+  }
+
+  &:first-of-type {
+    padding-top: 4px;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 14px 1fr;
+    gap: 14px;
   }
 }
 
 .actionItem__dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: $ed-brand;
-  margin-top: 9px;
+  margin-top: 10px;
+  box-shadow: 0 0 0 4px rgba(123, 31, 47, 0.08);
 }
 
 .actionItem__dotMedium {
   background: $ed-gold;
+  box-shadow: 0 0 0 4px rgba(182, 130, 75, 0.1);
 }
 
 .actionItem__dotLow {
   background: $ed-muted;
+  box-shadow: 0 0 0 4px rgba(107, 98, 88, 0.08);
 }
 
 .actionItem__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .actionItem__title {
   font-family: $ed-serif;
-  font-size: 1.02rem;
+  font-size: 1.12rem;
   font-weight: 600;
   color: $ed-ink;
+  letter-spacing: -0.005em;
   margin: 0;
+  line-height: 1.3;
 }
 
 .actionItem__desc {
   font-family: $ed-serif;
-  font-size: 0.9rem;
-  color: $ed-muted;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  color: $ed-ink-soft;
+  line-height: 1.55;
   margin: 0;
 }
 
 .actionItem__timeline {
   font-family: $ed-serif;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   color: $ed-brand;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
-  padding-top: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: $ed-brand-soft;
+  align-self: start;
+  margin-top: 6px;
+
+  @media (max-width: 640px) {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 0;
+  }
 }
 
 .actionItem__resources {
@@ -375,20 +519,239 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 10px;
   align-self: flex-start;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  background: $ed-brand-soft;
-  border: 1px solid rgba(123, 31, 47, 0.18);
-  color: $ed-brand;
+  background: $ed-brand;
+  border: 1px solid $ed-brand;
+  color: #fff;
   font-family: $ed-serif;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 
   &:hover {
-    background: rgba(123, 31, 47, 0.14);
+    background: $ed-brand-hover;
+    border-color: $ed-brand-hover;
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Recommended mentors ────────────────────────────────────────── */
+
+.mentorGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.mentorCard {
+  display: grid;
+  grid-template-columns: 56px 1fr 20px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid $ed-hairline;
+  background: $ed-cream-elev;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease,
+    background 0.18s ease;
+
+  &:hover {
+    border-color: $ed-brand;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(123, 31, 47, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ed-brand;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 48px 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+
+    .mentorCard__chevron {
+      display: none;
+    }
+  }
+}
+
+.mentorCard__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #d4a5a5 0%, #7b1f2f 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 540px) {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.mentorCard__initials {
+  font-family: $ed-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mentorCard__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mentorCard__nameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mentorCard__name {
+  font-family: $ed-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $ed-ink;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.mentorCard__level {
+  font-family: $ed-serif;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #eef2f6;
+  color: #475569;
+}
+
+.mentorCard__level_expert {
+  background: rgba(255, 140, 66, 0.14);
+  color: #b6571a;
+}
+
+.mentorCard__level_senior {
+  background: rgba(74, 144, 226, 0.14);
+  color: #1e5fa3;
+}
+
+.mentorCard__level_junior {
+  background: rgba(126, 211, 33, 0.16);
+  color: #3b7d09;
+}
+
+.mentorCard__level_probono {
+  background: rgba(244, 208, 63, 0.22);
+  color: #6b551b;
+}
+
+.mentorCard__level_uzcombinator {
+  background: rgba(139, 92, 246, 0.16);
+  color: #5b21b6;
+}
+
+.mentorCard__uni {
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  color: $ed-ink-soft;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mentorCard__flag {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.mentorCard__major {
+  font-family: $ed-serif;
+  font-size: 0.8rem;
+  color: $ed-muted;
+  line-height: 1.4;
+}
+
+.mentorCard__rate {
+  font-family: $ed-serif;
+  font-size: 0.78rem;
+  color: $ed-brand;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.mentorCard__chevron {
+  color: $ed-muted;
+  transition: color 0.18s ease, transform 0.18s ease;
+
+  .mentorCard:hover & {
+    color: $ed-brand;
+    transform: translateX(2px);
+  }
+}
+
+.mentorCardSkeleton {
+  height: 92px;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 0%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: plansSkeletonShimmer 1.4s ease-in-out infinite;
+}
+
+.mentorAllBtn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid $ed-hairline;
+  color: $ed-ink-soft;
+  font-family: $ed-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  &:hover {
+    color: $ed-brand;
+    border-color: $ed-brand;
+    background: $ed-brand-soft;
   }
 }
 
@@ -560,104 +923,36 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   margin: 0;
 }
 
-.plans {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-
-  @media (max-width: 540px) {
-    grid-template-columns: 1fr;
-  }
+/* Wraps the shared AvailablePlans component so the roadmap can give it
+   a little extra breathing room without altering the component itself. */
+.plansShell {
+  margin-top: 12px;
 }
 
-.planCard {
-  background: $ed-cream-elev;
-  border: 1px solid $ed-hairline;
+.plansSkeleton {
+  margin-top: 12px;
+  height: 320px;
   border-radius: 14px;
-  padding: 22px 22px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 0%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: plansSkeletonShimmer 1.4s ease-in-out infinite;
 }
 
-.planCardFeatured {
-  border-color: $ed-brand;
-  box-shadow: 0 6px 20px rgba(123, 31, 47, 0.08);
-}
-
-.planCard__ribbon {
-  position: absolute;
-  top: -10px;
-  right: 18px;
-  background: $ed-brand;
-  color: #fff;
-  font-family: $ed-serif;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-
-.planCard__eyebrow {
-  font-family: $ed-serif;
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: $ed-muted;
-  font-weight: 700;
-}
-
-.planCard__price {
-  font-family: $ed-serif;
-  font-size: 2rem;
-  font-weight: 600;
-  color: $ed-ink;
-  letter-spacing: -0.02em;
-
-  span {
-    font-size: 0.85rem;
-    font-weight: 400;
-    color: $ed-muted;
-    margin-left: 4px;
+@keyframes plansSkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 
-.planCard__features {
-  list-style: none;
-  padding: 0;
-  margin: 6px 0 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-family: $ed-serif;
-  font-size: 0.9rem;
-  color: $ed-ink-soft;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-  }
-}
-
-.planCard__cta {
-  margin-top: auto;
-  width: 100%;
-  justify-content: center;
-}
-
-/* ── Footer row ─────────────────────────────────────────────────── */
-
-.footerRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+/* ── Footer meta ─────────────────────────────────────────────────── */
 
 .regenInfo {
   font-family: $ed-serif;

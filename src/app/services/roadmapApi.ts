@@ -86,6 +86,10 @@ export type RoadmapMeta = {
   canRegenerate: boolean;
   regenerateAvailableAt: string | null;
   profileChangedSinceLastRoadmap: boolean;
+  /** Student profile signals used by personalization features. */
+  country: string | null;
+  academicInterests: string[];
+  targetUniversities: string[];
 };
 
 export type RoadmapResponse = {
