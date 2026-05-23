@@ -184,6 +184,15 @@ export default function SubscriptionTab() {
     null,
   );
   const [planChanging, setPlanChanging] = useState(false);
+  // Confirm-before-start modal: when set, we ask the user to confirm
+  // before kicking off the 7-day trial / first charge. Without this
+  // the click on a plan card silently fires `/subscriptions/start`
+  // and users land in a paid state before they realised they
+  // committed.
+  const [planStartConfirm, setPlanStartConfirm] = useState<PlanDto | null>(
+    null,
+  );
+  const [planStarting, setPlanStarting] = useState(false);
   const paymentMethodsRef = useRef<HTMLElement | null>(null);
   const planPickerRef = useRef<HTMLElement | null>(null);
 
@@ -259,7 +268,10 @@ export default function SubscriptionTab() {
 
     const defaultCard = paymentMethods.find((pm) => pm.isDefault);
     if (defaultCard) {
-      await startTrialWithCard(plan.id, defaultCard.id);
+      // User has a card on file — open the confirm modal instead of
+      // firing /subscriptions/start straight away. The actual call
+      // happens in `confirmPlanStart` after the user clicks OK.
+      setPlanStartConfirm(plan);
       return;
     }
 
@@ -327,6 +339,32 @@ export default function SubscriptionTab() {
       );
     } finally {
       setPlanChanging(false);
+    }
+  };
+
+  /**
+   * Fires `/subscriptions/start` after the user clicks the confirm
+   * button in the start-plan modal. Uses the default card already on
+   * file (the modal only opens when there's one). Closes the modal on
+   * success; the celebration overlay + toast take over from there.
+   */
+  const confirmPlanStart = async () => {
+    if (!planStartConfirm) return;
+    const defaultCard = paymentMethods.find((pm) => pm.isDefault);
+    if (!defaultCard) {
+      // Edge case: card was removed between opening the modal and
+      // clicking confirm. Drop into the add-card flow.
+      setPendingTrialPlan(planStartConfirm);
+      setPlanStartConfirm(null);
+      setAddCardOpen(true);
+      return;
+    }
+    setPlanStarting(true);
+    try {
+      await startTrialWithCard(planStartConfirm.id, defaultCard.id);
+      setPlanStartConfirm(null);
+    } finally {
+      setPlanStarting(false);
     }
   };
 
@@ -670,6 +708,74 @@ export default function SubscriptionTab() {
           </Modal>
         );
       })()}
+
+      {/* Confirm-before-start modal — mirrors the change-plan modal
+          above so the two flows feel like one editorial system. Only
+          opens when the user already has a card on file; the no-card
+          path still routes through AddCardModal. */}
+      <Modal
+        open={!!planStartConfirm}
+        title={
+          planStartConfirm
+            ? t(
+                'settings.subscription.confirmStart.title',
+                'Start your {{plan}} plan?',
+                {
+                  plan: `${planStartConfirm.displayName.en} · ${
+                    planStartConfirm.period === 'yearly' ? 'Yearly' : 'Monthly'
+                  }`,
+                },
+              )
+            : ''
+        }
+        okText={
+          planStartConfirm && planStartConfirm.trialDays > 0
+            ? t(
+                'settings.subscription.confirmStart.okTrial',
+                'Start {{days}}-day free trial',
+                { days: planStartConfirm.trialDays },
+              )
+            : t('settings.subscription.confirmStart.ok', 'Start subscription')
+        }
+        cancelText={t('settings.subscription.confirmStart.cancel', 'Not yet')}
+        okButtonProps={{ loading: planStarting, type: 'primary' }}
+        onOk={confirmPlanStart}
+        onCancel={() => setPlanStartConfirm(null)}
+        destroyOnClose
+      >
+        {planStartConfirm && (
+          <div style={{ lineHeight: 1.55, color: '#4b463f' }}>
+            <p style={{ marginBottom: 10 }}>
+              {planStartConfirm.trialDays > 0
+                ? t(
+                    'settings.subscription.confirmStart.bodyTrial',
+                    'Your {{days}}-day free trial starts today. After it ends we will charge your default card ${{price}} USD per {{period}}. You can cancel anytime from this page before the trial ends and you will not be charged.',
+                    {
+                      days: planStartConfirm.trialDays,
+                      price: planStartConfirm.priceUsd.toFixed(2),
+                      period:
+                        planStartConfirm.period === 'yearly' ? 'year' : 'month',
+                    },
+                  )
+                : t(
+                    'settings.subscription.confirmStart.body',
+                    'We will charge your default card ${{price}} USD per {{period}} and unlock the full Community immediately.',
+                    {
+                      price: planStartConfirm.priceUsd.toFixed(2),
+                      period:
+                        planStartConfirm.period === 'yearly' ? 'year' : 'month',
+                    },
+                  )}
+            </p>
+            <p style={{ color: '#6b6258', fontSize: 13, margin: 0 }}>
+              {t(
+                'settings.subscription.confirmStart.note',
+                'Cancel anytime from this page — your card stays on file for any sessions or event passes you book.',
+              )}
+            </p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
