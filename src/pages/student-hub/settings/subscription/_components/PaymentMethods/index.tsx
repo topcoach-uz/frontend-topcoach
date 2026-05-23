@@ -26,6 +26,12 @@ const BRAND_CLASS: Record<NonNullable<PaymentMethodDto['cardBrand']>, string> = 
   mastercard: 'brandMastercard',
 };
 
+/** Fallback when the backend didn't tag the card brand — never guess
+ *  VISA, since a Click-bound Uzcard/Humo card would then look like an
+ *  international card. Generic "CARD" label is safer. */
+const UNKNOWN_BRAND_LABEL = 'CARD';
+const UNKNOWN_BRAND_CLASS = 'brandUzcard'; // muted maroon — visually neutral
+
 export interface PaymentMethodsProps {
   /** Saved cards to render (RTK-driven). */
   paymentMethods: PaymentMethodDto[];
@@ -184,7 +190,11 @@ export default function PaymentMethods({
       {!hideList && methods.length > 0 && (
         <div className={styles.list}>
           {methods.map((pm) => {
-            const brand = pm.cardBrand ?? 'visa';
+            const brand = pm.cardBrand ?? null;
+            const brandLabel = brand ? BRAND_LABEL[brand] : UNKNOWN_BRAND_LABEL;
+            const brandClass = brand
+              ? styles[BRAND_CLASS[brand]]
+              : styles[UNKNOWN_BRAND_CLASS];
             const expiryLabel =
               pm.expiryMonth != null && pm.expiryYear != null
                 ? formatExpiry(pm.expiryMonth, pm.expiryYear)
@@ -193,10 +203,10 @@ export default function PaymentMethods({
             return (
               <div key={pm.id} className={styles.row}>
                 <span
-                  className={`${styles.brandBadge} ${styles[BRAND_CLASS[brand]]}`}
+                  className={`${styles.brandBadge} ${brandClass}`}
                   aria-hidden
                 >
-                  {BRAND_LABEL[brand]}
+                  {brandLabel}
                 </span>
                 <div className={styles.cardInfo}>
                   <div className={styles.pan}>{formatPan(pm.last4)}</div>

@@ -165,7 +165,14 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
     font-weight: 600;
     color: $rw-ink;
     line-height: 1;
-    letter-spacing: -0.01em;
+    // Force lining + tabular figures. Iowan Old Style's default 0
+    // renders with old-style oval figures that look clipped on the
+    // left at this size — `lnum` snaps to standard lining digits,
+    // `tnum` keeps width consistent so the number doesn't reflow
+    // when the balance grows from 0 → 10 → 100.
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: 'lnum', 'tnum';
+    letter-spacing: 0;
 
     @media (max-width: 768px) { font-size: 2.6rem; }
   }
@@ -372,10 +379,43 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
     color: $rw-brand;
   }
 
+  &__mission-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
   &__mission-title {
     font-size: 0.92rem;
     color: $rw-ink;
     font-weight: 500;
+  }
+
+  &__mission-detail {
+    font-size: 0.78rem;
+    color: $rw-ink-soft;
+    line-height: 1.35;
+  }
+
+  &__empty {
+    padding: 24px 20px;
+    color: $rw-ink-soft;
+    font-size: 0.88rem;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  &__marketplace-note {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: #fdf6ee;
+    border: 1px solid #ece4d3;
+    border-radius: 10px;
+    color: #8a6f3a;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    text-align: center;
   }
 
   &__mission-reward {

@@ -1,18 +1,18 @@
 import { RoleEnum } from 'src/app/api/Api';
 
 /**
- * Master kill-switch for the new editorial My Rewards page (TopCoach
- * coins, missions, marketplace) while it's in internal preview.
+ * Master kill-switch for the My Rewards page (TopCoach coins, earning
+ * rules, marketplace preview).
  *
  *   false → only SuperAdmin / Owner see the live rewards UI; everyone
  *           else lands on the "Coming soon" placeholder.
  *   true  → My Rewards is available to all enrolled users.
  *
- * Flip this to `true` once we're ready to open the gate to all
- * students. Mirrors `SAT_PREP_SHOW_ALL` so the two staged rollouts
- * read the same.
+ * Flipped on 2026-05-23 once the coin backend shipped — community
+ * users start earning from this point. The marketplace remains locked
+ * (per-item `isLockedUntil` from the backend) until 2026-07-01.
  */
-export const MY_REWARDS_SHOW_ALL = false;
+export const MY_REWARDS_SHOW_ALL = true;
 
 /**
  * Returns true when the current user should see the live My Rewards

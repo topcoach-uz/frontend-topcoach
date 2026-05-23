@@ -1,227 +1,165 @@
 /**
- * My Rewards (editorial) — TopCoach Coins, Missions, Marketplace.
+ * My Rewards (editorial) — TopCoach Coins + Marketplace preview.
  *
- * Editorial / magazine treatment that mirrors My Progress, Full Support,
- * and AI Major Match: cream surfaces, hairline borders, serif headlines,
- * brand-red accents.
+ * Earning is live; the marketplace opens 2026-07-01 and stays locked
+ * until then. Wired into the backend coin ledger via the coinsApi RTK
+ * Query slice; no mock data lives in this file.
  *
- * Behind the `MY_REWARDS_SHOW_ALL` flag — only SuperAdmin / Owner see
- * the live UI today. Wired into CommunityHubMockPage; the upstream
- * caller decides between this view and the "Coming soon" placeholder.
+ * Layout (per docs/COIN_SYSTEM_PRD.md §7.2):
+ *   1. Header with the July 1 callout
+ *   2. Balance card — balance + lifetime earned + next-milestone nudge
+ *   3. How to earn — the 4 confirmed earn paths
+ *   4. Recent earnings — last 10 ledger rows, empty state on day one
+ *   5. Marketplace preview — locked cards, no prices, "Opens July 1" CTA
  *
- * The numbers below are *demo data* by design. Wire up to a real
- * `useGetMyCoinsQuery` once the backend `/me/coins` endpoint exists —
- * for now the structure is intentionally close to what the API will
- * shape (balance, lifetime earned, spent, rank, missions, history,
- * marketplace items) so the swap is mechanical.
+ * Spent / Rank are deliberately not shown in v1 (Spent is always 0
+ * until the marketplace opens; Rank has no real signal yet).
  */
 
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo } from 'react';
 import {
   ArrowUpRight,
+  Award,
+  BookOpen,
   CalendarCheck,
-  CheckCircle2,
-  Coffee,
   Compass,
-  FlaskConical,
-  GraduationCap,
+  Flame,
   Headphones,
   History,
-  MessageCircle,
   PenLine,
-  Pencil,
+  PlayCircle,
+  Shirt,
   Sparkles,
-  Star,
   Target,
   Trophy,
-  Users,
-  ShoppingBag,
+  CheckCircle2,
+  Layers,
   type LucideIcon,
 } from 'lucide-react';
+
+import {
+  useGetCoinBalanceQuery,
+  useGetCoinTransactionsQuery,
+  useGetMarketplaceItemsQuery,
+  type CoinEventType,
+  type MarketplaceCategory,
+  type MarketplaceItem,
+} from 'src/app/services/coinsApi';
+
 import './MyRewardsEditorialView.scss';
 
 /* ───────────────────────────────────────────────────────────────
-   Demo data — keep in this file until the backend lands.
-   The shapes are deliberately close to what `/me/coins` will
-   return so the wiring is a mechanical swap.
+   Static config — these match the locked PRD rules. Update here
+   when product locks new earn types or marketplace categories.
    ─────────────────────────────────────────────────────────────── */
 
-interface MissionRow {
+interface EarnRule {
   Icon: LucideIcon;
   title: string;
+  detail: string;
   reward: string;
 }
 
-const HOW_TO_EARN: MissionRow[] = [
-  { Icon: CalendarCheck, title: 'Daily login streak', reward: '+5–50 / day' },
-  { Icon: GraduationCap, title: 'Complete a SAT mock test', reward: '+120' },
-  { Icon: PenLine, title: 'Submit a mentor task on time', reward: '+80' },
-  { Icon: MessageCircle, title: 'Helpful answer in community', reward: '+10–80' },
-  { Icon: Users, title: 'Match with a study buddy', reward: '+40' },
-  { Icon: Target, title: 'Hit weekly study goal', reward: '+100' },
-];
-
-interface EarningRow {
-  Icon: LucideIcon;
-  title: string;
-  date: string;
-  amount: number;
-}
-
-const RECENT_EARNINGS: EarningRow[] = [
-  { Icon: CalendarCheck, title: 'Daily streak · 14 days', date: 'May 6, 2026', amount: 50 },
-  { Icon: Users, title: 'Replied to study buddy match', date: 'May 5, 2026', amount: 20 },
-  { Icon: GraduationCap, title: 'Completed SAT mock test #3', date: 'May 3, 2026', amount: 120 },
-  { Icon: MessageCircle, title: 'Posted helpful answer · +12 ❤', date: 'May 1, 2026', amount: 80 },
-  { Icon: PenLine, title: 'Submitted Lumiere essay draft', date: 'Apr 28, 2026', amount: 150 },
-  { Icon: Compass, title: 'Completed AI Major Match', date: 'Apr 22, 2026', amount: 60 },
-];
-
-type MarketplaceCategory = 'all' | 'apparel' | 'study' | 'home' | 'access';
-
-interface MarketplaceItem {
-  id: string;
-  category: Exclude<MarketplaceCategory, 'all'>;
-  Icon: LucideIcon;
-  title: string;
-  desc: string;
-  cost: number;
-  limited?: boolean;
-  locked?: boolean;
-}
-
-const MARKETPLACE: MarketplaceItem[] = [
+const HOW_TO_EARN: EarnRule[] = [
   {
-    id: 'tc-tee',
-    category: 'apparel',
+    Icon: Flame,
+    title: 'Daily login',
+    detail: 'One bonus every day you sign in.',
+    reward: '+5',
+  },
+  {
+    Icon: PlayCircle,
+    title: 'Complete a lesson',
+    detail: 'Admissions lessons and Research Prep videos.',
+    reward: '+15',
+  },
+  {
+    Icon: Award,
+    title: 'Complete a module or week',
+    detail: '4 Admissions modules · 8 Research Prep weeks.',
+    reward: '+100 / +50',
+  },
+  {
     Icon: Sparkles,
-    title: 'TopCoach Classic Tee',
-    desc: 'Heavy cotton, crimson on cream.',
-    cost: 850,
-  },
-  {
-    id: 'tc-cap',
-    category: 'apparel',
-    Icon: Sparkles,
-    title: 'Embroidered Shield Cap',
-    desc: 'Six-panel · adjustable strap.',
-    cost: 600,
-  },
-  {
-    id: 'tc-mug',
-    category: 'home',
-    Icon: Coffee,
-    title: 'Ceramic Mug — "Future Alum"',
-    desc: '14oz · dishwasher-safe.',
-    cost: 450,
-  },
-  {
-    id: 'tc-notebook',
-    category: 'study',
-    Icon: PenLine,
-    title: 'Notebook · Hardcover A5',
-    desc: 'Dot grid · 192 pages.',
-    cost: 520,
-  },
-  {
-    id: 'tc-stickers',
-    category: 'study',
-    Icon: Star,
-    title: 'Premium Stickers Pack',
-    desc: '12 vinyl die-cut stickers.',
-    cost: 120,
-  },
-  {
-    id: 'tc-hoodie',
-    category: 'apparel',
-    Icon: Sparkles,
-    title: 'Hoodie · Heavyweight',
-    desc: '380gsm · cream / crimson.',
-    cost: 1800,
-    limited: true,
-  },
-  {
-    id: 'tc-mentor-hour',
-    category: 'access',
-    Icon: Headphones,
-    title: '1-on-1 Mentor Hour (Bonus)',
-    desc: 'Extra session beyond your plan.',
-    cost: 2500,
-    limited: true,
-    locked: true,
-  },
-  {
-    id: 'tc-pen-set',
-    category: 'study',
-    Icon: Pencil,
-    title: 'Pen & Pencil Set',
-    desc: 'Brass · refillable.',
-    cost: 350,
-  },
-  {
-    id: 'tc-tote',
-    category: 'apparel',
-    Icon: ShoppingBag,
-    title: 'Tote Bag · Canvas',
-    desc: 'Heavy canvas · book pocket.',
-    cost: 480,
-  },
-  {
-    id: 'tc-mock-voucher',
-    category: 'access',
-    Icon: GraduationCap,
-    title: 'Bluebook Mock Test Voucher',
-    desc: 'Unlocks 1 extra mock retake.',
-    cost: 900,
-  },
-  {
-    id: 'tc-workshop',
-    category: 'access',
-    Icon: FlaskConical,
-    title: 'Workshop Pass · Any topic',
-    desc: 'Redeem for any 1 paid workshop.',
-    cost: 1500,
-    locked: true,
-  },
-  {
-    id: 'tc-pin',
-    category: 'home',
-    Icon: Star,
-    title: 'Enamel Pin Set (3)',
-    desc: 'Shield · pen · book pins.',
-    cost: 280,
+    title: 'Complete AI Major Match',
+    detail: '+50 for the first run, +10 each time after.',
+    reward: '+50 / +10',
   },
 ];
 
-const CATEGORY_LABEL: Record<MarketplaceCategory, string> = {
-  all: 'All',
-  apparel: 'Apparel',
-  study: 'Study gear',
-  home: 'Home & lifestyle',
-  access: 'Access perks',
+const EVENT_LABEL: Record<CoinEventType, { title: string; Icon: LucideIcon }> = {
+  daily_login: { title: 'Daily login', Icon: CalendarCheck },
+  admissions_lesson: { title: 'Completed an Admissions lesson', Icon: BookOpen },
+  admissions_module: { title: 'Completed an Admissions module', Icon: Layers },
+  rp_video: { title: 'Watched a Research Prep video', Icon: PenLine },
+  rp_week: { title: 'Completed a Research Prep week', Icon: Trophy },
+  ai_match_first: { title: 'Completed AI Major Match', Icon: Compass },
+  ai_match_repeat: { title: 'Ran AI Major Match again', Icon: Compass },
 };
 
+const CATEGORY_LABEL: Record<MarketplaceCategory, string> = {
+  academic: 'Academic',
+  coaching: 'Coaching',
+  apparel: 'Apparel',
+  study_gear: 'Study gear',
+  access_perks: 'Access perks',
+};
+
+const CATEGORY_ICON: Record<MarketplaceCategory, LucideIcon> = {
+  academic: PenLine,
+  coaching: Headphones,
+  apparel: Shirt,
+  study_gear: BookOpen,
+  access_perks: Sparkles,
+};
+
+const SKU_ICON: Partial<Record<string, LucideIcon>> = {
+  'essay-expert-review': PenLine,
+  'mentor-session-1on1': Headphones,
+  'topcoach-classic-tee': Shirt,
+  'topcoach-shield-cap': Shirt,
+};
+
+/* ───────────────────────────────────────────────────────────────── */
+
+const formatCoins = (n: number) => n.toLocaleString('en-US');
+
+const formatDate = (iso: string): string => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const formatUnlockDate = (iso: string | null): string => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+};
+
+const itemIcon = (item: MarketplaceItem): LucideIcon =>
+  SKU_ICON[item.sku] ?? CATEGORY_ICON[item.category] ?? Sparkles;
+
+/* ───────────────────────────────────────────────────────────────── */
+
 const MyRewardsEditorialView: React.FC = () => {
-  const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState<MarketplaceCategory>('all');
+  const { data: balance } = useGetCoinBalanceQuery();
+  const { data: transactions = [] } = useGetCoinTransactionsQuery(10);
+  const { data: marketplace = [] } = useGetMarketplaceItemsQuery();
 
-  // Demo balance — wire to /me/coins once backend ships.
-  const balance = 1240;
-  const lifetimeEarned = 2090;
-  const spent = 850;
-  const rankLabel = 'Top 8%';
+  // Daily-login self-trigger fires from <DailyLoginCreditTracker /> at
+  // the app root — see App.tsx. This page just renders the result.
 
-  const visibleMarketplace = useMemo(
-    () =>
-      activeCategory === 'all'
-        ? MARKETPLACE
-        : MARKETPLACE.filter((m) => m.category === activeCategory),
-    [activeCategory],
-  );
+  const currentBalance = balance?.balance ?? 0;
+  const lifetimeEarned = balance?.lifetimeEarned ?? 0;
 
-  const formatCoins = (n: number) =>
-    n.toLocaleString('en-US');
+  // Marketplace launch date — pulled from the first locked item so the
+  // copy stays in sync if we shift the date in the seed without
+  // re-deploying the frontend.
+  const launchDate = useMemo(() => {
+    const locked = marketplace.find((m) => m.isLockedUntil);
+    return formatUnlockDate(locked?.isLockedUntil ?? null) || 'July 1, 2026';
+  }, [marketplace]);
 
   return (
     <div className="rewards">
@@ -230,8 +168,8 @@ const MyRewardsEditorialView: React.FC = () => {
         <div className="rewards__eyebrow">Account · Rewards</div>
         <h1 className="rewards__title">My Rewards</h1>
         <p className="rewards__subtitle">
-          Earn TopCoach coins by studying, contributing, and hitting your goals. Redeem
-          in the marketplace for swag, study gear, and bonus access.
+          Earn TopCoach coins by completing lessons, modules, and daily check-ins.
+          The marketplace opens {launchDate} — start stacking coins now.
         </p>
       </header>
 
@@ -239,13 +177,11 @@ const MyRewardsEditorialView: React.FC = () => {
       <section className="rewards__hero">
         <div className="rewards__hero-text">
           <div className="rewards__hero-eyebrow">
-            <span className="rewards__coin-glyph" aria-hidden>
-              ¢
-            </span>
+            <span className="rewards__coin-glyph" aria-hidden>¢</span>
             TopCoach coins · Available balance
           </div>
           <div className="rewards__hero-balance">
-            <span className="rewards__balance-num">{formatCoins(balance)}</span>
+            <span className="rewards__balance-num">{formatCoins(currentBalance)}</span>
             <span className="rewards__balance-unit">coins</span>
           </div>
           <div className="rewards__hero-stats">
@@ -254,12 +190,8 @@ const MyRewardsEditorialView: React.FC = () => {
               <span className="rewards__hero-stat-value">{formatCoins(lifetimeEarned)}</span>
             </div>
             <div className="rewards__hero-stat">
-              <span className="rewards__hero-stat-label">Spent</span>
-              <span className="rewards__hero-stat-value">{formatCoins(spent)}</span>
-            </div>
-            <div className="rewards__hero-stat">
-              <span className="rewards__hero-stat-label">Rank</span>
-              <span className="rewards__hero-stat-value">{rankLabel}</span>
+              <span className="rewards__hero-stat-label">Next milestone</span>
+              <span className="rewards__hero-stat-value">Complete a lesson · +15</span>
             </div>
           </div>
           <div className="rewards__hero-actions">
@@ -267,11 +199,11 @@ const MyRewardsEditorialView: React.FC = () => {
               type="button"
               className="rewards__btn rewards__btn--primary"
               onClick={() => {
-                const el = document.querySelector('.rewards__marketplace');
+                const el = document.querySelector('.rewards__missions-card');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             >
-              Browse marketplace <ArrowUpRight size={14} />
+              See how to earn <ArrowUpRight size={14} />
             </button>
             <button
               type="button"
@@ -295,21 +227,24 @@ const MyRewardsEditorialView: React.FC = () => {
 
       {/* Two-up: How to earn + Recent earnings ──────────────────── */}
       <div className="rewards__row rewards__row--two">
-        <section className="rewards__card">
+        <section className="rewards__card rewards__missions-card">
           <div className="rewards__card-head">
             <div className="rewards__card-head-left">
               <Target size={16} />
               <h2 className="rewards__card-title">How to earn coins</h2>
             </div>
-            <span className="rewards__card-meta">The more you engage, the faster you earn.</span>
+            <span className="rewards__card-meta">Four ways to earn while you study.</span>
           </div>
           <ul className="rewards__missions">
-            {HOW_TO_EARN.map(({ Icon, title, reward }) => (
+            {HOW_TO_EARN.map(({ Icon, title, detail, reward }) => (
               <li key={title} className="rewards__mission">
                 <span className="rewards__mission-icon">
                   <Icon size={14} />
                 </span>
-                <span className="rewards__mission-title">{title}</span>
+                <div className="rewards__mission-main">
+                  <div className="rewards__mission-title">{title}</div>
+                  <div className="rewards__mission-detail">{detail}</div>
+                </div>
                 <span className="rewards__mission-reward">
                   {reward}
                   <span className="rewards__mission-coin">¢</span>
@@ -325,94 +260,79 @@ const MyRewardsEditorialView: React.FC = () => {
               <History size={16} />
               <h2 className="rewards__card-title">Recent earnings</h2>
             </div>
-            <button
-              type="button"
-              className="rewards__card-action"
-              onClick={() => {
-                /* hook into a future /coins/history page */
-              }}
-            >
-              All <ArrowUpRight size={13} />
-            </button>
+            <span className="rewards__card-meta">
+              {transactions.length === 0
+                ? 'No activity yet'
+                : `Last ${transactions.length} event${transactions.length === 1 ? '' : 's'}`}
+            </span>
           </div>
-          <div className="rewards__earnings-meta">
-            Last 7 days · +{formatCoins(
-              RECENT_EARNINGS.filter((r) => true).reduce((acc, r) => acc + r.amount, 0),
-            )}{' '}
-            coins
-          </div>
-          <ul className="rewards__earnings-list">
-            {RECENT_EARNINGS.map((r) => (
-              <li key={r.title} className="rewards__earning">
-                <span className="rewards__earning-icon">
-                  <r.Icon size={14} />
-                </span>
-                <div className="rewards__earning-main">
-                  <div className="rewards__earning-title">{r.title}</div>
-                  <div className="rewards__earning-date">{r.date}</div>
-                </div>
-                <span className="rewards__earning-amount">
-                  +{r.amount}
-                  <span className="rewards__earning-coin">¢</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          {transactions.length === 0 ? (
+            <div className="rewards__empty">
+              No earnings yet. Log in tomorrow to start your streak (+5).
+            </div>
+          ) : (
+            <ul className="rewards__earnings-list">
+              {transactions.map((t) => {
+                const label = EVENT_LABEL[t.eventType] ?? {
+                  title: t.eventType,
+                  Icon: Trophy,
+                };
+                return (
+                  <li key={t.id} className="rewards__earning">
+                    <span className="rewards__earning-icon">
+                      <label.Icon size={14} />
+                    </span>
+                    <div className="rewards__earning-main">
+                      <div className="rewards__earning-title">{label.title}</div>
+                      <div className="rewards__earning-date">{formatDate(t.createdAt)}</div>
+                    </div>
+                    <span className="rewards__earning-amount">
+                      {t.amount >= 0 ? `+${t.amount}` : t.amount}
+                      <span className="rewards__earning-coin">¢</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
       </div>
 
-      {/* Marketplace ────────────────────────────────────────────── */}
+      {/* Marketplace preview ────────────────────────────────────── */}
       <section className="rewards__marketplace">
         <div className="rewards__marketplace-head">
           <div>
             <h2 className="rewards__marketplace-title">TopCoach Marketplace</h2>
             <div className="rewards__marketplace-meta">
-              {MARKETPLACE.length} items available · ships to UZ + 14 countries
+              Opens {launchDate} · Preview the rewards you're earning toward.
             </div>
-          </div>
-          <div className="rewards__chips" role="tablist" aria-label="Marketplace category">
-            {(Object.keys(CATEGORY_LABEL) as MarketplaceCategory[]).map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="tab"
-                aria-selected={activeCategory === c}
-                className={`rewards__chip ${activeCategory === c ? 'is-active' : ''}`}
-                onClick={() => setActiveCategory(c)}
-              >
-                {CATEGORY_LABEL[c]}
-              </button>
-            ))}
           </div>
         </div>
 
         <div className="rewards__grid">
-          {visibleMarketplace.map((item) => {
-            const canAfford = balance >= item.cost && !item.locked;
+          {marketplace.map((item) => {
+            const Icon = itemIcon(item);
             return (
               <article key={item.id} className="rewards__item">
                 <div className="rewards__item-thumb">
-                  {item.limited && <span className="rewards__limited">Limited</span>}
-                  <item.Icon size={36} />
+                  {!item.isUnlocked && (
+                    <span className="rewards__limited">Coming soon</span>
+                  )}
+                  <Icon size={36} />
                 </div>
                 <div className="rewards__item-eyebrow">
                   {CATEGORY_LABEL[item.category].toUpperCase()}
                 </div>
                 <h3 className="rewards__item-title">{item.title}</h3>
-                <p className="rewards__item-desc">{item.desc}</p>
+                <p className="rewards__item-desc">{item.description}</p>
                 <div className="rewards__item-foot">
-                  <span className="rewards__item-cost">
-                    <span className="rewards__item-coin">¢</span>
-                    {formatCoins(item.cost)}
-                  </span>
                   <button
                     type="button"
-                    className={`rewards__btn ${
-                      canAfford ? 'rewards__btn--primary' : 'rewards__btn--locked'
-                    } rewards__btn--small`}
-                    disabled={!canAfford}
+                    className="rewards__btn rewards__btn--locked rewards__btn--small"
+                    disabled
+                    title={`Redemptions open ${launchDate}`}
                   >
-                    {item.locked ? 'Locked' : canAfford ? 'Redeem' : 'Locked'}
+                    {item.isUnlocked ? 'Available' : 'Locked'}
                   </button>
                 </div>
               </article>
@@ -420,20 +340,9 @@ const MyRewardsEditorialView: React.FC = () => {
           })}
         </div>
 
-        <div className="rewards__suggest">
-          <div>
-            <div className="rewards__suggest-title">Suggest a reward</div>
-            <div className="rewards__suggest-desc">
-              Got an idea for the marketplace? We add the most-requested items each month.
-            </div>
-          </div>
-          <button
-            type="button"
-            className="rewards__btn rewards__btn--ghost"
-            onClick={() => navigate('/student-hub?section=messages')}
-          >
-            Submit suggestion <ArrowUpRight size={13} />
-          </button>
+        <div className="rewards__marketplace-note">
+          More rewards land before {launchDate} — that's when redemptions open
+          and you can start spending the coins you're stacking now.
         </div>
       </section>
     </div>
@@ -443,8 +352,9 @@ const MyRewardsEditorialView: React.FC = () => {
 export default MyRewardsEditorialView;
 
 /* ──────────────────────────────────────────────────────────────
-   Coming soon placeholder. Rendered for non-SuperAdmin users
-   while `MY_REWARDS_SHOW_ALL` is false.
+   Coming-soon placeholder. Once MY_REWARDS_SHOW_ALL is flipped on
+   (and all community-enrolled users see the live view), this is
+   rendered only for non-enrolled users. Kept for that fallback.
    ────────────────────────────────────────────────────────────── */
 
 export const MyRewardsComingSoon: React.FC = () => (

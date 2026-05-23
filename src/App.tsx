@@ -7,6 +7,7 @@ import RouterProvider from './lib/router';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './lib/i18n';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import DailyLoginCreditTracker from './components/coins/DailyLoginCreditTracker';
 
 function App() {
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ function App() {
         <AntdProvider>
           <I18nextProvider i18n={i18n}>
             <GoogleOAuthProvider clientId="156785162293-2m5fggar8f9v60h99v2a9ip18lonu3mc.apps.googleusercontent.com">
+              <DailyLoginCreditTracker />
               <RouterProvider />
             </GoogleOAuthProvider>
           </I18nextProvider>

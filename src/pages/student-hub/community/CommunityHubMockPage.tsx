@@ -43,6 +43,7 @@ import ResearchPrepPage from '../research/ResearchPrepPage';
 // standalone /student-hub/research-prep surface (non-community users).
 // The in-hub branch no longer renders the blurred preview.
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
+import { useGetCoinBalanceQuery } from '../../../app/services/coinsApi';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import PsychometricAssessmentPage from '../psychometric-assessment/PsychometricAssessmentPage';
 import OpportunitiesPage from '../opportunities/OpportunitiesPage';
@@ -424,6 +425,12 @@ export default function CommunityHubMockPage() {
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
+  // Coin balance for the sidebar card. Skip the call until we know the
+  // user is community-enrolled — non-members don't see the rewards page
+  // and shouldn't trigger an extra request on every account/* page load.
+  const { data: coinBalance } = useGetCoinBalanceQuery(undefined, {
+    skip: !isCommunityEnrolled,
+  });
   const researchPrepLive = useMemo(
     () =>
       canUseResearchPrepLive(
@@ -841,13 +848,26 @@ export default function CommunityHubMockPage() {
               <div className={styles.profileHandle} title={currentProfile.username}>
                 {currentProfile.username}
               </div>
+              <button
+                type="button"
+                className={styles.profileCoinsInline}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/student-hub?section=account&target=rewards');
+                }}
+                aria-label="View rewards"
+              >
+                <Coins size={16} aria-hidden />
+                <span className={styles.profileCoinsValue}>
+                  {(coinBalance?.balance ?? 0).toLocaleString()}
+                </span>
+                <span className={styles.profileCoinsLabel}>TopCoach coins</span>
+              </button>
               <div className={styles.profileFooter}>
                 <span>View profile</span>
                 <span className={styles.profileFooterArrow} aria-hidden>→</span>
               </div>
             </div>
-
-            {/* Plan/coins hidden for this release */}
           </Card>
         )}
 

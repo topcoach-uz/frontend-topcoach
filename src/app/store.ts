@@ -8,6 +8,7 @@ import { RtkApi } from './services/api';
 import { rtkQueryErrorLogger } from './services/api/middlewares';
 import { referralApi } from './services/referralApi';
 import { contactApi } from './services/contactApi';
+import { coinsApi } from './services/coinsApi';
 import './services/availability'; // Ensure availability endpoints are injected into RtkApi
 import './services/caafForumApi';
 import './services/student-hub/studyBuddyApi';
@@ -20,13 +21,20 @@ export const createStore = (
       [RtkApi.reducerPath]: RtkApi.reducer,
       [referralApi.reducerPath]: referralApi.reducer,
       [contactApi.reducerPath]: contactApi.reducer,
+      [coinsApi.reducerPath]: coinsApi.reducer,
       auth,
       layout,
       mentor,
       profilePopup,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(RtkApi.middleware, referralApi.middleware, contactApi.middleware, rtkQueryErrorLogger),
+      getDefaultMiddleware().concat(
+        RtkApi.middleware,
+        referralApi.middleware,
+        contactApi.middleware,
+        coinsApi.middleware,
+        rtkQueryErrorLogger,
+      ),
     ...options,
   });
 
