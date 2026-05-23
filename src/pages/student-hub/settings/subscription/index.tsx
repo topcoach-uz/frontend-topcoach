@@ -767,12 +767,6 @@ export default function SubscriptionTab() {
                     },
                   )}
             </p>
-            <p style={{ color: '#6b6258', fontSize: 13, margin: 0 }}>
-              {t(
-                'settings.subscription.confirmStart.note',
-                'Cancel anytime from this page — your card stays on file for any sessions or event passes you book.',
-              )}
-            </p>
           </div>
         )}
       </Modal>
