@@ -610,8 +610,46 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
     justify-content: center;
     color: $rw-brand;
     margin-bottom: 12px;
+    overflow: hidden;
   }
 
+  // Locked items: icon goes blurred + faded, overlay text reads "Coming soon".
+  // Mirrors the pattern used on locked Research Prep weeks.
+  &__item-thumb-icon {
+    transition: filter 0.2s ease, opacity 0.2s ease;
+  }
+
+  &__item-thumb--locked {
+    .rewards__item-thumb-icon {
+      filter: blur(6px);
+      opacity: 0.45;
+    }
+  }
+
+  &__item-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(253, 246, 238, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  &__item-thumb-overlay-text {
+    background: $rw-ink;
+    color: #fff;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  // Legacy class kept for safety while caches roll over — can remove once
+  // the locked-overlay treatment has been live a few releases.
   &__limited {
     position: absolute;
     top: 8px;

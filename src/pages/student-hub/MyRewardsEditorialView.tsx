@@ -314,11 +314,19 @@ const MyRewardsEditorialView: React.FC = () => {
             const Icon = itemIcon(item);
             return (
               <article key={item.id} className="rewards__item">
-                <div className="rewards__item-thumb">
+                <div
+                  className={`rewards__item-thumb ${
+                    !item.isUnlocked ? 'rewards__item-thumb--locked' : ''
+                  }`}
+                >
+                  <Icon size={36} className="rewards__item-thumb-icon" />
                   {!item.isUnlocked && (
-                    <span className="rewards__limited">Coming soon</span>
+                    <div className="rewards__item-thumb-overlay">
+                      <span className="rewards__item-thumb-overlay-text">
+                        Coming soon
+                      </span>
+                    </div>
                   )}
-                  <Icon size={36} />
                 </div>
                 <div className="rewards__item-eyebrow">
                   {CATEGORY_LABEL[item.category].toUpperCase()}
