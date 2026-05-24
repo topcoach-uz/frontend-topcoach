@@ -563,23 +563,20 @@ const MyProgressEditorialView: React.FC = () => {
               </p>
             </div>
 
-            {/* Trailer — temporary YouTube embed; swap the videoId
-                once the real trailer ships. The iframe lives inside
-                a 16:9 wrapper so it's never cropped or stretched —
-                the surrounding cell gets a soft brand-dark "screen
-                frame" background that fills whatever empty space the
-                editorial content on the left leaves. */}
+            {/* Trailer — the right column is itself shaped 16:9 so
+                the iframe fills the cell edge-to-edge with no
+                letterbox. Card height is driven by the video's
+                natural aspect ratio; the editorial copy on the left
+                centers vertically to match. */}
             <div className="myprog__joinhero__video">
-              <div className="myprog__joinhero__video-frame">
-                <iframe
-                  className="myprog__joinhero__video-iframe"
-                  src="https://www.youtube-nocookie.com/embed/wtIMtMxMGXA?rel=0&modestbranding=1&playsinline=1"
-                  title="Top Coach Community"
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
+              <iframe
+                className="myprog__joinhero__video-iframe"
+                src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
+                title="Top Coach Community"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
             </div>
           </article>
         </section>

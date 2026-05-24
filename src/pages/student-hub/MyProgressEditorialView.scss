@@ -498,21 +498,24 @@
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     background: #fff;
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    // Video column gets slightly more width so the 16:9 cell isn't
+    // tiny. Card height is driven by the video's aspect ratio — no
+    // min-height to fight against; left column centers content
+    // vertically to match.
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     align-items: stretch;
-    min-height: 320px;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
-      min-height: 0;
     }
   }
 
   &__joinhero__left {
-    padding: 36px 40px 32px;
+    padding: 28px 32px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    justify-content: center;
+    gap: 12px;
     border-right: 1px solid #ece9df;
     background:
       linear-gradient(
@@ -523,7 +526,7 @@
       );
 
     @media (max-width: 900px) {
-      padding: 28px 24px 26px;
+      padding: 26px 22px 22px;
       border-right: none;
       border-bottom: 1px solid #ece9df;
     }
@@ -596,54 +599,15 @@
   }
 
   /* ── Trailer (right column) ───────────────────────────────────── */
-  /* The grid cell can be any aspect ratio (editorial copy on the left
-     drives card height) — but YouTube videos are a fixed 16:9. The
-     previous "cover-crop" trick clipped YouTube's own UI; the previous
-     naive `100% × 100%` stretched the video. Right answer: show the
-     iframe at its true 16:9, centered, and treat the surrounding cell
-     as a brand-colored "screen frame" so the empty space reads as
-     intentional design, not letterbox. */
+  /* The cell itself is shaped 16:9 — the iframe fills it edge-to-edge
+     with no letterbox or decorative frame. This is what drives the
+     card height: editorial copy on the left flexes to match instead
+     of fighting a fixed min-height. */
   &__joinhero__video {
     position: relative;
-    overflow: hidden;
-    background:
-      radial-gradient(
-        130% 110% at 80% 15%,
-        rgba(255, 255, 255, 0.06) 0%,
-        rgba(255, 255, 255, 0) 60%
-      ),
-      linear-gradient(155deg, #4a0e1a 0%, #2a0810 60%, #1a050b 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-
-    @media (max-width: 900px) {
-      padding: 0;
-      aspect-ratio: 16 / 9;
-    }
-  }
-
-  /* The actual video screen — fixed 16:9, rounded, slightly inset
-     from the frame, with a soft shadow so it reads as a screen
-     embedded in the frame rather than just a recoloured bg. */
-  &__joinhero__video-frame {
-    position: relative;
-    width: 100%;
-    max-width: 560px;
     aspect-ratio: 16 / 9;
-    border-radius: 12px;
-    overflow: hidden;
     background: #000;
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.05),
-      0 14px 36px rgba(0, 0, 0, 0.42);
-
-    @media (max-width: 900px) {
-      max-width: none;
-      border-radius: 0;
-      box-shadow: none;
-    }
+    overflow: hidden;
   }
 
   &__joinhero__video-iframe {
