@@ -653,12 +653,14 @@ export interface UpdateAiConsultationSessionRequest extends Partial<CreateAiCons
 export interface Notification {
   id: string;
   userId: string;
-  type: 'deadline_reminder' | 'task_overdue' | 'progress_update' | 'achievement' | 'ai_insight' | 'mentor_message' | 'system';
+  type: 'deadline_reminder' | 'task_overdue' | 'progress_update' | 'achievement' | 'ai_insight' | 'mentor_message' | 'system' | 'study_buddy_request' | 'study_buddy_accepted';
   title: string;
   message: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'unread' | 'read' | 'clicked' | 'dismissed' | 'archived';
   targetUrl?: string;
+  /** Backend field for deep-link target (preferred over targetUrl). */
+  actionUrl?: string;
   metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;

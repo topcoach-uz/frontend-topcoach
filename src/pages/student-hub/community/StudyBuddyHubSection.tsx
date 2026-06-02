@@ -21,7 +21,16 @@ export type StudyBuddyHubSectionProps = {
 };
 
 export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectionProps) {
-  const [mainTab, setMainTab] = useState<'discover' | 'requests' | 'connected'>('discover');
+  // Honor a `tab` deep-link (e.g. from a "View request" notification) on mount.
+  const [mainTab, setMainTab] = useState<'discover' | 'requests' | 'connected'>(() => {
+    try {
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      if (tab === 'requests' || tab === 'connected') return tab;
+    } catch {
+      /* ignore */
+    }
+    return 'discover';
+  });
   const [reqDirection, setReqDirection] = useState<'in' | 'out'>('in');
   const [discoverPage, setDiscoverPage] = useState(1);
   const [reqPage, setReqPage] = useState(1);
@@ -41,6 +50,15 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
     { direction: reqDirection },
     { skip: mainTab !== 'requests', refetchOnMountOrArgChange: true },
   );
+
+  // Always-on count of incoming pending requests, used to badge the Requests
+  // tab even when the user is on Discover. Stays fresh via the 'StudyBuddy'
+  // cache tag, which the notification listener invalidates in real time.
+  const { data: incomingPendingData } = useStudyBuddyRequestsQuery({
+    direction: 'in',
+    status: 'pending',
+  });
+  const incomingPendingCount = incomingPendingData?.requests?.length ?? 0;
 
   const [sendRequest, { isLoading: sending }] = useStudyBuddySendRequestMutation();
   const [cancelRequest, { isLoading: cancelling }] = useStudyBuddyCancelRequestMutation();
@@ -319,7 +337,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                     <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                       {searchNeedle
                         ? `No peers match “${searchQuery}”.`
-                        : 'No community peers to show yet. Check back as more students enable Community mode.'}
+                        : 'No study buddies to show yet. Check back as more students join Study Buddy.'}
                     </Paragraph>
                   </Card>
                 ) : (
@@ -342,7 +360,16 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
           },
           {
             key: 'requests',
-            label: `Requests${filteredRequests.length ? ` · ${filteredRequests.length}` : ''}`,
+            label: (
+              <span className={styles.studyBuddyTabLabel}>
+                {`Requests${filteredRequests.length ? ` · ${filteredRequests.length}` : ''}`}
+                {incomingPendingCount > 0 && (
+                  <span className={styles.studyBuddyTabBadge} aria-label={`${incomingPendingCount} new requests`}>
+                    {incomingPendingCount > 99 ? '99+' : incomingPendingCount}
+                  </span>
+                )}
+              </span>
+            ),
             children: (
               <>
                 <Segmented

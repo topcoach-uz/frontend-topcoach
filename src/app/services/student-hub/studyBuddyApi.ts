@@ -39,8 +39,23 @@ export type StudyBuddyRequestRow = {
   };
 };
 
+export type StudyBuddyConsentStatus = {
+  consented: boolean;
+  acceptedAt: string | null;
+  version: number;
+  currentVersion: number;
+};
+
 export const studyBuddyApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
+    studyBuddyConsentStatus: build.query<StudyBuddyConsentStatus, void>({
+      query: () => ({ url: '/study-buddy/consent' }),
+      providesTags: ['StudyBuddy'],
+    }),
+    studyBuddyAcceptConsent: build.mutation<StudyBuddyConsentStatus, void>({
+      query: () => ({ url: '/study-buddy/consent', method: 'POST' }),
+      invalidatesTags: ['StudyBuddy'],
+    }),
     studyBuddyDiscover: build.query<
       { items: StudyBuddyDiscoverItem[]; nextCursor: number | null },
       { cursor?: number } | void
@@ -94,6 +109,8 @@ export const studyBuddyApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useStudyBuddyConsentStatusQuery,
+  useStudyBuddyAcceptConsentMutation,
   useStudyBuddyDiscoverQuery,
   useStudyBuddyRequestsQuery,
   useStudyBuddySendRequestMutation,

@@ -58,6 +58,8 @@ import PlacementProfileWizardPage from '../../placement-test/profile';
 import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
+import StudyBuddyConsentGate from './StudyBuddyConsentGate';
+import { useStudyBuddyConsentStatusQuery } from 'src/app/services/student-hub/studyBuddyApi';
 import MessengerExperience from '../../../components/chat/MessengerExperience';
 import {
   ADMISSIONS_YOUTUBE_PREVIEW_SPECS,
@@ -472,6 +474,13 @@ export default function CommunityHubMockPage() {
   );
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
   const [accountTarget, setAccountTarget] = useState<string | null>(null);
+  // Study Buddy is free; the editorial header shows once the user has accepted
+  // the community guidelines (the consent gate renders the standalone intro
+  // until then). Only fetched while on the buddies section.
+  const { data: buddyConsent } = useStudyBuddyConsentStatusQuery(undefined, {
+    skip: activeSection !== 'buddies',
+  });
+  const buddyConsented = !!buddyConsent?.consented;
   const [feedPostDraft, setFeedPostDraft] = useState('');
   const [feedPosts, setFeedPosts] = useState<MockFeedPost[]>(() =>
     MOCK_FEED_POSTS.filter((p) => p.v === 'forYou'),
@@ -718,8 +727,6 @@ export default function CommunityHubMockPage() {
       switch (activeSection) {
         case 'feed':
           return 'feed';
-        case 'buddies':
-          return 'study-buddies';
         case 'researchProgram':
           return 'research-program';
         default:
@@ -929,7 +936,6 @@ export default function CommunityHubMockPage() {
               <UserPlus size={20} color="#8b0000" />
             </span>
             <span className={styles.navLabel}>{t('studentHub.hub.findStudyBuddy', 'Find study buddy')}</span>
-            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
           <button
@@ -1138,7 +1144,7 @@ export default function CommunityHubMockPage() {
                 </p>
               </header>
             )}
-            {activeSection === 'buddies' && isCommunityEnrolled && (
+            {activeSection === 'buddies' && buddyConsented && (
               <header className={styles.editorialHeader}>
                 <div className={styles.editorialEyebrow}>
                   Study buddies
@@ -1648,14 +1654,16 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
-            {activeSection === 'buddies' && isCommunityEnrolled && (
-              <StudyBuddyHubSection
-                onOpenChat={(conversationId) => {
-                  setMessagesConversationId(conversationId);
-                  setActiveSection('messages');
-                  navigate('/student-hub?section=messages', { replace: true });
-                }}
-              />
+            {activeSection === 'buddies' && (
+              <StudyBuddyConsentGate>
+                <StudyBuddyHubSection
+                  onOpenChat={(conversationId) => {
+                    setMessagesConversationId(conversationId);
+                    setActiveSection('messages');
+                    navigate('/student-hub?section=messages', { replace: true });
+                  }}
+                />
+              </StudyBuddyConsentGate>
             )}
 
             {activeSection === 'aiMajorMatch' && (

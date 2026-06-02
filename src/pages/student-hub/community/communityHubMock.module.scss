@@ -3363,3 +3363,103 @@
   }
   :global(.ant-pagination-item:hover a) { color: #7B1F2F !important; }
 }
+
+/* ── Study Buddy consent gate ─────────────────────────────────────── */
+.buddyConsentWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 32px;
+}
+
+.buddyConsentCard {
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0e6e6;
+}
+
+.buddyConsentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.08);
+  color: #8b0000;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.buddyConsentList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.buddyConsentItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.buddyConsentItemTitle {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f1f1f;
+}
+
+.buddyConsentItemBody {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+  line-height: 1.45;
+}
+
+.buddyConsentCheckbox {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.buddyConsentButton {
+  background: #8b0000;
+  border-color: #8b0000;
+
+  &:hover,
+  &:focus {
+    background: #7b1f2f !important;
+    border-color: #7b1f2f !important;
+  }
+}
+
+.buddyConsentFootNote {
+  margin-top: 12px;
+  margin-bottom: 0;
+  font-size: 12px;
+  text-align: center;
+}
+
+.studyBuddyTabLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studyBuddyTabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+}

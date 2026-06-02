@@ -121,6 +121,20 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
     };
   }, [socket, isConnected, showIcon, on, off, dispatch, refetchUnreadCount]);
 
+  // Allow other parts of the app (e.g. the notification bell/toast) to open a
+  // specific conversation in the chat modal via a global `openChat` event.
+  React.useEffect(() => {
+    if (!showIcon) return;
+    const handleOpenChat = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      setSelectedConversationId(detail.conversationId ?? null);
+      setSelectedThreadId(detail.threadId ?? null);
+      setChatModalOpen(true);
+    };
+    window.addEventListener('openChat', handleOpenChat);
+    return () => window.removeEventListener('openChat', handleOpenChat);
+  }, [showIcon]);
+
   if (!showIcon) {
     return null;
   }

@@ -213,6 +213,15 @@ export const dashboardApi = RtkApi.injectEndpoints({
       ],
     }),
 
+    // Mark all notifications as read
+    markAllNotificationsRead: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: '/notifications/mark-all-read',
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
     // Get unread notification count
     getUnreadNotificationCount: builder.query<
       ApiResponse<{ count: number }>,
@@ -501,6 +510,7 @@ export const {
   useCreateNotificationMutation,
   useUpdateNotificationMutation,
   useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsReadMutation,
   useGetUnreadNotificationCountQuery,
   useGetNotificationStatsQuery,
 

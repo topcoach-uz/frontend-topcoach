@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
+import NotificationBell from 'src/components/notifications/NotificationBell';
 import { useTypedSelector } from 'src/app/store';
 import { UserRole } from 'src/app/api/Api';
 
@@ -102,6 +103,7 @@ export default function Actions() {
         <Mail size={20} color="white" />
       </Link>
       <ChatIcon />
+      {isAuthenticated && <NotificationBell />}
       <LanguageSelect />
       <div className={styles.authContainer}>
         {!isAuthLoading && (

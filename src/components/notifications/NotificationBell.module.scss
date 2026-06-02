@@ -1,0 +1,149 @@
+.bellWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s ease-in-out;
+  color: #fff;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    fill: none !important;
+  }
+}
+
+.bellBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
+  background: #ff4d4f;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px #8b0000;
+  pointer-events: none;
+}
+
+.popover {
+  :global(.ant-popover-inner) {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  :global(.ant-popover-inner-content) {
+    padding: 0;
+  }
+}
+
+.panel {
+  width: 380px;
+  max-width: 92vw;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.panelTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.markAllBtn {
+  color: #8b0000 !important;
+  padding: 0;
+  height: auto;
+}
+
+.panelBody {
+  max-height: 440px;
+  overflow-y: auto;
+}
+
+.panelLoading {
+  padding: 40px;
+  text-align: center;
+}
+
+.item {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+
+  &:hover {
+    background-color: #faf5f5;
+  }
+}
+
+.itemUnread {
+  background-color: #fcf6f6;
+}
+
+.itemIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(139, 0, 0, 0.06);
+}
+
+.itemMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.itemMessage {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+.itemTime {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+}
+
+.itemDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #8b0000;
+}

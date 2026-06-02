@@ -11,6 +11,7 @@ import styles from '../actions.module.scss';
 import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
+import NotificationBell from 'src/components/notifications/NotificationBell';
 
 interface Props {
   handleDarkMode: () => void;
@@ -61,6 +62,7 @@ export default function ActionsMobileVersion({
         </>
       )}
       <ChatIcon />
+      {isAuthenticated && <NotificationBell />}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />
       ) : (
