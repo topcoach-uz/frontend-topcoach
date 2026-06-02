@@ -9,8 +9,6 @@ import {
   Alert,
   Spin,
   Tabs,
-  Row,
-  Col,
   Progress,
   Select,
   Tooltip,
@@ -24,7 +22,6 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useGetAdminStudentsQuery } from 'src/app/services/fullSupportApi';
 import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
 import ProgramManagementAnalyticsTab, { type AnalyticsProgramScope } from './ProgramManagementAnalyticsTab';
-import ProgramManagementOrganizationsTab from './ProgramManagementOrganizationsTab';
 import ResearchPrepProgressTab from './ResearchPrepProgressTab';
 import PlacementTestPassesTab from './PlacementTestPassesTab';
 import type { ColumnsType } from 'antd/es/table';
@@ -68,7 +65,6 @@ export type ProgramDashboardProps = {
 const MANAGEMENT_TAB_KEYS = new Set([
   'users',
   'analytics',
-  'organizations',
   'full_support',
   'research_prep',
   'placement_test',
@@ -118,9 +114,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsCourseFilter, setAnalyticsCourseFilter] = useState<AnalyticsProgramScope>('all');
-  const [organizations, setOrganizations] = useState<any[]>([]);
-  const [organizationsLoading, setOrganizationsLoading] = useState(false);
-  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
 
   // Check if user is SuperAdmin
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
@@ -272,69 +265,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     if (activeTab !== 'analytics') return;
     void fetchAnalytics(analyticsCourseFilter === 'all' ? undefined : analyticsCourseFilter);
   }, [activeTab, analyticsCourseFilter, fetchAnalytics]);
-
-  const fetchOrganizations = async (bypassCache = false) => {
-    setOrganizationsLoading(true);
-    try {
-      // Add cache-busting parameter to force fresh fetch
-      const cacheBuster = bypassCache ? `?_t=${Date.now()}` : '';
-      const url = `/organizations${cacheBuster}`;
-      console.log('[TopCoach Management] Fetching organizations from:', url);
-      
-      const response = await api.request({
-        path: url,
-        method: 'GET',
-        secure: true,
-      });
-      
-      console.log('[TopCoach Management] Organizations data received:', response.data?.length || 0, 'organizations');
-      setOrganizations(response.data || []);
-    } catch (error: any) {
-      console.error('[TopCoach Management] Error fetching organizations:', error);
-      console.error('[TopCoach Management] Organizations error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        url: error.config?.url,
-      });
-      
-      // If 403, 404, or 500, just set empty array (no organizations exist or endpoint not available)
-      if (error.response?.status === 403 || error.response?.status === 404 || error.response?.status === 500) {
-        if (error.response?.status === 404) {
-          console.warn('[TopCoach Management] Organizations endpoint not found (404). Backend may need to be redeployed.');
-        }
-        setOrganizations([]);
-      } else {
-        message.error('Failed to load organizations');
-      }
-    } finally {
-      setOrganizationsLoading(false);
-    }
-  };
-
-  const fetchAvailableUsers = async (search?: string) => {
-    try {
-      const params = new URLSearchParams();
-      if (search) {
-        params.append('search', search);
-      }
-      const response = await api.request({
-        path: `/organizations/users/available?${params.toString()}`,
-        method: 'GET',
-        secure: true,
-      });
-      setAvailableUsers(response.data || []);
-    } catch (error: any) {
-      console.error('Error fetching available users:', error);
-      setAvailableUsers([]);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'organizations' && isSuperAdmin) {
-      fetchOrganizations();
-    }
-  }, [activeTab, isSuperAdmin]);
 
   // Merge user and mentor signups by month for the line chart - moved to top level to follow Rules of Hooks
   const chartData = useMemo(() => {
@@ -655,7 +585,7 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     <>
       <Card className={`dashboard-header${embedInAdminConsole ? ' dashboard-header--embed' : ''}`}>
         <h1>Programs</h1>
-        <p>Enrollments, analytics, organizations, and Full Support.</p>
+        <p>Enrollments, analytics, and Full Support.</p>
       </Card>
 
       <Tabs 
@@ -745,19 +675,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
             key: 'analytics',
             label: 'Analytics',
             children: renderAnalyticsTab(),
-          },
-          {
-            key: 'organizations',
-            label: 'School organizations',
-            children: (
-              <ProgramManagementOrganizationsTab
-                organizations={organizations}
-                organizationsLoading={organizationsLoading}
-                fetchOrganizations={fetchOrganizations}
-                fetchAvailableUsers={fetchAvailableUsers}
-                availableUsers={availableUsers}
-              />
-            ),
           },
           {
             key: 'full_support',

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Spin, Empty, Button, Tag } from 'antd';
+import { Card, Spin, Empty, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, ArrowRight, User, Calendar, Mail, Phone, MapPin } from 'lucide-react';
-import UnifiedIcon from 'src/components/common/icons/UnifiedIcon';
+import { Users, Plus, ArrowRight, User, Calendar, Mail, Phone, MapPin, GraduationCap } from 'lucide-react';
 
 const DESCRIPTION_PREVIEW_LENGTH = 120;
 import { useNavigate } from 'react-router-dom';
@@ -153,101 +152,113 @@ const OrganizationSelector: React.FC = () => {
   return (
     <div className="organization-selector">
       <div className="selector-header">
-        <h1>{t('schoolCounselor.organizationSelector.title', 'Select Organization')}</h1>
+        <div className="selector-eyebrow">
+          {t('schoolCounselor.organizationSelector.eyebrow', 'School counselor')}
+          <span className="selector-eyebrow-sep">·</span>
+          <span className="selector-eyebrow-accent">
+            {t('schoolCounselor.organizationSelector.eyebrowAccent', 'Organizations')}
+          </span>
+        </div>
+        <h1>{t('schoolCounselor.organizationSelector.title', 'Select an organization')}</h1>
         <p className="page-subtitle">{t('schoolCounselor.organizationSelector.subtitle', 'Choose an organization to view its School Counselor dashboard')}</p>
       </div>
 
-      <Row gutter={[24, 24]}>
+      <div className="org-grid">
         {organizationsWithDetails.map((org) => (
-          <Col xs={24} sm={12} lg={8} key={org.id}>
-            <Card
-              hoverable
-              className="org-card"
-              onClick={() => handleSelectOrganization(org.id)}
-              actions={[
-                <Button
-                  type="primary"
-                  icon={<ArrowRight size={16} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectOrganization(org.id);
-                  }}
-                  className="view-dashboard-btn"
-                >
-                  {t('schoolCounselor.organizationSelector.viewDashboard', 'View Dashboard')}
-                </Button>
-              ]}
-            >
-              <div className="org-card-content">
-                <div className="org-icon">
-                  <UnifiedIcon name="graduation-cap" size="2xl" color="primary" />
+          <article
+            key={org.id}
+            className="org-card"
+            role="button"
+            tabIndex={0}
+            onClick={() => handleSelectOrganization(org.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSelectOrganization(org.id);
+              }
+            }}
+          >
+            <div className="org-card__top">
+              <span className="org-card__glyph">
+                <GraduationCap size={20} />
+              </span>
+              <span className="org-card__eyebrow">
+                {t('schoolCounselor.organizationSelector.cardEyebrow', 'School')}
+              </span>
+            </div>
+
+            <h3 className="org-card__name">{org.name}</h3>
+
+            {org.description ? (
+              <OrganizationDescription text={org.description} />
+            ) : (
+              <p className="org-description org-description-placeholder" />
+            )}
+
+            <div className="org-meta">
+              {org.createdAt && (
+                <div className="org-meta-item">
+                  <Calendar size={15} className="org-meta-icon" />
+                  <span>{t('schoolCounselor.organizationSelector.created', 'Created')} {dayjs(org.createdAt).format('MMM D, YYYY')}</span>
                 </div>
-                <h3 className="org-name">{org.name}</h3>
-                {org.description ? (
-                  <OrganizationDescription text={org.description} />
-                ) : (
-                  <p className="org-description org-description-placeholder" />
-                )}
-                
-                <div className="org-meta">
-                  {org.createdAt && (
-                    <div className="org-meta-item">
-                      <Calendar size={16} className="org-meta-icon" />
-                      <span>{t('schoolCounselor.organizationSelector.created', 'Created')} {dayjs(org.createdAt).format('MMM D, YYYY')}</span>
-                    </div>
-                  )}
-                  
-                  {org.memberCount !== undefined && (
-                    <div className="org-meta-item">
-                      <Users size={16} className="org-meta-icon" />
-                      <span>{org.memberCount} {org.memberCount === 1 ? t('schoolCounselor.organizationSelector.member', 'member') : t('schoolCounselor.organizationSelector.members', 'members')}</span>
-                    </div>
-                  )}
-                  
-                  {org.counselors && org.counselors.length > 0 && (
-                    <div className="org-meta-item org-counselors">
-                      <User size={16} className="org-meta-icon" />
-                      <div className="counselors-list">
-                        <span className="counselors-label">
-                          {org.counselors.length > 1 ? t('schoolCounselor.organizationSelector.counselors', 'Counselors') : t('schoolCounselor.organizationSelector.counselor', 'Counselor')}:
+              )}
+
+              {org.memberCount !== undefined && (
+                <div className="org-meta-item">
+                  <Users size={15} className="org-meta-icon" />
+                  <span>{org.memberCount} {org.memberCount === 1 ? t('schoolCounselor.organizationSelector.member', 'member') : t('schoolCounselor.organizationSelector.members', 'members')}</span>
+                </div>
+              )}
+
+              {org.counselors && org.counselors.length > 0 && (
+                <div className="org-meta-item org-counselors">
+                  <User size={15} className="org-meta-icon" />
+                  <div className="counselors-list">
+                    <span className="counselors-label">
+                      {org.counselors.length > 1 ? t('schoolCounselor.organizationSelector.counselors', 'Counselors') : t('schoolCounselor.organizationSelector.counselor', 'Counselor')}:
+                    </span>
+                    <div className="counselors-tags">
+                      {org.counselors.map((counselor, idx) => (
+                        <span key={idx} className="org-counselor-pill">
+                          {counselor.userName}
                         </span>
-                        <div className="counselors-tags">
-                          {org.counselors.map((counselor, idx) => (
-                            <Tag key={idx} color="blue">
-                              {counselor.userName}
-                            </Tag>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  )}
-                  
-                  {org.contactEmail && (
-                    <div className="org-meta-item">
-                      <Mail size={16} className="org-meta-icon" />
-                      <span>{org.contactEmail}</span>
-                    </div>
-                  )}
-                  
-                  {org.contactPhone && (
-                    <div className="org-meta-item">
-                      <Phone size={16} className="org-meta-icon" />
-                      <span>{org.contactPhone}</span>
-                    </div>
-                  )}
-                  
-                  {(org.address || org.city || org.state || org.country) && (
-                    <div className="org-meta-item">
-                      <MapPin size={16} className="org-meta-icon" />
-                      <span>{[org.address, org.city, org.state, org.country].filter(Boolean).join(', ')}</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Col>
+              )}
+
+              {org.contactEmail && (
+                <div className="org-meta-item">
+                  <Mail size={15} className="org-meta-icon" />
+                  <span>{org.contactEmail}</span>
+                </div>
+              )}
+
+              {org.contactPhone && (
+                <div className="org-meta-item">
+                  <Phone size={15} className="org-meta-icon" />
+                  <span>{org.contactPhone}</span>
+                </div>
+              )}
+
+              {(org.address || org.city || org.state || org.country) && (
+                <div className="org-meta-item">
+                  <MapPin size={15} className="org-meta-icon" />
+                  <span>{[org.address, org.city, org.state, org.country].filter(Boolean).join(', ')}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="org-card__footer">
+              <span className="org-card__cta">
+                {t('schoolCounselor.organizationSelector.viewDashboard', 'View dashboard')}
+                <ArrowRight size={16} />
+              </span>
+            </div>
+          </article>
         ))}
-      </Row>
+      </div>
     </div>
   );
 };

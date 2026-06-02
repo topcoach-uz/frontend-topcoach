@@ -252,76 +252,171 @@
   margin-right: 6px;
 }
 
-/* Grant Access modal — rendered into a portal at <body>, so the parent dark
-   theme doesn't reach it. Scope styles by the className on the modal root. */
-.ac-grant-access-modal {
+/* Dark modals — rendered into a portal at <body>, so the parent dark theme
+   doesn't reach them. Scope styles by the className on the modal root.
+   `.ac-grant-access-modal` (Grant Access) and `.ac-dark-modal` (organization
+   create/edit/assign/members) share the same dark treatment.
+
+   HEX LITERALS + !important on purpose (same as ManageAccessModal.scss):
+   the modal portals to <body> where the `--ac-*` variables (scoped to :root)
+   tie with AntD v5's late-injected CSS-in-JS, so a var-based rule resolves to
+   AntD's white default. Pinned hex + !important is the only bulletproof fix. */
+.ac-grant-access-modal,
+.ac-dark-modal {
   .ant-modal-content {
-    background: var(--ac-bg-surface);
-    border: 1px solid var(--ac-border-strong);
-    border-radius: var(--ac-radius);
-    box-shadow: var(--ac-shadow-md);
-    color: var(--ac-text);
+    background: #252a35 !important;
+    background-color: #252a35 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    color: #f4f4f5 !important;
   }
-  .ant-modal-header {
-    background: transparent;
-    border-bottom: 1px solid var(--ac-border);
+  .ant-modal-header,
+  .ant-modal-content > .ant-modal-header {
+    background: #252a35 !important;
+    background-color: #252a35 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
   }
-  .ant-modal-title,
-  .ant-modal-body,
+  .ant-modal-title {
+    background: transparent !important;
+    color: #f4f4f5 !important;
+  }
+  .ant-modal-body {
+    background: transparent !important;
+    color: #f4f4f5 !important;
+  }
   .ant-modal-body p,
-  .ant-modal-body label,
+  .ant-modal-body span,
   .ant-modal-body strong {
-    color: var(--ac-text);
-  }
-  .ant-modal-body p {
-    color: var(--ac-text-secondary);
+    color: #d1d5e0 !important;
   }
   .ant-modal-body label {
-    color: var(--ac-text);
+    color: #f4f4f5 !important;
+  }
+  /* Modal.info (View Members) renders confirm-* structure, not a header */
+  .ant-modal-confirm-title {
+    color: #f4f4f5 !important;
+  }
+  .ant-modal-confirm-content {
+    color: #d1d5e0 !important;
   }
   .ant-modal-close,
   .ant-modal-close-x {
-    color: var(--ac-text-muted);
+    color: #a8b4c8 !important;
   }
   .ant-modal-close:hover {
-    color: var(--ac-text);
-    background: rgba(255, 255, 255, 0.06);
+    color: #f4f4f5 !important;
+    background: rgba(255, 255, 255, 0.06) !important;
   }
   .ant-modal-footer {
-    border-top: 1px solid var(--ac-border);
+    border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
   }
 
   /* Radio buttons: outline circle + tinted accent fill when selected */
   .ant-radio-wrapper {
-    color: var(--ac-text);
+    color: #f4f4f5 !important;
   }
   .ant-radio-inner {
-    background: transparent;
-    border-color: var(--ac-border-strong);
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
   }
   .ant-radio-checked .ant-radio-inner {
-    background: var(--ac-accent);
-    border-color: var(--ac-accent);
+    background: #10b981 !important;
+    border-color: #10b981 !important;
   }
   .ant-radio-checked .ant-radio-inner::after {
-    background: #04120c;
+    background: #04120c !important;
   }
   .ant-radio:hover .ant-radio-inner {
-    border-color: var(--ac-accent);
+    border-color: #10b981 !important;
   }
   .ant-radio-disabled + span {
-    color: var(--ac-text-muted);
+    color: #a8b4c8 !important;
   }
 
   /* Cancel button: ghost on dark */
   .ant-btn-default {
-    background: transparent;
-    border-color: var(--ac-border-strong);
-    color: var(--ac-text);
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f4f4f5 !important;
   }
   .ant-btn-default:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: var(--ac-text-muted);
-    color: var(--ac-text);
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: #a8b4c8 !important;
+    color: #f4f4f5 !important;
+  }
+
+  /* Form fields — inputs, textareas, selects on dark */
+  .ant-form-item-label > label {
+    color: #f4f4f5 !important;
+  }
+  .ant-input,
+  .ant-input-affix-wrapper,
+  textarea.ant-input,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-select-selector {
+    background: #2d3340 !important;
+    background-color: #2d3340 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f4f4f5 !important;
+  }
+  .ant-input::placeholder,
+  textarea.ant-input::placeholder,
+  .ant-select-selection-placeholder {
+    color: #a8b4c8 !important;
+    opacity: 1;
+  }
+  .ant-select-selection-item,
+  .ant-select-arrow {
+    color: #d1d5e0 !important;
+  }
+
+  /* Members table inside the View Members info modal */
+  .ant-table {
+    background: transparent !important;
+    color: #f4f4f5 !important;
+  }
+  .ant-table-thead > tr > th {
+    background: #2d3340 !important;
+    color: #d1d5e0 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+  }
+  .ant-table-tbody > tr > td {
+    background: #252a35 !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+    color: #f4f4f5 !important;
+  }
+
+  /* Required-field asterisk */
+  .ant-form-item-required::before {
+    color: #ef4444 !important;
+  }
+}
+
+/* Dark, opaque mask so the page behind genuinely recedes. */
+.ac-dark-modal-mask {
+  background: rgba(6, 8, 12, 0.78) !important;
+}
+
+/* The Select dropdown renders in its own body portal, separate from the
+   modal — theme it via the dropdown's own popup class. */
+.ac-dark-modal-select-dropdown.ant-select-dropdown {
+  background: #2d3340 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+
+  .ant-select-item {
+    color: #f4f4f5 !important;
+  }
+  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #f4f4f5 !important;
+  }
+  .ant-empty-description {
+    color: var(--ac-text-secondary);
   }
 }

@@ -156,6 +156,7 @@ const TopcoachLaunchEventAdminRouteLazy = lazy(
   () => import("src/pages/admin/console/TopcoachLaunchEventAdminRoute"),
 );
 const AdminProgramManagementLazy = lazy(() => import("src/pages/admin/console/pages/ProgramManagementPage"));
+const AdminOrganizationManagementLazy = lazy(() => import("src/pages/admin/console/pages/OrganizationManagementPage"));
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
@@ -166,7 +167,6 @@ const FullSupportLeadsPageLazy = lazy(() => import("src/pages/full-support-leads
 const PROGRAM_TAB_SLUG: Record<string, string> = {
   users: "enrollments",
   analytics: "analytics",
-  organizations: "organizations",
   full_support: "full-support",
 };
 
@@ -174,6 +174,10 @@ const PROGRAM_TAB_SLUG: Record<string, string> = {
 function TopCoachManagementCanonicalRedirect() {
   const [searchParams] = useSearchParams();
   const raw = searchParams.get("tab") ?? "users";
+  // Organizations is now a standalone page, no longer a Programs tab.
+  if (raw === "organizations") {
+    return <Navigate to="/new-admin/organization-management" replace />;
+  }
   const slug = PROGRAM_TAB_SLUG[raw] ?? "enrollments";
   return <Navigate to={`/new-admin/programs/${slug}`} replace />;
 }
@@ -247,9 +251,13 @@ function RouterProvider() {
                 <Route path="programs" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
                 <Route path="programs/enrollments" element={<AdminProgramManagementLazy />} />
                 <Route path="programs/analytics" element={<AdminProgramManagementLazy />} />
-                <Route path="programs/organizations" element={<AdminProgramManagementLazy />} />
+                {/* Organizations moved out of Programs into a standalone page */}
+                <Route path="programs/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
                 <Route path="programs/full-support" element={<AdminProgramManagementLazy />} />
                 <Route path="programs/research-prep" element={<AdminProgramManagementLazy />} />
+
+                {/* School / organization management (standalone) */}
+                <Route path="organization-management" element={<AdminOrganizationManagementLazy />} />
 
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
@@ -270,13 +278,13 @@ function RouterProvider() {
                 {/* Permanent redirects from legacy console paths */}
                 <Route path="mentees" element={<Navigate to="/new-admin/users?tab=mentees" replace />} />
                 <Route path="mentors" element={<Navigate to="/new-admin/users?tab=mentors" replace />} />
-                <Route path="organizations" element={<Navigate to="/new-admin/programs/organizations" replace />} />
+                <Route path="organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
                 <Route path="content" element={<Navigate to="/new-admin/events" replace />} />
                 <Route path="central-asian-admissions-forum" element={<Navigate to="/new-admin/events/caaf" replace />} />
                 <Route path="management" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
                 <Route path="management/users" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
                 <Route path="management/analytics" element={<Navigate to="/new-admin/programs/analytics" replace />} />
-                <Route path="management/organizations" element={<Navigate to="/new-admin/programs/organizations" replace />} />
+                <Route path="management/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
                 <Route path="management/full_support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
                 <Route path="full-support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
                 <Route path="access-programs" element={<Navigate to="/new-admin/dashboard" replace />} />

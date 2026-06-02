@@ -35,9 +35,12 @@ export default function ProgramManagementOrganizationsTab({
   availableUsers,
 }: ProgramManagementOrganizationsTabProps) {
   const [createOrgModalVisible, setCreateOrgModalVisible] = useState(false);
+  const [editOrgModalVisible, setEditOrgModalVisible] = useState(false);
+  const [editingOrgId, setEditingOrgId] = useState<string | null>(null);
   const [assignUserModalVisible, setAssignUserModalVisible] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [assignForm] = Form.useForm();
 
   const handleCreateOrganization = async (values: any) => {
@@ -55,6 +58,43 @@ export default function ProgramManagementOrganizationsTab({
     } catch (error: any) {
       console.error('Error creating organization:', error);
       message.error(error.response?.data?.message || 'Failed to create organization');
+    }
+  };
+
+  const openEditOrganization = (record: any) => {
+    setEditingOrgId(record.id);
+    editForm.setFieldsValue({
+      name: record.name,
+      description: record.description,
+      contactEmail: record.contactEmail,
+      contactPhone: record.contactPhone,
+      address: record.address,
+      city: record.city,
+      state: record.state,
+      country: record.country,
+      postalCode: record.postalCode,
+      website: record.website,
+    });
+    setEditOrgModalVisible(true);
+  };
+
+  const handleEditOrganization = async (values: any) => {
+    if (!editingOrgId) return;
+    try {
+      await api.request({
+        path: `/organizations/${editingOrgId}`,
+        method: 'PUT',
+        secure: true,
+        body: values,
+      });
+      message.success('Organization updated successfully');
+      setEditOrgModalVisible(false);
+      editForm.resetFields();
+      setEditingOrgId(null);
+      await fetchOrganizations(true);
+    } catch (error: any) {
+      console.error('Error updating organization:', error);
+      message.error(error.response?.data?.message || 'Failed to update organization');
     }
   };
 
@@ -192,6 +232,9 @@ export default function ProgramManagementOrganizationsTab({
               key: 'actions',
               render: (_, record) => (
                 <Space>
+                  <Button size="small" onClick={() => openEditOrganization(record)}>
+                    Edit
+                  </Button>
                   <Button
                     size="small"
                     onClick={() => {
@@ -212,6 +255,7 @@ export default function ProgramManagementOrganizationsTab({
                           secure: true,
                         });
                         Modal.info({
+                          rootClassName: 'ac-dark-modal',
                           title: `Members of ${record.name}`,
                           width: 800,
                           content: (
@@ -276,6 +320,8 @@ export default function ProgramManagementOrganizationsTab({
       </Card>
 
       <Modal
+        rootClassName="ac-dark-modal"
+        classNames={{ mask: 'ac-dark-modal-mask' }}
         title="Create Organization"
         open={createOrgModalVisible}
         onOk={() => createForm.submit()}
@@ -327,6 +373,62 @@ export default function ProgramManagementOrganizationsTab({
       </Modal>
 
       <Modal
+        rootClassName="ac-dark-modal"
+        classNames={{ mask: 'ac-dark-modal-mask' }}
+        title="Edit Organization"
+        open={editOrgModalVisible}
+        onOk={() => editForm.submit()}
+        onCancel={() => {
+          setEditOrgModalVisible(false);
+          editForm.resetFields();
+          setEditingOrgId(null);
+        }}
+      >
+        <Form form={editForm} onFinish={handleEditOrganization} layout="vertical">
+          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="contactEmail" label="Contact Email">
+            <Input type="email" />
+          </Form.Item>
+          <Form.Item name="contactPhone" label="Contact Phone">
+            <Input />
+          </Form.Item>
+          <Form.Item name="address" label="Address">
+            <Input.TextArea rows={2} />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="city" label="City">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="state" label="State">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="country" label="Country">
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="postalCode" label="Postal Code">
+            <Input />
+          </Form.Item>
+          <Form.Item name="website" label="Website">
+            <Input type="url" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        rootClassName="ac-dark-modal"
+        classNames={{ mask: 'ac-dark-modal-mask' }}
         title="Assign User to Organization"
         open={assignUserModalVisible}
         onOk={() => assignForm.submit()}
@@ -341,6 +443,7 @@ export default function ProgramManagementOrganizationsTab({
             <Select
               showSearch
               placeholder="Search by name or email"
+              popupClassName="ac-dark-modal-select-dropdown"
               optionFilterProp="children"
               onSearch={(value) => void fetchAvailableUsers(value)}
               filterOption={false}

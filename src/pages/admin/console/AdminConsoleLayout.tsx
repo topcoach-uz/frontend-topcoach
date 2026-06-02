@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   BookOpen,
   GraduationCap,
+  Building2,
   Search as SearchIcon,
   Brain,
 } from 'lucide-react';
@@ -52,6 +53,7 @@ type NavKey =
   | 'major-match'
   | 'administration'
   | 'course-content'
+  | 'organization-management'
   | 'school-counselor';
 
 type NavItem = {
@@ -176,8 +178,14 @@ export default function AdminConsoleLayout() {
             path: '/course-admin/courses/modules',
           },
           {
+            key: 'organization-management',
+            label: 'Organization Management',
+            icon: <Building2 size={18} strokeWidth={1.75} />,
+            path: '/new-admin/organization-management',
+          },
+          {
             key: 'school-counselor',
-            label: 'School counselor',
+            label: 'Organizations',
             icon: <GraduationCap size={18} strokeWidth={1.75} />,
             path: '/school-counselor',
           },
@@ -191,6 +199,7 @@ export default function AdminConsoleLayout() {
     const p = location.pathname;
     if (p.startsWith('/new-admin/dashboard')) return 'dashboard';
     if (p.startsWith('/new-admin/users')) return 'users';
+    if (p.startsWith('/new-admin/organization-management')) return 'organization-management';
     if (p.startsWith('/new-admin/programs')) return 'programs';
     if (p.startsWith('/new-admin/payments')) return 'payments';
     if (p.startsWith('/new-admin/subscriptions')) return 'subscriptions';
@@ -235,6 +244,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/insights': 'Insights',
       '/new-admin/major-match': 'AI Major Match',
       '/new-admin/administration': 'Administration',
+      '/new-admin/organization-management': 'Organization Management',
     };
     const title = map[p] ?? 'Admin';
     return [{ title: 'Admin' }, { title }];

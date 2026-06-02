@@ -5,7 +5,6 @@ import ProgramDashboard from 'src/pages/admin/topcoach-management';
 const SLUG_TO_TAB: Record<string, string> = {
   enrollments: 'users',
   analytics: 'analytics',
-  organizations: 'organizations',
   'full-support': 'full_support',
   'research-prep': 'research_prep',
 };
@@ -13,7 +12,6 @@ const SLUG_TO_TAB: Record<string, string> = {
 const TAB_TO_SLUG: Record<string, string> = {
   users: 'enrollments',
   analytics: 'analytics',
-  organizations: 'organizations',
   full_support: 'full-support',
   research_prep: 'research-prep',
 };
