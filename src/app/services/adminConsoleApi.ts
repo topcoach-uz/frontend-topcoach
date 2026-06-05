@@ -206,6 +206,18 @@ export type AdminSessionsOverview = {
     tag: 'Cancel' | 'Delay';
     reason: string | null;
   }>;
+  reports: Array<{
+    id: string;
+    dateTime: string;
+    mentorName: string;
+    studentName: string;
+    type: string;
+    topicsCovered: string;
+    notes: string;
+    homework: string | null;
+    rating: string | null;
+    submittedAt: string;
+  }>;
   monthlyTrend: Array<{
     month: string;
     completed: number;
@@ -422,6 +434,7 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
           kpis: raw.kpis ?? { upcomingCount: 0, completedMonth: 0, cancelledMonth: 0, flaggedMonth: 0 },
           upcoming: raw.upcoming ?? [],
           flagged: raw.flagged ?? [],
+          reports: raw.reports ?? [],
           monthlyTrend: raw.monthlyTrend ?? [],
         };
       },

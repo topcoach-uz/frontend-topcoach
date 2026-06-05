@@ -8,7 +8,16 @@
 
 import React, { useMemo, useState } from 'react';
 import { Button, Result, Spin, Tabs } from 'antd';
-import { Calendar, FileCheck2, GraduationCap, Sparkles } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle2,
+  FileCheck2,
+  GraduationCap,
+  Inbox,
+  RotateCcw,
+  Sparkles,
+  UserCheck,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   useGetGraderInboxQuery,
@@ -16,6 +25,7 @@ import {
 } from 'src/app/services/research-prep';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { useMentorConsole } from '../console/MentorConsoleContext';
+import { McStat } from '../console/components/McStat';
 import SubmissionDrawer from './SubmissionDrawer';
 import './research-grading.scss';
 
@@ -43,28 +53,13 @@ const fmtDate = (iso: string) =>
     minute: '2-digit',
   });
 
-const ResearchGradingPage: React.FC = () => {
+const ResearchGradingPage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { email, managementRole } = useMentorConsole();
   const researchLive = canUseResearchPrepLive(email, managementRole);
   const { data: inbox, isLoading } = useGetGraderInboxQuery(undefined, { skip: !researchLive });
   const [tab, setTab] = useState<'pending' | 'all'>('pending');
   const [openSub, setOpenSub] = useState<ResearchSubmission | null>(null);
-
-  if (!researchLive) {
-    return (
-      <Result
-        status="info"
-        title="Research grading — coming soon"
-        subTitle="The grading inbox will open when Research Prep launches for all mentors."
-        extra={
-          <Button type="primary" onClick={() => navigate('/mentor/dashboard')}>
-            Back to dashboard
-          </Button>
-        }
-      />
-    );
-  }
 
   const pending = useMemo(
     () =>
@@ -89,6 +84,21 @@ const ResearchGradingPage: React.FC = () => {
   }, [all, pending]);
 
   const visible = tab === 'pending' ? pending : all;
+
+  if (!researchLive) {
+    return (
+      <Result
+        status="info"
+        title="Research grading — coming soon"
+        subTitle="The grading inbox will open when Research Prep launches for all mentors."
+        extra={
+          <Button type="primary" onClick={() => navigate('/mentor/dashboard')}>
+            Back to dashboard
+          </Button>
+        }
+      />
+    );
+  }
 
   const renderRow = (s: ResearchSubmission) => (
     <div
@@ -122,7 +132,7 @@ const ResearchGradingPage: React.FC = () => {
       </div>
       <div className="right">
         {s.status === 'graded' && s.score != null && (
-          <span style={{ fontSize: 12, color: '#1f2937', fontWeight: 700 }}>
+          <span style={{ fontSize: 12, color: '#1c1a17', fontWeight: 700 }}>
             {s.score}/100
           </span>
         )}
@@ -142,36 +152,50 @@ const ResearchGradingPage: React.FC = () => {
   }
 
   return (
-    <div className="research-grading">
-      <div className="rg-head">
-        <div className="eyebrow">
-          <GraduationCap size={11} style={{ verticalAlign: -1, marginRight: 6 }} />
-          Research Prep · grading inbox
+    <div className={`research-grading${embedded ? ' research-grading--embedded' : ''}`}>
+      {!embedded && (
+        <div className="rg-head">
+          <div className="eyebrow">
+            <GraduationCap size={11} style={{ verticalAlign: -1, marginRight: 6 }} />
+            Research Prep · grading inbox
+          </div>
+          <h1>Grade your students' research assignments</h1>
+          <p>
+            Submissions from your Full Support students route here. Claim a submission to start
+            grading; write feedback, score 0–100, and either mark graded or return for revision.
+          </p>
         </div>
-        <h1>Grade your students' research assignments</h1>
-        <p>
-          Submissions from your Full Support students route here. Claim a submission to start
-          grading; write feedback, score 0–100, and either mark graded or return for revision.
-        </p>
-      </div>
+      )}
 
-      <div className="rg-stats">
-        <div className="stat">
-          <div className="label">Pending</div>
-          <div className="value">{stats.pending}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Claimed by you</div>
-          <div className="value">{stats.claimed}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Graded · 7 days</div>
-          <div className="value">{stats.gradedThisWeek}</div>
-        </div>
-        <div className="stat">
-          <div className="label">In revision</div>
-          <div className="value">{stats.returned}</div>
-        </div>
+      <div className="mc-stat-grid">
+        <McStat
+          icon={<Inbox size={16} />}
+          label="Pending"
+          value={stats.pending}
+          meta="Submitted — your turn"
+          tone={stats.pending > 0 ? 'warn' : 'good'}
+        />
+        <McStat
+          icon={<UserCheck size={16} />}
+          label="Claimed by you"
+          value={stats.claimed}
+          meta="In progress"
+          tone="neutral"
+        />
+        <McStat
+          icon={<CheckCircle2 size={16} />}
+          label="Graded · 7 days"
+          value={stats.gradedThisWeek}
+          meta="Closed out recently"
+          tone="good"
+        />
+        <McStat
+          icon={<RotateCcw size={16} />}
+          label="In revision"
+          value={stats.returned}
+          meta="Returned to student"
+          tone={stats.returned > 0 ? 'warn' : 'good'}
+        />
       </div>
 
       <div className="rg-toolbar">

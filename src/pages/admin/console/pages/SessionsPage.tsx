@@ -1,10 +1,12 @@
 import {
   Alert,
+  Button,
   Card,
   Col,
   Empty,
   Input,
   List,
+  Modal,
   Row,
   Segmented,
   Select,
@@ -14,7 +16,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { CalendarClock, Search } from 'lucide-react';
+import { CalendarClock, FileText, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Bar,
@@ -39,7 +41,22 @@ const { Paragraph } = Typography;
 
 type UpcomingRow = AdminSessionsOverview['upcoming'][number];
 type FlagRow = AdminSessionsOverview['flagged'][number];
+type ReportRow = AdminSessionsOverview['reports'][number];
 type TagFilter = 'all' | 'Cancel' | 'Delay';
+
+const RATING_LABEL: Record<string, string> = {
+  tough: 'Tough',
+  okay: 'Okay',
+  good: 'Good',
+  great: 'Great',
+};
+function ratingVariant(r: string | null): AcPillVariant {
+  if (r === 'great') return 'mint';
+  if (r === 'good') return 'cyan';
+  if (r === 'okay') return 'neutral';
+  if (r === 'tough') return 'amber';
+  return 'neutral';
+}
 
 function formatDateTime(iso: string) {
   try {
@@ -82,9 +99,12 @@ export default function AdminConsoleSessionsPage() {
   const [upcomingSearch, setUpcomingSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [tagFilter, setTagFilter] = useState<TagFilter>('all');
+  const [reportSearch, setReportSearch] = useState('');
+  const [viewReport, setViewReport] = useState<ReportRow | null>(null);
 
   const upcoming = data?.upcoming ?? [];
   const flagged = data?.flagged ?? [];
+  const reports = data?.reports ?? [];
   const trend = data?.monthlyTrend ?? [];
   const kpis = data?.kpis;
 
@@ -110,6 +130,51 @@ export default function AdminConsoleSessionsPage() {
     () => (tagFilter === 'all' ? flagged : flagged.filter((r) => r.tag === tagFilter)),
     [flagged, tagFilter],
   );
+
+  const filteredReports = useMemo(() => {
+    const s = reportSearch.trim().toLowerCase();
+    if (!s) return reports;
+    return reports.filter((r) =>
+      `${r.mentorName} ${r.studentName} ${r.topicsCovered}`.toLowerCase().includes(s),
+    );
+  }, [reports, reportSearch]);
+
+  const reportColumns: ColumnsType<ReportRow> = [
+    { title: 'Session', dataIndex: 'dateTime', key: 'dateTime', width: 170, render: (iso: string) => formatDateTime(iso) },
+    { title: 'Mentor', dataIndex: 'mentorName', key: 'mentorName' },
+    { title: 'Student', dataIndex: 'studentName', key: 'studentName' },
+    {
+      title: 'Rating',
+      dataIndex: 'rating',
+      key: 'rating',
+      width: 110,
+      render: (r: string | null) =>
+        r ? <AcPill variant={ratingVariant(r)}>{RATING_LABEL[r] ?? r}</AcPill> : <span style={{ color: 'var(--ac-text-muted)' }}>—</span>,
+    },
+    {
+      title: 'Topics',
+      dataIndex: 'topicsCovered',
+      key: 'topicsCovered',
+      ellipsis: true,
+    },
+    {
+      title: 'Submitted',
+      dataIndex: 'submittedAt',
+      key: 'submittedAt',
+      width: 120,
+      render: (iso: string) => formatRelative(iso),
+    },
+    {
+      title: '',
+      key: 'view',
+      width: 80,
+      render: (_, row) => (
+        <Button type="link" size="small" onClick={() => setViewReport(row)} style={{ padding: 0 }}>
+          View
+        </Button>
+      ),
+    },
+  ];
 
   const statusMix = useMemo(() => {
     const completed = trend.reduce((a, r) => a + r.completed, 0);
@@ -333,6 +398,42 @@ export default function AdminConsoleSessionsPage() {
       </Card>
 
       <Card
+        bordered={false}
+        className="ac-panel"
+        title={
+          <Space>
+            <FileText size={18} color="#94a3b8" />
+            <span>Session reports ({reports.length})</span>
+          </Space>
+        }
+        style={{ marginTop: 16 }}
+      >
+        <div className="ac-directory-toolbar" style={{ marginBottom: 12 }}>
+          <Input
+            allowClear
+            size="large"
+            placeholder="Search mentor, student, topics"
+            prefix={<Search size={18} style={{ opacity: 0.45 }} />}
+            value={reportSearch}
+            onChange={(e) => setReportSearch(e.target.value)}
+            className="ac-directory-search"
+          />
+        </div>
+        {filteredReports.length === 0 ? (
+          <Empty description="No session reports yet" />
+        ) : (
+          <Table<ReportRow>
+            rowKey="id"
+            columns={reportColumns}
+            dataSource={filteredReports}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50] }}
+            size="middle"
+            onRow={(row) => ({ onClick: () => setViewReport(row), style: { cursor: 'pointer' } })}
+          />
+        )}
+      </Card>
+
+      <Card
         title={
           <Space>
             <CalendarClock size={18} color="#94a3b8" />
@@ -373,6 +474,65 @@ export default function AdminConsoleSessionsPage() {
           />
         )}
       </Card>
+
+      <Modal
+        rootClassName="ac-dark-modal"
+        open={!!viewReport}
+        onCancel={() => setViewReport(null)}
+        footer={null}
+        title="Session report"
+        width={560}
+      >
+        {viewReport && (
+          <div className="ac-session-report">
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontWeight: 600 }}>
+                {viewReport.mentorName} → {viewReport.studentName}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--ac-text-muted)', marginTop: 2 }}>
+                {viewReport.type} · {formatDateTime(viewReport.dateTime)} · submitted{' '}
+                {formatRelative(viewReport.submittedAt)}
+                {viewReport.rating ? (
+                  <>
+                    {' · '}
+                    <AcPill variant={ratingVariant(viewReport.rating)}>
+                      {RATING_LABEL[viewReport.rating] ?? viewReport.rating}
+                    </AcPill>
+                  </>
+                ) : null}
+              </div>
+            </div>
+
+            <ReportField label="Topics covered" value={viewReport.topicsCovered} />
+            <ReportField label="Key takeaways & notes" value={viewReport.notes} />
+            {viewReport.homework ? (
+              <ReportField label="Homework assigned" value={viewReport.homework} />
+            ) : null}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+function ReportField({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          color: 'var(--ac-text-muted)',
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ whiteSpace: 'pre-wrap', fontSize: 13, color: 'var(--ac-text)', lineHeight: 1.55 }}>
+        {value || '—'}
+      </div>
     </div>
   );
 }

@@ -57,6 +57,12 @@ export type MilestoneDto = {
   done: boolean;
 };
 
+/** A milestone annotated with its student — for the cross-student deadlines view. */
+export type MentorMilestoneRow = MilestoneDto & {
+  studentUserId: string;
+  studentName: string;
+};
+
 export type PipelineDto = {
   id: string;
   studentUserId: string;
@@ -379,6 +385,15 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       },
       providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportMentorMilestones' as const, id: studentUserId }],
     }),
+    // Cross-student roll-up: every milestone across the mentor's roster.
+    getAllMentorMilestones: builder.query<{ data: MentorMilestoneRow[] }, void>({
+      query: () => ({ url: '/full-support/mentor/milestones', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? (raw as MentorMilestoneRow[]) : [] };
+      },
+      providesTags: [{ type: 'FullSupportMentorMilestones' as const, id: 'LIST' }],
+    }),
     createMentorMilestone: builder.mutation<
       { data: unknown; success: boolean },
       { studentUserId: string; label: string; date?: string | null }
@@ -694,6 +709,7 @@ export const {
   useUploadMentorFeedbackFileMutation,
   useGetMenteeSessionsQuery,
   useGetMentorMilestonesQuery,
+  useGetAllMentorMilestonesQuery,
   useCreateMentorMilestoneMutation,
   useUpdateMentorMilestoneMutation,
   useDeleteMentorMilestoneMutation,

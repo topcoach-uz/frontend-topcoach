@@ -48,6 +48,24 @@ export const sessionsApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['MySessions'],
     }),
+    // mentor post-session report (one-time platform sessions)
+    submitSessionReport: build.mutation<
+      void,
+      {
+        id: string;
+        topicsCovered: string;
+        notes: string;
+        homework?: string;
+        rating: 'tough' | 'okay' | 'good' | 'great';
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/sessions/${id}/report`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['MySessions'],
+    }),
     // rate session
     rateSession: build.mutation<void, RateSessionDto>({
       query: (body) => ({
@@ -113,6 +131,7 @@ export const {
   useBookBySlotMutation,
   useCancelSessionMutation,
   useReportSessionMutation,
+  useSubmitSessionReportMutation,
   useRateSessionMutation,
   useBuySubscriptionMutation,
   useValidateAndPayMutation,

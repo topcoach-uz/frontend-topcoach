@@ -6,17 +6,14 @@ import {
   Users,
   CalendarClock,
   ClipboardList,
-  CheckSquare,
-  Flag,
+  Inbox,
   UserCircle2,
   ChevronLeft,
-  FlaskConical,
   Menu,
   Shield,
 } from 'lucide-react';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
-import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
@@ -25,9 +22,7 @@ type NavKey =
   | 'students'
   | 'sessions'
   | 'availability'
-  | 'tasks'
-  | 'milestones'
-  | 'research-grading'
+  | 'to-review'
   | 'profile'
   | 'admin-console'
   | 'admin-school-counselor'
@@ -78,54 +73,44 @@ export default function MentorConsoleLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isMobileConsole, mobileMenuOpen]);
 
-  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport, email } =
+  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
     useMentorConsole();
 
   const navGroups: NavGroup[] = useMemo(() => {
-    const researchGradingItem: NavItem = {
-      key: 'research-grading',
-      label: 'Research grading',
-      icon: <FlaskConical size={18} strokeWidth={1.75} />,
-      path: '/mentor/research-grading',
+    const sessionsItem: NavItem = {
+      key: 'sessions',
+      label: 'Sessions',
+      icon: <CalendarClock size={18} strokeWidth={1.75} />,
+      path: '/mentor/sessions',
+    };
+    const availabilityItem: NavItem = {
+      key: 'availability',
+      label: 'Availability',
+      icon: <ClipboardList size={18} strokeWidth={1.75} />,
+      path: '/mentor/availability',
     };
 
-    const mentorshipItems: NavItem[] = [
-      {
-        key: 'availability',
-        label: 'Availability',
-        icon: <ClipboardList size={18} strokeWidth={1.75} />,
-        path: '/mentor/availability',
-      },
-      {
-        key: 'sessions',
-        label: 'Sessions',
-        icon: <CalendarClock size={18} strokeWidth={1.75} />,
-        path: '/mentor/sessions',
-      },
-    ];
-    if (hasFullSupport) {
-      mentorshipItems.splice(1, 0, {
-        key: 'students',
-        label: 'Students',
-        icon: <Users size={18} strokeWidth={1.75} />,
-        path: '/mentor/students',
-      });
-      mentorshipItems.push(
-        {
-          key: 'tasks',
-          label: 'Tasks',
-          icon: <CheckSquare size={18} strokeWidth={1.75} />,
-          path: '/mentor/tasks',
-        },
-        {
-          key: 'milestones',
-          label: 'Milestones',
-          icon: <Flag size={18} strokeWidth={1.75} />,
-          path: '/mentor/milestones',
-        },
-        ...(canUseResearchPrepLive(email, managementRole) ? [researchGradingItem] : []),
-      );
-    }
+    // FS mentors get a student-centric console; Tasks / Milestones / Research
+    // grading are unified into the "To review" queue (per-student work lives in
+    // the student workspace).
+    const mentorshipItems: NavItem[] = hasFullSupport
+      ? [
+          availabilityItem,
+          {
+            key: 'students',
+            label: 'Students',
+            icon: <Users size={18} strokeWidth={1.75} />,
+            path: '/mentor/students',
+          },
+          sessionsItem,
+          {
+            key: 'to-review',
+            label: 'To review',
+            icon: <Inbox size={18} strokeWidth={1.75} />,
+            path: '/mentor/to-review',
+          },
+        ]
+      : [availabilityItem, sessionsItem];
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
 
@@ -178,7 +163,7 @@ export default function MentorConsoleLayout() {
     ];
 
     return groups;
-  }, [hasFullSupport, email, managementRole]);
+  }, [hasFullSupport, managementRole]);
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
@@ -186,9 +171,13 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/students')) return 'students';
     if (p.startsWith('/mentor/sessions')) return 'sessions';
     if (p.startsWith('/mentor/availability')) return 'availability';
-    if (p.startsWith('/mentor/tasks')) return 'tasks';
-    if (p.startsWith('/mentor/milestones')) return 'milestones';
-    if (p.startsWith('/mentor/research-grading')) return 'research-grading';
+    if (
+      p.startsWith('/mentor/to-review') ||
+      p.startsWith('/mentor/tasks') ||
+      p.startsWith('/mentor/milestones') ||
+      p.startsWith('/mentor/research-grading')
+    )
+      return 'to-review';
     if (p.startsWith('/mentor/profile')) return 'profile';
     if (p.startsWith('/new-admin') || p.startsWith('/admin')) return 'admin-console';
     return null;

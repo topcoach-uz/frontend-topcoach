@@ -69,10 +69,15 @@ export default function MentorConsoleProfilePage() {
 
   return (
     <div>
-      <h1 className="mc-page-title">Profile</h1>
-      <p className="mc-page-lead">
-        Your public mentor profile. This is what students see when browsing mentors.
-      </p>
+      <div className="mc-page-head mc-page-head--ruled">
+        <div className="mc-page-eyebrow">
+          Mentor <span className="mc-page-eyebrow-accent">· Account</span>
+        </div>
+        <h1 className="mc-page-title">Profile</h1>
+        <p className="mc-page-lead">
+          Your public mentor profile. This is what students see when browsing mentors.
+        </p>
+      </div>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={8}>

@@ -163,10 +163,10 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
       onClose={onClose}
       title={
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9ca3af', fontWeight: 700 }}>
+          <span style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9a8f7d', fontWeight: 700 }}>
             Week {submission.weekNumber} · {submission.weekTitle}
           </span>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#1f2937' }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: '#1c1a17' }}>
             {submission.studentName}
           </span>
         </div>
@@ -218,7 +218,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
           <div className="body">
             <strong>{submission.fileName}</strong>
             {submission.fileSizeBytes ? (
-              <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 8 }}>
+              <span style={{ color: '#9a8f7d', fontSize: 12, marginLeft: 8 }}>
                 {fmtBytes(submission.fileSizeBytes)}
               </span>
             ) : null}
@@ -246,7 +246,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
         <div className="rgd-section">
           <div className="head">
             <span>Previous feedback</span>
-            <span style={{ color: '#1f2937' }}>{submission.score} / 100</span>
+            <span style={{ color: '#1c1a17' }}>{submission.score} / 100</span>
           </div>
           <div className="body">{submission.feedbackMd}</div>
           {submission.graderFileName && submission.graderFileUrl && (
@@ -260,14 +260,14 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
                 {submission.graderFileName}
               </Button>
               {submission.graderFileSizeBytes ? (
-                <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 8 }}>
+                <span style={{ color: '#9a8f7d', fontSize: 12, marginLeft: 8 }}>
                   {fmtBytes(submission.graderFileSizeBytes)}
                 </span>
               ) : null}
             </div>
           )}
           {submission.gradedAt && (
-            <div className="body" style={{ paddingTop: 0, color: '#6b7280', fontSize: 11.5 }}>
+            <div className="body" style={{ paddingTop: 0, color: '#5b5347', fontSize: 11.5 }}>
               Graded {fmtDate(submission.gradedAt)}
               {submission.gradedByName ? ` by ${submission.gradedByName}` : ''}
             </div>
@@ -281,7 +281,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
           <span>{isGraded ? 'Re-grade (resubmissions)' : 'Write feedback'}</span>
           {isUnclaimed && (
             <Button size="small" type="primary" loading={claiming} onClick={handleClaim}
-                    style={{ background: '#8b0000', borderColor: '#8b0000' }}>
+                    style={{ background: '#7b1f2f', borderColor: '#7b1f2f' }}>
               Claim to grade
             </Button>
           )}
@@ -295,7 +295,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
             disabled={!canEdit && !isGraded}
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 12.5, color: '#6b7280' }}>Score</span>
+            <span style={{ fontSize: 12.5, color: '#5b5347' }}>Score</span>
             <InputNumber
               min={0}
               max={100}
@@ -311,7 +311,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
           </div>
           {(canEdit || isGraded) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span style={{ fontSize: 12.5, color: '#6b7280' }}>
+              <span style={{ fontSize: 12.5, color: '#5b5347' }}>
                 Optional graded copy (PDF / DOCX, max {MAX_GRADER_FILE_MB} MB)
               </span>
               <Upload {...uploadProps}>
@@ -329,7 +329,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
                 loading={grading}
                 onClick={() => handleGrade('mark-graded')}
                 disabled={!isClaimed && !isGraded}
-                style={{ background: '#8b0000', borderColor: '#8b0000' }}
+                style={{ background: '#7b1f2f', borderColor: '#7b1f2f' }}
               >
                 {isGraded ? 'Update grade' : 'Save & mark graded'}
               </Button>
@@ -342,7 +342,7 @@ const SubmissionDrawer: React.FC<SubmissionDrawerProps> = ({ open, submission, o
                 Return for revision
               </Button>
               {!isClaimed && !isGraded && (
-                <span style={{ fontSize: 12, color: '#9ca3af' }}>
+                <span style={{ fontSize: 12, color: '#9a8f7d' }}>
                   <RefreshCw size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
                   Claim first to enable grading.
                 </span>

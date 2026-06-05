@@ -6,6 +6,14 @@ import {
 } from 'src/app/services/fullSupportApi';
 import { useGetMySessionsQuery } from 'src/app/services/sessions';
 
+export type SessionReport = {
+  topicsCovered: string;
+  notes?: string;
+  homework?: string;
+  rating?: 'tough' | 'okay' | 'good' | 'great';
+  submittedAt: string;
+};
+
 export type MentorBooking = {
   id: string;
   source: 'platform' | 'full-support';
@@ -18,8 +26,17 @@ export type MentorBooking = {
   status: 'upcoming' | 'completed' | 'report-due' | 'cancelled';
   cancelReason?: string | null;
   joinUrl?: string | null;
+  /** Submitted post-session report (platform sessions); null while pending. */
+  report?: SessionReport | null;
   raw: SessionsSchema | SessionLogDto;
 };
+
+/**
+ * Session reports are required only for one-time platform sessions that END on
+ * or after this launch date — older sessions stay "completed" so the queue
+ * isn't flooded with historical backlog. Bump if the feature re-launches.
+ */
+export const SESSION_REPORT_LAUNCH = new Date('2026-06-06T00:00:00Z').getTime();
 
 function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
   label: string;
@@ -47,13 +64,17 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
   const joinUrl = calendar?.link ?? calendar?.hangoutLink ?? null;
 
   const isCancelled = !!(s.cancelStatus && (s.cancelStatus as { id?: string }).id);
+  const report = (s as unknown as { report?: SessionReport | null }).report ?? null;
   const end = new Date(s.date).getTime() + minutes * 60_000;
   const now = Date.now();
 
   let status: MentorBooking['status'];
   if (isCancelled) status = 'cancelled';
-  else if (end < now) status = 'completed';
-  else status = 'upcoming';
+  else if (end > now) status = 'upcoming';
+  else if (report) status = 'completed';
+  // Past + no report: needs one only if it ended after the feature launched.
+  else if (end < SESSION_REPORT_LAUNCH) status = 'completed';
+  else status = 'report-due';
 
   return {
     id: s.id,
@@ -68,6 +89,7 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
     cancelReason:
       (s.cancelStatus as { reason?: string } | undefined)?.reason ?? null,
     joinUrl,
+    report,
     raw: s,
   };
 }

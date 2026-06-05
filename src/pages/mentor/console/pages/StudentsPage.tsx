@@ -1,32 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Button, Card, Input, Spin, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Search } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   useGetMentorRosterQuery,
   type MentorRosterStudent,
 } from 'src/app/services/fullSupportApi';
-import StudentDetailDrawer from '../components/StudentDetailDrawer';
 import { avatarStyleForId, initialsFromName } from '../utils';
 
 const { Text } = Typography;
 
 export default function MentorConsoleStudentsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const preselectId = searchParams.get('student');
+  const navigate = useNavigate();
   const [q, setQ] = useState('');
-  const [selected, setSelected] = useState<MentorRosterStudent | null>(null);
 
   const { data, isLoading, isError } = useGetMentorRosterQuery();
   const rows = data?.data ?? [];
-
-  useEffect(() => {
-    if (preselectId && rows.length) {
-      const match = rows.find((r) => r.id === preselectId);
-      if (match) setSelected(match);
-    }
-  }, [preselectId, rows]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -76,12 +66,7 @@ export default function MentorConsoleStudentsPage() {
           size="small"
           type="primary"
           ghost
-          onClick={() => {
-            setSelected(row);
-            const next = new URLSearchParams(searchParams);
-            next.set('student', row.id);
-            setSearchParams(next, { replace: true });
-          }}
+          onClick={() => navigate(`/mentor/students/${row.id}`)}
           style={{
             borderColor: 'var(--mc-accent)',
             color: 'var(--mc-accent)',
@@ -95,11 +80,16 @@ export default function MentorConsoleStudentsPage() {
 
   return (
     <div>
-      <h1 className="mc-page-title">Students</h1>
-      <p className="mc-page-lead">
-        Your Full Support students. Open a student to manage tasks, sessions, essays, milestones,
-        and research grading in one workspace.
-      </p>
+      <div className="mc-page-head mc-page-head--ruled">
+        <div className="mc-page-eyebrow">
+          Mentor <span className="mc-page-eyebrow-accent">· Mentorship</span>
+        </div>
+        <h1 className="mc-page-title">Students</h1>
+        <p className="mc-page-lead">
+          Your Full Support students. Open a student to manage tasks, sessions, essays, milestones,
+          and research grading in one workspace.
+        </p>
+      </div>
 
       <Card bordered={false} className="mc-panel">
         <div style={{ marginBottom: 12 }}>
@@ -149,17 +139,6 @@ export default function MentorConsoleStudentsPage() {
           />
         )}
       </Card>
-
-      <StudentDetailDrawer
-        student={selected}
-        open={!!selected}
-        onClose={() => {
-          setSelected(null);
-          const next = new URLSearchParams(searchParams);
-          next.delete('student');
-          setSearchParams(next, { replace: true });
-        }}
-      />
     </div>
   );
 }

@@ -1,0 +1,152 @@
+/* Mentor dashboard — editorial "ledger" layout.
+   Semantic stat tiles, serif section heads, balanced two-column composition,
+   a touch of warm atmosphere. Built on the --mc-* editorial tokens. */
+
+.mc-dash {
+  position: relative;
+}
+
+/* Faint warm glow top-left so the canvas isn't a flat slab. */
+.mc-dash::before {
+  content: '';
+  position: absolute;
+  inset: -48px -48px auto -48px;
+  height: 340px;
+  background: radial-gradient(110% 90% at 12% 0%, rgba(123, 31, 47, 0.05), transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+}
+.mc-dash > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hero ─────────────────────────────────────────────── */
+.mc-dash-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--mc-hairline);
+}
+
+.mc-dash-date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 14px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-sm);
+  flex-shrink: 0;
+}
+.mc-dash-date-day {
+  font-family: var(--mc-serif);
+  font-size: 2.1rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--mc-accent);
+  letter-spacing: -0.02em;
+}
+.mc-dash-date-rest {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mc-text-muted);
+  line-height: 1.45;
+}
+@media (max-width: 700px) {
+  .mc-dash-date {
+    display: none;
+  }
+}
+
+/* ── Main composition ─────────────────────────────────── */
+.mc-dash-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.72fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start; /* columns don't stretch → no dead space */
+  margin-top: 8px;
+}
+@media (max-width: 992px) {
+  .mc-dash-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mc-dash-col,
+.mc-dash-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ── Panels (custom header so titles can be serif) ────── */
+.mc-panel2 {
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-sm);
+  padding: 18px 20px 20px;
+}
+
+.mc-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.mc-sec-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--mc-serif);
+  font-size: 1.18rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--mc-text);
+}
+.mc-sec-ico {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mc-accent-soft);
+  color: var(--mc-accent);
+}
+.mc-sec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mc-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  svg {
+    transition: transform 0.15s ease;
+  }
+  &:hover svg {
+    transform: translateX(2px);
+  }
+}
+
+.mc-dash-empty {
+  padding: 28px 8px;
+  text-align: center;
+  color: var(--mc-text-muted);
+  font-size: 14px;
+}

@@ -215,19 +215,54 @@ img.mentor-console-user-avatar--image {
   width: 100%;
 }
 
-/* Page primitives */
-.mc-page-title {
-  font-size: 26px;
+/* Page primitives — editorial magazine header */
+.mc-page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mc-text-muted);
+  margin: 0 0 10px;
+}
+
+.mc-page-eyebrow-accent {
+  color: var(--mc-accent);
+}
+
+.mc-page-title {
+  font-family: var(--mc-serif);
+  font-size: 2.1rem;
+  font-weight: 500;
   color: var(--mc-text);
-  margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  line-height: 1.16;
+
+  @media (max-width: 600px) {
+    font-size: 1.7rem;
+  }
 }
 
 .mc-page-lead {
-  color: var(--mc-text-muted);
-  font-size: 14px;
+  color: var(--mc-text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 640px;
   margin: 0 0 24px;
+}
+
+/* Hairline rule under the page header, magazine style. Opt-in via `--ruled`. */
+.mc-page-head--ruled {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mc-hairline);
+  margin-bottom: 24px;
+
+  .mc-page-lead {
+    margin-bottom: 0;
+  }
 }
 
 .mc-panel.ant-card {
@@ -297,11 +332,12 @@ img.mentor-console-user-avatar--image {
 }
 
 .mc-kpi-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-family: var(--mc-serif);
+  font-size: 2.2rem;
+  font-weight: 500;
   color: var(--mc-text);
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
 
@@ -309,6 +345,33 @@ img.mentor-console-user-avatar--image {
   font-size: 12px;
   color: var(--mc-text-muted);
   margin-top: 6px;
+}
+
+/* Click-through KPI tiles — become real shortcuts, not dead numbers. */
+.mc-kpi-card--clickable.ant-card {
+  cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+.mc-kpi-card--clickable.ant-card:hover {
+  border-color: var(--mc-accent-ring) !important;
+  box-shadow: var(--mc-shadow-md);
+  transform: translateY(-3px);
+}
+.mc-kpi-card--clickable .mc-kpi-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mc-accent);
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.mc-kpi-card--clickable:hover .mc-kpi-cta {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Pills */
@@ -367,16 +430,233 @@ img.mentor-console-user-avatar--image {
   color: var(--mc-text-muted);
 }
 
-/* Alert banner */
-.mc-alert-banner {
-  border: 1px solid var(--mc-danger-soft);
+/* Editorial stat tiles — shared by dashboard / sessions / to-review.
+   Compact: serif numeral, icon chip, semantic tone tint, hover CTA. */
+.mc-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.mc-stat-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 560px;
+}
+
+.mc-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 104px;
+  padding: 14px 16px 13px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius-sm);
+  box-shadow: var(--mc-shadow-sm);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.mc-stat--clickable {
+  cursor: pointer;
+}
+.mc-stat--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mc-shadow-md);
+  border-color: var(--mc-accent-ring);
+}
+.mc-stat--clickable:focus-visible {
+  outline: 2px solid var(--mc-accent);
+  outline-offset: 2px;
+}
+
+.mc-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mc-stat-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mc-text-muted);
+  line-height: 1.4;
+}
+.mc-stat-ico {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mc-accent-soft);
+  color: var(--mc-accent);
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+.mc-stat-value {
+  font-family: var(--mc-serif);
+  font-size: 1.85rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--mc-text);
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.mc-stat-meta {
+  font-size: 11.5px;
+  color: var(--mc-text-muted);
+  margin-top: 5px;
+}
+.mc-stat-cta {
+  margin-top: auto;
+  padding-top: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--mc-accent);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.mc-stat--clickable:hover .mc-stat-cta {
+  opacity: 1;
+  transform: none;
+}
+
+/* Tones — attention items tint warm; "all clear" stays calm. */
+.mc-stat--info .mc-stat-ico {
+  background: var(--mc-info-soft);
+  color: var(--mc-info);
+}
+.mc-stat--good .mc-stat-ico {
+  background: var(--mc-success-soft);
+  color: var(--mc-success);
+}
+.mc-stat--warn {
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.06), var(--mc-bg-surface) 72%);
+  border-color: rgba(180, 83, 9, 0.22);
+}
+.mc-stat--warn .mc-stat-ico {
+  background: var(--mc-warning-soft);
+  color: var(--mc-warning);
+}
+.mc-stat--warn .mc-stat-cta {
+  color: var(--mc-warning);
+}
+.mc-stat--alert {
+  background: linear-gradient(180deg, rgba(185, 28, 28, 0.07), var(--mc-bg-surface) 72%);
+  border-color: rgba(185, 28, 28, 0.24);
+}
+.mc-stat--alert .mc-stat-ico {
   background: var(--mc-danger-soft);
+  color: var(--mc-danger);
+}
+.mc-stat--alert .mc-stat-value {
+  color: var(--mc-danger);
+}
+.mc-stat--alert .mc-stat-cta {
+  color: var(--mc-danger);
+}
+
+/* Past platform session needing (or having) a report — editorial card */
+.mc-report-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
   border-radius: var(--mc-radius);
-  padding: 14px 18px;
+  box-shadow: var(--mc-shadow-sm);
+}
+.mc-report-card--due {
+  border-color: rgba(185, 28, 28, 0.26);
+  background: linear-gradient(180deg, rgba(185, 28, 28, 0.05), var(--mc-bg-surface) 72%);
+}
+.mc-report-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mc-report-card-when {
+  font-family: var(--mc-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--mc-text);
+}
+.mc-report-card-meta {
+  font-size: 12px;
+  color: var(--mc-text-muted);
+  margin-top: 3px;
+}
+
+/* Quick-action rows — editorial list in the dashboard side rail */
+.mc-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius-sm);
+  background: var(--mc-bg-subtle);
+  color: var(--mc-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+  svg {
+    color: var(--mc-text-muted);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  &:hover {
+    border-color: var(--mc-accent-ring);
+    color: var(--mc-accent);
+    background: var(--mc-accent-soft);
+
+    svg {
+      color: var(--mc-accent);
+      transform: translateX(2px);
+    }
+  }
+}
+
+/* Alert banner — editorial: cream surface, danger left accent rule */
+.mc-alert-banner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mc-border);
+  background: var(--mc-bg-surface);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-sm);
+  padding: 16px 18px 16px 22px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 14px;
+}
+.mc-alert-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--mc-danger);
 }
 
 .mc-alert-banner-body {

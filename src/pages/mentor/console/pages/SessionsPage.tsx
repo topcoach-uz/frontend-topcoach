@@ -17,8 +17,12 @@ import {
   message,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { Plus } from 'lucide-react';
+import { CalendarCheck, CalendarClock, CalendarX, FileText, Flag, Plus } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import type { SessionsSchema } from 'src/app/api/Api';
+import { McStat } from '../components/McStat';
+import { McPill } from '../components/McPill';
+import SessionReportModal from '../components/SessionReportModal';
 import {
   useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
@@ -28,15 +32,24 @@ import UpcomingCard from 'src/pages/home/_components/bookings/_components/upcami
 import FullSupportBookingCard from '../components/FullSupportBookingCard';
 import { useMentorBookings, type MentorBooking } from '../sessionSources';
 import { useMentorConsole } from '../MentorConsoleContext';
+import { formatDateTime } from '../utils';
 
 type Scope = 'upcoming' | 'past' | 'cancelled' | 'all';
 type SourceFilter = 'all' | 'platform' | 'full-support';
 
+const SCOPES: Scope[] = ['upcoming', 'past', 'cancelled', 'all'];
+
 export default function MentorConsoleSessionsPage() {
   const { hasFullSupport } = useMentorConsole();
-  const [scope, setScope] = useState<Scope>('upcoming');
+  const [searchParams] = useSearchParams();
+  // Honor a `?scope=past` deep-link (e.g. from the dashboard "Reports due" KPI).
+  const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
+    ? (searchParams.get('scope') as Scope)
+    : 'upcoming';
+  const [scope, setScope] = useState<Scope>(initialScope);
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [studentFilter, setStudentFilter] = useState<string | null>(null);
+  const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
 
   const [logOpen, setLogOpen] = useState(false);
   const [form] = Form.useForm<{
@@ -110,8 +123,39 @@ export default function MentorConsoleSessionsPage() {
       .catch(() => message.error('Failed to log'));
   };
 
+  const renderReportCard = (b: MentorBooking) => {
+    const due = b.status === 'report-due';
+    return (
+      <div key={b.id} className={`mc-report-card${due ? ' mc-report-card--due' : ''}`}>
+        <div className="mc-report-card-top">
+          <div style={{ minWidth: 0 }}>
+            <div className="mc-report-card-when">{formatDateTime(b.dateTime)}</div>
+            <div className="mc-report-card-meta">
+              {b.studentName || 'Student'}
+              {b.durationLabel ? ` · ${b.durationLabel}` : ''}
+            </div>
+          </div>
+          <McPill variant={due ? 'danger' : 'success'}>{due ? 'Report due' : 'Reported'}</McPill>
+        </div>
+        <Button
+          type={due ? 'primary' : 'default'}
+          block
+          icon={due ? <FileText size={15} /> : undefined}
+          onClick={() => setReportBooking(b)}
+          style={due ? undefined : { borderColor: 'var(--mc-border-strong)' }}
+        >
+          {due ? 'Write report' : 'View / edit report'}
+        </Button>
+      </div>
+    );
+  };
+
   const renderBookingCard = (b: MentorBooking) => {
     if (b.source === 'platform') {
+      // Past platform sessions surface the report flow instead of the booking card.
+      if (b.status === 'report-due' || (b.status === 'completed' && b.report)) {
+        return renderReportCard(b);
+      }
       const raw = b.raw as SessionsSchema;
       return (
         <UpcomingCard
@@ -139,41 +183,54 @@ export default function MentorConsoleSessionsPage() {
 
   return (
     <div>
-      <h1 className="mc-page-title">Sessions</h1>
-      <p className="mc-page-lead">
-        {hasFullSupport
-          ? 'All your sessions — platform bookings and Full Support entries, unified.'
-          : 'Upcoming and past sessions booked through your availability.'}
-      </p>
+      <div className="mc-page-head mc-page-head--ruled">
+        <div className="mc-page-eyebrow">
+          Mentor <span className="mc-page-eyebrow-accent">· Mentorship</span>
+        </div>
+        <h1 className="mc-page-title">Sessions</h1>
+        <p className="mc-page-lead">
+          {hasFullSupport
+            ? 'All your sessions — platform bookings and Full Support entries, unified.'
+            : 'Upcoming and past sessions booked through your availability.'}
+        </p>
+      </div>
 
-      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} className="mc-kpi-card mc-kpi-card--info">
-            <div className="mc-kpi-label">Upcoming</div>
-            <div className="mc-kpi-value">{counts.upcoming}</div>
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} className="mc-kpi-card mc-kpi-card--success">
-            <div className="mc-kpi-label">Past</div>
-            <div className="mc-kpi-value">{counts.past}</div>
-          </Card>
-        </Col>
+      <div className="mc-stat-grid">
+        <McStat
+          icon={<CalendarClock size={16} />}
+          label="Upcoming"
+          value={counts.upcoming}
+          tone="info"
+          cta="Show"
+          onClick={() => setScope('upcoming')}
+        />
+        <McStat
+          icon={<CalendarCheck size={16} />}
+          label="Past"
+          value={counts.past}
+          tone="good"
+          cta="Show"
+          onClick={() => setScope('past')}
+        />
         {hasFullSupport && (
-          <Col xs={12} sm={6}>
-            <Card bordered={false} className="mc-kpi-card mc-kpi-card--warning">
-              <div className="mc-kpi-label">Report due</div>
-              <div className="mc-kpi-value">{counts.reportDue}</div>
-            </Card>
-          </Col>
+          <McStat
+            icon={<Flag size={16} />}
+            label="Report due"
+            value={counts.reportDue}
+            tone={counts.reportDue > 0 ? 'alert' : 'good'}
+            cta="Show"
+            onClick={() => setScope('past')}
+          />
         )}
-        <Col xs={12} sm={6}>
-          <Card bordered={false} className="mc-kpi-card">
-            <div className="mc-kpi-label">Cancelled</div>
-            <div className="mc-kpi-value">{counts.cancelled}</div>
-          </Card>
-        </Col>
-      </Row>
+        <McStat
+          icon={<CalendarX size={16} />}
+          label="Cancelled"
+          value={counts.cancelled}
+          tone="neutral"
+          cta="Show"
+          onClick={() => setScope('cancelled')}
+        />
+      </div>
 
       <Card bordered={false} className="mc-panel">
         <Row gutter={[12, 12]} align="middle" style={{ marginBottom: 16 }}>
@@ -308,6 +365,12 @@ export default function MentorConsoleSessionsPage() {
           </Form.Item>
         </Form>
       </Modal>
+
+      <SessionReportModal
+        booking={reportBooking}
+        open={!!reportBooking}
+        onClose={() => setReportBooking(null)}
+      />
     </div>
   );
 }
