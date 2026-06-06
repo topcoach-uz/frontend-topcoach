@@ -19,16 +19,15 @@ import {
 import dayjs, { Dayjs } from 'dayjs';
 import { CalendarCheck, CalendarClock, CalendarX, FileText, Flag, Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import type { SessionsSchema } from 'src/app/api/Api';
 import { McStat } from '../components/McStat';
 import { McPill } from '../components/McPill';
 import SessionReportModal from '../components/SessionReportModal';
+import MentorNextSessionCard from '../components/MentorNextSessionCard';
 import {
   useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
-import UpcomingCard from 'src/pages/home/_components/bookings/_components/upcamingcards';
 import FullSupportBookingCard from '../components/FullSupportBookingCard';
 import { useMentorBookings, type MentorBooking } from '../sessionSources';
 import { useMentorConsole } from '../MentorConsoleContext';
@@ -152,23 +151,13 @@ export default function MentorConsoleSessionsPage() {
 
   const renderBookingCard = (b: MentorBooking) => {
     if (b.source === 'platform') {
-      // Past platform sessions surface the report flow instead of the booking card.
+      // Sessions that need a report (or already have one) use the report card.
       if (b.status === 'report-due' || (b.status === 'completed' && b.report)) {
         return renderReportCard(b);
       }
-      const raw = b.raw as SessionsSchema;
-      return (
-        <UpcomingCard
-          key={b.id}
-          {...raw}
-          duration={b.durationMinutes}
-          cancelCheck={b.status === 'upcoming'}
-          reportCheck={false}
-          detailCheck={false}
-          rateCheck={false}
-          dropdownVisible={b.status === 'upcoming'}
-        />
-      );
+      // Everything else — upcoming, completed (legacy), cancelled — uses the
+      // single editorial session card, which adapts its content per status.
+      return <MentorNextSessionCard key={b.id} booking={b} />;
     }
     const fsRaw = b.raw as SessionLogDto;
     return (

@@ -79,6 +79,22 @@
   }
 }
 
+/* Non-FS: Next up + Quick actions are the only two panels — stretch them to
+   equal height so the Quick-actions card matches the (taller) Next-up card. */
+.mc-dash-main--even {
+  align-items: stretch;
+}
+.mc-dash-main--even .mc-dash-col > .mc-panel2,
+.mc-dash-main--even .mc-dash-rail > .mc-panel2 {
+  height: 100%;
+}
+@media (max-width: 992px) {
+  .mc-dash-main--even .mc-dash-col > .mc-panel2,
+  .mc-dash-main--even .mc-dash-rail > .mc-panel2 {
+    height: auto;
+  }
+}
+
 .mc-dash-col,
 .mc-dash-rail {
   display: flex;

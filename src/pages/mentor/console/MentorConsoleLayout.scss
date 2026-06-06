@@ -440,7 +440,21 @@ img.mentor-console-user-avatar--image {
 }
 .mc-stat-grid--2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 560px;
+  max-width: 520px;
+}
+/* Non-FS dashboard tiles — a touch more compact + refined. */
+.mc-stat-grid--2 .mc-stat {
+  min-height: 94px;
+  padding: 13px 16px 12px;
+}
+.mc-stat-grid--2 .mc-stat-value {
+  font-size: 1.7rem;
+  margin-top: 7px;
+}
+.mc-stat-grid--2 .mc-stat-ico {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
 }
 
 .mc-stat {
@@ -565,6 +579,41 @@ img.mentor-console-user-avatar--image {
 }
 .mc-stat--alert .mc-stat-cta {
   color: var(--mc-danger);
+}
+
+/* Status tiles (Availability / Profile) — same chrome as numeric stats but a
+   text headline + an always-visible action link instead of a hover CTA. */
+.mc-stat-headline {
+  font-family: var(--mc-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: var(--mc-text);
+  margin-top: 10px;
+}
+.mc-stat--alert .mc-stat-headline {
+  color: var(--mc-danger);
+}
+.mc-stat-link {
+  margin-top: auto;
+  padding-top: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mc-accent);
+
+  svg {
+    transition: transform 0.15s ease;
+  }
+}
+.mc-stat--alert .mc-stat-link {
+  color: var(--mc-danger);
+}
+.mc-stat--clickable:hover .mc-stat-link svg {
+  transform: translateX(2px);
 }
 
 /* Past platform session needing (or having) a report — editorial card */

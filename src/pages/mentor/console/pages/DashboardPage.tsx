@@ -1,42 +1,35 @@
 import { useMemo, type ReactNode } from 'react';
-import { Button, Card, Col, Row, Space, Spin, Typography } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
+import { Button, Col, Row, Space, Spin, Typography } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
   CalendarClock,
   CalendarPlus,
   CheckCircle2,
   CheckSquare,
   ClipboardList,
-  Eye,
-  EyeOff,
-  ExternalLink,
   Flag,
   Star,
   Users,
   ArrowRight,
 } from 'lucide-react';
-import type { SessionsSchema } from 'src/app/api/Api';
 import {
   useGetMentorPipelineQuery,
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
-  type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
-import UpcomingCard from 'src/pages/home/_components/bookings/_components/upcamingcards';
-import FullSupportBookingCard from '../components/FullSupportBookingCard';
-import { McPill } from '../components/McPill';
+import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
+import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
+import MentorNextSessionCard from '../components/MentorNextSessionCard';
 import { McStat } from '../components/McStat';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { formatRelative } from '../utils';
-import { useMentorBookings, type MentorBooking } from '../sessionSources';
+import { useMentorBookings } from '../sessionSources';
 import AdmissionsProgramProgressCard from 'src/pages/student-hub/components/AdmissionsProgramProgressCard';
 import './DashboardPage.scss';
 
-const { Paragraph, Text } = Typography;
-
-type MentorProfileShape = { visibleOnMentorsPage?: boolean | null } | null | undefined;
+const { Paragraph } = Typography;
 
 // Only flag recent sessions — stale 60-day-old entries just create noise.
 const PENDING_REPORT_WINDOW_DAYS = 14;
@@ -82,9 +75,19 @@ export default function MentorConsoleDashboardPage() {
   });
   const hasAvailability = (availabilityRes?.slots?.length ?? 0) > 0;
   const availabilityDays = availabilityRes?.slots?.length ?? 0;
-  const mentorProfile = (me as { mentorProfile?: MentorProfileShape } | undefined)?.mentorProfile;
-  const visibleOnMentors = !!mentorProfile?.visibleOnMentorsPage;
   const rating = Number(me?.profile?.overallRating ?? 0);
+
+  // "Your Learning Progress" (mentor-as-learner) only belongs to mentors who
+  // genuinely have Community access — same rule as JourneyExperienceContext.
+  // This deliberately ignores the SuperAdmin/Owner research-prep bypass, so a
+  // staff account that revoked its Community access no longer sees the card.
+  const { data: subscription } = useGetCurrentSubscriptionQuery();
+  const { data: rawPrefs } = useGetUserPreferencesQuery();
+  const prefs = ((rawPrefs as any)?.data ?? rawPrefs ?? null) as any;
+  const mentorHasCommunity =
+    prefs?.applicationSettings?.communityExperienceMode === 'community' ||
+    subscription?.status === 'active' ||
+    subscription?.status === 'trialing';
 
   const { data: rosterRes, isLoading: loadingRoster } = useGetMentorRosterQuery(undefined, {
     skip: !hasFullSupport,
@@ -161,32 +164,6 @@ export default function MentorConsoleDashboardPage() {
     );
   }
 
-  const renderUpcomingCard = (b: MentorBooking) => {
-    if (b.source === 'platform') {
-      const raw = b.raw as SessionsSchema;
-      return (
-        <UpcomingCard
-          key={b.id}
-          {...raw}
-          duration={b.durationMinutes}
-          cancelCheck
-          reportCheck={false}
-          detailCheck={false}
-          rateCheck={false}
-          dropdownVisible
-        />
-      );
-    }
-    return (
-      <FullSupportBookingCard
-        key={b.id}
-        session={b.raw as SessionLogDto}
-        studentName={b.studentName}
-        status={b.status}
-      />
-    );
-  };
-
   const today = new Date();
   const quickActions = [
     { label: 'Update availability', to: '/mentor/availability' },
@@ -246,145 +223,125 @@ export default function MentorConsoleDashboardPage() {
         </div>
       )}
 
-      <div className={`mc-stat-grid ${hasFullSupport ? '' : 'mc-stat-grid--2'}`}>
-        {hasFullSupport ? (
-          <>
-            <McStat
-              icon={<Users size={18} />}
-              label="Active students"
-              value={kpis.activeStudents}
-              meta="On Full Support"
-              tone="info"
-              onClick={() => navigate('/mentor/students')}
-            />
-            <McStat
-              icon={<CalendarClock size={18} />}
-              label="Sessions this month"
-              value={kpis.sessionsThisMonth}
-              meta={`${kpis.completedThisMonth} completed`}
-              tone="neutral"
-              onClick={() => navigate('/mentor/sessions')}
-            />
-            <McStat
-              icon={<Flag size={18} />}
-              label="Reports due"
-              value={kpis.reportDue}
-              meta={kpis.reportDue > 0 ? 'Past sessions to close out' : 'All caught up'}
-              tone={kpis.reportDue > 0 ? 'alert' : 'good'}
-              onClick={() => navigate('/mentor/sessions?scope=past')}
-            />
-            <McStat
-              icon={<CheckSquare size={18} />}
-              label="Open tasks"
-              value={kpis.openTasks}
-              meta={kpis.openTasks > 0 ? 'Awaiting your feedback' : 'All caught up'}
-              tone={kpis.openTasks > 0 ? 'warn' : 'good'}
-              onClick={() => navigate('/mentor/to-review')}
-            />
-          </>
-        ) : (
-          <>
-            <McStat
-              icon={<CalendarClock size={18} />}
-              label="Upcoming sessions"
-              value={kpis.upcoming}
-              meta="Booked by students"
-              tone="info"
-              onClick={() => navigate('/mentor/sessions')}
-            />
-            <McStat
-              icon={<Flag size={18} />}
-              label="Reports due"
-              value={kpis.reportDue}
-              meta={kpis.reportDue > 0 ? 'Past sessions to close out' : 'All caught up'}
-              tone={kpis.reportDue > 0 ? 'alert' : 'good'}
-              onClick={() => navigate('/mentor/sessions?scope=past')}
-            />
-          </>
-        )}
-      </div>
+      {hasFullSupport ? (
+        <div className="mc-stat-grid">
+          <McStat
+            icon={<Users size={18} />}
+            label="Active students"
+            value={kpis.activeStudents}
+            meta="On Full Support"
+            tone="info"
+            onClick={() => navigate('/mentor/students')}
+          />
+          <McStat
+            icon={<CalendarClock size={18} />}
+            label="Sessions this month"
+            value={kpis.sessionsThisMonth}
+            meta={`${kpis.completedThisMonth} completed`}
+            tone="neutral"
+            onClick={() => navigate('/mentor/sessions')}
+          />
+          <McStat
+            icon={<Flag size={18} />}
+            label="Reports due"
+            value={kpis.reportDue}
+            meta={kpis.reportDue > 0 ? 'Past sessions to close out' : 'All caught up'}
+            tone={kpis.reportDue > 0 ? 'alert' : 'good'}
+            onClick={() => navigate('/mentor/sessions?scope=past')}
+          />
+          <McStat
+            icon={<CheckSquare size={18} />}
+            label="Open tasks"
+            value={kpis.openTasks}
+            meta={kpis.openTasks > 0 ? 'Awaiting your feedback' : 'All caught up'}
+            tone={kpis.openTasks > 0 ? 'warn' : 'good'}
+            onClick={() => navigate('/mentor/to-review')}
+          />
+        </div>
+      ) : (
+        // Non-FS mentor: a single full-width row of four equal tiles —
+        // Upcoming · Reports · Availability · Profile — so nothing floats in
+        // dead space. Availability + Profile are status tiles (same chrome,
+        // text headline + always-visible action) rather than separate cards.
+        <div className="mc-stat-grid">
+          <McStat
+            icon={<CalendarClock size={18} />}
+            label="Upcoming sessions"
+            value={kpis.upcoming}
+            meta="Booked by students"
+            tone="info"
+            onClick={() => navigate('/mentor/sessions')}
+          />
+          <McStat
+            icon={<Flag size={18} />}
+            label="Reports due"
+            value={kpis.reportDue}
+            meta={kpis.reportDue > 0 ? 'Past sessions to close out' : 'All caught up'}
+            tone={kpis.reportDue > 0 ? 'alert' : 'good'}
+            onClick={() => navigate('/mentor/sessions?scope=past')}
+          />
 
-      {!hasFullSupport && (
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} md={12}>
-            <Card bordered={false} className="mc-panel">
-              <div className="mc-page-eyebrow" style={{ marginBottom: 8 }}>
-                <CalendarPlus size={13} /> Availability
-              </div>
-              {hasAvailability ? (
-                <>
-                  <div style={{ fontWeight: 600, color: 'var(--mc-text)', fontSize: 15 }}>
-                    You&apos;re bookable
-                  </div>
-                  <Text style={{ color: 'var(--mc-text-secondary)', fontSize: 13 }}>
-                    Weekly hours set on {availabilityDays} day{availabilityDays === 1 ? '' : 's'}.
-                    Students see slots in their own timezone.
-                  </Text>
-                  <div style={{ marginTop: 12 }}>
-                    <Button onClick={() => navigate('/mentor/availability')}>Edit hours</Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontWeight: 600, color: 'var(--mc-danger)', fontSize: 15 }}>
-                    Students can&apos;t book you yet
-                  </div>
-                  <Text style={{ color: 'var(--mc-text-secondary)', fontSize: 13 }}>
-                    Set your weekly hours so students can schedule sessions with you.
-                  </Text>
-                  <div style={{ marginTop: 12 }}>
-                    <Button type="primary" onClick={() => navigate('/mentor/availability')}>
-                      Set availability
-                    </Button>
-                  </div>
-                </>
-              )}
-            </Card>
-          </Col>
-          <Col xs={24} md={12}>
-            <Card bordered={false} className="mc-panel">
-              <div className="mc-page-eyebrow" style={{ marginBottom: 8 }}>
-                {visibleOnMentors ? <Eye size={13} /> : <EyeOff size={13} />} Your profile
-              </div>
-              <Space size={8} wrap style={{ marginBottom: 10 }}>
-                <McPill variant={visibleOnMentors ? 'success' : 'neutral'}>
-                  {visibleOnMentors ? 'Live on Mentors page' : 'Hidden from Mentors page'}
-                </McPill>
-                <McPill variant={rating > 0 ? 'warning' : 'neutral'}>
-                  <Star size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
-                  {rating > 0 ? rating.toFixed(1) : 'No ratings yet'}
-                </McPill>
-              </Space>
-              <Text style={{ display: 'block', color: 'var(--mc-text-secondary)', fontSize: 13 }}>
-                {visibleOnMentors
-                  ? 'Students can find and book you from the Mentors page.'
-                  : 'Complete your profile to appear on the Mentors page.'}
-              </Text>
-              <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
-                <Button onClick={() => navigate('/mentor/profile')}>Edit profile</Button>
-                {mentorId && (
-                  <Link
-                    to={`/mentors/${mentorId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      color: 'var(--mc-accent)',
-                      fontSize: 13,
-                    }}
-                  >
-                    <ExternalLink size={14} /> Public page
-                  </Link>
-                )}
-              </div>
-            </Card>
-          </Col>
-        </Row>
+          <div
+            className={`mc-stat mc-stat--clickable${hasAvailability ? '' : ' mc-stat--alert'}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/mentor/availability')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate('/mentor/availability');
+              }
+            }}
+          >
+            <div className="mc-stat-top">
+              <div className="mc-stat-label">Availability</div>
+              <span className="mc-stat-ico">
+                <CalendarPlus size={15} />
+              </span>
+            </div>
+            <div className="mc-stat-headline">{hasAvailability ? 'Bookable' : 'Not set'}</div>
+            <div className="mc-stat-meta">
+              {hasAvailability
+                ? `${availabilityDays} day${availabilityDays === 1 ? '' : 's'} a week`
+                : 'Students can’t book you yet'}
+            </div>
+            <span className="mc-stat-link">
+              {hasAvailability ? 'Edit hours' : 'Set availability'} <ArrowRight size={12} />
+            </span>
+          </div>
+
+          <div
+            className="mc-stat mc-stat--clickable"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/mentor/profile')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate('/mentor/profile');
+              }
+            }}
+          >
+            <div className="mc-stat-top">
+              <div className="mc-stat-label">Your profile</div>
+              <span className="mc-stat-ico">
+                <Star size={15} />
+              </span>
+            </div>
+            <div className="mc-stat-headline">
+              {rating > 0 ? `★ ${rating.toFixed(1)}` : 'New'}
+            </div>
+            <div className="mc-stat-meta">
+              {rating > 0 ? 'Avg student rating' : 'No ratings yet'}
+            </div>
+            <span className="mc-stat-link">
+              Edit profile <ArrowRight size={12} />
+            </span>
+          </div>
+        </div>
       )}
 
-      <div className="mc-dash-main">
+      <div className={`mc-dash-main ${hasFullSupport ? '' : 'mc-dash-main--even'}`}>
         <div className="mc-dash-col">
           <Panel
             icon={<CalendarClock size={17} />}
@@ -397,14 +354,16 @@ export default function MentorConsoleDashboardPage() {
               <Row gutter={[14, 14]} className="mc-booking-grid">
                 {upcomingBookings.map((b) => (
                   <Col key={b.id} xs={24} xl={12}>
-                    {renderUpcomingCard(b)}
+                    <MentorNextSessionCard booking={b} />
                   </Col>
                 ))}
               </Row>
             )}
           </Panel>
 
-          <AdmissionsProgramProgressCard forContext="mentor" wrapWithMentorPanel />
+          {mentorHasCommunity && (
+            <AdmissionsProgramProgressCard forContext="mentor" wrapWithMentorPanel />
+          )}
         </div>
 
         <div className="mc-dash-rail">
