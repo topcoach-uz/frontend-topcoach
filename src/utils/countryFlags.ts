@@ -23,6 +23,7 @@ export const universityCountryFlags: Record<string, string> = {
   'University of Southampton': '🇬🇧',
   'University of Nottingham': '🇬🇧',
   'Lincoln University' : '🇬🇧',
+  'University of Michigan-Ann Arbor': '🇺🇸',
 
   // German Universities
   'Berlin School of Economics and Law': '🇩🇪',
@@ -117,6 +118,7 @@ export const universityCountryFlags: Record<string, string> = {
   'Yonsei University': '🇰🇷',
   'Korea University': '🇰🇷',
   'Chonnam National University': '🇰🇷',
+  'Ulsan National Institute of Science & Technology': '🇰🇷',
   
   // European Universities
   'ETH Zurich': '🇨🇭',
