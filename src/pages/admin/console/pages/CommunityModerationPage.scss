@@ -1,0 +1,838 @@
+/* Community Moderation — admin console page styles.
+   Class prefix: `cm`. Dark theme tokens from admin-console-tokens.scss. */
+
+/* Small avatar variant — used in report cards, modal, activity timeline. */
+.ac-avatar--sm {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+.cm-page {
+  &-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &-head-actions {
+    display: inline-flex;
+    gap: 8px;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+}
+
+.cm-kpi-row { margin-bottom: 24px; }
+
+/* ── tabs ────────────────────────────────────────────────── */
+
+.cm-tabs {
+  .ant-tabs-tab {
+    padding: 10px 4px;
+  }
+  .ant-tabs-nav { margin-bottom: 18px; }
+}
+
+.cm-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.cm-tab-count {
+  background: rgba(248, 113, 113, 0.16);
+  color: #fda4af;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  line-height: 1.4;
+}
+
+.cm-tab-body { display: flex; flex-direction: column; }
+
+/* ── reports queue ──────────────────────────────────────── */
+
+.cm-sub-pills {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.cm-sub-pill {
+  appearance: none;
+  background: var(--ac-bg-surface);
+  border: 1px solid var(--ac-border);
+  color: var(--ac-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+
+  &:hover { color: var(--ac-text); border-color: var(--ac-border-strong); }
+
+  &--on {
+    background: var(--ac-text);
+    color: var(--ac-bg-deep);
+    border-color: var(--ac-text);
+  }
+}
+
+.cm-sub-pill-count {
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.cm-sub-pill--on .cm-sub-pill-count {
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--ac-bg-deep);
+}
+
+.cm-report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cm-report-card.ant-card {
+  background: var(--ac-bg-surface);
+  border: 1px solid var(--ac-border);
+  border-radius: 12px;
+  .ant-card-body { padding: 18px 20px; }
+}
+
+.cm-report-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.cm-report-reason {
+  color: #fda4af;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cm-report-target {
+  color: var(--ac-text-muted);
+  font-size: 13px;
+}
+
+.cm-report-head-right {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cm-report-flagcount {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #fda4af;
+  background: rgba(248, 113, 113, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cm-report-time {
+  color: var(--ac-text-muted);
+  font-size: 12px;
+}
+
+.cm-report-target-card {
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.cm-report-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.cm-report-author-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cm-report-author-name {
+  color: var(--ac-text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cm-report-author-handle {
+  color: var(--ac-text-muted);
+  font-size: 12px;
+}
+
+.cm-report-body {
+  color: var(--ac-text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.cm-report-quote {
+  background: rgba(252, 211, 77, 0.08);
+  border-left: 2px solid rgba(252, 211, 77, 0.55);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--ac-text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+
+  > svg { margin-top: 3px; color: rgba(252, 211, 77, 0.85); }
+}
+
+.cm-report-quote-text { color: var(--ac-text); }
+
+.cm-report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.cm-report-reporter {
+  color: var(--ac-text-muted);
+  font-size: 13px;
+  strong { color: var(--ac-text); font-weight: 600; }
+}
+
+.cm-report-actions-right {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cm-empty.ant-card {
+  background: var(--ac-bg-surface);
+  border: 1px dashed var(--ac-border-strong);
+  border-radius: 12px;
+  .ant-card-body { padding: 28px; display: flex; align-items: center; gap: 14px; }
+}
+.cm-empty-icon { color: #34d399; }
+.cm-empty-title { color: var(--ac-text); font-weight: 600; }
+.cm-empty-sub { color: var(--ac-text-muted); font-size: 13px; }
+
+/* ── all posts ──────────────────────────────────────────── */
+
+.cm-posts-panel.ant-card .ant-card-body { padding: 4px 0 0; }
+
+.cm-posts-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--ac-border);
+}
+
+.cm-post-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cm-post-cell-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cm-pin-icon { color: #fda4af; }
+
+.cm-post-cell-date {
+  color: var(--ac-text-muted);
+  font-size: 12px;
+}
+
+.cm-post-cell-body {
+  color: var(--ac-text-secondary);
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 480px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--deleted {
+    text-decoration: line-through;
+    color: var(--ac-text-muted);
+  }
+}
+
+.cm-flag-count {
+  color: #fda4af;
+  font-weight: 700;
+}
+
+.cm-dim { color: var(--ac-text-muted); }
+
+.cm-row-more {
+  color: var(--ac-text-muted);
+  font-size: 16px;
+}
+
+/* ── user activity ──────────────────────────────────────── */
+
+.cm-user-card.ant-card {
+  background: var(--ac-bg-surface);
+  border: 1px solid var(--ac-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  .ant-card-body { padding: 16px; }
+}
+
+.cm-user-list-label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: var(--ac-text-muted);
+  margin-bottom: 12px;
+}
+
+.cm-user-list { display: flex; flex-direction: column; gap: 4px; }
+
+.cm-user-list-item {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  color: var(--ac-text);
+
+  &:hover { background: var(--ac-bg-elevated); }
+  &--on { background: var(--ac-bg-elevated); }
+}
+
+.cm-user-list-item-main { flex: 1; min-width: 0; }
+.cm-user-list-item-name { font-size: 13.5px; font-weight: 600; }
+.cm-user-list-item-meta { font-size: 12px; color: var(--ac-text-muted); }
+
+.cm-user-list-empty {
+  color: var(--ac-text-muted);
+  font-size: 13px;
+  padding: 18px 14px;
+  text-align: center;
+  border: 1px dashed var(--ac-border);
+  border-radius: 10px;
+  background: var(--ac-bg-deep);
+}
+
+.cm-user-profile-card.ant-card .ant-card-body {
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative; /* anchor for the ⋯ menu button */
+}
+
+/* Quiet ⋯ button — top-right corner of the contributor profile card. */
+.cm-user-profile-menu-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--ac-text-muted);
+  &:hover { color: var(--ac-text); background: var(--ac-bg-deep); }
+}
+
+.cm-user-profile-name {
+  margin-top: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ac-text);
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+}
+
+.cm-user-profile-handle {
+  color: var(--ac-text-muted);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.cm-user-profile-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 4px;
+
+  > div {
+    background: var(--ac-bg-deep);
+    border: 1px solid var(--ac-border);
+    border-radius: 8px;
+    padding: 10px 6px;
+  }
+}
+
+.cm-user-profile-stat-value {
+  color: #fda4af;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+}
+
+.cm-user-profile-stat-label {
+  color: var(--ac-text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.cm-user-profile-meta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ac-text-muted);
+  border-top: 1px solid var(--ac-border);
+  padding-top: 14px;
+  margin-bottom: 16px;
+}
+
+.cm-user-profile-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  span:last-child { color: var(--ac-text); font-weight: 500; }
+}
+
+/* Stat values: the "flag count" was always painted with the danger
+   pink because the card used to be a "flagged user" card. With the
+   broader contributors model, paint the number neutral and let the
+   adjacent label do the work. */
+.cm-user-profile-stat-value { color: var(--ac-text); }
+
+/* timeline */
+.cm-activity-panel.ant-card .ant-card-body { padding: 18px 20px; }
+
+.cm-activity-head { margin-bottom: 14px; }
+
+.cm-activity-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: var(--ac-text-muted);
+  font-weight: 600;
+}
+
+.cm-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cm-activity-item {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--ac-border);
+  &:last-child { border-bottom: 0; }
+}
+
+.cm-activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ac-text-muted);
+}
+
+.cm-activity-main { min-width: 0; }
+
+.cm-activity-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.cm-activity-kind {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ac-text-muted);
+}
+
+.cm-activity-time { font-size: 12px; color: var(--ac-text-muted); }
+
+.cm-activity-body {
+  color: var(--ac-text-secondary);
+  font-size: 13.5px;
+  line-height: 1.5;
+
+  &--hidden {
+    color: var(--ac-text-muted);
+    font-style: italic;
+  }
+}
+
+.cm-activity-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── resolve modal ──────────────────────────────────────── */
+
+.cm-resolve-modal .ant-modal-content {
+  background: var(--ac-bg-surface);
+  border: 1px solid var(--ac-border);
+  border-radius: 14px;
+  padding: 26px 26px 18px;
+}
+.cm-resolve-modal .ant-modal-close { color: var(--ac-text-muted); top: 18px; right: 18px; }
+
+.cm-resolve-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ac-text-muted);
+  margin-bottom: 6px;
+}
+
+.cm-resolve-title {
+  font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ac-text);
+  margin: 0 0 16px;
+}
+
+.cm-resolve-target {
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.cm-resolve-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.cm-resolve-author-name { color: var(--ac-text); font-weight: 600; font-size: 13.5px; }
+.cm-resolve-author-handle { color: var(--ac-text-muted); font-size: 12.5px; }
+
+.cm-resolve-quote {
+  color: var(--ac-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.cm-resolve-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cm-resolve-meta-cell {
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.cm-resolve-meta-cell--reason {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.22);
+  .cm-resolve-meta-label { color: #fda4af; }
+}
+
+.cm-resolve-meta-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ac-text-muted);
+  margin-bottom: 4px;
+}
+
+.cm-resolve-meta-value { color: var(--ac-text); font-weight: 600; font-size: 13px; }
+
+.cm-resolve-reporter-note {
+  background: rgba(252, 211, 77, 0.07);
+  border-left: 2px solid rgba(252, 211, 77, 0.55);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--ac-text-secondary);
+  margin-bottom: 16px;
+
+  strong { color: var(--ac-text); }
+}
+
+.cm-resolve-action-label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ac-text-muted);
+  margin-bottom: 8px;
+}
+
+.cm-resolve-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cm-resolve-action {
+  appearance: none;
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+  color: var(--ac-text);
+
+  &:hover { border-color: var(--ac-border-strong); }
+
+  &--on {
+    border-color: var(--ac-text);
+    background: var(--ac-bg-elevated);
+  }
+  &--hide.cm-resolve-action--on {
+    border-color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+  }
+}
+
+.cm-resolve-action-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.cm-resolve-action-sub {
+  color: var(--ac-text-muted);
+  font-size: 12px;
+}
+
+.cm-resolve-note { margin-bottom: 14px; }
+
+.cm-resolve-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.cm-resolve-audit {
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: var(--ac-text-muted);
+  font-size: 11.5px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.cm-resolve-footer-actions { display: inline-flex; gap: 8px; }
+
+/* ── Contributor list flag tag (User activity sidebar) ──────────── */
+.cm-user-list-item-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #b8403c;
+  background: rgba(184, 64, 60, 0.12);
+  border: 1px solid rgba(184, 64, 60, 0.3);
+}
+
+/* ── Post detail modal (opened from "All posts" row click) ───── */
+/* Mirrors the resolve modal's dark theme — both used to render white because
+   the AntD modal-content/body defaults to white inside a Card-skinned page. */
+.cm-post-modal {
+  .ant-modal-content {
+    background: var(--ac-bg-surface);
+    border: 1px solid var(--ac-border);
+    border-radius: 14px;
+    padding: 22px 24px 18px;
+    color: var(--ac-text);
+  }
+  .ant-modal-body { background: transparent; color: var(--ac-text); }
+  .ant-modal-close { color: var(--ac-text-muted); top: 18px; right: 18px; }
+  .ant-modal-close:hover { color: var(--ac-text); }
+}
+.cm-post-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-right: 32px; /* leave room for the close X */
+}
+.cm-post-modal-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 40px;
+  height: 40px;
+}
+.cm-post-modal-author { flex: 1; min-width: 0; }
+.cm-post-modal-author-name {
+  font-weight: 600;
+  color: var(--ac-text);
+}
+.cm-post-modal-author-meta {
+  font-size: 12px;
+  color: var(--ac-text-muted);
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cm-post-modal-body {
+  color: var(--ac-text);
+  font-size: 14px;
+  line-height: 1.55;
+  p { margin: 0 0 8px; }
+  p:last-child { margin-bottom: 0; }
+}
+.cm-post-modal-media {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px;
+  margin: 12px 0 0;
+  a {
+    display: block;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--ac-border);
+    background: var(--ac-bg-deep);
+    aspect-ratio: 4 / 3;
+  }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+.cm-post-modal-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 16px 0 14px;
+  padding: 12px 14px;
+  background: var(--ac-bg-deep);
+  border: 1px solid var(--ac-border);
+  border-radius: 10px;
+  color: var(--ac-text-muted);
+  font-size: 12.5px;
+}
+.cm-post-modal-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cm-post-modal-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  &--warn {
+    background: rgba(214, 158, 46, 0.12);
+    color: #e0a93e;
+    border: 1px solid rgba(214, 158, 46, 0.3);
+  }
+}
+.cm-post-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ac-border);
+}
+.cm-post-modal-permalink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ac-text-muted);
+  &:hover { color: var(--ac-text); }
+}
+.cm-post-modal-footer-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+/* Make table rows visibly clickable. */
+.cm-posts-table .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}

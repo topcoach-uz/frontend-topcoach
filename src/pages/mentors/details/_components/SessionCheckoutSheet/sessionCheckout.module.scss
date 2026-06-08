@@ -1,0 +1,76 @@
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.summaryLabel {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.amount {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  margin: 0;
+
+  :global(.ant-radio) {
+    align-self: center;
+  }
+}
+
+.cardBrand {
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.cardDigits {
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.defaultPill {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 0.75;
+}
+
+.payBtn {
+  margin-top: 4px;
+}
+
+.errorBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}

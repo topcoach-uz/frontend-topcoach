@@ -150,6 +150,9 @@ const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/page
 const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
 const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
 const AdminConsoleMajorMatchLazy = lazy(() => import("src/pages/admin/console/pages/MajorMatchPage"));
+const AdminConsoleCommunityModerationLazy = lazy(
+  () => import("src/pages/admin/console/pages/CommunityModerationPage"),
+);
 const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
 const TopcoachLaunchEventAdminRouteLazy = lazy(
   () => import("src/pages/admin/console/TopcoachLaunchEventAdminRoute"),
@@ -160,6 +163,9 @@ const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
+const CommunityPostPermalinkLazy = lazy(
+  () => import("src/pages/community/CommunityPostPermalinkPage"),
+);
 const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
 const FullSupportLeadsPageLazy = lazy(() => import("src/pages/full-support-leads"));
 
@@ -273,6 +279,7 @@ function RouterProvider() {
                 <Route path="insights" element={<AdminConsoleInsightsLazy />} />
                 <Route path="major-match" element={<AdminConsoleMajorMatchLazy />} />
                 <Route path="administration" element={<AdminConsoleAdministrationLazy />} />
+                <Route path="community-moderation" element={<AdminConsoleCommunityModerationLazy />} />
 
                 {/* Permanent redirects from legacy console paths */}
                 <Route path="mentees" element={<Navigate to="/new-admin/users?tab=mentees" replace />} />
@@ -404,6 +411,15 @@ function RouterProvider() {
               />
               <Route path="/programs/success" element={<ProgramsSuccessPageLazy />} />
               <Route path="/contact-form" element={<ContactFormPageLazy />} />
+              {/* Community Feed — single-post permalink (auth-walled). */}
+              <Route
+                path="/community/post/:id"
+                element={
+                  <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Spin size="large" /></div>}>
+                    <CommunityPostPermalinkLazy />
+                  </Suspense>
+                }
+              />
               {/* Student Hub: mentees + oumarovna + sheraliozodov6; mentors/counselors → / (except sheraliozodov6) */}
               <Route
                 path="/student-hub/*"

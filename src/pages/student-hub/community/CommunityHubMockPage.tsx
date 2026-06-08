@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Button, Card, Input, Modal, Radio, Select, Space, Tag, Tabs, message } from 'antd';
+import { Button, Card, Modal, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   Compass,
@@ -13,20 +13,9 @@ import {
   Lock,
   FlaskConical,
   Presentation,
-  Camera,
-  Paperclip,
-  BarChart3,
   Coins,
-  Type,
   MessageCircle,
   Play,
-  Layers,
-  FlipHorizontal,
-  Heart,
-  Bookmark,
-  MessageSquare,
-  Share2,
-  MoreHorizontal,
   Shield,
   ArrowLeft,
   BookOpen,
@@ -37,6 +26,7 @@ import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import MyProgressEditorialView from '../MyProgressEditorialView';
 import styles from './communityHubMock.module.scss';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
+import CommunityFeedEditorialView from './CommunityFeedEditorialView';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
 import ResearchPrepPage from '../research/ResearchPrepPage';
 // ResearchPrepLockedPreview is now imported by StudentHubRoutes for the
@@ -152,262 +142,6 @@ const MOCK_BUDDY_CANDIDATES: BuddyCandidate[] = [
   },
 ];
 
-type MockFeedPost = {
-  id: string;
-  v: 'forYou' | 'following' | 'trending';
-  pinned?: boolean;
-  pinnedBy?: string;
-  authorEmoji?: string;
-  authorName: string;
-  authorHandle: string;
-  authorRoleLine: string;
-  authorSubLine: string;
-  timeAgo: string;
-  views: number;
-  category: string;
-  body: string;
-  likes: number;
-  comments: number;
-  earnedCoins?: number;
-  studyBuddyRequest?: {
-    heading: string;
-    tracks: string[];
-    cta: string;
-  };
-  isOwnPost?: boolean;
-};
-
-type MockFeedComment = {
-  id: string;
-  author: string;
-  handle: string;
-  text: string;
-  timeAgo: string;
-  likes?: number;
-};
-
-const MOCK_COMMENTS_BY_POST: Record<string, MockFeedComment[]> = {
-  p0: [
-    {
-      id: 'p0-c1',
-      author: 'Lina Ahmed',
-      handle: '@lina.prehealth',
-      text: 'This is so true. My personal statement clicked only after I connected it to one patient story.',
-      timeAgo: '48m',
-      likes: 22,
-    },
-    {
-      id: 'p0-c2',
-      author: 'Aditya Rao',
-      handle: '@adityarao',
-      text: 'Can you share examples of what counts as “specific” for program fit?',
-      timeAgo: '35m',
-      likes: 9,
-    },
-  ],
-  p1: [
-    {
-      id: 'p1-c1',
-      author: 'Mariam T.',
-      handle: '@mariamstem',
-      text: 'I am in for orgo accountability. Tuesdays/Thursdays work for me.',
-      timeAgo: '1h',
-      likes: 6,
-    },
-  ],
-  p4: [
-    {
-      id: 'p4-c1',
-      author: 'Noah Kim',
-      handle: '@noahapps',
-      text: '“Story arc” is exactly what my counselor said. This post should be pinned.',
-      timeAgo: '2h',
-      likes: 14,
-    },
-  ],
-};
-
-const MOCK_FEED_POSTS: MockFeedPost[] = [
-  {
-    id: 'p0',
-    v: 'forYou',
-    pinned: true,
-    pinnedBy: 'TopCoach',
-    authorEmoji: '👩‍⚕️',
-    authorName: 'Dr. Maya Reyes',
-    authorHandle: '@drmayareyes',
-    authorRoleLine: '🏆 Mentor',
-    authorSubLine: 'Harvard Med Alumni',
-    timeAgo: '2 hours ago',
-    views: 2400,
-    category: '⚕️ Medicine',
-    body:
-      'Pre-med students: here’s what I wish I knew before applying to medical school.\n\nAfter reviewing 200+ AMCAS applications, the #1 differentiator wasn’t GPA or MCAT.\nIt was authentic research narrative.\n\nAsk yourself: "Why THIS program, THIS community?"\nIf your answer isn’t specific, it’s not ready.',
-    likes: 847,
-    comments: 124,
-    earnedCoins: 340,
-  },
-  {
-    id: 'p1',
-    v: 'forYou',
-    authorEmoji: '🌱',
-    authorName: 'Priya Nair',
-    authorHandle: '@priyanair26',
-    authorRoleLine: 'New',
-    authorSubLine: 'Pre-Med · Johns Hopkins hopeful',
-    timeAgo: '4 hours ago',
-    views: 1100,
-    category: '⚕️ Medicine',
-    body:
-      "Hey everyone! 👋 I want to study medicine and I’m a sophomore working on pre-med requirements.\n\nAnyone else aiming for med school? Looking for study partners for orgo + biochem! 🔬",
-    likes: 63,
-    comments: 31,
-    studyBuddyRequest: {
-      heading: 'Study Buddy Request: Medicine Track',
-      tracks: ['Organic Chemistry', 'Biochemistry', 'MCAT Prep'],
-      cta: 'Join Group →',
-    },
-    earnedCoins: 0,
-  },
-  {
-    id: 'p2',
-    v: 'following',
-    authorEmoji: '⭐',
-    authorName: 'Marcus Webb',
-    authorHandle: '@marcuswebb',
-    authorRoleLine: 'Pro',
-    authorSubLine: 'CS @ MIT · Class of 2025',
-    timeAgo: 'Yesterday',
-    views: 5100,
-    category: '💻 CS / Tech',
-    body:
-      'I got into MIT CS last year. Here’s the honest truth 🧵\n\n1️⃣ My essay wasn’t about coding. It was about teaching my grandmother to use Zoom during COVID.\n2️⃣ One research project, not five internships. Quality > quantity.\n3️⃣ I used TopCoach’s AI Writing and went through 14 drafts.',
-    likes: 1204,
-    comments: 287,
-    earnedCoins: 520,
-  },
-  {
-    id: 'p3',
-    v: 'trending',
-    authorEmoji: '📝',
-    authorName: 'Rachel Kim',
-    authorHandle: '@rkim_sat',
-    authorRoleLine: 'SAT Coach',
-    authorSubLine: '1590 SAT · Tutor',
-    timeAgo: '2 days ago',
-    views: 3200,
-    category: '📝 SAT Prep',
-    body:
-      'My top 3 tips that helped 12 students break 750 in SAT Math this month:\n\n1) Stop memorizing formulas. Understand why they work.\n2) Practice with 30-second time pressure per question.\n3) Review wrong answers the same day. Memory decay is real.',
-    likes: 412,
-    comments: 88,
-    earnedCoins: 260,
-  },
-  {
-    id: 'p4',
-    v: 'forYou',
-    authorEmoji: '🎓',
-    authorName: 'Jordan Lee',
-    authorHandle: '@jordanlee_apps',
-    authorRoleLine: 'Rising senior',
-    authorSubLine: 'UC hopeful · First-gen',
-    timeAgo: '5 hours ago',
-    views: 890,
-    category: '📚 Admissions',
-    body:
-      'Hot take: your activities list isn’t a resume dump.\n\nAdmissions readers want a story arc: what you tried, what you learned, what you’ll do next. Pick 5–7 entries max and make each one a sentence with impact.',
-    likes: 214,
-    comments: 42,
-  },
-  {
-    id: 'p5',
-    v: 'forYou',
-    authorEmoji: '🔬',
-    authorName: 'Dr. Sam Okonkwo',
-    authorHandle: '@samok_research',
-    authorRoleLine: 'Mentor',
-    authorSubLine: 'STEM research · PhD',
-    timeAgo: '6 hours ago',
-    views: 1750,
-    category: '🔬 Research',
-    body:
-      'Cold-emailing professors for research: keep it to 120 words, attach a 1-page CV, and mention ONE paper of theirs you actually read. Generic “I love your lab” emails get ignored.',
-    likes: 502,
-    comments: 76,
-    earnedCoins: 120,
-  },
-  {
-    id: 'p6',
-    v: 'forYou',
-    authorEmoji: '✈️',
-    authorName: 'Aisha Rahman',
-    authorHandle: '@aishar',
-    authorRoleLine: 'Gap year',
-    authorSubLine: 'Intl student · UK apps',
-    timeAgo: '8 hours ago',
-    views: 640,
-    category: '🌍 International',
-    body:
-      'UK vs US personal statements are not interchangeable. If you’re applying to both, write two drafts: one that’s reflective (US) and one that’s course-focused (UK).',
-    likes: 156,
-    comments: 28,
-  },
-  {
-    id: 'p7',
-    v: 'forYou',
-    authorEmoji: '🧠',
-    authorName: 'Chris Park',
-    authorHandle: '@chrisp_study',
-    authorRoleLine: 'Pro',
-    authorSubLine: 'Test anxiety · Coach',
-    timeAgo: '10 hours ago',
-    views: 420,
-    category: '🧘 Wellness',
-    body:
-      'Before a full-length practice test: sleep > cram. One extra hour of sleep is worth more than one extra hour of drills the night before.',
-    likes: 98,
-    comments: 15,
-  },
-  {
-    id: 'p8',
-    v: 'following',
-    authorEmoji: '📖',
-    authorName: 'Elena Voss',
-    authorHandle: '@elenav',
-    authorRoleLine: 'Mentor',
-    authorSubLine: 'Essays · Liberal arts',
-    timeAgo: '3 hours ago',
-    views: 980,
-    category: '✍️ Essays',
-    body:
-      'When you rewrite your “why this college” essay, search for the word “prestigious” and delete it. Replace with one concrete detail about a course, professor, or program.',
-    likes: 331,
-    comments: 54,
-  },
-  {
-    id: 'p9',
-    v: 'trending',
-    authorEmoji: '🚀',
-    authorName: 'Taylor Brooks',
-    authorHandle: '@tbrooks',
-    authorRoleLine: 'Student',
-    authorSubLine: 'Startup intern',
-    timeAgo: '1 day ago',
-    views: 8900,
-    category: '💼 Career',
-    body:
-      'Internship apps: lead with a problem you solved with numbers, not with “hard-working team player.” One metric beats five adjectives.',
-    likes: 1201,
-    comments: 203,
-    earnedCoins: 410,
-  },
-];
-
-function formatCompactNumber(n: number) {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-  return `${n}`;
-}
 
 /**
  * Wraps ResearchPrepPage and resolves the current user's Full Support
@@ -469,9 +203,15 @@ export default function CommunityHubMockPage() {
     };
   }, [profile?.profile, t]);
 
-  const [activeSection, setActiveSection] = useState<CommunitySectionKey>(
-    ENABLE_COMMUNITY_FEED ? 'feed' : 'myLearning',
-  );
+  // Phase-1 gate: non-SuperAdmin users can't land on `feed` (the
+  // panel would render nothing). Fall back to Messages so the page
+  // still has content. Profile is hydrated by parent layout before
+  // this component mounts, so the check is synchronous in practice.
+  const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
+    const isSuperAdmin = profile?.managementRole === 'SuperAdmin';
+    if (ENABLE_COMMUNITY_FEED && isSuperAdmin) return 'feed';
+    return 'messages';
+  });
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
   const [accountTarget, setAccountTarget] = useState<string | null>(null);
   // Study Buddy is free; the editorial header shows once the user has accepted
@@ -481,15 +221,6 @@ export default function CommunityHubMockPage() {
     skip: activeSection !== 'buddies',
   });
   const buddyConsented = !!buddyConsent?.consented;
-  const [feedPostDraft, setFeedPostDraft] = useState('');
-  const [feedPosts, setFeedPosts] = useState<MockFeedPost[]>(() =>
-    MOCK_FEED_POSTS.filter((p) => p.v === 'forYou'),
-  );
-  const [likedPostIds, setLikedPostIds] = useState<Record<string, boolean>>({});
-  const [savedPostIds, setSavedPostIds] = useState<Record<string, boolean>>({});
-  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
-  const [commentOpenIds, setCommentOpenIds] = useState<Record<string, boolean>>({});
-  const [extraCommentCounts, setExtraCommentCounts] = useState<Record<string, number>>({});
   const [satSampleQuizChoice, setSatSampleQuizChoice] = useState<string | null>(null);
   const [admissionsVideoModal, setAdmissionsVideoModal] = useState<AdmissionsYoutubePreviewSpec | null>(null);
   // Ad-hoc CommunityLockedPage variant — set when a CTA needs to surface
@@ -647,13 +378,25 @@ export default function CommunityHubMockPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
+  /**
+   * Phase-1 launch gate: the Community Feed is rolled out to SuperAdmin
+   * accounts first. Once production smoke-testing is green the check
+   * widens — search for this comment to find every gate in one sweep.
+   * Frontend gate is paired with a matching backend check inside
+   * `CommunityEnrollmentGuard`.
+   */
+  const isFeedAllowed = profile?.managementRole === 'SuperAdmin';
+
   const navItems: CommunityNavItem[] = useMemo(
     () => [
-      { key: 'feed', label: 'Feed', icon: <Compass size={16} color="#fff" /> },
+      // Phase-1 gate — hide the Feed entry from anyone but SuperAdmin.
+      ...(isFeedAllowed
+        ? [{ key: 'feed' as const, label: 'Feed', icon: <Compass size={16} color="#fff" /> }]
+        : []),
       { key: 'messages', label: 'Messages', icon: <MessageCircle size={16} color="#fff" /> },
       { key: 'buddies', label: 'Find Study Buddy', icon: <User size={16} color="#fff" /> },
     ],
-    []
+    [isFeedAllowed]
   );
 
   const dashboardNav = useMemo(
@@ -747,55 +490,6 @@ export default function CommunityHubMockPage() {
     (activeSection === 'account' && (accountTarget === 'rewards' || accountTarget === 'settings'));
   const needsSettingsSubtitleGap = activeSection === 'account' && accountTarget === 'settings';
 
-  const toggleLike = (postId: string) => {
-    setLikedPostIds((prev) => ({ ...prev, [postId]: !prev[postId] }));
-  };
-
-  const toggleSave = (postId: string) => {
-    setSavedPostIds((prev) => ({ ...prev, [postId]: !prev[postId] }));
-  };
-
-  const toggleComments = (postId: string) => {
-    setCommentOpenIds((prev) => ({ ...prev, [postId]: !prev[postId] }));
-  };
-
-  const submitComment = (postId: string) => {
-    const text = (commentDrafts[postId] ?? '').trim();
-    if (!text) return;
-    setFeedPosts((prev) =>
-      prev.map((post) => (post.id === postId ? { ...post, comments: post.comments + 1 } : post)),
-    );
-    setExtraCommentCounts((prev) => ({ ...prev, [postId]: (prev[postId] ?? 0) + 1 }));
-    setCommentDrafts((prev) => ({ ...prev, [postId]: '' }));
-    message.success('Comment posted.');
-  };
-
-  const postToCommunity = () => {
-    const text = feedPostDraft.trim();
-    if (!text) {
-      message.warning('Write something first.');
-      return;
-    }
-    const newPost: MockFeedPost = {
-      id: `self-${Date.now()}`,
-      v: 'forYou',
-      authorName: currentProfile.name,
-      authorHandle: currentProfile.username,
-      authorRoleLine: 'You',
-      authorSubLine: 'TopCoach Community',
-      timeAgo: 'Just now',
-      views: 0,
-      category: '💬 Community',
-      body: text,
-      likes: 0,
-      comments: 0,
-      isOwnPost: true,
-    };
-    setFeedPosts((prev) => [newPost, ...prev]);
-    setFeedPostDraft('');
-    message.success(t('studentHub.hub.feedComposerPostedMock', 'Posted to Community.'));
-  };
-
   // Research Prep takes over the page once it opens — no community sidebar,
   // no max-width clamp. The page itself supplies a top bar with breadcrumb,
   // an Overview/Module switch, and a "Back to main menu" button.
@@ -809,6 +503,10 @@ export default function CommunityHubMockPage() {
   return (
     <div
       className={`${styles.hubPageOuter} ${
+        activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
+          ? styles.hubPageOuterFeedCream
+          : ''
+      } ${
         isFullBleed ? styles.hubPageOuterFullBleed : ''
       } ${isAdmissionsFullBleed ? styles.admissionsShellOuter : ''}`}
     >
@@ -820,6 +518,7 @@ export default function CommunityHubMockPage() {
       <div
         className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''} ${isFullBleed ? styles.leftColHidden : ''}`}
       >
+        <div className={styles.leftColInner}>
         {isCommunityEnrolled && (
           <Card
             className={styles.profileCard}
@@ -835,26 +534,34 @@ export default function CommunityHubMockPage() {
               }
             }}
           >
-            <div className={styles.profilePhoto}>
-              {currentProfile.avatar ? (
-                <img
-                  src={currentProfile.avatar}
-                  alt={currentProfile.name}
-                  className={styles.profilePhotoImg}
-                />
-              ) : (
-                <div className={styles.profilePhotoFallback} aria-hidden>
-                  <User size={40} />
+            {/* Compact row + coin chip layout (Option B from the design
+                explorations). Avatar + identity on one row, coin chip +
+                "View profile" CTA on the next. Drops the hero photo band
+                and shadow that the old single-column layout used. */}
+            <div className={styles.profileTopRow}>
+              <div className={styles.profilePhoto}>
+                {currentProfile.avatar ? (
+                  <img
+                    src={currentProfile.avatar}
+                    alt={currentProfile.name}
+                    className={styles.profilePhotoImg}
+                  />
+                ) : (
+                  <div className={styles.profilePhotoFallback} aria-hidden>
+                    <User size={28} />
+                  </div>
+                )}
+              </div>
+              <div className={styles.profileMeta}>
+                <div className={styles.profileName} title={currentProfile.name}>
+                  {currentProfile.name}
                 </div>
-              )}
+                <div className={styles.profileHandle} title={currentProfile.username}>
+                  {currentProfile.username}
+                </div>
+              </div>
             </div>
-            <div className={styles.profileBody}>
-              <div className={styles.profileName} title={currentProfile.name}>
-                {currentProfile.name}
-              </div>
-              <div className={styles.profileHandle} title={currentProfile.username}>
-                {currentProfile.username}
-              </div>
+            <div className={styles.profileBottomRow}>
               <button
                 type="button"
                 className={styles.profileCoinsInline}
@@ -862,13 +569,12 @@ export default function CommunityHubMockPage() {
                   e.stopPropagation();
                   navigate('/student-hub?section=account&target=rewards');
                 }}
-                aria-label="View rewards"
+                aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
               >
-                <Coins size={16} aria-hidden />
+                <Coins size={13} aria-hidden />
                 <span className={styles.profileCoinsValue}>
                   {(coinBalance?.balance ?? 0).toLocaleString()}
                 </span>
-                <span className={styles.profileCoinsLabel}>TopCoach coins</span>
               </button>
               <div className={styles.profileFooter}>
                 <span>View profile</span>
@@ -1100,19 +806,18 @@ export default function CommunityHubMockPage() {
             </button>
           )}
         </div>
+        </div>
       </div>
 
       <div
         className={`${styles.centerCol} ${
-          activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
-            ? styles.centerColFeedMode
-            : ''
-        } ${activeSection === 'messages' ? styles.centerColMessengerMode : ''}`}
+          activeSection === 'messages' ? styles.centerColMessengerMode : ''
+        }`}
       >
         <div
           className={`${styles.centerBody} ${
             activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
-              ? `${styles.centerBodyFeedScroll} ${styles.centerBodyFeedLinkedin}`
+              ? styles.centerBodyFeedEditorial
               : ''
           } ${activeSection === 'messages' ? styles.centerBodyMessenger : ''}`}
         >
@@ -1234,214 +939,28 @@ export default function CommunityHubMockPage() {
               />
             )}
 
-            {activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED && (
-              <div className={styles.feedScrollColumn}>
-                {/* LinkedIn-style “Start a post” — scrolls with feed (not sticky) */}
-                <div className={styles.startPostSection}>
-                  <div className={styles.startPostCard}>
-                    <div className={styles.startPostTop}>
-                      <Avatar
-                        size={48}
-                        src={currentProfile.avatar || undefined}
-                        className={styles.startPostAvatar}
-                      >
-                        {currentProfile.name.charAt(0)}
-                      </Avatar>
-                      <div className={styles.startPostPillWrap}>
-                        <Input
-                          value={feedPostDraft}
-                          onChange={(e) => setFeedPostDraft(e.target.value)}
-                          placeholder={t('studentHub.hub.startPostPlaceholder', 'Start a post')}
-                          className={styles.startPostPillInput}
-                          size="large"
-                          variant="borderless"
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.startPostToolbarOneRow}>
-                      <div className={styles.startPostIconRow}>
-                        <button
-                          type="button"
-                          className={styles.startPostIconBtn}
-                          onClick={() => message.info(t('studentHub.hub.feedComposerTextMock', 'Text post options are coming soon.'))}
-                        >
-                          <Type size={22} className={styles.startPostIconText} strokeWidth={2} />
-                          <span>{t('studentHub.hub.feedComposerAa', 'Aa')}</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.startPostIconBtn}
-                          onClick={() => message.info(t('studentHub.hub.feedComposerPhotoMock', 'Photo upload is coming soon.'))}
-                        >
-                          <Camera size={22} className={styles.startPostIconPhoto} strokeWidth={2} />
-                          <span>{t('studentHub.hub.feedComposerPhoto', 'Photo')}</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.startPostIconBtn}
-                          onClick={() => message.info(t('studentHub.hub.feedComposerFileMock', 'File attachment is coming soon.'))}
-                        >
-                          <Paperclip size={22} className={styles.startPostIconFile} strokeWidth={2} />
-                          <span>{t('studentHub.hub.feedComposerFile', 'File')}</span>
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.startPostIconBtn}
-                          onClick={() => message.info(t('studentHub.hub.feedComposerPollMock', 'Polls are coming soon.'))}
-                        >
-                          <BarChart3 size={22} className={styles.startPostIconPoll} strokeWidth={2} />
-                          <span>{t('studentHub.hub.feedComposerPoll', 'Poll')}</span>
-                        </button>
-                      </div>
-                      <div className={styles.startPostToolbarRight}>
-                        <div className={styles.startPostCoinsHint}>
-                          <Coins size={16} strokeWidth={2} />
-                          <span>{t('studentHub.hub.feedComposerCoinsHint', '+10 coins per post')}</span>
-                        </div>
-                        <Button type="primary" className={styles.startPostCtaBtn} onClick={postToCommunity}>
-                          {t('studentHub.hub.feedComposerPostCta', 'Post to Community')}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED && isFeedAllowed && (
+              <CommunityFeedEditorialView
+                currentUser={{
+                  id: profile?.id ?? '',
+                  name: currentProfile.name,
+                  initials: (currentProfile.name || 'U')
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((s) => s[0]?.toUpperCase() ?? '')
+                    .join(''),
+                  avatarColor: '#7B1F2F',
+                  avatarUrl: currentProfile.avatar ?? null,
+                  canPost:
+                    profile?.managementRole === 'SuperAdmin' ||
+                    profile?.managementRole === 'Admin' ||
+                    (profile?.managementRole as string) === 'Owner',
+                  canPin: profile?.managementRole === 'SuperAdmin',
+                }}
+              />
+            )}
 
-                <div className={styles.feedPostsSection}>
-                  <div className={styles.feedList}>
-                  {feedPosts.map((p) => {
-                    const liked = !!likedPostIds[p.id];
-                    const saved = !!savedPostIds[p.id];
-                    const likeCount = p.likes + (liked ? 1 : 0);
-                    return (
-                      <div key={p.id} className={styles.postMock}>
-                        {p.pinned && (
-                          <div className={styles.postPinnedRow}>
-                            <span className={styles.postPinnedEmoji}>📌</span> Pinned by {p.pinnedBy}
-                          </div>
-                        )}
-
-                        <div className={styles.postHeader}>
-                          <Avatar size={36} className={styles.postAvatar}>
-                            {p.authorEmoji ?? <User size={16} />}
-                          </Avatar>
-
-                          <div className={styles.postHeaderMain}>
-                            <div className={styles.postAuthorLine}>
-                              <div className={styles.postAuthorName}>{p.authorName}</div>
-                              <div className={styles.postAuthorRole}>{p.authorRoleLine}</div>
-                            </div>
-                            <div className={styles.postSubLine}>{p.authorSubLine}</div>
-                          </div>
-
-                          <div className={styles.postHeaderRight}>
-                            <button type="button" className={styles.postMoreBtn} aria-label="More actions">
-                              <MoreHorizontal size={18} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className={styles.postCategory}>{p.category}</div>
-
-                        <div className={styles.postBody}>{p.body}</div>
-
-                        {p.studyBuddyRequest && (
-                          <div className={styles.studyBuddyBox}>
-                            <div className={styles.studyBuddyHeading}>{p.studyBuddyRequest.heading}</div>
-                            <div className={styles.studyBuddyTracks}>
-                              {p.studyBuddyRequest.tracks.map((t) => (
-                                <Tag key={t} color="magenta" className={styles.studyBuddyTag}>
-                                  {t}
-                                </Tag>
-                              ))}
-                            </div>
-                            <Button
-                              type="primary"
-                              className={styles.studyBuddyCta}
-                              onClick={() => message.info('Group joining is coming soon.')}
-                            >
-                              {p.studyBuddyRequest.cta}
-                            </Button>
-                          </div>
-                        )}
-
-                        <div className={styles.postActions}>
-                          <button
-                            type="button"
-                            className={`${styles.postActionBtn} ${liked ? styles.postActionBtnActive : ''}`}
-                            onClick={() => toggleLike(p.id)}
-                          >
-                            <Heart size={15} />
-                            <span>{likeCount}</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={`${styles.postActionBtn} ${commentOpenIds[p.id] ? styles.postActionBtnActive : ''}`}
-                            onClick={() => toggleComments(p.id)}
-                          >
-                            <MessageSquare size={15} />
-                            <span>{p.comments + (extraCommentCounts[p.id] ?? 0)} Comments</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={`${styles.postActionBtn} ${saved ? styles.postActionBtnActive : ''}`}
-                            onClick={() => toggleSave(p.id)}
-                          >
-                            <Bookmark size={15} />
-                            <span>{saved ? 'Saved' : 'Save'}</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.postActionBtn}
-                            onClick={() => message.success('Post shared.')}
-                          >
-                            <Share2 size={15} />
-                            <span>Share</span>
-                          </button>
-                        </div>
-                        {commentOpenIds[p.id] && (
-                          <div className={styles.postCommentsWrap}>
-                            {(MOCK_COMMENTS_BY_POST[p.id] ?? []).map((c) => (
-                              <div key={c.id} className={styles.postCommentItem}>
-                                <div className={styles.postCommentTop}>
-                                  <span className={styles.postCommentAuthor}>{c.author}</span>
-                                  <span className={styles.postCommentHandle}>{c.handle}</span>
-                                  <span className={styles.postCommentDot}>·</span>
-                                  <span className={styles.postCommentTime}>{c.timeAgo}</span>
-                                </div>
-                                <div className={styles.postCommentText}>{c.text}</div>
-                                {!!c.likes && <div className={styles.postCommentLikes}>❤ {c.likes}</div>}
-                              </div>
-                            ))}
-                            <div className={styles.postCommentComposer}>
-                              <Input
-                                size="middle"
-                                value={commentDrafts[p.id] ?? ''}
-                                onChange={(e) =>
-                                  setCommentDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))
-                                }
-                                placeholder="Write a comment..."
-                                onPressEnter={() => submitComment(p.id)}
-                              />
-                              <Button size="middle" onClick={() => submitComment(p.id)}>
-                                Comment
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        <div className={styles.postFooterMeta}>
-                          {typeof p.earnedCoins === 'number' && p.earnedCoins > 0 && (
-                            <span className={styles.postEarnedChip}>🪙 +{p.earnedCoins} coins</span>
-                          )}
-                          👁 {formatCompactNumber(p.views)} views · {p.timeAgo}
-                          {p.isOwnPost ? ' · You posted this' : ''}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  </div>
-                </div>
-              </div>
-          )}
 
           {activeSection === 'more' && (
             <Card className={styles.sectionCard} bordered={false}>

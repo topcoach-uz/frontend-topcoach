@@ -60,7 +60,7 @@ export default function LanguageSelect({ isInHeader = false }: Props) {
         dropdownStyle={{ minWidth: 120 }}
       />
       <div className={styles.languageIconDisplay}>
-        <Globe size={20} color="white" />
+        <Globe size={20} color="#fff" />
       </div>
     </div>
   );

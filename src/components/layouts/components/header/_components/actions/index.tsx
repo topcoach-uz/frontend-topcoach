@@ -100,7 +100,7 @@ export default function Actions() {
       </button>
       */}
       <Link to="/contact" className={styles.contactIcon}>
-        <Mail size={20} color="white" />
+        <Mail size={20} color="#fff" />
       </Link>
       <ChatIcon />
       {isAuthenticated && <NotificationBell />}

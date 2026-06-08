@@ -26,6 +26,7 @@ import {
   Building2,
   Search as SearchIcon,
   Brain,
+  Flag,
 } from 'lucide-react';
 import { useAdminConsole } from './AdminConsoleContext';
 import './admin-console-tokens.scss';
@@ -52,6 +53,7 @@ type NavKey =
   | 'insights'
   | 'major-match'
   | 'administration'
+  | 'community-moderation'
   | 'course-content'
   | 'organization-management'
   | 'school-counselor';
@@ -165,6 +167,12 @@ export default function AdminConsoleLayout() {
             icon: <Shield size={18} strokeWidth={1.75} />,
             path: '/new-admin/administration',
           },
+          {
+            key: 'community-moderation',
+            label: 'Community Moderation',
+            icon: <Flag size={18} strokeWidth={1.75} />,
+            path: '/new-admin/community-moderation',
+          },
         ],
       },
       {
@@ -208,6 +216,7 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/insights')) return 'insights';
     if (p.startsWith('/new-admin/major-match')) return 'major-match';
     if (p.startsWith('/new-admin/administration')) return 'administration';
+    if (p.startsWith('/new-admin/community-moderation')) return 'community-moderation';
     return null;
   }, [location.pathname]);
 
@@ -244,6 +253,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/insights': 'Insights',
       '/new-admin/major-match': 'AI Major Match',
       '/new-admin/administration': 'Administration',
+      '/new-admin/community-moderation': 'Community Moderation',
       '/new-admin/organization-management': 'Organization Management',
     };
     const title = map[p] ?? 'Admin';

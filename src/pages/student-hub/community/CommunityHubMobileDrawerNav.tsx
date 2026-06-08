@@ -123,7 +123,8 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           </button>
         )}
 
-        {ENABLE_COMMUNITY_FEED && (
+        {/* Phase-1 gate — see CommunityHubMockPage.tsx "Phase-1 launch gate". */}
+        {ENABLE_COMMUNITY_FEED && profile?.managementRole === 'SuperAdmin' && (
           <button
             type="button"
             className={`${styles.navItem} ${isFeed ? styles.navItemActive : ''}`}

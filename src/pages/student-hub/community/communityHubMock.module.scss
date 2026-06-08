@@ -6,6 +6,19 @@
   box-sizing: border-box;
 }
 
+/* Feed editorial mode: paint cream behind the entire hub row so the feed,
+   sidebars, and any gap between them read as one continuous spread. The
+   negative side margins extend the cream past the centered max-width so
+   the wide-screen "letterbox" gutters disappear into the editorial tone. */
+.hubPageOuterFeedCream {
+  background: #faf8f3;
+  max-width: none;
+  padding-left: max(20px, calc((100% - 1320px) / 2 + 20px));
+  padding-right: max(20px, calc((100% - 1320px) / 2 + 20px));
+  padding-bottom: 0;
+  min-height: calc(100vh - 64px);
+}
+
 @media (max-width: 768px) {
   .hubPageOuter {
     padding-top: 12px;
@@ -73,11 +86,26 @@
 }
 
 .leftCol {
-  position: sticky;
-  top: 24px;
-  align-self: start;
+  align-self: stretch;
   padding-left: 8px;
   padding-right: 8px;
+}
+
+/* Inner sticky wrapper: stays at the top of the viewport while the feed
+   scrolls past, no matter how tall the feed gets. The outer .leftCol
+   stretches to the full grid-row height so this sticky has room to
+   travel through the entire feed. */
+.leftColInner {
+  position: sticky;
+  top: 16px;
+}
+
+/* When the community feed is mounted, scroll is hoisted to the document
+   (see body.cf-feed-active rule in CommunityFeedEditorialView.scss).
+   The global maroon header sticks at top: 0 and is ~80px tall, so the
+   sidebar needs to park below it instead of underneath. */
+:global(body.cf-feed-active) .leftColInner {
+  top: 96px;
 }
 
 .leftColNoProfile {
@@ -91,24 +119,33 @@
  * single large photo dominates the top of the card, then a tighter
  * meta block below with name + handle (no stats, no follow button).
  * The whole card is one click target → opens settings. */
+/* Compact "Option B" profile card — single white card with a hairline
+ * border, no internal banding, no avatar drop-shadow. Two rows:
+ *   Row 1: avatar + name/handle
+ *   Row 2: coin chip + "View profile →"
+ * Designed for the 236px sidebar width — the whole card stays under
+ * ~88px tall, which leaves more room for the nav items below. */
 .profileCard {
   position: relative;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid #e5e3da;
   background: #fff;
   cursor: pointer;
   overflow: hidden;
-  padding: 0 !important; /* children manage their own padding */
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.12s ease;
+  padding: 14px 14px 10px !important;
+  transition: border-color 0.18s ease, transform 0.12s ease;
 
-  /* Ant Card body — trim default padding so the photo sits flush. */
   :global(.ant-card-body) {
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    /* No gap here — the bottom row's top hairline + padding handle spacing
+       so the divider can run flush across the card. */
+    gap: 0;
   }
 
   &:hover {
     border-color: #c9b8bc;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
     transform: translateY(-1px);
   }
 
@@ -118,58 +155,60 @@
   }
 }
 
-/* Hero photo: a centered circular avatar in a short cream-tinted band.
- * Switching from a full-width 4:3 rectangle to a 96px circle drops the
- * card height significantly while keeping the "photo on top, meta
- * below" composition of the Sophie-Bennett reference. */
+/* Row 1 — avatar + identity block, inline. */
+.profileTopRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Inline avatar — bumped to 48px so the face is recognizable at a glance,
+ * but still compact enough that the card stays under ~110px tall.
+ * Explicit `border: 0` clears the white ring some browsers add to <img>
+ * elements inside Ant Card. */
 .profilePhoto {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px 0 12px;
-  background: linear-gradient(180deg, #faf8f3 0%, #fff 100%);
-  position: relative;
 }
 .profilePhotoImg {
-  width: 96px;
-  height: 96px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  border: 3px solid #fff;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
-  transition: transform 0.25s ease;
-
-  .profileCard:hover & { transform: scale(1.04); }
+  border: 0;
+  box-shadow: none;
 }
 .profilePhotoFallback {
-  width: 96px;
-  height: 96px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #9ca3af;
   background: #faf8f3;
-  border: 3px solid #fff;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  border: 0;
 }
 
-/* Meta block below the photo. Min-width: 0 + ellipsis on the children
- * so very long names/handles truncate cleanly inside the card. */
-.profileBody {
-  padding: 4px 14px 12px;
+/* Identity stack: name + handle, both ellipsis on overflow. */
+.profileMeta {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  text-align: center;
+  flex: 1;
 }
 
 .profileName {
   font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 1.04rem;
-  font-weight: 500;
+  font-size: 0.98rem;
+  font-weight: 600;
   color: #1f2937;
-  letter-spacing: -0.014em;
-  line-height: 1.2;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -178,47 +217,51 @@
 
 .profileHandle {
   color: #6b7280;
-  font-size: 0.8rem;
-  margin-top: 3px;
+  font-size: 0.78rem;
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
 
-/* Inline "View profile →" link sits below the handle inside .profileBody.
- * No follow button / stats — we don't have those affordances yet, so the
- * footer is just an unobtrusive call-to-action that hints the whole card
- * is clickable. */
+/* Row 2 — coin chip (left) + View-profile CTA (right), separated from
+ * row 1 by a hairline divider that runs across the full card width.
+ * The hairline + padding-top here replaces the previous gap on the
+ * card body so the two rows feel anchored, not floating. */
+.profileBottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #ece9df;
+}
+
 .profileFooter {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #ece9df;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #6b7280;
-  letter-spacing: 0.01em;
-  transition: color 0.15s ease;
-  width: 100%;
-  justify-content: space-between;
+  color: #7B1F2F;
+  letter-spacing: 0.005em;
+  padding: 2px 0;
 
   .profileCard:hover & {
-    color: #7B1F2F;
+    color: #5d1623;
   }
 }
 
-/* Inline coin row sits above the "View profile" footer. Clickable on
- * its own (stops propagation) so users can jump straight to the
- * rewards page without going through Settings first. */
+/* Coin chip — pill button on the left of the bottom row. Sized to
+ * match the avatar's visual weight (≈26px tall) so row 2 doesn't feel
+ * lighter than row 1. */
 .profileCoinsInline {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 6px 10px;
+  gap: 5px;
+  padding: 4px 10px;
   background: #fdf6ee;
   border: 1px solid #ece4d3;
   border-radius: 999px;
@@ -227,8 +270,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
-  width: fit-content;
-  max-width: 100%;
+  line-height: 1.2;
 
   &:hover {
     background: #fbeeda;
@@ -242,15 +284,15 @@
 }
 
 .profileCoinsLabel {
-  color: #8a6f3a;
-  font-weight: 500;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
+  /* Retained for backward compat — hidden in the compact layout. */
+  display: none;
 }
+
 .profileFooterArrow {
   transition: transform 0.18s ease;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   line-height: 1;
+  font-weight: 700;
 
   .profileCard:hover & {
     transform: translateX(3px);
@@ -977,6 +1019,16 @@
 .centerBodyMessenger {
   padding-bottom: 0;
   overflow: hidden;
+}
+
+/* Feed editorial mode: drop the card chrome so the editorial view paints
+   its own cream background flush to the column edges. The page (not this
+   container) handles the scroll. */
+.centerBodyFeedEditorial {
+  padding: 0;
+  background: transparent;
+  border: none;
+  overflow: visible;
 }
 
 /* Feed stream: inner scroll + LinkedIn-style surface */

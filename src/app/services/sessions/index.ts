@@ -122,8 +122,49 @@ export const sessionsApi = RtkApi.injectEndpoints({
       invalidatesTags: (result) =>
         (result as any)?.paymentRequired ? [] : ['GetMentorDetail', 'MySessions', 'AvailableSlots', 'GetMe'],
     }),
+    // Saved-card one-tap checkout (Phase 2): options for the sheet + the charge.
+    getSessionPayOptions: build.query<SavedCardCheckoutOptions, string>({
+      query: (sessionId) => ({ url: `/sessions/${sessionId}/pay/options` }),
+    }),
+    paySessionWithSavedCard: build.mutation<
+      { status: 'paid' | 'pending'; sessionId: string; message: string },
+      { sessionId: string; paymentMethodId: string }
+    >({
+      query: ({ sessionId, paymentMethodId }) => ({
+        url: `/sessions/${sessionId}/pay`,
+        method: 'POST',
+        body: { paymentMethodId },
+      }),
+      invalidatesTags: (result) =>
+        (result as any)?.status === 'paid'
+          ? ['GetMentorDetail', 'MySessions', 'AvailableSlots', 'GetMe']
+          : [],
+    }),
   }),
 });
+
+export interface SavedCardOption {
+  id: string;
+  provider: string;
+  cardBrand: string | null;
+  last4: string;
+  cardholder: string | null;
+  expiryMonth: number | null;
+  expiryYear: number | null;
+  isDefault: boolean;
+  addedAt: string;
+}
+
+export interface SavedCardCheckoutOptions {
+  sessionId: string;
+  amountUzs: number;
+  currency: string;
+  slotHeldUntil: string | null;
+  expired: boolean;
+  alreadyPaid: boolean;
+  cards: SavedCardOption[];
+  defaultCardId: string | null;
+}
 
 export const {
   useGetMySessionsQuery,
@@ -140,4 +181,7 @@ export const {
   useGetGiveawayStatusQuery,
   useBookGiveawaySessionMutation,
   useCancelGiveawaySessionMutation,
+  useGetSessionPayOptionsQuery,
+  useLazyGetSessionPayOptionsQuery,
+  usePaySessionWithSavedCardMutation,
 } = sessionsApi;

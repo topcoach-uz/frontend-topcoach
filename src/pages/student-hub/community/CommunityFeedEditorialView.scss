@@ -1,0 +1,1892 @@
+/* ─────────────────────────────────────────────────────────────
+   Community Feed (editorial). Cream surfaces, hairline borders,
+   serif headlines, brand-red accents. Class prefix: `cf`. Mirrors
+   My Rewards / My Progress / Full Support so all of My Journey
+   reads as one publication.
+   ───────────────────────────────────────────────────────────── */
+
+$cf-cream:          #faf8f3;
+$cf-cream-elevated: #fbfaf6;
+$cf-paper:          #ffffff;
+$cf-ink:            #1c1a17;
+$cf-ink-soft:       #4b463f;
+$cf-muted:          #6b6258;
+$cf-muted-2:        #8a8275;
+$cf-hairline:       #e5e3da;
+$cf-hairline-soft:  #efece4;
+$cf-brand:          #7b1f2f;
+$cf-brand-deep:     #5e1624;
+$cf-brand-soft:     rgba(123, 31, 47, 0.08);
+$cf-gold:           #b6824b;
+$cf-live:           #2e8a5a;
+
+/* Category accent dots — also used in `cf__cat-tag--<CATEGORY>` */
+$cat-admissions:     #7b1f2f;
+$cat-college-life:   #3d5afe;
+$cat-study-abroad:   #1f6b4b;
+$cat-exam-prep:      #c58a1f;
+$cat-wellness:       #6e3fb0;
+$cat-research:       #2a5566;
+$cat-general:        #6b6258;
+
+/**
+ * LinkedIn-style scroll model. When the feed mounts it adds the
+ * `cf-feed-active` class to <body>; we hand the scroll back to the
+ * document so the browser scrollbar appears at the page edge rather
+ * than at the inner `.main-content` panel edge.
+ *
+ * Both sidebars use `position: sticky` so they continue to anchor at
+ * the top of the viewport while the center column travels past — same
+ * behavior LinkedIn uses for the left "profile + nav" rail and the
+ * right "trending" widgets.
+ *
+ * Other student-hub sections (Messages, Research Prep) don't get this
+ * body class and keep their inner-scroll layout unchanged.
+ */
+body.cf-feed-active {
+  /* The student-hub layout owns these — `overflow-y: auto` on
+     `.main-content` is what creates the inner scrollbar. While the
+     feed is mounted, force overflow visible so the document handles
+     the scroll instead. min-height on `.main-content` stays at 100vh
+     so short pages still fill the viewport; the document scrolls only
+     once the feed is taller than that. */
+  .main-layout,
+  .main-content,
+  .main-content-padded {
+    overflow: visible !important;
+  }
+}
+
+.cf {
+  /* Sits on cream, edges flush with the left sidebar and right rail
+     so the whole hub row reads as one editorial spread. The center
+     column already has the cream backdrop from hubPageOuter; we just
+     make sure no white card chrome leaks here. */
+  background: transparent;
+  margin: 0;
+  padding: 0 0 24px;
+  color: $cf-ink;
+  font-size: 0.95rem;
+  line-height: 1.5;
+
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 28px;
+    /* Default `stretch` so the rail grid cell takes the full row height,
+       letting the inner sticky wrapper travel through the entire feed. */
+    align-items: stretch;
+
+    @media (max-width: 1100px) {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  &__main { min-width: 0; }
+
+  /* ── category filter row ──────────────────────────────────── */
+  &__category-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 18px;
+    padding: 0;
+  }
+
+  &__category-pill {
+    appearance: none;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink-soft;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 7px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+
+    &:hover { background: $cf-hairline-soft; }
+
+    &--active {
+      background: $cf-ink;
+      color: #fff;
+      border-color: $cf-ink;
+      .cf__category-dot { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
+    }
+  }
+
+  &__category-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* ── composer ─────────────────────────────────────────────── */
+  &__composer {
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 2px rgba(28, 26, 23, 0.03);
+  }
+
+  &__composer-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__composer-input {
+    flex: 1;
+    /* Inner-input affordance: subtle hairline + breathing room so the
+       placeholder isn't pasted to the card edge (which was the bug —
+       "Share something…" was overlapping the surrounding card border). */
+    border: 1px solid $cf-hairline-soft;
+    background: transparent;
+    color: $cf-ink;
+    font-size: 0.96rem;
+    line-height: 1.5;
+    padding: 12px 14px;
+    border-radius: 12px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.12s ease, background 0.12s ease;
+    &::placeholder { color: $cf-muted-2; }
+    &:focus {
+      border-color: rgba(123, 31, 47, 0.3);
+      background: rgba(123, 31, 47, 0.02);
+    }
+  }
+
+  &__composer-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid $cf-hairline-soft;
+  }
+
+  &__composer-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__composer-chip,
+  &__composer-tool-btn {
+    appearance: none;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink-soft;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s ease, border-color 0.12s ease;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
+  &__composer-tool-btn.cf__composer-pin--on {
+    background: $cf-brand-soft;
+    color: $cf-brand;
+    border-color: rgba(123, 31, 47, 0.25);
+  }
+
+  /* Colored affordance icons.
+     Each composer tool button paints its Lucide icon in a distinct hue
+     so they're scannable at a glance. `svg` is the icon child; using
+     it directly (instead of setting `color` on the button) lets the
+     button label stay neutral ink while only the icon is colored. */
+  &__composer-tool-btn--image  svg { color: #1F6B4B; } /* study-abroad green */
+  &__composer-tool-btn--pin    svg { color: $cf-brand; } /* brand maroon */
+  &__composer-tool-btn--poll   svg { color: #C58A1F; } /* exam-prep amber */
+  &__composer-tool-btn--question svg { color: #6E3FB0; } /* wellness purple */
+  /* When the same button flips to its `--on` state the active style
+     above already inherits color: $cf-brand for the whole button,
+     including the svg via currentColor — but only because the icon
+     overrides above lose specificity to .cf__composer-pin--on (single
+     class vs. attribute selector). Re-assert the brand color so the
+     "filled" look stays consistent across all four. */
+  &__composer-tool-btn.cf__composer-pin--on svg { color: $cf-brand; }
+
+  &__composer-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__composer-coins {
+    color: $cf-gold;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  /* ── category dropdown ───────────────────────────────────── */
+  &__category-dropdown { position: relative; }
+  &__category-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(28, 26, 23, 0.08);
+    min-width: 180px;
+    padding: 4px;
+    z-index: 10;
+  }
+  &__category-menu-item {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-ink;
+    width: 100%;
+    text-align: left;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
+  /* ── new post banner ──────────────────────────────────────── */
+  &__new-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px auto 18px;
+    align-self: center;
+    background: $cf-ink;
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 12px rgba(28, 26, 23, 0.18);
+    transition: transform 0.12s ease;
+    &:hover { transform: translateX(-50%) translateY(-1px); }
+  }
+
+  /* ── buttons ──────────────────────────────────────────────── */
+  &__btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 18px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    &--primary {
+      background: $cf-brand;
+      color: #fff;
+      &:hover:not(:disabled) { background: $cf-brand-deep; }
+    }
+    &--ghost {
+      background: transparent;
+      color: $cf-ink;
+      border-color: $cf-hairline;
+      &:hover:not(:disabled) { background: $cf-hairline-soft; }
+    }
+  }
+
+  /* ── post card ────────────────────────────────────────────── */
+  &__posts {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  &__post {
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 14px;
+    padding: 20px 24px 16px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(28, 26, 23, 0.03);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+
+    &:hover {
+      border-color: darken($cf-hairline, 4%);
+      box-shadow: 0 4px 14px rgba(28, 26, 23, 0.05);
+    }
+  }
+
+  &__pinned-strip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $cf-brand;
+    background: $cf-brand-soft;
+    border: 1px solid rgba(123, 31, 47, 0.18);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    margin: -2px 0 14px;
+  }
+
+  &__post-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 12px;
+  }
+
+  &__avatar {
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    user-select: none;
+
+    &--sm { width: 28px; height: 28px; font-size: 0.72rem; }
+    &--md { width: 44px; height: 44px; font-size: 0.95rem; }
+    &--official {
+      border-radius: 8px;
+      background: $cf-brand !important;
+    }
+  }
+
+  &__avatar-img {
+    object-fit: cover;
+    background: transparent !important;
+  }
+
+  &__post-author { min-width: 0; }
+  &__post-author-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  &__post-author-name {
+    font-weight: 600;
+    color: $cf-ink;
+  }
+  &__post-author-sub {
+    color: $cf-muted;
+    font-size: 0.82rem;
+    margin-top: 2px;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 3px 7px;
+    border-radius: 4px;
+
+    &--official {
+      color: $cf-brand;
+      background: $cf-brand-soft;
+    }
+    &--coach {
+      color: $cf-ink-soft;
+      background: $cf-hairline-soft;
+      border: 1px solid $cf-hairline;
+    }
+  }
+
+  &__post-head-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* category tag (right side of head) — color-coded background */
+  &__cat-tag {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: $cf-hairline-soft;
+    color: $cf-ink-soft;
+
+    &--ADMISSIONS    { color: $cat-admissions;   background: rgba(123, 31, 47, 0.08); }
+    &--COLLEGE_LIFE  { color: $cat-college-life; background: rgba(61, 90, 254, 0.10); }
+    &--STUDY_ABROAD  { color: $cat-study-abroad; background: rgba(31, 107, 75, 0.10); }
+    &--EXAM_PREP     { color: $cat-exam-prep;    background: rgba(197, 138, 31, 0.12); }
+    &--WELLNESS      { color: $cat-wellness;     background: rgba(110, 63, 176, 0.10); }
+    &--RESEARCH      { color: $cat-research;     background: rgba(42, 85, 102, 0.10); }
+    &--GENERAL       { color: $cat-general;      background: $cf-hairline-soft; }
+  }
+
+  &__icon-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 6px;
+    line-height: 1;
+    border-radius: 4px;
+    &:hover { background: $cf-hairline-soft; color: $cf-ink; }
+  }
+
+  /* ── post body / gallery ─────────────────────────────────── */
+  &__post-body {
+    color: $cf-ink;
+    font-size: 0.95rem;
+    line-height: 1.62;
+    margin: 4px 0 14px;
+
+    strong { font-weight: 700; }
+    em { font-style: italic; }
+  }
+
+  &__body-line { margin: 0 0 8px; &:last-child { margin-bottom: 0; } }
+
+  &__gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+
+    @media (max-width: 600px) { grid-template-columns: 1fr; }
+  }
+  &__gallery-tile {
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.92);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  &__gallery-icon { opacity: 0.7; }
+  &__gallery-label { letter-spacing: 0.01em; }
+
+  /* ── post meta + actions ─────────────────────────────────── */
+  &__post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: $cf-muted;
+    font-size: 0.78rem;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid $cf-hairline-soft;
+
+    span { display: inline-flex; align-items: center; gap: 4px; }
+  }
+
+  &__post-meta-views { margin-left: auto; }
+  &__post-meta-icon { color: $cf-brand; }
+
+  &__post-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: 8px;
+  }
+
+  &__action {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s ease, color 0.12s ease;
+    &:hover { background: $cf-hairline-soft; color: $cf-ink; }
+
+    &--on { color: $cf-ink; }
+    &--heart-on { color: $cf-brand !important; }
+    &--save-on  { color: $cf-ink !important; }
+    &--icon { padding: 8px; }
+  }
+
+  &__action-right {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  /* ── share popover ──────────────────────────────────────── */
+  &__share-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  &__share-pop {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(28, 26, 23, 0.12);
+    padding: 12px;
+    width: 240px;
+    z-index: 30;
+
+    /* Tiny arrow pointing down to the Share button */
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 28px;
+      width: 10px;
+      height: 10px;
+      background: $cf-paper;
+      border-right: 1px solid $cf-hairline;
+      border-bottom: 1px solid $cf-hairline;
+      transform: rotate(45deg);
+    }
+
+    @media (max-width: 600px) {
+      left: auto;
+      right: 0;
+      &::after { left: auto; right: 28px; }
+    }
+  }
+  &__share-pop-label {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: $cf-muted;
+    margin-bottom: 8px;
+  }
+  &__share-link-row {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    background: $cf-hairline-soft;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    color: $cf-ink-soft;
+    margin-bottom: 8px;
+  }
+  &__share-link { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__share-copy {
+    appearance: none;
+    background: $cf-ink;
+    color: #fff;
+    border: 0;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  &__share-item {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-ink-soft;
+    font-size: 0.85rem;
+    width: 100%;
+    text-align: left;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    &:hover { background: $cf-hairline-soft; color: $cf-brand; }
+  }
+
+  /* ── send-to-chat picker inside the share popover ──────────── */
+  &__share-pop-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  &__share-back {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    &:hover { color: $cf-ink; background: $cf-hairline-soft; }
+  }
+  &__share-search {
+    width: 100%;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    outline: none;
+    margin-bottom: 8px;
+    &:focus { border-color: rgba(123, 31, 47, 0.35); }
+    &::placeholder { color: $cf-muted-2; }
+  }
+  &__share-chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  &__share-chat-empty {
+    color: $cf-muted;
+    font-size: 0.78rem;
+    padding: 14px 6px;
+    text-align: center;
+  }
+  &__share-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 6px 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    color: $cf-ink-soft;
+    transition: background 0.12s ease, color 0.12s ease;
+    &:hover { background: $cf-hairline-soft; color: $cf-brand; }
+    &:disabled { opacity: 0.55; cursor: progress; }
+  }
+  &__share-chat-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+  &__share-chat-send {
+    color: $cf-muted;
+    flex-shrink: 0;
+  }
+
+  /* ── comments ───────────────────────────────────────────── */
+  &__comments {
+    margin-top: 14px;
+    padding-top: 16px;
+    border-top: 1px solid $cf-hairline-soft;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__comment-composer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: $cf-cream;
+    border: 1px solid $cf-hairline;
+    border-radius: 999px;
+    padding: 4px 4px 4px 8px;
+  }
+  &__comment-input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    outline: none;
+    color: $cf-ink;
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 8px;
+    &::placeholder { color: $cf-muted-2; }
+  }
+  &__comment-send {
+    appearance: none;
+    background: $cf-brand;
+    border: 0;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__comment {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+
+    &--reply {
+      margin-left: 38px;
+      margin-top: 8px;
+    }
+  }
+  &__comment-main { min-width: 0; flex: 1; }
+  &__comment-bubble {
+    background: $cf-cream;
+    border: 1px solid $cf-hairline-soft;
+    border-radius: 14px;
+    padding: 10px 14px;
+  }
+  &__comment-head {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  &__comment-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: $cf-ink;
+  }
+  &__comment-time { color: $cf-muted-2; font-size: 0.78rem; }
+  &__comment-body { color: $cf-ink-soft; font-size: 0.88rem; line-height: 1.55; }
+  &__comment-actions {
+    display: inline-flex;
+    gap: 12px;
+    padding: 4px 10px 0;
+  }
+  &__comment-action {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    font-size: 0.72rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    transition: color 0.12s ease;
+    &:hover { color: $cf-ink; }
+    /* `--on` is shared by like (filled heart) and reply (open reply box).
+       Both should pop in the brand maroon so users can spot active state. */
+    &--on { color: $cf-brand; font-weight: 600; }
+  }
+
+  /* Inline reply input under a top-level comment. Mirrors the main
+     composer's layout (avatar + input + send) but at the comment scale. */
+  &__comment-reply-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 0;
+    margin-top: 6px;
+  }
+
+  /* ── end-of-feed ────────────────────────────────────────── */
+  &__end {
+    margin-top: 32px;
+    text-align: center;
+    color: $cf-muted;
+    font-size: 0.85rem;
+    padding: 22px 0;
+    border-top: 1px solid $cf-hairline;
+  }
+
+  /* ── right rail widgets ─────────────────────────────────── */
+  /* Outer grid cell stretches to row height; inner wrapper does the sticking. */
+  &__rail { display: block; }
+
+  &__rail-inner {
+    position: sticky;
+    /* The global maroon header is `position: sticky; top: 0` and roughly
+       80px tall. Park the right rail just below it so the widgets don't
+       slide behind the header as the page scrolls. */
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    @media (max-width: 1100px) { position: static; }
+  }
+
+  &__widget {
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 2px rgba(28, 26, 23, 0.03);
+  }
+
+  &__widget-head {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $cf-muted;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &--row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+  }
+
+  &__widget-dismiss {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted-2;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    &:hover { background: $cf-hairline-soft; color: $cf-ink; }
+  }
+
+  /* ── trending ────────────────────────────────────────────── */
+  &__trending {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__trending-item {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 4px;
+    margin: -6px -4px;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
+  &__trending-rank {
+    font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $cf-brand;
+    line-height: 1;
+  }
+
+  &__trending-main { min-width: 0; }
+
+  &__trending-body {
+    font-size: 0.85rem;
+    color: $cf-ink;
+    line-height: 1.35;
+    font-weight: 500;
+    margin-bottom: 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  &__trending-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $cf-muted;
+    font-size: 0.72rem;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+  }
+
+  &__trending-dot { opacity: 0.5; }
+
+  /* ── top mentors ─────────────────────────────────────────── */
+  &__mentors {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__mentor-card {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+    margin: -8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
+  &__mentor-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__mentor-main { min-width: 0; }
+
+  &__mentor-name {
+    font-weight: 600;
+    color: $cf-ink;
+    font-size: 0.86rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__mentor-sub {
+    color: $cf-muted;
+    font-size: 0.74rem;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__mentor-rating {
+    color: $cf-gold;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-top: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  &__coins {
+    background: linear-gradient(180deg, #fdf5e6 0%, #f9efd9 100%);
+    border-color: rgba(182, 130, 75, 0.28);
+    box-shadow: 0 1px 2px rgba(160, 110, 50, 0.06);
+    .cf__widget-head { color: #8a6a2a; }
+  }
+  &__coins-balance {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: $cf-ink;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  &__coins-delta {
+    color: $cf-gold;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  &__coins-bar {
+    background: rgba(182, 130, 75, 0.18);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  &__coins-bar-fill {
+    background: $cf-gold;
+    height: 100%;
+  }
+  &__coins-cap {
+    color: $cf-ink-soft;
+    font-size: 0.74rem;
+  }
+
+  /* leaderboard */
+  &__leaderboard {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  &__leader {
+    display: grid;
+    grid-template-columns: 14px 28px 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  &__leader-rank {
+    color: $cf-muted-2;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  &__leader-main { min-width: 0; }
+  &__leader-name {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: $cf-ink;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__leader-meta {
+    font-size: 0.72rem;
+    color: $cf-muted;
+  }
+  &__leader-coins {
+    color: $cf-gold;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  &__leader-empty {
+    color: $cf-muted;
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  &__composer-image-count {
+    background: $cf-brand;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    margin-left: 4px;
+  }
+
+  /* house rules */
+  &__rules {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    li {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 8px;
+      align-items: baseline;
+      font-size: 0.82rem;
+      color: $cf-ink-soft;
+      line-height: 1.45;
+    }
+  }
+  &__rule-num {
+    color: $cf-brand;
+    font-weight: 700;
+    font-size: 0.72rem;
+    font-feature-settings: 'tnum';
+  }
+
+  /* ── report dialog ──────────────────────────────────────── */
+  &__dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 26, 23, 0.42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 24px;
+  }
+  &__dialog {
+    background: $cf-paper;
+    border-radius: 14px;
+    box-shadow: 0 24px 48px rgba(28, 26, 23, 0.24);
+    padding: 28px 28px 22px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+  }
+  &__dialog-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $cf-muted;
+    margin-bottom: 6px;
+  }
+  &__dialog-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $cf-ink;
+    margin: 0 0 18px;
+  }
+  &__dialog-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    &:hover { background: $cf-hairline-soft; color: $cf-ink; }
+  }
+
+  &__report-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  &__report-reason {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid $cf-hairline;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: $cf-ink-soft;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    &:hover { background: $cf-cream-elevated; }
+    input { display: none; }
+
+    &--on {
+      border-color: $cf-brand;
+      background: $cf-brand-soft;
+      color: $cf-brand;
+      .cf__report-reason-bullet {
+        border-color: $cf-brand;
+        &::after { transform: scale(1); }
+      }
+    }
+  }
+  &__report-reason-bullet {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid $cf-hairline;
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.12s ease;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: $cf-brand;
+      transform: scale(0);
+      transition: transform 0.12s ease;
+    }
+  }
+  &__report-note {
+    width: 100%;
+    border: 1px solid $cf-hairline;
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: $cf-ink;
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: $cf-cream-elevated;
+    outline: none;
+    margin-bottom: 14px;
+    &::placeholder { color: $cf-muted-2; }
+    &:focus { border-color: $cf-ink-soft; }
+  }
+  &__dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+  }
+  &__dialog-foot-note {
+    color: $cf-muted;
+    font-size: 0.78rem;
+  }
+  &__dialog-foot-actions {
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  /* ── toast ──────────────────────────────────────────────── */
+  &__toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: $cf-ink;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 24px rgba(28, 26, 23, 0.2);
+    z-index: 1200;
+  }
+
+  /* Saved view: small header strip + back link.
+     Replaces the old Feed | Saved tab strip at the top of the page —
+     entry point now lives as a single icon next to the search. */
+  &__saved-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid $cf-hairline-soft;
+  }
+  &__saved-back {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    &:hover { color: $cf-ink; background: $cf-hairline-soft; }
+  }
+  &__saved-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $cf-ink;
+    font-weight: 600;
+    font-size: 0.92rem;
+    font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+    letter-spacing: -0.005em;
+  }
+
+  /* Saved-view shortcut, right side of the search row. Quiet icon
+     button — toned brand maroon to read as a category cousin to the
+     search lens, with a subtle hover lift. */
+  &__saved-toggle {
+    appearance: none;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-brand;
+    border-radius: 999px;
+    padding: 7px 9px;
+    cursor: pointer;
+    line-height: 0;
+    transition: background 0.12s ease, border-color 0.12s ease;
+    flex-shrink: 0;
+    &:hover {
+      background: rgba(123, 31, 47, 0.06);
+      border-color: rgba(123, 31, 47, 0.25);
+    }
+  }
+
+  /* ── persona toggle inside composer ─────────────────────── */
+  &__composer-persona {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    padding-left: 52px; /* align with the textarea, past the avatar */
+  }
+  &__persona-chip {
+    appearance: none;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink-soft;
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    strong { font-weight: 700; margin-left: 4px; }
+    &:hover { background: $cf-hairline-soft; }
+    &--on {
+      background: $cf-brand;
+      color: #fff;
+      border-color: $cf-brand;
+      strong { color: #fff; }
+      &:hover { background: $cf-brand; }
+    }
+  }
+
+  /* ── pending image previews above the toolbar ───────────── */
+  &__composer-previews {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    margin: 0 0 12px 52px;
+  }
+  &__composer-preview {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid $cf-hairline;
+    background: $cf-hairline-soft;
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+  &__composer-preview-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(28, 26, 23, 0.7);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    &:hover { background: rgba(28, 26, 23, 0.9); }
+  }
+
+  /* ── post overflow menu (⋯) ──────────────────────────────── */
+  &__post-menu-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+  &__post-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 200px;
+    background: $cf-paper;
+    border: 1px solid $cf-hairline;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(28, 26, 23, 0.16);
+    padding: 6px;
+    z-index: 50;
+  }
+  &__post-menu-item {
+    width: 100%;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-ink;
+    font-size: 0.86rem;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    &:hover { background: $cf-hairline-soft; }
+    &--danger { color: #b8403c; }
+  }
+
+  /* ── search + active hashtag filter row ──────────────────── */
+  &__filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  &__search-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  &__search-icon {
+    position: absolute;
+    left: 11px;
+    color: $cf-muted-2;
+    pointer-events: none;
+  }
+  &__search-input {
+    flex: 1;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink;
+    border-radius: 999px;
+    padding: 8px 30px 8px 32px;
+    font-size: 0.86rem;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.12s ease, background 0.12s ease;
+    &::placeholder { color: $cf-muted-2; }
+    &:focus {
+      border-color: rgba(123, 31, 47, 0.35);
+      background: rgba(123, 31, 47, 0.02);
+    }
+    /* Strip the native clear-X — we render our own with the right icon. */
+    &::-webkit-search-cancel-button { -webkit-appearance: none; }
+  }
+  &__search-clear {
+    position: absolute;
+    right: 8px;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 999px;
+    line-height: 0;
+    &:hover { color: $cf-ink; background: $cf-hairline-soft; }
+  }
+  &__active-tag {
+    appearance: none;
+    border: 1px solid rgba(123, 31, 47, 0.3);
+    background: rgba(123, 31, 47, 0.08);
+    color: $cf-brand;
+    border-radius: 999px;
+    padding: 6px 10px 6px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+    flex-shrink: 0;
+    &:hover { background: rgba(123, 31, 47, 0.14); }
+  }
+
+  /* ── hashtag chip inside body text ───────────────────────── */
+  &__hashtag {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: $cf-brand;
+    font-weight: 600;
+    cursor: pointer;
+    font: inherit;
+    line-height: inherit;
+    &:hover { text-decoration: underline; }
+  }
+
+  /* ── right-rail "Trending Tags" widget ───────────────────── */
+  &__tag-cloud {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  &__tag-pill {
+    appearance: none;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink-soft;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    &:hover {
+      background: rgba(123, 31, 47, 0.05);
+      border-color: rgba(123, 31, 47, 0.3);
+      color: $cf-brand;
+    }
+    &--on {
+      background: rgba(123, 31, 47, 0.1);
+      border-color: rgba(123, 31, 47, 0.35);
+      color: $cf-brand;
+    }
+  }
+  &__tag-pill-count {
+    color: $cf-muted-2;
+    font-weight: 500;
+    font-size: 0.72rem;
+  }
+
+  /* ── question / answer tags + mentions ──────────────────── */
+  &__kind-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: $cf-brand;
+    background: rgba(123, 31, 47, 0.08);
+    border: 1px solid rgba(123, 31, 47, 0.2);
+    border-radius: 999px;
+    padding: 3px 8px;
+    margin-right: 4px;
+    &--answered {
+      color: #1f6b4b;
+      background: rgba(31, 107, 75, 0.1);
+      border-color: rgba(31, 107, 75, 0.25);
+    }
+  }
+
+  &__mention {
+    color: $cf-brand;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.12s ease;
+    &:hover { text-decoration: underline; }
+  }
+
+  &__comment-answer-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #1f6b4b;
+    background: rgba(31, 107, 75, 0.1);
+    border: 1px solid rgba(31, 107, 75, 0.22);
+    text-transform: uppercase;
+  }
+
+  &__comment--answer {
+    .cf__comment-bubble {
+      border: 1px solid rgba(31, 107, 75, 0.3);
+      background: rgba(31, 107, 75, 0.04);
+    }
+  }
+
+  /* ── inline poll editor (composer) ───────────────────────── */
+  &__poll-editor {
+    border: 1px solid $cf-hairline;
+    background: rgba(123, 31, 47, 0.025);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 0 0 12px 52px;
+  }
+  &__poll-editor-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: $cf-brand;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  &__poll-editor-remove {
+    margin-left: auto;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    &:hover { color: $cf-brand; background: rgba(123, 31, 47, 0.08); }
+  }
+  &__poll-editor-question,
+  &__poll-editor-option {
+    width: 100%;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.86rem;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.12s ease;
+    &:focus { border-color: rgba(123, 31, 47, 0.4); }
+    &::placeholder { color: $cf-muted-2; }
+  }
+  &__poll-editor-question { margin-bottom: 8px; }
+  &__poll-editor-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  &__poll-editor-option-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  &__poll-editor-remove-opt {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    &:hover { color: $cf-brand; }
+  }
+  &__poll-editor-add {
+    appearance: none;
+    background: transparent;
+    border: 1px dashed $cf-hairline;
+    color: $cf-muted;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    &:hover { color: $cf-brand; border-color: rgba(123, 31, 47, 0.3); }
+  }
+
+  /* ── poll card on rendered post ──────────────────────────── */
+  &__poll {
+    border: 1px solid $cf-hairline;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 8px 0 12px;
+    background: $cf-paper;
+    &--closed { background: rgba(123, 31, 47, 0.02); }
+  }
+  &__poll-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  &__poll-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $cf-brand;
+    letter-spacing: 0.12em;
+  }
+  &__poll-question {
+    font-weight: 600;
+    color: $cf-ink;
+    font-size: 0.9rem;
+    flex: 1;
+    min-width: 0;
+  }
+  &__poll-closed-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: $cf-muted;
+    background: $cf-hairline-soft;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  &__poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  &__poll-vote-btn {
+    appearance: none;
+    background: $cf-paper;
+    color: $cf-ink;
+    border: 1px solid $cf-hairline;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+    font-family: inherit;
+    &:hover {
+      border-color: rgba(123, 31, 47, 0.4);
+      background: rgba(123, 31, 47, 0.04);
+      color: $cf-brand;
+    }
+  }
+  &__poll-result {
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid $cf-hairline;
+    overflow: hidden;
+    padding: 10px 14px;
+    background: $cf-paper;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.86rem;
+    &--mine {
+      border-color: rgba(123, 31, 47, 0.45);
+      background: rgba(123, 31, 47, 0.04);
+    }
+  }
+  &__poll-result-bar {
+    position: absolute;
+    inset: 0;
+    background: rgba(123, 31, 47, 0.1);
+    z-index: 0;
+    transition: width 0.4s ease;
+  }
+  &__poll-result--mine &__poll-result-bar {
+    background: rgba(123, 31, 47, 0.18);
+  }
+  &__poll-result-label {
+    position: relative;
+    z-index: 1;
+    color: $cf-ink;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &__poll-result-meta {
+    position: relative;
+    z-index: 1;
+    color: $cf-ink-soft;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  &__poll-result-count {
+    color: $cf-muted;
+    font-weight: 500;
+  }
+  &__poll-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.74rem;
+    color: $cf-muted;
+  }
+  &__poll-total { font-weight: 500; }
+  &__poll-close-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: $cf-muted;
+    font-size: 0.74rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    &:hover { color: $cf-brand; background: rgba(123, 31, 47, 0.06); }
+  }
+
+  /* ── inline edit form (replaces post body when editing) ─── */
+  &__post-edit {
+    margin: 6px 0 14px;
+  }
+  &__post-edit-input {
+    width: 100%;
+    border: 1px solid $cf-hairline;
+    background: $cf-paper;
+    color: $cf-ink;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.12s ease;
+    &:focus {
+      border-color: rgba(123, 31, 47, 0.4);
+      background: rgba(123, 31, 47, 0.02);
+    }
+  }
+  &__post-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  &__post-edit-hint {
+    font-size: 0.78rem;
+    color: $cf-muted;
+  }
+  &__post-edit-buttons {
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  /* ── real-image gallery (post.mediaUrls) ────────────────── */
+  &__media {
+    display: grid;
+    gap: 4px;
+    margin: 8px 0 12px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid $cf-hairline-soft;
+    &--n1 { grid-template-columns: 1fr; }
+    &--n2 { grid-template-columns: 1fr 1fr; }
+    &--n3 {
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      .cf__media-tile:first-child { grid-row: span 2; }
+    }
+    &--n4 {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+  }
+  &__media-tile {
+    display: block;
+    background: $cf-hairline-soft;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    &:hover img { transform: scale(1.02); }
+  }
+  &__media--n1 &__media-tile { aspect-ratio: 16 / 9; }
+}

@@ -38,7 +38,7 @@ function ChatIconFallback() {
         color: '#fff',
       }}
     >
-      <MessageCircle size={22} color="#fff" />
+      <MessageCircle size={20} color="#fff" />
     </div>
   );
 }
@@ -173,7 +173,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
           opacity: 1,
         }}
       >
-        <MessageCircle size={22} color="#fff" />
+        <MessageCircle size={20} color="#fff" />
         {unreadCount > 0 && (
           <span className={styles.chatIconBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}

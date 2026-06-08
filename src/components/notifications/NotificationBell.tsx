@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Popover, List, Button, Empty, Spin, notification as antdNotification } from 'antd';
-import { Bell, Check, UserPlus, UserCheck } from 'lucide-react';
+import { BellDot, Bell, Check, UserPlus, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   useGetNotificationsQuery,
@@ -237,7 +237,7 @@ const NotificationBell: React.FC = () => {
           }
         }}
       >
-        <Bell size={20} color="#fff" />
+        <BellDot size={20} color="#fff" />
         {unreadCount > 0 && (
           <span className={styles.bellBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}

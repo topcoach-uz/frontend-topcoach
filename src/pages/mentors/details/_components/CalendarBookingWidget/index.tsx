@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import RequestSessionModal from '../RequestSessionModal';
+import SessionCheckoutSheet from '../SessionCheckoutSheet';
 import styles from './calendarBooking.module.scss';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -78,6 +79,8 @@ export default function CalendarBookingWidget({
   const [bookingSlotStart, setBookingSlotStart] = useState<string | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSlot, setPendingSlot] = useState<{ start: string; end: string; type: string } | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutSlot, setCheckoutSlot] = useState<{ sessionId: string; start: string; end: string; type: string } | null>(null);
 
   const isLoading = availLoading || slotsLoading;
 
@@ -157,14 +160,12 @@ export default function CalendarBookingWidget({
 
       if ((result as any)?.paymentRequired) {
         const sessionId = (result as any)?.sessionId;
-        if (sessionId && onPaymentRequired) {
-          onPaymentRequired({
-            mentorId,
-            sessionId,
-            start: slot.start,
-            end: slot.end,
-            type: slot.type,
-          });
+        if (sessionId) {
+          // Open the one-tap checkout sheet. It pays with the saved default
+          // card, and falls back to the hosted /payment page (via
+          // onUseDifferentCard) when there's no saved card or the user opts out.
+          setCheckoutSlot({ sessionId, start: slot.start, end: slot.end, type: slot.type });
+          setCheckoutOpen(true);
         } else {
           message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
         }
@@ -432,6 +433,31 @@ export default function CalendarBookingWidget({
           </div>
         )}
       </Modal>
+
+      <SessionCheckoutSheet
+        open={checkoutOpen}
+        sessionId={checkoutSlot?.sessionId ?? null}
+        mentorName={mentorName}
+        onClose={() => setCheckoutOpen(false)}
+        onUseDifferentCard={() => {
+          setCheckoutOpen(false);
+          if (checkoutSlot && onPaymentRequired) {
+            onPaymentRequired({
+              mentorId,
+              sessionId: checkoutSlot.sessionId,
+              start: checkoutSlot.start,
+              end: checkoutSlot.end,
+              type: checkoutSlot.type,
+            });
+          } else {
+            message.info(t('mentors.redirectToPayment', 'Please complete payment to book'));
+          }
+        }}
+        onPaid={() => {
+          setCheckoutOpen(false);
+          setCheckoutSlot(null);
+        }}
+      />
     </CustomCard>
   );
 }
