@@ -173,12 +173,20 @@ body.cf-feed-active {
     gap: 12px;
     padding-top: 12px;
     border-top: 1px solid $cf-hairline-soft;
+    /* On narrow viewports the right-side actions (+10 coins + Post)
+       were getting pushed past the card edge. Wrap so they drop to a
+       second row instead of overflowing — see the matching media query
+       below for the exact threshold. */
+    flex-wrap: wrap;
   }
 
   &__composer-tools {
     display: flex;
     align-items: center;
     gap: 8px;
+    /* Allow tool pills to wrap to a new line too rather than push out. */
+    flex-wrap: wrap;
+    min-width: 0;
   }
 
   &__composer-chip,
@@ -338,19 +346,28 @@ body.cf-feed-active {
     }
   }
 
+  /* Editorial "anchored" strip — small uppercase microtype with a thin
+     maroon left rule. Reads as a magazine kicker, not an Ant Design pill.
+     The pin icon stays for affordance; everything else trims down to
+     micro-typography to keep the post header serene. */
   &__pinned-strip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: $cf-brand;
-    background: $cf-brand-soft;
-    border: 1px solid rgba(123, 31, 47, 0.18);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
+    background: transparent;
+    border: 0;
+    border-left: 2px solid $cf-brand;
+    border-radius: 0;
+    padding: 3px 0 3px 10px;
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
     font-weight: 700;
+    text-transform: uppercase;
     margin: -2px 0 14px;
+    line-height: 1.1;
+
+    svg { color: $cf-brand; opacity: 0.85; }
   }
 
   &__post-head {
@@ -430,22 +447,45 @@ body.cf-feed-active {
   }
 
   /* category tag (right side of head) — color-coded background */
+  /* Category tag (top-right of a post). Editorial micro-label — a small
+     colored dot then the category name in uppercase microtype. No chip
+     background, so it sits flush with the cream paper instead of looking
+     like an Ant Design tag. Picks up the same dot language used by the
+     filter pills so the two surfaces feel related. */
   &__cat-tag {
-    font-size: 0.66rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.64rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background: $cf-hairline-soft;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
     color: $cf-ink-soft;
+    line-height: 1;
 
-    &--ADMISSIONS    { color: $cat-admissions;   background: rgba(123, 31, 47, 0.08); }
-    &--COLLEGE_LIFE  { color: $cat-college-life; background: rgba(61, 90, 254, 0.10); }
-    &--STUDY_ABROAD  { color: $cat-study-abroad; background: rgba(31, 107, 75, 0.10); }
-    &--EXAM_PREP     { color: $cat-exam-prep;    background: rgba(197, 138, 31, 0.12); }
-    &--WELLNESS      { color: $cat-wellness;     background: rgba(110, 63, 176, 0.10); }
-    &--RESEARCH      { color: $cat-research;     background: rgba(42, 85, 102, 0.10); }
-    &--GENERAL       { color: $cat-general;      background: $cf-hairline-soft; }
+    /* Leading dot — sized + colored per category. ::before keeps the JSX
+       clean (no extra <span>) and the size is matched to the filter-pill
+       dot for visual continuity. */
+    &::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 0; /* reserved for hover lift if we add it later */
+    }
+
+    &--ADMISSIONS    { color: $cat-admissions; }
+    &--COLLEGE_LIFE  { color: $cat-college-life; }
+    &--STUDY_ABROAD  { color: $cat-study-abroad; }
+    &--EXAM_PREP     { color: $cat-exam-prep; }
+    &--WELLNESS      { color: $cat-wellness; }
+    &--RESEARCH      { color: $cat-research; }
+    &--GENERAL       { color: $cat-general; }
   }
 
   &__icon-btn {
@@ -1889,4 +1929,56 @@ body.cf-feed-active {
     &:hover img { transform: scale(1.02); }
   }
   &__media--n1 &__media-tile { aspect-ratio: 16 / 9; }
+
+  /* ── narrow-viewport polish ──────────────────────────────────
+     The composer + post cards were built for the desktop column
+     (~700px). Below ~640px the toolbar's two flex children
+     (tools | coins+Post) overrun the card edge — the user reported
+     +10 coins and Post sliding off-screen on a 476px viewport.
+     These rules let the toolbar wrap, right-align the actions on
+     their own line, and tighten the avatar-aligned indents that
+     looked nice in desktop but eat half the card on mobile. */
+  @media (max-width: 640px) {
+    padding: 0 0 16px;
+
+    /* Toolbar — actions take the full bottom row, right-aligned. */
+    &__composer-toolbar {
+      gap: 8px;
+    }
+    &__composer-tools {
+      flex: 1 1 100%;
+      gap: 6px;
+    }
+    &__composer-actions {
+      flex: 1 1 100%;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* Pull persona / preview / poll-editor in flush with the card
+       gutter; the 52px desktop indent (avatar + gap) is too much
+       when the card itself is ~410px wide. */
+    &__composer-persona,
+    &__composer-previews,
+    &__poll-editor {
+      margin-left: 0;
+      padding-left: 0;
+    }
+
+    /* Tighten the composer-top so the textarea uses the full row. */
+    &__composer { padding: 14px; }
+    &__composer-top { gap: 10px; }
+    &__composer-input { padding: 10px 12px; font-size: 0.92rem; }
+
+    /* Tool buttons stay legible but lose a little side padding. */
+    &__composer-chip,
+    &__composer-tool-btn {
+      padding: 5px 9px;
+      font-size: 0.76rem;
+    }
+
+    /* Right rail is hidden by the cf__layout @1100 breakpoint, but
+       the main column still needs a sensible padding when stacked. */
+    &__main { min-width: 0; }
+  }
 }

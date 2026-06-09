@@ -67,16 +67,16 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
   const copy = useMemo((): VariantCopy => {
     const defaults: Record<CommunityLockVariant, VariantCopy> = {
       feed: {
-        badge: t('studentHub.communityLock.badgeCommunity', 'Community'),
-        title: t('studentHub.communityLock.feedTitle', 'Connect with peers and mentors on TopCoach'),
+        badge: t('studentHub.communityLock.badgeFeed', 'Community Feed'),
+        title: t('studentHub.communityLock.feedTitle', 'A live feed of admissions wins, advice, and questions'),
         lead: t(
           'studentHub.communityLock.feedLead',
-          'The Community hub includes the feed, study groups, study buddies, and mentor discovery — built for students in our full journey experience.',
+          'The Community Feed is your inside line to what other TopCoach students are doing right now — acceptance posts, scholarship news, application tips, and questions you can ask a real coach. Available with Community enrollment.',
         ),
         bullets: [
-          { icon: 'users', text: t('studentHub.communityLock.bulletPartners', 'Join conversations and find accountability partners') },
-          { icon: 'message', text: t('studentHub.communityLock.bulletMessages', 'Message threads and mentor office hours (where available)') },
-          { icon: 'sparkles', text: t('studentHub.communityLock.bulletCoins', 'Earn coins from engagement and unlock rewards') },
+          { icon: 'message', text: t('studentHub.communityLock.feedBPost', 'Ask a question, post a win, vote in polls, react with a single tap') },
+          { icon: 'users', text: t('studentHub.communityLock.feedBPeople', 'See who’s applying where — and follow trending #admissions, #SAT, #studyabroad') },
+          { icon: 'sparkles', text: t('studentHub.communityLock.feedBCoins', 'Earn coins for posts and helpful replies; redeem them on session perks') },
         ],
       },
       'ai-major-match': {

@@ -123,17 +123,23 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           </button>
         )}
 
-        {/* Phase-1 gate — see CommunityHubMockPage.tsx "Phase-1 launch gate". */}
-        {ENABLE_COMMUNITY_FEED && profile?.managementRole === 'SuperAdmin' && (
+        {/* Phase-1 gate — see CommunityHubMockPage.tsx "Phase-1 launch gate".
+            SuperAdmin OR a small email allowlist so the team can smoke-test
+            a non-SuperAdmin community-enrolled account in prod. */}
+        {ENABLE_COMMUNITY_FEED &&
+          (profile?.managementRole === 'SuperAdmin' ||
+            profile?.email?.toLowerCase() === 'support@topcoach.uz') && (
           <button
             type="button"
             className={`${styles.navItem} ${isFeed ? styles.navItemActive : ''}`}
             onClick={() => go('/student-hub?section=feed')}
+            title={!isCommunityEnrolled ? t('studentHub.hub.feedLocked', 'Community access required') : undefined}
           >
             <span className={styles.navIconCircle}>
               <Compass size={20} color="#8b0000" />
             </span>
             <span className={styles.navLabel}>{t('studentHub.hub.feed', 'Feed')}</span>
+            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
         )}
 

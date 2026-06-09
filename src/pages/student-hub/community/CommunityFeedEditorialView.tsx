@@ -1467,7 +1467,6 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
                     <span><Heart size={12} className="cf__post-meta-icon" /> {post.likes + (liked ? 0 : 0)}</span>
                     <span>{post.comments} comments</span>
                     <span>{post.saves} saved</span>
-                    <span className="cf__post-meta-views">👁 {compactNumber(post.views)}</span>
                   </div>
 
                   <div className="cf__post-actions">

@@ -203,14 +203,18 @@ export default function CommunityHubMockPage() {
     };
   }, [profile?.profile, t]);
 
-  // Phase-1 gate: non-SuperAdmin users can't land on `feed` (the
-  // panel would render nothing). Fall back to Messages so the page
-  // still has content. Profile is hydrated by parent layout before
-  // this component mounts, so the check is synchronous in practice.
+  // Phase-1 gate: only feed-allowed users (SuperAdmin + the small email
+  // allowlist) land on `feed` by default. Everyone else lands on the
+  // existing "My progress" panel, so the page always has content.
+  // Profile is hydrated by the parent layout before this component
+  // mounts, so the check is synchronous in practice.
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
-    const isSuperAdmin = profile?.managementRole === 'SuperAdmin';
-    if (ENABLE_COMMUNITY_FEED && isSuperAdmin) return 'feed';
-    return 'messages';
+    const allowEmails = ['support@topcoach.uz'];
+    const allowed =
+      profile?.managementRole === 'SuperAdmin' ||
+      (!!profile?.email && allowEmails.includes(profile.email.toLowerCase()));
+    if (ENABLE_COMMUNITY_FEED && allowed) return 'feed';
+    return 'myLearning';
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
   const [accountTarget, setAccountTarget] = useState<string | null>(null);
@@ -380,12 +384,16 @@ export default function CommunityHubMockPage() {
 
   /**
    * Phase-1 launch gate: the Community Feed is rolled out to SuperAdmin
-   * accounts first. Once production smoke-testing is green the check
-   * widens — search for this comment to find every gate in one sweep.
-   * Frontend gate is paired with a matching backend check inside
-   * `CommunityEnrollmentGuard`.
+   * accounts first, plus a small allowlist of test accounts so the team
+   * can smoke-test non-SuperAdmin paths in prod. Once production
+   * smoke-testing is green the check widens — search for "Phase-1 launch
+   * gate" to find every gate in one sweep. Frontend gate is paired with
+   * a matching backend check inside `CommunityEnrollmentGuard`.
    */
-  const isFeedAllowed = profile?.managementRole === 'SuperAdmin';
+  const PHASE_1_EMAIL_ALLOWLIST = ['support@topcoach.uz'];
+  const isFeedAllowed =
+    profile?.managementRole === 'SuperAdmin' ||
+    (!!profile?.email && PHASE_1_EMAIL_ALLOWLIST.includes(profile.email.toLowerCase()));
 
   const navItems: CommunityNavItem[] = useMemo(
     () => [
@@ -599,7 +607,8 @@ export default function CommunityHubMockPage() {
             </button>
           )}
 
-          {ENABLE_COMMUNITY_FEED && (
+          {/* Phase-1 launch gate — Feed is SuperAdmin-only (plus the test-account allowlist). */}
+          {ENABLE_COMMUNITY_FEED && isFeedAllowed && (
             <button
               type="button"
               className={`${styles.navItem} ${activeSection === 'feed' ? styles.navItemActive : ''}`}
@@ -607,11 +616,16 @@ export default function CommunityHubMockPage() {
                 setActiveSection('feed');
                 navigate('/student-hub?section=feed', { replace: true });
               }}
+              title={!isCommunityEnrolled ? t('studentHub.hub.feedLocked', 'Community access required') : undefined}
             >
               <span className={styles.navIconCircle}>
                 <Compass size={20} color="#8b0000" />
               </span>
               <span className={styles.navLabel}>{t('studentHub.hub.feed', 'Feed')}</span>
+              {/* Match the shared lock-icon pattern used by SAT/Admissions/
+                  Research/My Rewards so the Feed row reads as part of the
+                  same locked-items family — same size, same SCSS class. */}
+              {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
             </button>
           )}
 
