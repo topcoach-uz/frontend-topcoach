@@ -19,6 +19,7 @@ import {
   Shield,
   ArrowLeft,
   BookOpen,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -47,6 +48,7 @@ import PlacementTestPage from '../../placement-test';
 import PlacementProfileWizardPage from '../../placement-test/profile';
 import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
+import { isFeedPhase1Allowed } from './communityFeedAccess';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
 import StudyBuddyConsentGate from './StudyBuddyConsentGate';
 import { useStudyBuddyConsentStatusQuery } from 'src/app/services/student-hub/studyBuddyApi';
@@ -209,11 +211,7 @@ export default function CommunityHubMockPage() {
   // Profile is hydrated by the parent layout before this component
   // mounts, so the check is synchronous in practice.
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
-    const allowEmails = ['support@topcoach.uz'];
-    const allowed =
-      profile?.managementRole === 'SuperAdmin' ||
-      (!!profile?.email && allowEmails.includes(profile.email.toLowerCase()));
-    if (ENABLE_COMMUNITY_FEED && allowed) return 'feed';
+    if (ENABLE_COMMUNITY_FEED && isFeedPhase1Allowed(profile)) return 'feed';
     return 'myLearning';
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
@@ -379,21 +377,18 @@ export default function CommunityHubMockPage() {
     } else {
       setAccountTarget(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [location.search]);
 
   /**
    * Phase-1 launch gate: the Community Feed is rolled out to SuperAdmin
    * accounts first, plus a small allowlist of test accounts so the team
-   * can smoke-test non-SuperAdmin paths in prod. Once production
-   * smoke-testing is green the check widens — search for "Phase-1 launch
-   * gate" to find every gate in one sweep. Frontend gate is paired with
-   * a matching backend check inside `CommunityEnrollmentGuard`.
+   * can smoke-test non-SuperAdmin paths in prod. Source of truth lives
+   * in `communityFeedAccess.ts` (must be kept in lock-step with the
+   * backend `PHASE_1_EMAIL_ALLOWLIST`). Search "Phase-1 launch gate"
+   * to find every gate in one sweep.
    */
-  const PHASE_1_EMAIL_ALLOWLIST = ['support@topcoach.uz'];
-  const isFeedAllowed =
-    profile?.managementRole === 'SuperAdmin' ||
-    (!!profile?.email && PHASE_1_EMAIL_ALLOWLIST.includes(profile.email.toLowerCase()));
+  const isFeedAllowed = isFeedPhase1Allowed(profile);
 
   const navItems: CommunityNavItem[] = useMemo(
     () => [
@@ -416,6 +411,10 @@ export default function CommunityHubMockPage() {
     }),
     []
   );
+
+  const iscRole = profile?.managementRole as string | undefined;
+  const canReviewIsc =
+    iscRole === 'Reviewer' || iscRole === 'SuperAdmin' || iscRole === 'Owner';
 
   const yourJourneyOthersNav = useMemo(
     () => [
@@ -604,6 +603,18 @@ export default function CommunityHubMockPage() {
             >
               <span className={styles.navIconCircle}><Home size={20} color="#8b0000" /></span>
               <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
+            </button>
+          )}
+
+          {/* ISC 2026 reviewer console — only for users granted the Reviewer role. */}
+          {canReviewIsc && (
+            <button
+              type="button"
+              className={styles.navItem}
+              onClick={() => navigate('/isc-2026/review')}
+            >
+              <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
+              <span className={styles.navLabel}>ISC Reviewer</span>
             </button>
           )}
 
