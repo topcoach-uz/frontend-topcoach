@@ -27,6 +27,7 @@ export const PHASE_1_EMAIL_ALLOWLIST: ReadonlySet<string> = new Set([
   'jamolovamadinabonu02@gmail.com',
   'shahriyoraliboyev23@gmail.com',
   'orifovaa20@gmail.com',
+  'orzu@topcoach.uz',
 ]);
 
 /**
