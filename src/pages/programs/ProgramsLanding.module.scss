@@ -1,0 +1,389 @@
+@import 'src/styles/variables.scss';
+
+/* Editorial palette — match Mentors / Workshops / Intensive program page. */
+$pl-cream: #faf8f3;
+$pl-cream-elevated: #fbfaf6;
+$pl-ink: #1c1a17;
+$pl-ink-soft: #4b463f;
+$pl-muted: #6b6258;
+$pl-faint: #9a9186;
+$pl-hairline: #e5e3da;
+$pl-brand: #7b1f2f;
+$pl-brand-dark: #5d1622;
+$pl-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+$pl-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
+
+.shell {
+  display: block;
+  background: $pl-cream;
+  min-height: calc(100vh - 80px);
+  color: $pl-ink;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+
+  @media (max-width: 768px) {
+    padding: 32px 18px 60px;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Masthead
+---------------------------------------------------------------- */
+.header {
+  margin-bottom: 44px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.metaLeft,
+.metaRight {
+  font-family: $pl-mono;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $pl-muted;
+  white-space: nowrap;
+}
+
+.metaRule {
+  flex: 1;
+  height: 1px;
+  background: $pl-hairline;
+}
+
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+}
+
+.title {
+  font-family: $pl-serif;
+  font-size: 5.4rem;
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: $pl-ink;
+  margin: 0;
+
+  .period {
+    color: $pl-brand;
+  }
+
+  @media (max-width: 1100px) {
+    font-size: 4.2rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 3rem;
+  }
+}
+
+.lede {
+  flex: 0 1 460px;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: $pl-ink-soft;
+  margin: 0 0 8px;
+
+  @media (max-width: 860px) {
+    flex-basis: auto;
+    font-size: 0.95rem;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Catalog grid
+---------------------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Active program card
+---------------------------------------------------------------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: $pl-cream-elevated;
+  border: 1px solid $pl-hairline;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(123, 31, 47, 0.35);
+    box-shadow: 0 12px 32px rgba(28, 26, 23, 0.1);
+    outline: none;
+
+    .viewLink svg {
+      transform: translateX(4px);
+    }
+
+    .cardVisual::after {
+      transform: rotate(45deg) scale(1.06);
+    }
+  }
+}
+
+.cardVisual {
+  position: relative;
+  height: 210px;
+  padding: 20px;
+  overflow: hidden;
+  background: linear-gradient(155deg, $pl-brand 0%, $pl-brand-dark 100%);
+  color: #fff;
+
+  /* faint horizontal contour lines */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0 26px,
+      rgba(255, 255, 255, 0.05) 26px 27px
+    );
+    pointer-events: none;
+  }
+
+  /* translucent brand hexagon, nods to the shield logo */
+  &::after {
+    content: '';
+    position: absolute;
+    right: -34px;
+    bottom: -34px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.06);
+    clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+    transition: transform 0.4s ease;
+  }
+}
+
+.flag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 1;
+  padding: 6px 13px;
+  border-radius: 50px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.duration {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.edition {
+  position: absolute;
+  left: 20px;
+  bottom: 18px;
+  z-index: 1;
+  font-family: $pl-mono;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px 24px 24px;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $pl-brand;
+  margin-bottom: 10px;
+}
+
+.cardTitle {
+  font-family: $pl-serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: $pl-ink;
+  margin: 0 0 12px;
+}
+
+.cardDesc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: $pl-ink-soft;
+  margin: 0 0 18px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 50px;
+  background: rgba(123, 31, 47, 0.06);
+  color: $pl-brand;
+  font-size: 0.78rem;
+  font-weight: 500;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.cardFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid $pl-hairline;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+
+  strong {
+    font-family: $pl-serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: $pl-ink;
+  }
+
+  em {
+    font-style: normal;
+    font-size: 0.76rem;
+    color: $pl-muted;
+    margin-top: 3px;
+  }
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $pl-brand;
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+}
+
+/* ----------------------------------------------------------------
+   "Coming soon" placeholder card
+---------------------------------------------------------------- */
+.soonCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 420px;
+  padding: 32px 24px;
+  border: 1.5px dashed $pl-hairline;
+  border-radius: 16px;
+  background: transparent;
+
+  @media (max-width: 1000px) {
+    min-height: 320px;
+  }
+}
+
+.soonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(28, 26, 23, 0.04);
+  border: 1px solid $pl-hairline;
+  color: $pl-faint;
+  margin-bottom: 20px;
+}
+
+.soonTitle {
+  font-family: $pl-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $pl-ink-soft;
+  margin: 0 0 6px;
+}
+
+.soonCaption {
+  font-family: $pl-mono;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $pl-faint;
+  margin: 0;
+}

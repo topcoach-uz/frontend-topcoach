@@ -11,7 +11,9 @@ import {
   ChevronLeft,
   Menu,
   Shield,
+  ClipboardCheck,
 } from 'lucide-react';
+import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useMentorConsole } from './MentorConsoleContext';
 import { initialsFromName } from './utils';
 import './mentor-console-tokens.scss';
@@ -24,6 +26,7 @@ type NavKey =
   | 'availability'
   | 'to-review'
   | 'profile'
+  | 'isc-reviewer'
   | 'admin-console'
   | 'admin-school-counselor'
   | 'admin-topcoach-management'
@@ -137,6 +140,17 @@ export default function MentorConsoleLayout() {
       });
     }
 
+    // ISC 2026 reviewer console — for anyone granted the Reviewer role
+    // (superadmins can also jump in to test the reviewer experience).
+    if (ISC_2026_ENABLED && (managementRole === 'Reviewer' || isSuperAdmin)) {
+      accountItems.push({
+        key: 'isc-reviewer',
+        label: 'ISC Reviewer',
+        icon: <ClipboardCheck size={18} strokeWidth={1.75} />,
+        path: '/isc-2026/review',
+      });
+    }
+
     const groups: NavGroup[] = [
       {
         id: 'overview',
@@ -167,6 +181,7 @@ export default function MentorConsoleLayout() {
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
+    if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/dashboard')) return 'dashboard';
     if (p.startsWith('/mentor/students')) return 'students';
     if (p.startsWith('/mentor/sessions')) return 'sessions';

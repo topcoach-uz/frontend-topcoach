@@ -1,0 +1,385 @@
+/* ISC 2026 — public applicant portal. TopCoach editorial/magazine style:
+   serif display headings, brand crimson #7B1F2F, warm paper, hairline rules.
+   Fixed app frame: header + scrollable body + sticky action bar. */
+$crimson: #7B1F2F;
+$crimson-deep: #5d1622;
+$crimson-tint: #fbe9ec;
+$ink: #1f2937;
+$ink-strong: #111827;
+$slate: #4b5563;
+$muted: #6b7280;
+$faint: #9ca3af;
+$line: #e7e3d8;
+$line-soft: #f1efe8;
+$paper: #fbf8f3;
+$paper-soft: #faf8f3;
+$surface: #ffffff;
+$green: #047857;
+$serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+.site {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: $paper;
+  color: $ink;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── App header (functional, no marketing nav) ──────────────────── */
+.appbar {
+  flex: 0 0 auto;
+  background: $surface;
+  border-bottom: 1px solid $line;
+  height: 60px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.appbarBrand { display: flex; align-items: center; gap: 12px; }
+.appMark {
+  width: 36px; height: 36px; border-radius: 9px; background: $crimson; color: #fff;
+  font-family: $serif; font-weight: 600; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.appName { font-family: $serif; font-weight: 600; font-size: 16px; color: $ink-strong; line-height: 1.1; }
+.appSub { font-size: 12px; color: $muted; }
+.exitBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid $line; background: $surface; color: $slate;
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+  &:hover { border-color: $crimson; color: $crimson; }
+}
+
+/* ── Landing (one frame, two columns) ───────────────────────────── */
+.landingWrap {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-content: center;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 32px 48px;
+}
+.landingLeft { align-self: center; }
+.eyebrow {
+  display: inline-block;
+  background: $crimson-tint;
+  color: $crimson;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.heroTitle {
+  font-size: 2.7rem;
+  font-weight: 600;
+  font-family: $serif;
+  margin: 0 0 14px;
+  letter-spacing: -0.025em;
+  line-height: 1.06;
+  color: $ink-strong;
+  b { color: $crimson; font-weight: 600; }
+}
+.heroSub { color: $slate; font-size: 15.5px; line-height: 1.6; margin: 0 0 22px; max-width: 440px; }
+.statsStrip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: $ink;
+  font-size: 15px;
+  b { font-family: $serif; font-weight: 600; color: $crimson; font-size: 1.15em; }
+}
+.dot { width: 4px; height: 4px; border-radius: 50%; background: #cbb6ba; }
+.deadlineInline { margin-top: 18px; font-size: 13px; font-weight: 600; color: #92651b; }
+
+.landingCard {
+  background: $surface;
+  border: 1px solid $line;
+  border-radius: 16px;
+  padding: 26px 26px 24px;
+  box-shadow: 0 8px 30px rgba(123, 31, 47, 0.05);
+  align-self: center;
+}
+.cardHead { font-family: $serif; font-weight: 600; font-size: 1.35rem; margin: 0 0 4px; color: $ink-strong; }
+.cardSub { color: $muted; font-size: 14px; margin: 0 0 16px; }
+
+.qLabel {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: $faint; margin: 16px 0 9px;
+}
+.optionGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.option {
+  border: 1.5px solid $line;
+  border-radius: 11px;
+  padding: 13px 14px;
+  cursor: pointer;
+  background: $surface;
+  transition: all 0.12s;
+  &:hover { border-color: #cbb6ba; }
+  &.selected { border-color: $crimson; background: #fdf6f7; box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.08); }
+}
+.optionTitle { font-weight: 700; font-size: 14px; color: $ink-strong; }
+.optionDesc { font-size: 12px; color: $muted; margin-top: 3px; line-height: 1.4; }
+
+/* ── Scrollable body (form / review / submitted) ────────────────── */
+.formScroll, .narrow { flex: 1; overflow-y: auto; }
+.formGrid {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  gap: 44px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 28px 40px;
+  align-items: start;
+}
+.formCol { min-width: 0; }
+
+/* editorial vertical stepper (table-of-contents style) */
+.stepNav { position: sticky; top: 0; align-self: start; }
+.ctxLine {
+  font-size: 12.5px; color: $muted; line-height: 1.55; margin-bottom: 18px;
+  padding-bottom: 16px; border-bottom: 1px solid $line;
+}
+.stepList { list-style: none; margin: 0; padding: 0; }
+.stepItem {
+  display: flex; gap: 14px; align-items: baseline;
+  padding: 13px 0; border-bottom: 1px solid $line-soft; cursor: pointer;
+  &:hover .stepName { color: $crimson; }
+}
+.stepNum {
+  font-family: $serif; font-size: 1.15rem; font-weight: 600; color: $faint;
+  width: 26px; flex-shrink: 0; line-height: 1;
+}
+.stepBody { display: flex; flex-direction: column; gap: 3px; }
+.stepName { font-size: 14.5px; font-weight: 600; color: $slate; transition: color 0.12s; }
+.stepState { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: $faint; }
+.stepActive {
+  .stepNum { color: $crimson; }
+  .stepName { color: $ink-strong; }
+  .stepState { color: $crimson; }
+}
+.stepDone {
+  .stepNum { color: $green; }
+  .stepState { color: $green; }
+}
+.stepLocked {
+  cursor: not-allowed;
+  .stepName, .stepNum { color: #c4bdae; }
+  &:hover .stepName { color: #c4bdae; }
+}
+.deadlineNote {
+  margin-top: 20px; font-size: 12px; color: $muted; line-height: 1.65;
+  padding-top: 16px; border-top: 1px solid $line-soft;
+}
+
+.narrow { padding: 28px 24px; }
+.narrow > * { max-width: 720px; margin-left: auto; margin-right: auto; }
+
+.pageH { font-family: $serif; font-weight: 600; font-size: 1.5rem; margin: 0 0 4px; color: $ink-strong; }
+.pageHSub { color: $muted; font-size: 14px; margin: 0 0 18px; }
+
+/* chip row above tabs */
+.chipRowTop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.chosenChip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: $crimson-tint; border: 1px solid #ecccd2; color: $crimson;
+  border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600;
+}
+.changeLink { background: none; border: none; color: $crimson; cursor: pointer; font-size: 13px; font-weight: 700; text-decoration: underline; margin-left: 8px; padding: 0; }
+.deadlineInlineSm { margin-left: auto; font-size: 12.5px; color: $muted; }
+
+/* Progress tabs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tab {
+  display: flex; align-items: center; gap: 7px;
+  border: 1px solid $line; background: $surface; border-radius: 9px;
+  padding: 7px 13px; font-size: 13px; font-weight: 600; color: $slate; cursor: pointer; font-family: inherit;
+}
+.tabNum {
+  width: 18px; height: 18px; border-radius: 50%; background: #ece9df; color: $slate;
+  font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.tab.activeTab { border-color: $crimson; color: $crimson; background: $crimson-tint; }
+.tab.activeTab .tabNum { background: $crimson; color: #fff; }
+.tab.doneTab .tabNum { background: $green; color: #fff; }
+.formProgressTrack { height: 4px; background: #ece9df; border-radius: 999px; overflow: hidden; margin: 0 0 20px; }
+.formProgressFill { height: 100%; background: $crimson; border-radius: 999px; transition: width 0.2s; }
+
+/* Section card */
+.section {
+  background: $surface;
+  border: 1px solid $line;
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+.sectionHead {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid $line-soft;
+}
+.sectionTitle { margin: 0; flex: 1; font-weight: 600; font-size: 1.35rem; font-family: $serif; color: $ink-strong; letter-spacing: -0.015em; }
+.required { font-size: 11px; color: $faint; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.field { margin-bottom: 14px; }
+.hasError {
+  .input, .select, .textarea { border-color: #c81e1e; }
+  .input:focus, .select:focus, .textarea:focus { box-shadow: 0 0 0 3px rgba(200, 30, 30, 0.12); }
+}
+.fieldError { color: #c81e1e; font-size: 12px; font-weight: 600; margin-top: 5px; }
+.submitError {
+  margin-top: 16px; padding: 12px 14px; border-radius: 10px;
+  background: #fdf2f2; border: 1px solid #f3c0c0; color: #b91c1c;
+  font-size: 13.5px; font-weight: 600;
+}
+.fieldRow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.fieldRow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: $ink; }
+.label .star { color: $crimson; }
+.input, .textarea, .select {
+  width: 100%;
+  border: 1px solid $line;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $ink-strong;
+  background: $surface;
+  box-sizing: border-box;
+  &:focus { outline: none; border-color: $crimson; box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.1); }
+}
+/* native <select> renders shorter than inputs — pin both to the same height */
+.input, .select { height: 44px; }
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+}
+.textarea { resize: vertical; min-height: 84px; height: auto; }
+.subLabel {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: $faint; margin: 16px 0 10px;
+}
+
+/* upload dropzone */
+.dropzone {
+  border: 1.5px dashed #d6d0c2;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  background: $paper-soft;
+  color: $muted;
+  font-size: 12.5px;
+}
+.dropzoneCompact { padding: 12px; }
+.dropTitle { font-weight: 600; color: $slate; margin-bottom: 2px; font-size: 13px; }
+.dropHint { font-size: 12px; color: $faint; }
+.browseBtn {
+  margin-top: 9px;
+  border: 1px solid $line; background: $surface; border-radius: 8px;
+  padding: 6px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer; color: $ink-strong; font-family: inherit;
+  &:hover { border-color: $crimson; color: $crimson; }
+}
+.uploaded {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #ecf7f1; border: 1px solid #b7e3cd; color: $green;
+  border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600;
+}
+
+/* chips (english test) */
+.chipRow { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid $line; background: $surface; border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; color: $slate; cursor: pointer; font-family: inherit;
+  &.chipActive { border-color: $crimson; background: $crimson-tint; color: $crimson; }
+}
+.wordCount { font-size: 12px; color: $faint; margin-top: 5px; text-align: right; }
+.wordCount.ok { color: $green; }
+
+/* review rows */
+.reviewRow {
+  display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: 8px 18px;
+  padding: 11px 0; border-bottom: 1px solid $line-soft; font-size: 14px;
+}
+.reviewKey { color: $muted; font-weight: 500; }
+.reviewVal { color: $ink-strong; }
+
+/* ── Sticky action bar ──────────────────────────────────────────── */
+.stickyBar {
+  flex: 0 0 auto;
+  background: $paper-soft;
+  border-top: 1px solid $line;
+  padding: 14px 32px;
+}
+.stickyInner {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.stickyMeta { font-size: 13px; color: $muted; font-weight: 600; }
+.stickyError { color: #c81e1e; }
+.stickyRight { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.btn {
+  border-radius: 9px; font-weight: 600; font-size: 14px; padding: 10px 18px; cursor: pointer;
+  border: 1px solid $line; background: $surface; color: $ink-strong;
+  display: inline-flex; align-items: center; gap: 7px; font-family: inherit;
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:hover:not(:disabled) { border-color: #b8b2a3; }
+}
+.btnPrimary {
+  background: $crimson; color: #fff; border-color: $crimson;
+  &:hover:not(:disabled) { background: $crimson-deep; border-color: $crimson-deep; }
+}
+.btnGhost {
+  border: none; background: transparent; color: $slate; font-weight: 600; font-size: 13px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+  &:hover { color: $crimson; }
+}
+.fullBtn { width: 100%; justify-content: center; margin-top: 20px; }
+
+/* submitted */
+.successCard {
+  text-align: center; padding: 44px 28px;
+  border: 1px solid #b7e3cd; border-radius: 16px;
+  background: linear-gradient(180deg, #f1faf5 0%, #fff 100%);
+}
+.successTitle { font-size: 1.6rem; font-weight: 600; font-family: $serif; color: $green; margin: 16px 0 10px; }
+.successBody { color: $slate; font-size: 15px; line-height: 1.6; max-width: 440px; margin: 0 auto; }
+.emailBox {
+  margin-top: 22px; padding: 16px 18px; background: $paper-soft; border: 1px solid $line;
+  border-radius: 12px; font-size: 13px; color: $slate; text-align: left; line-height: 1.65;
+}
+.successActions { display: flex; gap: 12px; justify-content: center; margin-top: 22px; }
+
+@media (max-width: 860px) {
+  .landingWrap { grid-template-columns: 1fr; gap: 28px; align-content: start; }
+  .heroTitle { font-size: 2.1rem; }
+  .formGrid { grid-template-columns: 1fr; gap: 18px; }
+  .stepNav { position: static; }
+  .stepList { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  .stepItem { border-bottom: none; }
+  .deadlineNote { display: none; }
+}
+@media (max-width: 640px) {
+  .fieldRow, .fieldRow2 { grid-template-columns: 1fr; }
+  .reviewRow { grid-template-columns: 1fr; }
+}

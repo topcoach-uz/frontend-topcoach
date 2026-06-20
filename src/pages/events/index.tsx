@@ -16,6 +16,8 @@ import UpcomingEventsSection from './_components/UpcomingEventsSection';
 // Youth Leaders application entry — temporarily hidden on Events page
 // import YouthLeadersProgramCard from './_components/YouthLeadersProgramCard';
 import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
+import InternationalSummerCamp2026Card from './_components/InternationalSummerCamp2026Card';
+import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
 import { CAMPS_LIST_QUERY } from './campsQuery';
@@ -233,6 +235,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
+        {ISC_2026_ENABLED && <InternationalSummerCamp2026Card />}
         <TopcoachLaunchEventCard />
         <CentralAsianAdmissionsForumCard />
 

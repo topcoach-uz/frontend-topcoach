@@ -8,6 +8,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 import { formatUZS } from '../utils';
+import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 
 const { Paragraph } = Typography;
 
@@ -92,6 +93,25 @@ export default function AdminConsoleEventsPage() {
       <p className="ac-page-lead">Events catalog, registrations, and CA Admissions Forum administration.</p>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        {ISC_2026_ENABLED && (
+        <Col xs={24} md={8}>
+          <Card bordered={false} className="ac-panel" title="International Summer Camp 2026">
+            <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+              Admissions console — review applications, assign reviewers, AI
+              pre-evaluation, interviews, and final decisions.
+            </Paragraph>
+            <Button
+              type="primary"
+              size="large"
+              block
+              icon={<Sparkles size={18} />}
+              onClick={() => navigate('/new-admin/events/isc-2026')}
+            >
+              Open ISC 2026 admin
+            </Button>
+          </Card>
+        </Col>
+        )}
         <Col xs={24} md={8}>
           <Card bordered={false} className="ac-panel" title="New Feature Launch">
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
@@ -112,7 +132,7 @@ export default function AdminConsoleEventsPage() {
         <Col xs={24} md={8}>
           <Card bordered={false} className="ac-panel" title="CA Admissions Forum">
             <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-              Review registrations, manage payments, export applicant lists.
+              Review registrations, manage payments, export applicant lists. Download data in Excel, CSV, or PDF formats. 
             </Paragraph>
             <Button
               type="primary"

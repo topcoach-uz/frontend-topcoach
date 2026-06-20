@@ -11,6 +11,7 @@ import {
 import { Spin } from "antd";
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
+import { ISC_2026_ENABLED } from "src/lib/iscAccess";
 import { UserRole } from "src/app/api/Api";
 
 // Layouts
@@ -42,6 +43,10 @@ const SuccessStoriesDetailPageLazy = lazy(
 );
 const ContactPageLazy = lazy(() => import("src/pages/contact"));
 const EventsPageLazy = lazy(() => import("src/pages/events"));
+const Isc2026PreviewLazy = lazy(() => import("src/pages/isc-2026-preview"));
+const Isc2026ApplicantLazy = lazy(() => import("src/pages/isc-2026-preview/ApplicantSite"));
+const Isc2026ConsoleLazy = lazy(() => import("src/pages/isc-2026-preview/Console"));
+const Isc2026ReviewerGateLazy = lazy(() => import("src/pages/isc-2026-preview/ReviewerGate"));
 const CentralAsianAdmissionsForumPageLazy = lazy(
   () => import("src/pages/events/central-asian-admissions-forum")
 );
@@ -117,6 +122,7 @@ const PaymentSmsPageLazy = lazy(
   () => import("src/pages/payment/sms")
 );
 const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
+const ProgramsFullSupportPageLazy = lazy(() => import("src/pages/programs/IntensiveMentorshipProgram"));
 const ProgramsAdmissionsPageLazy = lazy(() => import("src/pages/programs/admissions"));
 const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
@@ -226,6 +232,22 @@ function RouterProvider() {
 
           <Route element={<AddFallbackLayout />}>
             <Route path="/new-admin" element={<AdminConsoleGate />}>
+              {/* ISC 2026 admissions console — full-screen takeover (its own
+                  sidebar), gated by AdminConsoleGate, outside AdminConsoleLayout. */}
+              <Route
+                path="events/isc-2026"
+                element={
+                  ISC_2026_ENABLED ? (
+                    <div style={{ height: '100vh' }}>
+                      <Suspense fallback={<Loader height="100vh" />}>
+                        <Isc2026ConsoleLazy />
+                      </Suspense>
+                    </div>
+                  ) : (
+                    <Navigate to="/new-admin/events" replace />
+                  )
+                }
+              />
               <Route
                 element={
                   <Suspense
@@ -383,6 +405,7 @@ function RouterProvider() {
                 element={<EventDetailsPageLazy />}
               />
               <Route path="/programs" element={<ProgramsPageLazy />} />
+              <Route path="/programs/full-support" element={<ProgramsFullSupportPageLazy />} />
               <Route path="/programs/admissions" element={<ProgramsAdmissionsPageLazy />} />
               <Route path="/programs/sat" element={<ProgramsSatPageLazy />} />
               <Route 
@@ -591,6 +614,44 @@ function RouterProvider() {
             />
           </Route>
         </Route>
+        {/* ISC 2026 — all routes are dark until ISC_2026_ENABLED is flipped on. */}
+        {ISC_2026_ENABLED && (
+          <>
+            {/* public applicant portal (real home, full-screen) */}
+            <Route
+              path="/events/international-summer-camp-2026"
+              element={
+                <div style={{ height: '100vh' }}>
+                  <Suspense fallback={<Loader height="100vh" />}>
+                    <Isc2026ApplicantLazy />
+                  </Suspense>
+                </div>
+              }
+            />
+            {/* reviewer console (gated: Reviewer or SuperAdmin) */}
+            <Route
+              path="/isc-2026/review"
+              element={
+                <div style={{ height: '100vh' }}>
+                  <Suspense fallback={<Loader height="100vh" />}>
+                    <Isc2026ReviewerGateLazy>
+                      <Isc2026ConsoleLazy variant="reviewer" />
+                    </Isc2026ReviewerGateLazy>
+                  </Suspense>
+                </div>
+              }
+            />
+            {/* dev preview harness (applicant + console, mock switcher) */}
+            <Route
+              path="/isc-2026"
+              element={
+                <Suspense fallback={<Loader height="100vh" />}>
+                  <Isc2026PreviewLazy />
+                </Suspense>
+              }
+            />
+          </>
+        )}
       </Routes>
     </CustomRouter>
   );

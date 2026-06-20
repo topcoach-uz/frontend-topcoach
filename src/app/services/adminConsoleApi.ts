@@ -94,6 +94,8 @@ export type AdminSubscriptionRow = {
   planPeriod: 'monthly' | 'yearly' | null;
   userId: string;
   userEmail: string | null;
+  /** Telegram-connected phone number from `users.phoneNumber`. */
+  userPhoneNumber: string | null;
   paymentMethodId: string | null;
   cardLast4: string | null;
   cardProvider: string | null;

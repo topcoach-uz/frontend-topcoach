@@ -259,6 +259,7 @@ function SubscriptionDetailDrawer({
       {!isFetching && data && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <DetailRow label="User" value={data.userEmail ?? '—'} />
+          <DetailRow label="Phone" value={data.userPhoneNumber ?? '—'} />
           <DetailRow
             label="Status"
             valueNode={<AcPill variant={statusPill(data.status).variant}>{statusPill(data.status).label}</AcPill>}

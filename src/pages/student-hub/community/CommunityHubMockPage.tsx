@@ -63,6 +63,7 @@ import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { canUseMyRewards } from 'src/lib/myRewardsAccess';
+import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
 import { getLatestCreatedImg } from 'src/utils';
 
@@ -414,7 +415,8 @@ export default function CommunityHubMockPage() {
 
   const iscRole = profile?.managementRole as string | undefined;
   const canReviewIsc =
-    iscRole === 'Reviewer' || iscRole === 'SuperAdmin' || iscRole === 'Owner';
+    ISC_2026_ENABLED &&
+    (iscRole === 'Reviewer' || iscRole === 'SuperAdmin' || iscRole === 'Owner');
 
   const yourJourneyOthersNav = useMemo(
     () => [

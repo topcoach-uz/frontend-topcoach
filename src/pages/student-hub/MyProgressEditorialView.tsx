@@ -58,6 +58,7 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { SessionTypeEnum } from 'src/app/api/Api';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
+import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -326,6 +327,12 @@ const MyProgressEditorialView: React.FC = () => {
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
+  // International Summer Camp 2026 — current flagship intake. Takes the
+  // "Top Coach presents" slot while applications are open. Static for
+  // now (links to the /isc-2026 application); wire to the real
+  // open/close + my-application status when the backend lands.
+  const showIscPromo = ISC_2026_ENABLED;
+
   // Top Coach Launch Event — free event on May 24, 2026. While the
   // event hasn't passed, this card takes precedence over the CAAF
   // promo because it's the nearest live event we want students to act
@@ -531,13 +538,14 @@ const MyProgressEditorialView: React.FC = () => {
         <section className="myprog__tracks-section">
           <article className="myprog__card myprog__joinhero">
             <div className="myprog__joinhero__left">
+              <span className="myprog__joinhero__eyebrow">The Community</span>
               <h2 className="myprog__joinhero__title">
-                Your admissions journey,
+                Your admissions journey
                 <br />
-                starts here.
+                <em>starts here.</em>
               </h2>
               <p className="myprog__joinhero__lede">
-                The full Community unlocks every tool to get into your
+                One membership unlocks every tool you need to get into your
                 dream university.
               </p>
               <ul className="myprog__joinhero__chips" aria-label="Community unlocks">
@@ -548,19 +556,20 @@ const MyProgressEditorialView: React.FC = () => {
                 <li>Study Buddies</li>
                 <li>Live Workshops</li>
               </ul>
-              <button
-                type="button"
-                className="myprog__btn myprog__btn--primary myprog__joinhero__cta"
-                onClick={() => navigate(communityGate.destination)}
-                disabled={communityGate.state === 'loading'}
-              >
-               
-                Join the Community
-                <ArrowRight size={14} />
-              </button>
-              <p className="myprog__joinhero__micro">
-                7-day free trial · cancel anytime
-              </p>
+              <div className="myprog__joinhero__actions">
+                <button
+                  type="button"
+                  className="myprog__btn myprog__btn--primary myprog__joinhero__cta"
+                  onClick={() => navigate(communityGate.destination)}
+                  disabled={communityGate.state === 'loading'}
+                >
+                  Join the Community
+                  <ArrowRight size={14} />
+                </button>
+                <p className="myprog__joinhero__micro">
+                  7-day free trial · cancel anytime
+                </p>
+              </div>
             </div>
 
             {/* Trailer — the right column is itself shaped 16:9 so
@@ -807,10 +816,31 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </article>
 
-        {/* Top Coach Presents — prefers the Launch Event while it's
-            upcoming (May 24, 2026), then falls back to the CAAF promo,
-            then to the quiet empty card. */}
-        {showLaunchPromo ? (
+        {/* Top Coach Presents — ISC 2026 takes the slot while its
+            applications are open, then the Launch Event, then CAAF,
+            then the quiet empty card. */}
+        {showIscPromo ? (
+          <article className="myprog__card myprog__promo">
+            <div className="myprog__promo-yr">2026</div>
+            <div className="myprog__promo-eyebrow">Top Coach presents</div>
+            <h3 className="myprog__promo-title">International Summer Camp</h3>
+            <div className="myprog__promo-meta">6 weeks · 30+ countries · Apply by Mar 15</div>
+            <p className="myprog__promo-desc">
+              A six-week academic camp for ambitious students — Bachelor&apos;s &amp;
+              Master&apos;s tracks, open to local and international applicants.
+            </p>
+            <div className="myprog__promo-foot">
+              <div className="myprog__promo-foot-status">Applications open</div>
+              <button
+                type="button"
+                className="myprog__btn myprog__btn--primary myprog__promo-cta"
+                onClick={() => navigate('/events/international-summer-camp-2026')}
+              >
+                Apply now
+              </button>
+            </div>
+          </article>
+        ) : showLaunchPromo ? (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
