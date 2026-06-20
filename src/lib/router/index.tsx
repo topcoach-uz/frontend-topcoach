@@ -26,6 +26,7 @@ import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
 import NavigationProgressBar from "src/components/NavigationProgressBar";
+import PostHogPageView from "src/lib/posthog/PostHogPageView";
 
 // Pages
 
@@ -208,6 +209,7 @@ function RouterProvider() {
   return (
     <CustomRouter history={customHistory}>
       <NavigationProgressBar />
+      <PostHogPageView />
       <GlobalModals />
       <Routes>
         <Route element={<RootLayout />}>
