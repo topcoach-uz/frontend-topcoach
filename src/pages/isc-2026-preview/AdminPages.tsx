@@ -69,9 +69,9 @@ const draftRaw = (app: IscApplicationRow | undefined, section: string, key: stri
   return typeof d === 'string' && d ? d : null;
 };
 
-/** Resolve an uploaded-file path to an absolute URL on the API host. */
-const docUrl = (path: string | null): string | null =>
-  !path ? null : path.startsWith('http') ? path : `${hostName}${path}`;
+/** Authenticated document download URL (served via the API, cookie-gated). */
+const docDownloadUrl = (appId: string, kind: string): string =>
+  `${hostName}/api/isc-admissions/documents/${appId}/${kind}`;
 
 /** CSV-escape a cell (wrap in quotes, double inner quotes). */
 const csvCell = (v: unknown): string => `"${String(v ?? '').replace(/"/g, '""')}"`;
@@ -529,16 +529,16 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
           <div className={s.infoBlock}>
             <div className={s.infoLabel}>Uploaded documents</div>
             <div className={s.docList}>
-              <DocLink label="Passport (photo page)" path={draftRaw(application, 'personal', 'passportPath')} />
+              <DocLink label="Passport (photo page)" present={!!draftRaw(application, 'personal', 'passportPath')} href={docDownloadUrl(application.id, 'passport')} />
               {application.program === 'master' ? (
                 <>
-                  <DocLink label="CV / résumé" path={draftRaw(application, 'academics', 'cvPath')} />
-                  <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
+                  <DocLink label="CV / résumé" present={!!draftRaw(application, 'academics', 'cvPath')} href={docDownloadUrl(application.id, 'cv')} />
+                  <DocLink label="English proficiency certificate" present={!!draftRaw(application, 'academics', 'certificatePath')} href={docDownloadUrl(application.id, 'english')} />
                 </>
               ) : (
                 <>
-                  <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
-                  <DocLink label="SAT / standardized report" path={draftRaw(application, 'academics', 'satReportPath')} />
+                  <DocLink label="English proficiency certificate" present={!!draftRaw(application, 'academics', 'certificatePath')} href={docDownloadUrl(application.id, 'english')} />
+                  <DocLink label="SAT / standardized report" present={!!draftRaw(application, 'academics', 'satReportPath')} href={docDownloadUrl(application.id, 'sat')} />
                 </>
               )}
             </div>
@@ -577,7 +577,11 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
               <div className={s.aiHead}>
                 <span aria-hidden>✦</span> AI pre-evaluation
               </div>
-              <div className={s.aiSummary}>AI evaluation {ai?.status ?? 'pending'}</div>
+              <div className={s.aiSummary}>
+                AI evaluation {ai?.status ?? 'pending'}
+                {ai?.status === 'failed' && ai?.error ? ` — ${ai.error}` : ''}
+                {ai?.status === 'failed' ? ' · use “Re-run AI” to retry.' : ''}
+              </div>
             </div>
           )}
 
@@ -616,9 +620,8 @@ function KV({ k, v }: { k: string; v: string }) {
   );
 }
 
-function DocLink({ label, path }: { label: string; path: string | null }) {
-  const href = docUrl(path);
-  if (!href) {
+function DocLink({ label, present, href }: { label: string; present: boolean; href: string }) {
+  if (!present) {
     return <div className={s.docMissing}>{label} — not uploaded</div>;
   }
   return (

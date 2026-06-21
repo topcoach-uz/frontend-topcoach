@@ -54,6 +54,7 @@ export interface IscAiEvaluation {
   flags?: { type: string; severity: 'info' | 'warn' | 'high'; detail: string }[] | null;
   model?: string | null;
   evaluatedAt?: string | null;
+  error?: string | null;
 }
 
 export interface IscReviewRow extends IscScoreBreakdown {
