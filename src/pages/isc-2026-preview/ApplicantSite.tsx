@@ -85,6 +85,7 @@ interface Draft {
   fullName: string;
   age: string;
   grade: string;
+  countryOfResidence: string;
   passportNumber: string;
   email: string;
   phone: string;
@@ -99,6 +100,13 @@ interface Draft {
   satScore: string;
   satUploaded: boolean;
   satReportPath: string;
+  // Master's-track current education
+  university: string;
+  degree: string;
+  gradYear: string;
+  gpa: string;
+  cvUploaded: boolean;
+  cvPath: string;
   extracurriculars: string;
   awards: string;
   whyCamp: string;
@@ -106,15 +114,23 @@ interface Draft {
 }
 
 const EMPTY: Draft = {
-  fullName: '', age: '', grade: '', passportNumber: '', email: '', phone: '', telegram: '',
+  fullName: '', age: '', grade: '', countryOfResidence: '', passportNumber: '', email: '', phone: '', telegram: '',
   passportUploaded: false, passportPath: '', englishTest: '', englishScore: '', englishDate: '',
   englishUploaded: false, englishCertPath: '', satScore: '', satUploaded: false, satReportPath: '',
+  university: '', degree: '', gradYear: '', gpa: '', cvUploaded: false, cvPath: '',
   extracurriculars: '', awards: '', whyCamp: '', whySelect: '',
 };
 
-const SECTIONS = ['Personal info', 'Academics', 'Activities', 'Essays'];
-const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'Undergraduate', 'Graduate'];
+const GRADES = ['Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
 const ENGLISH_TESTS = ['IELTS', 'CEFR', 'TOEFL', 'Duolingo', 'Mock result'];
+const GRAD_YEARS = ['2024', '2025', '2026', '2027', '2028', '2029', '2030', '2031', '2032'];
+const COUNTRIES = [
+  'Kazakhstan', 'Kyrgyzstan', 'Tajikistan', 'Turkmenistan', 'Afghanistan',
+  'Russia', 'Turkey', 'United States', 'United Kingdom', 'Canada', 'Germany',
+  'France', 'Italy', 'Spain', 'Netherlands', 'Poland', 'Czech Republic',
+  'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'China', 'South Korea',
+  'Japan', 'India', 'Pakistan', 'Malaysia', 'Australia', 'Other',
+];
 
 function words(str: string): number {
   return str.trim() ? str.trim().split(/\s+/).length : 0;
@@ -123,7 +139,14 @@ function words(str: string): number {
 type Errors = Record<string, string>;
 
 /** Required-field validation for a given section. Empty object = valid. */
-function validateSection(idx: number, d: Draft): Errors {
+function validateSection(
+  idx: number,
+  d: Draft,
+  program: IscProgram | null,
+  applicantType: IscApplicantType | null,
+): Errors {
+  const isMaster = program === 'master';
+  const isInternational = applicantType === 'international';
   const e: Errors = {};
   const req = (k: keyof Draft, msg = 'This field is required') => {
     if (!String(d[k] ?? '').trim()) e[k] = msg;
@@ -131,16 +154,29 @@ function validateSection(idx: number, d: Draft): Errors {
   if (idx === 0) {
     req('fullName');
     req('age');
-    req('grade', 'Select your grade');
+    // Bachelor's applicants are school students — ask their current grade.
+    if (!isMaster) req('grade', 'Select your grade');
     req('passportNumber');
+    // International applicants must tell us where they currently live.
+    if (isInternational) req('countryOfResidence', 'Select your country of residence');
     if (!d.email.trim()) e.email = 'This field is required';
     else if (!/^\S+@\S+\.\S+$/.test(d.email)) e.email = 'Enter a valid email address';
     req('phone');
     req('telegram');
     if (!d.passportUploaded) e.passportUploaded = 'Upload your passport photo page';
   } else if (idx === 1) {
-    req('englishTest', 'Select a proficiency test');
-    if (!d.englishUploaded) e.englishUploaded = 'Upload your proficiency certificate';
+    if (isMaster) {
+      // Master's track: current education + CV, plus English proficiency.
+      req('university');
+      req('degree');
+      req('gradYear', 'Select your expected graduation year');
+      if (!d.cvUploaded) e.cvUploaded = 'Upload your CV / résumé';
+      req('englishTest', 'Select a proficiency test');
+      if (!d.englishUploaded) e.englishUploaded = 'Upload your proficiency certificate';
+    } else {
+      req('englishTest', 'Select a proficiency test');
+      if (!d.englishUploaded) e.englishUploaded = 'Upload your proficiency certificate';
+    }
   } else if (idx === 2) {
     req('extracurriculars');
     req('awards');
@@ -323,6 +359,7 @@ export default function ApplicantSite() {
             fullName: draft.fullName,
             age: draft.age,
             grade: draft.grade,
+            countryOfResidence: draft.countryOfResidence || null,
             passportNumber: draft.passportNumber,
             email: draft.email,
             phone: draft.phone,
@@ -336,6 +373,12 @@ export default function ApplicantSite() {
             certificatePath: draft.englishCertPath || null,
             satScore: draft.satScore,
             satReportPath: draft.satReportPath || null,
+            // Master's-track current education
+            university: draft.university,
+            degree: draft.degree,
+            gradYear: draft.gradYear,
+            gpa: draft.gpa,
+            cvPath: draft.cvPath || null,
           },
           activities: { extracurriculars: draft.extracurriculars, awards: draft.awards },
           essays: { whyCamp: draft.whyCamp, whySelect: draft.whySelect },
@@ -361,18 +404,19 @@ export default function ApplicantSite() {
   };
 
   /** Upload one document to the backend and store its returned path in the draft. */
-  const uploadAndStore = async (file: File, kind: 'passport' | 'english' | 'sat') => {
+  const uploadAndStore = async (file: File, kind: 'passport' | 'english' | 'sat' | 'cv') => {
     const fd = new FormData();
     fd.append('file', file);
     const res = await uploadDoc(fd).unwrap();
     if (kind === 'passport') up({ passportUploaded: true, passportPath: res.path });
     else if (kind === 'english') up({ englishUploaded: true, englishCertPath: res.path });
+    else if (kind === 'cv') up({ cvUploaded: true, cvPath: res.path });
     else up({ satUploaded: true, satReportPath: res.path });
   };
 
   // advance only if the current section validates
   const next = () => {
-    const errs = validateSection(section, draft);
+    const errs = validateSection(section, draft, program, applicantType);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     if (section < 3) {
@@ -388,7 +432,7 @@ export default function ApplicantSite() {
   const goToTab = (i: number) => {
     if (i <= section) { setErrors({}); setSection(i); return; }
     if (i <= maxReached) {
-      const errs = validateSection(section, draft);
+      const errs = validateSection(section, draft, program, applicantType);
       if (Object.keys(errs).length) { setErrors(errs); return; }
       setErrors({});
       setSection(i);
@@ -398,6 +442,9 @@ export default function ApplicantSite() {
   const programLabel = program === 'master' ? "Master's program" : "Bachelor's program";
   const typeLabel =
     applicantType === 'international' ? 'International applicant' : 'Local applicant (Uzbekistan)';
+  // Step 2 is the school-leaver "Academics" block for bachelor's, and the
+  // "Education" (current studies + CV) block for master's.
+  const stepLabels = ['Personal info', program === 'master' ? 'Education' : 'Academics', 'Activities', 'Essays'];
 
   /* ── Landing ─────────────────────────────────────────────── */
   if (phase === 'landing') {
@@ -535,18 +582,33 @@ export default function ApplicantSite() {
 
   /* ── Review ──────────────────────────────────────────────── */
   if (phase === 'review') {
+    const isMaster = program === 'master';
     const rows: [string, string][] = [
       ['Program', programLabel],
       ['Applying from', typeLabel],
       ['Full name', draft.fullName || '—'],
       ['Age', draft.age || '—'],
-      ['Grade / year', draft.grade || '—'],
+      ...(!isMaster ? [['Grade / year', draft.grade || '—'] as [string, string]] : []),
+      ...(applicantType === 'international'
+        ? [['Country of residence', draft.countryOfResidence || '—'] as [string, string]]
+        : []),
       ['Passport number', draft.passportNumber || '—'],
       ['Email', draft.email || '—'],
       ['Phone', draft.phone || '—'],
       ['Telegram', draft.telegram || '—'],
-      ['English test', [draft.englishTest, draft.englishScore].filter(Boolean).join(' · ') || '—'],
-      ['SAT / standardized', draft.satScore || '—'],
+      ...(isMaster
+        ? ([
+            ['University / institution', draft.university || '—'],
+            ['Degree / field', draft.degree || '—'],
+            ['Expected graduation', draft.gradYear || '—'],
+            ['GPA / standing', draft.gpa || '—'],
+            ['CV / résumé', draft.cvUploaded ? 'Uploaded' : '—'],
+            ['English test', [draft.englishTest, draft.englishScore].filter(Boolean).join(' · ') || '—'],
+          ] as [string, string][])
+        : ([
+            ['English test', [draft.englishTest, draft.englishScore].filter(Boolean).join(' · ') || '—'],
+            ['SAT / standardized', draft.satScore || '—'],
+          ] as [string, string][])),
       ['Extracurriculars', draft.extracurriculars || '—'],
       ['Awards & honors', draft.awards || '—'],
       ['Why this camp', draft.whyCamp || '—'],
@@ -595,7 +657,7 @@ export default function ApplicantSite() {
               <button className={s.changeLink} onClick={() => setPhase('landing')}>Change</button>
             </div>
             <ol className={s.stepList}>
-              {SECTIONS.map((label, i) => {
+              {stepLabels.map((label, i) => {
                 const locked = i > maxReached;
                 return (
                   <li key={label}
@@ -616,8 +678,8 @@ export default function ApplicantSite() {
           </aside>
 
           <div className={s.formCol}>
-            {section === 0 && <PersonalSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} />}
-            {section === 1 && <AcademicsSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} />}
+            {section === 0 && <PersonalSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} program={program} applicantType={applicantType} />}
+            {section === 1 && <AcademicsSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} program={program} />}
             {section === 2 && <ActivitiesSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} />}
             {section === 3 && <EssaysSection draft={draft} up={up} errors={errors} onUpload={uploadAndStore} />}
           </div>
@@ -650,7 +712,9 @@ export default function ApplicantSite() {
 }
 
 /* ── Sections ──────────────────────────────────────────────── */
-function PersonalSection({ draft, up, errors, onUpload }: SectionProps) {
+function PersonalSection({ draft, up, errors, onUpload, program, applicantType }: SectionProps & { program: IscProgram | null; applicantType: IscApplicantType | null }) {
+  const isMaster = program === 'master';
+  const isInternational = applicantType === 'international';
   return (
     <div className={s.section}>
       <Head num={1} title="Personal information" required />
@@ -660,20 +724,32 @@ function PersonalSection({ draft, up, errors, onUpload }: SectionProps) {
       </Field>
       <div className={s.fieldRow}>
         <Field label="Age" req error={errors.age}>
-          <input className={s.input} placeholder="e.g. 16" value={draft.age}
+          <input className={s.input} placeholder="e.g. 22" value={draft.age}
             onChange={(e) => up({ age: e.target.value })} />
         </Field>
-        <Field label="Current grade / year" req error={errors.grade}>
-          <select className={s.select} value={draft.grade} onChange={(e) => up({ grade: e.target.value })}>
-            <option value="">Select grade</option>
-            {GRADES.map((g) => <option key={g}>{g}</option>)}
-          </select>
-        </Field>
+        {!isMaster && (
+          <Field label="Current grade / year" req error={errors.grade}>
+            <select className={s.select} value={draft.grade} onChange={(e) => up({ grade: e.target.value })}>
+              <option value="">Select grade</option>
+              {GRADES.map((g) => <option key={g}>{g}</option>)}
+            </select>
+          </Field>
+        )}
         <Field label="Passport number" req error={errors.passportNumber}>
           <input className={s.input} placeholder="e.g. AB1234567" value={draft.passportNumber}
             onChange={(e) => up({ passportNumber: e.target.value })} />
         </Field>
       </div>
+
+      {isInternational && (
+        <Field label="Country of residence" req error={errors.countryOfResidence}>
+          <select className={s.select} value={draft.countryOfResidence}
+            onChange={(e) => up({ countryOfResidence: e.target.value })}>
+            <option value="">Select your country</option>
+            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+      )}
 
       <div className={s.subLabel}>
         Contact
@@ -703,7 +779,66 @@ function PersonalSection({ draft, up, errors, onUpload }: SectionProps) {
   );
 }
 
-function AcademicsSection({ draft, up, errors, onUpload }: SectionProps) {
+function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps & { program: IscProgram | null }) {
+  // Master's track: current education + CV, plus the same English
+  // proficiency block that bachelor's applicants complete.
+  if (program === 'master') {
+    return (
+      <div className={s.section}>
+        <Head num={2} title="Current education" required />
+        <Field label="University / institution you are currently studying at" req error={errors.university}>
+          <input className={s.input} placeholder="e.g. National University of Uzbekistan, University of Westminster…"
+            value={draft.university} onChange={(e) => up({ university: e.target.value })} />
+        </Field>
+        <div className={s.fieldRow2}>
+          <Field label="Degree / field of study" req error={errors.degree}>
+            <input className={s.input} placeholder="e.g. BSc Computer Science" value={draft.degree}
+              onChange={(e) => up({ degree: e.target.value })} />
+          </Field>
+          <Field label="Expected graduation year" req error={errors.gradYear}>
+            <select className={s.select} value={draft.gradYear} onChange={(e) => up({ gradYear: e.target.value })}>
+              <option value="">Select year</option>
+              {GRAD_YEARS.map((y) => <option key={y}>{y}</option>)}
+            </select>
+          </Field>
+        </div>
+        <Field label="GPA / academic standing (optional)">
+          <input className={s.input} placeholder="e.g. 3.8 / 4.0 or First Class Honours" value={draft.gpa}
+            onChange={(e) => up({ gpa: e.target.value })} />
+        </Field>
+        <Field label="Upload CV / résumé" req error={errors.cvUploaded}>
+          <Dropzone uploaded={draft.cvUploaded} onFile={(f) => onUpload(f, 'cv')}
+            title="Upload your CV or résumé" hint="PDF preferred · max 5 MB" />
+        </Field>
+        <p className={s.fieldHelp}>Include education, work experience, research projects, and any relevant achievements.</p>
+
+        <div className={s.subLabel}>English proficiency</div>
+        <Field label="English proficiency test" req error={errors.englishTest}>
+          <div className={s.chipRow}>
+            {ENGLISH_TESTS.map((tst) => (
+              <button key={tst} className={`${s.chip} ${draft.englishTest === tst ? s.chipActive : ''}`}
+                onClick={() => up({ englishTest: tst })}>{tst}</button>
+            ))}
+          </div>
+        </Field>
+        <div className={s.fieldRow2}>
+          <Field label="Score / band">
+            <input className={s.input} placeholder="e.g. 7.0 / C1 / 105" value={draft.englishScore}
+              onChange={(e) => up({ englishScore: e.target.value })} />
+          </Field>
+          <Field label="Test date">
+            <input className={s.input} placeholder="MM/YYYY" value={draft.englishDate}
+              onChange={(e) => up({ englishDate: e.target.value })} />
+          </Field>
+        </div>
+        <Field label="Upload proficiency certificate" req error={errors.englishUploaded}>
+          <Dropzone uploaded={draft.englishUploaded} onFile={(f) => onUpload(f, 'english')}
+            title="Drag and drop your file here" hint="PDF, JPG, or PNG · max 5 MB" />
+        </Field>
+      </div>
+    );
+  }
+
   return (
     <div className={s.section}>
       <Head num={2} title="Academic & language qualifications" required />
@@ -786,7 +921,7 @@ interface SectionProps {
   draft: Draft;
   up: (p: Partial<Draft>) => void;
   errors: Errors;
-  onUpload: (file: File, kind: 'passport' | 'english' | 'sat') => Promise<void>;
+  onUpload: (file: File, kind: 'passport' | 'english' | 'sat' | 'cv') => Promise<void>;
 }
 
 function Shell({ children, onExit }: { children: React.ReactNode; onExit: () => void }) {

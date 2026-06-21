@@ -80,7 +80,8 @@ const csvCell = (v: unknown): string => `"${String(v ?? '').replace(/"/g, '""')}
 function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
   const headers = [
     'Name', 'Email', 'Phone', 'Telegram', 'Program', 'Type', 'Grade',
-    'Passport #', 'English test', 'English score', 'SAT', 'Submitted',
+    'Country of residence', 'Passport #', 'English test', 'English score', 'SAT',
+    'University', 'Degree', 'Grad year', 'GPA', 'Submitted',
     'Status', 'AI score', 'Review avg',
   ];
   const lines = rows.map((r) =>
@@ -92,10 +93,15 @@ function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
       PROGRAM_LABEL(r.program),
       TYPE_LABEL(r.applicantType),
       draftRaw(r, 'personal', 'grade') ?? '',
+      draftRaw(r, 'personal', 'countryOfResidence') ?? '',
       draftRaw(r, 'personal', 'passportNumber') ?? '',
       draftRaw(r, 'academics', 'englishTest') ?? '',
       draftRaw(r, 'academics', 'englishScore') ?? '',
       draftRaw(r, 'academics', 'satScore') ?? '',
+      draftRaw(r, 'academics', 'university') ?? '',
+      draftRaw(r, 'academics', 'degree') ?? '',
+      draftRaw(r, 'academics', 'gradYear') ?? '',
+      draftRaw(r, 'academics', 'gpa') ?? '',
       r.submittedAt ? r.submittedAt.slice(0, 10) : '',
       STATUS_LABEL[r.status] ?? r.status,
       r.aiScore ?? '',
@@ -473,18 +479,37 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
               <KV k="Telegram" v={draftVal(application, 'personal', 'telegram')} />
               <KV k="Passport" v={draftVal(application, 'personal', 'passportNumber')} />
               <KV k="Age" v={draftVal(application, 'personal', 'age')} />
-              <KV k="Grade" v={draftVal(application, 'personal', 'grade')} />
+              {application.program === 'master'
+                ? <KV k="Country of residence" v={draftVal(application, 'personal', 'countryOfResidence')} />
+                : <KV k="Grade" v={draftVal(application, 'personal', 'grade')} />}
+              {application.program !== 'master' && application.applicantType === 'international' && (
+                <KV k="Country of residence" v={draftVal(application, 'personal', 'countryOfResidence')} />
+              )}
             </div>
           </div>
 
-          <div className={s.infoBlock}>
-            <div className={s.infoLabel}>Academics</div>
-            <div className={s.kvGrid}>
-              <KV k="English test" v={draftVal(application, 'academics', 'englishTest')} />
-              <KV k="English score" v={draftVal(application, 'academics', 'englishScore')} />
-              <KV k="SAT score" v={draftVal(application, 'academics', 'satScore')} />
+          {application.program === 'master' ? (
+            <div className={s.infoBlock}>
+              <div className={s.infoLabel}>Current education</div>
+              <div className={s.kvGrid}>
+                <KV k="University" v={draftVal(application, 'academics', 'university')} />
+                <KV k="Degree / field" v={draftVal(application, 'academics', 'degree')} />
+                <KV k="Expected graduation" v={draftVal(application, 'academics', 'gradYear')} />
+                <KV k="GPA / standing" v={draftVal(application, 'academics', 'gpa')} />
+                <KV k="English test" v={draftVal(application, 'academics', 'englishTest')} />
+                <KV k="English score" v={draftVal(application, 'academics', 'englishScore')} />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className={s.infoBlock}>
+              <div className={s.infoLabel}>Academics</div>
+              <div className={s.kvGrid}>
+                <KV k="English test" v={draftVal(application, 'academics', 'englishTest')} />
+                <KV k="English score" v={draftVal(application, 'academics', 'englishScore')} />
+                <KV k="SAT score" v={draftVal(application, 'academics', 'satScore')} />
+              </div>
+            </div>
+          )}
 
           <div className={s.infoBlock}>
             <div className={s.infoLabel}>Extracurricular activities & achievements</div>
@@ -505,8 +530,17 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
             <div className={s.infoLabel}>Uploaded documents</div>
             <div className={s.docList}>
               <DocLink label="Passport (photo page)" path={draftRaw(application, 'personal', 'passportPath')} />
-              <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
-              <DocLink label="SAT / standardized report" path={draftRaw(application, 'academics', 'satReportPath')} />
+              {application.program === 'master' ? (
+                <>
+                  <DocLink label="CV / résumé" path={draftRaw(application, 'academics', 'cvPath')} />
+                  <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
+                </>
+              ) : (
+                <>
+                  <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
+                  <DocLink label="SAT / standardized report" path={draftRaw(application, 'academics', 'satReportPath')} />
+                </>
+              )}
             </div>
           </div>
         </div>
