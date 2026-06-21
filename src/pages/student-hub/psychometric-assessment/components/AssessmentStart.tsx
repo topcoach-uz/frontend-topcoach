@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
   Compass,
   Brain,
@@ -14,12 +15,14 @@ import {
   Play,
   Eye,
   Trophy,
+  Lock,
 } from 'lucide-react';
 import type { StudentProfile } from '../../../../app/services/student-hub/types';
 import {
   useGetAllAssessmentsQuery,
   useDeleteAssessmentMutation,
 } from '../../../../app/services/student-hub/psychometricApi';
+import { useCommunityAccessGate } from '../../../../lib/communityAccess';
 
 interface ActiveSessionInfo {
   hasActiveSession: boolean;
@@ -138,6 +141,11 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   majorMatchAccessStatus,
 }) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  // Funnel-aware destination for the "Unlock Community" CTA — the gate decides
+  // whether to send the user to the placement test, profile, roadmap, or the
+  // subscription tab based on how far they are through Community enrollment.
+  const gate = useCommunityAccessGate();
   const [selectedLanguage] = useState<'en' | 'uz' | 'ru'>(
     (i18n.language.split('-')[0] as 'en' | 'uz' | 'ru') || 'en',
   );
@@ -192,6 +200,10 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
   const modules = includeAptitude ? [...CORE_MODULES, APTITUDE_MODULE] : CORE_MODULES;
   const hasActive = !!activeSession?.hasActiveSession;
+  // Free-attempt limit reached and not Community-enrolled — show the upsell
+  // path instead of a dead-end disabled button.
+  const requiresEnrollment = !readOnly && !!majorMatchAccessStatus?.requiresCommunityEnrollment;
+  const handleUnlock = () => navigate(gate.destination);
 
   return (
     <div className="majormatch">
@@ -214,36 +226,54 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
         </div>
         {!readOnly && (
           <div className="majormatch__hero-cta">
-            {majorMatchAccessStatus?.requiresCommunityEnrollment && (
-              <div className="majormatch__access-note">
-                {majorMatchAccessStatus.promptMessage}
-              </div>
-            )}
-            <button
-              type="button"
-              className="majormatch__btn majormatch__btn--primary"
-              onClick={handleStart}
-              disabled={
-                isLoading || (!!majorMatchAccessStatus && !majorMatchAccessStatus.canStart)
-              }
-            >
-              {hasActive ? <RotateCcw size={14} /> : <Play size={14} />}
-              {hasActive
-                ? t('studentHub.psychometric.resume', 'Resume ({{answered}}/{{total}})', {
-                    answered: activeSession?.answeredCount ?? 0,
-                    total: activeSession?.totalCount ?? 48,
-                  })
-                : t('studentHub.psychometric.startAssessment', 'Start Assessment')}
-            </button>
-            {hasActive && activeSession?.lastUpdated && (
-              <div className="majormatch__cta-meta">
-                {t('studentHub.psychometric.lastSaved', 'Last saved')}{' · '}
-                {formatLastSaved(activeSession.lastUpdated)}
-              </div>
+            {requiresEnrollment ? (
+              <>
+                <button
+                  type="button"
+                  className="majormatch__btn majormatch__btn--primary"
+                  onClick={handleUnlock}
+                >
+                  <Lock size={14} />
+                  {t('studentHub.psychometric.unlockUnlimited', 'Unlock unlimited matches')}
+                </button>
+                <div className="majormatch__cta-meta majormatch__cta-meta--unlock">
+                  {t(
+                    'studentHub.psychometric.freeAttemptUsedNote',
+                    "You've used your 1 free attempt. Subscribe to Community for unlimited matches.",
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="majormatch__btn majormatch__btn--primary"
+                  onClick={handleStart}
+                  disabled={isLoading}
+                >
+                  {hasActive ? <RotateCcw size={14} /> : <Play size={14} />}
+                  {hasActive
+                    ? t('studentHub.psychometric.resume', 'Resume ({{answered}}/{{total}})', {
+                        answered: activeSession?.answeredCount ?? 0,
+                        total: activeSession?.totalCount ?? 48,
+                      })
+                    : t('studentHub.psychometric.startAssessment', 'Start Assessment')}
+                </button>
+                {hasActive && activeSession?.lastUpdated && (
+                  <div className="majormatch__cta-meta">
+                    {t('studentHub.psychometric.lastSaved', 'Last saved')}{' · '}
+                    {formatLastSaved(activeSession.lastUpdated)}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
       </header>
+
+      {/* The "free attempt used" state is now conveyed by the small note
+          under the hero "Unlock unlimited matches" button — the large
+          feature-list upsell card that used to sit here was redundant. */}
 
       {/* Stats strip ──────────────────────────────────────────────── */}
       <section className="majormatch__stats">

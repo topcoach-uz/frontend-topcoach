@@ -35,6 +35,7 @@ import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
 import { RoadmapTab } from './roadmap/RoadmapTab';
+import StudentProfileTab from './StudentProfileTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -86,6 +87,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
    */
   type SettingsTabKey =
     | 'profile'
+    | 'studentProfile'
     | 'studyBuddy'
     | 'experience'
     | 'notifications'
@@ -93,12 +95,15 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'roadmap';
 
   // Read initial tab from URL `?tab=` so other pages can deep-link
-  // (e.g. the Community lock popup → subscription tab).
+  // (e.g. the Community lock popup → subscription tab). When no tab is
+  // specified we open on Subscription & billing — that's the most common
+  // reason students land here.
   const initialTab: SettingsTabKey = (() => {
-    if (typeof window === 'undefined') return 'profile';
+    if (typeof window === 'undefined') return 'subscription';
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     const allowed: SettingsTabKey[] = [
       'profile',
+      'studentProfile',
       'studyBuddy',
       'experience',
       'notifications',
@@ -107,7 +112,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     ];
     return allowed.includes(fromUrl as SettingsTabKey)
       ? (fromUrl as SettingsTabKey)
-      : 'profile';
+      : 'subscription';
   })();
   const [activeTab, setActiveTab] = useState<SettingsTabKey>(initialTab);
 
@@ -119,6 +124,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       const fromUrl = new URLSearchParams(window.location.search).get('tab');
       const allowed: SettingsTabKey[] = [
         'profile',
+        'studentProfile',
         'studyBuddy',
         'experience',
         'notifications',
@@ -243,12 +249,33 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       {/* Tab strip — Profile / Study buddy / Experience / Notifications.
           Security tab intentionally omitted (no UI to back it). */}
       <nav className={styles.tabs} aria-label="Settings sections">
+        {/* Subscription first — it's the most common reason students open
+            settings, and the default tab on a bare ?tab-less load. */}
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'subscription' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('subscription')}
+        >
+          {t('settings.subscription.tab', 'Subscription & billing')}
+        </button>
+        {/* "Account" = the basic identity card (name / username / email /
+            photo). Key stays `profile` so existing ?tab=profile deep-links
+            keep working. */}
         <button
           type="button"
           className={`${styles.tab} ${activeTab === 'profile' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('profile')}
         >
-          {t('studentHub.settingsMock.profile', 'Profile')}
+          {t('studentHub.settingsMock.account', 'Account')}
+        </button>
+        {/* "Profile" = the rich student profile (Personal / Academic /
+            Activities) that powers AI recommendations. */}
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'studentProfile' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('studentProfile')}
+        >
+          {t('studentHub.settingsMock.studentProfile', 'Profile')}
         </button>
         <button
           type="button"
@@ -256,6 +283,14 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => setActiveTab('studyBuddy')}
         >
           {t('studentHub.settingsMock.studyBuddy', 'Study buddy')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'roadmap' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('roadmap')}
+        >
+          <MapIcon size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+          {t('settings.roadmap.tab', 'Roadmap')}
         </button>
         {/* Experience tab is the SuperAdmin/Owner toggle between the
             standard and community experiences. Regular students never
@@ -273,28 +308,13 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             {t('studentHub.settingsMock.experience', 'Experience')}
           </button>
         )}
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'subscription' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('subscription')}
-        >
-          {t('settings.subscription.tab', 'Subscription & billing')}
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'roadmap' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('roadmap')}
-        >
-          <MapIcon size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
-          {t('settings.roadmap.tab', 'Roadmap')}
-        </button>
         {/* Notifications tab hidden until the per-channel toggle backend
             ships — surfacing static text felt half-baked. The render
             block below stays in place so re-enabling is a one-line flip. */}
       </nav>
 
       {activeTab === 'profile' && (
-      <Card className={styles.card} title={<><User size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.profile', 'Profile')}</>}>
+      <Card className={styles.card} title={<><User size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.account', 'Account')}</>}>
         <div className={styles.profileRow}>
           <div className={styles.avatarBlock}>
             <Avatar
@@ -368,6 +388,11 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       {/* The legacy "Subscription" card shown above used to live here; it
           has been removed. The new Phase 1B "Subscription & billing" tab
           (rendered below when activeTab === 'subscription') replaces it. */}
+
+      {/* Rich student profile (Personal / Academic / Activities) — the
+          three-tab profile that used to live at /student-hub/profile,
+          re-skinned editorial and surfaced here in settings. */}
+      {activeTab === 'studentProfile' && <StudentProfileTab />}
 
       {activeTab === 'studyBuddy' && (
       <Card

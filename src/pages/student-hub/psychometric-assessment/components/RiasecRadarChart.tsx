@@ -9,9 +9,13 @@ import {
   Legend,
   Tooltip,
 } from 'recharts';
-import { Card, Typography } from 'antd';
 
-const { Title, Text } = Typography;
+const MM_BRAND = '#7b1f2f';
+const MM_INK = '#1c1a17';
+const MM_MUTED = '#6b6258';
+const MM_HAIRLINE = '#e5e3da';
+const MM_GREEN = '#2e6e4e';
+const MM_SERIF = "'Iowan Old Style', 'Charter', 'Georgia', serif";
 
 interface RiasecScores {
   realistic: number;
@@ -75,23 +79,23 @@ const CustomTooltip = ({ active, payload }: any) => {
     return (
       <div
         style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          border: '1px solid #e8e8e8',
-          borderRadius: 8,
+          background: '#fbfaf6',
+          border: `1px solid ${MM_HAIRLINE}`,
+          borderRadius: 10,
           padding: '12px 16px',
           maxWidth: 280,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: '0 6px 18px rgba(28, 26, 23, 0.08)',
         }}
       >
-        <Text strong style={{ fontSize: 16, color: '#8b0000' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: MM_BRAND, fontFamily: MM_SERIF }}>
           {info.full} ({data.score.toFixed(0)}%)
-        </Text>
-        <p style={{ margin: '8px 0', fontSize: 13, color: '#666' }}>
+        </span>
+        <p style={{ margin: '8px 0', fontSize: 13, color: '#4b463f', lineHeight: 1.45 }}>
           {info.description}
         </p>
-        <Text type="secondary" style={{ fontSize: 12 }}>
+        <span style={{ fontSize: 12, color: MM_MUTED }}>
           Example careers: {info.careers.slice(0, 3).join(', ')}
-        </Text>
+        </span>
       </div>
     );
   }
@@ -132,52 +136,40 @@ export const RiasecRadarChart: React.FC<RiasecRadarChartProps> = ({
     .slice(0, 3);
 
   return (
-    <Card className="riasec-radar-card" style={{ height: '100%' }}>
-      <div style={{ textAlign: 'center', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>
+    <div className="majormatch-results__card riasec-radar-card" style={{ height: '100%' }}>
+      <div style={{ textAlign: 'center', marginBottom: 12 }}>
+        <h4 className="majormatch-results__card-title" style={{ justifyContent: 'center', marginBottom: 10 }}>
           Your Interest Profile
-        </Title>
-        <div
-          style={{
-            display: 'inline-block',
-            background: 'linear-gradient(135deg, #8b0000 0%, #dc143c 100%)',
-            color: 'white',
-            padding: '8px 24px',
-            borderRadius: 20,
-            marginTop: 8,
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: 4,
-          }}
-        >
+        </h4>
+        <span className="majormatch-results__code-value" style={{ letterSpacing: '0.18em' }}>
           {riasecCode}
-        </div>
+        </span>
       </div>
 
       <ResponsiveContainer width="100%" height={height}>
         <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-          <PolarGrid stroke="#e8e8e8" />
+          <PolarGrid stroke={MM_HAIRLINE} />
           <PolarAngleAxis
             dataKey="dimension"
-            tick={{ fill: '#333', fontSize: 12, fontWeight: 500 }}
+            tick={{ fill: MM_INK, fontSize: 12, fontWeight: 500 }}
             tickLine={false}
           />
           <PolarRadiusAxis
             angle={30}
             domain={[0, 100]}
-            tick={{ fill: '#999', fontSize: 10 }}
+            tick={{ fill: MM_MUTED, fontSize: 10 }}
             tickCount={5}
           />
-          
+
           {/* Your profile */}
           <Radar
             name="Your Profile"
             dataKey="score"
-            stroke="#8b0000"
-            fill="#8b0000"
-            fillOpacity={0.35}
+            stroke={MM_BRAND}
+            fill={MM_BRAND}
+            fillOpacity={0.18}
             strokeWidth={2}
-            dot={{ fill: '#8b0000', strokeWidth: 2, r: 4 }}
+            dot={{ fill: MM_BRAND, strokeWidth: 2, r: 4 }}
           />
 
           {/* Comparison profile (if provided) */}
@@ -185,56 +177,45 @@ export const RiasecRadarChart: React.FC<RiasecRadarChartProps> = ({
             <Radar
               name={comparisonLabel}
               dataKey="comparison"
-              stroke="#10b981"
-              fill="#10b981"
-              fillOpacity={0.15}
+              stroke={MM_GREEN}
+              fill={MM_GREEN}
+              fillOpacity={0.12}
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ fill: '#10b981', strokeWidth: 2, r: 3 }}
+              dot={{ fill: MM_GREEN, strokeWidth: 2, r: 3 }}
             />
           )}
 
           <Tooltip content={<CustomTooltip />} />
-          {showLegend && <Legend wrapperStyle={{ paddingTop: 20 }} />}
+          {showLegend && <Legend wrapperStyle={{ paddingTop: 20, fontSize: 12, color: MM_MUTED }} />}
         </RadarChart>
       </ResponsiveContainer>
 
       {/* Description of top interests */}
-      <div style={{ marginTop: 16 }}>
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>
-          Your Top Interests:
-        </Text>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ marginTop: 8 }}>
+        <span className="majormatch-results__rec-block-label">Your Top Interests</span>
+        <div className="majormatch-results__interest-grid">
           {sortedDimensions.map(([key, value], index) => {
             const letter = key.charAt(0).toUpperCase();
             const info = RIASEC_DESCRIPTIONS[letter];
             return (
               <div
                 key={key}
-                style={{
-                  flex: '1 1 calc(33.33% - 8px)',
-                  minWidth: 120,
-                  padding: '12px',
-                  background: index === 0 ? '#fff7f7' : '#f9f9f9',
-                  borderRadius: 8,
-                  border: index === 0 ? '2px solid #8b0000' : '1px solid #e8e8e8',
-                }}
+                className={`majormatch-results__interest ${index === 0 ? 'majormatch-results__interest--top' : ''}`}
               >
-                <Text strong style={{ color: '#8b0000' }}>
+                <div className="majormatch-results__interest-rank">
                   #{index + 1} {info.full}
-                </Text>
-                <div style={{ fontSize: 20, fontWeight: 700, margin: '4px 0' }}>
-                  {value.toFixed(0)}%
                 </div>
-                <Text type="secondary" style={{ fontSize: 11 }}>
+                <div className="majormatch-results__interest-value">{value.toFixed(0)}%</div>
+                <div className="majormatch-results__interest-desc">
                   {info.description.slice(0, 50)}...
-                </Text>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

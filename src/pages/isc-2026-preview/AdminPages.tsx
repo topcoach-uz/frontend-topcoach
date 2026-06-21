@@ -1,6 +1,6 @@
 // ISC 2026 — superadmin console pages.
 //
-// Pipeline (Shortlist removed): Applications → Interviews → Final decisions.
+// Pipeline: Applications → review → Final decisions (interviews removed).
 // Applications is the hub: a list of every submission that opens a full
 // applicant file (what they submitted + AI pre-eval + reviewer scores +
 // the admin actions that move them through the pipeline).
@@ -8,10 +8,11 @@
 // Wired to the real backend through RTK Query (iscAdmissionsApi). The real
 // form collects less than the original mock: no region / school / GPA — we
 // surface program + applicantType + grade instead.
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, Video, Inbox, ArrowLeft, UserPlus, ArrowRight, Pencil, Trash2, X, MoreVertical } from 'lucide-react';
+import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, MoreVertical, Download, FileText } from 'lucide-react';
 import s from './isc.module.scss';
+import { hostName } from '../../app/services/api/const';
 import {
   SCORE_DIMENSIONS,
   STATUS_LABEL,
@@ -21,13 +22,8 @@ import {
   useGetIscAdminStatsQuery,
   useGetIscAdminApplicationsQuery,
   useGetIscAdminApplicationQuery,
-  useGetIscAdminInterviewsQuery,
   useGetIscReviewersQuery,
   useAssignIscReviewersMutation,
-  useScheduleIscInterviewMutation,
-  useUpdateIscInterviewMutation,
-  useCancelIscInterviewMutation,
-  useRecordIscInterviewEvalMutation,
   useDecideIscApplicationMutation,
   useRerunIscAiEvalMutation,
   useGrantIscReviewerByEmailMutation,
@@ -36,14 +32,10 @@ import {
   IscApplicationStatus,
   IscProgram,
   IscApplicantType,
-  IscReviewerRow,
-  IscAdminApplicationDetail,
-  IscInterviewRow,
 } from '../../app/services/iscAdmissionsApi';
 
 const ALL_STATUSES: IscApplicationStatus[] = [
-  'submitted', 'under_review', 'reviewed',
-  'interview_scheduled', 'interview_completed', 'accepted', 'waitlisted', 'rejected',
+  'submitted', 'under_review', 'reviewed', 'accepted', 'waitlisted', 'rejected',
 ];
 
 const PROGRAM_LABEL = (p?: IscProgram | null) => (p === 'master' ? "Master's" : "Bachelor's");
@@ -71,6 +63,56 @@ const draftVal = (app: IscApplicationRow | undefined, section: string, key: stri
   return d == null || d === '' ? '—' : String(d);
 };
 
+/** Raw draft string (null when missing) — for file paths / export. */
+const draftRaw = (app: IscApplicationRow | undefined, section: string, key: string): string | null => {
+  const d = (app?.draft as any)?.[section]?.[key];
+  return typeof d === 'string' && d ? d : null;
+};
+
+/** Resolve an uploaded-file path to an absolute URL on the API host. */
+const docUrl = (path: string | null): string | null =>
+  !path ? null : path.startsWith('http') ? path : `${hostName}${path}`;
+
+/** CSV-escape a cell (wrap in quotes, double inner quotes). */
+const csvCell = (v: unknown): string => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+/** Build + download a CSV of the given applications. */
+function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
+  const headers = [
+    'Name', 'Email', 'Phone', 'Telegram', 'Program', 'Type', 'Grade',
+    'Passport #', 'English test', 'English score', 'SAT', 'Submitted',
+    'Status', 'AI score', 'Review avg',
+  ];
+  const lines = rows.map((r) =>
+    [
+      r.fullName ?? '',
+      r.email ?? '',
+      draftRaw(r, 'personal', 'phone') ?? '',
+      draftRaw(r, 'personal', 'telegram') ?? '',
+      PROGRAM_LABEL(r.program),
+      TYPE_LABEL(r.applicantType),
+      draftRaw(r, 'personal', 'grade') ?? '',
+      draftRaw(r, 'personal', 'passportNumber') ?? '',
+      draftRaw(r, 'academics', 'englishTest') ?? '',
+      draftRaw(r, 'academics', 'englishScore') ?? '',
+      draftRaw(r, 'academics', 'satScore') ?? '',
+      r.submittedAt ? r.submittedAt.slice(0, 10) : '',
+      STATUS_LABEL[r.status] ?? r.status,
+      r.aiScore ?? '',
+      r.reviewScoreAvg ?? '',
+    ].map(csvCell).join(','),
+  );
+  // Prepend BOM so Excel reads UTF-8 correctly.
+  const csv = '﻿' + [headers.map(csvCell).join(','), ...lines].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const num = (v?: string | null): number | null => {
   if (v == null) return null;
   const n = Number(v);
@@ -82,8 +124,6 @@ const PIPELINE: { key: IscApplicationStatus; label: string; variant?: 'green' | 
   { key: 'submitted', label: 'Submitted' },
   { key: 'under_review', label: 'Under review', variant: 'amber' },
   { key: 'reviewed', label: 'Reviewed' },
-  { key: 'interview_scheduled', label: 'Interview scheduled' },
-  { key: 'interview_completed', label: 'Interview completed' },
   { key: 'accepted', label: 'Accepted', variant: 'green' },
   { key: 'rejected', label: 'Rejected', variant: 'red' },
 ];
@@ -102,8 +142,8 @@ export function DashboardPage({ onNav }: { onNav: (n: string) => void }) {
   // admin to-dos — each jumps to the page where the work happens
   const attention = [
     { label: 'Awaiting reviewer assignment', n: byStatus.submitted ?? 0, hint: 'Assign reviewers to start review', nav: 'applications', tone: 'crimson' as const },
-    { label: 'Ready to schedule an interview', n: byStatus.reviewed ?? 0, hint: 'Reviewed · no interview booked yet', nav: 'interviews', tone: 'amber' as const },
-    { label: 'Awaiting a final decision', n: byStatus.interview_completed ?? 0, hint: 'Interview done · needs accept / waitlist / reject', nav: 'decisions', tone: 'green' as const },
+    { label: 'In review', n: byStatus.under_review ?? 0, hint: 'Reviewers are scoring these', nav: 'applications', tone: 'amber' as const },
+    { label: 'Awaiting a final decision', n: byStatus.reviewed ?? 0, hint: 'Review complete · needs accept / reject', nav: 'decisions', tone: 'green' as const },
   ];
 
   return (
@@ -112,7 +152,6 @@ export function DashboardPage({ onNav }: { onNav: (n: string) => void }) {
       <div className={s.kpiRow}>
         <Kpi label="Total applications" value={total} sub="this cohort" />
         <Kpi label="Awaiting review" value={stats.awaitingReview} sub="submitted + in review" tone="amber" />
-        <Kpi label="In interview" value={stats.inInterview} sub="scheduled + completed" />
         <Kpi label="Accepted" value={stats.accepted} sub="this cohort" tone="green" />
         <Kpi label="Avg AI score" value={`${stats.avgAiScore} / 50`} sub="pre-evaluation" />
       </div>
@@ -230,6 +269,15 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       return next;
     });
   const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); };
+  const exportCsv = () => {
+    const rows = selected.size
+      ? items.filter((a) => selected.has(a.id))
+      : items;
+    if (!rows.length) return toast('No applications to export.');
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadApplicationsCsv(rows, `isc-applications-${stamp}.csv`);
+    toast(`Exported ${rows.length} application${rows.length > 1 ? 's' : ''}.`);
+  };
   const assign = async () => {
     if (!selected.size) return toast('Select applicants to assign first.');
     if (!effectiveAssignTo) return toast('No reviewer available to assign.');
@@ -263,6 +311,9 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
           <b>{minScore}</b>
         </label>
         <button className={s.btn} onClick={reset}>Reset</button>
+        <button className={s.btn} onClick={exportCsv}>
+          <Download size={15} /> Export CSV{selected.size ? ` (${selected.size})` : ''}
+        </button>
         <div className={s.assignCluster}>
           <span className={s.assignHint}>{selected.size} selected</span>
           <Sel value={effectiveAssignTo} onChange={setAssignTo} options={(reviewers ?? []).map((r) => [r.id, r.name] as [string, string])} />
@@ -402,7 +453,7 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
         </div>
         <div className={s.actionGroupRight}>
           <button className={s.btn} onClick={doRerun}>Re-run AI</button>
-          {application.status === 'interview_completed' && !decision && (
+          {application.status === 'reviewed' && !decision && (
             <>
               <button className={`${s.btn} ${s.btnPrimary}`} onClick={() => doDecide('accepted')}>Accept</button>
               <button className={`${s.btn} ${s.btnDanger}`} onClick={() => doDecide('rejected')}>Reject</button>
@@ -448,6 +499,15 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
           <div className={s.infoBlock}>
             <div className={s.infoLabel}>Essay 2 — why select you</div>
             <div className={s.infoText}>{draftVal(application, 'essays', 'whySelect')}</div>
+          </div>
+
+          <div className={s.infoBlock}>
+            <div className={s.infoLabel}>Uploaded documents</div>
+            <div className={s.docList}>
+              <DocLink label="Passport (photo page)" path={draftRaw(application, 'personal', 'passportPath')} />
+              <DocLink label="English proficiency certificate" path={draftRaw(application, 'academics', 'certificatePath')} />
+              <DocLink label="SAT / standardized report" path={draftRaw(application, 'academics', 'satReportPath')} />
+            </div>
           </div>
         </div>
 
@@ -522,260 +582,59 @@ function KV({ k, v }: { k: string; v: string }) {
   );
 }
 
-/* ── Interviews ─────────────────────────────────────────────── */
-const BLANK_FORM = { applicationId: '', date: '2026-06-20', time: '09:00', interviewerName: 'Dr. Sato', link: 'https://zoom.us/j/8842910334' };
-
-export function InterviewsPage() {
-  const { data: interviewsData } = useGetIscAdminInterviewsQuery();
-  const { data: readyData } = useGetIscAdminApplicationsQuery({ status: 'reviewed', page: 1 });
-
-  const [scheduleInterview] = useScheduleIscInterviewMutation();
-  const [updateInterview] = useUpdateIscInterviewMutation();
-  const [cancelInterview] = useCancelIscInterviewMutation();
-
-  const rows = interviewsData?.interviews ?? [];
-  const scheduled = rows.filter((r) => r.interview.status === 'scheduled');
-  const pending = rows.filter((r) => r.interview.status === 'completed');
-  const readyForInterview = readyData?.items ?? [];
-
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string; date: string; time: string } | null>(null);
-  const [form, setForm] = useState({ ...BLANK_FORM });
-  const setF = (p: Partial<typeof form>) => setForm((f) => ({ ...f, ...p }));
-  const resetForm = () => { setEditingId(null); setForm({ ...BLANK_FORM }); };
-
-  // default applicant select to the first ready applicant
-  const effectiveAppId = form.applicationId || readyForInterview[0]?.id || '';
-
-  const save = async () => {
-    if (editingId) {
-      try {
-        await updateInterview({
-          id: editingId,
-          body: {
-            scheduledAt: `${form.date}T${form.time}:00`,
-            interviewerName: form.interviewerName,
-            meetingLink: form.link,
-          },
-        }).unwrap();
-        toast('Interview updated.');
-        resetForm();
-      } catch {
-        toast('Could not update interview.');
-      }
-      return;
-    }
-    if (!effectiveAppId) return toast('No applicant ready to schedule.');
-    try {
-      await scheduleInterview({
-        applicationId: effectiveAppId,
-        scheduledAt: `${form.date}T${form.time}:00`,
-        interviewerName: form.interviewerName,
-        meetingLink: form.link,
-      }).unwrap();
-      toast('Interview slot created · applicant notified.');
-      resetForm();
-    } catch {
-      toast('Could not schedule interview.');
-    }
-  };
-
-  const edit = (iv: IscInterviewRow, name: string) => {
-    setEditingId(iv.id);
-    setForm({
-      applicationId: iv.applicationId,
-      date: iv.scheduledAt ? iv.scheduledAt.slice(0, 10) : BLANK_FORM.date,
-      time: iv.scheduledAt ? iv.scheduledAt.slice(11, 16) : BLANK_FORM.time,
-      interviewerName: iv.interviewerName ?? '',
-      link: iv.meetingLink ?? '',
-    });
-    void name;
-  };
-
-  const del = async (id: string) => {
-    try {
-      await cancelInterview(id).unwrap();
-      if (editingId === id) resetForm();
-      toast('Interview cancelled · applicant notified.');
-    } catch {
-      toast('Could not cancel interview.');
-    }
-  };
-
-  const editingName = editingId
-    ? rows.find((r) => r.interview.id === editingId)?.applicant?.fullName ?? ''
-    : '';
-
+function DocLink({ label, path }: { label: string; path: string | null }) {
+  const href = docUrl(path);
+  if (!href) {
+    return <div className={s.docMissing}>{label} — not uploaded</div>;
+  }
   return (
-    <div className={s.splitLayout}>
-      <div>
-        <div className={s.listCard} style={{ marginBottom: 18 }}>
-          <div className={s.formCardHead}>
-            <h3 className={s.cardTitle} style={{ margin: 0 }}>{editingId ? 'Edit interview' : 'Schedule an interview'}</h3>
-            {editingId && <button className={s.btnGhost} onClick={resetForm}><X size={14} /> Cancel edit</button>}
-          </div>
-          <Lbl t="Applicant">
-            {editingId ? (
-              <input className={s.textInput} style={{ width: '100%' }} value={editingName} readOnly />
-            ) : (
-              <select className={s.selectInput} style={{ width: '100%' }} value={effectiveAppId} onChange={(e) => setF({ applicationId: e.target.value })}>
-                {readyForInterview.length === 0 && <option value="">No applicants ready</option>}
-                {readyForInterview.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.fullName ?? '—'} — {PROGRAM_LABEL(a.program)} (avg {num(a.reviewScoreAvg) ?? '—'})
-                  </option>
-                ))}
-              </select>
-            )}
-          </Lbl>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <Lbl t="Date"><input className={s.textInput} style={{ width: '100%' }} value={form.date} onChange={(e) => setF({ date: e.target.value })} /></Lbl>
-            <Lbl t="Time"><input className={s.textInput} style={{ width: '100%' }} value={form.time} onChange={(e) => setF({ time: e.target.value })} /></Lbl>
-          </div>
-          <Lbl t="Interviewer"><input className={s.textInput} style={{ width: '100%' }} value={form.interviewerName} onChange={(e) => setF({ interviewerName: e.target.value })} /></Lbl>
-          <Lbl t="Meeting link"><input className={s.textInput} style={{ width: '100%' }} value={form.link} onChange={(e) => setF({ link: e.target.value })} /></Lbl>
-          <button className={`${s.btn} ${s.btnPrimary}`} style={{ width: '100%', justifyContent: 'center' }} onClick={save}>
-            {editingId ? 'Update interview' : 'Create slot & notify applicant'}
-          </button>
-        </div>
-
-        <div className={s.listCard}>
-          <h3 className={s.cardTitle}>Scheduled interviews</h3>
-          {scheduled.length === 0 && <Empty text="No interviews scheduled yet." />}
-          {scheduled.map(({ interview: iv, applicant }) => {
-            const name = applicant?.fullName ?? '—';
-            const date = iv.scheduledAt ? iv.scheduledAt.slice(0, 10) : '—';
-            const time = iv.scheduledAt ? iv.scheduledAt.slice(11, 16) : '—';
-            return (
-              <div key={iv.id} className={`${s.scheduleRow} ${editingId === iv.id ? s.selected : ''}`}>
-                <Calendar size={18} color="#6b7280" />
-                <div className={s.scheduleBody}>
-                  <div className={s.applicantName}>{name}</div>
-                  <div className={s.rowMeta}>{date} · {time}{iv.interviewerName ? ` · ${iv.interviewerName}` : ''}</div>
-                </div>
-                <span className={`${s.badge} ${s.bInterview}`}><Video size={12} style={{ marginRight: 4 }} /> Zoom</span>
-                <button className={s.iconBtn} title="Edit" onClick={() => edit(iv, name)}><Pencil size={15} /></button>
-                <button className={`${s.iconBtn} ${s.iconBtnDanger}`} title="Cancel interview" onClick={() => setPendingDelete({ id: iv.id, name, date, time })}><Trash2 size={15} /></button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {pendingDelete && (
-        <ConfirmDialog
-          title="Cancel this interview?"
-          body={`The interview with ${pendingDelete.name} on ${pendingDelete.date} at ${pendingDelete.time} will be removed and the applicant will be notified. This can't be undone.`}
-          confirmLabel="Cancel interview"
-          onCancel={() => setPendingDelete(null)}
-          onConfirm={() => { del(pendingDelete.id); setPendingDelete(null); }}
-        />
-      )}
-
-      <div className={s.listCard}>
-        <h3 className={s.cardTitle}>Pending evaluation</h3>
-        {pending.length === 0 && <Empty text="No interviews awaiting evaluation." />}
-        {pending.map(({ interview: iv, applicant }) => (
-          <PendingEvalBlock key={iv.id} interview={iv} name={applicant?.fullName ?? '—'} />
-        ))}
-      </div>
-    </div>
+    <a className={s.docLink} href={href} target="_blank" rel="noreferrer">
+      <FileText size={15} /> {label}
+      <ArrowRight size={13} className={s.docArrow} />
+    </a>
   );
 }
 
-function PendingEvalBlock({ interview, name }: { interview: IscInterviewRow; name: string }) {
-  const [recordEval] = useRecordIscInterviewEvalMutation();
-  const dims: { key: 'communication' | 'leadership' | 'criticalThinking' | 'motivation' | 'campFit'; label: string }[] = [
-    { key: 'communication', label: 'Communication' },
-    { key: 'leadership', label: 'Leadership' },
-    { key: 'criticalThinking', label: 'Critical thinking' },
-    { key: 'motivation', label: 'Motivation' },
-    { key: 'campFit', label: 'Camp fit' },
-  ];
-  const [vals, setVals] = useState({ communication: 7, leadership: 7, criticalThinking: 8, motivation: 9, campFit: 8 });
-  const [notes, setNotes] = useState('');
-
-  const save = async () => {
-    try {
-      await recordEval({ id: interview.id, body: { ...vals, notes } }).unwrap();
-      toast('Interview evaluation saved.');
-    } catch {
-      toast('Could not save evaluation.');
-    }
-  };
-
-  return (
-    <div className={s.pendingBlock}>
-      <div className={s.pendingHead}>
-        <Avatar initials={avatarInitials(name)} />
-        <div>
-          <div className={s.applicantName}>{name}</div>
-          <div className={s.rowMeta}>{interview.scheduledAt ? fmtDate(interview.scheduledAt) : '—'}{interview.interviewerName ? ` with ${interview.interviewerName}` : ''}</div>
-        </div>
-        <span className={`${s.badge} ${s.bInterview}`} style={{ marginLeft: 'auto' }}>Completed</span>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {dims.map((d) => (
-          <div key={d.key}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
-              <span style={{ color: '#4b5563', fontWeight: 600 }}>{d.label}</span>
-              <span style={{ color: '#6b7280', fontWeight: 700 }}>{vals[d.key]} / 10</span>
-            </div>
-            <input className={s.slider} type="range" min={0} max={10} value={vals[d.key]}
-              onChange={(e) => setVals((v) => ({ ...v, [d.key]: Number(e.target.value) }))} />
-          </div>
-        ))}
-      </div>
-      <textarea className={s.notesArea} placeholder="Notes on this candidate's interview…" style={{ marginTop: 10 }}
-        value={notes} onChange={(e) => setNotes(e.target.value)} />
-      <button className={`${s.btn} ${s.btnPrimary}`} style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
-        onClick={save}>Save evaluation</button>
-    </div>
-  );
-}
-
-function Lbl({ t, children }: { t: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: 6 }}>{t}</div>
-      {children}
-    </div>
-  );
-}
 
 /* ── Final decisions ────────────────────────────────────────── */
 export function FinalDecisionsPage() {
-  const { data: awaitingData } = useGetIscAdminApplicationsQuery({ status: 'interview_completed', page: 1 });
-  const awaiting = awaitingData?.items ?? [];
+  // Applicants are ready for a decision once their review is complete.
+  const { data: reviewedData } = useGetIscAdminApplicationsQuery({ status: 'reviewed', page: 1 });
+  const awaiting = reviewedData?.items ?? [];
   const [selId, setSelId] = useState<string | null>(null);
 
   const effectiveSelId = selId ?? awaiting[0]?.id ?? null;
 
   return (
     <div className={s.splitLayout}>
-      <div className={s.listCard}>
+      <div className={`${s.listCard} ${s.decisionCol}`}>
         <h3 className={s.cardTitle}>Awaiting a final decision</h3>
-        {awaiting.map((a) => {
-          const avg = num(a.reviewScoreAvg);
-          return (
-            <div key={a.id} className={`${s.decisionRow} ${effectiveSelId === a.id ? s.selected : ''}`} onClick={() => setSelId(a.id)}>
-              <Avatar initials={avatarInitials(a.fullName ?? undefined)} />
-              <div>
-                <div className={s.applicantName}>{a.fullName ?? '—'}</div>
-                <div className={s.rowMeta}>{PROGRAM_LABEL(a.program)} · Grade {draftVal(a, 'personal', 'grade')} · Review {avg ?? '—'}</div>
-              </div>
-            </div>
-          );
-        })}
-        {awaiting.length === 0 && <Empty text="No applicants awaiting a final decision." />}
+        {awaiting.length === 0 ? (
+          <Empty text="No applicants awaiting a final decision." />
+        ) : (
+          <div className={s.decisionRows}>
+            {awaiting.map((a) => {
+              const avg = num(a.reviewScoreAvg);
+              return (
+                <div key={a.id} className={`${s.decisionRow} ${effectiveSelId === a.id ? s.selected : ''}`} onClick={() => setSelId(a.id)}>
+                  <Avatar initials={avatarInitials(a.fullName ?? undefined)} />
+                  <div>
+                    <div className={s.applicantName}>{a.fullName ?? '—'}</div>
+                    <div className={s.rowMeta}>{PROGRAM_LABEL(a.program)} · Grade {draftVal(a, 'personal', 'grade')} · Review {avg ?? '—'}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {effectiveSelId ? (
         <DecisionDetail selectedId={effectiveSelId} />
       ) : (
-        <div className={s.emptyPanel}>
-          <Inbox size={40} />
-          <div>Select an applicant to review combined scores and make a decision.</div>
+        <div className={`${s.listCard} ${s.decisionCol}`}>
+          <h3 className={s.cardTitle}>Decision</h3>
+          <Empty text="Select an applicant to review the combined scores and make a decision." />
         </div>
       )}
     </div>
@@ -790,11 +649,9 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
   if (isFetching && !detail) return <div className={s.listCard}><div className={s.emptyText}>Loading…</div></div>;
   if (!detail) return <div className={s.listCard}><div className={s.emptyText}>Not found.</div></div>;
 
-  const { application, reviews, interviews } = detail;
+  const { application, reviews } = detail;
   const fullName = application.fullName ?? '—';
   const reviewAvg = num(application.reviewScoreAvg);
-  const interviewTotal = interviews[0]?.interviewTotal ?? null;
-  const combined = (reviewAvg ?? 0) + (interviewTotal ?? 0);
   const reviewerName = (id: string) => reviewers?.find((r) => r.id === id)?.name ?? `${id.slice(0, 8)}…`;
 
   const doDecide = async (d: 'accepted' | 'waitlisted' | 'rejected') => {
@@ -817,8 +674,7 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
       </div>
       <div className={s.scoreStatRow}>
         <ScoreStat label="Review avg" value={`${reviewAvg ?? '—'} / 50`} />
-        <ScoreStat label="Interview" value={`${interviewTotal ?? '—'} / 50`} />
-        <ScoreStat label="Combined" value={`${combined} / 100`} />
+        <ScoreStat label="AI score" value={`${num(application.aiScore) ?? '—'} / 50`} />
       </div>
 
       <div className={s.infoBlock}>
@@ -830,13 +686,6 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
             <span className={s.recScore}>{r.total} / 50</span>
           </div>
         ))}
-        {interviews[0]?.interviewerName && (
-          <div className={s.recLine}>
-            <span className={s.recWho}>Interview · {interviews[0].interviewerName}</span>
-            <span className={`${s.badge} ${s.bInterview}`}>Interviewed</span>
-            <span className={s.recScore}>{interviewTotal ?? '—'} / 50</span>
-          </div>
-        )}
         {reviews.length === 0 && <div className={s.dim}>No reviewer recommendations yet.</div>}
       </div>
 
@@ -1096,11 +945,16 @@ function Sel({ value, onChange, options }: { value: string; onChange: (v: string
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className={s.emptyText}>{text}</div>;
+  return (
+    <div className={s.emptyState}>
+      <Inbox size={36} />
+      <div className={s.emptyStateText}>{text}</div>
+    </div>
+  );
 }
 
-function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }: {
-  title: string; body: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
+function ConfirmDialog({ title, body, confirmLabel, cancelLabel = 'Cancel', onConfirm, onCancel }: {
+  title: string; body: string; confirmLabel: string; cancelLabel?: string; onConfirm: () => void; onCancel: () => void;
 }) {
   return (
     <div className={s.modalOverlay} onClick={onCancel}>
@@ -1108,15 +962,10 @@ function ConfirmDialog({ title, body, confirmLabel, onConfirm, onCancel }: {
         <h3 className={s.modalTitle}>{title}</h3>
         <p className={s.modalBody}>{body}</p>
         <div className={s.modalActions}>
-          <button className={s.btn} onClick={onCancel}>Keep interview</button>
+          <button className={s.btn} onClick={onCancel}>{cancelLabel}</button>
           <button className={`${s.btn} ${s.btnDanger}`} onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
     </div>
   );
-}
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.toISOString().slice(0, 10)} · ${d.toISOString().slice(11, 16)}`;
 }

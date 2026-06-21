@@ -29,15 +29,13 @@ export default function useNavigation() {
     ?.managementRole;
   const isSuperAdmin = role === 'SuperAdmin' || role === 'Owner';
   const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
-  // "My Journey" (the student/mentee hub) is for students only. Superadmins
-  // are operated as mentors (with the admin-console shortcut added inside
-  // the mentor sidebar), so they should not see the student hub link in
-  // the top nav. Counselors (non-superadmin) also hide it.
-  // Final rule: show My Journey only when the user is NOT a mentor AND
-  // NOT a counselor AND NOT a superadmin (CEO email override re-enables
-  // it for the legacy mentor exceptions, same as before).
+  // "My Journey" (the student/mentee hub).
+  // - SuperAdmins/Owners are both mentor and mentee, so they DO get the
+  //   link (they actively use the student hub) and it highlights as active.
+  // - Otherwise: show it for students — i.e. not a mentor (unless a CEO
+  //   exception) and not a (non-superadmin) counselor.
   const shouldShowMyJourney =
-    !isSuperAdmin && ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
+    isSuperAdmin || ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
   // Mentors: Home. Counselors (non-superadmin): School Counselor as home.
   const showHome = isMentor && !(isCounselor && !isSuperAdmin);
   const showSchoolCounselor = isCounselor && !isSuperAdmin;

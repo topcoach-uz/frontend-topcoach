@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography, Progress, Tooltip, Row, Col } from 'antd';
+import { Tooltip } from 'antd';
 import {
   RadarChart,
   PolarGrid,
@@ -8,8 +8,29 @@ import {
   Radar,
   ResponsiveContainer,
 } from 'recharts';
+import {
+  Sparkles,
+  Target,
+  Sun,
+  Handshake,
+  Anchor,
+  ClipboardList,
+  Palette,
+  Scale,
+  User,
+  Users,
+  RefreshCw,
+  Zap,
+  Gauge,
+  Microscope,
+  Briefcase,
+  type LucideIcon,
+} from 'lucide-react';
 
-const { Title, Text, Paragraph } = Typography;
+const MM_BRAND = '#7b1f2f';
+const MM_INK = '#1c1a17';
+const MM_MUTED = '#6b6258';
+const MM_HAIRLINE = '#e5e3da';
 
 interface BigFiveScores {
   openness: number;
@@ -39,7 +60,7 @@ const BIG_FIVE_INFO: Record<
   string,
   {
     label: string;
-    emoji: string;
+    Icon: LucideIcon;
     color: string;
     highLabel: string;
     lowLabel: string;
@@ -50,7 +71,7 @@ const BIG_FIVE_INFO: Record<
 > = {
   openness: {
     label: 'Openness',
-    emoji: '🌟',
+    Icon: Sparkles,
     color: '#9333ea',
     highLabel: 'Creative & Curious',
     lowLabel: 'Practical & Traditional',
@@ -60,7 +81,7 @@ const BIG_FIVE_INFO: Record<
   },
   conscientiousness: {
     label: 'Conscientiousness',
-    emoji: '🎯',
+    Icon: Target,
     color: '#10b981',
     highLabel: 'Organized & Disciplined',
     lowLabel: 'Flexible & Spontaneous',
@@ -70,7 +91,7 @@ const BIG_FIVE_INFO: Record<
   },
   extraversion: {
     label: 'Extraversion',
-    emoji: '🌞',
+    Icon: Sun,
     color: '#f59e0b',
     highLabel: 'Outgoing & Energetic',
     lowLabel: 'Reserved & Reflective',
@@ -80,7 +101,7 @@ const BIG_FIVE_INFO: Record<
   },
   agreeableness: {
     label: 'Agreeableness',
-    emoji: '🤝',
+    Icon: Handshake,
     color: '#ec4899',
     highLabel: 'Cooperative & Trusting',
     lowLabel: 'Competitive & Skeptical',
@@ -90,7 +111,7 @@ const BIG_FIVE_INFO: Record<
   },
   neuroticism: {
     label: 'Emotional Stability',
-    emoji: '⚖️',
+    Icon: Anchor,
     color: '#0ea5e9',
     highLabel: 'Sensitive & Aware',
     lowLabel: 'Calm & Resilient',
@@ -101,21 +122,24 @@ const BIG_FIVE_INFO: Record<
 };
 
 // Work style descriptions
-const WORK_STYLE_DESCRIPTIONS = {
+const WORK_STYLE_DESCRIPTIONS: Record<
+  string,
+  Record<string, { label: string; description: string; Icon: LucideIcon }>
+> = {
   preferredEnvironment: {
-    structured: { label: 'Structured', description: 'Clear rules, defined processes', emoji: '📋' },
-    flexible: { label: 'Flexible', description: 'Autonomy, creative freedom', emoji: '🎨' },
-    mixed: { label: 'Balanced', description: 'Mix of structure and flexibility', emoji: '⚖️' },
+    structured: { label: 'Structured', description: 'Clear rules, defined processes', Icon: ClipboardList },
+    flexible: { label: 'Flexible', description: 'Autonomy, creative freedom', Icon: Palette },
+    mixed: { label: 'Balanced', description: 'Mix of structure and flexibility', Icon: Scale },
   },
   collaborationStyle: {
-    independent: { label: 'Independent', description: 'Work alone, focused time', emoji: '🧘' },
-    team: { label: 'Team-Oriented', description: 'Collaborate, brainstorm together', emoji: '👥' },
-    mixed: { label: 'Adaptable', description: 'Both solo and team work', emoji: '🔄' },
+    independent: { label: 'Independent', description: 'Work alone, focused time', Icon: User },
+    team: { label: 'Team-Oriented', description: 'Collaborate, brainstorm together', Icon: Users },
+    mixed: { label: 'Adaptable', description: 'Both solo and team work', Icon: RefreshCw },
   },
   pacePreference: {
-    fast: { label: 'Fast-Paced', description: 'Quick decisions, high energy', emoji: '⚡' },
-    moderate: { label: 'Moderate', description: 'Balanced pace, thoughtful', emoji: '🎵' },
-    deliberate: { label: 'Deliberate', description: 'Careful, thorough approach', emoji: '🔬' },
+    fast: { label: 'Fast-Paced', description: 'Quick decisions, high energy', Icon: Zap },
+    moderate: { label: 'Moderate', description: 'Balanced pace, thoughtful', Icon: Gauge },
+    deliberate: { label: 'Deliberate', description: 'Careful, thorough approach', Icon: Microscope },
   },
 };
 
@@ -154,89 +178,98 @@ export const BigFiveChart: React.FC<BigFiveChartProps> = ({
 
   if (variant === 'radar') {
     return (
-      <Card>
-        <Title level={4}>Personality Profile</Title>
+      <div className="majormatch-results__card">
+        <h4 className="majormatch-results__card-title">Personality Profile</h4>
         <ResponsiveContainer width="100%" height={height}>
           <RadarChart data={chartData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="trait" tick={{ fontSize: 12 }} />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} />
+            <PolarGrid stroke={MM_HAIRLINE} />
+            <PolarAngleAxis dataKey="trait" tick={{ fontSize: 12, fill: MM_INK }} />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: MM_MUTED }} />
             <Radar
               name="Your Profile"
               dataKey="score"
-              stroke="#8b0000"
-              fill="#8b0000"
-              fillOpacity={0.4}
+              stroke={MM_BRAND}
+              fill={MM_BRAND}
+              fillOpacity={0.18}
+              strokeWidth={2}
             />
           </RadarChart>
         </ResponsiveContainer>
-      </Card>
+      </div>
     );
   }
 
   if (variant === 'bars') {
     return (
-      <Card>
-        <Title level={4}>Personality Traits</Title>
+      <div className="majormatch-results__card">
+        <h4 className="majormatch-results__card-title">Personality Traits</h4>
         {Object.entries(BIG_FIVE_INFO).map(([key, info]) => {
           const value = key === 'neuroticism' ? 100 - scores[key as keyof BigFiveScores] : scores[key as keyof BigFiveScores];
           return (
-            <div key={key} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text strong>
-                  {info.emoji} {key === 'neuroticism' ? 'Emotional Stability' : info.label}
-                </Text>
-                <Text type="secondary">{getTraitLabel(key, scores[key as keyof BigFiveScores])}</Text>
+            <div key={key} className="majormatch-results__meter">
+              <div className="majormatch-results__meter-head">
+                <span className="majormatch-results__meter-label" style={{ fontWeight: 600, color: MM_INK }}>
+                  {info.Icon ? (
+                    <info.Icon size={14} style={{ color: info.color, marginRight: 4, verticalAlign: '-2px' }} />
+                  ) : null}
+                  {key === 'neuroticism' ? 'Emotional Stability' : info.label}
+                </span>
+                <span className="majormatch-results__meter-value" style={{ fontWeight: 400, color: MM_MUTED, fontFamily: 'inherit' }}>
+                  {getTraitLabel(key, scores[key as keyof BigFiveScores])}
+                </span>
               </div>
-              <Progress percent={value} strokeColor={info.color} showInfo />
+              <div className="majormatch-results__meter-track">
+                <div
+                  className="majormatch-results__meter-fill"
+                  style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: info.color }}
+                />
+              </div>
             </div>
           );
         })}
-      </Card>
+      </div>
     );
   }
 
   // Detailed variant (default)
   return (
-    <Card className="big-five-chart-detailed">
-      <Title level={4} style={{ marginBottom: 8 }}>
-        Your Personality Profile
-      </Title>
-      <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
+    <div className="majormatch-results__card big-five-chart-detailed">
+      <h4 className="majormatch-results__card-title">Your Personality Profile</h4>
+      <p className="majormatch-results__card-sub">
         Based on the Big Five personality model
-      </Text>
+      </p>
 
-      <Row gutter={[24, 24]}>
+      <div className="majormatch-results__grid-2" style={{ marginTop: 0 }}>
         {/* Radar chart */}
-        <Col xs={24} md={12}>
+        <div>
           <ResponsiveContainer width="100%" height={280}>
             <RadarChart data={chartData}>
-              <PolarGrid stroke="#e8e8e8" />
+              <PolarGrid stroke={MM_HAIRLINE} />
               <PolarAngleAxis
                 dataKey="trait"
-                tick={{ fontSize: 11, fill: '#333' }}
+                tick={{ fontSize: 11, fill: MM_INK }}
               />
               <PolarRadiusAxis
                 angle={30}
                 domain={[0, 100]}
-                tick={{ fontSize: 10, fill: '#999' }}
+                tick={{ fontSize: 10, fill: MM_MUTED }}
                 tickCount={5}
               />
               <Radar
                 name="Your Profile"
                 dataKey="score"
-                stroke="#8b0000"
-                fill="#8b0000"
-                fillOpacity={0.35}
+                stroke={MM_BRAND}
+                fill={MM_BRAND}
+                fillOpacity={0.18}
                 strokeWidth={2}
               />
             </RadarChart>
           </ResponsiveContainer>
-        </Col>
+        </div>
 
         {/* Trait details */}
-        <Col xs={24} md={12}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {Object.entries(BIG_FIVE_INFO).map(([key, info]) => {
               const rawValue = scores[key as keyof BigFiveScores];
               const displayValue = key === 'neuroticism' ? 100 - rawValue : rawValue;
@@ -250,130 +283,125 @@ export const BigFiveChart: React.FC<BigFiveChartProps> = ({
                 >
                   <div
                     style={{
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: '#f9f9f9',
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      background: '#fff',
+                      border: `1px solid ${MM_HAIRLINE}`,
                       cursor: 'pointer',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <Text strong>
-                        {info.emoji} {displayLabel}
-                      </Text>
-                      <Text style={{ color: info.color, fontWeight: 600 }}>
-                        {displayValue.toFixed(0)}%
-                      </Text>
+                    <div className="majormatch-results__meter-head">
+                      <span className="majormatch-results__meter-label" style={{ fontWeight: 600, color: MM_INK }}>
+                        {info.Icon ? (
+                          <info.Icon size={14} style={{ color: info.color, marginRight: 4, verticalAlign: '-2px' }} />
+                        ) : null}
+                        {displayLabel}
+                      </span>
+                      <span className="majormatch-results__meter-value">{displayValue.toFixed(0)}%</span>
                     </div>
-                    <Progress
-                      percent={displayValue}
-                      size="small"
-                      strokeColor={info.color}
-                      showInfo={false}
-                    />
-                    <Text type="secondary" style={{ fontSize: 11 }}>
+                    <div className="majormatch-results__meter-track">
+                      <div
+                        className="majormatch-results__meter-fill"
+                        style={{ width: `${Math.max(0, Math.min(100, displayValue))}%`, background: info.color }}
+                      />
+                    </div>
+                    <div style={{ fontSize: 11, color: MM_MUTED, marginTop: 5 }}>
                       {getTraitLabel(key, rawValue)}
-                    </Text>
+                    </div>
                   </div>
                 </Tooltip>
               );
             })}
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
       {/* Work Style Summary */}
       {workStyleProfile && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: 16,
-            background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-            borderRadius: 12,
-          }}
-        >
-          <Title level={5} style={{ marginBottom: 16 }}>
-            🏢 Your Work Style
-          </Title>
-          <Row gutter={[16, 16]}>
-            {workStyleProfile.preferredEnvironment && (
-              <Col xs={12} sm={8}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, marginBottom: 4 }}>
-                    {WORK_STYLE_DESCRIPTIONS.preferredEnvironment[workStyleProfile.preferredEnvironment].emoji}
+        <div className="majormatch-results__workstyle">
+          <h5 className="majormatch-results__rec-block-label" style={{ marginBottom: 12 }}>
+            <Briefcase size={16} style={{ color: MM_BRAND, marginRight: 6, verticalAlign: '-2px' }} />
+            Your Work Style
+          </h5>
+          <div className="majormatch-results__workstyle-grid">
+            {workStyleProfile.preferredEnvironment && (() => {
+              const item = WORK_STYLE_DESCRIPTIONS.preferredEnvironment[workStyleProfile.preferredEnvironment];
+              return (
+                <div className="majormatch-results__workstyle-item">
+                  <div style={{ marginBottom: 4 }}>
+                    {item.Icon ? <item.Icon size={24} style={{ color: MM_BRAND }} /> : null}
                   </div>
-                  <Text strong style={{ display: 'block' }}>
-                    {WORK_STYLE_DESCRIPTIONS.preferredEnvironment[workStyleProfile.preferredEnvironment].label}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    Environment
-                  </Text>
+                  <div className="majormatch-results__workstyle-name">{item.label}</div>
+                  <div className="majormatch-results__workstyle-label">Environment</div>
                 </div>
-              </Col>
-            )}
-            {workStyleProfile.collaborationStyle && (
-              <Col xs={12} sm={8}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, marginBottom: 4 }}>
-                    {WORK_STYLE_DESCRIPTIONS.collaborationStyle[workStyleProfile.collaborationStyle].emoji}
+              );
+            })()}
+            {workStyleProfile.collaborationStyle && (() => {
+              const item = WORK_STYLE_DESCRIPTIONS.collaborationStyle[workStyleProfile.collaborationStyle];
+              return (
+                <div className="majormatch-results__workstyle-item">
+                  <div style={{ marginBottom: 4 }}>
+                    {item.Icon ? <item.Icon size={24} style={{ color: MM_BRAND }} /> : null}
                   </div>
-                  <Text strong style={{ display: 'block' }}>
-                    {WORK_STYLE_DESCRIPTIONS.collaborationStyle[workStyleProfile.collaborationStyle].label}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    Collaboration
-                  </Text>
+                  <div className="majormatch-results__workstyle-name">{item.label}</div>
+                  <div className="majormatch-results__workstyle-label">Collaboration</div>
                 </div>
-              </Col>
-            )}
-            {workStyleProfile.pacePreference && (
-              <Col xs={12} sm={8}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, marginBottom: 4 }}>
-                    {WORK_STYLE_DESCRIPTIONS.pacePreference[workStyleProfile.pacePreference].emoji}
+              );
+            })()}
+            {workStyleProfile.pacePreference && (() => {
+              const item = WORK_STYLE_DESCRIPTIONS.pacePreference[workStyleProfile.pacePreference];
+              return (
+                <div className="majormatch-results__workstyle-item">
+                  <div style={{ marginBottom: 4 }}>
+                    {item.Icon ? <item.Icon size={24} style={{ color: MM_BRAND }} /> : null}
                   </div>
-                  <Text strong style={{ display: 'block' }}>
-                    {WORK_STYLE_DESCRIPTIONS.pacePreference[workStyleProfile.pacePreference].label}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    Pace
-                  </Text>
+                  <div className="majormatch-results__workstyle-name">{item.label}</div>
+                  <div className="majormatch-results__workstyle-label">Pace</div>
                 </div>
-              </Col>
-            )}
-          </Row>
+              );
+            })()}
+          </div>
 
           {/* Leadership & Risk indicators */}
           {(workStyleProfile.leadershipTendency !== undefined || workStyleProfile.riskTolerance !== undefined) && (
-            <Row gutter={16} style={{ marginTop: 16 }}>
+            <div className="majormatch-results__grid-2" style={{ marginTop: 16 }}>
               {workStyleProfile.leadershipTendency !== undefined && (
-                <Col xs={12}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Leadership Tendency
-                  </Text>
-                  <Progress
-                    percent={workStyleProfile.leadershipTendency}
-                    strokeColor="#8b0000"
-                    size="small"
-                  />
-                </Col>
+                <div className="majormatch-results__meter">
+                  <div className="majormatch-results__meter-head">
+                    <span className="majormatch-results__meter-label">Leadership Tendency</span>
+                    <span className="majormatch-results__meter-value">
+                      {workStyleProfile.leadershipTendency.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="majormatch-results__meter-track">
+                    <div
+                      className="majormatch-results__meter-fill"
+                      style={{ width: `${Math.max(0, Math.min(100, workStyleProfile.leadershipTendency))}%` }}
+                    />
+                  </div>
+                </div>
               )}
               {workStyleProfile.riskTolerance !== undefined && (
-                <Col xs={12}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Risk Tolerance
-                  </Text>
-                  <Progress
-                    percent={workStyleProfile.riskTolerance}
-                    strokeColor="#f59e0b"
-                    size="small"
-                  />
-                </Col>
+                <div className="majormatch-results__meter">
+                  <div className="majormatch-results__meter-head">
+                    <span className="majormatch-results__meter-label">Risk Tolerance</span>
+                    <span className="majormatch-results__meter-value">
+                      {workStyleProfile.riskTolerance.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="majormatch-results__meter-track">
+                    <div
+                      className="majormatch-results__meter-fill majormatch-results__meter-fill--amber"
+                      style={{ width: `${Math.max(0, Math.min(100, workStyleProfile.riskTolerance))}%` }}
+                    />
+                  </div>
+                </div>
               )}
-            </Row>
+            </div>
           )}
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 

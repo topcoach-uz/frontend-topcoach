@@ -1,0 +1,212 @@
+/* Editorial palette — match MenteeSettingsPageMock + the rest of My Journey. */
+$st-cream: #faf8f3;
+$st-cream-elevated: #fbfaf6;
+$st-ink: #1c1a17;
+$st-muted: #6b6258;
+$st-hairline: #e5e3da;
+$st-brand: #7b1f2f;
+$st-brand-dark: #641826;
+$st-brand-soft: rgba(123, 31, 47, 0.08);
+
+.wrap {
+  display: block;
+}
+
+.lead {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: $st-muted;
+  margin: 0 0 12px;
+  max-width: 70ch;
+}
+
+/* Segmented sub-tab nav (Personal / Academic / Activities). Pill style so
+   it reads as a secondary level below the top settings tab strip. */
+.subTabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 14px;
+  background: $st-cream;
+  border: 1px solid $st-hairline;
+  border-radius: 999px;
+}
+
+.subTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: $st-muted;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    color: $st-ink;
+  }
+}
+
+.subTabIcon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.subTabActive {
+  background: $st-brand;
+  color: #fff;
+  font-weight: 600;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   Scoped re-skin of the legacy profile forms (PersonalProfile /
+   AcademicProfile / ActivitiesProfile). Those components ship their own
+   blue design-system SCSS with heavy `!important`; we override here, also
+   with `!important`, only within this editorial settings surface so the
+   standalone counselor view (ProfilePage) is untouched.
+   -------------------------------------------------------------------- */
+.editorialProfile {
+  /* Section cards → cream paper, hairline border, no shadow, serif head. */
+  :global(.section-card) {
+    border-radius: 14px !important;
+    border: 1px solid $st-hairline !important;
+    background: $st-cream-elevated !important;
+    box-shadow: none !important;
+    margin-bottom: 18px !important;
+  }
+
+  :global(.section-card .ant-card-head),
+  :global(.test-section-header) {
+    background: transparent !important;
+    border-bottom: 1px solid $st-hairline !important;
+  }
+
+  :global(.section-card .ant-card-head-title) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    color: $st-ink !important;
+  }
+
+  /* Form labels — quieter ink, no blue. */
+  :global(.ant-form-item-label > label) {
+    color: $st-ink !important;
+    font-weight: 600 !important;
+  }
+
+  /* Primary buttons → crimson pill (was blue $primary-500). */
+  :global(.ant-btn-primary) {
+    background: $st-brand !important;
+    border-color: $st-brand !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+
+    &:hover,
+    &:focus {
+      background: $st-brand-dark !important;
+      border-color: $st-brand-dark !important;
+      transform: none !important;
+    }
+  }
+
+  /* Default / reset buttons → hairline pill. */
+  :global(.ant-btn-default) {
+    border-radius: 999px !important;
+    border-color: $st-hairline !important;
+    color: $st-ink !important;
+
+    &:hover,
+    &:focus {
+      border-color: $st-brand !important;
+      color: $st-brand !important;
+      transform: none !important;
+    }
+  }
+
+  /* Dashed "add" buttons (languages, etc.) → warm. */
+  :global(.ant-btn-dashed) {
+    border-radius: 10px !important;
+    border-color: $st-hairline !important;
+    color: $st-muted !important;
+
+    &:hover,
+    &:focus {
+      border-color: $st-brand !important;
+      color: $st-brand !important;
+    }
+  }
+
+  /* Link buttons (remove rows) → crimson. */
+  :global(.ant-btn-link) {
+    color: $st-brand !important;
+  }
+
+  /* Actions card matches the paper section cards. */
+  :global(.form-actions-card) {
+    border-radius: 14px !important;
+    border: 1px solid $st-hairline !important;
+    background: $st-cream-elevated !important;
+    box-shadow: none !important;
+  }
+
+  /* Rate stars (confidence level) → crimson instead of gold. */
+  :global(.ant-rate) {
+    color: $st-brand !important;
+  }
+
+  /* Multi-select tags → warm neutral. */
+  :global(.ant-select-multiple .ant-select-selection-item) {
+    background: $st-brand-soft !important;
+    border: 1px solid $st-hairline !important;
+    color: $st-ink !important;
+    border-radius: 6px !important;
+  }
+
+  /* Checkbox / radio accent → crimson. */
+  :global(.ant-checkbox-checked .ant-checkbox-inner),
+  :global(.ant-radio-checked .ant-radio-inner) {
+    background-color: $st-brand !important;
+    border-color: $st-brand !important;
+  }
+
+  /* The "complete your profile for AI" info alert → warm brand tint
+     instead of AntD's default blue, and compact so it doesn't dominate
+     the top of the form before the first real section. */
+  :global(.ant-alert-info) {
+    background: $st-brand-soft !important;
+    border: 1px solid $st-hairline !important;
+    border-radius: 10px !important;
+    padding: 9px 14px !important;
+    margin-bottom: 14px !important;
+    align-items: center !important;
+
+    :global(.ant-alert-icon) {
+      font-size: 15px !important;
+      margin-right: 10px !important;
+    }
+    :global(.ant-alert-message) {
+      color: $st-ink !important;
+      font-size: 0.88rem !important;
+      font-weight: 600 !important;
+    }
+    :global(.ant-alert-description) {
+      color: $st-muted !important;
+      font-size: 0.8rem !important;
+      margin-top: 1px !important;
+    }
+    :global(.anticon) {
+      color: $st-brand !important;
+    }
+  }
+}

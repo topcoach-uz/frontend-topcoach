@@ -101,7 +101,43 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   b { font-family: $serif; font-weight: 600; color: $crimson; font-size: 1.15em; }
 }
 .dot { width: 4px; height: 4px; border-radius: 50%; background: #cbb6ba; }
-.deadlineInline { margin-top: 18px; font-size: 13px; font-weight: 600; color: #92651b; }
+.deadlineInline {
+  margin-top: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $slate;
+  b { color: $crimson; }
+}
+
+.expectList {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+
+  li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: $slate;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $crimson;
+    }
+
+    b { color: $ink-strong; font-weight: 600; }
+  }
+}
 
 .landingCard {
   background: $surface;
@@ -273,6 +309,11 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 .subLabel {
   font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: $faint; margin: 16px 0 10px;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.subLabelHint {
+  font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none;
+  color: $muted;
 }
 
 /* upload dropzone */

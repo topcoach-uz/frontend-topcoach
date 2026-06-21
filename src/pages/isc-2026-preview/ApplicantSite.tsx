@@ -3,12 +3,14 @@
 // Designed as a focused application portal: a slim functional header
 // (brand + Exit), a one-frame landing, and a form with a sticky
 // progress header + sticky Back/Next bar so navigation is always visible.
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
+  Clock,
+  XCircle,
   Upload,
   FileCheck2,
   X,
@@ -18,11 +20,66 @@ import s from './applicant.module.scss';
 import { IscApplicantType, IscProgram } from './types';
 import {
   useGetIscConfigQuery,
+  useGetIscApplicationMeQuery,
   useSubmitIscApplicationMutation,
   useUploadIscDocumentMutation,
+  type IscApplicationStatus,
 } from 'src/app/services/iscAdmissionsApi';
+import { useGetMeQuery } from 'src/app/services/users';
+import { useTypedSelector } from 'src/app/store';
+import { hasIscLocalDraft } from '../events/_components/useIscCardState';
 
-type Phase = 'landing' | 'form' | 'review' | 'submitted';
+const ISC_PATH = '/events/international-summer-camp-2026';
+
+/** Backend status → applicant-facing status screen copy. */
+const STATUS_VIEW: Record<
+  IscApplicationStatus,
+  { title: string; body: string; tone: 'pending' | 'success' | 'danger' } | null
+> = {
+  submitted: {
+    title: 'Application submitted',
+    body: 'Your application is in. Our admissions team will review it and follow up by email.',
+    tone: 'pending',
+  },
+  under_review: {
+    title: 'Under review',
+    body: 'Our reviewers are reading your application. We’ll be in touch with next steps.',
+    tone: 'pending',
+  },
+  reviewed: {
+    title: 'Under review',
+    body: 'Your application has been reviewed and is moving through the process.',
+    tone: 'pending',
+  },
+  interview_scheduled: {
+    title: 'Interview scheduled',
+    body: 'You’ve advanced to the interview stage. Check your email for the details.',
+    tone: 'pending',
+  },
+  interview_completed: {
+    title: 'Interview completed',
+    body: 'Thanks for interviewing. We’ll share the final decision by email soon.',
+    tone: 'pending',
+  },
+  waitlisted: {
+    title: 'Waitlisted',
+    body: 'You’re on the waitlist. We’ll reach out by email if a place opens up.',
+    tone: 'pending',
+  },
+  accepted: {
+    title: 'Congratulations — you’re in! 🎉',
+    body: 'You’ve been accepted to the International Summer Camp 2026. Watch your email for joining details.',
+    tone: 'success',
+  },
+  rejected: {
+    title: 'Application decision',
+    body: 'Thank you for applying. Unfortunately you weren’t selected this year — we hope to see you again.',
+    tone: 'danger',
+  },
+  withdrawn: null,
+};
+
+type Phase = 'landing' | 'form' | 'review' | 'submitted' | 'status';
 
 interface Draft {
   fullName: string;
@@ -96,6 +153,9 @@ function validateSection(idx: number, d: Draft): Errors {
   return e;
 }
 
+/** localStorage key for the in-progress application draft. */
+const DRAFT_KEY = 'isc-2026-application-draft-v1';
+
 function initialPhase(): Phase {
   if (typeof window === 'undefined') return 'landing';
   const p = new URLSearchParams(window.location.search).get('phase');
@@ -116,6 +176,129 @@ export default function ApplicantSite() {
   const [submitApplication, { isLoading: submitting }] = useSubmitIscApplicationMutation();
   const [uploadDoc] = useUploadIscDocumentMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Application is logged-in only (like every other application). Fetch the
+  // account so we can prefill the contact fields we already have on file.
+  const isAuthenticated = useTypedSelector((st) => st.auth.isAuthenticated);
+  const { data: me } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  const { data: meApp, isLoading: meAppLoading } = useGetIscApplicationMeQuery(
+    undefined,
+    { skip: !isAuthenticated, refetchOnMountOrArgChange: true },
+  );
+  const existingApp =
+    meApp?.application && meApp.application.status !== 'withdrawn'
+      ? meApp.application
+      : null;
+  const contactPrefilled = useRef(false);
+  const bootstrapped = useRef(false);
+
+  // Hydrate any previously-saved draft on mount so "Save draft" actually
+  // survives a reload / coming back later.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        draft?: Partial<Draft>;
+        program?: IscProgram | null;
+        applicantType?: IscApplicantType | null;
+        section?: number;
+        maxReached?: number;
+      };
+      if (saved.draft) setDraft((d) => ({ ...d, ...saved.draft }));
+      if (saved.program) setProgram(saved.program);
+      if (saved.applicantType) setApplicantType(saved.applicantType);
+      if (typeof saved.section === 'number') setSection(saved.section);
+      if (typeof saved.maxReached === 'number') setMaxReached(saved.maxReached);
+    } catch {
+      /* corrupt draft — ignore and start fresh */
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+  }, []);
+
+  /** Persist the in-progress application locally + flash a "Saved" label. */
+  const saveDraft = () => {
+    try {
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ draft, program, applicantType, section, maxReached }),
+      );
+      setDraftSaved(true);
+      if (savedTimer.current) clearTimeout(savedTimer.current);
+      savedTimer.current = setTimeout(() => setDraftSaved(false), 2200);
+    } catch {
+      /* storage full / unavailable — silently no-op */
+    }
+  };
+
+  const clearSavedDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Logged-in only: bounce to sign-in when an anonymous user tries to open
+  // the actual application (form/review). The landing stays viewable.
+  useEffect(() => {
+    if (isAuthenticated) return;
+    if (phase === 'form' || phase === 'review') {
+      try {
+        localStorage.setItem('redirectAfterLogin', ISC_PATH);
+      } catch {
+        /* ignore */
+      }
+      navigate('/auth/signin', { replace: true });
+    }
+  }, [isAuthenticated, phase, navigate]);
+
+  // Prefill the contact fields we already have on file (email + phone) from
+  // the account, once, and only for fields the applicant hasn't already
+  // filled (e.g. from a restored draft). They remain fully editable.
+  useEffect(() => {
+    if (!me || contactPrefilled.current) return;
+    contactPrefilled.current = true;
+    const accountEmail = me.email ?? '';
+    const accountPhone =
+      me.phoneNumber ?? (me as { telegramPhoneNumber?: string }).telegramPhoneNumber ?? '';
+    setDraft((d) => ({
+      ...d,
+      email: d.email || accountEmail,
+      phone: d.phone || accountPhone,
+    }));
+  }, [me]);
+
+  // Decide the entry phase once, after the application query settles:
+  //   • submitted application (live status) → show the status screen
+  //   • a saved local draft → jump straight into the form (skip the gate)
+  //   • otherwise → the "Before you begin" landing
+  // A `?phase=` deep-link always wins (preview / returning links).
+  useEffect(() => {
+    if (bootstrapped.current) return;
+    if (isAuthenticated && meAppLoading) return; // wait for the status
+    bootstrapped.current = true;
+
+    const urlPhase = new URLSearchParams(window.location.search).get('phase');
+    if (urlPhase) return;
+
+    if (existingApp) {
+      setPhase('status');
+    } else if (isAuthenticated && hasIscLocalDraft()) {
+      setPhase('form');
+    }
+  }, [isAuthenticated, meAppLoading, existingApp]);
+
+  // Safety net: if the application disappears (e.g. withdrawn) while we're on
+  // the status screen, drop back to the landing instead of a blank screen.
+  useEffect(() => {
+    if (phase === 'status' && !existingApp && !meAppLoading) setPhase('landing');
+  }, [phase, existingApp, meAppLoading]);
 
   const up = (p: Partial<Draft>) => {
     setDraft((d) => ({ ...d, ...p }));
@@ -158,13 +341,21 @@ export default function ApplicantSite() {
           essays: { whyCamp: draft.whyCamp, whySelect: draft.whySelect },
         },
       }).unwrap();
+      clearSavedDraft();
       setPhase('submitted');
     } catch (err) {
       const status = (err as { status?: number })?.status;
+      const serverMsg = (err as { data?: { message?: string | string[] } })?.data
+        ?.message;
+      const serverMsgText = Array.isArray(serverMsg) ? serverMsg[0] : serverMsg;
       setSubmitError(
         status === 401
           ? 'Please sign in to submit your application.'
-          : 'Something went wrong submitting your application. Please try again.',
+          : // 403 = application window closed (or not yet open) — show the
+            // server's specific deadline message verbatim.
+            status === 403 && serverMsgText
+            ? serverMsgText
+            : 'Something went wrong submitting your application. Please try again.',
       );
     }
   };
@@ -214,22 +405,31 @@ export default function ApplicantSite() {
       <Shell onExit={exit}>
         <div className={s.landingWrap}>
           <div className={s.landingLeft}>
-            <span className={s.eyebrow}>◷ Applications open — 2026</span>
+            <span className={s.eyebrow}>◷ Applications open · June 22 – July 6, 2026</span>
             <h1 className={s.heroTitle}>
               International Summer Camp <b>2026</b>
             </h1>
             <p className={s.heroSub}>
-              A six-week academic experience for ambitious students. Build skills, connect
-              with peers from 30+ countries, and take your future to the next level.
+              A one-week academic camp bringing together 250 local and international students,
+              particularly from Central Asia — for learning, networking, and fun, and a head
+              start on studying abroad.
             </p>
             <div className={s.statsStrip}>
-              <div><b>6</b> weeks</div>
+              <div><b>Aug 3–9</b> · 1 week</div>
               <span className={s.dot} />
-              <div><b>30+</b> countries</div>
+              <div><b>250</b> students</div>
               <span className={s.dot} />
-              <div><b>150</b> spots</div>
+              <div><b>Bachelor&apos;s &amp; Master&apos;s</b></div>
             </div>
-            <div className={s.deadlineInline}>Apply by March 15, 2026 · Decisions by April 10</div>
+            <div className={s.deadlineInline}>
+              Applications close <b>July 6, 2026 · 23:59</b>
+            </div>
+
+            <ul className={s.expectList}>
+              <li><b>Mornings</b> — admissions, scholarships &amp; career sessions</li>
+              <li><b>Afternoons</b> — workshops, networking, sports &amp; culture</li>
+              <li><b>Connect</b> — mentors, university students &amp; peers across the region</li>
+            </ul>
           </div>
 
           <div className={s.landingCard}>
@@ -239,9 +439,9 @@ export default function ApplicantSite() {
             <div className={s.qLabel}>Which program?</div>
             <div className={s.optionGrid}>
               <Opt active={program === 'bachelor'} onClick={() => setProgram('bachelor')}
-                title="Bachelor's" desc="High school / pre-undergraduate" />
+                title="Bachelor's" desc="School students (Grades 9–11) & gap-year" />
               <Opt active={program === 'master'} onClick={() => setProgram('master')}
-                title="Master's" desc="Undergraduate / pre-postgraduate" />
+                title="Master's" desc="University students & recent graduates" />
             </div>
 
             <div className={s.qLabel}>Where are you applying from?</div>
@@ -262,6 +462,48 @@ export default function ApplicantSite() {
     );
   }
 
+  /* ── Status (returning applicant, live backend status) ───── */
+  if (phase === 'status' && existingApp) {
+    const view = STATUS_VIEW[existingApp.status] ?? STATUS_VIEW.submitted!;
+    const StatusIcon =
+      view.tone === 'success' ? CheckCircle2 : view.tone === 'danger' ? XCircle : Clock;
+    const iconColor =
+      view.tone === 'success' ? '#047857' : view.tone === 'danger' ? '#b42318' : '#92651b';
+    const appProgramLabel =
+      existingApp.program === 'master' ? "Master's program" : "Bachelor's program";
+    const appTypeLabel =
+      existingApp.applicantType === 'international'
+        ? 'International applicant'
+        : 'Local applicant (Uzbekistan)';
+    return (
+      <Shell onExit={exit}>
+        <div className={s.narrow}>
+          <div className={s.successCard}>
+            <StatusIcon size={52} color={iconColor} />
+            <h1 className={s.successTitle}>{view.title}</h1>
+            <p className={s.successBody}>
+              {existingApp.fullName ? `${existingApp.fullName}, ` : ''}
+              {view.body}
+            </p>
+            <div className={s.emailBox}>
+              <strong>Your application</strong>
+              <br />
+              {appProgramLabel} · {appTypeLabel}
+              {existingApp.submittedAt
+                ? ` · submitted ${new Date(existingApp.submittedAt).toLocaleDateString()}`
+                : ''}
+            </div>
+            <div className={s.successActions}>
+              <button className={`${s.btn} ${s.btnPrimary}`} onClick={exit}>
+                Back to events
+              </button>
+            </div>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
   /* ── Submitted ───────────────────────────────────────────── */
   if (phase === 'submitted') {
     return (
@@ -276,12 +518,11 @@ export default function ApplicantSite() {
             </p>
             <div className={s.emailBox}>
               <strong>What happens next</strong><br />
-              Applications close on <b>March 15, 2026</b>. Our admissions team will review your
-              application and you'll hear back by <b>April 10, 2026</b>. A confirmation has been
-              sent to <b>{draft.email || 'your email'}</b>.
+              Our admissions team will review your application and follow up by email about
+              next steps. A confirmation has been sent to <b>{draft.email || 'your email'}</b>.
             </div>
             <div className={s.successActions}>
-              <button className={s.btn} onClick={() => { setDraft(EMPTY); setSection(0); setPhase('landing'); }}>
+              <button className={s.btn} onClick={() => { clearSavedDraft(); setDraft(EMPTY); setSection(0); setPhase('landing'); }}>
                 Start over
               </button>
               <button className={`${s.btn} ${s.btnPrimary}`} onClick={exit}>Back to events</button>
@@ -370,7 +611,7 @@ export default function ApplicantSite() {
               })}
             </ol>
             <div className={s.deadlineNote}>
-              Deadline · March 15, 2026<br />Decisions by April 10
+              Apply by · July 6, 2026 · 23:59<br />Camp · August 3–9, 2026
             </div>
           </aside>
 
@@ -394,7 +635,10 @@ export default function ApplicantSite() {
               : `Section ${section + 1} of 4`}
           </span>
           <div className={s.stickyRight}>
-            <button className={s.btnGhost}><Save size={15} /> Save draft</button>
+            <button className={s.btnGhost} onClick={saveDraft}>
+              {draftSaved ? <CheckCircle2 size={15} /> : <Save size={15} />}
+              {draftSaved ? 'Saved' : 'Save draft'}
+            </button>
             <button className={`${s.btn} ${s.btnPrimary}`} onClick={next}>
               {section < 3 ? 'Next' : 'Review'} <ArrowRight size={16} />
             </button>
@@ -431,7 +675,10 @@ function PersonalSection({ draft, up, errors, onUpload }: SectionProps) {
         </Field>
       </div>
 
-      <div className={s.subLabel}>Contact</div>
+      <div className={s.subLabel}>
+        Contact
+        <span className={s.subLabelHint}>From your account — update if needed</span>
+      </div>
       <div className={s.fieldRow}>
         <Field label="Email address" req error={errors.email}>
           <input className={s.input} placeholder="you@example.com" value={draft.email}

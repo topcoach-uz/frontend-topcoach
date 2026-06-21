@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography, Progress, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import {
   BarChart,
   Bar,
@@ -9,8 +9,20 @@ import {
   Cell,
   LabelList,
 } from 'recharts';
+import {
+  Trophy,
+  Palette,
+  HeartHandshake,
+  Bird,
+  ShieldCheck,
+  Crown,
+  Scale,
+  BookOpen,
+  Target,
+  type LucideIcon,
+} from 'lucide-react';
 
-const { Title, Text } = Typography;
+const MM_INK = '#1c1a17';
 
 interface ValuesScores {
   achievement: number;
@@ -30,52 +42,52 @@ interface ValuesChartProps {
 }
 
 // Values metadata with icons and descriptions
-const VALUES_INFO: Record<string, { label: string; emoji: string; description: string; color: string }> = {
+const VALUES_INFO: Record<string, { label: string; Icon: LucideIcon; description: string; color: string }> = {
   achievement: {
     label: 'Achievement',
-    emoji: '🏆',
+    Icon: Trophy,
     description: 'Drive to accomplish goals and be recognized for success',
     color: '#8b0000',
   },
   creativity: {
     label: 'Creativity',
-    emoji: '🎨',
+    Icon: Palette,
     description: 'Desire to create, innovate, and express original ideas',
     color: '#9333ea',
   },
   helpingOthers: {
     label: 'Helping Others',
-    emoji: '💝',
+    Icon: HeartHandshake,
     description: 'Motivation to support, care for, and make a difference',
     color: '#ec4899',
   },
   independence: {
     label: 'Independence',
-    emoji: '🦅',
+    Icon: Bird,
     description: 'Preference for autonomy and self-direction',
     color: '#0ea5e9',
   },
   security: {
     label: 'Security',
-    emoji: '🛡️',
+    Icon: ShieldCheck,
     description: 'Need for stability, predictability, and financial safety',
     color: '#10b981',
   },
   prestige: {
     label: 'Prestige',
-    emoji: '⭐',
+    Icon: Crown,
     description: 'Desire for status, respect, and recognition',
     color: '#f59e0b',
   },
   workLifeBalance: {
     label: 'Work-Life Balance',
-    emoji: '⚖️',
+    Icon: Scale,
     description: 'Importance of balance between work and personal life',
     color: '#06b6d4',
   },
   intellectualStimulation: {
     label: 'Learning',
-    emoji: '📚',
+    Icon: BookOpen,
     description: 'Love of learning and intellectual challenges',
     color: '#6366f1',
   },
@@ -100,57 +112,46 @@ export const ValuesChart: React.FC<ValuesChartProps> = ({
 
   if (variant === 'compact') {
     return (
-      <Card className="values-chart-compact">
-        <Title level={5} style={{ marginBottom: 16 }}>
-          🎯 Your Core Values
-        </Title>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="majormatch-results__card values-chart-compact">
+        <h5 className="majormatch-results__card-title">
+          <Target size={18} style={{ color: MM_INK, marginRight: 6, verticalAlign: '-2px' }} />
+          Your Core Values
+        </h5>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {topValues.map((item, index) => (
             <Tooltip key={item.key} title={item.description} placement="right">
               <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '8px 12px',
-                  borderRadius: 8,
-                  background: index === 0 ? '#fff7f7' : '#f9f9f9',
-                  border: index === 0 ? '2px solid #8b0000' : '1px solid #e8e8e8',
-                  cursor: 'pointer',
-                }}
+                className={`majormatch-results__interest ${index === 0 ? 'majormatch-results__interest--top' : ''}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
               >
-                <span style={{ fontSize: 24 }}>{item.emoji}</span>
+                {item.Icon ? <item.Icon size={22} style={{ color: item.color }} /> : null}
                 <div style={{ flex: 1 }}>
-                  <Text strong style={{ color: index === 0 ? '#8b0000' : '#333' }}>
+                  <div className="majormatch-results__meter-label" style={{ fontWeight: 600, color: MM_INK }}>
                     {item.label}
-                  </Text>
-                  <Progress
-                    percent={item.value}
-                    size="small"
-                    strokeColor={item.color}
-                    showInfo={false}
-                  />
+                  </div>
+                  <div className="majormatch-results__meter-track" style={{ marginTop: 5 }}>
+                    <div
+                      className="majormatch-results__meter-fill"
+                      style={{ width: `${Math.max(0, Math.min(100, item.value))}%`, background: item.color }}
+                    />
+                  </div>
                 </div>
-                <Text strong style={{ color: item.color, fontSize: 16 }}>
-                  {item.value.toFixed(0)}%
-                </Text>
+                <span className="majormatch-results__meter-value">{item.value.toFixed(0)}%</span>
               </div>
             </Tooltip>
           ))}
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (variant === 'horizontal') {
     return (
-      <Card className="values-chart-horizontal">
-        <Title level={4} style={{ marginBottom: 8 }}>
-          Your Values Profile
-        </Title>
-        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+      <div className="majormatch-results__card values-chart-horizontal">
+        <h4 className="majormatch-results__card-title">Your Values Profile</h4>
+        <p className="majormatch-results__card-sub">
           What drives and motivates you in your career
-        </Text>
+        </p>
 
         <ResponsiveContainer width="100%" height={height}>
           <BarChart
@@ -163,7 +164,7 @@ export const ValuesChart: React.FC<ValuesChartProps> = ({
               type="category"
               dataKey="label"
               width={120}
-              tick={{ fontSize: 13, fill: '#333' }}
+              tick={{ fontSize: 13, fill: MM_INK }}
               tickLine={false}
               axisLine={false}
             />
@@ -179,64 +180,67 @@ export const ValuesChart: React.FC<ValuesChartProps> = ({
                 dataKey="value"
                 position="right"
                 formatter={(value: any) => `${Number(value).toFixed(0)}%`}
-                style={{ fill: '#333', fontWeight: 600, fontSize: 12 }}
+                style={{ fill: MM_INK, fontWeight: 600, fontSize: 12 }}
               />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
 
         {/* Top values summary */}
-        <div
-          style={{
-            marginTop: 16,
-            padding: 16,
-            background: '#f9fafb',
-            borderRadius: 8,
-          }}
-        >
-          <Text strong>Your Driving Forces:</Text>
-          <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div className="majormatch-results__rec-block" style={{ marginTop: 12 }}>
+          <span className="majormatch-results__rec-block-label">Your Driving Forces</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {topValues.map((item) => (
               <span
                 key={item.key}
                 style={{
                   padding: '4px 12px',
-                  background: 'white',
-                  border: `2px solid ${item.color}`,
-                  borderRadius: 20,
+                  background: '#fff',
+                  border: `1px solid ${item.color}`,
+                  borderRadius: 999,
                   fontSize: 13,
                   fontWeight: 500,
+                  color: MM_INK,
                 }}
               >
-                {item.emoji} {item.label}
+                {item.Icon ? (
+                  <item.Icon size={14} style={{ color: item.color, marginRight: 4, verticalAlign: '-2px' }} />
+                ) : null}
+                {item.label}
               </span>
             ))}
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   // Default bars variant
   return (
-    <Card className="values-chart-bars">
-      <Title level={4}>Values & Motivations</Title>
+    <div className="majormatch-results__card values-chart-bars">
+      <h4 className="majormatch-results__card-title">Values &amp; Motivations</h4>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {chartData.map((item) => (
           <Tooltip key={item.key} title={item.description}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 32 }}>{item.emoji}</div>
-              <Text strong>{item.label}</Text>
-              <Progress
-                percent={item.value}
-                strokeColor={item.color}
-                format={(percent) => `${percent?.toFixed(0)}%`}
-              />
+              <div>{item.Icon ? <item.Icon size={24} style={{ color: item.color }} /> : null}</div>
+              <div className="majormatch-results__meter-label" style={{ fontWeight: 600, color: MM_INK }}>
+                {item.label}
+              </div>
+              <div className="majormatch-results__meter-head" style={{ justifyContent: 'flex-end', marginTop: 6 }}>
+                <span className="majormatch-results__meter-value">{item.value.toFixed(0)}%</span>
+              </div>
+              <div className="majormatch-results__meter-track">
+                <div
+                  className="majormatch-results__meter-fill"
+                  style={{ width: `${Math.max(0, Math.min(100, item.value))}%`, background: item.color }}
+                />
+              </div>
             </div>
           </Tooltip>
         ))}
       </div>
-    </Card>
+    </div>
   );
 };
 

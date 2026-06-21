@@ -108,6 +108,14 @@ $mm-amber: #b6824b;
     @media (max-width: 820px) { text-align: left; }
   }
 
+  /* The "free attempt used" note sits under the Unlock button. Cap its
+     width so the sentence wraps onto two lines aligned with the button
+     instead of stretching across the hero. */
+  &__cta-meta--unlock {
+    max-width: 220px;
+    line-height: 1.4;
+  }
+
   /* — buttons ─────────────────────────────────────────────────── */
   &__btn {
     display: inline-flex;
@@ -151,6 +159,102 @@ $mm-amber: #b6824b;
 
     &--danger { color: #b04545; }
     &--danger:hover { background: rgba(176, 69, 69, 0.08); }
+  }
+
+  /* — upsell (single free attempt used) ───────────────────────── */
+  &__upsell {
+    display: grid;
+    grid-template-columns: 1fr minmax(200px, 260px);
+    gap: 28px;
+    align-items: center;
+    background: $mm-brand-soft;
+    border: 1px solid rgba(123, 31, 47, 0.18);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+
+    @media (max-width: 820px) {
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 20px;
+    }
+  }
+
+  &__upsell-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $mm-brand;
+    margin-bottom: 10px;
+  }
+
+  &__upsell-title {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: $mm-ink;
+    font-weight: 600;
+    margin: 0 0 8px;
+
+    @media (max-width: 768px) { font-size: 1.3rem; }
+  }
+
+  &__upsell-lead {
+    color: $mm-ink-soft;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 16px;
+    max-width: 60ch;
+  }
+
+  &__upsell-benefits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+
+    @media (max-width: 600px) { grid-template-columns: 1fr; }
+  }
+
+  &__upsell-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.83rem;
+    line-height: 1.45;
+    color: $mm-ink-soft;
+
+    svg {
+      flex: none;
+      margin-top: 2px;
+      color: $mm-brand;
+    }
+
+    strong { color: $mm-ink; font-weight: 600; }
+  }
+
+  &__upsell-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    text-align: center;
+  }
+
+  &__upsell-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  &__upsell-fine {
+    font-size: 0.72rem;
+    color: $mm-muted;
   }
 
   /* — stats strip ─────────────────────────────────────────────── */

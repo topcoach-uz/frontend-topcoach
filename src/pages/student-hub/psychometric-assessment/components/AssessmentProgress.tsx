@@ -1,9 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { Progress, Typography, Card, Row, Col, Tag, Button, Modal, Space, message } from 'antd';
-import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
-import UnifiedIcon from '../../../../components/common/icons/UnifiedIcon';
-
-const { Text, Title } = Typography;
+import { Modal, message } from 'antd';
+import {
+  Compass,
+  Brain,
+  Star,
+  Lightbulb,
+  PenLine,
+  Calculator,
+  Check,
+  Save,
+  LogOut,
+  Trash2,
+} from 'lucide-react';
+import './AssessmentQuestions.scss';
 
 interface AssessmentProgressProps {
   currentQuestionIndex: number;
@@ -17,53 +26,49 @@ interface AssessmentProgressProps {
   questions?: Array<{ questionType: string }>; // Actual questions for dynamic calculation
 }
 
-// Module configuration V2 (updated question counts)
+// Module configuration V2 (updated question counts).
+// `Icon` is a lucide-react component so the segmented bar matches the
+// rest of the editorial AI Major Match feature.
 const MODULES = {
   riasec: {
     name: 'Interests',
     shortName: 'RIASEC',
-    icon: 'compass',
-    color: '#8b0000',
+    Icon: Compass,
     questionCount: 12, // V2: 12 forced-choice pairs
     description: 'Discover your career interests',
   },
   'big-five': {
     name: 'Personality',
     shortName: 'Big Five',
-    icon: 'brain',
-    color: '#6366f1',
+    Icon: Brain,
     questionCount: 20, // V2: Behavioral + reverse scoring
     description: 'Your work style',
   },
   values: {
     name: 'Values',
     shortName: 'Values',
-    icon: 'star',
-    color: '#ec4899',
+    Icon: Star,
     questionCount: 10, // V2: Reduced, more tradeoffs
     description: 'What motivates you',
   },
   sjt: {
     name: 'Scenarios',
     shortName: 'SJT',
-    icon: 'lightbulb',
-    color: '#14b8a6',
+    Icon: Lightbulb,
     questionCount: 4, // V2: New - Situational Judgment
     description: 'Real-life situations',
   },
   'work-style': {
     name: 'Open Questions',
     shortName: 'Open',
-    icon: 'edit',
-    color: '#f59e0b',
+    Icon: PenLine,
     questionCount: 2,
     description: 'Tell us about yourself',
   },
   aptitude: {
     name: 'Aptitude',
     shortName: 'Aptitude',
-    icon: 'calculator',
-    color: '#10b981',
+    Icon: Calculator,
     questionCount: 12, // V2: Reduced from 16
     description: 'Skills assessment',
   },
@@ -182,149 +187,105 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
     onAbandon?.();
   };
 
+  const HeadIcon = moduleConfig.Icon;
+
   return (
     <>
-      {/* Save and Exit Buttons Outside Card */}
-      {(onSaveAndExit || onAbandon || onSave) && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
-          {onSave && (
-            <Button
-              type="text"
-              onClick={handleSaveClick}
-              loading={isSaving}
-              icon={<FontAwesomeIcon icon="save" />}
+      <div className="majormatch-progress">
+        {/* Save and Exit controls */}
+        {(onSaveAndExit || onAbandon || onSave) && (
+          <div className="majormatch-progress__toolbar">
+            {onSave && (
+              <button
+                type="button"
+                className="majormatch-progress__btn"
+                onClick={handleSaveClick}
+                disabled={isSaving}
+              >
+                <Save size={14} />
+                Save
+              </button>
+            )}
+            <button
+              type="button"
+              className="majormatch-progress__btn"
+              onClick={handleExitClick}
             >
-              Save
-            </Button>
-          )}
-          <Button
-            type="text"
-            onClick={handleExitClick}
-            icon={<FontAwesomeIcon icon="sign-out-alt" />}
-          >
-            Exit
-          </Button>
-        </div>
-      )}
+              <LogOut size={14} />
+              Exit
+            </button>
+          </div>
+        )}
 
-      <Card
-        className="assessment-progress"
-        style={{
-          background: '#ffffff',
-          marginBottom: 16,
-        }}
-        bodyStyle={{ padding: '16px 20px' }}
-      >
-        {/* Module Progress */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: moduleConfig.color,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <FontAwesomeIcon icon={moduleConfig.icon as any} style={{ color: 'white', fontSize: 18 }} />
+        <div className="majormatch-progress__panel">
+          {/* Current module header */}
+          <div className="majormatch-progress__head">
+            <span className="majormatch-progress__head-icon">
+              <HeadIcon size={18} />
+            </span>
+            <div className="majormatch-progress__head-text">
+              <div className="majormatch-progress__module-name">{moduleConfig.name}</div>
+              <div className="majormatch-progress__module-desc">{moduleConfig.description}</div>
             </div>
-            <div>
-              <Title level={5} style={{ margin: 0, color: moduleConfig.color }}>
-                {moduleConfig.name}
-              </Title>
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {moduleConfig.description}
-              </Text>
-            </div>
-            <Tag
-              style={{
-                marginLeft: 'auto',
-                background: `${moduleConfig.color}15`,
-                borderColor: moduleConfig.color,
-                color: moduleConfig.color,
-              }}
-            >
+            <span className="majormatch-progress__count">
               {currentQuestionIndex + 1} / {totalQuestions}
-            </Tag>
+            </span>
           </div>
 
-          {/* Module Stepper with Labels Below Each Section */}
-          <div style={{ marginTop: 10 }}>
-            <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-              {moduleProgress.modules.map((moduleKey, index) => {
-                const module = MODULES[moduleKey];
-                const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
-                const isActive = index === moduleProgress.currentModuleIndex;
-                const isCompleted = index < moduleProgress.currentModuleIndex;
-                
-                return (
-                  <div
-                    key={moduleKey}
-                    style={{
-                      flex: moduleCount, // Use dynamic count for proportional width
-                      height: 6,
-                      borderRadius: 3,
-                      background: isCompleted
-                        ? module.color
-                        : isActive
-                        ? `linear-gradient(90deg, ${module.color} ${(moduleProgress.questionsInCurrentModule / moduleCount) * 100}%, #e5e7eb ${(moduleProgress.questionsInCurrentModule / moduleCount) * 100}%)`
-                        : '#e5e7eb',
-                      transition: 'all 0.3s ease',
-                    }}
-                    title={`${module.name}: ${moduleCount} questions`}
-                  />
-                );
-              })}
-            </div>
+          {/* Segmented progress track */}
+          <div className="majormatch-progress__track">
+            {moduleProgress.modules.map((moduleKey, index) => {
+              const module = MODULES[moduleKey];
+              const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
+              const isActive = index === moduleProgress.currentModuleIndex;
+              const isCompleted = index < moduleProgress.currentModuleIndex;
+              const fillPct = isActive
+                ? (moduleProgress.questionsInCurrentModule / moduleCount) * 100
+                : 0;
 
-            {/* Module Labels - Centered Below Each Section */}
-            <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-              {moduleProgress.modules.map((moduleKey, index) => {
-                const module = MODULES[moduleKey];
-                const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
-                const isActive = index === moduleProgress.currentModuleIndex;
-                const isCompleted = index < moduleProgress.currentModuleIndex;
-                
-                return (
-                  <div
-                    key={moduleKey}
-                    style={{
-                      flex: moduleCount, // Use dynamic count for proportional width
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      opacity: isActive ? 1 : isCompleted ? 0.7 : 0.4,
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={isCompleted ? 'check-circle' : (module.icon as any)}
-                      style={{
-                        color: isCompleted ? '#10b981' : isActive ? module.color : '#9ca3af',
-                        fontSize: 14,
-                        marginBottom: 4,
-                      }}
+              return (
+                <div
+                  key={moduleKey}
+                  className={`majormatch-progress__segment ${isCompleted ? 'is-completed' : ''}`}
+                  style={{ flex: moduleCount }} // Use dynamic count for proportional width
+                  title={`${module.name}: ${moduleCount} questions`}
+                >
+                  {isActive && (
+                    <span
+                      className="majormatch-progress__segment-fill"
+                      style={{ width: `${fillPct}%` }}
                     />
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: isActive ? module.color : '#6b7280',
-                        fontWeight: isActive ? 600 : 400,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {module.shortName}
-                    </Text>
-                  </div>
-                );
-              })}
-            </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Module labels centered below each section */}
+          <div className="majormatch-progress__labels">
+            {moduleProgress.modules.map((moduleKey, index) => {
+              const module = MODULES[moduleKey];
+              const moduleCount = moduleProgress.getModuleCount(moduleKey); // Use dynamic count
+              const isActive = index === moduleProgress.currentModuleIndex;
+              const isCompleted = index < moduleProgress.currentModuleIndex;
+              const LabelIcon = module.Icon;
+
+              return (
+                <div
+                  key={moduleKey}
+                  className={`majormatch-progress__label ${
+                    isActive ? 'is-active' : isCompleted ? 'is-completed' : ''
+                  }`}
+                  style={{ flex: moduleCount }} // Use dynamic count for proportional width
+                >
+                  {isCompleted ? <Check size={14} /> : <LabelIcon size={14} />}
+                  <span className="majormatch-progress__label-text">{module.shortName}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Exit Modal */}
       <Modal
@@ -334,40 +295,36 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
         footer={null}
         centered
       >
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <Text style={{ display: 'block', marginBottom: 24, fontSize: 16 }}>
+        <div className="majormatch-exit-modal">
+          <span className="majormatch-exit-modal__lede">
             Your progress has been saved automatically. What would you like to do?
-          </Text>
-          
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-            <Button
-              type="primary"
-              size="large"
-              block
-              onClick={handleSaveAndExit}
-              icon={<FontAwesomeIcon icon="save" style={{ marginRight: 8 }} />}
+          </span>
+
+          <button
+            type="button"
+            className="majormatch-exit-modal__btn majormatch-exit-modal__btn--primary"
+            onClick={handleSaveAndExit}
+          >
+            <Save size={16} />
+            Save &amp; Continue Later
+          </button>
+          <span className="majormatch-exit-modal__meta">
+            Your answers are saved. You can resume within 24 hours.
+          </span>
+
+          <div className="majormatch-exit-modal__divider">
+            <button
+              type="button"
+              className="majormatch-exit-modal__btn majormatch-exit-modal__btn--danger"
+              onClick={handleAbandon}
             >
-              Save & Continue Later
-            </Button>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Your answers are saved. You can resume within 24 hours.
-            </Text>
-            
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-              <Button
-                className="btn-delete-crimson"
-                size="large"
-                block
-                onClick={handleAbandon}
-                icon={<UnifiedIcon name="trash-2" size="sm" color="white" />}
-              >
-                Abandon Assessment
-              </Button>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 8 }}>
-                All progress will be lost. You'll start fresh next time.
-              </Text>
-            </div>
-          </Space>
+              <Trash2 size={16} />
+              Abandon Assessment
+            </button>
+            <span className="majormatch-exit-modal__meta">
+              All progress will be lost. You&apos;ll start fresh next time.
+            </span>
+          </div>
         </div>
       </Modal>
     </>

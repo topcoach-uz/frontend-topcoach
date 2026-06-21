@@ -197,6 +197,20 @@ export interface MajorRecommendation {
   majorProfile: any;
 }
 
+export interface UniversityRecommendation {
+  name: string;
+  country: string;
+  ranking: number | null;
+  /** 'Reach' | 'Match' | 'Safety' (free-form from the model). */
+  type: string;
+  whyItFits: string;
+  programs: string[];
+}
+
+export interface UniversityRecommendationsResponse {
+  universities: UniversityRecommendation[];
+}
+
 export interface RecommendationsResponse {
   recommendations: MajorRecommendation[];
   shouldRecommendAptitude: boolean;
@@ -313,6 +327,15 @@ export const psychometricApi = RtkApi.injectEndpoints({
       providesTags: ['PsychometricAssessment'],
     }),
 
+    // AI-generated best-fit universities (real schools worldwide, via Gemini)
+    getUniversityRecommendations: builder.query<UniversityRecommendationsResponse, string>({
+      query: (studentProfileId) => ({
+        url: `/psychometric-assessment/university-recommendations/${studentProfileId}`,
+        method: 'GET',
+      }),
+      providesTags: ['PsychometricAssessment'],
+    }),
+
     // Cancel session
     cancelSession: builder.mutation<{ success: boolean }, { sessionId: string; studentProfileId: string }>({
       query: ({ sessionId, studentProfileId }) => ({
@@ -347,6 +370,7 @@ export const {
   useGetSessionProgressQuery,
   useCheckActiveSessionQuery,
   useGetMajorMatchAccessStatusQuery,
+  useGetUniversityRecommendationsQuery,
   useCancelSessionMutation,
   useDeleteAssessmentMutation,
 } = psychometricApi;

@@ -68,9 +68,9 @@ export interface CommunityGateResult {
  *   3. Active or trialing subscription → already in
  *   4. Hasn't passed the placement test → /placement-test
  *   5. Passed test, no profile yet → /placement-test/profile/:lastEditedStep
- *   6. Has a profile and a roadmap → /placement-test/roadmap
- *      (the roadmap page itself handles preview-vs-unlocked and offers
- *      the subscribe CTA when needed)
+ *   6. Profile done, no active subscription → Subscription tab in Settings
+ *      (the only remaining step is payment; never bounce back to a stale
+ *      previously-generated roadmap)
  *
  * Skip behaviour: queries are skipped while unauthenticated so we don't
  * hammer the backend for users who can't be funneled yet.
@@ -149,11 +149,15 @@ export function useCommunityAccessGate(): CommunityGateResult {
       };
     }
 
-    // Profile done, no active sub → land on the roadmap page; it shows
-    // the preview + plan picker.
+    // Profile done, no active sub (never subscribed, trial expired, or
+    // canceled) → the only thing left is payment, so send them straight
+    // to the Subscription tab in Settings. We intentionally do NOT route
+    // back to the roadmap: a returning user who already generated one
+    // would just see stale content instead of the place where they can
+    // actually re-subscribe.
     return {
       state: 'needs_subscription' as const,
-      destination: COMMUNITY_FUNNEL_PATHS.roadmap,
+      destination: COMMUNITY_FUNNEL_PATHS.subscriptionTab,
       scoreBadge,
     };
   }, [isAuthenticated, isCommunityEnrolled, status, statusLoading, subscription, subLoading]);

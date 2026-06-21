@@ -1,9 +1,15 @@
 import React from 'react';
-import { Card, Typography, Progress, Tag, Button, Tooltip, Alert } from 'antd';
+import { Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
-import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
-
-const { Title, Text, Paragraph } = Typography;
+import {
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Check,
+  Zap,
+  Info,
+  GraduationCap,
+} from 'lucide-react';
 
 interface ConfidenceIndicatorProps {
   confidenceLevel: 'high' | 'medium' | 'low';
@@ -13,33 +19,29 @@ interface ConfidenceIndicatorProps {
   riskFlags?: string[];
   academicConfidenceScore?: number;
   onBoostAccuracy?: () => void;
+  /** Sends the student to add grades/test scores (unlocks academic fit). */
+  onAddGrades?: () => void;
   language?: 'en' | 'uz' | 'ru';
 }
 
 const CONFIDENCE_CONFIG = {
   high: {
-    color: '#10b981',
-    background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-    borderColor: '#10b981',
-    icon: 'check-circle',
+    Icon: CheckCircle2,
     label: 'High Confidence',
     description: 'Strong match across all dimensions. Your results are highly reliable.',
+    fill: 'majormatch-results__meter-fill--green',
   },
   medium: {
-    color: '#f59e0b',
-    background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-    borderColor: '#f59e0b',
-    icon: 'exclamation-circle',
+    Icon: AlertTriangle,
     label: 'Medium Confidence',
     description: 'Good match with some areas to consider. Results are reliable but could be improved.',
+    fill: 'majormatch-results__meter-fill--amber',
   },
   low: {
-    color: '#ef4444',
-    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-    borderColor: '#ef4444',
-    icon: 'times-circle',
+    Icon: XCircle,
     label: 'Low Confidence',
     description: 'Weak match or missing data. Consider providing more information.',
+    fill: '',
   },
 };
 
@@ -60,170 +62,166 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
   riskFlags = [],
   academicConfidenceScore,
   onBoostAccuracy,
-  language = 'en',
+  onAddGrades,
 }) => {
   const { t } = useTranslation();
   const config = CONFIDENCE_CONFIG[confidenceLevel];
-  const showBoostCTA = !aptitudeTaken && hasSTEMMajors && confidenceLevel !== 'high';
+  const { Icon } = config;
+
+  // The two concrete things that make the match sharper. We only surface a
+  // step if it's actually actionable (not already done).
+  const needAptitude = !aptitudeTaken;
+  const needGrades = academicConfidenceScore === undefined || academicConfidenceScore <= 0;
+  const sharpenSteps = [needAptitude, needGrades].filter(Boolean).length;
+
+  // Map academic readiness to a palette fill class.
+  const academicFill =
+    academicConfidenceScore !== undefined && academicConfidenceScore >= 0.75
+      ? 'majormatch-results__meter-fill--green'
+      : academicConfidenceScore !== undefined && academicConfidenceScore >= 0.5
+      ? 'majormatch-results__meter-fill--amber'
+      : '';
+
+  const clamp = (n: number) => Math.max(0, Math.min(100, n));
 
   return (
-    <Card
-      className="confidence-indicator"
-      style={{
-        background: config.background,
-        borderColor: config.borderColor,
-        borderWidth: 2,
-      }}
-    >
+    <div className="majormatch-results__conf">
       {/* Main confidence display */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          }}
-        >
-          <FontAwesomeIcon
-            icon={config.icon as string}
-            style={{ fontSize: 32, color: config.color }}
-          />
+      <div className="majormatch-results__conf-head">
+        <div className={`majormatch-results__conf-badge majormatch-results__conf-badge--${confidenceLevel}`}>
+          <Icon size={26} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Title level={4} style={{ margin: 0, color: config.color }}>
-              {config.label}
-            </Title>
-            <Tag color={config.color}>{confidenceScore.toFixed(0)}%</Tag>
-          </div>
-          <Text type="secondary">{config.description}</Text>
+          <h4 className="majormatch-results__conf-label">
+            {config.label}
+            <span className={`majormatch-results__conf-pill majormatch-results__conf-pill--${confidenceLevel}`}>
+              {confidenceScore.toFixed(0)}%
+            </span>
+          </h4>
+          <div className="majormatch-results__conf-desc">{config.description}</div>
         </div>
       </div>
 
-      {/* Confidence breakdown */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Text>{t('studentHub.psychometric.results.resultReliability', 'Result Reliability')}</Text>
-          <Text strong style={{ color: config.color }}>
-            {confidenceScore.toFixed(0)}%
-          </Text>
+      {/* Result reliability meter */}
+      <div className="majormatch-results__meter">
+        <div className="majormatch-results__meter-head">
+          <span className="majormatch-results__meter-label">
+            {t('studentHub.psychometric.results.resultReliability', 'Result Reliability')}
+          </span>
+          <span className="majormatch-results__meter-value">{confidenceScore.toFixed(0)}%</span>
         </div>
-        <Progress
-          percent={confidenceScore}
-          strokeColor={config.color}
-          trailColor="rgba(255,255,255,0.5)"
-          showInfo={false}
-        />
-      </div>
-
-      {/* Academic confidence (if available) */}
-      {academicConfidenceScore !== undefined && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <Text>{t('studentHub.psychometric.results.academicReadiness', 'Academic Readiness')}</Text>
-            <Text strong>
-              {academicConfidenceScore >= 0.75 ? t('common.high', 'High') : academicConfidenceScore >= 0.5 ? t('studentHub.psychometric.results.mediumConfidence', 'Medium') : t('common.low', 'Low')}
-            </Text>
-          </div>
-          <Progress
-            percent={academicConfidenceScore * 100}
-            strokeColor={
-              academicConfidenceScore >= 0.75
-                ? '#10b981'
-                : academicConfidenceScore >= 0.5
-                ? '#f59e0b'
-                : '#ef4444'
-            }
-            trailColor="rgba(255,255,255,0.5)"
-            showInfo={false}
+        <div className="majormatch-results__meter-track">
+          <div
+            className={`majormatch-results__meter-fill ${config.fill}`}
+            style={{ width: `${clamp(confidenceScore)}%` }}
           />
+        </div>
+      </div>
+
+      {/* Academic readiness — only when we actually have academic data.
+          A score of 0 means no grades/test scores were provided, so we hide
+          the meter (showing "Low / 0%" reads as broken/judgmental) and let the
+          "Areas to Consider" note prompt the student to add their data. */}
+      {academicConfidenceScore !== undefined && academicConfidenceScore > 0 && (
+        <div className="majormatch-results__meter" style={{ marginTop: 12 }}>
+          <div className="majormatch-results__meter-head">
+            <span className="majormatch-results__meter-label">
+              {t('studentHub.psychometric.results.academicReadiness', 'Academic Readiness')}
+            </span>
+            <span className="majormatch-results__meter-value">
+              {academicConfidenceScore >= 0.75
+                ? t('common.high', 'High')
+                : academicConfidenceScore >= 0.5
+                ? t('studentHub.psychometric.results.mediumConfidence', 'Medium')
+                : t('common.low', 'Low')}
+            </span>
+          </div>
+          <div className="majormatch-results__meter-track">
+            <div
+              className={`majormatch-results__meter-fill ${academicFill}`}
+              style={{ width: `${clamp(academicConfidenceScore * 100)}%` }}
+            />
+          </div>
         </div>
       )}
 
-      {/* Aptitude status */}
-      <div
-        style={{
-          padding: '12px 16px',
-          background: 'rgba(255,255,255,0.7)',
-          borderRadius: 8,
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <FontAwesomeIcon
-            icon={aptitudeTaken ? 'check' : 'clock'}
-            style={{ color: aptitudeTaken ? '#10b981' : '#f59e0b' }}
-          />
-          <Text>
-            {t('studentHub.psychometric.results.aptitudeTest', 'Aptitude Test:')}{' '}
-            <Text strong style={{ color: aptitudeTaken ? '#10b981' : '#f59e0b' }}>
-              {aptitudeTaken ? t('studentHub.psychometric.results.completed', 'Completed') : t('studentHub.psychometric.results.notTaken', 'Not Taken')}
-            </Text>
-          </Text>
+      {/* Make your matches sharper — concrete, actionable steps instead of a
+          passive "Aptitude: Not Taken" status. */}
+      {sharpenSteps > 0 ? (
+        <div className="majormatch-results__sharpen">
+          <div className="majormatch-results__sharpen-title">
+            {sharpenSteps === 1
+              ? t('studentHub.psychometric.results.sharpenOne', 'One step makes your matches sharper')
+              : t('studentHub.psychometric.results.sharpenTwo', '2 steps make your matches sharper')}
+          </div>
+          <ol className="majormatch-results__sharpen-list">
+            {needAptitude && (
+              <li className="majormatch-results__sharpen-step">
+                <div className="majormatch-results__sharpen-body">
+                  <div className="majormatch-results__sharpen-step-title">
+                    {t('studentHub.psychometric.results.stepAptitude', 'Take the 10-minute aptitude test')}
+                  </div>
+                  <div className="majormatch-results__sharpen-step-desc">
+                    {hasSTEMMajors
+                      ? t('studentHub.psychometric.results.stepAptitudeStem', 'Your top matches include STEM majors — this sharpens their accuracy the most.')
+                      : t('studentHub.psychometric.results.stepAptitudeDesc', 'Adds aptitude fit to your major matches.')}
+                  </div>
+                  {onBoostAccuracy && (
+                    <button
+                      type="button"
+                      className="majormatch-results__sharpen-cta"
+                      onClick={onBoostAccuracy}
+                    >
+                      <Zap size={13} />
+                      {t('studentHub.psychometric.results.takeAptitudeTest', 'Take the test')}
+                    </button>
+                  )}
+                </div>
+              </li>
+            )}
+            {needGrades && (
+              <li className="majormatch-results__sharpen-step">
+                <div className="majormatch-results__sharpen-body">
+                  <div className="majormatch-results__sharpen-step-title">
+                    {t('studentHub.psychometric.results.stepGrades', 'Add your grades & test scores')}
+                  </div>
+                  <div className="majormatch-results__sharpen-step-desc">
+                    {t('studentHub.psychometric.results.stepGradesDesc', 'Unlocks the academic-fit score on every major recommendation.')}
+                  </div>
+                  {onAddGrades && (
+                    <button
+                      type="button"
+                      className="majormatch-results__sharpen-cta"
+                      onClick={onAddGrades}
+                    >
+                      <GraduationCap size={13} />
+                      {t('studentHub.psychometric.results.addGrades', 'Add grades')}
+                    </button>
+                  )}
+                </div>
+              </li>
+            )}
+          </ol>
         </div>
-        {!aptitudeTaken && (
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
-            {hasSTEMMajors
-              ? t('studentHub.psychometric.results.recommendedForStem', 'Recommended for STEM major recommendations')
-              : t('studentHub.psychometric.results.optionalCanImprove', 'Optional - can improve accuracy for some majors')}
-          </Text>
-        )}
-      </div>
+      ) : (
+        <div className="majormatch-results__sharpen majormatch-results__sharpen--complete">
+          <Check size={15} />
+          {t('studentHub.psychometric.results.profileComplete', 'Your results are based on a complete profile.')}
+        </div>
+      )}
 
       {/* Risk flags */}
       {riskFlags.length > 0 && (
-        <Alert
-          type="warning"
-          showIcon
-          message={t('studentHub.psychometric.results.areasToConsider', 'Areas to Consider')}
-          description={
-            <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
-              {riskFlags.map((flag, index) => (
-                <li key={index} style={{ marginBottom: 4 }}>
-                  {RISK_FLAG_DESCRIPTIONS[flag] || flag}
-                </li>
-              ))}
-            </ul>
-          }
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
-      {/* Boost accuracy CTA */}
-      {showBoostCTA && onBoostAccuracy && (
-        <div
-          style={{
-            padding: 16,
-            background: 'linear-gradient(135deg, #8b0000 0%, #dc143c 100%)',
-            borderRadius: 8,
-            textAlign: 'center',
-          }}
-        >
-          <Title level={5} style={{ color: 'white', margin: '0 0 8px 0' }}>
-            {t('studentHub.psychometric.results.boostYourAccuracy', '🎯 Boost Your Accuracy')}
-          </Title>
-          <Paragraph style={{ color: 'rgba(255,255,255,0.9)', margin: '0 0 12px 0' }}>
-            {t('studentHub.psychometric.results.stemMajorsMessage', 'Your top matches include STEM majors. Take the aptitude test (+10-15 min) for more accurate recommendations.')}
-          </Paragraph>
-          <Button
-            type="default"
-            size="large"
-            onClick={onBoostAccuracy}
-            style={{
-              background: 'white',
-              borderColor: 'white',
-              color: '#8b0000',
-              fontWeight: 600,
-            }}
-          >
-            <FontAwesomeIcon icon="bolt" style={{ marginRight: 8 }} />
-            {t('studentHub.psychometric.results.takeAptitudeTest', 'Take Aptitude Test')}
-          </Button>
+        <div className="majormatch-results__conf-flags">
+          <div className="majormatch-results__conf-flags-title">
+            <AlertTriangle size={14} />
+            {t('studentHub.psychometric.results.areasToConsider', 'Areas to Consider')}
+          </div>
+          <ul className="majormatch-results__conf-flags-list">
+            {riskFlags.map((flag, index) => (
+              <li key={index}>{RISK_FLAG_DESCRIPTIONS[flag] || flag}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -242,18 +240,14 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
             </div>
           }
         >
-          <Text
-            type="secondary"
-            style={{ cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            <FontAwesomeIcon icon="info-circle" style={{ marginRight: 4 }} />
+          <button type="button" className="majormatch-results__conf-link">
+            <Info size={13} />
             {t('studentHub.psychometric.results.howIsConfidenceCalculated', 'How is confidence calculated?')}
-          </Text>
+          </button>
         </Tooltip>
       </div>
-    </Card>
+    </div>
   );
 };
 
 export default ConfidenceIndicator;
-

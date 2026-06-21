@@ -9,4 +9,4 @@
  * The backend has a mirror flag (src/modules/isc-admissions/isc-admissions.flags.ts)
  * that 404s the API. To launch, flip BOTH to true.
  */
-export const ISC_2026_ENABLED = false;
+export const ISC_2026_ENABLED = true;

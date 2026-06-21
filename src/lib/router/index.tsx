@@ -641,15 +641,19 @@ function RouterProvider() {
                 </div>
               }
             />
-            {/* dev preview harness (applicant + console, mock switcher) */}
-            <Route
-              path="/isc-2026"
-              element={
-                <Suspense fallback={<Loader height="100vh" />}>
-                  <Isc2026PreviewLazy />
-                </Suspense>
-              }
-            />
+            {/* dev preview harness (applicant + console, mock switcher).
+                Kept dev-only so the "PREVIEW · mock data" switcher never
+                becomes publicly reachable once the feature is launched. */}
+            {import.meta.env.DEV && (
+              <Route
+                path="/isc-2026"
+                element={
+                  <Suspense fallback={<Loader height="100vh" />}>
+                    <Isc2026PreviewLazy />
+                  </Suspense>
+                }
+              />
+            )}
           </>
         )}
       </Routes>

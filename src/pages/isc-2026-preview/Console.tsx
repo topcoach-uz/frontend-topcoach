@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ClipboardList,
-  Video,
   Star,
   Users,
   Zap,
@@ -19,14 +18,13 @@ import {
 import {
   DashboardPage,
   ApplicationsPage,
-  InterviewsPage,
   FinalDecisionsPage,
   ReviewersPage,
 } from './AdminPages';
 import { ReviewerDashboard, FastReviewMode } from './ReviewerPages';
 
 type Role = 'admin' | 'reviewer';
-type AdminNav = 'dashboard' | 'applications' | 'interviews' | 'decisions' | 'reviewers';
+type AdminNav = 'dashboard' | 'applications' | 'decisions' | 'reviewers';
 type ReviewerNav = 'my-dashboard' | 'fast-review';
 
 function param(key: string): string | null {
@@ -74,7 +72,6 @@ export default function Console({
   }, [preview, reviewers, reviewingAs]);
 
   const total = adminStats?.total ?? 0;
-  const inInterview = adminStats?.inInterview ?? 0;
 
   const queue = reviewerQueue ?? [];
   const reviewerAssigned = queue.length;
@@ -100,9 +97,6 @@ export default function Console({
             <div className={s.navGroupLabel}>Admissions pipeline</div>
             <NavBtn icon={<ClipboardList size={18} />} label="Applications" badge={total}
               active={adminNav === 'applications'} onClick={() => setAdminNav('applications')} />
-            <NavBtn icon={<Video size={18} />} label="Interviews"
-              badge={inInterview}
-              active={adminNav === 'interviews'} onClick={() => setAdminNav('interviews')} />
             <NavBtn icon={<Star size={18} />} label="Final decisions"
               active={adminNav === 'decisions'} onClick={() => setAdminNav('decisions')} />
 
@@ -163,7 +157,6 @@ export default function Console({
         <div className={s.body}>
           {role === 'admin' && adminNav === 'dashboard' && <DashboardPage onNav={(n) => setAdminNav(n as AdminNav)} />}
           {role === 'admin' && adminNav === 'applications' && <ApplicationsPage />}
-          {role === 'admin' && adminNav === 'interviews' && <InterviewsPage />}
           {role === 'admin' && adminNav === 'decisions' && <FinalDecisionsPage />}
           {role === 'admin' && adminNav === 'reviewers' && <ReviewersPage />}
           {role === 'reviewer' && reviewerNav === 'my-dashboard' && (
@@ -193,8 +186,7 @@ function NavBtn({ icon, label, active, badge, onClick }: {
 const ADMIN_HEAD: Record<AdminNav, { title: string; sub: string }> = {
   dashboard: { title: 'Dashboard', sub: 'Cohort overview · 2026 international summer camp' },
   applications: { title: 'Applications', sub: 'Every submission · open any applicant to review the full file' },
-  interviews: { title: 'Interviews', sub: 'Schedule slots and record interview evaluations' },
-  decisions: { title: 'Final decisions', sub: 'Combine review and interview scores to make a call' },
+  decisions: { title: 'Final decisions', sub: 'Review the combined scores and make a call' },
   reviewers: { title: 'Reviewers', sub: 'Workload and progress across the review team' },
 };
 

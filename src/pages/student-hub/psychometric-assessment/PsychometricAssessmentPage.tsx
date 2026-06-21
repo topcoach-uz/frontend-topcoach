@@ -16,6 +16,7 @@ import {
 import { AssessmentStart } from './components/AssessmentStart';
 import { AssessmentQuestions } from './components/AssessmentQuestions';
 import { AssessmentResults } from './components/AssessmentResults';
+import { useCommunityAccessGate } from '../../../lib/communityAccess';
 import './PsychometricAssessmentPage.scss';
 
 export interface PsychometricAssessmentPageProps {
@@ -72,6 +73,10 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const { data: majorMatchAccessStatus } = useGetMajorMatchAccessStatusQuery(studentProfile?.id || '', {
     skip: !studentProfile?.id || readOnly,
   });
+  // Funnel-aware Community destination, used to convert a locked "Retake" into
+  // an upsell rather than a blocked action.
+  const communityGate = useCommunityAccessGate();
+  const requiresEnrollment = !readOnly && !!majorMatchAccessStatus?.requiresCommunityEnrollment;
 
   // Check URL params for navigation
   useEffect(() => {
@@ -114,7 +119,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
           setCurrentStep('start');
           setSessionId(null);
           setQuestions([]);
-          navigate('/student-hub/psychometric-assessment?step=start');
+          // Nothing to resume — return to the AI Major Match section inside the
+          // hub (with sidebar) rather than the chrome-less standalone landing.
+          navigate('/student-hub?section=ai-major-match');
           return;
         }
 
@@ -134,7 +141,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         setCurrentStep('start');
         setSessionId(null);
         setQuestions([]);
-        navigate('/student-hub/psychometric-assessment?step=start');
+        navigate('/student-hub?section=ai-major-match');
       } finally {
         setIsRecoveringSession(false);
       }
@@ -182,9 +189,21 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         includeAptitude: aptitude,
       }).unwrap();
 
+      // Guard against an empty question set (e.g. backend question bank not
+      // ready). Don't navigate into the questions step with nothing to show —
+      // that produced the "No questions available" dead end. Keep the user on
+      // start with a clear, retryable message instead.
+      if (!response.questions || response.questions.length === 0) {
+        message.error({
+          content: 'Assessment questions are not ready yet. Please try again in a moment.',
+          duration: 5,
+        });
+        return;
+      }
+
       setSessionId(response.sessionId);
-      setQuestions(response.questions || []);
-      
+      setQuestions(response.questions);
+
       // Only show resuming message if there are meaningful answers (more than 1)
       if (response.resumedFrom && response.resumedFrom.answeredCount > 1) {
         setIsResuming(true);
@@ -226,13 +245,22 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     message.success('Assessment completed successfully!');
   };
 
+  // Where to land after leaving the focused (chrome-less) assessment view.
+  // The full-screen, no-sidebar surface is only meant for actively taking the
+  // test; once the student exits they're browsing again, so return them to the
+  // AI Major Match section *inside* the My Journey hub (with sidebar). The
+  // counselor/read-only view isn't mounted in the hub, so keep its own route.
+  const exitDestination = readOnly
+    ? '/student-hub/psychometric-assessment?step=start'
+    : '/student-hub?section=ai-major-match';
+
   // Save and exit - keeps session alive for resuming later
   const handleSaveAndExit = () => {
     message.success('Progress saved! You can continue later.');
     setCurrentStep('start');
     setSessionId(null);
     setQuestions([]);
-    navigate('/student-hub/psychometric-assessment?step=start');
+    navigate(exitDestination);
     // Refetch active session so the Start/Resume button updates
     setTimeout(() => refetchActiveSession(), 100);
   };
@@ -258,7 +286,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setQuestions([]);
     setSavedAnswers({});
     setIsResuming(false);
-    navigate('/student-hub/psychometric-assessment?step=start');
+    navigate(exitDestination);
     // Refetch active session so the Start/Resume button updates
     setTimeout(() => refetchActiveSession(), 100);
   };
@@ -353,7 +381,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
                 message="Assessment session missing"
                 description="We couldn't find active question data. Please return to Start and launch or resume your assessment."
                 action={
-                  <Button size="small" onClick={() => navigate('/student-hub/psychometric-assessment?step=start')}>
+                  <Button size="small" onClick={() => navigate(exitDestination)}>
                     Go to Start
                   </Button>
                 }
@@ -368,7 +396,8 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             studentProfileId={studentProfile.id}
             assessment={selectedAssessment || latestAssessment}
             recommendations={recommendations}
-            onRetake={handleAbandon}
+            onRetake={requiresEnrollment ? () => navigate(communityGate.destination) : handleAbandon}
+            retakeLocked={requiresEnrollment}
             onTakeAptitude={handleStartAssessment.bind(null, language, true)}
             isLoading={assessmentLoading || selectedAssessmentLoading || recommendationsLoading}
             isGeneratingResults={isGeneratingResults}

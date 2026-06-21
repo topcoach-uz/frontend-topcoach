@@ -59,6 +59,7 @@ import {
 import { SessionTypeEnum } from 'src/app/api/Api';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
+import { useIscCardState } from '../events/_components/useIscCardState';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -328,10 +329,11 @@ const MyProgressEditorialView: React.FC = () => {
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
   // International Summer Camp 2026 — current flagship intake. Takes the
-  // "Top Coach presents" slot while applications are open. Static for
-  // now (links to the /isc-2026 application); wire to the real
-  // open/close + my-application status when the backend lands.
+  // "Top Coach presents" slot while applications are open. The CTA +
+  // status line reflect the user's live application state (apply / resume /
+  // submitted / accepted …) via the shared hook.
   const showIscPromo = ISC_2026_ENABLED;
+  const iscCard = useIscCardState();
 
   // Top Coach Launch Event — free event on May 24, 2026. While the
   // event hasn't passed, this card takes precedence over the CAAF
@@ -824,19 +826,20 @@ const MyProgressEditorialView: React.FC = () => {
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
             <h3 className="myprog__promo-title">International Summer Camp</h3>
-            <div className="myprog__promo-meta">6 weeks · 30+ countries · Apply by Mar 15</div>
+            <div className="myprog__promo-meta">Aug 3–9, 2026 · 250 students · Apply by Jul 6</div>
             <p className="myprog__promo-desc">
-              A six-week academic camp for ambitious students — Bachelor&apos;s &amp;
-              Master&apos;s tracks, open to local and international applicants.
+              A one-week academic camp for 250 students from across Central Asia —
+              150 Bachelor&apos;s and 100 Master&apos;s places — for learning,
+              networking, and a head start on studying abroad.
             </p>
             <div className="myprog__promo-foot">
-              <div className="myprog__promo-foot-status">Applications open</div>
+              <div className="myprog__promo-foot-status">{iscCard.statusLabel}</div>
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
                 onClick={() => navigate('/events/international-summer-camp-2026')}
               >
-                Apply now
+                {iscCard.ctaLabel}
               </button>
             </div>
           </article>

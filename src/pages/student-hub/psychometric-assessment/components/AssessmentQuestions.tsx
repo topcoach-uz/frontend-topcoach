@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Button, Radio, Input, Progress, Typography, Space, message, Spin, Alert } from 'antd';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import FontAwesomeIcon from '../../../../components/common/icons/FontAwesomeIcon';
+import { ArrowLeft, ArrowRight, Check, Search } from 'lucide-react';
 import {
   useSubmitAnswerMutation,
   useCompleteAssessmentMutation,
@@ -9,9 +9,7 @@ import {
 } from '../../../../app/services/student-hub/psychometricApi';
 import type { AssessmentQuestion } from '../../../../app/services/student-hub/psychometricApi';
 import { AssessmentProgress } from './AssessmentProgress';
-
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+import './AssessmentQuestions.scss';
 
 interface AssessmentQuestionsProps {
   sessionId: string;
@@ -36,7 +34,13 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 }) => {
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [questions] = useState<AssessmentQuestion[]>(initialQuestions || []);
+  // Derive from props rather than snapshotting once via useState — a stale
+  // snapshot (e.g. mounting before questions arrive) used to strand the user
+  // on "No questions available" even after the real list loaded.
+  const questions = useMemo<AssessmentQuestion[]>(
+    () => initialQuestions || [],
+    [initialQuestions],
+  );
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -183,12 +187,12 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
   // Show loading while fetching progress
   if (progressLoading || !isInitialized) {
     return (
-      <Card>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" />
-          <p>Loading your progress...</p>
+      <div className="majormatch-quiz">
+        <div className="majormatch-quiz__state">
+          <span className="majormatch-quiz__spinner" />
+          <p className="majormatch-quiz__state-desc">Loading your progress...</p>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -200,18 +204,17 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
 
   if (!currentQuestion) {
     return (
-      <Card>
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Alert 
-            message="No questions available" 
-            description="Please try starting a new assessment."
-            type="warning" 
-          />
-          <Button onClick={onAbandon} style={{ marginTop: 16 }}>
+      <div className="majormatch-quiz">
+        <div className="majormatch-quiz__state">
+          <p className="majormatch-quiz__state-title">No questions available</p>
+          <p className="majormatch-quiz__state-desc">
+            Please try starting a new assessment.
+          </p>
+          <button type="button" className="majormatch-quiz__btn" onClick={onAbandon}>
             Go Back
-          </Button>
+          </button>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -220,116 +223,151 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
     return currentQuestion.translations?.[language] || currentQuestion.questionText;
   };
 
+  // Editorial selectable option row (replaces antd Radio) for likert /
+  // multiple-choice / forced-choice. Keeps role="radio" + aria-checked
+  // and the F1–Fn keyboard ordering (index drives the shortcut label).
+  const renderOptionRow = (label: string, value: any, index: number) => {
+    const selected = answers[currentQuestion.id] === value;
+    return (
+      <div
+        key={index}
+        role="radio"
+        aria-checked={selected}
+        tabIndex={0}
+        className={`majormatch-quiz__option ${selected ? 'is-selected' : ''}`}
+        onClick={() => handleAnswerChange(currentQuestion.id, value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleAnswerChange(currentQuestion.id, value);
+          }
+        }}
+      >
+        <span className="majormatch-quiz__option-dot" aria-hidden="true" />
+        <span className="majormatch-quiz__option-label">{label}</span>
+        <span className="majormatch-quiz__option-key" aria-hidden="true">
+          F{index + 1}
+        </span>
+      </div>
+    );
+  };
+
   const renderQuestionInput = () => {
     if (!currentQuestion.questionData) {
       console.error('Question data is missing!');
-      return <Alert message="Error: Question data is missing" type="error" />;
+      return <div className="majormatch-quiz__error">Error: Question data is missing</div>;
     }
 
     const questionType = currentQuestion.questionData?.type;
 
     if (!questionType) {
       console.error('Question type is missing!', currentQuestion);
-      return <Alert message="Error: Question type is missing" type="error" />;
+      return <div className="majormatch-quiz__error">Error: Question type is missing</div>;
     }
 
     switch (questionType) {
-      case 'likert':
+      case 'likert': {
         const scale = currentQuestion.questionData.scale;
         if (!scale) {
           console.error('Likert scale is missing!', currentQuestion.questionData);
-          return <Alert message="Error: Likert scale configuration is missing" type="error" />;
+          return (
+            <div className="majormatch-quiz__error">
+              Error: Likert scale configuration is missing
+            </div>
+          );
         }
 
         // Default labels if missing (reversed order: Strongly Agree -> Strongly Disagree)
         const defaultLabels = ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'];
-        const labels = scale.labels && scale.labels.length > 0 
+        const labels = scale.labels && scale.labels.length > 0
           ? [...scale.labels].reverse() // Reverse the labels array
           : defaultLabels.slice(0, scale.max - scale.min + 1);
 
         return (
-          <Radio.Group
-            value={answers[currentQuestion.id]}
-            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            style={{ width: '100%' }}
-            size="large"
+          <div
+            className="majormatch-quiz__options"
+            role="radiogroup"
+            aria-label="Answer options"
           >
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {labels.map((label, index) => {
-                // Map reversed labels to values: first label (Strongly Agree) gets highest value (scale.max)
-                const value = scale.max - index;
-                return (
-                  <Radio key={index} value={value} style={{ fontSize: 16, padding: '8px 0' }}>
-                    {label}
-                  </Radio>
-                );
-              })}
-            </Space>
-          </Radio.Group>
+            {labels.map((label, index) =>
+              // Map reversed labels to values: first label (Strongly Agree) gets highest value (scale.max)
+              renderOptionRow(label, scale.max - index, index),
+            )}
+          </div>
         );
+      }
 
       case 'multiple-choice':
         if (!currentQuestion.questionData.options || currentQuestion.questionData.options.length === 0) {
           console.error('Multiple choice options are missing!', currentQuestion.questionData);
-          return <Alert message="Error: Multiple choice options are missing" type="error" />;
+          return (
+            <div className="majormatch-quiz__error">
+              Error: Multiple choice options are missing
+            </div>
+          );
         }
 
         return (
-          <Radio.Group
-            value={answers[currentQuestion.id]}
-            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            style={{ width: '100%' }}
-            size="large"
+          <div
+            className="majormatch-quiz__options"
+            role="radiogroup"
+            aria-label="Answer options"
           >
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {currentQuestion.questionData.options.map((option, index) => (
-                <Radio key={index} value={option} style={{ fontSize: 16, padding: '8px 0' }}>
-                  {option}
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
+            {currentQuestion.questionData.options.map((option, index) =>
+              renderOptionRow(option, option, index),
+            )}
+          </div>
         );
 
       case 'forced-choice':
         if (!currentQuestion.questionData.options || currentQuestion.questionData.options.length === 0) {
           console.error('Forced choice options are missing!', currentQuestion.questionData);
-          return <Alert message="Error: Forced choice options are missing" type="error" />;
+          return (
+            <div className="majormatch-quiz__error">
+              Error: Forced choice options are missing
+            </div>
+          );
         }
 
         return (
-          <Radio.Group
-            value={answers[currentQuestion.id]}
-            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            style={{ width: '100%' }}
-            size="large"
+          <div
+            className="majormatch-quiz__options"
+            role="radiogroup"
+            aria-label="Answer options"
           >
-            <Space direction="vertical" style={{ width: '100%' }} size="large">
-              {currentQuestion.questionData.options.map((option, index) => (
-                <Radio key={index} value={option} style={{ fontSize: 16, padding: '12px 0', minHeight: '48px' }}>
-                  {option}
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
+            {currentQuestion.questionData.options.map((option, index) =>
+              renderOptionRow(option, option, index),
+            )}
+          </div>
         );
 
-      case 'open-ended':
+      case 'open-ended': {
+        const maxLength = currentQuestion.questionData.maxLength || 500;
+        const openValue = answers[currentQuestion.id] || '';
         return (
-          <TextArea
-            value={answers[currentQuestion.id] || ''}
-            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            rows={4}
-            placeholder="Type your answer here..."
-            maxLength={currentQuestion.questionData.maxLength || 500}
-            showCount
-            size="large"
-          />
+          <div className="majormatch-quiz__textarea-wrap">
+            <textarea
+              className="majormatch-quiz__textarea"
+              value={openValue}
+              onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+              rows={4}
+              placeholder="Type your answer here..."
+              maxLength={maxLength}
+            />
+            <div className="majormatch-quiz__char-count">
+              {openValue.length} / {maxLength}
+            </div>
+          </div>
         );
+      }
 
       default:
         console.error('Unknown question type:', questionType);
-        return <Alert message={`Error: Unknown question type: ${questionType}`} type="error" />;
+        return (
+          <div className="majormatch-quiz__error">
+            Error: Unknown question type: {questionType}
+          </div>
+        );
     }
   };
 
@@ -352,53 +390,60 @@ export const AssessmentQuestions: React.FC<AssessmentQuestionsProps> = ({
         onAbandon={onAbandon}
       />
 
-      <Card className="question-card">
-        <div className="question-content">
-          <Title level={4} style={{ marginBottom: 24 }}>
-            {getQuestionText()}
-          </Title>
+      <div className="majormatch-quiz">
+        <div className="majormatch-quiz__card">
+          <h2 className="majormatch-quiz__question">{getQuestionText()}</h2>
 
-          <div className="question-input" style={{ marginBottom: 32 }}>
+          <div className="majormatch-quiz__input">
             {renderQuestionInput()}
             {currentOptions.length > 0 && (
-              <Text type="secondary" style={{ display: 'block', marginTop: 12, fontSize: 13 }}>
+              <span className="majormatch-quiz__tip">
                 Tip: Press F1–F{currentOptions.length} to select an answer
-              </Text>
+              </span>
+            )}
+          </div>
+
+          <div className="majormatch-quiz__actions">
+            <button
+              type="button"
+              className="majormatch-quiz__btn"
+              onClick={handlePrevious}
+              disabled={currentQuestionIndex === 0}
+            >
+              <ArrowLeft size={15} />
+              Previous
+            </button>
+            {currentQuestionIndex < questions.length - 1 || !allQuestionsAnswered ? (
+              <button
+                type="button"
+                className="majormatch-quiz__btn majormatch-quiz__btn--primary"
+                onClick={handleNext}
+              >
+                {currentQuestionIndex === questions.length - 1 ? (
+                  <Search size={15} />
+                ) : (
+                  <ArrowRight size={15} />
+                )}
+                {currentQuestionIndex === questions.length - 1 ? 'Find Unanswered' : 'Next'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="majormatch-quiz__btn majormatch-quiz__btn--primary"
+                onClick={handleComplete}
+                disabled={!allQuestionsAnswered || isCompleting || isSubmitting}
+              >
+                {isCompleting || isSubmitting ? (
+                  <span className="majormatch-quiz__spinner" style={{ width: 15, height: 15, borderWidth: 2 }} />
+                ) : (
+                  <Check size={15} />
+                )}
+                Complete Assessment
+              </button>
             )}
           </div>
         </div>
-
-        <div className="question-actions">
-          <Space>
-            <Button
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
-              icon={<FontAwesomeIcon icon="arrow-left" />}
-            >
-              Previous
-            </Button>
-            {currentQuestionIndex < questions.length - 1 || !allQuestionsAnswered ? (
-              <Button
-                type="primary"
-                onClick={handleNext}
-                icon={<FontAwesomeIcon icon={currentQuestionIndex === questions.length - 1 ? "search" : "arrow-right"} />}
-              >
-                {currentQuestionIndex === questions.length - 1 ? 'Find Unanswered' : 'Next'}
-              </Button>
-            ) : (
-              <Button
-                type="primary"
-                onClick={handleComplete}
-                loading={isCompleting || isSubmitting}
-                disabled={!allQuestionsAnswered}
-                icon={<FontAwesomeIcon icon="check" />}
-              >
-                Complete Assessment
-              </Button>
-            )}
-          </Space>
-        </div>
-      </Card>
+      </div>
     </div>
   );
 };
