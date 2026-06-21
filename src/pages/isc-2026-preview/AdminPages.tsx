@@ -563,7 +563,8 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
               {ai.summary && <div className={s.aiSummary}>{ai.summary}</div>}
               {(ai.flags ?? []).map((f, i) => (
                 <div key={i} className={`${s.aiFlag} ${f.severity === 'high' ? s.aiFlagHigh : ''}`}>
-                  ⚑ {f.detail}
+                  ⚑ <b>{(f.type || 'note').replace(/-/g, ' ').toUpperCase()}</b>
+                  {f.severity ? ` · ${f.severity}` : ''} — {f.detail}
                 </div>
               ))}
               {ai.model && (
