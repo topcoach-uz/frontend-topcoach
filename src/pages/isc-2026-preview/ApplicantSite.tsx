@@ -105,6 +105,8 @@ interface Draft {
   degree: string;
   gradYear: string;
   gpa: string;
+  gre: string;
+  gmat: string;
   cvUploaded: boolean;
   cvPath: string;
   extracurriculars: string;
@@ -117,7 +119,7 @@ const EMPTY: Draft = {
   fullName: '', age: '', grade: '', countryOfResidence: '', passportNumber: '', email: '', phone: '', telegram: '',
   passportUploaded: false, passportPath: '', englishTest: '', englishScore: '', englishDate: '',
   englishUploaded: false, englishCertPath: '', satScore: '', satUploaded: false, satReportPath: '',
-  university: '', degree: '', gradYear: '', gpa: '', cvUploaded: false, cvPath: '',
+  university: '', degree: '', gradYear: '', gpa: '', gre: '', gmat: '', cvUploaded: false, cvPath: '',
   extracurriculars: '', awards: '', whyCamp: '', whySelect: '',
 };
 
@@ -378,6 +380,8 @@ export default function ApplicantSite() {
             degree: draft.degree,
             gradYear: draft.gradYear,
             gpa: draft.gpa,
+            gre: draft.gre,
+            gmat: draft.gmat,
             cvPath: draft.cvPath || null,
           },
           activities: { extracurriculars: draft.extracurriculars, awards: draft.awards },
@@ -567,11 +571,15 @@ export default function ApplicantSite() {
               <strong>What happens next</strong><br />
               Our admissions team will review your application and follow up by email about
               next steps. A confirmation has been sent to <b>{draft.email || 'your email'}</b>.
+              <br />
+              Questions? Message us on Telegram:{' '}
+              <a href="https://t.me/Top100uni_admin" target="_blank" rel="noreferrer">
+                @Top100uni_admin
+              </a>.
             </div>
+            {/* One application per user — no "Start over". Returning here
+                shows the live status of the submitted application. */}
             <div className={s.successActions}>
-              <button className={s.btn} onClick={() => { clearSavedDraft(); setDraft(EMPTY); setSection(0); setPhase('landing'); }}>
-                Start over
-              </button>
               <button className={`${s.btn} ${s.btnPrimary}`} onClick={exit}>Back to events</button>
             </div>
           </div>
@@ -602,6 +610,8 @@ export default function ApplicantSite() {
             ['Degree / field', draft.degree || '—'],
             ['Expected graduation', draft.gradYear || '—'],
             ['GPA / standing', draft.gpa || '—'],
+            ['GRE', draft.gre || '—'],
+            ['GMAT', draft.gmat || '—'],
             ['CV / résumé', draft.cvUploaded ? 'Uploaded' : '—'],
             ['English test', [draft.englishTest, draft.englishScore].filter(Boolean).join(' · ') || '—'],
           ] as [string, string][])
@@ -806,6 +816,16 @@ function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps
           <input className={s.input} placeholder="e.g. 3.8 / 4.0 or First Class Honours" value={draft.gpa}
             onChange={(e) => up({ gpa: e.target.value })} />
         </Field>
+        <div className={s.fieldRow2}>
+          <Field label="GRE score (optional)">
+            <input className={s.input} placeholder="e.g. 320" value={draft.gre}
+              onChange={(e) => up({ gre: e.target.value })} />
+          </Field>
+          <Field label="GMAT score (optional)">
+            <input className={s.input} placeholder="e.g. 700" value={draft.gmat}
+              onChange={(e) => up({ gmat: e.target.value })} />
+          </Field>
+        </div>
         <Field label="Upload CV / résumé" req error={errors.cvUploaded}>
           <Dropzone uploaded={draft.cvUploaded} onFile={(f) => onUpload(f, 'cv')}
             title="Upload your CV or résumé" hint="PDF preferred · max 5 MB" />

@@ -81,7 +81,7 @@ function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
   const headers = [
     'Name', 'Email', 'Phone', 'Telegram', 'Program', 'Type', 'Grade',
     'Country of residence', 'Passport #', 'English test', 'English score', 'SAT',
-    'University', 'Degree', 'Grad year', 'GPA', 'Submitted',
+    'University', 'Degree', 'Grad year', 'GPA', 'GRE', 'GMAT', 'Submitted',
     'Status', 'AI score', 'Review avg',
   ];
   const lines = rows.map((r) =>
@@ -102,6 +102,8 @@ function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
       draftRaw(r, 'academics', 'degree') ?? '',
       draftRaw(r, 'academics', 'gradYear') ?? '',
       draftRaw(r, 'academics', 'gpa') ?? '',
+      draftRaw(r, 'academics', 'gre') ?? '',
+      draftRaw(r, 'academics', 'gmat') ?? '',
       r.submittedAt ? r.submittedAt.slice(0, 10) : '',
       STATUS_LABEL[r.status] ?? r.status,
       r.aiScore ?? '',
@@ -496,6 +498,8 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
                 <KV k="Degree / field" v={draftVal(application, 'academics', 'degree')} />
                 <KV k="Expected graduation" v={draftVal(application, 'academics', 'gradYear')} />
                 <KV k="GPA / standing" v={draftVal(application, 'academics', 'gpa')} />
+                <KV k="GRE" v={draftVal(application, 'academics', 'gre')} />
+                <KV k="GMAT" v={draftVal(application, 'academics', 'gmat')} />
                 <KV k="English test" v={draftVal(application, 'academics', 'englishTest')} />
                 <KV k="English score" v={draftVal(application, 'academics', 'englishScore')} />
               </div>
