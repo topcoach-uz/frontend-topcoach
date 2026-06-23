@@ -337,10 +337,26 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   &:hover { border-color: $crimson; color: $crimson; }
 }
 .uploaded {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
   background: #ecf7f1; border: 1px solid #b7e3cd; color: $green;
   border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600;
 }
+.uploadedLabel { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.uploadedName {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.uploadedActions { display: inline-flex; align-items: center; gap: 12px; }
+.uploadedAction {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: $crimson; text-decoration: underline;
+
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+.uploadedRemove { color: #b42318; }
 
 /* chips (english test) */
 .chipRow { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -8,7 +8,7 @@
  */
 
 import { Navigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import Loader from 'src/components/loader';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext';
@@ -36,9 +36,7 @@ export default function StudentHubGate() {
 
   if (profileLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Spin size="large" />
-      </div>
+      <Loader height="100vh" />
     );
   }
 
@@ -56,9 +54,7 @@ export default function StudentHubGate() {
 
   if (counselorLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Spin size="large" />
-      </div>
+      <Loader height="100vh" />
     );
   }
 

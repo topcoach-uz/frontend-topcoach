@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { Spin } from 'antd';
+import Loader from 'src/components/loader';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { AdminConsoleProvider } from './AdminConsoleContext';
@@ -21,9 +21,7 @@ export default function AdminConsoleGate() {
   }
   if (profileLoading && !currentUser?.managementRole) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Spin size="large" />
-      </div>
+      <Loader height="100vh" />
     );
   }
   if (!canEnterAdminConsole(currentUser?.managementRole)) {

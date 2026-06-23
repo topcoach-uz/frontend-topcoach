@@ -10,7 +10,7 @@
 // surface program + applicantType + grade instead.
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, MoreVertical, Download, FileText } from 'lucide-react';
+import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, X, MoreVertical, Download, FileText } from 'lucide-react';
 import s from './isc.module.scss';
 import { hostName } from '../../app/services/api/const';
 import {
@@ -239,8 +239,17 @@ export function ApplicationsPage() {
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('app') : null,
   );
 
-  if (openId) return <ApplicationDetail openId={openId} onBack={() => setOpenId(null)} />;
-  return <ApplicationsList onOpen={setOpenId} />;
+  // Keep the list MOUNTED while a detail is open (just hidden) so its
+  // filters / search / scroll survive the round-trip — clicking an
+  // applicant and hitting "All applications" returns to the same view.
+  return (
+    <>
+      <div style={{ display: openId ? 'none' : 'block' }}>
+        <ApplicationsList onOpen={setOpenId} />
+      </div>
+      {openId && <ApplicationDetail openId={openId} onBack={() => setOpenId(null)} />}
+    </>
+  );
 }
 
 function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
@@ -277,6 +286,8 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       return next;
     });
   const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); };
+  const filtersActive =
+    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0;
   const exportCsv = () => {
     const rows = selected.size
       ? items.filter((a) => selected.has(a.id))
@@ -311,6 +322,11 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         <Sel value={program} onChange={setProgram} options={[['all', 'All programs'], ['bachelor', "Bachelor's"], ['master', "Master's"]]} />
         <Sel value={applicantType} onChange={setApplicantType} options={[['all', 'All types'], ['local', 'Local'], ['international', 'International']]} />
         <Sel value={status} onChange={setStatus} options={[['all', 'All statuses'], ...ALL_STATUSES.map((st) => [st, STATUS_LABEL[st] ?? st] as [string, string])]} />
+        {filtersActive && (
+          <button className={s.btn} onClick={reset} title="Clear all filters">
+            <X size={15} /> Clear filters
+          </button>
+        )}
       </div>
       <div className={s.filters}>
         <label className={s.minScore}>
@@ -318,7 +334,6 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
           <input type="range" min={0} max={50} value={minScore} onChange={(e) => setMinScore(Number(e.target.value))} />
           <b>{minScore}</b>
         </label>
-        <button className={s.btn} onClick={reset}>Reset</button>
         <button className={s.btn} onClick={exportCsv}>
           <Download size={15} /> Export CSV{selected.size ? ` (${selected.size})` : ''}
         </button>

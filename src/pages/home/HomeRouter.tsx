@@ -11,7 +11,8 @@ import { useLayoutEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
 import { useTypedSelector } from 'src/app/store';
-import { PageLoader } from 'src/components/loading';
+import { useGetMeQuery } from 'src/app/services/users';
+import Loader from 'src/components/loader';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
@@ -21,15 +22,21 @@ export default function HomeRouter() {
   const { searchParams } = useParamsHook();
   const verified = searchParams.get('verified') && !!searchParams.get('verified');
 
-  const profile = useTypedSelector((s) => s.auth.profile?.profile);
-  const email = useTypedSelector((s) => s.auth.profile?.email);
+  const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
+  // The profile is already fetched fresh by the app-bootstrap gate
+  // (RouterProvider), so this just reads it from cache — no extra fetch and
+  // no extra full-screen spinner.
+  const { data: me } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  const profile = me?.profile;
+  const email = me?.email;
 
   useLayoutEffect(() => {
     if (verified) navigate('/auth/verification?verified=true');
   }, [verified, navigate]);
 
+  // Safety net only — normally the bootstrap gate guarantees a profile here.
   if (!profile?.role) {
-    return <PageLoader text="Loading..." />;
+    return <Loader height="100vh" />;
   }
 
   return (
@@ -53,7 +60,7 @@ function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
   const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
 
   if (counselorLoading) {
-    return <PageLoader text="Loading..." />;
+    return <Loader height="100vh" />;
   }
 
   // Students with counselor access → school counselor as home. Mentors with counselor access → stay on mentor home.

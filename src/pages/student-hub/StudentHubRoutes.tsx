@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import Loader from 'src/components/loader';
 import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
 import CommunityHubMockPage from './community/CommunityHubMockPage';
@@ -22,11 +22,7 @@ const SatPrepComingSoonPage = lazy(() => import('./sat-prep/SatPrepComingSoonPag
 const ResearchPrepLockedPreview = lazy(() => import('./research/ResearchPrepLockedPreview'));
 const CommunityLockedPage = lazy(() => import('./community/CommunityLockedPage'));
 
-const RouteFallback = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 240, padding: 48 }}>
-    <Spin size="large" />
-  </div>
-);
+const RouteFallback = () => <Loader height="60vh" />;
 
 const withSuspense = (node: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 

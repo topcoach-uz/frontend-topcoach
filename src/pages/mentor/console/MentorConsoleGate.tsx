@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { Spin } from 'antd';
+import Loader from 'src/components/loader';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMentorRosterQuery } from 'src/app/services/fullSupportApi';
@@ -46,18 +46,7 @@ export default function MentorConsoleGate() {
     return <Navigate to="/auth/signin" replace />;
   }
   if (profileLoading && !profileRole && !managementRole) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '60vh',
-        }}
-      >
-        <Spin size="large" />
-      </div>
-    );
+    return <Loader height="60vh" />;
   }
   if (!canEnter(profileRole, managementRole)) {
     return <Navigate to="/" replace />;

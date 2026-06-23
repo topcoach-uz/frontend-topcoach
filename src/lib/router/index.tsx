@@ -8,9 +8,10 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { Spin } from "antd";
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
+import { useGetMyOrganizationsQuery } from "src/app/services/organizations";
+import HomeRouter from "src/pages/home/HomeRouter";
 import { ISC_2026_ENABLED } from "src/lib/iscAccess";
 import { UserRole } from "src/app/api/Api";
 
@@ -31,7 +32,8 @@ import NavigationProgressBar from "src/components/NavigationProgressBar";
 // Pages
 
 const HomePage = lazy(() => import("src/pages/home"));
-const HomeRouter = lazy(() => import("src/pages/home/HomeRouter"));
+// HomeRouter is a tiny routing-decision component imported directly (not
+// lazy) so the post-login redirect doesn't flash an extra Suspense loader.
 const HelpPageLazy = lazy(() => import("src/pages/help"));
 const Custom404PageLazy = lazy(() => import("src/pages/404"));
 const SuccessStoriesPageLazy = lazy(
@@ -201,11 +203,36 @@ function RouterProvider() {
     (state) => state.auth.profile
   );
   
-  // Fetch user profile to ensure managementRole is loaded
+  // SINGLE source of truth for the signed-in profile. This is the only
+  // getMe that drives an app-level loader; every downstream layout/gate
+  // reads the result from cache (no more stacked spinners). `refetch on
+  // mount` keeps it fresh on each full app load so routing/role decisions
+  // never run on a stale persisted profile.
   const { data: userData, isLoading: profileLoading } = useGetMeQuery(undefined, {
     skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
   });
-  
+
+  // Also resolve the org/counselor membership here so the home redirect
+  // (HomeRouter) and the student-hub gate read it from cache instead of each
+  // showing their own loader.
+  const { data: orgsData, isLoading: orgsLoading } = useGetMyOrganizationsQuery(
+    undefined,
+    { skip: !isAuthenticated },
+  );
+
+  // App-bootstrap gate: while the authenticated user's profile (+ org
+  // membership, which the very first redirect needs) is loading, show ONE
+  // full-screen loader instead of letting each route/layout/gate render its
+  // own. Once resolved, everything below renders straight from cache — no
+  // chained spinners.
+  if (
+    isAuthenticated &&
+    ((profileLoading && !userData) || (orgsLoading && !orgsData))
+  ) {
+    return <Loader height="100vh" />;
+  }
+
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
   const isSuperAdminOrOwner = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
@@ -260,7 +287,7 @@ function RouterProvider() {
                           minHeight: '100vh',
                         }}
                       >
-                        <Spin size="large" />
+                        <Loader height="100vh" />
                       </div>
                     }
                   >
@@ -327,7 +354,7 @@ function RouterProvider() {
                 index
                 element={
                   isAuthenticated ? (
-                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                    <Suspense fallback={<Loader height="100vh" />}>
                       <HomeRouter />
                     </Suspense>
                   ) : (
@@ -438,7 +465,7 @@ function RouterProvider() {
               <Route
                 path="/community/post/:id"
                 element={
-                  <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Spin size="large" /></div>}>
+                  <Suspense fallback={<Loader height="100vh" />}>
                     <CommunityPostPermalinkLazy />
                   </Suspense>
                 }
@@ -450,7 +477,7 @@ function RouterProvider() {
                   !isAuthenticated ? (
                     <Navigate to="/" replace />
                   ) : (
-                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Spin size="large" /></div>}>
+                    <Suspense fallback={<Loader height="100vh" />}>
                       <StudentHubGateLazy />
                     </Suspense>
                   )
@@ -469,7 +496,7 @@ function RouterProvider() {
                     <Navigate to="/auth/signin" replace />
                   ) : profileLoading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
+                      <Loader height="100vh" />
                     </div>
                   ) : isSuperAdminOrOwner ? (
                     <TopCoachManagementCanonicalRedirect />
@@ -485,7 +512,7 @@ function RouterProvider() {
                     <Navigate to="/auth/signin" replace />
                   ) : profileLoading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
+                      <Loader height="100vh" />
                     </div>
                   ) : isSuperAdminOrOwner ? (
                     <Navigate to="/new-admin/programs/full-support" replace />
@@ -505,10 +532,10 @@ function RouterProvider() {
                     <Navigate to="/auth/signin" replace />
                   ) : profileLoading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                      <Spin size="large" />
+                      <Loader height="100vh" />
                     </div>
                   ) : isMentor || isSuperAdminOrOwner ? (
-                    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+                    <Suspense fallback={<Loader height="100vh" />}>
                       <FullSupportMentorSatProgressPageLazy />
                     </Suspense>
                   ) : (

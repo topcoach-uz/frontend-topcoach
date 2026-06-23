@@ -92,14 +92,17 @@ interface Draft {
   telegram: string;
   passportUploaded: boolean;
   passportPath: string;
+  passportName: string;
   englishTest: string;
   englishScore: string;
   englishDate: string;
   englishUploaded: boolean;
   englishCertPath: string;
+  englishCertName: string;
   satScore: string;
   satUploaded: boolean;
   satReportPath: string;
+  satName: string;
   // Master's-track current education
   university: string;
   degree: string;
@@ -109,6 +112,7 @@ interface Draft {
   gmat: string;
   cvUploaded: boolean;
   cvPath: string;
+  cvName: string;
   extracurriculars: string;
   awards: string;
   whyCamp: string;
@@ -117,9 +121,9 @@ interface Draft {
 
 const EMPTY: Draft = {
   fullName: '', age: '', grade: '', countryOfResidence: '', passportNumber: '', email: '', phone: '', telegram: '',
-  passportUploaded: false, passportPath: '', englishTest: '', englishScore: '', englishDate: '',
-  englishUploaded: false, englishCertPath: '', satScore: '', satUploaded: false, satReportPath: '',
-  university: '', degree: '', gradYear: '', gpa: '', gre: '', gmat: '', cvUploaded: false, cvPath: '',
+  passportUploaded: false, passportPath: '', passportName: '', englishTest: '', englishScore: '', englishDate: '',
+  englishUploaded: false, englishCertPath: '', englishCertName: '', satScore: '', satUploaded: false, satReportPath: '', satName: '',
+  university: '', degree: '', gradYear: '', gpa: '', gre: '', gmat: '', cvUploaded: false, cvPath: '', cvName: '',
   extracurriculars: '', awards: '', whyCamp: '', whySelect: '',
 };
 
@@ -412,10 +416,11 @@ export default function ApplicantSite() {
     const fd = new FormData();
     fd.append('file', file);
     const res = await uploadDoc(fd).unwrap();
-    if (kind === 'passport') up({ passportUploaded: true, passportPath: res.path });
-    else if (kind === 'english') up({ englishUploaded: true, englishCertPath: res.path });
-    else if (kind === 'cv') up({ cvUploaded: true, cvPath: res.path });
-    else up({ satUploaded: true, satReportPath: res.path });
+    const name = res.originalName || file.name;
+    if (kind === 'passport') up({ passportUploaded: true, passportPath: res.path, passportName: name });
+    else if (kind === 'english') up({ englishUploaded: true, englishCertPath: res.path, englishCertName: name });
+    else if (kind === 'cv') up({ cvUploaded: true, cvPath: res.path, cvName: name });
+    else up({ satUploaded: true, satReportPath: res.path, satName: name });
   };
 
   // advance only if the current section validates
@@ -781,7 +786,8 @@ function PersonalSection({ draft, up, errors, onUpload, program, applicantType }
       </div>
 
       <Field label="Upload passport (photo page)" req error={errors.passportUploaded}>
-        <Dropzone uploaded={draft.passportUploaded} onFile={(f) => onUpload(f, 'passport')}
+        <Dropzone uploaded={draft.passportUploaded} fileName={draft.passportName} onFile={(f) => onUpload(f, 'passport')}
+          onRemove={() => up({ passportUploaded: false, passportPath: '', passportName: '' })}
           title="Scan or photo of your passport's main page"
           hint="PDF, JPG, or PNG · max 5 MB · must show name, photo, and expiry date" />
       </Field>
@@ -827,7 +833,8 @@ function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps
           </Field>
         </div>
         <Field label="Upload CV / résumé" req error={errors.cvUploaded}>
-          <Dropzone uploaded={draft.cvUploaded} onFile={(f) => onUpload(f, 'cv')}
+          <Dropzone uploaded={draft.cvUploaded} fileName={draft.cvName} onFile={(f) => onUpload(f, 'cv')}
+            onRemove={() => up({ cvUploaded: false, cvPath: '', cvName: '' })}
             title="Upload your CV or résumé" hint="PDF preferred · max 5 MB" />
         </Field>
         <p className={s.fieldHelp}>Include education, work experience, research projects, and any relevant achievements.</p>
@@ -852,7 +859,8 @@ function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps
           </Field>
         </div>
         <Field label="Upload proficiency certificate" req error={errors.englishUploaded}>
-          <Dropzone uploaded={draft.englishUploaded} onFile={(f) => onUpload(f, 'english')}
+          <Dropzone uploaded={draft.englishUploaded} fileName={draft.englishCertName} onFile={(f) => onUpload(f, 'english')}
+            onRemove={() => up({ englishUploaded: false, englishCertPath: '', englishCertName: '' })}
             title="Drag and drop your file here" hint="PDF, JPG, or PNG · max 5 MB" />
         </Field>
       </div>
@@ -881,7 +889,8 @@ function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps
         </Field>
       </div>
       <Field label="Upload proficiency certificate" req error={errors.englishUploaded}>
-        <Dropzone uploaded={draft.englishUploaded} onFile={(f) => onUpload(f, 'english')}
+        <Dropzone uploaded={draft.englishUploaded} fileName={draft.englishCertName} onFile={(f) => onUpload(f, 'english')}
+          onRemove={() => up({ englishUploaded: false, englishCertPath: '', englishCertName: '' })}
           title="Drag and drop your file here" hint="PDF, JPG, or PNG · max 5 MB" />
       </Field>
       <div className={s.fieldRow2}>
@@ -890,7 +899,8 @@ function AcademicsSection({ draft, up, errors, onUpload, program }: SectionProps
             onChange={(e) => up({ satScore: e.target.value })} />
         </Field>
         <Field label="Upload score reports (optional)">
-          <Dropzone compact uploaded={draft.satUploaded} onFile={(f) => onUpload(f, 'sat')}
+          <Dropzone compact uploaded={draft.satUploaded} fileName={draft.satName} onFile={(f) => onUpload(f, 'sat')}
+            onRemove={() => up({ satUploaded: false, satReportPath: '', satName: '' })}
             title="Drag & drop files" hint="PDF, JPG, PNG · max 10 MB" />
         </Field>
       </div>
@@ -995,9 +1005,11 @@ function Field({ label, req, error, children }: { label: string; req?: boolean; 
   );
 }
 
-function Dropzone({ uploaded, onFile, title, hint, compact }: {
+function Dropzone({ uploaded, fileName, onFile, onRemove, title, hint, compact }: {
   uploaded: boolean;
+  fileName?: string;
   onFile: (file: File) => Promise<void>;
+  onRemove?: () => void;
   title: string;
   hint: string;
   compact?: boolean;
@@ -1006,35 +1018,64 @@ function Dropzone({ uploaded, onFile, title, hint, compact }: {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setErr(null);
+    setBusy(true);
+    try {
+      await onFile(file);
+    } catch {
+      setErr('Upload failed. Please sign in and try again.');
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  // Hidden input is rendered in BOTH states so "Replace" can re-open it.
+  const input = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept=".pdf,.jpg,.jpeg,.png"
+      style={{ display: 'none' }}
+      onChange={handleChange}
+    />
+  );
+
   if (uploaded) {
     return (
       <div className={s.uploaded}>
-        <FileCheck2 size={16} /> File uploaded · ready to submit
+        {input}
+        <span className={s.uploadedLabel}>
+          <FileCheck2 size={16} />
+          {busy ? (
+            'Uploading…'
+          ) : (
+            <span className={s.uploadedName} title={fileName || undefined}>
+              {fileName || 'File uploaded'}
+            </span>
+          )}
+        </span>
+        <span className={s.uploadedActions}>
+          <button type="button" className={s.uploadedAction} disabled={busy}
+            onClick={() => inputRef.current?.click()}>
+            Replace
+          </button>
+          {onRemove && (
+            <button type="button" className={`${s.uploadedAction} ${s.uploadedRemove}`} disabled={busy}
+              onClick={onRemove}>
+              Remove
+            </button>
+          )}
+        </span>
       </div>
     );
   }
   return (
     <div className={`${s.dropzone} ${compact ? s.dropzoneCompact : ''}`}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
-        style={{ display: 'none' }}
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          setErr(null);
-          setBusy(true);
-          try {
-            await onFile(file);
-          } catch {
-            setErr('Upload failed. Please sign in and try again.');
-          } finally {
-            setBusy(false);
-            if (inputRef.current) inputRef.current.value = '';
-          }
-        }}
-      />
+      {input}
       <Upload size={compact ? 16 : 20} style={{ marginBottom: 4 }} />
       <div className={s.dropTitle}>{title}</div>
       <div className={s.dropHint}>{err ?? hint}</div>
