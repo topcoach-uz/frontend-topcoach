@@ -75,14 +75,11 @@ export default function SigninForm() {
           api.instance.defaults.headers['Authorization'] =
             `Bearer ${access_token}`;
           
-          // Check for stored redirect URL
+          // Return to where the user came from, but never an auth page.
           const redirectUrl = localStorage.getItem('redirectAfterLogin');
-          if (redirectUrl) {
-            localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirectUrl;
-          } else {
-            window.location.href = '/';
-          }
+          localStorage.removeItem('redirectAfterLogin');
+          window.location.href =
+            redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';
         }
       })
       .catch((err: any) => {

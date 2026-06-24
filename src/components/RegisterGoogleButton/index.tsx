@@ -17,9 +17,12 @@ export default function RegisterGoogleButton({
       className={styles.google_button}
       icon={<GoogleIcon />}
       onClick={() => {
-        // Store current URL for redirect after Google auth
+        // Store where to return AFTER Google auth — but never an auth page,
+        // otherwise we'd bounce the user right back to /auth/signin and they'd
+        // have to sign in again. Auth pages → home ('/'), which routes by role.
         const currentUrl = window.location.pathname + window.location.search;
-        localStorage.setItem('redirectAfterLogin', currentUrl);
+        const safeRedirect = currentUrl.startsWith('/auth') ? '/' : currentUrl;
+        localStorage.setItem('redirectAfterLogin', safeRedirect);
         window.location.href = `${baseUrl}/auth/google`;
       }}
     >

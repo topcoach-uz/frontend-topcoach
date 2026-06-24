@@ -59,7 +59,9 @@ export default function GoogleAuthenticationPage() {
     if (!profileComplete) return;
     const redirectUrl = localStorage.getItem('redirectAfterLogin');
     localStorage.removeItem('redirectAfterLogin');
-    window.location.href = redirectUrl || '/';
+    // Never bounce back to an auth page — fall back to home ('/').
+    window.location.href =
+      redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';
   }, [profileComplete]);
 
   const [selected, setSelected] = useState<UserType>(UserRole.Student);
@@ -117,10 +119,10 @@ export default function GoogleAuthenticationPage() {
       dispatch(updateProfile({ profile: profileUpdate as any }))
         .unwrap()
         .then(() => {
-          // Check for stored redirect URL
+          // Return to where the user came from, but never an auth page.
           const redirectUrl = localStorage.getItem('redirectAfterLogin');
-          if (redirectUrl) {
-            localStorage.removeItem('redirectAfterLogin');
+          localStorage.removeItem('redirectAfterLogin');
+          if (redirectUrl && !redirectUrl.startsWith('/auth')) {
             window.location.href = redirectUrl;
           } else {
             navigate('/');
