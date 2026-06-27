@@ -33,7 +33,6 @@ interface Program {
   description: string;
   href: string;
   chips: Chip[];
-  statusLabel: string;
   statValue: string;
   statLabel: string;
 }
@@ -60,7 +59,6 @@ const PROGRAMS: Program[] = [
       { icon: <Rocket size={13} />, label: 'Standout project' },
       { icon: <Briefcase size={13} />, label: 'Internship' },
     ],
-    statusLabel: 'Now · 2026 intake open',
     statValue: '24+',
     statLabel: 'hours of 1:1 mentorship',
   },
@@ -71,7 +69,7 @@ const PROGRAMS: Program[] = [
     flag: 'Early Start',
     duration: '6 months',
     eyebrow: 'Early Admissions · Grade 8–9',
-    title: 'International Admissions Prep',
+    title: 'Admissions Program',
     description:
       'A two-phase head start for Grade 8–9 students — explore global universities, then build a university-ready portfolio project.',
     href: '/programs/admissions',
@@ -80,7 +78,6 @@ const PROGRAMS: Program[] = [
       { icon: <CircleDollarSign size={13} />, label: 'Sponsored SAT' },
       { icon: <GitBranch size={13} />, label: '3 pathways' },
     ],
-    statusLabel: 'New · 2026 intake open',
     statValue: '2–3 yrs',
     statLabel: 'profile head start',
   },
@@ -100,7 +97,6 @@ const PROGRAMS: Program[] = [
       { icon: <Layers size={13} />, label: '3 phases' },
       { icon: <FileText size={13} />, label: 'Final paper' },
     ],
-    statusLabel: 'New · 2026 intake open',
     statValue: '1',
     statLabel: 'completed research paper',
   },
@@ -167,11 +163,6 @@ const ProgramsLanding: React.FC = () => {
                       {chip.label}
                     </span>
                   ))}
-                </div>
-
-                <div className={styles.status}>
-                  <span className={styles.statusDot} />
-                  {program.statusLabel}
                 </div>
 
                 <div className={styles.cardFooter}>
