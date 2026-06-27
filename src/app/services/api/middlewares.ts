@@ -85,15 +85,22 @@ export const rtkQueryErrorLogger: Middleware =
           return next(action);
         }
 
-        // Only show session expired messages for authenticated requests, not login attempts
-        const isLoginAttempt = originalRequestEndpoint && (
-          originalRequestEndpoint.includes('/auth/login') ||
-          originalRequestEndpoint.includes('/auth/exchange') ||
-          originalRequestEndpoint.includes('/auth/reset/password') ||
-          originalRequestEndpoint.includes('/auth/reset/password/confirm')
-        );
+        // A 401 from ANY auth endpoint is part of the sign-in handshake
+        // (wrong password, Google short-code exchange, register, reset) — it
+        // must never trigger a global logout/redirect. `/auth/` covers
+        // `/auth/google/exchange-by-code`, which previously slipped through.
+        const isLoginAttempt =
+          !!originalRequestEndpoint &&
+          originalRequestEndpoint.includes('/auth/');
 
-        if (!isLoginAttempt && originalRequestEndpoint) {
+        // Never bounce the user while they're ON an /auth/* page either — a
+        // transient `users/me` 401 during the Google callback would otherwise
+        // throw a new user straight back to the login page.
+        const onAuthPage =
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/auth');
+
+        if (!isLoginAttempt && !onAuthPage && originalRequestEndpoint) {
           const now = Date.now();
           if (now - last401ToastTime > TOAST_DEBOUNCE_MS) {
             last401ToastTime = now;

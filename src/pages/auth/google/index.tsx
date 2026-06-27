@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -28,6 +28,7 @@ export default function GoogleAuthenticationPage() {
   const shortCode = searchParams.get('c') || '';
   const exchangeToken = searchParams.get('exchangeToken') || '';
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
+  const exchangedRef = useRef(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   // const [showPhoneModal, setShowPhoneModal] = useState(false);
@@ -72,7 +73,18 @@ export default function GoogleAuthenticationPage() {
 
   useEffect(() => {
     const code = shortCode || exchangeToken;
-    if (!code) return;
+    // No auth code present — this page is meaningless without one; send the
+    // user to sign-in rather than hanging on a loader.
+    if (!code) {
+      navigate('/auth/signin', { replace: true });
+      return;
+    }
+
+    // The short code is SINGLE-USE — guard so we exchange it exactly once
+    // (React's dev double-invoke, or any re-render, would otherwise reuse a
+    // spent code and 401).
+    if (exchangedRef.current) return;
+    exchangedRef.current = true;
 
     const exchange = shortCode
       ? api.instance.post<{ access: string; refresh: string }>('/auth/google/exchange-by-code', { code: shortCode })
@@ -89,9 +101,12 @@ export default function GoogleAuthenticationPage() {
         setExchangeSuccess(true);
       })
       .catch((err: any) => {
-        message.error(err?.response?.data?.message ?? 'Login failed', 10);
+        // Genuine exchange failure (expired / already-used code) — don't hang
+        // on the loader; send the user back to retry sign-in.
+        message.error(err?.response?.data?.message ?? 'Sign-in link expired. Please try again.', 8);
+        navigate('/auth/signin', { replace: true });
       });
-  }, [shortCode, exchangeToken]);
+  }, [shortCode, exchangeToken, navigate]);
 
   const handleSubmit = async () => {
     if (selected === UserRole.Mentor) {
