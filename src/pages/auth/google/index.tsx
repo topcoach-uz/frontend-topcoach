@@ -21,6 +21,12 @@ import { useTranslation } from 'react-i18next';
 // Define a partial type for profile updates
 type PartialProfileUpdate = Partial<Pick<ProfilesSchema, 'profileComplete' | 'role'>>;
 
+// Module-level guard: short codes already exchanged during this page load.
+// Survives component remounts (a ref would not), so even if the page is
+// remounted mid-flow the single-use code is never POSTed twice (a second
+// exchange of a spent code 401s and bounces the user to login).
+const exchangedCodes = new Set<string>();
+
 export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -73,18 +79,32 @@ export default function GoogleAuthenticationPage() {
 
   useEffect(() => {
     const code = shortCode || exchangeToken;
-    // No auth code present — this page is meaningless without one; send the
-    // user to sign-in rather than hanging on a loader.
     if (!code) {
-      navigate('/auth/signin', { replace: true });
+      // No code in the URL. If we already hold a session, just continue;
+      // otherwise there's nothing to exchange here — go to sign-in.
+      if (localStorage.getItem(ACCESS_TOKEN)) setExchangeSuccess(true);
+      else navigate('/auth/signin', { replace: true });
       return;
     }
 
-    // The short code is SINGLE-USE — guard so we exchange it exactly once
-    // (React's dev double-invoke, or any re-render, would otherwise reuse a
-    // spent code and 401).
-    if (exchangedRef.current) return;
+    // The short code is SINGLE-USE on the backend. Guard against exchanging it
+    // more than once — within this mount (ref), across remounts in this page
+    // load (module Set), and across a full reload/back-nav (sessionStorage).
+    // A second exchange of a spent code 401s and bounces the user to login.
+    const consumedKey = `google_exchanged:${code}`;
+    const alreadyExchanged =
+      exchangedRef.current ||
+      exchangedCodes.has(code) ||
+      !!sessionStorage.getItem(consumedKey);
+
+    if (alreadyExchanged) {
+      // Tokens were already stored by the first exchange — just proceed to
+      // load the profile instead of re-POSTing the spent code.
+      if (localStorage.getItem(ACCESS_TOKEN)) setExchangeSuccess(true);
+      return;
+    }
     exchangedRef.current = true;
+    exchangedCodes.add(code);
 
     const exchange = shortCode
       ? api.instance.post<{ access: string; refresh: string }>('/auth/google/exchange-by-code', { code: shortCode })
@@ -93,6 +113,7 @@ export default function GoogleAuthenticationPage() {
     exchange
       .then((res: any) => {
         const data = res.data;
+        sessionStorage.setItem(consumedKey, '1');
         // Store tokens BEFORE flipping exchangeSuccess so the getMe fetch
         // that follows authenticates as the new user (not the old session).
         localStorage.setItem(ACCESS_TOKEN, data.access);
@@ -101,8 +122,14 @@ export default function GoogleAuthenticationPage() {
         setExchangeSuccess(true);
       })
       .catch((err: any) => {
-        // Genuine exchange failure (expired / already-used code) — don't hang
-        // on the loader; send the user back to retry sign-in.
+        // If a session was already stored (e.g. a prior in-flight exchange this
+        // round), don't bounce — proceed with it.
+        if (localStorage.getItem(ACCESS_TOKEN)) {
+          setExchangeSuccess(true);
+          return;
+        }
+        // Genuine failure (expired / already-used code) — don't hang on the
+        // loader; send the user back to retry sign-in.
         message.error(err?.response?.data?.message ?? 'Sign-in link expired. Please try again.', 8);
         navigate('/auth/signin', { replace: true });
       });

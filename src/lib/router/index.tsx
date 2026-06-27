@@ -226,8 +226,18 @@ function RouterProvider() {
   // full-screen loader instead of letting each route/layout/gate render its
   // own. Once resolved, everything below renders straight from cache — no
   // chained spinners.
+  // NEVER apply this gate on /auth/* pages. The Google callback flips
+  // isAuthenticated mid-flow (right after the token exchange); if the gate
+  // fired it would UNMOUNT the callback page and remount it once getMe
+  // resolved — re-running the single-use short-code exchange → 401 → the user
+  // gets bounced back to login. Auth pages own their own loading UI.
+  const onAuthPage =
+    typeof window !== 'undefined' &&
+    window.location.pathname.startsWith('/auth');
+
   if (
     isAuthenticated &&
+    !onAuthPage &&
     ((profileLoading && !userData) || (orgsLoading && !orgsData))
   ) {
     return <Loader height="100vh" />;
