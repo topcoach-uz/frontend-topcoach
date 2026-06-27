@@ -1,254 +1,266 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Typography, Collapse } from 'antd';
-import { ArrowRight, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  ChevronDown,
+  GraduationCap,
+  Trophy,
+  Rocket,
+} from 'lucide-react';
 import './IntensiveMentorshipProgram.scss';
 
-const { Title, Paragraph, Text } = Typography;
+const APPLY_URL = 'https://forms.gle/qTLqfZ9YcvZDqzx1A';
 
 interface Phase {
-  id: number;
+  index: string;
+  weeks: string;
   title: string;
-  duration: string;
-  points: string[];
+  items: string[];
 }
 
+interface Faq {
+  q: string;
+  a: string;
+}
+
+const WHO_ITS_FOR = [
+  { icon: <GraduationCap size={18} />, text: 'Students applying for the class of 2031.' },
+  { icon: <Trophy size={18} />, text: 'Serious about admission to top-tier universities.' },
+  { icon: <Rocket size={18} />, text: 'Ready to get ahead and build a profile early.' },
+];
+
+const PHASES: Phase[] = [
+  {
+    index: '1',
+    weeks: 'Months 1–4',
+    title: 'The Foundation & SAT Spike',
+    items: [
+      'Intensive SAT prep and early testing',
+      '16+ hours of extracurricular & profile building',
+      'Strategic summer program applications',
+      'Foundation for academic excellence',
+    ],
+  },
+  {
+    index: '2',
+    weeks: 'Months 4–6',
+    title: 'The Project',
+    items: [
+      'Specialized track selection',
+      'Research paper or startup mentorship',
+      'Build your standout project',
+      'Develop deep academic interest',
+    ],
+  },
+  {
+    index: '3',
+    weeks: 'Months 6–8',
+    title: 'The Professional Summer',
+    items: [
+      'Personal statement completion',
+      'Multiple refinement rounds',
+      'Corporate internship placement',
+      'Professional recommendation letters',
+    ],
+  },
+  {
+    index: '4',
+    weeks: 'Months 9–12',
+    title: 'Application Season',
+    items: [
+      'Finalize strategic college list',
+      'Complete all application essays',
+      '24+ hours of personalized mentorship',
+      'Final review and submission',
+    ],
+  },
+];
+
+const FAQS: Faq[] = [
+  {
+    q: 'Who is this program designed for?',
+    a: 'This program is designed for students applying for class of 2031 who are serious about securing admission to top-tier universities and want to get ahead early.',
+  },
+  {
+    q: 'What makes this program different?',
+    a: 'We start early, include a corporate internship, and focus on building a “spike” — deep expertise in one area rather than shallow participation — across a single 12-month, mentor-led roadmap.',
+  },
+  {
+    q: 'Are internships included?',
+    a: 'Yes. We have secured contracts with partner organizations, and every student is placed in a professional internship during the Professional Summer phase.',
+  },
+  {
+    q: 'What support is provided after the program?',
+    a: 'Our mentors remain available during the admissions decision period and provide guidance on next steps after you submit.',
+  },
+];
+
 const IntensiveMentorshipProgram: React.FC = () => {
-  const [completedPhases, setCompletedPhases] = useState<Set<number>>(new Set());
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const phaseRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const navigate = useNavigate();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!timelineRef.current) return;
-
-      const timelineTop = timelineRef.current.offsetTop;
-      const timelineHeight = timelineRef.current.offsetHeight;
-      const windowHeight = window.innerHeight;
-      const scrollY = window.scrollY;
-
-      // Calculate scroll progress through timeline (0 to 1)
-      const timelineStart = timelineTop - windowHeight * 0.5;
-      const timelineEnd = timelineTop + timelineHeight - windowHeight * 0.5;
-      const progress = Math.max(0, Math.min(1, (scrollY - timelineStart) / Math.max(1, timelineEnd - timelineStart)));
-      setScrollProgress(progress);
-
-      // Check which phases are visible/completed
-      const newCompleted = new Set<number>();
-      
-      phaseRefs.current.forEach((ref, index) => {
-        if (!ref) return;
-        
-        const rect = ref.getBoundingClientRect();
-        const viewportMiddle = windowHeight * 0.6; // Trigger slightly earlier for better UX
-        
-        // Phase is "completed" if it has passed 60% of viewport height
-        // Also mark as completed if it's fully visible
-        if (rect.top < viewportMiddle) {
-          newCompleted.add(index + 1);
-        }
-      });
-
-      setCompletedPhases(newCompleted);
-    };
-
-    // Use requestAnimationFrame for smoother performance
-    let ticking = false;
-    const optimizedScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', optimizedScroll, { passive: true });
-    handleScroll(); // Initial check
-
-    return () => window.removeEventListener('scroll', optimizedScroll);
+    document.title = 'Full Support Mentorship - Top Coach';
   }, []);
 
-  const phases: Phase[] = [
-    {
-      id: 1,
-      title: 'The Foundation & SAT Spike',
-      duration: 'Months 1-4',
-      points: [
-        'Intensive SAT prep and early testing',
-        '16+ hours of extracurricular & profile building',
-        'Strategic summer program applications',
-        'Foundation for academic excellence'
-      ]
-    },
-    {
-      id: 2,
-      title: 'The Project',
-      duration: 'Months 4-5',
-      points: [
-        'Specialized track selection',
-        'Research paper or startup mentorship',
-        'Build your standout project',
-        'Develop deep academic interest'
-      ]
-    },
-    {
-      id: 3,
-      title: 'The Professional Summer',
-      duration: 'Months 6-8',
-      points: [
-        'Personal statement completion',
-        'Multiple refinement rounds',
-        'Corporate internship placement',
-        'Professional recommendation letters'
-      ]
-    },
-    {
-      id: 4,
-      title: 'Application Season',
-      duration: 'Months 9-12',
-      points: [
-        'Finalize strategic college list',
-        'Complete all application essays',
-        '24+ hours of personalized mentorship',
-        'Final review and submission'
-      ]
-    }
-  ];
-
-  const faqItems = [
-    {
-      key: '1',
-      label: 'Who is this program designed for?',
-      children: 'This program is designed for students applying for class of 2031 who are serious about securing admission to top-tier universities and want to get ahead early.'
-    },
-    {
-      key: '2',
-      label: 'What makes this program different?',
-      children: 'We start early, include corporate internship, and focus on building a "spike" - deep expertise in one area rather than shallow participation.'
-    },
-    {
-      key: '4',
-      label: 'Are internships included?',
-      children: 'Yes, we have secured contracts with partner organizations. All students will be placed in professional internships during Phase 3.'
-    },
-    {
-      key: '5',
-      label: 'What support is provided after the program?',
-      children: 'Our mentors remain available during the admissions decision period and provide guidance on next steps.'
-    }
-  ];
+  const handleApply = () => window.open(APPLY_URL, '_blank');
 
   return (
-    <div className="intensive-program">
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero__container">
-          <div className="hero__badge">
-            <Calendar size={16} />
-            <span>12-Month Program</span>
-          </div>
-          
-          <Title level={1} className="hero__title">
-            12-Month Intensive<br />
-            <span>Full Support Mentorship Program</span>
-          </Title>
-          
-          <Paragraph className="hero__description">
-            A personalized strategic roadmap for students applying for class of 2031.<br />
-            From SAT prep to application submission, we guide every step.
-          </Paragraph>
+    <main className="fs">
+      <div className="fs__container">
+        <button type="button" className="fs__back" onClick={() => navigate('/programs')}>
+          ← All programs <span>/ Full Support Mentorship</span>
+        </button>
 
-          <Button 
-            type="primary" 
-            size="large"
-            className="hero__cta"
-            onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
-          >
-            Apply Now <ArrowRight size={16} />
-          </Button>
-        </div>
-      </section>
+        {/* Hero */}
+        <section className="fs__hero">
+          <div className="fs__heroGrid" />
+          <span className="fs__heroStatus">
+            <span className="fs__heroDot" />
+            New · 2026 intake open
+          </span>
+          <div className="fs__heroInner">
+            <div className="fs__heroCopy">
+              <span className="fs__heroEdition">Vol. 04 / 01 · Flagship</span>
+              <span className="fs__heroKicker">12-month intensive · Class of 2031</span>
+              <h1 className="fs__heroTitle">
+                Full Support <em>Mentorship.</em>
+              </h1>
+              <p className="fs__heroLede">
+                A personalized strategic roadmap for students applying for the
+                class of 2031. From SAT prep to application submission, we guide
+                every step.
+              </p>
+              <div className="fs__heroActions">
+                <button type="button" className="fs__btn fs__btn--solid" onClick={handleApply}>
+                  Apply Now <ArrowRight size={16} />
+                </button>
+                <button type="button" className="fs__btn fs__btn--ghost">
+                  Download syllabus
+                </button>
+              </div>
+            </div>
 
-      {/* Timeline Section */}
-      <section className="timeline" ref={timelineRef}>
-        <div className="timeline__header">
-          <Title level={2}>Program Phases</Title>
-          <Paragraph>Your 12-month journey to top universities</Paragraph>
-        </div>
-
-        <div className="timeline__content">
-          <div 
-            className="timeline__line" 
-            style={{ 
-              background: `linear-gradient(180deg, var(--primary) 0%, var(--primary) ${scrollProgress * 100}%, #e0e0e0 ${scrollProgress * 100}%, #e0e0e0 100%)`
-            }}
-          />
-          <div className="timeline__line-mobile" 
-            style={{ 
-              background: `linear-gradient(180deg, var(--primary) 0%, var(--primary) ${scrollProgress * 100}%, #e0e0e0 ${scrollProgress * 100}%, #e0e0e0 100%)`
-            }}
-          />
-          
-          {phases.map((phase, index) => {
-            const isCompleted = completedPhases.has(phase.id);
-            return (
-              <div 
-                key={phase.id} 
-                ref={(el) => { phaseRefs.current[index] = el; }}
-                className={`timeline__item ${index % 2 === 0 ? 'timeline__item--left' : 'timeline__item--right'} ${isCompleted ? 'timeline__item--completed' : ''}`}
-              >
-                <div className={`timeline__marker ${isCompleted ? 'timeline__marker--completed' : ''}`}>
-                  <span>{phase.id}</span>
+            <div className="fs__glance">
+              <span className="fs__glanceTag">At a glance</span>
+              <div className="fs__glanceItems">
+                <div className="fs__glanceItem">
+                  <strong>12</strong>
+                  <span>months, four phases</span>
                 </div>
-              
-                <div className="timeline__card">
-                  <div className="timeline__card-header">
-                    <Text className="timeline__duration">{phase.duration}</Text>
-                    <Title level={4} className="timeline__card-title">{phase.title}</Title>
-                  </div>
-                  <ul className="timeline__points">
-                    {phase.points.map((point, idx) => (
-                      <li key={idx}>{point}</li>
-                    ))}
-                  </ul>
+                <div className="fs__glanceItem">
+                  <strong>24+</strong>
+                  <span>hrs of 1:1 mentorship</span>
+                </div>
+                <div className="fs__glanceItem">
+                  <strong>16+</strong>
+                  <span>hrs profile building</span>
+                </div>
+                <div className="fs__glanceItem">
+                  <strong>1</strong>
+                  <span>corporate internship</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </section>
+            </div>
+          </div>
+        </section>
 
-      {/* CTA Section */}
-      <section className="cta">
-        <div className="cta__container">
-          <Title level={2}>Ready to Start?</Title>
-          <Paragraph>
-            Take the first step toward your dream university
-          </Paragraph>
-          <Button 
-            type="primary" 
-            size="large"
-            onClick={() => window.open('https://forms.gle/qTLqfZ9YcvZDqzx1A', '_blank')}
-          >
-            Apply Now <ArrowRight size={16} />
-          </Button>
-        </div>
-      </section>
+        {/* Who it's for */}
+        <section className="fs__section">
+          <span className="fs__sectionTag">§ 01 — Who it’s for</span>
+          <h2 className="fs__sectionTitle">For the student who starts early.</h2>
+          <div className="fs__whoGrid">
+            {WHO_ITS_FOR.map((w) => (
+              <div key={w.text} className="fs__whoCard">
+                <span className="fs__whoIcon">{w.icon}</span>
+                <p>{w.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* FAQ Section */}
-      <section className="faq">
-        <div className="faq__container">
-          <Title level={2}>Frequently Asked Questions</Title>
-          <Collapse 
-            items={faqItems}
-            expandIconPosition="end"
-            className="faq__collapse"
-          />
-        </div>
-      </section>
-    </div>
+        {/* Program phases */}
+        <section className="fs__section">
+          <div className="fs__sectionHead">
+            <div>
+              <span className="fs__sectionTag">§ 02 — Program phases</span>
+              <h2 className="fs__sectionTitle">
+                Your 12-month journey <em>to top universities.</em>
+              </h2>
+            </div>
+            <p className="fs__sectionAside">
+              Four phases, each building on the last — from SAT spike to submitted
+              application.
+            </p>
+          </div>
+
+          <div className="fs__phaseGrid">
+            {PHASES.map((phase) => (
+              <div key={phase.index} className="fs__phase">
+                <div className="fs__phaseHeader">
+                  <div className="fs__phaseHead">
+                    <span className="fs__phaseNum">{phase.index}</span>
+                    <h3 className="fs__phaseTitle">{phase.title}</h3>
+                  </div>
+                  <span className="fs__phaseWeeks">{phase.weeks}</span>
+                </div>
+                <ul className="fs__phaseList">
+                  {phase.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="fs__section">
+          <span className="fs__sectionTag">§ 03 — Frequently asked</span>
+          <h2 className="fs__sectionTitle">What students ask before they apply.</h2>
+          <div className="fs__faq">
+            {FAQS.map((faq, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={faq.q} className={`fs__faqItem ${open ? 'is-open' : ''}`}>
+                  <button
+                    type="button"
+                    className="fs__faqQ"
+                    onClick={() => setOpenFaq(open ? null : i)}
+                  >
+                    <span className="fs__faqNum">{String(i + 1).padStart(2, '0')}</span>
+                    {faq.q}
+                    <ChevronDown size={18} className="fs__faqChevron" />
+                  </button>
+                  {open && <p className="fs__faqA">{faq.a}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Closing CTA */}
+        <section className="fs__finalCta">
+          <span className="fs__finalKicker">Ready to begin</span>
+          <h2 className="fs__finalTitle">
+            Take the first step toward <em>your dream university.</em>
+          </h2>
+          <div className="fs__heroActions">
+            <button type="button" className="fs__btn fs__btn--solid" onClick={handleApply}>
+              Apply Now <ArrowRight size={16} />
+            </button>
+            <button
+              type="button"
+              className="fs__btn fs__btn--ghostLight"
+              onClick={handleApply}
+            >
+              Talk to admissions
+            </button>
+          </div>
+          <span className="fs__finalDomain">2026 intake now open</span>
+        </section>
+      </div>
+    </main>
   );
 };
 

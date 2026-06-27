@@ -127,6 +127,7 @@ const ProgramsPageLazy = lazy(() => import("src/pages/programs"));
 const ProgramsFullSupportPageLazy = lazy(() => import("src/pages/programs/IntensiveMentorshipProgram"));
 const ProgramsAdmissionsPageLazy = lazy(() => import("src/pages/programs/admissions"));
 const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
+const ProgramsResearchPageLazy = lazy(() => import("src/pages/programs/research"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
@@ -445,6 +446,7 @@ function RouterProvider() {
               <Route path="/programs/full-support" element={<ProgramsFullSupportPageLazy />} />
               <Route path="/programs/admissions" element={<ProgramsAdmissionsPageLazy />} />
               <Route path="/programs/sat" element={<ProgramsSatPageLazy />} />
+              <Route path="/programs/research" element={<ProgramsResearchPageLazy />} />
               <Route 
                 path="/learning" 
                 element={
