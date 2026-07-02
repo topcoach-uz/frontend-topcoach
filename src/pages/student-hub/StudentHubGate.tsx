@@ -8,10 +8,10 @@
  */
 
 import { Navigate } from 'react-router-dom';
-import { Spin } from 'antd';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext';
+import { PageLoader } from 'src/components/loading';
 import StudentHubRoutes from './StudentHubRoutes';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
@@ -35,11 +35,10 @@ export default function StudentHubGate() {
   }
 
   if (profileLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Spin size="large" />
-      </div>
-    );
+    // Same full-screen PageLoader as HomeRouter and StudentHubLayout so the
+    // login → hub transition looks like one continuous loader, not several
+    // different spinners flashing in sequence.
+    return <PageLoader text="Loading..." />;
   }
 
   if (email === SUPER_ADMIN_EMAIL) {
@@ -55,11 +54,7 @@ export default function StudentHubGate() {
   }
 
   if (counselorLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <Spin size="large" />
-      </div>
-    );
+    return <PageLoader text="Loading..." />;
   }
 
   if (isCounselor) {

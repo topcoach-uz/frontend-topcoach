@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Layout, Menu, Button, Drawer, Spin } from 'antd';
+import { Layout, Menu, Button, Drawer } from 'antd';
+import { PageLoader } from 'src/components/loading';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
@@ -348,12 +349,10 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
           {!isSatPrep && <StudyGoalsStickyBanner />}
           <div className={isSatPrep ? 'main-content-flush' : 'main-content-padded'}>
             {isLoading && location.pathname === '/student-hub' ? (
-              <div className="student-hub-loading-content">
-                <div className="loading-spinner-container">
-                  <Spin size="large" />
-                  <p>Loading your dashboard...</p>
-                </div>
-              </div>
+              // Same full-screen PageLoader (identical text) as HomeRouter and
+              // StudentHubGate, so the login → hub load reads as one continuous
+              // loader instead of a third, differently-styled spinner.
+              <PageLoader text="Loading..." />
             ) : (
               children
             )}

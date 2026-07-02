@@ -233,8 +233,15 @@ export default function CommunityHubMockPage() {
   const [adHocLockVariant, setAdHocLockVariant] = useState<CommunityLockVariant | null>(null);
   const [messagesConversationId, setMessagesConversationId] = useState<string | null>(null);
   const [messagesThreadId, setMessagesThreadId] = useState<string | null>(null);
+  // Must match the `activeSection` initializer above exactly: only
+  // feed-allowed users (SuperAdmin + Phase-1 allowlist) default to `feed`.
+  // Otherwise an enrolled non-allowed student was redirected to
+  // ?section=feed — a section that renders nothing for them (see the
+  // `isFeedAllowed` gate on the feed view) — after a visible
+  // my-learning → feed flash. Landing them on my-learning (their
+  // initial activeSection) makes the redirect a no-op for the content.
   const defaultHubSectionPath = isCommunityEnrolled
-    ? ENABLE_COMMUNITY_FEED
+    ? ENABLE_COMMUNITY_FEED && isFeedPhase1Allowed(profile)
       ? '/student-hub?section=feed'
       : '/student-hub?section=my-learning'
     : '/student-hub?section=dashboard';
