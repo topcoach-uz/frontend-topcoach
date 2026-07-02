@@ -1,7 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
-import { useTypedSelector } from 'src/app/store';
 import Footer from '../components/footer';
 import Header from '../components/header';
 import MentorPrefetch from 'src/components/MentorPrefetch';
@@ -11,11 +9,9 @@ import styles from './main.module.scss';
 import 'src/lib/dayjs';
 
 function Main() {
-  // Scroll to top when route changes
-  const { profile, isAuthenticated } = useTypedSelector((state) => state.auth);
-  useGetMeQuery(undefined, {
-    skip: !!profile?.id || !isAuthenticated,
-  });
+  // NOTE: the signed-in profile (getMe) is fetched ONCE at the app root
+  // (RouterProvider) behind a single bootstrap loader, so this layout no
+  // longer fetches it — that previously caused a second stacked spinner.
 
   // Prefetch mentor data for instant loading on mentors page
   useGetMentorsQuery(undefined, {

@@ -8,10 +8,10 @@
  */
 
 import { Navigate } from 'react-router-dom';
+import Loader from 'src/components/loader';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext';
-import { PageLoader } from 'src/components/loading';
 import StudentHubRoutes from './StudentHubRoutes';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
@@ -35,10 +35,9 @@ export default function StudentHubGate() {
   }
 
   if (profileLoading) {
-    // Same full-screen PageLoader as HomeRouter and StudentHubLayout so the
-    // login → hub transition looks like one continuous loader, not several
-    // different spinners flashing in sequence.
-    return <PageLoader text="Loading..." />;
+    return (
+      <Loader height="100vh" />
+    );
   }
 
   if (email === SUPER_ADMIN_EMAIL) {
@@ -54,7 +53,9 @@ export default function StudentHubGate() {
   }
 
   if (counselorLoading) {
-    return <PageLoader text="Loading..." />;
+    return (
+      <Loader height="100vh" />
+    );
   }
 
   if (isCounselor) {

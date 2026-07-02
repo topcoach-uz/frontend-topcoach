@@ -61,10 +61,29 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const urlList = ['/auth/login', '/auth/exchange', '/auth/reset/password', '/auth/reset/password/confirm', '/auth/verify/email'];
+// Any of these endpoints returning 401 must NOT trigger a global
+// logout/redirect — they're part of the auth handshake itself (wrong
+// password, short-code exchange, Google callback, register) and are handled
+// by the calling page. `/auth/google` covers `/auth/google/exchange-by-code`
+// and `/auth/google/callback`, which previously slipped past `/auth/exchange`
+// and bounced users back to the login page mid-sign-in.
+const urlList = [
+  '/auth/login',
+  '/auth/exchange',
+  '/auth/google',
+  '/auth/register',
+  '/auth/reset/password',
+  '/auth/reset/password/confirm',
+  '/auth/verify/email',
+];
 
 const isAuthUrl = (url: string) =>
   urlList.some((path) => (url || '').includes(path));
+
+/** True while the user is on any /auth/* page (sign-in, sign-up, Google). */
+const onAuthPage = () =>
+  typeof window !== 'undefined' &&
+  window.location.pathname.startsWith('/auth');
 
 // Deduplicate error toasts to prevent "infinite" stacked messages
 let lastErrorToast = '';
@@ -125,11 +144,15 @@ axiosInstance.interceptors.response.use(
 
 // Modify refreshToken to accept the original URL
 export const refreshToken = async (originalUrl?: string, error?: Error) => {
-  // Only logout if the original request was not for a session endpoint
+  // Only logout if the original request was not for a session endpoint,
+  // and NEVER while the user is on an /auth/* page — a 401 during sign-in /
+  // Google callback must not bounce them back to the login page.
   if (
     originalUrl &&
     !originalUrl.startsWith('/sessions') &&
-    !originalUrl.startsWith('/camps')
+    !originalUrl.startsWith('/camps') &&
+    !isAuthUrl(originalUrl) &&
+    !onAuthPage()
   ) {
     setTimeout(() => store.dispatch(logout()), 2000);
   }

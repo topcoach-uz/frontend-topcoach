@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -11,11 +11,7 @@ import TitleDescriptionPair from '../signin/_components/title_description_pair';
 import RoleCard from '../signup/_components/role_card';
 import styles from './AuthGoogle.module.scss';
 import { useAppDispatch } from 'src/app/store';
-import {
-  loginCheck,
-  setProfile,
-  updateProfile,
-} from 'src/app/slices/authSlice';
+import { loginCheck, updateProfile } from 'src/app/slices/authSlice';
 import { UserRole, ProfilesSchema } from 'src/app/api/Api';
 import { UserType } from 'src/app/type';
 import { message } from 'antd';
@@ -25,6 +21,12 @@ import { useTranslation } from 'react-i18next';
 // Define a partial type for profile updates
 type PartialProfileUpdate = Partial<Pick<ProfilesSchema, 'profileComplete' | 'role'>>;
 
+// Module-level guard: short codes already exchanged during this page load.
+// Survives component remounts (a ref would not), so even if the page is
+// remounted mid-flow the single-use code is never POSTed twice (a second
+// exchange of a spent code 401s and bounces the user to login).
+const exchangedCodes = new Set<string>();
+
 export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -32,18 +34,20 @@ export default function GoogleAuthenticationPage() {
   const shortCode = searchParams.get('c') || '';
   const exchangeToken = searchParams.get('exchangeToken') || '';
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
+  const exchangedRef = useRef(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   // const [showPhoneModal, setShowPhoneModal] = useState(false);
   // const [pendingPhone, setPendingPhone] = useState<string>('');
 
-  const { data, isLoading, refetch } = useGetMeQuery(undefined, {
+  const { data, isLoading, isFetching, refetch } = useGetMeQuery(undefined, {
     skip: !exchangeSuccess,
+    refetchOnMountOrArgChange: true,
   });
 
-  if (data?.id) {
-    dispatch(loginCheck());
-  }
+  // True only once a FRESH profile for the just-exchanged token has arrived.
+  const profileReady = exchangeSuccess && !isLoading && !isFetching && !!data;
+  const profileComplete = profileReady && !!data?.profile?.profileComplete;
 
   useEffect(() => {
     if (exchangeSuccess) {
@@ -51,16 +55,21 @@ export default function GoogleAuthenticationPage() {
     }
   }, [exchangeSuccess]);
 
-  if (data?.profile.profileComplete) {
-    // Check for stored redirect URL
+  useEffect(() => {
+    if (data?.id) dispatch(loginCheck());
+  }, [data?.id, dispatch]);
+
+  // Only redirect away from the role picker once we KNOW (from fresh data)
+  // the profile is already complete — never on a stale cached profile, which
+  // would skip the picker and leave a new mentor stuck as the default student.
+  useEffect(() => {
+    if (!profileComplete) return;
     const redirectUrl = localStorage.getItem('redirectAfterLogin');
-    if (redirectUrl) {
-      localStorage.removeItem('redirectAfterLogin');
-      window.location.href = redirectUrl;
-    } else {
-      window.location.href = '/';
-    }
-  }
+    localStorage.removeItem('redirectAfterLogin');
+    // Never bounce back to an auth page — fall back to home ('/').
+    window.location.href =
+      redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';
+  }, [profileComplete]);
 
   const [selected, setSelected] = useState<UserType>(UserRole.Student);
 
@@ -70,7 +79,32 @@ export default function GoogleAuthenticationPage() {
 
   useEffect(() => {
     const code = shortCode || exchangeToken;
-    if (!code) return;
+    if (!code) {
+      // No code in the URL. If we already hold a session, just continue;
+      // otherwise there's nothing to exchange here — go to sign-in.
+      if (localStorage.getItem(ACCESS_TOKEN)) setExchangeSuccess(true);
+      else navigate('/auth/signin', { replace: true });
+      return;
+    }
+
+    // The short code is SINGLE-USE on the backend. Guard against exchanging it
+    // more than once — within this mount (ref), across remounts in this page
+    // load (module Set), and across a full reload/back-nav (sessionStorage).
+    // A second exchange of a spent code 401s and bounces the user to login.
+    const consumedKey = `google_exchanged:${code}`;
+    const alreadyExchanged =
+      exchangedRef.current ||
+      exchangedCodes.has(code) ||
+      !!sessionStorage.getItem(consumedKey);
+
+    if (alreadyExchanged) {
+      // Tokens were already stored by the first exchange — just proceed to
+      // load the profile instead of re-POSTing the spent code.
+      if (localStorage.getItem(ACCESS_TOKEN)) setExchangeSuccess(true);
+      return;
+    }
+    exchangedRef.current = true;
+    exchangedCodes.add(code);
 
     const exchange = shortCode
       ? api.instance.post<{ access: string; refresh: string }>('/auth/google/exchange-by-code', { code: shortCode })
@@ -79,22 +113,33 @@ export default function GoogleAuthenticationPage() {
     exchange
       .then((res: any) => {
         const data = res.data;
-        setExchangeSuccess(true);
+        sessionStorage.setItem(consumedKey, '1');
+        // Store tokens BEFORE flipping exchangeSuccess so the getMe fetch
+        // that follows authenticates as the new user (not the old session).
         localStorage.setItem(ACCESS_TOKEN, data.access);
         localStorage.setItem(REFRESH_TOKEN, data.refresh);
         api.instance.defaults.headers['Authorization'] = `Bearer ${data.access}`;
+        setExchangeSuccess(true);
       })
       .catch((err: any) => {
-        message.error(err?.response?.data?.message ?? 'Login failed', 10);
+        // If a session was already stored (e.g. a prior in-flight exchange this
+        // round), don't bounce — proceed with it.
+        if (localStorage.getItem(ACCESS_TOKEN)) {
+          setExchangeSuccess(true);
+          return;
+        }
+        // Genuine failure (expired / already-used code) — don't hang on the
+        // loader; send the user back to retry sign-in.
+        message.error(err?.response?.data?.message ?? 'Sign-in link expired. Please try again.', 8);
+        navigate('/auth/signin', { replace: true });
       });
-  }, [shortCode, exchangeToken]);
+  }, [shortCode, exchangeToken, navigate]);
 
   const handleSubmit = async () => {
     if (selected === UserRole.Mentor) {
       setSubmitting(true);
       const profileUpdatePayload = { profile: { role: UserRole.Mentor } };
-      // @ts-ignore
-      dispatch(updateProfile(profileUpdatePayload))
+      dispatch(updateProfile(profileUpdatePayload as any))
         .unwrap()
         .then(() => {
           // For mentor signup, we don't redirect to the stored URL yet
@@ -116,10 +161,10 @@ export default function GoogleAuthenticationPage() {
       dispatch(updateProfile({ profile: profileUpdate as any }))
         .unwrap()
         .then(() => {
-          // Check for stored redirect URL
+          // Return to where the user came from, but never an auth page.
           const redirectUrl = localStorage.getItem('redirectAfterLogin');
-          if (redirectUrl) {
-            localStorage.removeItem('redirectAfterLogin');
+          localStorage.removeItem('redirectAfterLogin');
+          if (redirectUrl && !redirectUrl.startsWith('/auth')) {
             window.location.href = redirectUrl;
           } else {
             navigate('/');
@@ -132,14 +177,10 @@ export default function GoogleAuthenticationPage() {
     }
   };
 
-  // Show loader during token exchange and while loading user data
-  // Never show welcome screen during sign-in process
-  if (!exchangeSuccess || isLoading) {
-    return <PageLoader text="Loading..." />;
-  }
-
-  // Don't show welcome screen if profile is already complete
-  if (data?.profile.profileComplete) {
+  // Show loader until a fresh profile has arrived, and while redirecting an
+  // already-complete profile away. The role picker only renders once we have
+  // confirmed (from fresh data) the profile still needs completing.
+  if (!profileReady || profileComplete) {
     return <PageLoader text="Loading..." />;
   }
 

@@ -80,6 +80,8 @@ const authSlice = createSlice({
       // Remove tokens from localStorage
       localStorage.removeItem(ACCESS_TOKEN);
       localStorage.removeItem(REFRESH_TOKEN);
+      // Clear any stale post-login redirect so the next sign-in isn't bounced.
+      localStorage.removeItem('redirectAfterLogin');
       window.location.href = '/auth/signin';
     },
     login: (

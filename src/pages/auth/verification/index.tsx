@@ -67,11 +67,14 @@ export default function VerificationPage() {
     }
   }, [token, isVerified, isProcessing]);
 
-  if (verified) {
-    setTimeout(() => {
-      navigate('/auth/signin');
-    }, 5000);
-  }
+  // After the email is verified, show the success state briefly then send the
+  // user to sign in. Must live in an effect — doing it in render queued a new
+  // timer (and navigation) on every re-render.
+  useEffect(() => {
+    if (!verified) return;
+    const timer = setTimeout(() => navigate('/auth/signin'), 5000);
+    return () => clearTimeout(timer);
+  }, [verified, navigate]);
 
   const handleResend = () => {
     setIsResendDisabled(true);

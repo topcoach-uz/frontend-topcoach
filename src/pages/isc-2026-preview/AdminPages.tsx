@@ -8,9 +8,9 @@
 // Wired to the real backend through RTK Query (iscAdmissionsApi). The real
 // form collects less than the original mock: no region / school / GPA — we
 // surface program + applicantType + grade instead.
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, MoreVertical, Download, FileText } from 'lucide-react';
+import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, X, MoreVertical, Download, FileText } from 'lucide-react';
 import s from './isc.module.scss';
 import { hostName } from '../../app/services/api/const';
 import {
@@ -239,8 +239,17 @@ export function ApplicationsPage() {
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('app') : null,
   );
 
-  if (openId) return <ApplicationDetail openId={openId} onBack={() => setOpenId(null)} />;
-  return <ApplicationsList onOpen={setOpenId} />;
+  // Keep the list MOUNTED while a detail is open (just hidden) so its
+  // filters / search / scroll survive the round-trip — clicking an
+  // applicant and hitting "All applications" returns to the same view.
+  return (
+    <>
+      <div style={{ display: openId ? 'none' : 'block' }}>
+        <ApplicationsList onOpen={setOpenId} />
+      </div>
+      {openId && <ApplicationDetail openId={openId} onBack={() => setOpenId(null)} />}
+    </>
+  );
 }
 
 function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
@@ -249,8 +258,11 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   const [applicantType, setApplicantType] = useState('all');
   const [status, setStatus] = useState('all');
   const [minScore, setMinScore] = useState(0);
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [assignTo, setAssignTo] = useState('');
+
+  const PAGE_SIZE = 25;
 
   const { data: reviewers } = useGetIscReviewersQuery();
   const { data, isFetching } = useGetIscAdminApplicationsQuery({
@@ -260,12 +272,21 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
     status: status !== 'all' ? (status as IscApplicationStatus) : undefined,
     minScore: minScore > 0 ? minScore : undefined,
     sort: 'submittedAt',
-    page: 1,
+    page,
+    limit: PAGE_SIZE,
   });
   const [assignReviewers] = useAssignIscReviewersMutation();
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = (page - 1) * PAGE_SIZE + items.length;
+
+  // Any filter change resets to the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [q, program, applicantType, status, minScore]);
 
   // default the assign-to select to the first reviewer once they load
   const effectiveAssignTo = assignTo || reviewers?.[0]?.id || '';
@@ -277,6 +298,8 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       return next;
     });
   const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); };
+  const filtersActive =
+    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0;
   const exportCsv = () => {
     const rows = selected.size
       ? items.filter((a) => selected.has(a.id))
@@ -311,6 +334,11 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         <Sel value={program} onChange={setProgram} options={[['all', 'All programs'], ['bachelor', "Bachelor's"], ['master', "Master's"]]} />
         <Sel value={applicantType} onChange={setApplicantType} options={[['all', 'All types'], ['local', 'Local'], ['international', 'International']]} />
         <Sel value={status} onChange={setStatus} options={[['all', 'All statuses'], ...ALL_STATUSES.map((st) => [st, STATUS_LABEL[st] ?? st] as [string, string])]} />
+        {filtersActive && (
+          <button className={s.btn} onClick={reset} title="Clear all filters">
+            <X size={15} /> Clear filters
+          </button>
+        )}
       </div>
       <div className={s.filters}>
         <label className={s.minScore}>
@@ -318,7 +346,6 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
           <input type="range" min={0} max={50} value={minScore} onChange={(e) => setMinScore(Number(e.target.value))} />
           <b>{minScore}</b>
         </label>
-        <button className={s.btn} onClick={reset}>Reset</button>
         <button className={s.btn} onClick={exportCsv}>
           <Download size={15} /> Export CSV{selected.size ? ` (${selected.size})` : ''}
         </button>
@@ -329,7 +356,13 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         </div>
       </div>
 
-      <div className={s.resultMeta}>{isFetching ? 'Loading…' : `Showing ${items.length} of ${total} applications`}</div>
+      <div className={s.resultMeta}>
+        {isFetching
+          ? 'Loading…'
+          : total === 0
+            ? 'No applications'
+            : `Showing ${rangeStart}–${rangeEnd} of ${total} applications`}
+      </div>
 
       <div className={s.tableWrap}>
         <table className={s.table}>
@@ -375,6 +408,26 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className={s.pagination}>
+          <button
+            className={s.btn}
+            disabled={page <= 1 || isFetching}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            <ArrowLeft size={15} /> Previous
+          </button>
+          <span className={s.paginationInfo}>Page {page} of {totalPages}</span>
+          <button
+            className={s.btn}
+            disabled={page >= totalPages || isFetching}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next <ArrowRight size={15} />
+          </button>
+        </div>
+      )}
     </>
   );
 }
