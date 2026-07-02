@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
 import NotificationBell from 'src/components/notifications/NotificationBell';
+import CoinChip from './_components/CoinChip/index.tsx';
 import { useTypedSelector } from 'src/app/store';
 import { UserRole } from 'src/app/api/Api';
 
@@ -103,6 +104,7 @@ export default function Actions() {
         <Mail size={20} color="#fff" />
       </Link>
       <ChatIcon />
+      {isAuthenticated && <CoinChip />}
       {isAuthenticated && <NotificationBell />}
       <LanguageSelect />
       <div className={styles.authContainer}>
