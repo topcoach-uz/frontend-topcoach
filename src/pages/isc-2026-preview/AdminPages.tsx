@@ -219,6 +219,10 @@ function Kpi({ label, value, sub, tone }: { label: string; value: number | strin
 }
 
 /* ── Applications (list ↔ detail) ───────────────────────────── */
+// Hide the bulk "Score all with AI" button for now so admins can't trigger a
+// costly full re-score by accident. Flip to `true` to show it again.
+const SHOW_AI_SCORING = false;
+
 /**
  * Bulk AI scoring trigger + live progress. Kicks off a background pass that
  * (re)scores every application still missing an AI score, and polls progress
@@ -420,7 +424,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         <button className={s.btn} onClick={exportAll}>
           <Download size={15} /> Export all
         </button>
-        <AiScoringControl />
+        {SHOW_AI_SCORING && <AiScoringControl />}
         <div className={s.assignCluster}>
           <span className={s.assignHint}>{selected.size} selected</span>
           <Sel value={effectiveAssignTo} onChange={setAssignTo} options={(reviewers ?? []).map((r) => [r.id, r.name] as [string, string])} />
