@@ -1663,7 +1663,7 @@ copy-to-clipboard@^3.3.3:
   dependencies:
     toggle-selection "^1.0.6"
 
-core-js@^3.6.0, core-js@^3.8.3:
+core-js@^3.38.1, core-js@^3.6.0, core-js@^3.8.3:
   version "3.46.0"
   resolved "https://registry.npmjs.org/core-js/-/core-js-3.46.0.tgz"
   integrity sha512-vDMm9B0xnqqZ8uSBpZ8sNtRtOdmfShrvT6h2TuQGLs0Is+cR0DYbj/KWP6ALVNbWPpqA/qPLoOuppJN07humpA==
@@ -1871,7 +1871,7 @@ didyoumean@^1.2.2:
   resolved "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz"
   integrity sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==
 
-dompurify@*, dompurify@^3.4.2:
+dompurify@*, dompurify@^3.3.2, dompurify@^3.4.2:
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.2.tgz#f0ff81be682c485505097ba8195a058d8f575218"
   integrity sha512-lHeS9SA/IKeIFFyYciHBr2n0v1VMPlSj843HdLOwjb2OxNwdq9Xykxqhk+FE42MzAdHvInbAolSE4mhahPpjXA==
@@ -4556,3 +4556,49 @@ yoctocolors-cjs@^2.1.2:
   version "2.1.2"
   resolved "https://registry.npmjs.org/yoctocolors-cjs/-/yoctocolors-cjs-2.1.2.tgz"
   integrity sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==
+
+"@posthog/core@^1.35.3":
+  version "1.35.3"
+  resolved "https://registry.npmjs.org/@posthog/core/-/core-1.35.3.tgz"
+  integrity sha512-EsGPbSLl39Jgo2KZ+kI9UAxFnh5nddaN5bNm2rXvUwF+vGmam9eN1EXeNbxhRU7ulEeIiGdm7XjoU7pzavkgIQ==
+  dependencies:
+    "@posthog/types" "^1.390.2"
+
+"@posthog/types@^1.390.2":
+  version "1.390.2"
+  resolved "https://registry.npmjs.org/@posthog/types/-/types-1.390.2.tgz"
+  integrity sha512-WcfKz2GNn2vfDX8vXmJYbKxegPxVWHuDQ/pHdAn0HoZDXDFnEp/+x3qBQA+fEvtbPjjtjgAt2wIgJMlM7asx7g==
+
+fflate@^0.4.8:
+  version "0.4.8"
+  resolved "https://registry.npmjs.org/fflate/-/fflate-0.4.8.tgz"
+  integrity sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==
+
+posthog-js@^1.391.2:
+  version "1.391.2"
+  resolved "https://registry.npmjs.org/posthog-js/-/posthog-js-1.391.2.tgz"
+  integrity sha512-q0DZN6ljchSnAFJIXf+sQFTPlsLjTlRa+TvrL+QRb6413BGtib/MNiQy1bnwLKt8KR+f6xJYvkqdLyty9s4Aww==
+  dependencies:
+    "@posthog/core" "^1.35.3"
+    "@posthog/types" "^1.390.2"
+    core-js "^3.38.1"
+    dompurify "^3.3.2"
+    fflate "^0.4.8"
+    preact "^10.29.2"
+    query-selector-shadow-dom "^1.0.1"
+    web-vitals "^5.3.0"
+
+preact@^10.29.2:
+  version "10.29.2"
+  resolved "https://registry.npmjs.org/preact/-/preact-10.29.2.tgz"
+  integrity sha512-7tNmwg/7mzzAoB/8kSg6Hl37JraAZw3Z3A0JSY7VXlZwo82Xn0G7wKbNNs2qoF4ZEEsQGTwDAroNdqKs1ofJxQ==
+
+query-selector-shadow-dom@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/query-selector-shadow-dom/-/query-selector-shadow-dom-1.0.1.tgz"
+  integrity sha512-lT5yCqEBgfoMYpf3F2xQRK7zEr1rhIIZuceDK6+xRkJQ4NMbHTwXqk4NkwDwQMNqXgG9r9fyHnzwNVs6zV5KRw==
+
+web-vitals@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.npmjs.org/web-vitals/-/web-vitals-5.3.0.tgz"
+  integrity sha512-q6LWsLatGYZp5VGBIOvbTj6JBV2nOmC8KvWztXBmwJcfFAzhwKwbOxhUH306XY3CcaZDUlSmSuNPBsCn0bFu+g==

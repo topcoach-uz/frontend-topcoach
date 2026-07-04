@@ -12,3 +12,8 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Local env files (keep secrets/keys out of git); the template is tracked.
+.env
+.env.*
+!.env.example
