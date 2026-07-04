@@ -10,7 +10,7 @@
 // surface program + applicantType + grade instead.
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, X, MoreVertical, Download, FileText } from 'lucide-react';
+import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, X, MoreVertical, Download, FileText, Sparkles } from 'lucide-react';
 import s from './isc.module.scss';
 import { hostName } from '../../app/services/api/const';
 import { api } from '../../app/api';
@@ -18,7 +18,7 @@ import {
   SCORE_DIMENSIONS,
   STATUS_LABEL,
 } from './types';
-import { Avatar, BarRow, RecBadge, StatusBadge } from './components';
+import { Avatar, BarRow, RecBadge, StatusBadge, AiAssessmentDetails } from './components';
 import {
   useGetIscAdminStatsQuery,
   useGetIscAdminApplicationsQuery,
@@ -27,6 +27,8 @@ import {
   useAssignIscReviewersMutation,
   useDecideIscApplicationMutation,
   useRerunIscAiEvalMutation,
+  useRerunAllIscAiMutation,
+  useGetIscAiProgressQuery,
   useGrantIscReviewerByEmailMutation,
   useRevokeIscReviewerMutation,
   IscApplicationRow,
@@ -217,6 +219,58 @@ function Kpi({ label, value, sub, tone }: { label: string; value: number | strin
 }
 
 /* ── Applications (list ↔ detail) ───────────────────────────── */
+/**
+ * Bulk AI scoring trigger + live progress. Kicks off a background pass that
+ * (re)scores every application still missing an AI score, and polls progress
+ * while it runs. Safe to click again — the backend refuses a second concurrent
+ * run and resumes/retries on repeat.
+ */
+function AiScoringControl() {
+  const [rerunAll, { isLoading: starting }] = useRerunAllIscAiMutation();
+  const [poll, setPoll] = useState(false);
+  const { data: progress } = useGetIscAiProgressQuery(undefined, {
+    pollingInterval: poll ? 4000 : 0,
+  });
+
+  // Stop polling once every application has been attempted (DB-derived, so this
+  // is correct regardless of which replica served the request).
+  useEffect(() => {
+    if (poll && progress && progress.total > 0 && progress.remaining === 0) {
+      setPoll(false);
+    }
+  }, [poll, progress]);
+
+  const start = async () => {
+    try {
+      const res = await rerunAll({ onlyPending: true }).unwrap();
+      if (res.alreadyRunning) toast('AI scoring is already running.');
+      else if (res.total === 0) toast('Every application is already scored.');
+      else toast(`Scoring ${res.total} application${res.total === 1 ? '' : 's'} with AI…`);
+      setPoll(true);
+    } catch {
+      toast('Could not start AI scoring.');
+    }
+  };
+
+  if (poll && progress) {
+    const pct = progress.total ? Math.round((progress.completed / progress.total) * 100) : 0;
+    return (
+      <span
+        className={s.aiProgress}
+        title={`${progress.failed} failed · ${progress.remaining} remaining`}
+      >
+        <span className={s.aiSpinner} />
+        Scoring {progress.completed}/{progress.total} ({pct}%)
+      </span>
+    );
+  }
+  return (
+    <button className={s.btn} onClick={start} disabled={starting}>
+      <Sparkles size={15} /> Score all with AI
+    </button>
+  );
+}
+
 export function ApplicationsPage() {
   const [openId, setOpenId] = useState<string | null>(
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('app') : null,
@@ -366,6 +420,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         <button className={s.btn} onClick={exportAll}>
           <Download size={15} /> Export all
         </button>
+        <AiScoringControl />
         <div className={s.assignCluster}>
           <span className={s.assignHint}>{selected.size} selected</span>
           <Sel value={effectiveAssignTo} onChange={setAssignTo} options={(reviewers ?? []).map((r) => [r.id, r.name] as [string, string])} />
@@ -635,6 +690,7 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
                 ))}
               </div>
               {ai.summary && <div className={s.aiSummary}>{ai.summary}</div>}
+              <AiAssessmentDetails assessment={ai.assessment} />
               {(ai.flags ?? []).map((f, i) => (
                 <div key={i} className={`${s.aiFlag} ${f.severity === 'high' ? s.aiFlagHigh : ''}`}>
                   ⚑ <b>{(f.type || 'note').replace(/-/g, ' ').toUpperCase()}</b>

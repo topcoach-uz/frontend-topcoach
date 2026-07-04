@@ -24,7 +24,7 @@ import {
   SCORE_DIMENSIONS,
   scoreTotal,
 } from './types';
-import { ScoreSliders } from './components';
+import { ScoreSliders, AiAssessmentDetails } from './components';
 
 /* ── Small helpers over the real application shape ─────────────── */
 type Draft = {
@@ -186,6 +186,7 @@ function AiBlock({ ai }: { ai: IscAiEvaluation | null }) {
         ))}
       </div>
       {ai.summary && <div className={s.aiSummary}>{ai.summary}</div>}
+      <AiAssessmentDetails assessment={ai.assessment} />
       {(ai.flags ?? []).map((f, i) => (
         <div key={i} className={`${s.aiFlag} ${f.severity === 'high' ? s.aiFlagHigh : ''}`}>
           ⚑ {f.detail}

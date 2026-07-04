@@ -45,6 +45,34 @@ export interface IscApplicationRow {
   createdAt: string;
 }
 
+export type IscAiRecommendation2 =
+  | 'strong_yes'
+  | 'yes'
+  | 'lean_yes'
+  | 'borderline'
+  | 'lean_no'
+  | 'no';
+
+export interface IscAiAssessment {
+  recommendation: IscAiRecommendation2;
+  headline: string;
+  dimensions: {
+    key: keyof IscScoreBreakdown;
+    score: number;
+    justification: string;
+  }[];
+  strengths: string[];
+  concerns: string[];
+  authenticity: {
+    verdict: 'authentic' | 'mixed' | 'likely_ai' | 'uncertain';
+    confidence: number;
+    reasoning: string;
+  };
+  fit: string;
+  interviewQuestions: string[];
+  verify: string[];
+}
+
 export interface IscAiEvaluation {
   id: string;
   applicationId: string;
@@ -52,6 +80,7 @@ export interface IscAiEvaluation {
   scores?: (IscScoreBreakdown & { total: number }) | null;
   summary?: string | null;
   flags?: { type: string; severity: 'info' | 'warn' | 'high'; detail: string }[] | null;
+  assessment?: IscAiAssessment | null;
   model?: string | null;
   evaluatedAt?: string | null;
   error?: string | null;
@@ -334,6 +363,32 @@ export const iscAdmissionsApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['IscAdminApplication'],
     }),
+    rerunAllIscAi: b.mutation<
+      { started: boolean; total: number; alreadyRunning: boolean },
+      { onlyPending?: boolean } | void
+    >({
+      query: (body) => ({
+        url: `${BASE}/admin/ai-eval/rerun-all`,
+        method: 'POST',
+        body: body ?? {},
+      }),
+    }),
+    getIscAiProgress: b.query<
+      {
+        running: boolean;
+        total: number;
+        completed: number;
+        failed: number;
+        skipped: number;
+        attempted: number;
+        remaining: number;
+        startedAt: string | null;
+        finishedAt: string | null;
+      },
+      void
+    >({
+      query: () => `${BASE}/admin/ai-eval/progress`,
+    }),
     reviewAsIsc: b.query<
       { application: IscApplicationRow; ai: IscAiEvaluation | null; myReview: IscReviewRow | null },
       { applicationId: string; reviewerUserId: string }
@@ -382,6 +437,8 @@ export const {
   useRecordIscInterviewEvalMutation,
   useDecideIscApplicationMutation,
   useRerunIscAiEvalMutation,
+  useRerunAllIscAiMutation,
+  useGetIscAiProgressQuery,
   useReviewAsIscQuery,
   useSubmitReviewAsIscMutation,
 } = iscAdmissionsApi;
