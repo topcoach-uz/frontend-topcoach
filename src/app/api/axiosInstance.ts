@@ -3,7 +3,7 @@ import axios from 'axios';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { baseUrl } from '../services/api/const';
 import { store } from '../store';
-import { logout } from '../slices/authSlice';
+import { login, logout } from '../slices/authSlice';
 
 // Function to get the current access token
 const getAccessToken = () => store.getState().auth.access_token;
@@ -142,11 +142,60 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Modify refreshToken to accept the original URL
+// Single-flight guard: while a refresh is in progress, every other 401 awaits
+// the same round-trip instead of firing its own (which would race the backend
+// and could rotate the refresh token out from under us).
+let refreshInFlight: Promise<string | null> | null = null;
+
+/**
+ * Ask the backend for a fresh access token. The refresh token lives in an
+ * httpOnly `Refresh` cookie set at login; the frontend is same-origin with the
+ * API (nginx proxies /api), so the browser sends that cookie automatically —
+ * `withCredentials` covers the split-origin case too. A bare axios call is used
+ * (not axiosInstance) so this request can't recurse through this interceptor.
+ */
+const requestNewAccessToken = async (): Promise<string | null> => {
+  try {
+    const res = await axios.post(
+      `${baseUrl}/auth/refresh`,
+      {},
+      { withCredentials: true },
+    );
+    const access = res.data?.user?.access;
+    const refresh = res.data?.user?.refresh;
+    if (access && refresh) {
+      // Updates both the store and localStorage, so the retried request (and
+      // every later request) picks up the new token from the request interceptor.
+      store.dispatch(login({ access, refresh }));
+      return access;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Called by the 401 response interceptor. Attempts a real token refresh; on
+ * success the caller retries the original request with the new token. Only when
+ * refresh genuinely fails do we log the user out — and never for the auth
+ * handshake endpoints or session/camps calls, nor while on an /auth/* page.
+ */
 export const refreshToken = async (originalUrl?: string, error?: Error) => {
-  // Only logout if the original request was not for a session endpoint,
-  // and NEVER while the user is on an /auth/* page — a 401 during sign-in /
-  // Google callback must not bounce them back to the login page.
+  if (!refreshInFlight) {
+    refreshInFlight = requestNewAccessToken().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+
+  const newToken = await refreshInFlight;
+  if (newToken) {
+    // Session recovered — let the interceptor retry the original request.
+    return newToken;
+  }
+
+  // Refresh failed → the session is really dead. Log out, but keep the existing
+  // exceptions so a 401 during sign-in / on session endpoints doesn't bounce.
   if (
     originalUrl &&
     !originalUrl.startsWith('/sessions') &&
@@ -154,17 +203,8 @@ export const refreshToken = async (originalUrl?: string, error?: Error) => {
     !isAuthUrl(originalUrl) &&
     !onAuthPage()
   ) {
-    setTimeout(() => store.dispatch(logout()), 2000);
+    store.dispatch(logout());
   }
-  // The actual refresh logic seems commented out/missing,
-  // but the conditional logout is implemented above.
-  // If there was actual refresh logic, it would go here.
-  // For now, it will likely reject as logout() is dispatched.
-  // Example:
-  // return await axios.post(`${baseUrl}/auth/refresh`, { ... });
-
-  // If logout was dispatched, we might want to throw an error
-  // to prevent retrying the original request.
   return Promise.reject(error);
 };
 
