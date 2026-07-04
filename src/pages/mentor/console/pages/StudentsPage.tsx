@@ -5,9 +5,12 @@ import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   useGetMentorRosterQuery,
+  useGetMentorTasksQuery,
   type MentorRosterStudent,
 } from 'src/app/services/fullSupportApi';
-import { avatarStyleForId, initialsFromName } from '../utils';
+import { McPill } from '../components/McPill';
+import { useMentorBookings } from '../sessionSources';
+import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
 
 const { Text } = Typography;
 
@@ -16,7 +19,44 @@ export default function MentorConsoleStudentsPage() {
   const [q, setQ] = useState('');
 
   const { data, isLoading, isError } = useGetMentorRosterQuery();
-  const rows = data?.data ?? [];
+  const rows = useMemo(() => data?.data ?? [], [data?.data]);
+
+  // Answer "who needs me?" from the list itself — next session + attention.
+  const { bookings } = useMentorBookings(null, { includeFullSupport: true });
+  const { data: tasksRes } = useGetMentorTasksQuery();
+
+  const nextSessionByStudent = useMemo(() => {
+    const map = new Map<string, string>();
+    bookings
+      .filter((b) => b.status === 'upcoming' && b.studentUserId)
+      .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+      .forEach((b) => {
+        if (!map.has(b.studentUserId!)) map.set(b.studentUserId!, b.dateTime);
+      });
+    return map;
+  }, [bookings]);
+
+  const reportsDueByStudent = useMemo(() => {
+    const map = new Map<string, number>();
+    bookings.forEach((b) => {
+      if (b.status === 'report-due' && b.studentUserId) {
+        map.set(b.studentUserId, (map.get(b.studentUserId) ?? 0) + 1);
+      }
+    });
+    return map;
+  }, [bookings]);
+
+  const awaitingReviewByStudent = useMemo(() => {
+    const map = new Map<string, number>();
+    (tasksRes?.data ?? []).forEach((t) => {
+      const awaiting =
+        !t.hasFeedback && (t.submissionText || (t.submissionFileUrls?.length ?? 0) > 0);
+      if (awaiting && t.studentUserId) {
+        map.set(t.studentUserId, (map.get(t.studentUserId) ?? 0) + 1);
+      }
+    });
+    return map;
+  }, [tasksRes?.data]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -41,9 +81,22 @@ export default function MentorConsoleStudentsPage() {
       ),
     },
     {
+      title: 'Next session',
+      key: 'next',
+      width: 170,
+      render: (_, row) => {
+        const next = nextSessionByStudent.get(row.id);
+        return next ? (
+          <Text style={{ color: 'var(--mc-text)', fontSize: 13 }}>{formatDateTime(next)}</Text>
+        ) : (
+          <Text style={{ color: 'var(--mc-text-muted)', fontSize: 13 }}>—</Text>
+        );
+      },
+    },
+    {
       title: 'Hours used',
       key: 'hours',
-      width: 160,
+      width: 130,
       render: (_, row) => (
         <Text style={{ color: 'var(--mc-text)' }}>
           {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
@@ -54,7 +107,23 @@ export default function MentorConsoleStudentsPage() {
       title: 'Sessions',
       dataIndex: 'sessionsCount',
       key: 'sessionsCount',
-      width: 110,
+      width: 100,
+    },
+    {
+      title: 'Attention',
+      key: 'attention',
+      width: 150,
+      render: (_, row) => {
+        const due = reportsDueByStudent.get(row.id) ?? 0;
+        const review = awaitingReviewByStudent.get(row.id) ?? 0;
+        if (due > 0) {
+          return <McPill variant="danger">{due} report{due === 1 ? '' : 's'} due</McPill>;
+        }
+        if (review > 0) {
+          return <McPill variant="warning">{review} to review</McPill>;
+        }
+        return <McPill variant="success">Caught up</McPill>;
+      },
     },
     {
       title: '',
@@ -86,8 +155,8 @@ export default function MentorConsoleStudentsPage() {
         </div>
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
-          Your Full Support students. Open a student to manage tasks, sessions, essays, milestones,
-          and research grading in one workspace.
+          Your Full Support students. Open a workspace to manage tasks, sessions, essays and
+          reports in one place.
         </p>
       </div>
 

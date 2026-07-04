@@ -2,11 +2,9 @@ import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import {
-  LayoutDashboard,
-  Users,
   CalendarClock,
+  Users,
   ClipboardList,
-  Inbox,
   UserCircle2,
   ChevronLeft,
   Menu,
@@ -14,32 +12,31 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
+import {
+  useGetMentorPipelineQuery,
+  useGetMentorRosterQuery,
+  useGetMentorTasksQuery,
+} from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
-import { initialsFromName } from './utils';
+import { useMentorBookings } from './sessionSources';
+import { avatarStyleForId, initialsFromName } from './utils';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
 type NavKey =
-  | 'dashboard'
-  | 'students'
-  | 'sessions'
+  | 'schedule'
   | 'availability'
-  | 'to-review'
+  | 'students'
   | 'profile'
   | 'isc-reviewer'
-  | 'admin-console'
-  | 'admin-school-counselor'
-  | 'admin-topcoach-management'
-  | 'admin-course-content'
-  | 'admin-caaf'
-  | 'admin-full-support';
+  | 'admin-console';
 
 type NavItem = {
   key: NavKey;
   label: string;
   icon: ReactNode;
   path: string;
-  external?: boolean;
+  badge?: string | null;
 };
 
 type NavGroup = { id: string; label: string; items: NavItem[] };
@@ -79,41 +76,69 @@ export default function MentorConsoleLayout() {
   const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
     useMentorConsole();
 
-  const navGroups: NavGroup[] = useMemo(() => {
-    const sessionsItem: NavItem = {
-      key: 'sessions',
-      label: 'Sessions',
-      icon: <CalendarClock size={18} strokeWidth={1.75} />,
-      path: '/mentor/sessions',
-    };
-    const availabilityItem: NavItem = {
-      key: 'availability',
-      label: 'Availability',
-      icon: <ClipboardList size={18} strokeWidth={1.75} />,
-      path: '/mentor/availability',
-    };
+  // Sidebar data — the roster lives permanently in the nav ("My students"),
+  // the Schedule item carries a pending-reports badge, and each student row
+  // gets an attention dot. All three queries are shared (RTK-cached) with the
+  // pages themselves, so this adds no extra network cost.
+  const { data: rosterRes } = useGetMentorRosterQuery(undefined, { skip: !hasFullSupport });
+  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !hasFullSupport });
+  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !hasFullSupport });
+  const { bookings } = useMentorBookings(null, { includeFullSupport: hasFullSupport });
 
-    // FS mentors get a student-centric console; Tasks / Milestones / Research
-    // grading are unified into the "To review" queue (per-student work lives in
-    // the student workspace).
-    const mentorshipItems: NavItem[] = hasFullSupport
-      ? [
-          availabilityItem,
-          {
-            key: 'students',
-            label: 'Students',
-            icon: <Users size={18} strokeWidth={1.75} />,
-            path: '/mentor/students',
-          },
-          sessionsItem,
-          {
-            key: 'to-review',
-            label: 'To review',
-            icon: <Inbox size={18} strokeWidth={1.75} />,
-            path: '/mentor/to-review',
-          },
-        ]
-      : [availabilityItem, sessionsItem];
+  const roster = rosterRes?.data ?? [];
+
+  const relevantBookings = useMemo(
+    () => (hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform')),
+    [bookings, hasFullSupport],
+  );
+
+  const reportDueCount = useMemo(
+    () => relevantBookings.filter((b) => b.status === 'report-due').length,
+    [relevantBookings],
+  );
+
+  // Program label per student — first essays/applications row, mockup-style
+  // ("Oxford PPE" under the name). Falls back to hours + session count.
+  const programByStudent = useMemo(() => {
+    const map = new Map<string, string>();
+    (pipelineRes?.data ?? []).forEach((p) => {
+      if (p.studentUserId && p.program && !map.has(p.studentUserId)) {
+        map.set(p.studentUserId, p.program);
+      }
+    });
+    return map;
+  }, [pipelineRes?.data]);
+
+  // Attention dot — a report to write or a submission awaiting review.
+  const attentionByStudent = useMemo(() => {
+    const set = new Set<string>();
+    relevantBookings.forEach((b) => {
+      if (b.status === 'report-due' && b.studentUserId) set.add(b.studentUserId);
+    });
+    (tasksRes?.data ?? []).forEach((t) => {
+      const awaiting =
+        !t.hasFeedback && (t.submissionText || (t.submissionFileUrls?.length ?? 0) > 0);
+      if (awaiting && t.studentUserId) set.add(t.studentUserId);
+    });
+    return set;
+  }, [relevantBookings, tasksRes?.data]);
+
+  const navGroups: NavGroup[] = useMemo(() => {
+    const overviewItems: NavItem[] = [
+      {
+        key: 'schedule',
+        label: 'Schedule',
+        icon: <CalendarClock size={18} strokeWidth={1.75} />,
+        path: '/mentor/dashboard',
+        badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
+      },
+      {
+        key: 'availability',
+        label: 'Availability',
+        icon: <ClipboardList size={18} strokeWidth={1.75} />,
+        path: '/mentor/availability',
+      },
+    ];
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
 
@@ -151,52 +176,34 @@ export default function MentorConsoleLayout() {
       });
     }
 
-    const groups: NavGroup[] = [
-      {
-        id: 'overview',
-        label: 'Overview',
-        items: [
-          {
-            key: 'dashboard',
-            label: 'Dashboard',
-            icon: <LayoutDashboard size={18} strokeWidth={1.75} />,
-            path: '/mentor/dashboard',
-          },
-        ],
-      },
-      {
-        id: 'mentorship',
-        label: 'Mentorship',
-        items: mentorshipItems,
-      },
-      {
-        id: 'account',
-        label: 'Account',
-        items: accountItems,
-      },
+    return [
+      { id: 'overview', label: 'Overview', items: overviewItems },
+      { id: 'account', label: 'Account', items: accountItems },
     ];
+  }, [managementRole, reportDueCount]);
 
-    return groups;
-  }, [hasFullSupport, managementRole]);
+  const activeStudentId = useMemo(() => {
+    const m = location.pathname.match(/^\/mentor\/students\/([^/]+)/);
+    return m ? m[1] : null;
+  }, [location.pathname]);
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
-    if (p.startsWith('/mentor/dashboard')) return 'dashboard';
-    if (p.startsWith('/mentor/students')) return 'students';
-    if (p.startsWith('/mentor/sessions')) return 'sessions';
-    if (p.startsWith('/mentor/availability')) return 'availability';
+    // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (
-      p.startsWith('/mentor/to-review') ||
-      p.startsWith('/mentor/tasks') ||
-      p.startsWith('/mentor/milestones') ||
-      p.startsWith('/mentor/research-grading')
+      p.startsWith('/mentor/dashboard') ||
+      p.startsWith('/mentor/sessions') ||
+      p.startsWith('/mentor/to-review')
     )
-      return 'to-review';
+      return 'schedule';
+    if (activeStudentId) return null; // the student row itself is highlighted
+    if (p.startsWith('/mentor/students')) return 'students';
+    if (p.startsWith('/mentor/availability')) return 'availability';
     if (p.startsWith('/mentor/profile')) return 'profile';
     if (p.startsWith('/new-admin') || p.startsWith('/admin')) return 'admin-console';
     return null;
-  }, [location.pathname]);
+  }, [location.pathname, activeStudentId]);
 
   const roleLabel = (() => {
     // Elevated admin roles take precedence — otherwise a mentor is always "Mentor",
@@ -211,6 +218,7 @@ export default function MentorConsoleLayout() {
   })();
 
   const siderWidth = collapsed ? 76 : 232;
+  const showLabels = !collapsed || isMobileConsole;
 
   const siderClass = [
     'mentor-console-sider',
@@ -220,6 +228,34 @@ export default function MentorConsoleLayout() {
   ]
     .filter(Boolean)
     .join(' ');
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive = activeKey === item.key;
+    return (
+      <button
+        key={item.key}
+        type="button"
+        className={`mentor-console-nav-item ${
+          isActive ? 'mentor-console-nav-item--active' : ''
+        }`}
+        onClick={() => {
+          navigate(item.path);
+          setMobileMenuOpen(false);
+        }}
+        title={collapsed && !isMobileConsole ? item.label : undefined}
+      >
+        <span className="mentor-console-nav-item-icon">{item.icon}</span>
+        {showLabels && (
+          <>
+            <span className="mentor-console-nav-item-label">{item.label}</span>
+            {item.badge ? (
+              <span className="mentor-console-nav-pending">{item.badge}</span>
+            ) : null}
+          </>
+        )}
+      </button>
+    );
+  };
 
   return (
     <div
@@ -249,7 +285,7 @@ export default function MentorConsoleLayout() {
             <div className="mentor-console-brand-title">
               {collapsed && !isMobileConsole ? 'MC' : 'Mentor console'}
             </div>
-            {(!collapsed || isMobileConsole) && (
+            {showLabels && (
               <div className="mentor-console-brand-sub">
                 Students, sessions &amp; milestones
               </div>
@@ -257,35 +293,83 @@ export default function MentorConsoleLayout() {
           </div>
 
           <nav className="mentor-console-nav" aria-label="Mentor navigation" id="mentor-console-sider-nav">
-            {navGroups.map((group) => (
-              <div key={group.id} className="mentor-console-nav-group">
-                {(!collapsed || isMobileConsole) && (
-                  <div className="mentor-console-nav-group-label">{group.label}</div>
+            <div className="mentor-console-nav-group">
+              {showLabels && <div className="mentor-console-nav-group-label">Overview</div>}
+              {navGroups[0].items.map(renderNavItem)}
+            </div>
+
+            {hasFullSupport && (
+              <div className="mentor-console-nav-group">
+                {showLabels && (
+                  <div className="mentor-console-nav-group-label">My students</div>
                 )}
-                {group.items.map((item) => {
-                  const isActive = activeKey === item.key;
+                {roster.map((r) => {
+                  const isActive = activeStudentId === r.id;
+                  const program = programByStudent.get(r.id);
+                  const needsAttention = attentionByStudent.has(r.id);
                   return (
                     <button
-                      key={item.key}
+                      key={r.id}
                       type="button"
-                      className={`mentor-console-nav-item ${
-                        isActive ? 'mentor-console-nav-item--active' : ''
+                      className={`mentor-console-student-item ${
+                        isActive ? 'mentor-console-student-item--active' : ''
                       }`}
                       onClick={() => {
-                        navigate(item.path);
+                        navigate(`/mentor/students/${r.id}`);
                         setMobileMenuOpen(false);
                       }}
-                      title={collapsed && !isMobileConsole ? item.label : undefined}
+                      title={collapsed && !isMobileConsole ? r.name : undefined}
                     >
-                      <span className="mentor-console-nav-item-icon">{item.icon}</span>
-                      {(!collapsed || isMobileConsole) && (
-                        <span className="mentor-console-nav-item-label">{item.label}</span>
+                      <span
+                        className="mentor-console-student-avatar"
+                        style={avatarStyleForId(r.id)}
+                      >
+                        {initialsFromName(r.name)}
+                      </span>
+                      {showLabels && (
+                        <>
+                          <span className="mentor-console-student-meta">
+                            <span className="mentor-console-student-name">{r.name}</span>
+                            <span className="mentor-console-student-program">
+                              {program || `${r.sessionsCount} session${r.sessionsCount === 1 ? '' : 's'}`}
+                            </span>
+                          </span>
+                          <span
+                            className={`mentor-console-student-dot ${
+                              needsAttention ? 'mentor-console-student-dot--attention' : ''
+                            }`}
+                            title={needsAttention ? 'Needs attention' : 'All caught up'}
+                          />
+                        </>
                       )}
                     </button>
                   );
                 })}
+                <button
+                  type="button"
+                  className={`mentor-console-nav-item ${
+                    activeKey === 'students' ? 'mentor-console-nav-item--active' : ''
+                  }`}
+                  onClick={() => {
+                    navigate('/mentor/students');
+                    setMobileMenuOpen(false);
+                  }}
+                  title={collapsed && !isMobileConsole ? 'All students' : undefined}
+                >
+                  <span className="mentor-console-nav-item-icon">
+                    <Users size={18} strokeWidth={1.75} />
+                  </span>
+                  {showLabels && (
+                    <span className="mentor-console-nav-item-label">All students</span>
+                  )}
+                </button>
               </div>
-            ))}
+            )}
+
+            <div className="mentor-console-nav-group">
+              {showLabels && <div className="mentor-console-nav-group-label">Account</div>}
+              {navGroups[1].items.map(renderNavItem)}
+            </div>
           </nav>
 
           <button
@@ -314,7 +398,7 @@ export default function MentorConsoleLayout() {
                 {initialsFromName(displayName)}
               </div>
             )}
-            {(!collapsed || isMobileConsole) && (
+            {showLabels && (
               <div className="mentor-console-user-meta">
                 <div className="mentor-console-user-name">{displayName}</div>
                 <div className="mentor-console-user-role">{roleLabel}</div>

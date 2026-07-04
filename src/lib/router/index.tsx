@@ -132,12 +132,10 @@ const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"))
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleLayout"));
-const MentorConsoleDashboardLazy = lazy(() => import("src/pages/mentor/console/pages/DashboardPage"));
+const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pages/SchedulePage"));
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
-const MentorConsoleSessionsLazy = lazy(() => import("src/pages/mentor/console/pages/SessionsPage"));
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
-const MentorConsoleToReviewLazy = lazy(() => import("src/pages/mentor/console/pages/ToReviewPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
@@ -560,16 +558,17 @@ function RouterProvider() {
               <Route path="/mentor" element={<MentorConsoleGate />}>
                 <Route element={<MentorConsoleLayoutLazy />}>
                   <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<MentorConsoleDashboardLazy />} />
+                  {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
+                  <Route path="dashboard" element={<MentorConsoleScheduleLazy />} />
                   <Route path="students" element={<MentorConsoleStudentsLazy />} />
                   <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
-                  <Route path="sessions" element={<MentorConsoleSessionsLazy />} />
                   <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
-                  <Route path="to-review" element={<MentorConsoleToReviewLazy />} />
-                  {/* Tasks / Milestones / Research grading unified into "To review" */}
-                  <Route path="tasks" element={<Navigate to="/mentor/to-review" replace />} />
-                  <Route path="milestones" element={<Navigate to="/mentor/to-review" replace />} />
-                  <Route path="research-grading" element={<Navigate to="/mentor/to-review" replace />} />
+                  {/* Sessions merged into the Schedule; per-student review lives in each workspace. */}
+                  <Route path="sessions" element={<Navigate to="/mentor/dashboard" replace />} />
+                  <Route path="to-review" element={<Navigate to="/mentor/students" replace />} />
+                  <Route path="tasks" element={<Navigate to="/mentor/students" replace />} />
+                  <Route path="milestones" element={<Navigate to="/mentor/students" replace />} />
+                  <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
                   <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
                   <Route path="profile" element={<MentorConsoleProfileLazy />} />
                 </Route>

@@ -1,0 +1,452 @@
+import { useMemo, useState } from 'react';
+import {
+  Alert,
+  Button,
+  DatePicker,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Select,
+  Spin,
+  message,
+} from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
+import { ArrowRight, CalendarPlus, CheckCircle2, Flag, Plus, Video } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  useCreateMentorSessionMutation,
+  useGetMentorRosterQuery,
+  useUpdateMentorSessionMutation,
+  type SessionLogDto,
+} from 'src/app/services/fullSupportApi';
+import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
+import { McPill } from '../components/McPill';
+import SessionReportModal from '../components/SessionReportModal';
+import { useMentorConsole } from '../MentorConsoleContext';
+import { useMentorBookings, type MentorBooking } from '../sessionSources';
+import { formatRelative } from '../utils';
+import './SchedulePage.scss';
+
+// Only flag recent sessions — stale 60-day-old entries just create noise.
+const PENDING_REPORT_WINDOW_DAYS = 14;
+
+type Scope = 'upcoming' | 'due' | 'past' | 'cancelled';
+
+const SCOPES: Scope[] = ['upcoming', 'due', 'past', 'cancelled'];
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+function timeRange(b: MentorBooking): string {
+  const start = new Date(b.dateTime);
+  const end = new Date(start.getTime() + b.durationMinutes * 60_000);
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function upcomingPill(b: MentorBooking) {
+  const start = new Date(b.dateTime);
+  const now = new Date();
+  const isToday = start.toDateString() === now.toDateString();
+  if (isToday) return <McPill variant="accent">Today</McPill>;
+  if (start.getTime() - now.getTime() < WEEK_MS) {
+    return <McPill variant="warning">This week</McPill>;
+  }
+  return <McPill variant="info">Upcoming</McPill>;
+}
+
+export default function MentorConsoleSchedulePage() {
+  const navigate = useNavigate();
+  const { id: mentorId, displayName, hasFullSupport } = useMentorConsole();
+  const [searchParams] = useSearchParams();
+  // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
+  const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
+    ? (searchParams.get('scope') as Scope)
+    : 'upcoming';
+  const [scope, setScope] = useState<Scope>(initialScope);
+  const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
+
+  const [logOpen, setLogOpen] = useState(false);
+  const [logForm] = Form.useForm<{
+    studentUserId: string;
+    when: Dayjs;
+    duration: string;
+    description: string;
+  }>();
+
+  const { data: rosterRes } = useGetMentorRosterQuery(undefined, { skip: !hasFullSupport });
+  const roster = useMemo(() => rosterRes?.data ?? [], [rosterRes?.data]);
+  const rosterById = useMemo(() => new Map(roster.map((r) => [r.id, r])), [roster]);
+
+  // Non-FS mentors get a "students can't book you yet" nudge instead of tiles.
+  const { data: availabilityRes } = useGetMentorAvailabilityQuery(mentorId, {
+    skip: hasFullSupport || !mentorId,
+  });
+  const hasAvailability = (availabilityRes?.slots?.length ?? 0) > 0;
+
+  const { bookings, isLoading, isError } = useMentorBookings(null, {
+    includeFullSupport: hasFullSupport,
+  });
+  const [createSession, { isLoading: creating }] = useCreateMentorSessionMutation();
+  const [updateSession, { isLoading: marking }] = useUpdateMentorSessionMutation();
+
+  const decorated = useMemo<MentorBooking[]>(() => {
+    const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
+    return relevant.map((b) => ({
+      ...b,
+      studentName:
+        b.studentName || (b.studentUserId && rosterById.get(b.studentUserId)?.name) || null,
+    }));
+  }, [bookings, hasFullSupport, rosterById]);
+
+  const byScope = useMemo(() => {
+    const asc = (a: MentorBooking, b: MentorBooking) =>
+      new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
+    const desc = (a: MentorBooking, b: MentorBooking) => -asc(a, b);
+    return {
+      upcoming: decorated.filter((b) => b.status === 'upcoming').sort(asc),
+      due: decorated.filter((b) => b.status === 'report-due').sort(desc),
+      past: decorated
+        .filter((b) => b.status === 'completed' || b.status === 'report-due')
+        .sort(desc),
+      cancelled: decorated.filter((b) => b.status === 'cancelled').sort(desc),
+    };
+  }, [decorated]);
+
+  const nextUp = byScope.upcoming[0] ?? null;
+
+  const pendingReport = useMemo(() => {
+    const windowMs = PENDING_REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return (
+      byScope.due.find((b) => now - new Date(b.dateTime).getTime() <= windowMs) ?? null
+    );
+  }, [byScope.due]);
+
+  const openReportFor = (b: MentorBooking) => {
+    if (b.source === 'platform') {
+      setReportBooking(b);
+    } else {
+      setScope('due');
+    }
+  };
+
+  const markFsDone = (b: MentorBooking) => {
+    const raw = b.raw as SessionLogDto;
+    updateSession({ id: raw.id, done: true })
+      .unwrap()
+      .then(() => message.success('Marked complete'))
+      .catch(() => message.error('Failed to update'));
+  };
+
+  const submitLog = async () => {
+    const values = await logForm.validateFields();
+    await createSession({
+      studentUserId: values.studentUserId,
+      dateTime: values.when.toISOString(),
+      duration: values.duration,
+      description: values.description || '',
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Session logged');
+        setLogOpen(false);
+        logForm.resetFields();
+      })
+      .catch(() => message.error('Failed to log'));
+  };
+
+  const renderRow = (b: MentorBooking) => {
+    const d = new Date(b.dateTime);
+    const canViewStudent = hasFullSupport && b.studentUserId && rosterById.has(b.studentUserId);
+
+    return (
+      <div key={b.id} className={`mc-sched-row${b.status === 'report-due' ? ' mc-sched-row--due' : ''}`}>
+        <div className="mc-sched-row-date" aria-hidden>
+          <span className="mc-sched-row-day">{d.getDate()}</span>
+          <span className="mc-sched-row-month">
+            {d.toLocaleDateString(undefined, { month: 'short' })}
+          </span>
+        </div>
+        <div className="mc-sched-row-info">
+          <div className="mc-sched-row-name">{b.studentName || 'Student'}</div>
+          <div className="mc-sched-row-when">
+            {d.toLocaleDateString(undefined, { weekday: 'short' })} · {timeRange(b)} ·{' '}
+            {b.durationLabel}
+          </div>
+          <div className="mc-sched-row-meta">
+            {b.source === 'full-support' ? 'Full Support' : 'Platform booking'}
+            {b.description ? ` · ${b.description}` : ''}
+            {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
+          </div>
+        </div>
+        <div className="mc-sched-row-actions">
+          {b.status === 'upcoming' && upcomingPill(b)}
+          {b.status === 'report-due' && <McPill variant="danger">Report due</McPill>}
+          {b.status === 'completed' && <McPill variant="success">Completed</McPill>}
+          {b.status === 'cancelled' && <McPill variant="neutral">Cancelled</McPill>}
+
+          {b.status === 'upcoming' && b.joinUrl ? (
+            <Button
+              type="primary"
+              size="small"
+              icon={<Video size={14} />}
+              href={b.joinUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Join Meet
+            </Button>
+          ) : null}
+          {b.status === 'report-due' &&
+            (b.source === 'platform' ? (
+              <Button type="primary" size="small" onClick={() => setReportBooking(b)}>
+                Write report
+              </Button>
+            ) : (
+              <Button type="primary" size="small" loading={marking} onClick={() => markFsDone(b)}>
+                Mark done
+              </Button>
+            ))}
+          {b.status === 'completed' && b.source === 'platform' && b.report ? (
+            <Button size="small" onClick={() => setReportBooking(b)}>
+              View report
+            </Button>
+          ) : null}
+          {canViewStudent ? (
+            <Button
+              size="small"
+              type="text"
+              className="mc-sched-row-ghost"
+              onClick={() => navigate(`/mentor/students/${b.studentUserId}`)}
+            >
+              View student
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  const today = new Date();
+  const rows = byScope[scope];
+
+  if (isLoading && decorated.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mc-sched">
+      {pendingReport && (
+        <div className="mc-alert-banner">
+          <Flag size={22} color="var(--mc-danger)" />
+          <div className="mc-alert-banner-body">
+            <div className="mc-alert-banner-title">Session report pending</div>
+            <div className="mc-alert-banner-subtitle">
+              Your session{pendingReport.studentName ? ` with ${pendingReport.studentName}` : ''}{' '}
+              ended {formatRelative(pendingReport.dateTime)}. Submit your report to close it out.
+            </div>
+          </div>
+          <Button
+            type="primary"
+            onClick={() => openReportFor(pendingReport)}
+            style={{ background: 'var(--mc-danger)', borderColor: 'var(--mc-danger)' }}
+          >
+            Write report
+          </Button>
+        </div>
+      )}
+
+      <header className="mc-sched-hero">
+        <div>
+          <div className="mc-page-eyebrow">
+            Mentor <span className="mc-page-eyebrow-accent">· Schedule</span>
+          </div>
+          <h1 className="mc-page-title" style={{ marginBottom: 8 }}>
+            Welcome back, {displayName.split(' ')[0] || 'mentor'}
+          </h1>
+          <p className="mc-page-lead" style={{ marginBottom: 0 }}>
+            Your sessions — upcoming, past, and anything that still needs a report.
+          </p>
+        </div>
+        <div className="mc-sched-date" aria-hidden>
+          <span className="mc-sched-date-day">{today.getDate()}</span>
+          <span className="mc-sched-date-rest">
+            {today.toLocaleDateString(undefined, { weekday: 'long' })}
+            <br />
+            {today.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+          </span>
+        </div>
+      </header>
+
+      {!hasFullSupport && !hasAvailability && (
+        <button
+          type="button"
+          className="mc-sched-nudge"
+          onClick={() => navigate('/mentor/availability')}
+        >
+          <CalendarPlus size={17} />
+          <span>
+            <b>Students can&apos;t book you yet.</b> Set your weekly hours to become bookable.
+          </span>
+          <ArrowRight size={15} />
+        </button>
+      )}
+
+      {nextUp && (
+        <div className="mc-sched-feature">
+          <div className="mc-sched-feature-date" aria-hidden>
+            <span className="mc-sched-feature-day">{new Date(nextUp.dateTime).getDate()}</span>
+            <span className="mc-sched-feature-month">
+              {new Date(nextUp.dateTime).toLocaleDateString(undefined, {
+                month: 'short',
+                weekday: 'short',
+              })}
+            </span>
+          </div>
+          <div className="mc-sched-feature-body">
+            <span className="mc-sched-feature-pill">Next session</span>
+            <div className="mc-sched-feature-name">{nextUp.studentName || 'Student'}</div>
+            <div className="mc-sched-feature-when">
+              <b>{timeRange(nextUp)}</b> · {nextUp.durationLabel}
+              {nextUp.description ? ` · ${nextUp.description}` : ''}
+            </div>
+          </div>
+          <div className="mc-sched-feature-actions">
+            {nextUp.joinUrl ? (
+              <Button
+                type="primary"
+                icon={<Video size={15} />}
+                href={nextUp.joinUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Join Google Meet
+              </Button>
+            ) : null}
+            {hasFullSupport && nextUp.studentUserId && rosterById.has(nextUp.studentUserId) ? (
+              <Button onClick={() => navigate(`/mentor/students/${nextUp.studentUserId}`)}>
+                View student
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      <div className="mc-sched-tabbar" role="tablist" aria-label="Session scope">
+        {(
+          [
+            { key: 'upcoming', label: 'Upcoming', count: byScope.upcoming.length },
+            { key: 'due', label: 'Report due', count: byScope.due.length },
+            { key: 'past', label: 'Past', count: byScope.past.length },
+            { key: 'cancelled', label: 'Cancelled', count: byScope.cancelled.length },
+          ] as { key: Scope; label: string; count: number }[]
+        ).map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={scope === t.key}
+            className={`mc-sched-tab${scope === t.key ? ' mc-sched-tab--active' : ''}${
+              t.key === 'due' && t.count > 0 ? ' mc-sched-tab--alert' : ''
+            }`}
+            onClick={() => setScope(t.key)}
+          >
+            {t.label}
+            <span className="mc-sched-tab-count">{t.count}</span>
+          </button>
+        ))}
+        {hasFullSupport && (
+          <div className="mc-sched-tabbar-tools">
+            <Button
+              type="primary"
+              icon={<Plus size={15} />}
+              onClick={() => setLogOpen(true)}
+              disabled={roster.length === 0}
+            >
+              Log Full Support session
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {isError && (
+        <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Failed to load sessions" />
+      )}
+
+      {rows.length === 0 ? (
+        <div className="mc-sched-empty">
+          {scope === 'upcoming' ? (
+            <Empty description="No upcoming sessions on the calendar." />
+          ) : scope === 'due' ? (
+            <div className="mc-sched-empty-good">
+              <CheckCircle2 size={20} color="var(--mc-success)" />
+              All reports filed — nothing to close out.
+            </div>
+          ) : (
+            <Empty description={scope === 'past' ? 'No past sessions yet.' : 'No cancelled sessions.'} />
+          )}
+        </div>
+      ) : (
+        <div className="mc-sched-rows">{rows.map(renderRow)}</div>
+      )}
+
+      <Modal
+        title="Log a Full Support session"
+        open={logOpen}
+        onCancel={() => setLogOpen(false)}
+        onOk={submitLog}
+        confirmLoading={creating}
+        okText="Save"
+      >
+        <Form form={logForm} layout="vertical" initialValues={{ duration: '60m', when: dayjs() }}>
+          <Form.Item
+            name="studentUserId"
+            label="Student"
+            rules={[{ required: true, message: 'Pick a student' }]}
+          >
+            <Select
+              placeholder="Select a student"
+              options={roster.map((r) => ({ value: r.id, label: r.name }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="when"
+            label="Date & time"
+            rules={[{ required: true, message: 'Pick a time' }]}
+          >
+            <DatePicker showTime style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
+            name="duration"
+            label="Duration"
+            rules={[{ required: true, message: 'Pick a duration' }]}
+          >
+            <Select
+              options={[
+                { value: '30m', label: '30 min' },
+                { value: '45m', label: '45 min' },
+                { value: '60m', label: '60 min' },
+                { value: '90m', label: '90 min' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea rows={3} placeholder="What did you cover?" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <SessionReportModal
+        booking={reportBooking}
+        open={!!reportBooking}
+        onClose={() => setReportBooking(null)}
+      />
+    </div>
+  );
+}

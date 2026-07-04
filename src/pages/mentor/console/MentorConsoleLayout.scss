@@ -116,6 +116,97 @@
   font-weight: 600;
 }
 
+/* "N pending" chip on the Schedule nav item — reports waiting to be filed. */
+.mentor-console-nav-pending {
+  font-size: 10.5px;
+  line-height: 1;
+  font-weight: 700;
+  background: var(--mc-danger-soft);
+  color: var(--mc-danger);
+  border-radius: 999px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* "My students" roster rows — the sidebar is the student switcher. */
+.mentor-console-student-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--mc-bg-hover);
+  }
+}
+
+.mentor-console-student-item--active {
+  background: var(--mc-accent-soft);
+
+  .mentor-console-student-name {
+    color: var(--mc-accent);
+  }
+}
+
+.mentor-console-student-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.mentor-console-student-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.mentor-console-student-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mentor-console-student-program {
+  font-size: 11.5px;
+  color: var(--mc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mentor-console-student-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--mc-border-strong);
+}
+
+.mentor-console-student-dot--attention {
+  background: var(--mc-warning);
+}
+
 .mentor-console-collapse-toggle {
   display: flex;
   align-items: center;
@@ -144,13 +235,17 @@
     padding-left: 10px;
     padding-right: 10px;
   }
-  .mentor-console-nav-item {
+  .mentor-console-nav-item,
+  .mentor-console-student-item {
     justify-content: center;
     padding: 10px;
   }
   .mentor-console-nav-item-label,
   .mentor-console-nav-group-label,
-  .mentor-console-brand-sub {
+  .mentor-console-brand-sub,
+  .mentor-console-nav-pending,
+  .mentor-console-student-meta,
+  .mentor-console-student-dot {
     display: none;
   }
   .mentor-console-brand {
@@ -824,7 +919,20 @@ img.mentor-console-user-avatar--image {
     display: block !important;
   }
 
-  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-nav-item {
+  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-nav-pending {
+    display: inline-flex !important;
+  }
+
+  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-student-meta {
+    display: flex !important;
+  }
+
+  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-student-dot {
+    display: block !important;
+  }
+
+  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-nav-item,
+  .mentor-console-app--mobile-layout .mentor-console-sider--mobile .mentor-console-student-item {
     justify-content: flex-start !important;
   }
 

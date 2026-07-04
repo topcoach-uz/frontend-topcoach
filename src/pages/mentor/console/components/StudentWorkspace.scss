@@ -1,43 +1,9 @@
 /* Full Support — student workspace (full page, tabbed). Editorial tokens. */
 
-.mc-ws-kpis {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.mc-ws-kpi {
-  flex: 1;
-  min-width: 120px;
-  padding: 14px 16px;
-  background: var(--mc-bg-surface);
-  border: 1px solid var(--mc-border);
-  border-radius: var(--mc-radius-sm);
-  box-shadow: var(--mc-shadow-sm);
-}
-
-.mc-ws-kpi--accent {
-  background: var(--mc-accent-soft);
-  border-color: var(--mc-accent-soft-strong);
-}
-
-.mc-ws-kpi-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--mc-text-muted);
-}
-
-.mc-ws-kpi-value {
-  font-family: var(--mc-serif);
-  font-size: 1.9rem;
-  font-weight: 500;
-  color: var(--mc-accent);
-  line-height: 1.1;
-  margin-top: 4px;
-  font-variant-numeric: tabular-nums;
+/* Stat cards under the identity header (Total sessions / Reports filed /
+   Open tasks / Essays) reuse the shared .mc-stat tiles. */
+.mc-ws-stats {
+  margin-bottom: 22px;
 }
 
 .mc-ws-tab-count {
@@ -159,6 +125,20 @@
   margin-bottom: 6px;
 }
 
+/* Mockup-style identity header — big avatar, serif name, program subtitle. */
+.mc-ws-identity--hero {
+  gap: 18px;
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--mc-hairline);
+}
+
+.mc-ws-identity-avatar {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 18px !important;
+}
+
 .mc-ws-identity-name {
   font-family: var(--mc-serif);
   font-size: 1.8rem;
@@ -172,4 +152,132 @@
   font-size: 13px;
   color: var(--mc-text-muted);
   margin-top: 2px;
+}
+
+/* ── Task list — mockup-style checklist rows ──────────── */
+.mc-ws-tasklist {
+  display: flex;
+  flex-direction: column;
+}
+
+.mc-ws-task {
+  border-bottom: 1px solid var(--mc-hairline);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.mc-ws-task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 4px;
+}
+
+.mc-ws-task-check {
+  display: inline-flex;
+  color: var(--mc-text-muted);
+  flex-shrink: 0;
+}
+
+.mc-ws-task-check--done {
+  color: var(--mc-success);
+}
+
+.mc-ws-task-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
+.mc-ws-task-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-ws-task--done .mc-ws-task-title {
+  text-decoration: line-through;
+  color: var(--mc-text-muted);
+  font-weight: 400;
+}
+
+.mc-ws-task-due {
+  font-size: 12.5px;
+  color: var(--mc-text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-ws-task-due--overdue {
+  color: var(--mc-danger);
+  font-weight: 600;
+}
+
+.mc-ws-task-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mc-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    color: var(--mc-danger);
+    background: var(--mc-danger-soft);
+  }
+}
+
+.mc-ws-task-detail {
+  padding: 2px 4px 14px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-ws-task-detail-text {
+  white-space: pre-wrap;
+  font-size: 13px;
+  color: var(--mc-text-secondary);
+  background: var(--mc-bg-subtle);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+/* Inline quick-add row — title + due date + Add, mockup style. */
+.mc-ws-task-add {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--mc-hairline);
+
+  .ant-input {
+    flex: 1;
+  }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+  }
+}
+
+.mc-ws-more-switch {
+  margin-bottom: 14px;
 }

@@ -7,6 +7,7 @@ import {
   Modal,
   Popconfirm,
   Progress,
+  Segmented,
   Select,
   Space,
   Spin,
@@ -17,16 +18,18 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import type { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import {
   Calendar,
+  CalendarCheck,
+  CheckCircle2,
   CheckSquare,
+  Circle,
   ClipboardList,
   FileText,
-  FlaskConical,
   Flag,
-  BookOpen,
   Plus,
+  X,
 } from 'lucide-react';
 import {
   useCreateMentorMilestoneMutation,
@@ -54,6 +57,7 @@ import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
 import { useMentorBookings } from '../sessionSources';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
+import { McStat } from './McStat';
 import { formatDate, formatDateTime } from '../utils';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import './StudentWorkspace.scss';
@@ -83,6 +87,7 @@ const RG_LABEL: Record<ResearchSubmission['status'], string> = {
 };
 
 type TaskScope = 'open' | 'awaiting-review' | 'done';
+type MoreView = 'milestones' | 'research' | 'curriculum';
 
 function taskStatus(t: TaskDto): TaskScope {
   if (t.hasFeedback) return 'done';
@@ -105,7 +110,9 @@ function tabLabel(label: string, count?: number) {
   return (
     <span>
       {label}
-      {typeof count === 'number' ? <span className="mc-ws-tab-count">{count}</span> : null}
+      {typeof count === 'number' && count > 0 ? (
+        <span className="mc-ws-tab-count">{count}</span>
+      ) : null}
     </span>
   );
 }
@@ -115,11 +122,13 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
 
-  // Sessions first (your pick); heavy sections load only when their tab opens.
-  const [activeTab, setActiveTab] = useState('sessions');
+  // Tasks first — the mockup's everyday view. Heavy sections load lazily.
+  const [activeTab, setActiveTab] = useState('tasks');
+  const [moreView, setMoreView] = useState<MoreView>('milestones');
 
-  const [assignTaskOpen, setAssignTaskOpen] = useState(false);
-  const [assignTaskForm] = Form.useForm<{ task: string; deadline: Dayjs; description?: string }>();
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [quickTaskTitle, setQuickTaskTitle] = useState('');
+  const [quickTaskDeadline, setQuickTaskDeadline] = useState<Dayjs | null>(null);
   const [feedbackTask, setFeedbackTask] = useState<TaskDto | null>(null);
   const [feedbackForm] = Form.useForm<{ feedback: string }>();
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
@@ -130,27 +139,28 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
   const [pipelineForm] = Form.useForm<{ program: string; stage?: string; status?: string; deadline?: Dayjs | null }>();
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
 
-  // Always loaded — power the KPI strip + tab badges + default Sessions tab.
+  // Always loaded — power the stat cards + tab badges.
   const { bookings, isLoading: loadingBookings } = useMentorBookings(studentId, {
     includeFullSupport: true,
   });
   const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !studentId });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
 
-  // Lazy — fetched only when the matching tab is active.
+  // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: sessionsRes, isFetching: loadingSessions } = useGetMentorSessionsQuery(
     studentId || null,
     { skip: activeTab !== 'session-log' },
   );
   const { data: milestonesRes, isFetching: loadingMilestones } = useGetMentorMilestonesQuery(
     studentId,
-    { skip: activeTab !== 'milestones' },
+    { skip: activeTab !== 'more' || moreView !== 'milestones' },
   );
   const { data: curriculumRes } = useGetMentorCurriculumProgressQuery(studentId, {
-    skip: activeTab !== 'curriculum',
+    skip: activeTab !== 'more' || moreView !== 'curriculum',
   });
   const { data: inbox, isFetching: loadingInbox } = useGetGraderInboxQuery(undefined, {
-    skip: activeTab !== 'research' || !hasFullSupport || !researchPrepLive,
+    skip:
+      activeTab !== 'more' || moreView !== 'research' || !hasFullSupport || !researchPrepLive,
   });
 
   const tasks = useMemo<TaskDto[]>(
@@ -182,9 +192,226 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
   );
 
   const openTasksCount = useMemo(
-    () => tasks.filter((t) => taskStatus(t) === 'open' || taskStatus(t) === 'awaiting-review').length,
+    () => tasks.filter((t) => taskStatus(t) !== 'done').length,
     [tasks],
   );
+  const awaitingReviewCount = useMemo(
+    () => tasks.filter((t) => taskStatus(t) === 'awaiting-review').length,
+    [tasks],
+  );
+  const reportsFiled = useMemo(
+    () => studentBookings.filter((b) => b.status === 'completed').length,
+    [studentBookings],
+  );
+  const reportsDue = useMemo(
+    () => studentBookings.filter((b) => b.status === 'report-due').length,
+    [studentBookings],
+  );
+
+  const [createTask, { isLoading: creatingTask }] = useCreateMentorTaskMutation();
+  const [updateFeedback, { isLoading: savingFeedback }] = useUpdateMentorTaskFeedbackMutation();
+  const [deleteTask] = useDeleteMentorTaskMutation();
+  const [createMilestone, { isLoading: creatingMs }] = useCreateMentorMilestoneMutation();
+  const [updateMilestone] = useUpdateMentorMilestoneMutation();
+  const [deleteMilestone] = useDeleteMentorMilestoneMutation();
+  const [createSession, { isLoading: creatingSession }] = useCreateMentorSessionMutation();
+  const [createPipeline, { isLoading: creatingPl }] = useCreateMentorPipelineRowMutation();
+  const [deletePipeline] = useDeleteMentorPipelineRowMutation();
+
+  const submitQuickTask = async () => {
+    const title = quickTaskTitle.trim();
+    if (!title) {
+      message.warning('Give the task a title');
+      return;
+    }
+    if (!quickTaskDeadline) {
+      message.warning('Pick a due date');
+      return;
+    }
+    await createTask({
+      studentUserId: studentId,
+      task: title,
+      deadline: quickTaskDeadline.toISOString(),
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Task assigned');
+        setQuickTaskTitle('');
+        setQuickTaskDeadline(null);
+      })
+      .catch(() => message.error('Could not assign task'));
+  };
+
+  const submitFeedback = async () => {
+    if (!feedbackTask) return;
+    const values = await feedbackForm.validateFields();
+    await updateFeedback({
+      id: feedbackTask.id,
+      feedback: values.feedback,
+      feedbackFileUrls: feedbackTask.feedbackFileUrls,
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Feedback saved');
+        setFeedbackTask(null);
+      })
+      .catch(() => message.error('Could not save'));
+  };
+
+  const submitMilestone = async () => {
+    const values = await milestoneForm.validateFields();
+    await createMilestone({
+      studentUserId: studentId,
+      label: values.label,
+      date: values.date ? values.date.toISOString() : null,
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Milestone added');
+        setAddMilestoneOpen(false);
+        milestoneForm.resetFields();
+      })
+      .catch(() => message.error('Could not add'));
+  };
+
+  const submitSession = async () => {
+    const values = await sessionForm.validateFields();
+    await createSession({
+      studentUserId: studentId,
+      dateTime: values.when.toISOString(),
+      duration: values.duration,
+      description: values.description || '',
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Session logged');
+        setLogSessionOpen(false);
+        sessionForm.resetFields();
+      })
+      .catch(() => message.error('Could not log session'));
+  };
+
+  const submitPipeline = async () => {
+    const values = await pipelineForm.validateFields();
+    await createPipeline({
+      studentUserId: studentId,
+      program: values.program,
+      stage: values.stage,
+      status: values.status,
+      deadline: values.deadline ? values.deadline.toISOString() : null,
+    })
+      .unwrap()
+      .then(() => {
+        message.success('Application row added');
+        setAddPipelineOpen(false);
+        pipelineForm.resetFields();
+      })
+      .catch(() => message.error('Could not add'));
+  };
+
+  const openFeedbackModal = (t: TaskDto) => {
+    setFeedbackTask(t);
+    feedbackForm.setFieldsValue({ feedback: t.feedback || '' });
+  };
+
+  const sectionHead = (
+    title: string,
+    icon: React.ReactNode,
+    action?: { label: string; onClick: () => void },
+  ) => (
+    <div className="mc-ws-section-head">
+      <h2 className="mc-ws-section-title">
+        {icon}
+        {title}
+      </h2>
+      {action && (
+        <Button type="primary" size="small" icon={<Plus size={14} />} onClick={action.onClick}>
+          {action.label}
+        </Button>
+      )}
+    </div>
+  );
+
+  const renderTaskRow = (t: TaskDto) => {
+    const s = taskStatus(t);
+    const done = s === 'done';
+    const overdue =
+      !done && t.deadline && new Date(t.deadline).getTime() < Date.now();
+    const expanded = expandedTaskId === t.id;
+    const hasDetail = !!(t.submissionText || t.feedback);
+
+    return (
+      <div key={t.id} className={`mc-ws-task${done ? ' mc-ws-task--done' : ''}`}>
+        <div className="mc-ws-task-row">
+          <span
+            className={`mc-ws-task-check${done ? ' mc-ws-task-check--done' : ''}`}
+            title={done ? 'Feedback given' : s === 'awaiting-review' ? 'Awaiting your review' : 'Assigned'}
+          >
+            {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
+          </span>
+
+          <button
+            type="button"
+            className="mc-ws-task-main"
+            onClick={() => hasDetail && setExpandedTaskId(expanded ? null : t.id)}
+            style={{ cursor: hasDetail ? 'pointer' : 'default' }}
+          >
+            <span className="mc-ws-task-title">{t.task}</span>
+            {s === 'awaiting-review' && <McPill variant="warning">Awaiting review</McPill>}
+          </button>
+
+          <span className={`mc-ws-task-due${overdue ? ' mc-ws-task-due--overdue' : ''}`}>
+            {t.deadline ? `Due ${formatDate(t.deadline)}` : ''}
+          </span>
+
+          {s === 'awaiting-review' ? (
+            <Button type="primary" size="small" onClick={() => openFeedbackModal(t)}>
+              Review
+            </Button>
+          ) : (
+            <Button size="small" type="text" onClick={() => openFeedbackModal(t)}>
+              {done ? 'Edit feedback' : 'Feedback'}
+            </Button>
+          )}
+
+          <Popconfirm
+            title="Delete this task?"
+            onConfirm={() =>
+              deleteTask(t.id)
+                .unwrap()
+                .then(() => message.success('Task removed'))
+                .catch(() => message.error('Could not delete'))
+            }
+          >
+            <button type="button" className="mc-ws-task-x" aria-label="Delete task">
+              <X size={15} />
+            </button>
+          </Popconfirm>
+        </div>
+
+        {expanded && hasDetail && (
+          <div className="mc-ws-task-detail">
+            {t.submissionText ? (
+              <>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Student submission
+                </Text>
+                <div className="mc-ws-task-detail-text">{t.submissionText}</div>
+              </>
+            ) : null}
+            {t.feedback ? (
+              <>
+                <Text strong style={{ color: 'var(--mc-accent)', fontSize: 12 }}>
+                  Your feedback
+                </Text>
+                <div className="mc-ws-task-detail-text">{t.feedback}</div>
+              </>
+            ) : null}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const sessionColumns: ColumnsType<SessionLogDto> = [
     {
@@ -211,56 +438,6 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
         if (isPast) return <McPill variant="danger">Report due</McPill>;
         return <McPill variant="info">Upcoming</McPill>;
       },
-    },
-  ];
-
-  const taskColumns: ColumnsType<TaskDto> = [
-    { title: 'Task', dataIndex: 'task', key: 'task' },
-    { title: 'Deadline', dataIndex: 'deadline', key: 'deadline', width: 118, render: (v: string) => formatDate(v) },
-    {
-      title: 'Status',
-      key: 'status',
-      width: 132,
-      render: (_, row) => {
-        const s = taskStatus(row);
-        if (s === 'done') return <McPill variant="success">Feedback given</McPill>;
-        if (s === 'awaiting-review') return <McPill variant="warning">Awaiting review</McPill>;
-        return <McPill variant="info">Assigned</McPill>;
-      },
-    },
-    {
-      title: '',
-      key: 'actions',
-      width: 168,
-      render: (_, row) => (
-        <Space size={4}>
-          <Button
-            size="small"
-            type="primary"
-            ghost
-            style={{ borderColor: 'var(--mc-accent)', color: 'var(--mc-accent)' }}
-            onClick={() => {
-              setFeedbackTask(row);
-              feedbackForm.setFieldsValue({ feedback: row.feedback || '' });
-            }}
-          >
-            {row.hasFeedback ? 'Edit feedback' : 'Feedback'}
-          </Button>
-          <Popconfirm
-            title="Delete this task?"
-            onConfirm={() =>
-              deleteTask(row.id)
-                .unwrap()
-                .then(() => message.success('Task removed'))
-                .catch(() => message.error('Could not delete'))
-            }
-          >
-            <Button size="small" danger type="text">
-              Delete
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
     },
   ];
 
@@ -345,119 +522,50 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
     },
   ];
 
-  const [createTask, { isLoading: creatingTask }] = useCreateMentorTaskMutation();
-  const [updateFeedback, { isLoading: savingFeedback }] = useUpdateMentorTaskFeedbackMutation();
-  const [deleteTask] = useDeleteMentorTaskMutation();
-  const [createMilestone, { isLoading: creatingMs }] = useCreateMentorMilestoneMutation();
-  const [updateMilestone] = useUpdateMentorMilestoneMutation();
-  const [deleteMilestone] = useDeleteMentorMilestoneMutation();
-  const [createSession, { isLoading: creatingSession }] = useCreateMentorSessionMutation();
-  const [createPipeline, { isLoading: creatingPl }] = useCreateMentorPipelineRowMutation();
-  const [deletePipeline] = useDeleteMentorPipelineRowMutation();
-
-  const submitAssignTask = async () => {
-    const values = await assignTaskForm.validateFields();
-    await createTask({
-      studentUserId: studentId,
-      task: values.task,
-      deadline: values.deadline.toISOString(),
-      description: values.description,
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Task assigned');
-        setAssignTaskOpen(false);
-        assignTaskForm.resetFields();
-      })
-      .catch(() => message.error('Could not assign task'));
-  };
-
-  const submitFeedback = async () => {
-    if (!feedbackTask) return;
-    const values = await feedbackForm.validateFields();
-    await updateFeedback({
-      id: feedbackTask.id,
-      feedback: values.feedback,
-      feedbackFileUrls: feedbackTask.feedbackFileUrls,
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Feedback saved');
-        setFeedbackTask(null);
-      })
-      .catch(() => message.error('Could not save'));
-  };
-
-  const submitMilestone = async () => {
-    const values = await milestoneForm.validateFields();
-    await createMilestone({
-      studentUserId: studentId,
-      label: values.label,
-      date: values.date ? values.date.toISOString() : null,
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Milestone added');
-        setAddMilestoneOpen(false);
-        milestoneForm.resetFields();
-      })
-      .catch(() => message.error('Could not add'));
-  };
-
-  const submitSession = async () => {
-    const values = await sessionForm.validateFields();
-    await createSession({
-      studentUserId: studentId,
-      dateTime: values.when.toISOString(),
-      duration: values.duration,
-      description: values.description || '',
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Session logged');
-        setLogSessionOpen(false);
-        sessionForm.resetFields();
-      })
-      .catch(() => message.error('Could not log session'));
-  };
-
-  const submitPipeline = async () => {
-    const values = await pipelineForm.validateFields();
-    await createPipeline({
-      studentUserId: studentId,
-      program: values.program,
-      stage: values.stage,
-      status: values.status,
-      deadline: values.deadline ? values.deadline.toISOString() : null,
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Application row added');
-        setAddPipelineOpen(false);
-        pipelineForm.resetFields();
-      })
-      .catch(() => message.error('Could not add'));
-  };
-
-  const sectionHead = (
-    title: string,
-    icon: React.ReactNode,
-    action?: { label: string; onClick: () => void },
-  ) => (
-    <div className="mc-ws-section-head">
-      <h2 className="mc-ws-section-title">
-        {icon}
-        {title}
-      </h2>
-      {action && (
-        <Button type="primary" size="small" icon={<Plus size={14} />} onClick={action.onClick}>
-          {action.label}
-        </Button>
-      )}
-    </div>
-  );
+  const moreOptions = [
+    { label: 'Milestones', value: 'milestones' },
+    ...(hasFullSupport && researchPrepLive ? [{ label: 'Research', value: 'research' }] : []),
+    { label: 'Curriculum', value: 'curriculum' },
+  ];
 
   const items = [
+    {
+      key: 'tasks',
+      label: tabLabel('Tasks', openTasksCount),
+      children: (
+        <>
+          {sectionHead('Tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+          <div className="mc-ws-card">
+            {tasks.length === 0 ? (
+              <div className="mc-ws-empty">No tasks yet — assign the first one below.</div>
+            ) : (
+              <div className="mc-ws-tasklist">{tasks.map(renderTaskRow)}</div>
+            )}
+            <div className="mc-ws-task-add">
+              <Input
+                placeholder="New task title…"
+                value={quickTaskTitle}
+                onChange={(e) => setQuickTaskTitle(e.target.value)}
+                onPressEnter={submitQuickTask}
+              />
+              <DatePicker
+                placeholder="Due date"
+                value={quickTaskDeadline}
+                onChange={(v) => setQuickTaskDeadline(v)}
+              />
+              <Button
+                type="primary"
+                icon={<Plus size={14} />}
+                loading={creatingTask}
+                onClick={submitQuickTask}
+              >
+                Add task
+              </Button>
+            </div>
+          </div>
+        </>
+      ),
+    },
     {
       key: 'sessions',
       label: tabLabel('Sessions', upcomingSessions.length),
@@ -494,52 +602,27 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
       ),
     },
     {
-      key: 'tasks',
-      label: tabLabel('Tasks', tasks.length),
+      key: 'essays',
+      label: tabLabel('Essays', pipeline.length),
       children: (
         <>
-          {sectionHead('Tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />, {
-            label: 'Add task',
-            onClick: () => setAssignTaskOpen(true),
+          {sectionHead('Essays & applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
+            label: 'Add row',
+            onClick: () => setAddPipelineOpen(true),
           })}
           <div className="mc-ws-card">
-            {tasks.length === 0 ? (
-              <div className="mc-ws-empty">No tasks yet — add the first one above.</div>
+            {pipeline.length === 0 ? (
+              <div className="mc-ws-empty">
+                Track schools and essay stages — add a pipeline row to get started.
+              </div>
             ) : (
-              <Table<TaskDto>
+              <Table<PipelineDto>
                 rowKey="id"
-                columns={taskColumns}
-                dataSource={tasks}
+                columns={pipelineColumns}
+                dataSource={pipeline}
                 pagination={false}
                 size="small"
                 scroll={{ x: true }}
-                expandable={{
-                  expandedRowRender: (row) => (
-                    <div style={{ padding: '4px 8px 12px', maxWidth: 720 }}>
-                      {row.submissionText ? (
-                        <>
-                          <Text strong>Student submission</Text>
-                          <div style={{ whiteSpace: 'pre-wrap', marginTop: 6, fontSize: 13 }}>
-                            {row.submissionText}
-                          </div>
-                        </>
-                      ) : (
-                        <Text type="secondary">No submission yet.</Text>
-                      )}
-                      {row.feedback ? (
-                        <>
-                          <div style={{ marginTop: 12 }} />
-                          <Text strong style={{ color: 'var(--mc-accent)' }}>
-                            Your feedback
-                          </Text>
-                          <div style={{ whiteSpace: 'pre-wrap', marginTop: 6, fontSize: 13 }}>
-                            {row.feedback}
-                          </div>
-                        </>
-                      ) : null}
-                    </div>
-                  ),
-                }}
               />
             )}
           </div>
@@ -577,144 +660,118 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
       ),
     },
     {
-      key: 'essays',
-      label: tabLabel('Essays', pipeline.length),
+      key: 'more',
+      label: tabLabel('More'),
       children: (
         <>
-          {sectionHead('Essays & applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
-            label: 'Add row',
-            onClick: () => setAddPipelineOpen(true),
-          })}
-          <div className="mc-ws-card">
-            {pipeline.length === 0 ? (
-              <div className="mc-ws-empty">
-                Track schools and essay stages — add a pipeline row to get started.
-              </div>
-            ) : (
-              <Table<PipelineDto>
-                rowKey="id"
-                columns={pipelineColumns}
-                dataSource={pipeline}
-                pagination={false}
-                size="small"
-                scroll={{ x: true }}
-              />
-            )}
+          <div className="mc-ws-more-switch">
+            <Segmented
+              value={moreView}
+              onChange={(v) => setMoreView(v as MoreView)}
+              options={moreOptions}
+            />
           </div>
-        </>
-      ),
-    },
-    {
-      key: 'milestones',
-      label: tabLabel('Milestones', milestonesRes ? milestones.length : undefined),
-      children: (
-        <>
-          {sectionHead('Milestones', <Flag size={18} color="var(--mc-accent)" aria-hidden />, {
-            label: 'Add milestone',
-            onClick: () => setAddMilestoneOpen(true),
-          })}
-          <div className="mc-ws-card">
-            {loadingMilestones ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-                <Spin />
-              </div>
-            ) : milestones.length === 0 ? (
-              <div className="mc-ws-empty">No milestones — add key dates and deliverables here.</div>
-            ) : (
-              <Table<MilestoneDto>
-                rowKey="id"
-                columns={milestoneColumns}
-                dataSource={milestones}
-                pagination={false}
-                size="small"
-                scroll={{ x: true }}
-              />
-            )}
-          </div>
-        </>
-      ),
-    },
-    ...(hasFullSupport && researchPrepLive
-      ? [
-          {
-            key: 'research',
-            label: tabLabel('Research', inbox ? researchForStudent.length : undefined),
-            children: (
-              <>
-                {sectionHead('Research grading', <FlaskConical size={18} color="var(--mc-accent)" aria-hidden />)}
-                <div className="mc-ws-card" style={{ padding: 0 }}>
-                  {loadingInbox ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-                      <Spin />
-                    </div>
-                  ) : researchForStudent.length === 0 ? (
-                    <div className="mc-ws-empty">No research submissions from this student yet.</div>
-                  ) : (
-                    researchForStudent.map((s) => (
-                      <div
-                        key={s.id}
-                        className="mc-ws-rg-row"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setResearchPick(s)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setResearchPick(s);
-                          }
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>
-                            Week {s.weekNumber} — {s.weekTitle}
-                          </div>
-                          <div className="mc-ws-rg-meta">
-                            Submitted {formatDateTime(s.submittedAt)} · Attempt #{s.attemptNumber}
-                            {s.fileName ? ` · ${s.fileName}` : ''}
-                          </div>
-                        </div>
-                        <Space direction="vertical" size={2} style={{ alignItems: 'flex-end' }}>
-                          {s.status === 'graded' && s.score != null ? (
-                            <Text strong style={{ fontSize: 12 }}>
-                              {s.score}/100
-                            </Text>
-                          ) : null}
-                          <McPill variant={RG_MC[s.status]}>{RG_LABEL[s.status]}</McPill>
-                        </Space>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </>
-            ),
-          },
-        ]
-      : []),
-    {
-      key: 'curriculum',
-      label: tabLabel('Curriculum', curriculumRes ? curriculumItems.length : undefined),
-      children: (
-        <>
-          {sectionHead('Curriculum progress', <BookOpen size={18} color="var(--mc-accent)" aria-hidden />)}
-          <div className="mc-ws-card">
-            {curriculumItems.length === 0 ? (
-              <div className="mc-ws-empty">No curriculum watchlist items yet.</div>
-            ) : (
-              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                {curriculumItems.map((item: CurriculumWatchlistItemDto) => (
-                  <div key={item.key}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-                      <span>{item.label}</span>
-                      <span style={{ color: 'var(--mc-text-muted)' }}>
-                        {item.percent}%{item.target ? ` · target ${item.target}` : ''}
-                      </span>
-                    </div>
-                    <Progress percent={item.percent} showInfo={false} strokeColor="var(--mc-accent)" size="small" />
+
+          {moreView === 'milestones' && (
+            <>
+              {sectionHead('Milestones', <Flag size={18} color="var(--mc-accent)" aria-hidden />, {
+                label: 'Add milestone',
+                onClick: () => setAddMilestoneOpen(true),
+              })}
+              <div className="mc-ws-card">
+                {loadingMilestones ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                    <Spin />
                   </div>
-                ))}
-              </Space>
-            )}
-          </div>
+                ) : milestones.length === 0 ? (
+                  <div className="mc-ws-empty">No milestones — add key dates and deliverables here.</div>
+                ) : (
+                  <Table<MilestoneDto>
+                    rowKey="id"
+                    columns={milestoneColumns}
+                    dataSource={milestones}
+                    pagination={false}
+                    size="small"
+                    scroll={{ x: true }}
+                  />
+                )}
+              </div>
+            </>
+          )}
+
+          {moreView === 'research' && hasFullSupport && researchPrepLive && (
+            <>
+              {sectionHead('Research grading', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+              <div className="mc-ws-card" style={{ padding: 0 }}>
+                {loadingInbox ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                    <Spin />
+                  </div>
+                ) : researchForStudent.length === 0 ? (
+                  <div className="mc-ws-empty">No research submissions from this student yet.</div>
+                ) : (
+                  researchForStudent.map((s) => (
+                    <div
+                      key={s.id}
+                      className="mc-ws-rg-row"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setResearchPick(s)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setResearchPick(s);
+                        }
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>
+                          Week {s.weekNumber} — {s.weekTitle}
+                        </div>
+                        <div className="mc-ws-rg-meta">
+                          Submitted {formatDateTime(s.submittedAt)} · Attempt #{s.attemptNumber}
+                          {s.fileName ? ` · ${s.fileName}` : ''}
+                        </div>
+                      </div>
+                      <Space direction="vertical" size={2} style={{ alignItems: 'flex-end' }}>
+                        {s.status === 'graded' && s.score != null ? (
+                          <Text strong style={{ fontSize: 12 }}>
+                            {s.score}/100
+                          </Text>
+                        ) : null}
+                        <McPill variant={RG_MC[s.status]}>{RG_LABEL[s.status]}</McPill>
+                      </Space>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {moreView === 'curriculum' && (
+            <>
+              {sectionHead('Curriculum progress', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+              <div className="mc-ws-card">
+                {curriculumItems.length === 0 ? (
+                  <div className="mc-ws-empty">No curriculum watchlist items yet.</div>
+                ) : (
+                  <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    {curriculumItems.map((item: CurriculumWatchlistItemDto) => (
+                      <div key={item.key}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                          <span>{item.label}</span>
+                          <span style={{ color: 'var(--mc-text-muted)' }}>
+                            {item.percent}%{item.target ? ` · target ${item.target}` : ''}
+                          </span>
+                        </div>
+                        <Progress percent={item.percent} showInfo={false} strokeColor="var(--mc-accent)" size="small" />
+                      </div>
+                    ))}
+                  </Space>
+                )}
+              </div>
+            </>
+          )}
         </>
       ),
     },
@@ -722,44 +779,44 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
 
   return (
     <>
-      <div className="mc-ws-kpis">
-        <div className="mc-ws-kpi mc-ws-kpi--accent">
-          <div className="mc-ws-kpi-label">Open tasks</div>
-          <div className="mc-ws-kpi-value">{openTasksCount}</div>
-        </div>
-        <div className="mc-ws-kpi">
-          <div className="mc-ws-kpi-label">Upcoming</div>
-          <div className="mc-ws-kpi-value">{upcomingSessions.length}</div>
-        </div>
-        <div className="mc-ws-kpi">
-          <div className="mc-ws-kpi-label">Essays / apps</div>
-          <div className="mc-ws-kpi-value">{pipeline.length}</div>
-        </div>
+      <div className="mc-stat-grid mc-ws-stats">
+        <McStat
+          icon={<Calendar size={18} />}
+          label="Total sessions"
+          value={student.sessionsCount}
+          meta={`${student.used}h of ${student.allocated}h used`}
+          tone="info"
+        />
+        <McStat
+          icon={<CalendarCheck size={18} />}
+          label="Reports filed"
+          value={reportsFiled}
+          meta={reportsDue > 0 ? `${reportsDue} report${reportsDue === 1 ? '' : 's'} due` : 'All filed'}
+          tone={reportsDue > 0 ? 'alert' : 'good'}
+        />
+        <McStat
+          icon={<CheckSquare size={18} />}
+          label="Open tasks"
+          value={openTasksCount}
+          meta={
+            awaitingReviewCount > 0
+              ? `${awaitingReviewCount} awaiting review`
+              : openTasksCount > 0
+                ? 'Assigned'
+                : 'All caught up'
+          }
+          tone={awaitingReviewCount > 0 ? 'warn' : 'neutral'}
+        />
+        <McStat
+          icon={<FileText size={18} />}
+          label="Essays"
+          value={pipeline.length}
+          meta="Applications & essays"
+          tone="neutral"
+        />
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} destroyInactiveTabPane />
-
-      <Modal
-        title="Assign task"
-        open={assignTaskOpen}
-        onCancel={() => setAssignTaskOpen(false)}
-        onOk={submitAssignTask}
-        confirmLoading={creatingTask}
-        okText="Assign"
-        destroyOnClose
-      >
-        <Form form={assignTaskForm} layout="vertical">
-          <Form.Item name="task" label="Task" rules={[{ required: true, message: 'Describe the task' }]}>
-            <Input placeholder="e.g. Draft supplemental essay" />
-          </Form.Item>
-          <Form.Item name="deadline" label="Deadline" rules={[{ required: true, message: 'Pick a deadline' }]}>
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="description" label="Instructions (optional)">
-            <Input.TextArea rows={3} />
-          </Form.Item>
-        </Form>
-      </Modal>
 
       <Modal
         title={feedbackTask?.hasFeedback ? 'Edit feedback' : 'Give feedback'}
@@ -833,11 +890,11 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
         okText="Save"
         destroyOnClose
       >
-        <Form form={sessionForm} layout="vertical">
+        <Form form={sessionForm} layout="vertical" initialValues={{ when: dayjs(), duration: '1h' }}>
           <Form.Item name="when" label="When" rules={[{ required: true, message: 'Pick date & time' }]}>
             <DatePicker showTime style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="duration" label="Duration" rules={[{ required: true, message: 'e.g. 1h' }]} initialValue="1h">
+          <Form.Item name="duration" label="Duration" rules={[{ required: true, message: 'e.g. 1h' }]}>
             <Input placeholder="1h" />
           </Form.Item>
           <Form.Item name="description" label="Notes">

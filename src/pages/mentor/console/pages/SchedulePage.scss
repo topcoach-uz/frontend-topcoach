@@ -1,0 +1,389 @@
+/* Mentor Schedule — the console home. Editorial layout: report banner,
+   featured next-session card, then Upcoming / Report due / Past / Cancelled
+   as underlined magazine tabs over session rows. Built on --mc-* tokens. */
+
+.mc-sched {
+  position: relative;
+}
+
+/* Faint warm glow top-left so the canvas isn't a flat slab. */
+.mc-sched::before {
+  content: '';
+  position: absolute;
+  inset: -48px -48px auto -48px;
+  height: 340px;
+  background: radial-gradient(110% 90% at 12% 0%, rgba(123, 31, 47, 0.05), transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+}
+.mc-sched > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hero ─────────────────────────────────────────────── */
+.mc-sched-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--mc-hairline);
+}
+
+.mc-sched-date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 14px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-sm);
+  flex-shrink: 0;
+}
+.mc-sched-date-day {
+  font-family: var(--mc-serif);
+  font-size: 2.1rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--mc-accent);
+  letter-spacing: -0.02em;
+}
+.mc-sched-date-rest {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mc-text-muted);
+  line-height: 1.45;
+}
+@media (max-width: 700px) {
+  .mc-sched-date {
+    display: none;
+  }
+}
+
+/* ── Availability nudge (non-FS mentors without hours) ── */
+.mc-sched-nudge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 16px;
+  margin-bottom: 18px;
+  border: 1px dashed var(--mc-border-strong);
+  border-radius: var(--mc-radius-sm);
+  background: var(--mc-bg-subtle);
+  color: var(--mc-text-secondary);
+  font-size: 13.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  b {
+    color: var(--mc-text);
+  }
+  svg {
+    flex-shrink: 0;
+    color: var(--mc-accent);
+  }
+  span {
+    flex: 1;
+  }
+  &:hover {
+    border-color: var(--mc-accent-ring);
+    color: var(--mc-accent);
+  }
+}
+
+/* ── Featured next session ────────────────────────────── */
+.mc-sched-feature {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 26px;
+  margin-bottom: 26px;
+  background: linear-gradient(120deg, var(--mc-accent-soft), var(--mc-bg-surface) 55%);
+  border: 1px solid var(--mc-accent-ring);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-md);
+}
+
+.mc-sched-feature-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-right: 24px;
+  border-right: 1px solid var(--mc-hairline);
+  flex-shrink: 0;
+}
+.mc-sched-feature-day {
+  font-family: var(--mc-serif);
+  font-size: 2.7rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--mc-accent);
+  letter-spacing: -0.02em;
+}
+.mc-sched-feature-month {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mc-text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+.mc-sched-feature-body {
+  flex: 1;
+  min-width: 0;
+}
+.mc-sched-feature-pill {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mc-accent);
+  background: var(--mc-accent-soft-strong);
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin-bottom: 7px;
+}
+.mc-sched-feature-name {
+  font-family: var(--mc-serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--mc-text);
+  line-height: 1.15;
+}
+.mc-sched-feature-when {
+  font-size: 14px;
+  color: var(--mc-text-secondary);
+  margin-top: 4px;
+
+  b {
+    color: var(--mc-text);
+    font-weight: 600;
+  }
+}
+.mc-sched-feature-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .mc-sched-feature {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .mc-sched-feature-date {
+    border-right: none;
+    padding-right: 0;
+  }
+  .mc-sched-feature-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+}
+
+/* ── Tab bar — underlined, magazine style ─────────────── */
+.mc-sched-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  border-bottom: 1px solid var(--mc-hairline);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.mc-sched-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 2px 11px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--mc-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: var(--mc-text);
+  }
+}
+
+.mc-sched-tab--active {
+  color: var(--mc-accent);
+  border-bottom-color: var(--mc-accent);
+}
+
+.mc-sched-tab-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: var(--mc-bg-subtle);
+  color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-hairline);
+  line-height: 1.4;
+}
+.mc-sched-tab--active .mc-sched-tab-count {
+  background: var(--mc-accent-soft-strong);
+  color: var(--mc-accent);
+  border-color: transparent;
+}
+.mc-sched-tab--alert .mc-sched-tab-count {
+  background: var(--mc-danger-soft);
+  color: var(--mc-danger);
+  border-color: transparent;
+}
+
+.mc-sched-tabbar-tools {
+  margin-left: auto;
+  padding-bottom: 8px;
+}
+@media (max-width: 700px) {
+  .mc-sched-tabbar-tools {
+    margin-left: 0;
+    width: 100%;
+    order: 10;
+  }
+}
+
+/* ── Session rows ─────────────────────────────────────── */
+.mc-sched-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mc-sched-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 20px;
+  background: var(--mc-bg-surface);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius);
+  box-shadow: var(--mc-shadow-sm);
+}
+
+.mc-sched-row--due {
+  border-color: rgba(185, 28, 28, 0.26);
+  background: linear-gradient(180deg, rgba(185, 28, 28, 0.04), var(--mc-bg-surface) 72%);
+}
+
+.mc-sched-row-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+.mc-sched-row-day {
+  font-family: var(--mc-serif);
+  font-size: 1.65rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--mc-text);
+  letter-spacing: -0.02em;
+}
+.mc-sched-row-month {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mc-text-muted);
+  margin-top: 3px;
+}
+
+.mc-sched-row-info {
+  flex: 1;
+  min-width: 0;
+  border-left: 1px solid var(--mc-hairline);
+  padding-left: 18px;
+}
+.mc-sched-row-name {
+  font-family: var(--mc-serif);
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--mc-text);
+  line-height: 1.2;
+}
+.mc-sched-row-when {
+  font-size: 13px;
+  color: var(--mc-text-secondary);
+  margin-top: 2px;
+}
+.mc-sched-row-meta {
+  font-size: 12px;
+  color: var(--mc-text-muted);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-sched-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mc-sched-row-ghost {
+  color: var(--mc-text-secondary) !important;
+
+  &:hover {
+    color: var(--mc-accent) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .mc-sched-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .mc-sched-row-info {
+    border-left: none;
+    padding-left: 0;
+    flex-basis: calc(100% - 60px);
+  }
+  .mc-sched-row-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ── Empty states ─────────────────────────────────────── */
+.mc-sched-empty {
+  padding: 34px 16px;
+  border: 1px dashed var(--mc-border-strong);
+  border-radius: var(--mc-radius);
+  background: var(--mc-bg-subtle);
+}
+
+.mc-sched-empty-good {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: var(--mc-text-secondary);
+  font-size: 14px;
+}
