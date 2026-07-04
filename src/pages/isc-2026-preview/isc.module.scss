@@ -1084,3 +1084,86 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   .reviewLayout, .cardGrid, .splitLayout, .detailGrid { grid-template-columns: 1fr; }
   .scoreCard { position: static; }
 }
+
+/* ── Final decisions: toolbar, ranking, reversible-decision state ──── */
+.decisionToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.sortWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.toolbarLabel {
+  font-size: 0.78rem;
+  color: $muted;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.toolbarSpacer { flex: 1 1 auto; }
+.miniInput {
+  width: 108px;
+  padding: 8px 10px;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: $surface;
+  font-size: 0.85rem;
+  color: $ink;
+  &:focus { outline: none; border-color: $crimson; }
+  &::placeholder { color: $faint; }
+}
+.countPill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: $crimson-tint;
+  color: $crimson;
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.rankNum {
+  flex: 0 0 auto;
+  min-width: 22px;
+  text-align: center;
+  font-family: $serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $crimson;
+  font-variant-numeric: tabular-nums;
+}
+.currentDecision {
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid $line;
+  border-left: 3px solid $crimson;
+  border-radius: 8px;
+  background: $paper;
+  font-size: 0.82rem;
+  color: $slate;
+  strong { color: $crimson; }
+}
+.decisionActive {
+  box-shadow: 0 0 0 2px rgba(123, 31, 47, 0.25) inset;
+  font-weight: 700;
+}
+
+/* Reviewer: "editing your submitted review" chip in the scoring header. */
+.editingChip {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: $amber-soft;
+  color: $amber;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+}

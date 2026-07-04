@@ -166,6 +166,9 @@ export interface IscListParams {
   reviewerUserId?: string;
   q?: string;
   minScore?: number;
+  maxScore?: number;
+  minAiScore?: number;
+  maxAiScore?: number;
   sort?: 'submittedAt' | 'aiScore' | 'reviewScoreAvg';
 }
 

@@ -441,3 +441,148 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   .fieldRow, .fieldRow2 { grid-template-columns: 1fr; }
   .reviewRow { grid-template-columns: 1fr; }
 }
+
+/* ── Accepted celebration screen + confetti ───────────────────────── */
+.acceptedCard {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 40px 34px 34px;
+  border: 1px solid $line;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 50% -10%, lighten($crimson-tint, 2%), $surface 62%);
+  box-shadow: 0 24px 60px -30px rgba(93, 22, 34, 0.45);
+}
+.acceptedGlow {
+  position: absolute;
+  top: -140px;
+  left: 50%;
+  width: 460px;
+  height: 300px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(201, 154, 46, 0.28), transparent 70%);
+  pointer-events: none;
+}
+.acceptedSeal {
+  position: relative;
+  font-size: 3.4rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 8px 18px rgba(123, 31, 47, 0.28));
+  animation: seal-pop 0.7s cubic-bezier(0.2, 1.4, 0.5, 1) both;
+}
+@keyframes seal-pop {
+  0% { transform: scale(0.4) rotate(-12deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.acceptedEyebrow {
+  position: relative;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $crimson;
+  margin-bottom: 10px;
+}
+.acceptedTitle {
+  position: relative;
+  font-family: $serif;
+  font-size: 2rem;
+  line-height: 1.12;
+  font-weight: 600;
+  color: $crimson-deep;
+  margin: 0 0 12px;
+}
+.acceptedLede {
+  position: relative;
+  max-width: 46ch;
+  margin: 0 auto 6px;
+  color: $slate;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+.acceptedDivider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px auto;
+  max-width: 240px;
+  color: $crimson;
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $line;
+  }
+  span { font-size: 0.85rem; }
+}
+.acceptedMetaRow {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.acceptedMeta {
+  min-width: 120px;
+  padding: 12px 16px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: $surface;
+  span {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $muted;
+    margin-bottom: 4px;
+  }
+  strong { font-size: 0.95rem; color: $ink-strong; font-weight: 600; }
+}
+.acceptedStatus { color: $green !important; }
+.acceptedNext {
+  position: relative;
+  text-align: left;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  border: 1px solid $line;
+  border-left: 3px solid $crimson;
+  border-radius: 10px;
+  background: $paper;
+  color: $slate;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  strong { display: block; color: $ink-strong; margin-bottom: 4px; }
+  a { color: $crimson; font-weight: 600; }
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 60;
+}
+.confettiPiece {
+  position: absolute;
+  top: -12%;
+  display: block;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  100% { transform: translateY(108vh) rotate(620deg); opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti { display: none; }
+  .acceptedSeal { animation: none; }
+}

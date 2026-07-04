@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 import { Inbox, ArrowLeft, UserPlus, ArrowRight, Trash2, X, MoreVertical, Download, FileText } from 'lucide-react';
 import s from './isc.module.scss';
 import { hostName } from '../../app/services/api/const';
+import { api } from '../../app/api';
 import {
   SCORE_DIMENSIONS,
   STATUS_LABEL,
@@ -73,52 +74,34 @@ const draftRaw = (app: IscApplicationRow | undefined, section: string, key: stri
 const docDownloadUrl = (appId: string, kind: string): string =>
   `${hostName}/api/isc-admissions/documents/${appId}/${kind}`;
 
-/** CSV-escape a cell (wrap in quotes, double inner quotes). */
-const csvCell = (v: unknown): string => `"${String(v ?? '').replace(/"/g, '""')}"`;
-
-/** Build + download a CSV of the given applications. */
-function downloadApplicationsCsv(rows: IscApplicationRow[], filename: string) {
-  const headers = [
-    'Name', 'Email', 'Phone', 'Telegram', 'Program', 'Type', 'Grade',
-    'Country of residence', 'Passport #', 'English test', 'English score', 'SAT',
-    'University', 'Degree', 'Grad year', 'GPA', 'GRE', 'GMAT', 'Submitted',
-    'Status', 'AI score', 'Review avg',
-  ];
-  const lines = rows.map((r) =>
-    [
-      r.fullName ?? '',
-      r.email ?? '',
-      draftRaw(r, 'personal', 'phone') ?? '',
-      draftRaw(r, 'personal', 'telegram') ?? '',
-      PROGRAM_LABEL(r.program),
-      TYPE_LABEL(r.applicantType),
-      draftRaw(r, 'personal', 'grade') ?? '',
-      draftRaw(r, 'personal', 'countryOfResidence') ?? '',
-      draftRaw(r, 'personal', 'passportNumber') ?? '',
-      draftRaw(r, 'academics', 'englishTest') ?? '',
-      draftRaw(r, 'academics', 'englishScore') ?? '',
-      draftRaw(r, 'academics', 'satScore') ?? '',
-      draftRaw(r, 'academics', 'university') ?? '',
-      draftRaw(r, 'academics', 'degree') ?? '',
-      draftRaw(r, 'academics', 'gradYear') ?? '',
-      draftRaw(r, 'academics', 'gpa') ?? '',
-      draftRaw(r, 'academics', 'gre') ?? '',
-      draftRaw(r, 'academics', 'gmat') ?? '',
-      r.submittedAt ? r.submittedAt.slice(0, 10) : '',
-      STATUS_LABEL[r.status] ?? r.status,
-      r.aiScore ?? '',
-      r.reviewScoreAvg ?? '',
-    ].map(csvCell).join(','),
-  );
-  // Prepend BOM so Excel reads UTF-8 correctly.
-  const csv = '﻿' + [headers.map(csvCell).join(','), ...lines].join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+/**
+ * Download a ranked, fully-detailed CSV from the server. The params decide the
+ * scope, so the three export modes share one code path:
+ *   - {}                    → every application ("all")
+ *   - { ...filters, sort }  → the current filtered view ("filtered")
+ *   - { ids: 'a,b,c' }      → an explicit checkbox selection ("selected")
+ */
+async function downloadIscExport(
+  params: Record<string, string | number | undefined>,
+  label: string,
+): Promise<void> {
+  try {
+    const res = await api.instance.get(
+      '/isc-admissions/admin/applications/export',
+      { params, responseType: 'blob' },
+    );
+    const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `isc-applications-${label}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Export ready — check your downloads.');
+  } catch {
+    toast('Could not export. Please try again.');
+  }
 }
 
 const num = (v?: string | null): number | null => {
@@ -258,6 +241,8 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   const [applicantType, setApplicantType] = useState('all');
   const [status, setStatus] = useState('all');
   const [minScore, setMinScore] = useState(0);
+  const [minAiScore, setMinAiScore] = useState(0);
+  const [sort, setSort] = useState<'submittedAt' | 'reviewScoreAvg' | 'aiScore'>('submittedAt');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [assignTo, setAssignTo] = useState('');
@@ -271,7 +256,8 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
     applicantType: applicantType !== 'all' ? (applicantType as IscApplicantType) : undefined,
     status: status !== 'all' ? (status as IscApplicationStatus) : undefined,
     minScore: minScore > 0 ? minScore : undefined,
-    sort: 'submittedAt',
+    minAiScore: minAiScore > 0 ? minAiScore : undefined,
+    sort,
     page,
     limit: PAGE_SIZE,
   });
@@ -286,7 +272,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   // Any filter change resets to the first page.
   useEffect(() => {
     setPage(1);
-  }, [q, program, applicantType, status, minScore]);
+  }, [q, program, applicantType, status, minScore, minAiScore, sort]);
 
   // default the assign-to select to the first reviewer once they load
   const effectiveAssignTo = assignTo || reviewers?.[0]?.id || '';
@@ -297,18 +283,26 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); };
+  const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); setMinAiScore(0); setSort('submittedAt'); };
   const filtersActive =
-    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0;
-  const exportCsv = () => {
-    const rows = selected.size
-      ? items.filter((a) => selected.has(a.id))
-      : items;
-    if (!rows.length) return toast('No applications to export.');
-    const stamp = new Date().toISOString().slice(0, 10);
-    downloadApplicationsCsv(rows, `isc-applications-${stamp}.csv`);
-    toast(`Exported ${rows.length} application${rows.length > 1 ? 's' : ''}.`);
+    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0 || minAiScore > 0 || sort !== 'submittedAt';
+  // Server-side exports (ranked, full detail, across ALL matching rows — not
+  // just the current page). Three explicit scopes:
+  const exportFilters = (): Record<string, string | number | undefined> => ({
+    q: q || undefined,
+    program: program !== 'all' ? program : undefined,
+    applicantType: applicantType !== 'all' ? applicantType : undefined,
+    status: status !== 'all' ? status : undefined,
+    minScore: minScore > 0 ? minScore : undefined,
+    minAiScore: minAiScore > 0 ? minAiScore : undefined,
+    sort,
+  });
+  const exportSelected = () => {
+    if (!selected.size) return toast('Select applicants to export first.');
+    downloadIscExport({ ids: Array.from(selected).join(',') }, 'selected');
   };
+  const exportFiltered = () => downloadIscExport(exportFilters(), 'filtered');
+  const exportAll = () => downloadIscExport({}, 'all');
   const assign = async () => {
     if (!selected.size) return toast('Select applicants to assign first.');
     if (!effectiveAssignTo) return toast('No reviewer available to assign.');
@@ -342,12 +336,35 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       </div>
       <div className={s.filters}>
         <label className={s.minScore}>
-          Min score
+          Min review
           <input type="range" min={0} max={50} value={minScore} onChange={(e) => setMinScore(Number(e.target.value))} />
           <b>{minScore}</b>
         </label>
-        <button className={s.btn} onClick={exportCsv}>
-          <Download size={15} /> Export CSV{selected.size ? ` (${selected.size})` : ''}
+        <label className={s.minScore}>
+          Min AI
+          <input type="range" min={0} max={50} value={minAiScore} onChange={(e) => setMinAiScore(Number(e.target.value))} />
+          <b>{minAiScore}</b>
+        </label>
+        <div className={s.sortWrap}>
+          <span className={s.toolbarLabel}>Sort</span>
+          <Sel
+            value={sort}
+            onChange={(v) => setSort(v as typeof sort)}
+            options={[['submittedAt', 'Most recent'], ['reviewScoreAvg', 'Reviewer score'], ['aiScore', 'AI score']]}
+          />
+        </div>
+        {selected.size > 0 && (
+          <button className={s.btn} onClick={exportSelected}>
+            <Download size={15} /> Export selected ({selected.size})
+          </button>
+        )}
+        {filtersActive && (
+          <button className={s.btn} onClick={exportFiltered}>
+            <Download size={15} /> Export filtered
+          </button>
+        )}
+        <button className={s.btn} onClick={exportAll}>
+          <Download size={15} /> Export all
         </button>
         <div className={s.assignCluster}>
           <span className={s.assignHint}>{selected.size} selected</span>
@@ -692,67 +709,166 @@ function DocLink({ label, present, href }: { label: string; present: boolean; hr
 
 
 /* ── Final decisions ────────────────────────────────────────── */
-export function FinalDecisionsPage() {
-  // Applicants are ready for a decision once their review is complete.
-  const { data: reviewedData } = useGetIscAdminApplicationsQuery({ status: 'reviewed', page: 1 });
-  const awaiting = reviewedData?.items ?? [];
-  const [selId, setSelId] = useState<string | null>(null);
+const DECISION_STATUS_OPTS: string[][] = [
+  ['reviewed', 'Awaiting decision'],
+  ['accepted', 'Accepted'],
+  ['waitlisted', 'Waitlisted'],
+  ['rejected', 'Not selected'],
+  ['all', 'All (decision stage)'],
+];
+const DECISION_SORT_OPTS: string[][] = [
+  ['reviewScoreAvg', 'Reviewer score'],
+  ['aiScore', 'AI score'],
+  ['submittedAt', 'Most recent'],
+];
 
-  const effectiveSelId = selId ?? awaiting[0]?.id ?? null;
+export function FinalDecisionsPage() {
+  const [status, setStatus] = useState('reviewed');
+  const [sort, setSort] = useState<'reviewScoreAvg' | 'aiScore' | 'submittedAt'>('reviewScoreAvg');
+  const [minScore, setMinScore] = useState('');
+  const [minAiScore, setMinAiScore] = useState('');
+  const [selId, setSelId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const filters = {
+    ...(status !== 'all' ? { status: status as IscApplicationStatus } : {}),
+    ...(minScore ? { minScore: Number(minScore) } : {}),
+    ...(minAiScore ? { minAiScore: Number(minAiScore) } : {}),
+  };
+  // 100 rows is the backend cap — plenty to rank a decision cohort on one page.
+  const { data, isFetching } = useGetIscAdminApplicationsQuery({ ...filters, sort, page: 1, limit: 100 });
+  const items = data?.items ?? [];
+  const effectiveSelId = selId && items.some((i) => i.id === selId) ? selId : items[0]?.id ?? null;
+
+  // Server-side CSV so the export is the FULL ranked set (all filtered rows +
+  // rank + decision), not just what's on screen. `filtered=false` exports every
+  // application (the "default" export).
+  const download = async (filtered: boolean) => {
+    setExporting(true);
+    await downloadIscExport(
+      filtered ? { ...filters, sort } : {},
+      filtered ? 'filtered' : 'all',
+    );
+    setExporting(false);
+  };
 
   return (
-    <div className={s.splitLayout}>
-      <div className={`${s.listCard} ${s.decisionCol}`}>
-        <h3 className={s.cardTitle}>Awaiting a final decision</h3>
-        {awaiting.length === 0 ? (
-          <Empty text="No applicants awaiting a final decision." />
-        ) : (
-          <div className={s.decisionRows}>
-            {awaiting.map((a) => {
-              const avg = num(a.reviewScoreAvg);
-              return (
-                <div key={a.id} className={`${s.decisionRow} ${effectiveSelId === a.id ? s.selected : ''}`} onClick={() => setSelId(a.id)}>
-                  <Avatar initials={avatarInitials(a.fullName ?? undefined)} />
-                  <div>
-                    <div className={s.applicantName}>{a.fullName ?? '—'}</div>
-                    <div className={s.rowMeta}>{PROGRAM_LABEL(a.program)} · Grade {draftVal(a, 'personal', 'grade')} · Review {avg ?? '—'}</div>
+    <div>
+      <div className={s.decisionToolbar}>
+        <Sel value={status} onChange={setStatus} options={DECISION_STATUS_OPTS} />
+        <div className={s.sortWrap}>
+          <span className={s.toolbarLabel}>Rank by</span>
+          <Sel value={sort} onChange={(v) => setSort(v as typeof sort)} options={DECISION_SORT_OPTS} />
+        </div>
+        <input
+          className={s.miniInput}
+          type="number"
+          min={0}
+          max={50}
+          placeholder="Min review"
+          value={minScore}
+          onChange={(e) => setMinScore(e.target.value)}
+        />
+        <input
+          className={s.miniInput}
+          type="number"
+          min={0}
+          max={50}
+          placeholder="Min AI"
+          value={minAiScore}
+          onChange={(e) => setMinAiScore(e.target.value)}
+        />
+        <div className={s.toolbarSpacer} />
+        <button className={s.btn} disabled={exporting} onClick={() => download(true)}>
+          <Download size={15} /> Export filtered
+        </button>
+        <button className={s.btn} disabled={exporting} onClick={() => download(false)}>
+          <Download size={15} /> Export all
+        </button>
+      </div>
+
+      <div className={s.splitLayout}>
+        <div className={`${s.listCard} ${s.decisionCol}`}>
+          <h3 className={s.cardTitle}>
+            Ranked applicants <span className={s.countPill}>{items.length}</span>
+          </h3>
+          {isFetching && items.length === 0 ? (
+            <div className={s.emptyText}>Loading…</div>
+          ) : items.length === 0 ? (
+            <Empty text="No applicants match these filters." />
+          ) : (
+            <div className={s.decisionRows}>
+              {items.map((a, i) => {
+                const avg = num(a.reviewScoreAvg);
+                return (
+                  <div
+                    key={a.id}
+                    className={`${s.decisionRow} ${effectiveSelId === a.id ? s.selected : ''}`}
+                    onClick={() => setSelId(a.id)}
+                  >
+                    <span className={s.rankNum}>{i + 1}</span>
+                    <Avatar initials={avatarInitials(a.fullName ?? undefined)} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div className={s.applicantName}>{a.fullName ?? '—'}</div>
+                      <div className={s.rowMeta}>
+                        {PROGRAM_LABEL(a.program)} · Review {avg ?? '—'} · AI {num(a.aiScore) ?? '—'}
+                      </div>
+                    </div>
+                    <StatusBadge status={a.status} />
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {effectiveSelId ? (
+          <DecisionDetail selectedId={effectiveSelId} />
+        ) : (
+          <div className={`${s.listCard} ${s.decisionCol}`}>
+            <h3 className={s.cardTitle}>Decision</h3>
+            <Empty text="Select an applicant to review the combined scores and make a decision." />
           </div>
         )}
       </div>
-
-      {effectiveSelId ? (
-        <DecisionDetail selectedId={effectiveSelId} />
-      ) : (
-        <div className={`${s.listCard} ${s.decisionCol}`}>
-          <h3 className={s.cardTitle}>Decision</h3>
-          <Empty text="Select an applicant to review the combined scores and make a decision." />
-        </div>
-      )}
     </div>
   );
 }
 
+const DECIDE_LABEL: Record<'accepted' | 'waitlisted' | 'rejected', string> = {
+  accepted: 'Accepted',
+  waitlisted: 'Waitlisted',
+  rejected: 'Not selected',
+};
+
 function DecisionDetail({ selectedId }: { selectedId: string }) {
   const { data: detail, isFetching } = useGetIscAdminApplicationQuery(selectedId);
   const { data: reviewers } = useGetIscReviewersQuery();
-  const [decide] = useDecideIscApplicationMutation();
+  const [decide, { isLoading: deciding }] = useDecideIscApplicationMutation();
+  const [rationale, setRationale] = useState('');
+  // Prefill the rationale from the existing decision once per applicant, and
+  // never clobber what the admin is typing on a background refetch.
+  const loadedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (detail && loadedFor.current !== selectedId) {
+      loadedFor.current = selectedId;
+      setRationale(detail.decision?.rationale ?? '');
+    }
+  }, [detail, selectedId]);
 
   if (isFetching && !detail) return <div className={s.listCard}><div className={s.emptyText}>Loading…</div></div>;
   if (!detail) return <div className={s.listCard}><div className={s.emptyText}>Not found.</div></div>;
 
-  const { application, reviews } = detail;
+  const { application, reviews, decision } = detail;
   const fullName = application.fullName ?? '—';
   const reviewAvg = num(application.reviewScoreAvg);
   const reviewerName = (id: string) => reviewers?.find((r) => r.id === id)?.name ?? `${id.slice(0, 8)}…`;
+  const current = decision?.decision ?? null;
 
   const doDecide = async (d: 'accepted' | 'waitlisted' | 'rejected') => {
     try {
-      await decide({ applicationId: application.id, decision: d }).unwrap();
-      toast(`${d[0].toUpperCase() + d.slice(1)} ${fullName}.`);
+      await decide({ applicationId: application.id, decision: d, rationale: rationale.trim() || undefined }).unwrap();
+      toast(`${DECIDE_LABEL[d]} — ${fullName}.`);
     } catch {
       toast('Could not record decision.');
     }
@@ -766,11 +882,19 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
           <div className={s.detailName} style={{ fontSize: '1.15rem' }}>{fullName}</div>
           <div className={s.detailSub}>{PROGRAM_LABEL(application.program)} · {TYPE_LABEL(application.applicantType)} · Grade {draftVal(application, 'personal', 'grade')}</div>
         </div>
+        <StatusBadge status={application.status} />
       </div>
       <div className={s.scoreStatRow}>
         <ScoreStat label="Review avg" value={`${reviewAvg ?? '—'} / 50`} />
         <ScoreStat label="AI score" value={`${num(application.aiScore) ?? '—'} / 50`} />
       </div>
+
+      {current && (
+        <div className={s.currentDecision}>
+          Current decision: <strong>{DECIDE_LABEL[current]}</strong>. You can change it below —
+          decisions stay editable for corrections.
+        </div>
+      )}
 
       <div className={s.infoBlock}>
         <div className={s.infoLabel}>Reviewer recommendations</div>
@@ -789,13 +913,41 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
         <div className={s.infoText}>{draftVal(application, 'essays', 'whyCamp')}</div>
       </div>
 
-      <textarea className={s.notesArea} placeholder="Decision rationale (internal)…" style={{ marginBottom: 10 }} />
+      <textarea
+        className={s.notesArea}
+        placeholder="Decision rationale (internal)…"
+        style={{ marginBottom: 10 }}
+        value={rationale}
+        onChange={(e) => setRationale(e.target.value)}
+      />
       <p className={s.decisionNote}>
-        Reviewers score and recommend — the final decision is the admissions team's call.
+        Reviewers score and recommend — the final decision is the admissions team's call, and can be changed later.
       </p>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button className={`${s.btn} ${s.btnPrimary}`} style={{ flex: 1, justifyContent: 'center' }} onClick={() => doDecide('accepted')}>Accept</button>
-        <button className={`${s.btn} ${s.btnDanger}`} style={{ flex: 1, justifyContent: 'center' }} onClick={() => doDecide('rejected')}>Reject</button>
+        <button
+          className={`${s.btn} ${s.btnPrimary} ${current === 'accepted' ? s.decisionActive : ''}`}
+          style={{ flex: 1, justifyContent: 'center' }}
+          disabled={deciding}
+          onClick={() => doDecide('accepted')}
+        >
+          {current === 'accepted' ? '✓ Accepted' : 'Accept'}
+        </button>
+        <button
+          className={`${s.btn} ${current === 'waitlisted' ? s.decisionActive : ''}`}
+          style={{ flex: 1, justifyContent: 'center' }}
+          disabled={deciding}
+          onClick={() => doDecide('waitlisted')}
+        >
+          {current === 'waitlisted' ? '✓ Waitlisted' : 'Waitlist'}
+        </button>
+        <button
+          className={`${s.btn} ${s.btnDanger} ${current === 'rejected' ? s.decisionActive : ''}`}
+          style={{ flex: 1, justifyContent: 'center' }}
+          disabled={deciding}
+          onClick={() => doDecide('rejected')}
+        >
+          {current === 'rejected' ? '✓ Not selected' : 'Reject'}
+        </button>
       </div>
     </div>
   );

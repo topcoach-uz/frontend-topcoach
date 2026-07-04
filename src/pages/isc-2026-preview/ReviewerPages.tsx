@@ -4,7 +4,7 @@
 // admin impersonation affordance for the displayed label only (we prefer
 // correctness over impersonation, per the rewire brief).
 import React, { useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import s from './isc.module.scss';
 import {
   useGetIscReviewerQueueQuery,
@@ -368,7 +368,10 @@ export function FastReviewMode({
         </div>
 
         <div className={s.scoreCard}>
-          <h3 className={s.cardTitle}>Scoring</h3>
+          <h3 className={s.cardTitle}>
+            Scoring
+            {detail?.myReview && <span className={s.editingChip}>Editing your review</span>}
+          </h3>
           <ScoreSliders scores={scores} onChange={setScores} />
 
           <div style={{ marginTop: 18 }}>
@@ -389,9 +392,16 @@ export function FastReviewMode({
           </div>
 
           <div className={s.reviewFooter}>
+            <button
+              className={s.btn}
+              onClick={() => setIdx((i) => Math.max(0, i - 1))}
+              disabled={idx === 0 || submitting}
+            >
+              <ArrowLeft size={16} /> Previous
+            </button>
             <button className={s.btn} onClick={advance} disabled={submitting}>Skip for now</button>
             <button className={`${s.btn} ${s.btnPrimary}`} onClick={saveNext} disabled={submitting}>
-              {submitting ? 'Saving…' : 'Save & next'} <ArrowRight size={16} />
+              {submitting ? 'Saving…' : detail?.myReview ? 'Update & next' : 'Save & next'} <ArrowRight size={16} />
             </button>
           </div>
         </div>

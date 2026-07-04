@@ -520,6 +520,10 @@ export default function ApplicantSite() {
 
   /* ── Status (returning applicant, live backend status) ───── */
   if (phase === 'status' && existingApp) {
+    // Acceptance gets its own celebratory screen (confetti + fancy layout).
+    if (existingApp.status === 'accepted') {
+      return <AcceptedScreen app={existingApp} onExit={exit} />;
+    }
     const view = STATUS_VIEW[existingApp.status] ?? STATUS_VIEW.submitted!;
     const StatusIcon =
       view.tone === 'success' ? CheckCircle2 : view.tone === 'danger' ? XCircle : Clock;
@@ -952,6 +956,138 @@ interface SectionProps {
   up: (p: Partial<Draft>) => void;
   errors: Errors;
   onUpload: (file: File, kind: 'passport' | 'english' | 'sat' | 'cv') => Promise<void>;
+}
+
+/* ── Accepted: celebratory screen (confetti + editorial layout) ───── */
+function AcceptedScreen({
+  app,
+  onExit,
+}: {
+  app: {
+    fullName?: string | null;
+    program: IscProgram;
+    applicantType: IscApplicantType;
+    submittedAt?: string | null;
+  };
+  onExit: () => void;
+}) {
+  // Confetti bursts once when the page opens, then clears itself.
+  const [celebrate, setCelebrate] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setCelebrate(false), 7000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const firstName = (app.fullName ?? '').trim().split(/\s+/)[0] || 'there';
+  const programLabel =
+    app.program === 'master' ? "Master's program" : "Bachelor's program";
+  const typeLabel =
+    app.applicantType === 'international'
+      ? 'International'
+      : 'Local (Uzbekistan)';
+
+  return (
+    <Shell onExit={onExit}>
+      {celebrate && <Confetti />}
+      <div className={s.narrow}>
+        <div className={s.acceptedCard}>
+          <div className={s.acceptedGlow} aria-hidden />
+          <div className={s.acceptedSeal}>🎉</div>
+          <div className={s.acceptedEyebrow}>International Summer Camp 2026</div>
+          <h1 className={s.acceptedTitle}>
+            Congratulations, {firstName} — you’re in!
+          </h1>
+          <p className={s.acceptedLede}>
+            You’ve earned your place at the International Summer Camp 2026. Out
+            of a competitive field, your application stood out — we can’t wait
+            to meet you this summer.
+          </p>
+
+          <div className={s.acceptedDivider}>
+            <span>✦</span>
+          </div>
+
+          <div className={s.acceptedMetaRow}>
+            <div className={s.acceptedMeta}>
+              <span>Program</span>
+              <strong>{programLabel}</strong>
+            </div>
+            <div className={s.acceptedMeta}>
+              <span>Track</span>
+              <strong>{typeLabel}</strong>
+            </div>
+            <div className={s.acceptedMeta}>
+              <span>Status</span>
+              <strong className={s.acceptedStatus}>Accepted</strong>
+            </div>
+          </div>
+
+          <div className={s.acceptedNext}>
+            <strong>What happens next</strong>
+            Joining details, dates and logistics are on their way to your inbox.
+            Keep an eye on your email — and message us on Telegram{' '}
+            <a
+              href="https://t.me/Top100uni_admin"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @Top100uni_admin
+            </a>{' '}
+            if you have any questions.
+          </div>
+
+          <button
+            className={`${s.btn} ${s.btnPrimary}`}
+            onClick={onExit}
+            style={{ marginTop: 4 }}
+          >
+            Back to events
+          </button>
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
+/**
+ * Lightweight, dependency-free confetti (CSP-safe — no external lib). Renders
+ * ~90 randomized pieces that fall once via CSS keyframes.
+ */
+function Confetti() {
+  const pieces = React.useMemo(() => {
+    const colors = ['#7B1F2F', '#c99a2e', '#047857', '#b45462', '#e0b64d', '#1f7a8c'];
+    return Array.from({ length: 90 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 2.5,
+      duration: 3.6 + Math.random() * 2.6,
+      size: 6 + Math.random() * 7,
+      color: colors[i % colors.length],
+      rotate: Math.random() * 360,
+      round: Math.random() > 0.72,
+    }));
+  }, []);
+
+  return (
+    <div className={s.confetti} aria-hidden>
+      {pieces.map((p) => (
+        <span
+          key={p.id}
+          className={s.confettiPiece}
+          style={{
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.round ? p.size : p.size * 0.5,
+            background: p.color,
+            borderRadius: p.round ? '50%' : '2px',
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            transform: `rotate(${p.rotate}deg)`,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 function Shell({ children, onExit }: { children: React.ReactNode; onExit: () => void }) {
