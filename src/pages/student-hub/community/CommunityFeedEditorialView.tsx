@@ -264,6 +264,7 @@ const compactNumber = (n: number): string => {
  */
 const MENTION_RE = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_.]{2,32})/g;
 const HASHTAG_RE = /(^|[^A-Za-z0-9_])#([A-Za-z][A-Za-z0-9_]{1,29})/g;
+const URL_RE = /https?:\/\/[^\s<]+/g;
 
 /**
  * Wrap @mentions and #hashtags in a single pass so we never double-
@@ -281,11 +282,22 @@ const renderMentionableLine = (
   // line once stitching plain text between them.
   type Token =
     | { kind: 'mention'; start: number; end: number; handle: string }
-    | { kind: 'hashtag'; start: number; end: number; tag: string };
+    | { kind: 'hashtag'; start: number; end: number; tag: string }
+    | { kind: 'link'; start: number; end: number; url: string };
   const tokens: Token[] = [];
 
-  const mRe = new RegExp(MENTION_RE.source, 'g');
+  // URLs first: they sort earliest at their position, so the overlap
+  // guard below keeps @/# fragments inside a URL from double-matching.
+  const uRe = new RegExp(URL_RE.source, 'g');
   let m: RegExpExecArray | null;
+  while ((m = uRe.exec(line)) !== null) {
+    // Trailing sentence punctuation belongs to the prose, not the URL.
+    const url = m[0].replace(/[.,;:!?)\]]+$/, '');
+    if (!url) continue;
+    tokens.push({ kind: 'link', start: m.index, end: m.index + url.length, url });
+  }
+
+  const mRe = new RegExp(MENTION_RE.source, 'g');
   while ((m = mRe.exec(line)) !== null) {
     const start = m.index + m[1].length;
     tokens.push({ kind: 'mention', start, end: start + m[2].length + 1, handle: m[2] });
@@ -303,7 +315,20 @@ const renderMentionableLine = (
   for (const t of tokens) {
     if (t.start < cursor) continue; // overlap — keep the earlier match
     if (t.start > cursor) out.push(line.slice(cursor, t.start));
-    if (t.kind === 'mention') {
+    if (t.kind === 'link') {
+      out.push(
+        <a
+          key={`u-${keyPrefix}-${i++}`}
+          href={t.url}
+          className="cf__link"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {t.url.replace(/^https?:\/\//, '')}
+        </a>,
+      );
+    } else if (t.kind === 'mention') {
       out.push(
         <a
           key={`m-${keyPrefix}-${i++}`}

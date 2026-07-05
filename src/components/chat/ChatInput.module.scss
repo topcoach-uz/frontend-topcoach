@@ -12,12 +12,14 @@
 
 .filePreview {
   position: relative;
-  padding: 8px;
-  background: #f8fafc;
-  border-radius: 10px;
+  padding: 8px 12px;
+  background: #f6f4ee;
+  border-radius: 12px;
   display: inline-block;
-  max-width: 200px;
-  border: 1px solid #e2e8f0;
+  max-width: 220px;
+  border: 1px solid #e7e4d9;
+  font-size: 13px;
+  color: #4b5563;
 
   img {
     max-width: 100%;
@@ -51,30 +53,50 @@
 
 .inputContainer {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #faf8f3;
-  border-radius: 14px;
-  border: 1px solid #e5e3da;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  /* Bottom-anchored: when the textarea grows to multiple lines the text
+     climbs upward while attach/emoji/send stay pinned to the last line,
+     like every native messenger. */
+  align-items: flex-end;
+  gap: 2px;
+  padding: 5px 5px 5px 6px;
+  background: #f6f4ee;
+  border-radius: 23px;
+  border: 1px solid #e7e4d9;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:focus-within {
     background: #fff;
-    border-color: #b9b6a8;
-    box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.08);
+    border-color: #d3cfc0;
+    box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.07);
   }
 }
 
-.attachButton {
+.iconButton {
   flex-shrink: 0;
-  color: #9ca3af;
-  padding: 4px;
-  border-radius: 50%;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #a39d8c;
+  transition: color 0.15s ease, background 0.15s ease;
 
-  &:hover {
+  :global(.ant-btn-icon) {
+    display: inline-flex !important;
+    line-height: 0 !important;
+  }
+
+  &:hover:not(:disabled) {
     color: #7B1F2F !important;
-    background: rgba(123, 31, 47, 0.06) !important;
+    background: rgba(123, 31, 47, 0.07) !important;
+  }
+
+  &:disabled {
+    color: #cfcaba;
   }
 }
 
@@ -92,7 +114,9 @@
     background: transparent !important;
     box-shadow: none !important;
     outline: none !important;
-    padding: 2px 4px;
+    /* Centers a single line against the 36px round controls; multi-line
+       growth is handled by the flex-end container. */
+    padding: 7px 6px;
 
     &:focus,
     &:focus-within,
@@ -144,35 +168,43 @@
 
 .sendButton {
   flex-shrink: 0;
+  margin-left: 4px;
   background: #7B1F2F !important;
   border-color: #7B1F2F !important;
   border-radius: 50% !important;
   padding: 0 !important;
-  height: 34px !important;
-  width: 34px !important;
-  min-width: 34px !important;
+  height: 36px !important;
+  width: 36px !important;
+  min-width: 36px !important;
   display: flex !important;
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
 
   :global(.ant-btn-icon) {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     line-height: 0 !important;
+    /* Optically center the send glyph, which leans up-right */
+    transform: translate(-1px, 1px);
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #5d1622 !important;
     border-color: #5d1622 !important;
   }
 
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
   &:disabled {
-    background: #cbd5e1 !important;
-    border-color: #cbd5e1 !important;
-    opacity: 0.6;
+    background: #ded9cb !important;
+    border-color: #ded9cb !important;
+    color: #fff !important;
+    opacity: 1;
   }
 }
 
@@ -182,12 +214,19 @@
   }
 
   .inputContainer {
-    padding: 6px 10px;
+    padding: 4px;
+    border-radius: 21px;
+  }
+
+  .iconButton {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
   }
 
   .sendButton {
-    width: 32px !important;
-    height: 32px !important;
-    min-width: 32px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
   }
 }

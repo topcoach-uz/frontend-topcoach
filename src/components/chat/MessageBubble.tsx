@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { getLatestCreatedImg } from 'src/utils';
 import ImagePreview from './ImagePreview';
 import FilePreview from './FilePreview';
+import { countEmojiOnly } from './emojiUtils';
 import styles from './MessageBubble.module.scss';
 
 const { Text } = Typography;
@@ -23,6 +24,13 @@ interface MessageBubbleProps {
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) => {
   const currentUser = useTypedSelector((state) => state.auth.profile);
   const isOwnMessage = message.senderId === currentUser?.id;
+
+  // Emoji-only messages (up to 3 emoji) render enlarged without a bubble,
+  // like Telegram
+  const emojiOnlyCount =
+    message.messageType === MessageType.TEXT
+      ? countEmojiOnly(message.message)
+      : 0;
   
   // Determine if sender is mentor or student to get correct avatar
   const isSenderMentor = conversation?.mentorId === message.senderId;
@@ -154,6 +162,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, conversation }) 
           <div
             className={`${styles.bubble} ${
               isOwnMessage ? styles.bubbleOwn : styles.bubbleOther
+            } ${
+              emojiOnlyCount
+                ? `${styles.bubbleEmojiOnly} ${styles[`emojiCount${emojiOnlyCount}`]}`
+                : ''
             }`}
           >
             {renderMessageContent()}

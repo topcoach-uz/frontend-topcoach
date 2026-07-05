@@ -1612,6 +1612,19 @@ body.cf-feed-active {
     &:hover { text-decoration: underline; }
   }
 
+  &__link {
+    color: $cf-brand;
+    text-decoration: underline;
+    text-decoration-color: rgba(123, 31, 47, 0.35);
+    text-underline-offset: 2px;
+    word-break: break-all;
+    transition: text-decoration-color 0.12s ease;
+    &:hover {
+      color: $cf-brand;
+      text-decoration-color: currentColor;
+    }
+  }
+
   &__comment-answer-tag {
     display: inline-flex;
     align-items: center;

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { App, Input, Button, Upload, Space } from 'antd';
+import type { TextAreaRef } from 'antd/es/input/TextArea';
 import { Send, Paperclip } from 'lucide-react';
+import EmojiPickerButton from './EmojiPickerButton';
 import {
   useSendMessageMutation,
   useSendFileMessageMutation,
@@ -27,6 +29,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textAreaRef = useRef<TextAreaRef>(null);
   const { socket, isConnected, emit } = useSocket({ autoConnect: true });
 
   const [sendMessage, { isLoading: isSendingMessage }] = useSendMessageMutation();
@@ -171,6 +174,23 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  // Insert emoji at the current cursor position, keeping focus in the input
+  const handleEmojiSelect = (emoji: string) => {
+    const textArea = textAreaRef.current?.resizableTextArea?.textArea;
+    if (!textArea) {
+      setMessage((prev) => prev + emoji);
+      return;
+    }
+    const start = textArea.selectionStart ?? message.length;
+    const end = textArea.selectionEnd ?? message.length;
+    setMessage(message.slice(0, start) + emoji + message.slice(end));
+    requestAnimationFrame(() => {
+      textArea.focus();
+      const caret = start + emoji.length;
+      textArea.setSelectionRange(caret, caret);
+    });
+  };
+
   // Handle Enter key (Shift+Enter for new line)
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -218,28 +238,36 @@ const ChatInput: React.FC<ChatInputProps> = ({
         >
           <Button
             type="text"
-            icon={<Paperclip size={16} />}
-            className={styles.attachButton}
+            icon={<Paperclip size={18} strokeWidth={1.75} />}
+            className={styles.iconButton}
             disabled={isLoading}
+            aria-label="Attach file"
           />
         </Upload>
         <TextArea
+          ref={textAreaRef}
           value={message}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
-          autoSize={{ minRows: 1, maxRows: 4 }}
+          autoSize={{ minRows: 1, maxRows: 5 }}
           className={styles.textInput}
           variant="borderless"
           disabled={isLoading}
         />
+        <EmojiPickerButton
+          onSelect={handleEmojiSelect}
+          disabled={isLoading}
+          className={styles.iconButton}
+        />
         <Button
           type="primary"
-          icon={<Send size={16} />}
+          icon={<Send size={16} strokeWidth={2} />}
           onClick={() => handleSend()}
           loading={isLoading}
           disabled={!message.trim() && !selectedFile}
           className={styles.sendButton}
+          aria-label="Send message"
         />
       </div>
     </div>

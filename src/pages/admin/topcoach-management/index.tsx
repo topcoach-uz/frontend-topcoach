@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Card,
@@ -21,7 +21,6 @@ import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetAdminStudentsQuery } from 'src/app/services/fullSupportApi';
 import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
-import ProgramManagementAnalyticsTab, { type AnalyticsProgramScope } from './ProgramManagementAnalyticsTab';
 import ResearchPrepProgressTab from './ResearchPrepProgressTab';
 import PlacementTestPassesTab from './PlacementTestPassesTab';
 import type { ColumnsType } from 'antd/es/table';
@@ -64,7 +63,6 @@ export type ProgramDashboardProps = {
 
 const MANAGEMENT_TAB_KEYS = new Set([
   'users',
-  'analytics',
   'full_support',
   'research_prep',
   'placement_test',
@@ -111,9 +109,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   const [communityFilter, setCommunityFilter] = useState<'all' | 'community' | 'standard'>('all');
   const { data: fullSupportStudentsData, isLoading: fullSupportStudentsLoading } = useGetAdminStudentsQuery(undefined, { skip: activeTab !== 'full_support' });
   const fullSupportEnrolledUsers = fullSupportStudentsData?.data ?? [];
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [analyticsCourseFilter, setAnalyticsCourseFilter] = useState<AnalyticsProgramScope>('all');
 
   // Check if user is SuperAdmin
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
@@ -225,83 +220,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   };
 
   const emptyMuted = embedInAdminConsole ? 'var(--ac-text-muted)' : '#999';
-
-  const fetchAnalytics = useCallback(async (courseName?: 'admissions' | 'sat') => {
-    setAnalyticsLoading(true);
-    try {
-      const params = courseName ? `?courseName=${courseName}` : '';
-      console.log(`[TopCoach Management] Fetching analytics data from: /program-dashboard/analytics${params}`);
-      
-      const response = await api.request({
-        path: `/program-dashboard/analytics${params}`,
-        method: 'GET',
-        secure: true,
-      });
-      
-      console.log('[TopCoach Management] Analytics data received');
-      setAnalyticsData(response.data);
-    } catch (error: any) {
-      console.error('[TopCoach Management] Error fetching analytics:', error);
-      console.error('[TopCoach Management] Analytics error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        url: error.config?.url,
-      });
-      
-      if (error.response?.status === 404) {
-        message.error('Analytics endpoint not found. Please ensure the backend is deployed with the latest changes.');
-      } else if (error.response?.status === 403) {
-        message.error('Access denied. SuperAdmin role required.');
-      } else {
-        message.error('Failed to load analytics data');
-      }
-    } finally {
-      setAnalyticsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (activeTab !== 'analytics') return;
-    void fetchAnalytics(analyticsCourseFilter === 'all' ? undefined : analyticsCourseFilter);
-  }, [activeTab, analyticsCourseFilter, fetchAnalytics]);
-
-  // Merge user and mentor signups by month for the line chart - moved to top level to follow Rules of Hooks
-  const chartData = useMemo(() => {
-    if (!analyticsData?.userSignups) return [];
-    
-    const monthMap = new Map<string, { month: string; users: number; mentors: number }>();
-    
-    // Add user signups
-    analyticsData.userSignups.forEach((item: any) => {
-      monthMap.set(item.month, { month: item.month, users: item.count, mentors: 0 });
-    });
-    
-    // Add mentor signups
-    if (analyticsData.mentorSignups) {
-      analyticsData.mentorSignups.forEach((item: any) => {
-        const existing = monthMap.get(item.month);
-        if (existing) {
-          existing.mentors = item.count;
-        } else {
-          monthMap.set(item.month, { month: item.month, users: 0, mentors: item.count });
-        }
-      });
-    }
-    
-    return Array.from(monthMap.values()).sort((a, b) => a.month.localeCompare(b.month));
-  }, [analyticsData?.userSignups, analyticsData?.mentorSignups]);
-
-  const renderAnalyticsTab = () => (
-    <ProgramManagementAnalyticsTab
-      analyticsData={analyticsData}
-      analyticsLoading={analyticsLoading}
-      embedInAdminConsole={Boolean(embedInAdminConsole)}
-      chartData={chartData}
-      programScope={analyticsCourseFilter}
-      onProgramScopeChange={setAnalyticsCourseFilter}
-    />
-  );
 
   const rowProgramLabel = (courseName: DashboardData['courseName']) => {
     if (courseName === 'sat') return 'SAT Prep';
@@ -585,7 +503,7 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     <>
       <Card className={`dashboard-header${embedInAdminConsole ? ' dashboard-header--embed' : ''}`}>
         <h1>Programs</h1>
-        <p>Enrollments, analytics, and Full Support.</p>
+        <p>Enrollments, Full Support, and program progress. Analytics moved to Insights.</p>
       </Card>
 
       <Tabs 
@@ -670,11 +588,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
                 </Card>
               </>
             ),
-          },
-          {
-            key: 'analytics',
-            label: 'Analytics',
-            children: renderAnalyticsTab(),
           },
           {
             key: 'full_support',

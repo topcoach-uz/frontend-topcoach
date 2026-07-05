@@ -91,6 +91,25 @@ export default function FullSupportAdminDashboard({
   const accent = integratedInAdminConsole ? '#10b981' : primary;
   const muted = integratedInAdminConsole ? 'var(--ac-text-secondary)' : '#666';
   const subtle = integratedInAdminConsole ? 'var(--ac-text-muted)' : '#999';
+  // Ant Modals portal outside `.admin-console-app`, so the `--ac-*` CSS vars
+  // above don't resolve there — modals need concrete values instead (same
+  // approach as the Full Support progress modal below).
+  const modalMuted = integratedInAdminConsole ? '#cbd5e1' : '#666';
+  const modalSubtle = integratedInAdminConsole ? '#94a3b8' : '#999';
+  const modalDivider = integratedInAdminConsole ? 'rgba(148, 163, 184, 0.22)' : '#f0f0f0';
+  const modalDarkClassName = integratedInAdminConsole
+    ? 'fs-progress-modal fs-progress-modal--dark'
+    : undefined;
+  const modalContentStyle: React.CSSProperties | undefined = integratedInAdminConsole
+    ? {
+        background: '#161922',
+        border: '1px solid rgba(148, 163, 184, 0.22)',
+        borderRadius: 14,
+      }
+    : undefined;
+  const modalMaskStyle: React.CSSProperties | undefined = integratedInAdminConsole
+    ? { background: 'rgba(5, 8, 14, 0.65)' }
+    : undefined;
   const { data: statsData } = useGetAdminStatsQuery();
   const { data: studentsData, isLoading: studentsLoading } = useGetAdminStudentsQuery();
   const { data: mentorsFromPage } = useGetMentorsQuery(); // same API as Mentors page (accepted only)
@@ -373,10 +392,12 @@ export default function FullSupportAdminDashboard({
         onCancel={() => setAssignModalStudent(null)}
         footer={null}
         width={400}
+        className={modalDarkClassName}
+        styles={{ content: modalContentStyle, mask: modalMaskStyle }}
       >
         {assignModalStudent && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#666', marginBottom: 12 }}>Choose a mentor to assign to this student:</p>
+            <p style={{ color: modalMuted, marginBottom: 12 }}>Choose a mentor to assign to this student:</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {mentors.map((m) => (
                 <Button
@@ -394,7 +415,7 @@ export default function FullSupportAdminDashboard({
                 </Button>
               ))}
             </div>
-            {mentors.length === 0 && <p style={{ color: '#999' }}>No mentors available. Add mentor profiles first.</p>}
+            {mentors.length === 0 && <p style={{ color: modalSubtle }}>No mentors available. Add mentor profiles first.</p>}
           </div>
         )}
       </Modal>
@@ -417,11 +438,16 @@ export default function FullSupportAdminDashboard({
           </Button>
         }
         width={600}
-        styles={{ body: { maxHeight: '70vh', overflow: 'auto' } }}
+        className={modalDarkClassName}
+        styles={{
+          body: { maxHeight: '70vh', overflow: 'auto' },
+          content: modalContentStyle,
+          mask: modalMaskStyle,
+        }}
       >
         {selectedMentor && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#666', marginBottom: 12 }}>
+            <p style={{ color: modalMuted, marginBottom: 12 }}>
               Assigned students: {mentors.find((x) => x.id === selectedMentor.id)?.students.join(', ')}
             </p>
             <div style={{ marginTop: 16 }}>
@@ -429,18 +455,18 @@ export default function FullSupportAdminDashboard({
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {adminInteractions.filter((i) => i.mentor === selectedMentor.name)
                   .map((i) => (
-                    <li key={i.id} style={{ padding: '10px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                    <li key={i.id} style={{ padding: '10px 0', borderBottom: `1px solid ${modalDivider}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
                       <div>
                         <AcPill variant={interactionPillVariant(i.type)}>{i.type}</AcPill>
                         <span style={{ marginLeft: 6 }}><strong>{i.student}</strong></span>
-                        <div style={{ color: '#666', fontSize: 13, marginTop: 4 }}>{i.description}</div>
+                        <div style={{ color: modalMuted, fontSize: 13, marginTop: 4 }}>{i.description}</div>
                       </div>
-                      <span style={{ color: '#999', whiteSpace: 'nowrap', fontSize: 13 }}>{dayjs(i.date).format('MMM D, YYYY')}</span>
+                      <span style={{ color: modalSubtle, whiteSpace: 'nowrap', fontSize: 13 }}>{dayjs(i.date).format('MMM D, YYYY')}</span>
                     </li>
                   ))}
               </ul>
               {adminInteractions.filter((i) => i.mentor === selectedMentor.name).length === 0 && (
-                <p style={{ color: '#999' }}>No recent actions for this mentor.</p>
+                <p style={{ color: modalSubtle }}>No recent actions for this mentor.</p>
               )}
             </div>
           </div>

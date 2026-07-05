@@ -716,9 +716,11 @@ $fs-amber: #b6824b;
   }
 
   .ant-modal-body,
-  .ant-modal-body * {
+  .ant-modal-body *:not(.ac-pill) {
     /* Anything not overridden to a specific token inherits the light text
-       color so no description / label / number ever renders invisible. */
+       color so no description / label / number ever renders invisible.
+       Pills are excluded — `.ac-pill--*` carry their own dark-friendly
+       tinted text colors that must not be flattened to the body color. */
     color: inherit;
   }
 

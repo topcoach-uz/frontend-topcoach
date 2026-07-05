@@ -1,0 +1,183 @@
+/* Page-specific styles for the super-admin operational Dashboard. */
+
+/* ─────────────── Attention strip ───────────────
+   Slim full-width strip under the KPI row; rendered only when at least one
+   exception count is non-zero, so a healthy platform shows no strip at all. */
+
+.ac-dashboard-attention-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: var(--ac-bg-surface, #252a35);
+  border: 1px solid var(--ac-border, rgba(255, 255, 255, 0.07));
+  border-radius: 12px;
+}
+
+.ac-dashboard-attention-strip-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ac-text-muted, #a8b4c8);
+  margin-right: 4px;
+}
+
+.ac-dashboard-attention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--ac-border, rgba(255, 255, 255, 0.07));
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ac-text, #f4f4f5);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.ac-dashboard-attention-chip:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ac-dashboard-attention-chip-icon {
+  display: inline-flex;
+}
+
+.ac-dashboard-attention-chip-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────────── Panel grid ───────────────
+   Equal-height cards in each row so the two-column band reads as one unit. */
+
+.ac-dashboard-grid > .ant-col {
+  display: flex;
+}
+
+.ac-dashboard-grid > .ant-col > .ant-card {
+  width: 100%;
+}
+
+.ac-dashboard-panel.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ac-dashboard-panel.ant-card > .ant-card-body {
+  flex: 1;
+}
+
+/* ─────────────── Upcoming sessions ─────────────── */
+
+.ac-dashboard-panel-spin {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.ac-dashboard-upcoming-item.ant-list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom-color: var(--ac-border, rgba(255, 255, 255, 0.07)) !important;
+}
+
+.ac-dashboard-upcoming-when {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.ac-dashboard-upcoming-relative {
+  font-size: 13px;
+  font-weight: 700;
+  color: #10b981;
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-dashboard-upcoming-absolute {
+  font-size: 11px;
+  color: var(--ac-text-muted, #a8b4c8);
+  margin-top: 2px;
+}
+
+.ac-dashboard-upcoming-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-dashboard-upcoming-pair {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ac-text, #f4f4f5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-dashboard-upcoming-arrow {
+  color: var(--ac-text-muted, #a8b4c8);
+  font-weight: 400;
+}
+
+.ac-dashboard-upcoming-type {
+  font-size: 12px;
+  color: var(--ac-text-secondary, #d1d5e0);
+  margin-top: 2px;
+}
+
+/* ─────────────── Session flags ───────────────
+   Scoped under .ac-dashboard-page to override the baseline flag styles in
+   AdminConsoleLayout.scss regardless of stylesheet load order. */
+
+.ac-dashboard-page .ac-dashboard-session-flag-body {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+}
+
+.ac-dashboard-page .ac-dashboard-session-flag-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ac-text, #f4f4f5);
+}
+
+.ac-dashboard-page .ac-dashboard-session-flag-time {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ac-text-muted, #a8b4c8);
+  margin-top: 0;
+}
+
+.ac-dashboard-page .ac-dashboard-session-flag-pair {
+  font-size: 12px;
+  color: var(--ac-text-secondary, #d1d5e0);
+  margin-top: 2px;
+}
+
+.ac-dashboard-page .ac-dashboard-session-flag-reason {
+  font-size: 12px;
+  color: var(--ac-text-muted, #a8b4c8);
+  font-style: italic;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

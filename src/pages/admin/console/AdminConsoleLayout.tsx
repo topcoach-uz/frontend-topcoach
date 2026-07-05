@@ -96,10 +96,10 @@ export default function AdminConsoleLayout() {
             path: '/new-admin/dashboard',
           },
           {
-            key: 'users',
-            label: 'Users',
-            icon: <Users size={18} strokeWidth={1.75} />,
-            path: '/new-admin/users',
+            key: 'insights',
+            label: 'Insights',
+            icon: <LineChart size={18} strokeWidth={1.75} />,
+            path: '/new-admin/insights',
           },
         ],
       },
@@ -114,18 +114,6 @@ export default function AdminConsoleLayout() {
             path: '/new-admin/programs/enrollments',
           },
           {
-            key: 'payments',
-            label: 'Payments',
-            icon: <CreditCard size={18} strokeWidth={1.75} />,
-            path: '/new-admin/payments',
-          },
-          {
-            key: 'subscriptions',
-            label: 'Subscriptions',
-            icon: <Repeat size={18} strokeWidth={1.75} />,
-            path: '/new-admin/subscriptions',
-          },
-          {
             key: 'sessions',
             label: 'Sessions',
             icon: <CalendarDays size={18} strokeWidth={1.75} />,
@@ -137,23 +125,59 @@ export default function AdminConsoleLayout() {
             icon: <Sparkles size={18} strokeWidth={1.75} />,
             path: '/new-admin/events',
           },
-        ],
-      },
-      {
-        id: 'insights',
-        label: 'Insights',
-        items: [
           {
-            key: 'insights',
-            label: 'Insights',
-            icon: <LineChart size={18} strokeWidth={1.75} />,
-            path: '/new-admin/insights',
+            key: 'course-content',
+            label: 'Course content',
+            icon: <BookOpen size={18} strokeWidth={1.75} />,
+            path: '/course-admin/courses/modules',
           },
           {
             key: 'major-match',
             label: 'AI Major Match',
             icon: <Brain size={18} strokeWidth={1.75} />,
             path: '/new-admin/major-match',
+          },
+        ],
+      },
+      {
+        id: 'revenue',
+        label: 'Revenue',
+        items: [
+          {
+            key: 'payments',
+            label: 'Payments',
+            icon: <CreditCard size={18} strokeWidth={1.75} />,
+            path: '/new-admin/payments',
+          },
+          {
+            key: 'subscriptions',
+            label: 'Subscriptions',
+            icon: <Repeat size={18} strokeWidth={1.75} />,
+            path: '/new-admin/subscriptions',
+          },
+        ],
+      },
+      {
+        id: 'people',
+        label: 'People & Partners',
+        items: [
+          {
+            key: 'users',
+            label: 'Users',
+            icon: <Users size={18} strokeWidth={1.75} />,
+            path: '/new-admin/users',
+          },
+          {
+            key: 'school-counselor',
+            label: 'Organizations',
+            icon: <GraduationCap size={18} strokeWidth={1.75} />,
+            path: '/school-counselor',
+          },
+          {
+            key: 'organization-management',
+            label: 'Organization Management',
+            icon: <Building2 size={18} strokeWidth={1.75} />,
+            path: '/new-admin/organization-management',
           },
         ],
       },
@@ -172,30 +196,6 @@ export default function AdminConsoleLayout() {
             label: 'Community Moderation',
             icon: <Flag size={18} strokeWidth={1.75} />,
             path: '/new-admin/community-moderation',
-          },
-        ],
-      },
-      {
-        id: 'tools',
-        label: 'Tools',
-        items: [
-          {
-            key: 'course-content',
-            label: 'Course content',
-            icon: <BookOpen size={18} strokeWidth={1.75} />,
-            path: '/course-admin/courses/modules',
-          },
-          {
-            key: 'organization-management',
-            label: 'Organization Management',
-            icon: <Building2 size={18} strokeWidth={1.75} />,
-            path: '/new-admin/organization-management',
-          },
-          {
-            key: 'school-counselor',
-            label: 'Organizations',
-            icon: <GraduationCap size={18} strokeWidth={1.75} />,
-            path: '/school-counselor',
           },
         ],
       },
@@ -232,7 +232,6 @@ export default function AdminConsoleLayout() {
       const slug = p.replace('/new-admin/programs/', '') || 'enrollments';
       const labels: Record<string, string> = {
         enrollments: 'Enrollments',
-        analytics: 'Analytics',
         organizations: 'Organizations',
         'full-support': 'Full Support',
         'research-prep': 'Research Prep',

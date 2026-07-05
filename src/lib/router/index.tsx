@@ -315,7 +315,7 @@ function RouterProvider() {
                 {/* Programs */}
                 <Route path="programs" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
                 <Route path="programs/enrollments" element={<AdminProgramManagementLazy />} />
-                <Route path="programs/analytics" element={<AdminProgramManagementLazy />} />
+                <Route path="programs/analytics" element={<Navigate to="/new-admin/insights" replace />} />
                 {/* Organizations moved out of Programs into a standalone page */}
                 <Route path="programs/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
                 <Route path="programs/full-support" element={<AdminProgramManagementLazy />} />
@@ -349,7 +349,7 @@ function RouterProvider() {
                 <Route path="central-asian-admissions-forum" element={<Navigate to="/new-admin/events/caaf" replace />} />
                 <Route path="management" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
                 <Route path="management/users" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
-                <Route path="management/analytics" element={<Navigate to="/new-admin/programs/analytics" replace />} />
+                <Route path="management/analytics" element={<Navigate to="/new-admin/insights" replace />} />
                 <Route path="management/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
                 <Route path="management/full_support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
                 <Route path="full-support" element={<Navigate to="/new-admin/programs/full-support" replace />} />

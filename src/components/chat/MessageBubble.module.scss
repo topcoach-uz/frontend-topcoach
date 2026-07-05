@@ -65,6 +65,35 @@
   white-space: pre-wrap;
 }
 
+/* Emoji-only messages: no bubble chrome, enlarged glyphs (Telegram-style).
+   emojiCount1..3 scale the size down as more emoji are present. */
+.bubbleEmojiOnly {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 2px 4px;
+
+  .messageText {
+    line-height: 1.2;
+  }
+
+  &.emojiCount1 .messageText {
+    font-size: 48px;
+  }
+
+  &.emojiCount2 .messageText {
+    font-size: 36px;
+  }
+
+  &.emojiCount3 .messageText {
+    font-size: 28px;
+  }
+}
+
+.ownMessage .bubbleEmojiOnly {
+  text-align: right;
+}
+
 .editedLabel {
   font-size: 11px;
   font-style: italic;

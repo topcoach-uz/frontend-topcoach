@@ -4,14 +4,12 @@ import ProgramDashboard from 'src/pages/admin/topcoach-management';
 /** URL slug ↔ ProgramDashboard internal tab key. */
 const SLUG_TO_TAB: Record<string, string> = {
   enrollments: 'users',
-  analytics: 'analytics',
   'full-support': 'full_support',
   'research-prep': 'research_prep',
 };
 
 const TAB_TO_SLUG: Record<string, string> = {
   users: 'enrollments',
-  analytics: 'analytics',
   full_support: 'full-support',
   research_prep: 'research-prep',
 };
