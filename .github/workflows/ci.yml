@@ -37,6 +37,12 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/topcoach-frontend:latest
           push: true
           platforms: linux/amd64
+          # VITE_* vars must exist at build time (Vite inlines them into the
+          # bundle). Set these as repository secrets under Settings →
+          # Secrets and variables → Actions → Secrets.
+          build-args: |
+            VITE_PUBLIC_POSTHOG_KEY=${{ secrets.VITE_PUBLIC_POSTHOG_KEY }}
+            VITE_PUBLIC_POSTHOG_HOST=${{ secrets.VITE_PUBLIC_POSTHOG_HOST }}
 
       - name: Setup SSH for Deployment
         uses: webfactory/ssh-agent@v0.5.3
