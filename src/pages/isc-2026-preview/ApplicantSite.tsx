@@ -461,7 +461,7 @@ export default function ApplicantSite() {
       <Shell onExit={exit}>
         <div className={s.landingWrap}>
           <div className={s.landingLeft}>
-            <span className={s.eyebrow}>◷ Applications open · June 22 – July 6, 2026</span>
+            <span className={s.eyebrow}>◷ Applications open · June 22 – July 11, 2026</span>
             <h1 className={s.heroTitle}>
               International Summer Camp <b>2026</b>
             </h1>
@@ -478,7 +478,7 @@ export default function ApplicantSite() {
               <div><b>Bachelor&apos;s &amp; Master&apos;s</b></div>
             </div>
             <div className={s.deadlineInline}>
-              Applications close <b>July 6, 2026 · 23:59</b>
+              Applications close <b>July 11, 2026 · 23:59</b>
             </div>
 
             <ul className={s.expectList}>
@@ -692,7 +692,7 @@ export default function ApplicantSite() {
               })}
             </ol>
             <div className={s.deadlineNote}>
-              Apply by · July 6, 2026 · 23:59<br />Camp · August 3–9, 2026
+              Apply by · July 11, 2026 · 23:59<br />Camp · August 3–9, 2026
             </div>
           </aside>
 

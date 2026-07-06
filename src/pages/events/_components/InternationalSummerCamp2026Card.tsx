@@ -65,7 +65,7 @@ export default function InternationalSummerCamp2026Card() {
 
           <div className={styles.foot}>
             <span className={`${styles.deadline} ${styles[`tone_${statusTone}`]}`}>
-              {mode === 'apply' ? 'Apply by July 6, 2026' : statusLabel}
+              {mode === 'apply' ? 'Apply by July 11, 2026' : statusLabel}
             </span>
             <Button
               type="primary"

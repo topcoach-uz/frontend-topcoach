@@ -16,7 +16,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { isFeedPhase1Allowed } from './communityFeedAccess';
+import { isFeedAllowed } from './communityFeedAccess';
 import { useTypedSelector } from 'src/app/store';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
@@ -124,9 +124,9 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           </button>
         )}
 
-        {/* Phase-1 gate — see CommunityHubMockPage.tsx "Phase-1 launch gate".
-            Shared allowlist source-of-truth lives in `communityFeedAccess.ts`. */}
-        {ENABLE_COMMUNITY_FEED && isFeedPhase1Allowed(profile) && (
+        {/* Feed is open to community-enrolled users and staff — shared
+            check lives in `communityFeedAccess.ts`. */}
+        {ENABLE_COMMUNITY_FEED && isFeedAllowed(profile, isCommunityEnrolled) && (
           <button
             type="button"
             className={`${styles.navItem} ${isFeed ? styles.navItemActive : ''}`}

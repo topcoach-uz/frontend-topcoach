@@ -48,7 +48,7 @@ import PlacementTestPage from '../../placement-test';
 import PlacementProfileWizardPage from '../../placement-test/profile';
 import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
-import { isFeedPhase1Allowed } from './communityFeedAccess';
+import { isFeedAllowed as checkFeedAllowed } from './communityFeedAccess';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
 import StudyBuddyConsentGate from './StudyBuddyConsentGate';
 import { useStudyBuddyConsentStatusQuery } from 'src/app/services/student-hub/studyBuddyApi';
@@ -206,13 +206,13 @@ export default function CommunityHubMockPage() {
     };
   }, [profile?.profile, t]);
 
-  // Phase-1 gate: only feed-allowed users (SuperAdmin + the small email
-  // allowlist) land on `feed` by default. Everyone else lands on the
-  // existing "My progress" panel, so the page always has content.
-  // Profile is hydrated by the parent layout before this component
-  // mounts, so the check is synchronous in practice.
+  // Feed-allowed users (community-enrolled + staff) land on `feed` by
+  // default. Everyone else lands on the existing "My progress" panel,
+  // so the page always has content. Profile is hydrated by the parent
+  // layout before this component mounts, so the check is synchronous
+  // in practice.
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
-    if (ENABLE_COMMUNITY_FEED && isFeedPhase1Allowed(profile)) return 'feed';
+    if (ENABLE_COMMUNITY_FEED && checkFeedAllowed(profile, isCommunityEnrolled)) return 'feed';
     return 'myLearning';
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
@@ -381,19 +381,12 @@ export default function CommunityHubMockPage() {
      
   }, [location.search]);
 
-  /**
-   * Phase-1 launch gate: the Community Feed is rolled out to SuperAdmin
-   * accounts first, plus a small allowlist of test accounts so the team
-   * can smoke-test non-SuperAdmin paths in prod. Source of truth lives
-   * in `communityFeedAccess.ts` (must be kept in lock-step with the
-   * backend `PHASE_1_EMAIL_ALLOWLIST`). Search "Phase-1 launch gate"
-   * to find every gate in one sweep.
-   */
-  const isFeedAllowed = isFeedPhase1Allowed(profile);
+  // Feed is open to community-enrolled users and staff — see
+  // `communityFeedAccess.ts` (kept in sync with the backend guard).
+  const isFeedAllowed = checkFeedAllowed(profile, isCommunityEnrolled);
 
   const navItems: CommunityNavItem[] = useMemo(
     () => [
-      // Phase-1 gate — hide the Feed entry from anyone but SuperAdmin.
       ...(isFeedAllowed
         ? [{ key: 'feed' as const, label: 'Feed', icon: <Compass size={16} color="#fff" /> }]
         : []),
@@ -620,7 +613,6 @@ export default function CommunityHubMockPage() {
             </button>
           )}
 
-          {/* Phase-1 launch gate — Feed is SuperAdmin-only (plus the test-account allowlist). */}
           {ENABLE_COMMUNITY_FEED && isFeedAllowed && (
             <button
               type="button"
