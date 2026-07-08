@@ -87,7 +87,11 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   
   const [data, setData] = useState<DashboardData[]>([]);
   const [loading, setLoading] = useState(false);
+  // `searchText` drives the controlled input; `debouncedSearchText` is what the
+  // fetch effect actually reacts to (300ms after the last keystroke), so we
+  // don't hit /program-dashboard once per character.
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
   const [currentPage, setCurrentPage] = useState(1);
@@ -121,6 +125,11 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
   }, [currentUser, isSuperAdmin]);
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchText(searchText.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchText]);
+
+  useEffect(() => {
     if (!isAuthenticated) {
       navigate('/auth/signin');
       return;
@@ -131,13 +140,13 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
     }
 
     fetchData();
-  }, [isAuthenticated, isSuperAdmin, searchText, sortBy, sortOrder, courseFilter, communityFilter]);
+  }, [isAuthenticated, isSuperAdmin, debouncedSearchText, sortBy, sortOrder, courseFilter, communityFilter]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
-        ...(searchText && { search: searchText }),
+        ...(debouncedSearchText && { search: debouncedSearchText }),
         ...(sortBy && { sortBy }),
         ...(sortOrder && { sortOrder }),
         ...(courseFilter !== 'all' && { courseName: courseFilter }),
@@ -531,7 +540,9 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
                       size="large"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
-                      onSearch={fetchData}
+                      // Enter / search button flushes the debounce immediately;
+                      // the fetch effect fires when the value actually changes.
+                      onSearch={(value) => setDebouncedSearchText(value.trim())}
                       style={{ maxWidth: 400 }}
                     />
                       <Select

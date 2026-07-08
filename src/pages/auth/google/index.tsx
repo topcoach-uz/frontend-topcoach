@@ -67,9 +67,17 @@ export default function GoogleAuthenticationPage() {
     const redirectUrl = localStorage.getItem('redirectAfterLogin');
     localStorage.removeItem('redirectAfterLogin');
     // Never bounce back to an auth page — fall back to home ('/').
-    window.location.href =
+    // SPA navigation (not window.location.href): getMe is already fresh in
+    // the RTK cache at this point, so the landing page renders immediately
+    // instead of re-bootstrapping the whole app through the loader chain.
+    const target =
       redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';
-  }, [profileComplete]);
+    if (/^https?:\/\//.test(target)) {
+      window.location.href = target;
+    } else {
+      navigate(target, { replace: true });
+    }
+  }, [profileComplete, navigate]);
 
   const [selected, setSelected] = useState<UserType>(UserRole.Student);
 

@@ -5,6 +5,7 @@ import { refreshToken } from 'src/app/api/axiosInstance';
 import { logout } from 'src/app/slices/authSlice';
 import { show } from 'src/app/slices/profilePopupSlice';
 import { store } from 'src/app/store';
+import { RtkApi } from './index';
 
 // Deduplicate error toasts to prevent stacked/infinite messages
 let last401ToastTime = 0;
@@ -101,29 +102,43 @@ export const rtkQueryErrorLogger: Middleware =
           window.location.pathname.startsWith('/auth');
 
         if (!isLoginAttempt && !onAuthPage && originalRequestEndpoint) {
-          const now = Date.now();
-          if (now - last401ToastTime > TOAST_DEBOUNCE_MS) {
-            last401ToastTime = now;
-            message.warning('Your session has expired. Please log in again.');
-          }
-          if (
-            !originalRequestEndpoint.startsWith('/sessions') &&
-            !originalRequestEndpoint.startsWith('/camps') &&
-            !originalRequestEndpoint.includes('/chat')
-          ) {
-            setTimeout(() => {
-              store.dispatch(logout());
-            }, 2000);
-          }
-          await refreshToken()
-            .then(() => {
-              message.success('Refresh successful!');
-            })
-            .catch(() => {
-              if (Date.now() - last401ToastTime > TOAST_DEBOUNCE_MS) {
-                message.error('Refresh failed. Please log in again.');
+          // Refresh FIRST, silently. The old order (toast "session expired",
+          // schedule logout() in 2s, THEN refresh) logged the user out even
+          // when the refresh succeeded — the timer was never cancelled and
+          // the failed query was never retried, so an expired-but-refreshable
+          // token on boot meant loader → broken empty-profile render →
+          // forced bounce to /auth/signin. Now: only a genuinely failed
+          // refresh ends the session.
+          try {
+            await refreshToken();
+            // Token is valid again — re-run the query that just failed so
+            // the UI recovers in place (profile, orgs, …). Queries only:
+            // auto-retrying a mutation could double-submit.
+            const arg = action.meta?.arg as
+              | { endpointName?: string; originalArgs?: unknown; type?: string }
+              | undefined;
+            const endpoint = arg?.endpointName
+              ? (RtkApi.endpoints as Record<string, any>)[arg.endpointName]
+              : undefined;
+            if (arg?.type === 'query' && endpoint?.initiate) {
+              store.dispatch(
+                endpoint.initiate(arg.originalArgs, { forceRefetch: true }),
+              );
+            }
+          } catch {
+            const isLogoutExempt =
+              originalRequestEndpoint.startsWith('/sessions') ||
+              originalRequestEndpoint.startsWith('/camps') ||
+              originalRequestEndpoint.includes('/chat');
+            if (!isLogoutExempt) {
+              const now = Date.now();
+              if (now - last401ToastTime > TOAST_DEBOUNCE_MS) {
+                last401ToastTime = now;
+                message.warning('Your session has expired. Please log in again.');
               }
-            });
+              store.dispatch(logout());
+            }
+          }
         }
       }
     }

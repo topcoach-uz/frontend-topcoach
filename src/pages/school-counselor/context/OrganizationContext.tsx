@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTypedSelector } from 'src/app/store';
 import { api } from 'src/app/api';
+import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { message, Alert, Spin } from 'antd';
 
 interface OrganizationContextType {
@@ -36,59 +37,26 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
   const [organizations, setOrganizations] = useState<any[]>([]);
-  const [counselorOrganizations, setCounselorOrganizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isCounselor, setIsCounselor] = useState(false);
-  const [counselorOrganizationId, setCounselorOrganizationId] = useState<string | null>(null);
-  const [hasCheckedCounselor, setHasCheckedCounselor] = useState(false);
 
-  // Check if user is a counselor and get their organization
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setIsCounselor(false);
-      setCounselorOrganizationId(null);
-      setHasCheckedCounselor(false);
-      return;
-    }
-    
-    // SuperAdmins don't need to check counselor status
-    if (isSuperAdmin) {
-      setHasCheckedCounselor(true);
-      return;
-    }
+  // Counselor status is derived from the my-organizations query. The router
+  // bootstrap (src/lib/router) already fetches this endpoint behind its
+  // single app-level loader, so this hook resolves instantly from the RTK
+  // cache on repeat visits instead of re-fetching on every mount.
+  // On error (e.g. 403), data stays undefined → user is not a counselor.
+  const { data: myOrganizationsData, isLoading: counselorCheckLoading } = useGetMyOrganizationsQuery(
+    undefined,
+    { skip: !isAuthenticated || isSuperAdmin },
+  );
 
-    const checkCounselorStatus = async () => {
-      try {
-        // Use the my-organizations endpoint to get counselor's organizations
-        const response = await api.request({
-          path: '/organizations/my-organizations',
-          method: 'GET',
-          secure: true,
-        });
-        
-        // If we get organizations, user is a counselor
-        if (response.data && response.data.length > 0) {
-          setIsCounselor(true);
-          setCounselorOrganizations(response.data);
-          const orgId = response.data[0].id; // Get first organization
-          setCounselorOrganizationId(orgId);
-          setSelectedOrganizationId(orgId);
-        } else {
-          setIsCounselor(false);
-          setCounselorOrganizations([]);
-        }
-      } catch (error: any) {
-        // If 403 or other error, user is not a counselor
-        setIsCounselor(false);
-        setCounselorOrganizationId(null);
-        setCounselorOrganizations([]);
-      } finally {
-        setHasCheckedCounselor(true);
-      }
-    };
+  const counselorOrganizations = (!isSuperAdmin && (myOrganizationsData as any[])) || [];
+  const isCounselor = counselorOrganizations.length > 0;
+  const counselorOrganizationId = isCounselor ? counselorOrganizations[0].id : null;
 
-    checkCounselorStatus();
-  }, [isAuthenticated, isSuperAdmin, user?.id]);
+  // Counselors get their (first) organization auto-selected; SuperAdmins pick
+  // one explicitly via the organization selector. Derived (not synced via an
+  // effect) so it's available in the same render as isCounselor.
+  const effectiveSelectedOrganizationId = selectedOrganizationId ?? counselorOrganizationId;
 
   // Fetch organizations for SuperAdmins
   useEffect(() => {
@@ -122,8 +90,10 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   // Check if user has access (SuperAdmin or Counselor)
   const hasAccess = isSuperAdmin || isCounselor;
 
-  // Show loading while checking access (only for non-SuperAdmins)
-  if (!isSuperAdmin && isAuthenticated && !hasCheckedCounselor) {
+  // Show loading while checking access (only for non-SuperAdmins). With the
+  // bootstrap having warmed the cache, this only appears on a genuinely cold
+  // cache — isLoading is false when cached data is already available.
+  if (!isSuperAdmin && isAuthenticated && counselorCheckLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', flexDirection: 'column' }}>
         <Spin size="large" />
@@ -133,7 +103,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   }
 
   // Show access denied message if user doesn't have access
-  if (hasCheckedCounselor && isAuthenticated && !hasAccess) {
+  if (isAuthenticated && !counselorCheckLoading && !hasAccess) {
     return (
       <div style={{ padding: '50px 20px', textAlign: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Alert
@@ -157,7 +127,7 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
   return (
     <OrganizationContext.Provider
       value={{
-        selectedOrganizationId,
+        selectedOrganizationId: effectiveSelectedOrganizationId,
         setSelectedOrganizationId,
         organizations,
         counselorOrganizations,

@@ -509,6 +509,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
   /* ─── data ────────────────────────────────────────────────── */
   const {
     data: postsPage,
+    isLoading: postsLoading,
     refetch: refetchPosts,
   } = useListPostsQuery(
     {
@@ -520,8 +521,13 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
   );
   const {
     data: savedPage,
+    isLoading: savedLoading,
     refetch: refetchSaved,
   } = useListSavedPostsQuery(undefined, { skip: viewMode !== 'saved' });
+  // True while the ACTIVE view's list is fetching with no cached data yet
+  // (cold load or a new filter/search combination). Used to show post
+  // skeletons instead of flashing the "You're all caught up." end-cap.
+  const feedLoading = viewMode === 'saved' ? savedLoading : postsLoading;
 
   const apiPosts = useMemo(
     () => (viewMode === 'saved' ? savedPage?.items ?? [] : postsPage?.items ?? []),
@@ -1245,7 +1251,19 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
 
           {/* posts */}
           <div className="cf__posts">
-            {filteredPosts.map((post) => {
+            {feedLoading &&
+              [0, 1, 2].map((i) => (
+                <article key={`cf-sk-${i}`} className="cf__post cf__post--skeleton">
+                  <div className="cf__skel-head">
+                    <span className="cf__skel cf__skel--avatar" />
+                    <span className="cf__skel cf__skel--line" style={{ width: '35%' }} />
+                  </div>
+                  <span className="cf__skel cf__skel--line" style={{ width: '95%' }} />
+                  <span className="cf__skel cf__skel--line" style={{ width: '85%' }} />
+                  <span className="cf__skel cf__skel--line" style={{ width: '55%' }} />
+                </article>
+              ))}
+            {!feedLoading && filteredPosts.map((post) => {
               const liked = !!likedIds[post.id];
               const saved = !!savedIds[post.id];
               const commentsOpen = !!expandedComments[post.id];
@@ -1676,13 +1694,17 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
             })}
           </div>
 
-          <div className="cf__end">
-            {viewMode === 'saved'
-              ? filteredPosts.length
-                ? "That's all your saved posts."
-                : "You haven't saved any posts yet. Tap the bookmark icon on a post to keep it here."
-              : "You're all caught up. Check back for more from the team."}
-          </div>
+          {/* End-cap only once the list has actually loaded — otherwise
+              "You're all caught up." flashes during the cold fetch. */}
+          {!feedLoading && (
+            <div className="cf__end">
+              {viewMode === 'saved'
+                ? filteredPosts.length
+                  ? "That's all your saved posts."
+                  : "You haven't saved any posts yet. Tap the bookmark icon on a post to keep it here."
+                : "You're all caught up. Check back for more from the team."}
+            </div>
+          )}
         </main>
 
         {/* ═══ RIGHT RAIL ═══════════════════════════════════════════ */}
@@ -1973,25 +1995,30 @@ const PostCommentsSection: React.FC<{
     return reordered;
   }, [data, isQuestion, answeredCommentId]);
 
+  // Clear the input optimistically on send — waiting for the response left
+  // the typed text sitting in the box whenever the request was slow or
+  // errored after the comment was already persisted. On a real failure the
+  // draft is restored so nothing the user typed is lost.
   const submit = () => {
     const text = draft.trim();
     if (!text || isPosting) return;
+    setDraft('');
     createComment({ postId, body: { body: text } })
       .unwrap()
-      .then(() => setDraft(''))
-      .catch(() => { /* RTK retry handles transient errors */ });
+      .catch(() => setDraft(text));
   };
 
   const submitReply = (parentCommentId: string) => {
     const text = replyDraft.trim();
     if (!text || isPosting) return;
+    setReplyDraft('');
+    setReplyOpenId(null);
     createComment({ postId, body: { body: text, parentCommentId } })
       .unwrap()
-      .then(() => {
-        setReplyDraft('');
-        setReplyOpenId(null);
-      })
-      .catch(() => { /* keep the draft so the user doesn't lose it */ });
+      .catch(() => {
+        setReplyDraft(text);
+        setReplyOpenId(parentCommentId);
+      });
   };
 
   const onToggleLike = (commentId: string) => {

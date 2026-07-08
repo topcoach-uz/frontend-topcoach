@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
+import { Skeleton, Spin } from 'antd';
 import {
   CalendarClock,
   Users,
@@ -8,6 +8,7 @@ import {
   UserCircle2,
   ChevronLeft,
   Menu,
+  MessageSquare,
   Shield,
   ClipboardCheck,
 } from 'lucide-react';
@@ -27,6 +28,7 @@ type NavKey =
   | 'schedule'
   | 'availability'
   | 'students'
+  | 'feed'
   | 'profile'
   | 'isc-reviewer'
   | 'admin-console';
@@ -80,10 +82,18 @@ export default function MentorConsoleLayout() {
   // the Schedule item carries a pending-reports badge, and each student row
   // gets an attention dot. All three queries are shared (RTK-cached) with the
   // pages themselves, so this adds no extra network cost.
-  const { data: rosterRes } = useGetMentorRosterQuery(undefined, { skip: !hasFullSupport });
-  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !hasFullSupport });
-  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !hasFullSupport });
-  const { bookings } = useMentorBookings(null, { includeFullSupport: hasFullSupport });
+  //
+  // Fired unconditionally for mentors: the backend scopes each endpoint to the
+  // requesting mentor and returns empty arrays for mentors without Full Support
+  // assignments, so gating them behind `hasFullSupport` (itself derived from the
+  // roster response) only serialized every fetch behind the roster request.
+  // `hasFullSupport` is kept for rendering decisions only.
+  const { data: rosterRes, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
+    skip: !isMentor,
+  });
+  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor });
+  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor });
+  const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
 
   const roster = rosterRes?.data ?? [];
 
@@ -137,6 +147,12 @@ export default function MentorConsoleLayout() {
         label: 'Availability',
         icon: <ClipboardList size={18} strokeWidth={1.75} />,
         path: '/mentor/availability',
+      },
+      {
+        key: 'feed',
+        label: 'Feed',
+        icon: <MessageSquare size={18} strokeWidth={1.75} />,
+        path: '/mentor/feed',
       },
     ];
 
@@ -200,6 +216,7 @@ export default function MentorConsoleLayout() {
     if (activeStudentId) return null; // the student row itself is highlighted
     if (p.startsWith('/mentor/students')) return 'students';
     if (p.startsWith('/mentor/availability')) return 'availability';
+    if (p.startsWith('/mentor/feed')) return 'feed';
     if (p.startsWith('/mentor/profile')) return 'profile';
     if (p.startsWith('/new-admin') || p.startsWith('/admin')) return 'admin-console';
     return null;
@@ -298,7 +315,32 @@ export default function MentorConsoleLayout() {
               {navGroups[0].items.map(renderNavItem)}
             </div>
 
-            {hasFullSupport && (
+            {rosterLoading ? (
+              // Reserve the "My students" slot while the roster loads so the
+              // nav doesn't grow and push "Account" down after first paint.
+              <div className="mentor-console-nav-group" aria-hidden>
+                {showLabels && (
+                  <div className="mentor-console-nav-group-label">My students</div>
+                )}
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="mentor-console-student-item">
+                    <Skeleton.Avatar active size={30} shape="circle" />
+                    {showLabels && (
+                      <span className="mentor-console-student-meta" style={{ gap: 5 }}>
+                        <Skeleton.Input
+                          active
+                          style={{ width: 96, height: 11, minWidth: 0, borderRadius: 4 }}
+                        />
+                        <Skeleton.Input
+                          active
+                          style={{ width: 64, height: 9, minWidth: 0, borderRadius: 4 }}
+                        />
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : hasFullSupport && (
               <div className="mentor-console-nav-group">
                 {showLabels && (
                   <div className="mentor-console-nav-group-label">My students</div>

@@ -56,6 +56,8 @@ export interface CommunityPost {
   isAutoFlagged: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Set on soft-deleted posts — present in admin lists (withDeleted). */
+  deletedAt?: string | null;
   /** Decorated by the server for the calling user. */
   isLikedByMe?: boolean;
   isSavedByMe?: boolean;

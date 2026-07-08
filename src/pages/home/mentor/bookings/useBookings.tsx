@@ -6,6 +6,7 @@ import { SessionsSchema, SessionTypeEnum } from 'src/app/api/Api';
 import { useGetMySessionsQuery } from 'src/app/services/sessions';
 import { CustomText } from 'src/components/common';
 import EmptyCardComp from 'src/components/emptyCard';
+import { CardSkeleton } from 'src/components/loading';
 import useColors from 'src/hooks/useColors';
 import UpcomingCard from '../../_components/bookings/_components/upcamingcards';
 import styles from './bookings.module.scss';
@@ -107,6 +108,14 @@ export default function useBookings() {
 
   const cancelSessionData = data.filter((item) => item.cancelStatus);
 
+  // Never show the "No … sessions" empty cards while the sessions query is
+  // still in flight — hold each tab body on skeleton cards until it settles.
+  const tabLoading = (
+    <div className={styles.upcoming}>
+      <CardSkeleton count={2} showImage={false} />
+    </div>
+  );
+
   const tabItems: TabsProps['items'] = [
     {
       key: '1',
@@ -115,7 +124,9 @@ export default function useBookings() {
           {t('homeMentor.booked')}
         </CustomText>
       ),
-      children: correctDateBooking.length ? (
+      children: isLoading ? (
+        tabLoading
+      ) : correctDateBooking.length ? (
         <div className={styles.upcoming}>
           {correctDateBooking.map((item) => (
             <UpcomingCard
@@ -141,7 +152,9 @@ export default function useBookings() {
           {t('homeMentor.available')}
         </CustomText>
       ),
-      children: correctDateAviable.length ? (
+      children: isLoading ? (
+        tabLoading
+      ) : correctDateAviable.length ? (
         <div className={styles.upcoming}>
           {correctDateAviable.map((item) => (
             <UpcomingCard
@@ -166,7 +179,9 @@ export default function useBookings() {
           {t('homeMentor.past')}
         </CustomText>
       ),
-      children: pastSessions.length ? (
+      children: isLoading ? (
+        tabLoading
+      ) : pastSessions.length ? (
         <div className={styles.upcoming}>
           {correctDatePast.map((item) => (
             <UpcomingCard
@@ -191,7 +206,9 @@ export default function useBookings() {
           {t('homeMentor.canceled')}
         </CustomText>
       ),
-      children: cancelSessionData.length ? (
+      children: isLoading ? (
+        tabLoading
+      ) : cancelSessionData.length ? (
         <div className={styles.upcoming}>
           {cancelSessionData.map((item) => (
             <UpcomingCard

@@ -143,7 +143,9 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
   const { bookings, isLoading: loadingBookings } = useMentorBookings(studentId, {
     includeFullSupport: true,
   });
-  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !studentId });
+  const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
+    skip: !studentId,
+  });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
@@ -536,7 +538,11 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
         <>
           {sectionHead('Tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
           <div className="mc-ws-card">
-            {tasks.length === 0 ? (
+            {loadingTasks ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                <Spin />
+              </div>
+            ) : tasks.length === 0 ? (
               <div className="mc-ws-empty">No tasks yet — assign the first one below.</div>
             ) : (
               <div className="mc-ws-tasklist">{tasks.map(renderTaskRow)}</div>

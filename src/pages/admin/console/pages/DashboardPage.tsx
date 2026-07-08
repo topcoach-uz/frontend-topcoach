@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Col, Empty, List, Row, Space, Spin, Table, Typography } from 'antd';
+import { Alert, Button, Card, Col, Empty, List, Row, Skeleton, Space, Spin, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   AlertTriangle,
@@ -148,11 +148,38 @@ export default function AdminConsoleDashboardPage() {
   ];
 
   if (stats.isLoading) {
+    // In-place skeletons instead of a full-page Spin — the page chrome paints
+    // immediately and the layout matches the loaded state (no reflow on settle).
     return (
-      <div className="ac-admin-page">
-        <div className="admin-console-suspense">
-          <Spin size="large" />
-        </div>
+      <div className="ac-admin-page ac-dashboard-page">
+        <h1 className="ac-page-title">Dashboard</h1>
+        <p className="ac-page-lead">Operational snapshot — what needs attention right now.</p>
+        <Row gutter={[16, 16]} className="ac-kpi-row ac-kpi-row--equal">
+          {[0, 1, 2, 3].map((i) => (
+            <Col key={i} xs={24} sm={12} xl={6}>
+              <Card bordered={false} className="ac-kpi-card">
+                <Skeleton active title={false} paragraph={{ rows: 2 }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+        <Row gutter={[16, 16]} className="ac-dashboard-grid">
+          <Col xs={24} lg={12}>
+            <Card bordered={false} className="ac-panel ac-dashboard-panel">
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
+            <Card bordered={false} className="ac-panel ac-dashboard-panel">
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </Card>
+          </Col>
+          <Col xs={24}>
+            <Card bordered={false} className="ac-panel">
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </Card>
+          </Col>
+        </Row>
       </div>
     );
   }
@@ -177,15 +204,14 @@ export default function AdminConsoleDashboardPage() {
   const overviewKpis = overview.data?.kpis;
   const sub = subStats.data;
 
-  // Active subscriptions KPI — only shown when subscription stats loaded.
+  // Active subscriptions KPI — the 4th column is always reserved (fixed xl={6})
+  // so the row doesn't reflow from 3 to 4 cards when subscription stats settle.
   const activeSubs = sub ? (sub.byStatus.active ?? 0) + (sub.byStatus.trialing ?? 0) : null;
   const mrrMeta = sub && sub.mrrUzs > 0 ? `MRR ${formatUZSShort(sub.mrrUzs)}` : 'Active + trialing plans';
 
   const sessionsMeta = overviewKpis
     ? `${overviewKpis.upcomingCount.toLocaleString()} upcoming · ${overviewKpis.cancelledMonth.toLocaleString()} cancelled`
     : 'All programs combined';
-
-  const kpiColSpan = activeSubs === null ? 8 : 6;
 
   // Attention strip — subscription/session exceptions only (payments live on
   // the Payments page). Rendered as a slim full-width strip only when
@@ -237,39 +263,52 @@ export default function AdminConsoleDashboardPage() {
       <p className="ac-page-lead">Operational snapshot — what needs attention right now.</p>
 
       <Row gutter={[16, 16]} className="ac-kpi-row ac-kpi-row--equal">
-        <Col xs={24} sm={12} xl={kpiColSpan}>
+        <Col xs={24} sm={12} xl={6}>
           <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-green">
             <div className="ac-kpi-label">Total students</div>
             <div className="ac-kpi-value">{kpis.totalStudents.toLocaleString()}</div>
             <div className="ac-kpi-meta">Platform-wide student accounts</div>
           </Card>
         </Col>
-        <Col xs={24} sm={12} xl={kpiColSpan}>
+        <Col xs={24} sm={12} xl={6}>
           <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-green">
             <div className="ac-kpi-label">Active mentors</div>
             <div className="ac-kpi-value">{kpis.activeMentors.toLocaleString()}</div>
             <div className="ac-kpi-meta">Accepted mentor profiles</div>
           </Card>
         </Col>
-        <Col xs={24} sm={12} xl={kpiColSpan}>
+        <Col xs={24} sm={12} xl={6}>
           <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-amber">
             <div className="ac-kpi-label">Sessions this month</div>
             <div className="ac-kpi-value">{kpis.sessionsThisMonth.toLocaleString()}</div>
             <div className="ac-kpi-meta">{sessionsMeta}</div>
           </Card>
         </Col>
-        {activeSubs !== null && (
-          <Col xs={24} sm={12} xl={kpiColSpan}>
-            <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-blue">
-              <div className="ac-kpi-label">Active subscriptions</div>
-              <div className="ac-kpi-value">{activeSubs.toLocaleString()}</div>
-              <div className="ac-kpi-meta">{mrrMeta}</div>
-            </Card>
-          </Col>
-        )}
+        <Col xs={24} sm={12} xl={6}>
+          <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-blue">
+            <div className="ac-kpi-label">Active subscriptions</div>
+            {subStats.isLoading ? (
+              <Skeleton active title={false} paragraph={{ rows: 2 }} />
+            ) : (
+              <>
+                <div className="ac-kpi-value">{activeSubs !== null ? activeSubs.toLocaleString() : '—'}</div>
+                <div className="ac-kpi-meta">{mrrMeta}</div>
+              </>
+            )}
+          </Card>
+        </Col>
       </Row>
 
-      {attentionItems.length > 0 && (
+      {(subStats.isLoading || overview.isLoading) && (
+        // Reserve the strip's slot while the feeding queries load so it doesn't
+        // pop in and push the grid down after the page has painted.
+        <div className="ac-dashboard-attention-strip" aria-hidden>
+          <Skeleton.Button active size="small" style={{ width: 150 }} />
+          <Skeleton.Button active size="small" style={{ width: 230 }} />
+          <Skeleton.Button active size="small" style={{ width: 200 }} />
+        </div>
+      )}
+      {!subStats.isLoading && !overview.isLoading && attentionItems.length > 0 && (
         <div className="ac-dashboard-attention-strip" role="region" aria-label="Needs attention">
           <span className="ac-dashboard-attention-strip-label">
             <AlertTriangle size={14} /> Needs attention

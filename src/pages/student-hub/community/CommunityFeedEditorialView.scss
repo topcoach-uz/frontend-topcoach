@@ -346,6 +346,58 @@ body.cf-feed-active {
     }
   }
 
+  /* Post-card skeletons for the cold fetch — same card chrome, shimmering
+     bars in place of content, with a short fade-in so warm-cache loads
+     never flash them. */
+  &__post--skeleton {
+    pointer-events: none;
+    opacity: 0;
+    animation: cf-skel-appear 0.25s ease 0.15s forwards;
+  }
+
+  &__skel {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(28, 26, 23, 0.06) 25%, rgba(28, 26, 23, 0.1) 50%, rgba(28, 26, 23, 0.06) 75%);
+    background-size: 200% 100%;
+    animation: cf-skel-shimmer 1.4s ease infinite;
+  }
+
+  &__skel--avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__skel--line {
+    height: 13px;
+    margin-top: 12px;
+  }
+
+  &__skel-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+
+    .cf__skel--line {
+      margin-top: 0;
+    }
+  }
+
+  @keyframes cf-skel-shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes cf-skel-appear {
+    to {
+      opacity: 1;
+    }
+  }
+
   /* Editorial "anchored" strip — small uppercase microtype with a thin
      maroon left rule. Reads as a magazine kicker, not an Ant Design pill.
      The pin icon stays for affordance; everything else trims down to

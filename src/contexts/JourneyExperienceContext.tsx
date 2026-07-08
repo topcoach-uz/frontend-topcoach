@@ -18,6 +18,15 @@ type JourneyExperienceValue = {
   /** Community enrollment (mock: localStorage). Controls feed vs dashboard default & locked learning items. */
   isCommunityEnrolled: boolean;
   setCommunityEnrolled: (value: boolean) => void;
+  /**
+   * True while the entitlement sources (user preferences + subscription)
+   * are still loading AND local storage didn't already say "enrolled".
+   * Consumers that route/redirect based on isCommunityEnrolled should
+   * wait for this to go false — otherwise an enrolled user on a fresh
+   * device gets routed as not-enrolled and then yanked to the right
+   * place when the subscription resolves.
+   */
+  isEntitlementLoading: boolean;
 };
 
 const JourneyExperienceContext = createContext<JourneyExperienceValue | null>(null);
@@ -35,16 +44,17 @@ function readCommunityEnrolled(): boolean {
 export function JourneyExperienceProvider({ children }: { children: React.ReactNode }) {
   const profile = useTypedSelector((s) => s.auth.profile);
   const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
-  const { data: rawPreferences } = useGetUserPreferencesQuery();
+  const { data: rawPreferences, isLoading: preferencesLoading } = useGetUserPreferencesQuery();
   // Subscription state is the second source of community entitlement.
   // Anyone whose current subscription is `trialing` or `active` must
   // be treated as community-enrolled — that's the whole point of the
   // trial: pay (or card-on-file) → instant access. We still keep the
   // user_preferences flag for admin/Full-Support grants and as the
   // explicit "switch back to standard" override.
-  const { data: subscription } = useGetCurrentSubscriptionQuery(undefined, {
-    skip: !isAuthenticated,
-  });
+  const { data: subscription, isLoading: subscriptionLoading } =
+    useGetCurrentSubscriptionQuery(undefined, {
+      skip: !isAuthenticated,
+    });
   const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
   const [preferenceMode, setState] = useState(readCommunityEnrolled);
@@ -66,6 +76,10 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     subscription?.status === 'active' || subscription?.status === 'trialing';
 
   const isCommunityEnrolled = preferenceMode || hasEntitlingSubscription;
+  // Already-enrolled-per-localStorage users don't need to wait; only an
+  // unknown entitlement (fresh device) is "loading".
+  const isEntitlementLoading =
+    !isCommunityEnrolled && (preferencesLoading || subscriptionLoading);
 
   const setCommunityEnrolled = useCallback((value: boolean) => {
     setState(value);
@@ -120,8 +134,9 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
       unlockPremiumJourney,
       isCommunityEnrolled,
       setCommunityEnrolled,
+      isEntitlementLoading,
     }),
-    [isCommunityEnrolled, setCommunityEnrolled, setPremiumJourney, unlockPremiumJourney],
+    [isCommunityEnrolled, setCommunityEnrolled, setPremiumJourney, unlockPremiumJourney, isEntitlementLoading],
   );
 
   return <JourneyExperienceContext.Provider value={value}>{children}</JourneyExperienceContext.Provider>;
@@ -139,6 +154,7 @@ const FALLBACK_VALUE: JourneyExperienceValue = {
   unlockPremiumJourney: () => {},
   isCommunityEnrolled: false,
   setCommunityEnrolled: () => {},
+  isEntitlementLoading: false,
 };
 
 export function useJourneyExperience(): JourneyExperienceValue {

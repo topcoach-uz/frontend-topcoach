@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import {
   Outlet,
   Route,
@@ -137,6 +137,7 @@ const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pa
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
+const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
@@ -170,7 +171,11 @@ const AdminOrganizationManagementLazy = lazy(() => import("src/pages/admin/conso
 const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
-const StudentHubGateLazy = lazy(() => import("src/pages/student-hub/StudentHubGate"));
+// Import factories shared between lazy() and the post-auth preload below,
+// so the chunk is (almost always) already in the module cache by the time
+// the post-login redirect mounts the route — no Suspense loader flash.
+const importStudentHubGate = () => import("src/pages/student-hub/StudentHubGate");
+const StudentHubGateLazy = lazy(importStudentHubGate);
 const CommunityPostPermalinkLazy = lazy(
   () => import("src/pages/community/CommunityPostPermalinkPage"),
 );
@@ -221,27 +226,34 @@ function RouterProvider() {
     { skip: !isAuthenticated },
   );
 
-  // App-bootstrap gate: while the authenticated user's profile (+ org
-  // membership, which the very first redirect needs) is loading, show ONE
-  // full-screen loader instead of letting each route/layout/gate render its
-  // own. Once resolved, everything below renders straight from cache — no
-  // chained spinners.
-  // NEVER apply this gate on /auth/* pages. The Google callback flips
-  // isAuthenticated mid-flow (right after the token exchange); if the gate
-  // fired it would UNMOUNT the callback page and remount it once getMe
-  // resolved — re-running the single-use short-code exchange → 401 → the user
-  // gets bounced back to login. Auth pages own their own loading UI.
-  const onAuthPage =
-    typeof window !== 'undefined' &&
-    window.location.pathname.startsWith('/auth');
+  // Warm the landing-page chunks while the bootstrap data loads, so the
+  // redirect after sign-in mounts an already-cached module instead of
+  // flashing a Suspense loader. Students land on /student-hub; mentors on
+  // the mentor console.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    importStudentHubGate();
+    import("src/pages/mentor/console/MentorConsoleLayout");
+  }, [isAuthenticated]);
 
-  if (
+  // App-bootstrap gate: while the authenticated user's profile (+ org
+  // membership, which the very first redirect needs) is loading, cover the
+  // app with ONE full-screen loader OVERLAY instead of letting each
+  // route/layout/gate flash its own.
+  //
+  // Rendered as an overlay — NOT an early return — on purpose. The old
+  // `return <Loader/>` unmounted the whole router mid sign-in (the gate
+  // fires right after navigate('/') when getMe/orgs are still in flight),
+  // then remounted everything when they resolved: every layout, page and
+  // loader restarted, which read as 3–4 loader "flashes". It also forced an
+  // /auth/* carve-out because unmounting the Google callback re-ran the
+  // single-use code exchange. With an overlay the tree underneath stays
+  // mounted (callback keeps running, navigation proceeds), so neither
+  // problem exists: the user sees one continuous loader from sign-in to
+  // landing page.
+  const bootstrapLoading =
     isAuthenticated &&
-    !onAuthPage &&
-    ((profileLoading && !userData) || (orgsLoading && !orgsData))
-  ) {
-    return <Loader height="100vh" />;
-  }
+    ((profileLoading && !userData) || (orgsLoading && !orgsData));
 
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
@@ -250,6 +262,17 @@ function RouterProvider() {
 
   return (
     <CustomRouter history={customHistory}>
+      {bootstrapLoading && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10_000,
+          }}
+        >
+          <Loader height="100vh" />
+        </div>
+      )}
       <NavigationProgressBar />
       <PostHogPageView />
       <GlobalModals />
@@ -482,7 +505,7 @@ function RouterProvider() {
                   </Suspense>
                 }
               />
-              {/* Student Hub: mentees + oumarovna + sheraliozodov6; mentors/counselors → / (except sheraliozodov6) */}
+              {/* Student Hub: mentees only; mentors/counselors → their own home (see StudentHubGate) */}
               <Route
                 path="/student-hub/*"
                 element={
@@ -565,6 +588,7 @@ function RouterProvider() {
                   <Route path="students" element={<MentorConsoleStudentsLazy />} />
                   <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
                   <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
+                  <Route path="feed" element={<MentorConsoleFeedLazy />} />
                   {/* Sessions merged into the Schedule; per-student review lives in each workspace. */}
                   <Route path="sessions" element={<Navigate to="/mentor/dashboard" replace />} />
                   <Route path="to-review" element={<Navigate to="/mentor/students" replace />} />

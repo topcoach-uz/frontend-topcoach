@@ -1,6 +1,7 @@
 /**
- * Gate for /student-hub: redirect mentors (except oumarovna, sheraliozodov6, sheraliozodov03) and
- * counselors (except sheraliozodov6) to /. Always allow sheraliozodov6@gmail.com.
+ * Gate for /student-hub: redirect ALL mentors (SuperAdmin or not — they work
+ * from the mentor dashboard) and counselors to their own home surfaces.
+ * Always allow sheraliozodov6@gmail.com.
  *
  * Hook-order fix: useCounselorStatus (useState/useEffect) + useGetMeQuery(skip) caused
  * "change in order of Hooks" on refresh. We use Redux for profile and RTK Query
@@ -15,7 +16,6 @@ import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext
 import StudentHubRoutes from './StudentHubRoutes';
 
 const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
-const MENTOR_EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
 
 export default function StudentHubGate() {
   const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
@@ -34,7 +34,11 @@ export default function StudentHubGate() {
     return <Navigate to="/" replace />;
   }
 
-  if (profileLoading) {
+  // One loader for BOTH pending sources (profile + org membership). They
+  // resolve in parallel and are usually cache-warm from RouterProvider's
+  // bootstrap queries, so this rarely shows at all — but when it does, it's
+  // a single continuous loader instead of two back-to-back ones.
+  if (profileLoading || counselorLoading) {
     return (
       <Loader height="100vh" />
     );
@@ -48,14 +52,8 @@ export default function StudentHubGate() {
     );
   }
 
-  if (isMentor && !MENTOR_EXCEPTION_EMAILS.includes(email || '')) {
+  if (isMentor) {
     return <Navigate to="/" replace />;
-  }
-
-  if (counselorLoading) {
-    return (
-      <Loader height="100vh" />
-    );
   }
 
   if (isCounselor) {

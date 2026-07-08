@@ -10,7 +10,7 @@
  * backend Phase 3 (see docs/COMMUNITY_FEED_PRD.md).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, Tabs } from 'antd';
+import { Button, Card, Col, Dropdown, Input, Modal, Row, Skeleton, Table, Tabs, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   Filter,
@@ -190,7 +190,7 @@ export default function CommunityModerationPage() {
 
   /* ─── live data ────────────────────────────────────────── */
   const { data: stats } = useAdminStatsQuery();
-  const { data: reportsList } = useAdminListReportsQuery({
+  const { data: reportsList, isLoading: reportsLoading } = useAdminListReportsQuery({
     status: activeStatusFilter === 'ALL' ? 'ALL' : activeStatusFilter,
   });
   const { data: postsList } = useAdminListPostsQuery();
@@ -224,7 +224,10 @@ export default function CommunityModerationPage() {
         saves: p.savedCount,
         views: p.viewCount,
         flags: 0, // backend per-post flag count joins land in v1.1
-        status: p.isHidden ? 'HIDDEN' : 'LIVE',
+        // The admin list includes soft-deleted rows (withDeleted) — check
+        // deletedAt FIRST or a deleted post renders as LIVE with a Delete
+        // button whose second click 404s.
+        status: p.deletedAt ? 'DELETED' : p.isHidden ? 'HIDDEN' : 'LIVE',
         hiddenReason: p.hiddenReason,
         isAutoFlagged: p.isAutoFlagged,
       })),
@@ -295,7 +298,12 @@ export default function CommunityModerationPage() {
     if (!window.confirm(
       'Soft-delete this post permanently? The author cannot restore it; only an admin running SQL can.',
     )) return;
-    await adminDeletePost(postId);
+    try {
+      await adminDeletePost(postId).unwrap();
+      message.success('Post deleted');
+    } catch {
+      message.error('Could not delete the post — it may already be deleted.');
+    }
     setOpenPost(null);
   };
 
@@ -468,7 +476,15 @@ export default function CommunityModerationPage() {
                 </div>
 
                 <div className="cm-report-list">
-                  {visibleReports.length === 0 ? (
+                  {reportsLoading ? (
+                    // Skeleton report cards while the queue loads — never flash
+                    // "Queue is clear." before the query has settled.
+                    [0, 1, 2].map((i) => (
+                      <Card key={i} bordered={false} className="cm-report-card">
+                        <Skeleton active avatar={{ size: 'small' }} title={false} paragraph={{ rows: 3 }} />
+                      </Card>
+                    ))
+                  ) : visibleReports.length === 0 ? (
                     <Card bordered={false} className="cm-empty">
                       <CheckCircle2 size={20} className="cm-empty-icon" />
                       <div>
@@ -964,6 +980,11 @@ export default function CommunityModerationPage() {
               </div>
             </div>
 
+            {liveOpenPost.status === 'DELETED' && (
+              <div className="cm-post-modal-banner cm-post-modal-banner--warn">
+                <Trash2 size={14} /> This post is deleted — it no longer appears in the feed.
+              </div>
+            )}
             {liveOpenPost.status === 'HIDDEN' && (
               <div className="cm-post-modal-banner cm-post-modal-banner--warn">
                 <EyeOff size={14} /> Hidden from the feed.
@@ -987,19 +1008,23 @@ export default function CommunityModerationPage() {
               </a>
               <div className="cm-post-modal-footer-actions">
                 <Button onClick={() => setOpenPost(null)}>Close</Button>
-                <Button
-                  icon={liveOpenPost.status === 'HIDDEN' ? <Eye size={12} /> : <EyeOff size={12} />}
-                  onClick={() => togglePostHidden(liveOpenPost.id)}
-                >
-                  {liveOpenPost.status === 'HIDDEN' ? 'Unhide' : 'Hide'}
-                </Button>
-                <Button
-                  danger
-                  icon={<Trash2 size={12} />}
-                  onClick={() => handleAdminDelete(liveOpenPost.id)}
-                >
-                  Delete
-                </Button>
+                {liveOpenPost.status !== 'DELETED' && (
+                  <>
+                    <Button
+                      icon={liveOpenPost.status === 'HIDDEN' ? <Eye size={12} /> : <EyeOff size={12} />}
+                      onClick={() => togglePostHidden(liveOpenPost.id)}
+                    >
+                      {liveOpenPost.status === 'HIDDEN' ? 'Unhide' : 'Hide'}
+                    </Button>
+                    <Button
+                      danger
+                      icon={<Trash2 size={12} />}
+                      onClick={() => handleAdminDelete(liveOpenPost.id)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </>

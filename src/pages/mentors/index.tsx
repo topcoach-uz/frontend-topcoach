@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Skeleton } from 'antd';
 import { useTypedSelector } from 'src/app/store';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import { getLatestCreatedImg } from 'src/utils';
@@ -118,7 +119,33 @@ export default function MentorsPage() {
             />
           </div>
           <div className={styles.cards}>
-            {sortedMentors.map((mentor, index) => {
+            {/* Skeleton grid while mentors load — same footprint as the real
+                cards, so the grid doesn't render blank and then pop in. */}
+            {isLoading &&
+              Array.from({ length: 8 }, (_, i) => (
+                <div key={`sk-${i}`} className={styles.cardSkeleton}>
+                  <Skeleton.Image
+                    active
+                    style={{ width: '100%', height: 320 }}
+                  />
+                  <div className={styles.cardSkeletonBody}>
+                    <Skeleton
+                      active
+                      title={{ width: '60%' }}
+                      paragraph={{ rows: 2, width: ['90%', '40%'] }}
+                    />
+                  </div>
+                </div>
+              ))}
+            {!isLoading && isError && (
+              <p className={styles.cardsError}>
+                {t(
+                  'mentors.loadError',
+                  "Couldn't load mentors. Please refresh the page to try again."
+                )}
+              </p>
+            )}
+            {!isLoading && !isError && sortedMentors.map((mentor, index) => {
               // Backend now only returns the profile-picture media record, so this pick is O(1).
               const profileImage = getLatestCreatedImg(mentor.profile?.media || []);
 

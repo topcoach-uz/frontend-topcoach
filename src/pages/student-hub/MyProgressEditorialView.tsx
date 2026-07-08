@@ -14,7 +14,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Dropdown, Form, Input, Modal } from 'antd';
+import { App, Dropdown, Form, Input, Modal, Skeleton } from 'antd';
 import {
   ArrowRight,
   Plus,
@@ -113,15 +113,30 @@ const MyProgressEditorialView: React.FC = () => {
   // ── Real learning-progress queries (same ones the legacy
   // AdmissionsProgramProgressCard uses) so the active-track card
   // mirrors the user's actual enrolled programs. ────────────────────
-  const { data: admissionsEnrollment } = useGetEnrollmentStatusQuery('admissions');
-  const { data: satEnrollment } = useGetEnrollmentStatusQuery('sat');
-  const { data: admissionsProgress } = useGetUserProgressQuery('admissions', {
-    skip: !admissionsEnrollment?.canAccessLearning,
-  });
-  const { data: satProgress } = useGetUserProgressQuery('sat', {
+  const { data: admissionsEnrollment, isLoading: admissionsEnrollmentLoading } =
+    useGetEnrollmentStatusQuery('admissions');
+  const { data: satEnrollment, isLoading: satEnrollmentLoading } =
+    useGetEnrollmentStatusQuery('sat');
+  const { data: admissionsProgress, isLoading: admissionsProgressLoading } =
+    useGetUserProgressQuery('admissions', {
+      skip: !admissionsEnrollment?.canAccessLearning,
+    });
+  const { data: satProgress, isLoading: satProgressLoading } = useGetUserProgressQuery('sat', {
     skip: !satEnrollment?.canAccessLearning,
   });
-  const { data: researchSummary } = useGetResearchProgressSummaryQuery();
+  const { data: researchSummary, isLoading: researchLoading } =
+    useGetResearchProgressSummaryQuery();
+
+  // Enrollment/progress queries still in flight. While true (and no track
+  // data has landed yet) we hold skeletons in place of the tracks grid and
+  // AI recommendations instead of computing "not enrolled" fallbacks from
+  // empty data that swap to real content a beat later.
+  const tracksLoading =
+    admissionsEnrollmentLoading ||
+    satEnrollmentLoading ||
+    admissionsProgressLoading ||
+    satProgressLoading ||
+    researchLoading;
 
   /** Build a unified "track" entry for each enrolled program. */
   const tracks: TrackInfo[] = useMemo(() => {
@@ -182,7 +197,8 @@ const MyProgressEditorialView: React.FC = () => {
   }, [tracks]);
 
   // Pull college applications to derive the nearest-deadline card.
-  const { data: applicationsResponse } = useGetCollegeApplicationsQuery(undefined as any);
+  const { data: applicationsResponse, isLoading: applicationsLoading } =
+    useGetCollegeApplicationsQuery(undefined as any);
   const applications = (applicationsResponse as any)?.data ?? applicationsResponse ?? [];
   const nearestDeadline = useMemo(() => {
     const now = Date.now();
@@ -359,6 +375,11 @@ const MyProgressEditorialView: React.FC = () => {
    * recommendation has a real CTA path so clicks lead somewhere
    * meaningful — no static placeholders.
    */
+  // Recs derive from tracks + applications — don't compute the "enroll in
+  // your first program / add your first college" fallbacks from data that
+  // simply hasn't arrived yet.
+  const aiRecsLoading = tracksLoading || applicationsLoading;
+
   const aiRecs: AiRecItem[] = useMemo(() => {
     type Rec = AiRecItem & { priority: number; ctaPath: string };
     const recs: Rec[] = [];
@@ -603,11 +624,25 @@ const MyProgressEditorialView: React.FC = () => {
               <div>
                 <div className="myprog__card-eyebrow">Your learning progress</div>
                 <h2 className="myprog__card-title">
-                  {tracks.length} program{tracks.length === 1 ? '' : 's'} enrolled
+                  {tracksLoading && tracks.length === 0 ? (
+                    <Skeleton.Input active size="small" style={{ width: 200 }} />
+                  ) : (
+                    <>
+                      {tracks.length} program{tracks.length === 1 ? '' : 's'} enrolled
+                    </>
+                  )}
                 </h2>
               </div>
             </div>
-            {tracks.length === 0 ? (
+            {tracksLoading && tracks.length === 0 ? (
+              // Queries in flight, nothing landed yet — hold a track-sized
+              // skeleton instead of the "enroll to start tracking" empty state.
+              <div className="myprog__tracks-grid">
+                <div className="myprog__track">
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                </div>
+              </div>
+            ) : tracks.length === 0 ? (
               <div className="myprog__tracks-empty">
                 <p>
                   Enroll in the Admissions Program, SAT Prep, or Research Prep to start
@@ -994,7 +1029,17 @@ const MyProgressEditorialView: React.FC = () => {
           <h3 className="myprog__airecs-title">
             Three things you can do today to move the needle.
           </h3>
-          {aiRecs.length === 0 ? (
+          {aiRecsLoading ? (
+            // Source queries in flight — skeleton rows instead of fallback
+            // recs computed from still-empty enrollment/application data.
+            <ol className="myprog__airecs-list">
+              {[1, 2, 3].map((i) => (
+                <li key={i} className="myprog__airecs-row">
+                  <Skeleton active title={false} paragraph={{ rows: 2 }} />
+                </li>
+              ))}
+            </ol>
+          ) : aiRecs.length === 0 ? (
             <p className="myprog__airecs-empty">
               All caught up — nothing pressing today. Your dashboard will surface
               new tasks as deadlines approach and progress shifts.

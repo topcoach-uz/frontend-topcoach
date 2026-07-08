@@ -76,10 +76,20 @@ export default function SigninForm() {
             `Bearer ${access_token}`;
           
           // Return to where the user came from, but never an auth page.
+          // Client-side navigation, NOT window.location.href: a hard reload
+          // re-bootstrapped the entire app (all chunks, all queries, the
+          // full loader chain) on every sign-in. With SPA navigation the
+          // router's bootstrap overlay covers the transition and the
+          // landing page renders as soon as getMe resolves.
           const redirectUrl = localStorage.getItem('redirectAfterLogin');
           localStorage.removeItem('redirectAfterLogin');
-          window.location.href =
+          const target =
             redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';
+          if (/^https?:\/\//.test(target)) {
+            window.location.href = target;
+          } else {
+            navigate(target, { replace: true });
+          }
         }
       })
       .catch((err: any) => {

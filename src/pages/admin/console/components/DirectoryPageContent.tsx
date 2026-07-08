@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Button,
@@ -79,21 +79,41 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  // The input stays controlled by the raw `q` URL param; only the debounced
+  // value feeds the query args, so we fire one request per pause instead of
+  // one per keystroke.
+  const [debouncedQ, setDebouncedQ] = useState(q.trim());
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQ(q.trim());
+      // Reset paging together with the debounced term so both land in the
+      // same render — one fetch, not two.
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [q]);
+
   const queryParams = useMemo<AdminDirectoryQuery>(
     () => ({
       role: variant,
-      search: q.trim() || undefined,
+      search: debouncedQ || undefined,
       managementRole: adminFilter,
       page,
       pageSize,
     }),
-    [variant, q, adminFilter, page, pageSize],
+    [variant, debouncedQ, adminFilter, page, pageSize],
   );
 
   const { data, isFetching, isError, error } = useGetAdminUsersDirectoryQuery(queryParams);
 
-  const rows = data?.items ?? [];
-  const total = data?.total ?? 0;
+  // Keep the last resolved payload visible while a new page/search is in
+  // flight so the stat tiles and table don't reset to 0/empty mid-fetch.
+  const lastDataRef = useRef<typeof data>(undefined);
+  if (data !== undefined) lastDataRef.current = data;
+  const viewData = data ?? lastDataRef.current;
+
+  const rows = viewData?.items ?? [];
+  const total = viewData?.total ?? 0;
 
   // Per-tab column sets
   const menteeColumns: ColumnsType<AdminDirectoryRow> = [
@@ -278,7 +298,7 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
       { title: 'Total mentees', value: total, color: 'var(--ac-text)' },
       {
         title: 'Telegram profiles',
-        value: data?.telegramProfilesTotal ?? 0,
+        value: viewData?.telegramProfilesTotal ?? 0,
         color: '#7dd3fc',
         subtitle: 'Platform-wide users with a Telegram status set',
       },
@@ -324,10 +344,7 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
             placeholder="Search name, email"
             prefix={<Search size={18} style={{ opacity: 0.45 }} />}
             value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => setQ(e.target.value)}
             className="ac-directory-search"
           />
           {variant !== 'admins' && (

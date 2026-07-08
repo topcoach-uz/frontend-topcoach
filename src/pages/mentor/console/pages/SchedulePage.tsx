@@ -58,7 +58,7 @@ function upcomingPill(b: MentorBooking) {
 
 export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
-  const { id: mentorId, displayName, hasFullSupport } = useMentorConsole();
+  const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
   const [searchParams] = useSearchParams();
   // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
   const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
@@ -75,15 +75,24 @@ export default function MentorConsoleSchedulePage() {
     description: string;
   }>();
 
-  const { data: rosterRes } = useGetMentorRosterQuery(undefined, { skip: !hasFullSupport });
+  // Shared (RTK-cached) with the gate/layout, which fire it for every mentor —
+  // `hasFullSupport` is derived from this same query, so its loading flag tells
+  // us whether Full Support participation is actually known yet.
+  const { data: rosterRes, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
+    skip: !isMentor,
+  });
   const roster = useMemo(() => rosterRes?.data ?? [], [rosterRes?.data]);
   const rosterById = useMemo(() => new Map(roster.map((r) => [r.id, r])), [roster]);
 
   // Non-FS mentors get a "students can't book you yet" nudge instead of tiles.
-  const { data: availabilityRes } = useGetMentorAvailabilityQuery(mentorId, {
-    skip: hasFullSupport || !mentorId,
-  });
+  const { data: availabilityRes, isLoading: availabilityLoading } =
+    useGetMentorAvailabilityQuery(mentorId, {
+      skip: hasFullSupport || !mentorId,
+    });
   const hasAvailability = (availabilityRes?.slots?.length ?? 0) > 0;
+  // `hasFullSupport` and `hasAvailability` are both false while their queries
+  // are still in flight — only surface the nudge once everything has settled.
+  const bookabilityKnown = !rosterLoading && !availabilityLoading;
 
   const { bookings, isLoading, isError } = useMentorBookings(null, {
     includeFullSupport: hasFullSupport,
@@ -284,7 +293,7 @@ export default function MentorConsoleSchedulePage() {
         </div>
       </header>
 
-      {!hasFullSupport && !hasAvailability && (
+      {bookabilityKnown && !hasFullSupport && !hasAvailability && (
         <button
           type="button"
           className="mc-sched-nudge"

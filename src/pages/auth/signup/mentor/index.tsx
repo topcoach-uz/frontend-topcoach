@@ -56,33 +56,40 @@ export default function MentorRegistration() {
       {current === 0 ? (
         <PersonalInfo
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+          formButtonsProps={{ current, lastStep: 5, onNext, onPrev, onComplete }}
         />
       ) : current === 1 ? (
         <DetailedInfo
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+          formButtonsProps={{ current, lastStep: 5, onNext, onPrev, onComplete }}
           formError={formError}
         />
       ) : current === 2 ? (
         <AcademicInfo
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+          formButtonsProps={{ current, lastStep: 5, onNext, onPrev, onComplete }}
         />
       ) : current === 3 ? (
         <AboutMeAndMotivation
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+          formButtonsProps={{ current, lastStep: 5, onNext, onPrev, onComplete }}
         />
       ) : current === 4 ? (
         <Support
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete }}
+          formButtonsProps={{ current, lastStep: 5, onNext, onPrev, onComplete }}
         />
       ) : current === 5 ? (
         <Background
           form={form}
-          formButtonsProps={{ current, onNext, onPrev, onComplete, loading }}
+          formButtonsProps={{
+            current,
+            lastStep: 5,
+            onNext,
+            onPrev,
+            onComplete,
+            loading,
+          }}
         />
       ) : (
         ''

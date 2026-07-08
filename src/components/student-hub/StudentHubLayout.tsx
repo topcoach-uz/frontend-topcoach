@@ -347,7 +347,14 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
         <Content className={`main-content ${isSatPrep ? 'main-content--sat-prep' : ''}`}>
           {!isSatPrep && <StudyGoalsStickyBanner />}
           <div className={isSatPrep ? 'main-content-flush' : 'main-content-padded'}>
-            {isLoading && location.pathname === '/student-hub' ? (
+            {/* Only the dashboard section actually consumes useStudentHub's
+                data — every hub section shares the '/student-hub' pathname
+                via ?section=…, so gating on pathname alone blocked Feed,
+                Messages, etc. behind unrelated dashboard queries AND delayed
+                mounting the hub page (serializing its own fetches). */}
+            {isLoading &&
+            location.pathname === '/student-hub' &&
+            new URLSearchParams(location.search).get('section') === 'dashboard' ? (
               <div className="student-hub-loading-content">
                 <div className="loading-spinner-container">
                   <Spin size="large" />

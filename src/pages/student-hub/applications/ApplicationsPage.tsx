@@ -138,6 +138,12 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   // Merge data based on mode
   const finalApplicationsData = isReadOnly ? readOnlyApplicationsResponse?.data : applicationsResponse?.data;
   const finalScholarshipsData = isReadOnly ? readOnlyScholarshipsResponse?.data : scholarshipsResponse?.data;
+
+  // College-list queries still in flight — keep the List in its loading state
+  // instead of flashing the "No applications yet" empty state.
+  const listLoading = isReadOnly
+    ? readOnlyApplicationsLoading || readOnlyScholarshipsLoading
+    : applicationsLoading || scholarshipsLoading;
   
   const [deleteCollegeApplication, { isLoading: deleteLoading }] = useDeleteCollegeApplicationMutation();
   const [deleteScholarshipApplication, { isLoading: deleteScholarshipLoading }] = useDeleteScholarshipApplicationMutation();
@@ -728,6 +734,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
               >
                 <List
                   dataSource={combinedList}
+                  loading={listLoading}
                   locale={{
                     emptyText: (
                       <div className="applications-empty-state">
@@ -855,7 +862,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           >
             <List
               dataSource={combinedList}
-              locale={{ 
+              loading={listLoading}
+              locale={{
                 emptyText: (
                   <div className="applications-empty-state">
                     <UnifiedIcon name="file-text" size="md" color="secondary" style={{ marginBottom: 12, opacity: 0.4 }} />

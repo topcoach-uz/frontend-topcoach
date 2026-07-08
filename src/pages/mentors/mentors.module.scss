@@ -98,6 +98,33 @@ $mp-brand: #7B1F2F;
   }
 }
 
+// Loading skeleton matching the real MentorCard footprint (min-height 480px,
+// 320px image) so the grid reserves its final size while mentors load.
+.cardSkeleton {
+  min-height: 480px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+
+  :global(.ant-skeleton-image) {
+    width: 100% !important;
+    height: 320px !important;
+    border-radius: 0;
+  }
+}
+
+.cardSkeletonBody {
+  padding: 16px;
+}
+
+.cardsError {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 0;
+  color: #6b7280;
+}
+
 // Skeleton loading styles
 .skeletonCard {
   background: $colorBgContainer;

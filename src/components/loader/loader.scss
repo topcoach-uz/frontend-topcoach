@@ -2,29 +2,44 @@
 .pl {
   width: 6em;
   height: 6em;
+  /* Flash guard: stay invisible for the first ~150ms. Loaders that
+     resolve faster than that (cached chunks, warm queries) never paint,
+     so rapid gate/Suspense transitions don't read as "flashing".
+     Genuinely slow loads fade in smoothly instead of popping. */
+  opacity: 0;
+  animation: pl-appear 0.25s ease 0.15s forwards;
 }
 
+@keyframes pl-appear {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Brand palette (maroon family) — matches the antd Spin dots recolored
+   in loading.scss, so consecutive loading surfaces read as one system
+   instead of two unrelated loaders. */
 .pl__ring {
   animation: ringA 2s linear infinite;
 }
 
 .pl__ring--a {
-  stroke: #f42f25;
+  stroke: #7b1f2f;
 }
 
 .pl__ring--b {
   animation-name: ringB;
-  stroke: #f49725;
+  stroke: #c46a76;
 }
 
 .pl__ring--c {
   animation-name: ringC;
-  stroke: #255ff4;
+  stroke: #9b3d4b;
 }
 
 .pl__ring--d {
   animation-name: ringD;
-  stroke: #f42582;
+  stroke: #5d1622;
 }
 
 /* Animations */

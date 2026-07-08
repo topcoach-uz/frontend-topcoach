@@ -162,7 +162,7 @@ export default function CommunityHubMockPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isCommunityEnrolled, unlockPremiumJourney } = useJourneyExperience();
+  const { isCommunityEnrolled, unlockPremiumJourney, isEntitlementLoading } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
   // Coin balance for the sidebar card. Skip the call until we know the
   // user is community-enrolled — non-members don't see the rewards page
@@ -243,8 +243,12 @@ export default function CommunityHubMockPage() {
   useEffect(() => {
     if (location.pathname !== '/student-hub' && location.pathname !== '/student-hub/') return;
     if (location.search && location.search.length > 1) return;
+    // Don't commit to the not-enrolled default while entitlement is still
+    // resolving on a fresh device — otherwise an enrolled user lands on the
+    // dashboard upsell and then gets yanked to Feed a beat later.
+    if (isEntitlementLoading) return;
     navigate(defaultHubSectionPath, { replace: true });
-  }, [location.pathname, location.search, defaultHubSectionPath, navigate]);
+  }, [location.pathname, location.search, defaultHubSectionPath, navigate, isEntitlementLoading]);
 
   /**
    * Scroll-to-top on in-hub section change.

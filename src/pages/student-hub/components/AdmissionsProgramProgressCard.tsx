@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Card, Progress, Button, Spin, Empty, message, Space, Typography } from 'antd';
+import { Card, Progress, Button, Spin, Empty, Skeleton, message, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Lock, PlayCircle, BookOpen, FlaskConical } from 'lucide-react';
@@ -65,8 +65,14 @@ export default function AdmissionsProgramProgressCard({
     'admissions',
     { skip: !!skip }
   );
-  const { data: satEnrollment } = useGetEnrollmentStatusQuery('sat', { skip: !!skip });
-  const { data: enrollmentMe } = useGetEnrollmentMeQuery(undefined, { skip: !!skip });
+  const { data: satEnrollment, isLoading: satEnrollmentLoading } = useGetEnrollmentStatusQuery(
+    'sat',
+    { skip: !!skip }
+  );
+  const { data: enrollmentMe, isLoading: enrollmentMeLoading } = useGetEnrollmentMeQuery(
+    undefined,
+    { skip: !!skip }
+  );
   const [fetchSsoLink] = useLazyGetScholarhubSsoLinkQuery();
 
   const { data: admissionsProgress, isLoading: progressLoading } = useGetUserProgressQuery(
@@ -156,12 +162,40 @@ export default function AdmissionsProgramProgressCard({
 
   const isLoading =
     enrollmentLoading ||
+    satEnrollmentLoading ||
+    enrollmentMeLoading ||
     (!skipResearchQuery && researchLoading) ||
     (hasAdmissions && progressLoading);
-  if (isLoading && !hasAdmissions && !hasSat && !hasResearchPrep) {
-    return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
-  }
   if (!hasAdmissions && !hasSat && !hasResearchPrep) {
+    if (isLoading) {
+      // Queries still in flight and no data yet — hold a card-sized skeleton
+      // instead of flashing the "no programs enrolled" empty state (or null).
+      const skeleton = <Skeleton active paragraph={{ rows: 4 }} />;
+      if (wrapWithMentorPanel) {
+        return (
+          <Card
+            bordered={false}
+            className="mc-panel mc-learning-progress-panel admissions-progress-card"
+            title={
+              <Space size="small">
+                <BookOpen size={18} color="var(--mc-accent)" />
+                <span>{title ?? t('programs.enrollment.learningProgress')}</span>
+              </Space>
+            }
+          >
+            {skeleton}
+          </Card>
+        );
+      }
+      if (embedded) {
+        return skeleton;
+      }
+      return (
+        <Card className="admissions-progress-card" style={{ marginTop: 24, marginBottom: 24 }}>
+          {skeleton}
+        </Card>
+      );
+    }
     return showEmptyWhenNotEnrolled ? <Empty description={t('programs.enrollment.noProgramsEnrolled') || 'No programs enrolled at the moment'} image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null;
   }
 

@@ -66,7 +66,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     { skip: !studentProfile?.id || currentStep !== 'results' }
   );
   // Check for active (saved) session
-  const { data: activeSession, refetch: refetchActiveSession } = useCheckActiveSessionQuery(
+  const {
+    data: activeSession,
+    isFetching: activeSessionFetching,
+    refetch: refetchActiveSession,
+  } = useCheckActiveSessionQuery(
     studentProfile?.id || '',
     { skip: !studentProfile?.id || readOnly }
   );
@@ -109,6 +113,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   useEffect(() => {
     if (readOnly || !studentProfile?.id || currentStep !== 'questions' || isRecoveringSession) return;
     if (sessionId && questions.length > 0) return;
+    // Wait for the active-session check to settle before deciding whether a
+    // resumable session exists — on a refresh `activeSession` is undefined
+    // while the query is in flight, which previously bounced users with a
+    // saved session back to start with "No active assessment session found".
+    if (activeSessionFetching) return;
 
     const recoverSession = async () => {
       try {
@@ -155,6 +164,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     isRecoveringSession,
     sessionId,
     questions.length,
+    activeSessionFetching,
     activeSession?.hasActiveSession,
     activeSession?.includeAptitude,
     startAssessment,
@@ -369,7 +379,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
         {currentStep === 'questions' && (!sessionId || questions.length === 0) && (
           <Card>
-            {isRecoveringSession ? (
+            {isRecoveringSession || activeSessionFetching ? (
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <Spin size="large" />
                 <p style={{ marginTop: 12, marginBottom: 0 }}>Restoring your assessment session...</p>

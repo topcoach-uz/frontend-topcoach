@@ -1,4 +1,4 @@
-import { Button, Form, message, Select, TimePicker } from 'antd';
+import { Button, Form, message, Select, Skeleton, TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -233,6 +233,28 @@ export default function AvailabilitySettings() {
       >
         <Form.Item noStyle shouldUpdate>
           {() => {
+            // Don't flash "Unavailable" on every weekday while the saved
+            // availability is still loading — hold skeleton rows until then.
+            if (isLoading) {
+              return (
+                <div className={styles.daysList} aria-hidden>
+                  {DAYS.map((day) => (
+                    <div key={day.value} className={styles.daySection}>
+                      <div className={styles.dayRow}>
+                        <div className={styles.dayLetter}>{day.letter}</div>
+                        <div className={styles.dayContent}>
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: 220, minWidth: 0 }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            }
             const blocks = form.getFieldValue('blocks') || [];
             return (
               <div className={styles.daysList}>

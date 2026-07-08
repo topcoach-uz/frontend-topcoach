@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 export interface FormButtonsProps {
   current?: number;
+  lastStep?: number;
   checkEmail?: string;
   onNext?: () => void;
   onPrev?: () => void;
@@ -15,6 +16,7 @@ export interface FormButtonsProps {
 
 export default function FormButtons({
   current,
+  lastStep = 4,
   onPrev,
   onNext,
   onComplete,
@@ -38,7 +40,7 @@ export default function FormButtons({
         </CustomButton>
       )}
       <Form.Item style={current === 0 ? { width: '100%' } : {}}>
-        {current === 4 ? (
+        {current === lastStep ? (
           <CustomButton
             onClick={onComplete}
             type="primary"

@@ -11,8 +11,6 @@ interface INavLink {
   children?: INavLink[];
 }
 
-const MENTOR_EXCEPTION_EMAILS = ['oumarovna@gmail.com', 'sheraliozodov03@gmail.com'];
-
 export default function useNavigation() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -22,20 +20,17 @@ export default function useNavigation() {
   const { data: orgsData } = useGetMyOrganizationsQuery(undefined, { skip: !isAuthenticated });
   const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
-  const isCEO = MENTOR_EXCEPTION_EMAILS.includes(userProfile?.email || '');
   // Superadmin is now driven by managementRole, not a hardcoded email,
   // so every SuperAdmin / Owner account gets the same treatment.
   const role = (userProfile as { managementRole?: string } | null | undefined)
     ?.managementRole;
   const isSuperAdmin = role === 'SuperAdmin' || role === 'Owner';
   const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
-  // "My Journey" (the student/mentee hub).
-  // - SuperAdmins/Owners are both mentor and mentee, so they DO get the
-  //   link (they actively use the student hub) and it highlights as active.
-  // - Otherwise: show it for students — i.e. not a mentor (unless a CEO
-  //   exception) and not a (non-superadmin) counselor.
-  const shouldShowMyJourney =
-    isSuperAdmin || ((!isMentor || isCEO) && !(isCounselor && !isSuperAdmin));
+  // "My Journey" (the student/mentee hub) is a student surface: mentors
+  // never get the link — including mentors with SuperAdmin access, who
+  // work from their mentor dashboard. Non-mentor SuperAdmins keep it;
+  // non-superadmin counselors get School Counselor as home instead.
+  const shouldShowMyJourney = !isMentor && (isSuperAdmin || !isCounselor);
   // Mentors: Home. Counselors (non-superadmin): School Counselor as home.
   const showHome = isMentor && !(isCounselor && !isSuperAdmin);
   const showSchoolCounselor = isCounselor && !isSuperAdmin;
