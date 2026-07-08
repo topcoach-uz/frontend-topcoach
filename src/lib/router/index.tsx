@@ -11,6 +11,14 @@ import {
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
 import { useGetMyOrganizationsQuery } from "src/app/services/organizations";
+import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboardApi";
+import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
+import { useListPostsQuery } from "src/app/services/communityFeedApi";
+
+// Stable args for the feed prefetch — must serialize identically to the
+// feed view's default query ({category/hashtag/q: undefined} ≡ {}) so both
+// share one cache entry.
+const FEED_DEFAULT_ARGS = {};
 import HomeRouter from "src/pages/home/HomeRouter";
 import { ISC_2026_ENABLED } from "src/lib/iscAccess";
 import { UserRole } from "src/app/api/Api";
@@ -226,14 +234,42 @@ function RouterProvider() {
     { skip: !isAuthenticated },
   );
 
+  // Community entitlement (preferences + subscription) decides the hub's
+  // landing section (feed vs dashboard). It used to be fetched only when
+  // the hub MOUNTED — so the bootstrap overlay lifted, the user briefly saw
+  // the wrong section, then got re-routed once the subscription resolved.
+  // Fetching both here, in parallel with getMe/orgs and covered by the same
+  // overlay, means the landing decision is instant when the overlay lifts.
+  const { data: prefsData, isLoading: prefsLoading } = useGetUserPreferencesQuery(
+    undefined,
+    { skip: !isAuthenticated },
+  );
+  const { data: subscriptionData, isLoading: subscriptionLoading } =
+    useGetCurrentSubscriptionQuery(undefined, { skip: !isAuthenticated });
+
+  // Prefetch the feed's first page for community-entitled users so the
+  // default landing paints with content instead of skeletons. Entitlement
+  // mirrors JourneyExperienceContext: subscription active/trialing, the
+  // preferences flag, or the localStorage fast-path.
+  const communityEntitled =
+    isAuthenticated &&
+    (subscriptionData?.status === 'active' ||
+      subscriptionData?.status === 'trialing' ||
+      ((prefsData as any)?.data ?? prefsData)?.applicationSettings
+        ?.communityExperienceMode === 'community' ||
+      (typeof localStorage !== 'undefined' &&
+        localStorage.getItem('topcoach_community_enrolled') === 'true'));
+  useListPostsQuery(FEED_DEFAULT_ARGS, { skip: !communityEntitled });
+
   // Warm the landing-page chunks while the bootstrap data loads, so the
   // redirect after sign-in mounts an already-cached module instead of
-  // flashing a Suspense loader. Students land on /student-hub; mentors on
-  // the mentor console.
+  // flashing a Suspense loader. Students land on /student-hub (whose chunk
+  // includes the hub shell + feed); mentors land on the console schedule.
   useEffect(() => {
     if (!isAuthenticated) return;
     importStudentHubGate();
     import("src/pages/mentor/console/MentorConsoleLayout");
+    import("src/pages/mentor/console/pages/SchedulePage");
   }, [isAuthenticated]);
 
   // App-bootstrap gate: while the authenticated user's profile (+ org
@@ -251,9 +287,15 @@ function RouterProvider() {
   // mounted (callback keeps running, navigation proceeds), so neither
   // problem exists: the user sees one continuous loader from sign-in to
   // landing page.
+  // Entitlement queries are part of the gate: all four requests run in
+  // parallel, so this only lengthens the overlay by the slowest of them —
+  // and removes the wrong-section flash + re-route that used to follow.
   const bootstrapLoading =
     isAuthenticated &&
-    ((profileLoading && !userData) || (orgsLoading && !orgsData));
+    ((profileLoading && !userData) ||
+      (orgsLoading && !orgsData) ||
+      (prefsLoading && !prefsData) ||
+      (subscriptionLoading && !subscriptionData));
 
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
