@@ -16,6 +16,13 @@
   }
 }
 
+/* Continuation loaders (one full-screen loader directly following another)
+   skip the flash guard — the fade gap would read as a blink. */
+.pl--instant {
+  opacity: 1;
+  animation: none;
+}
+
 /* Brand palette (maroon family) — matches the antd Spin dots recolored
    in loading.scss, so consecutive loading surfaces read as one system
    instead of two unrelated loaders. */

@@ -312,7 +312,7 @@ function RouterProvider() {
             zIndex: 10_000,
           }}
         >
-          <Loader height="100vh" />
+          <Loader height="100vh" instant />
         </div>
       )}
       <NavigationProgressBar />

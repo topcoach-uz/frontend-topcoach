@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
+import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
+import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { CustomButton } from 'src/components/common';
-import { PageLoader } from 'src/components/loading';
+import Loader from 'src/components/loader';
 import { Logo } from 'src/components/logos';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from 'src/constants/storage';
 import useParamsHook from 'src/hooks/params';
@@ -49,21 +52,44 @@ export default function GoogleAuthenticationPage() {
   const profileReady = exchangeSuccess && !isLoading && !isFetching && !!data;
   const profileComplete = profileReady && !!data?.profile?.profileComplete;
 
+  // Warm the bootstrap data (org membership + community entitlement) in
+  // parallel with the profile fetch, and hold the redirect until it's all
+  // cached. Without this, navigating away re-triggered the router's
+  // bootstrap overlay — a SECOND full-screen loader right after this
+  // page's own one. Same cache entries as RouterProvider's hooks.
+  const { isLoading: orgsWarming } = useGetMyOrganizationsQuery(undefined, {
+    skip: !exchangeSuccess,
+  });
+  const { isLoading: prefsWarming } = useGetUserPreferencesQuery(undefined, {
+    skip: !exchangeSuccess,
+  });
+  const { isLoading: subscriptionWarming } = useGetCurrentSubscriptionQuery(
+    undefined,
+    { skip: !exchangeSuccess },
+  );
+  const bootstrapReady = !orgsWarming && !prefsWarming && !subscriptionWarming;
+
   useEffect(() => {
     if (exchangeSuccess) {
       refetch();
     }
   }, [exchangeSuccess]);
 
+  // Flip isAuthenticated the moment tokens are stored (exchangeSuccess only
+  // becomes true with tokens in localStorage) instead of waiting for getMe
+  // to resolve — this starts the router's bootstrap queries a full network
+  // round-trip earlier, in parallel with the profile fetch above.
   useEffect(() => {
-    if (data?.id) dispatch(loginCheck());
-  }, [data?.id, dispatch]);
+    if (exchangeSuccess) dispatch(loginCheck());
+  }, [exchangeSuccess, dispatch]);
 
   // Only redirect away from the role picker once we KNOW (from fresh data)
   // the profile is already complete — never on a stale cached profile, which
   // would skip the picker and leave a new mentor stuck as the default student.
   useEffect(() => {
-    if (!profileComplete) return;
+    // Wait for BOTH the fresh profile and the warmed bootstrap data — then
+    // the landing page renders instantly, with no second loader.
+    if (!profileComplete || !bootstrapReady) return;
     const redirectUrl = localStorage.getItem('redirectAfterLogin');
     localStorage.removeItem('redirectAfterLogin');
     // Never bounce back to an auth page — fall back to home ('/').
@@ -77,7 +103,7 @@ export default function GoogleAuthenticationPage() {
     } else {
       navigate(target, { replace: true });
     }
-  }, [profileComplete, navigate]);
+  }, [profileComplete, bootstrapReady, navigate]);
 
   const [selected, setSelected] = useState<UserType>(UserRole.Student);
 
@@ -188,8 +214,10 @@ export default function GoogleAuthenticationPage() {
   // Show loader until a fresh profile has arrived, and while redirecting an
   // already-complete profile away. The role picker only renders once we have
   // confirmed (from fresh data) the profile still needs completing.
+  // Same rings Loader as the route's Suspense fallback and the bootstrap
+  // overlay — visually one continuous loader instead of a design switch.
   if (!profileReady || profileComplete) {
-    return <PageLoader text="Loading..." />;
+    return <Loader height="100vh" instant />;
   }
 
   return (

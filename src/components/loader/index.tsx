@@ -5,9 +5,16 @@ interface Props {
   width?: number | string;
   height?: number | string;
   bgColor?: string;
+  /**
+   * Skip the 150ms fade-in flash guard. Use when this loader visually
+   * CONTINUES an already-visible loader (e.g. the Google callback page
+   * after the route's Suspense fallback) — the fade gap would otherwise
+   * read as a blink between the two.
+   */
+  instant?: boolean;
 }
 
-export default function Loader({ height = '100vh', width, bgColor }: Props) {
+export default function Loader({ height = '100vh', width, bgColor, instant }: Props) {
   const colors = useColors();
 
   return (
@@ -21,7 +28,12 @@ export default function Loader({ height = '100vh', width, bgColor }: Props) {
         width: width || 'auto',
       }}
     >
-      <svg className="pl" width="240" height="240" viewBox="0 0 240 240">
+      <svg
+        className={`pl ${instant ? 'pl--instant' : ''}`}
+        width="240"
+        height="240"
+        viewBox="0 0 240 240"
+      >
         <circle
           className="pl__ring pl__ring--a"
           cx="120"
