@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { loginCheck, logout } from 'src/app/slices/authSlice';
 import { changeTheme } from 'src/app/slices/layoutSlice';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
-import { EditIcon, LogoutIcon } from 'src/components/icons';
+import { EditIcon, LogoutIcon, UserIcon } from 'src/components/icons';
 import useColors from 'src/hooks/useColors';
 import styles from './actions.module.scss';
 import { UserRole } from 'src/app/api/Api';
@@ -62,18 +62,28 @@ export default function useActions() {
 
   // Profile
 
+  const role = userData?.profile?.role;
+  const isMentor = role === UserRole.Mentor;
+  const isStudent = role === UserRole.Student;
+
   const profileMenuItems: MenuProps['items'] = [
-    ...((userData?.profile?.role === UserRole.Mentor || userData?.profile?.role === UserRole.Student)
+    ...((isMentor || isStudent)
       ? [
           {
-            label: t('header.editProfile'),
+            // Mentors open their profile page (view) and edit from there;
+            // students keep the existing settings shortcut.
+            label: isMentor ? t('header.viewProfile') : t('header.editProfile'),
             key: '1',
-            icon: <EditIcon className={styles.dropdown_icon} />,
+            icon: isMentor ? (
+              <UserIcon size={16} className={styles.dropdown_icon} />
+            ) : (
+              <EditIcon className={styles.dropdown_icon} />
+            ),
             onClick: () => {
-              if (userData?.profile?.role === UserRole.Student) {
+              if (isStudent) {
                 navigate('/student-hub/settings');
               } else {
-                setIsModalVisible(true);
+                navigate('/mentor/profile');
               }
             },
           },

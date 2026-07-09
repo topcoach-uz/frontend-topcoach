@@ -1,4 +1,4 @@
-import { Button, message, Modal, Skeleton, Select } from 'antd';
+import { Button, Input, message, Modal, Skeleton, Select } from 'antd';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -79,6 +79,7 @@ export default function CalendarBookingWidget({
   const [bookingSlotStart, setBookingSlotStart] = useState<string | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSlot, setPendingSlot] = useState<{ start: string; end: string; type: string } | null>(null);
+  const [bookingNote, setBookingNote] = useState('');
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutSlot, setCheckoutSlot] = useState<{ sessionId: string; start: string; end: string; type: string } | null>(null);
 
@@ -149,13 +150,16 @@ export default function CalendarBookingWidget({
     setBookingSlotStart(pendingSlot.start);
     setConfirmModalOpen(false);
     const slot = pendingSlot;
+    const note = bookingNote.trim();
     setPendingSlot(null);
+    setBookingNote('');
 
     try {
       const result = await bookSlot({
         mentorId,
         start: slot.start,
         type: slot.type,
+        ...(note ? { comment: note } : {}),
       }).unwrap();
 
       if ((result as any)?.paymentRequired) {
@@ -410,7 +414,7 @@ export default function CalendarBookingWidget({
         title={t('mentors.confirmBookingTitle', 'Confirm Booking')}
         open={confirmModalOpen}
         onOk={handleConfirmBooking}
-        onCancel={() => { setConfirmModalOpen(false); setPendingSlot(null); }}
+        onCancel={() => { setConfirmModalOpen(false); setPendingSlot(null); setBookingNote(''); }}
         okText={mentorLevel?.toLowerCase() === 'probono'
           ? t('mentors.confirm', 'Confirm')
           : t('mentors.confirmAndPay', 'Confirm & Proceed to Payment')}
@@ -426,10 +430,33 @@ export default function CalendarBookingWidget({
               <strong>{t('mentors.sessionType', 'Session')}:</strong>{' '}
               {pendingSlot.type === 'individual60m' ? '60 min' : '30 min'} mentor session
             </p>
-            <p style={{ marginBottom: 0 }}>
+            <p style={{ marginBottom: 16 }}>
               <strong>{t('mentors.dateTime', 'Date & Time')}:</strong>{' '}
               {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('ddd, MMM D, YYYY')} • {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('h:mm')} – {dayjs.utc(pendingSlot.end).tz(menteeTimezone).format('h:mm A')}
             </p>
+            <div className={styles.noteField}>
+              <label htmlFor="booking-note" className={styles.noteLabel}>
+                {t('mentors.notesForMentorLabel', 'Notes for your mentor (optional)')}
+              </label>
+              <Input.TextArea
+                id="booking-note"
+                value={bookingNote}
+                onChange={(e) => setBookingNote(e.target.value)}
+                placeholder={t(
+                  'mentors.notesForMentorPlaceholder',
+                  "What would you like to focus on in this session?",
+                )}
+                rows={3}
+                maxLength={1000}
+                showCount
+              />
+              <p className={styles.noteHint}>
+                {t(
+                  'mentors.notesForMentorHint',
+                  "Share what you'd like to focus on — your mentor will see this.",
+                )}
+              </p>
+            </div>
           </div>
         )}
       </Modal>

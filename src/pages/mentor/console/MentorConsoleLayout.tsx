@@ -5,7 +5,6 @@ import {
   CalendarClock,
   Users,
   ClipboardList,
-  UserCircle2,
   ChevronLeft,
   Menu,
   MessageSquare,
@@ -158,14 +157,9 @@ export default function MentorConsoleLayout() {
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
 
-    const accountItems: NavItem[] = [
-      {
-        key: 'profile',
-        label: 'Profile',
-        icon: <UserCircle2 size={18} strokeWidth={1.75} />,
-        path: '/mentor/profile',
-      },
-    ];
+    // Profile is reached from the top-right avatar menu ("View Profile"),
+    // so it is intentionally not duplicated here in the sidebar.
+    const accountItems: NavItem[] = [];
 
     // Surface the Admin Console shortcut inside the mentor sidebar for
     // SuperAdmin / Owner accounts. They run a Mentor profile day-to-day
@@ -298,17 +292,6 @@ export default function MentorConsoleLayout() {
         }
       >
         <div className="mentor-console-sider-inner">
-          <div className="mentor-console-brand">
-            <div className="mentor-console-brand-title">
-              {collapsed && !isMobileConsole ? 'MC' : 'Mentor console'}
-            </div>
-            {showLabels && (
-              <div className="mentor-console-brand-sub">
-                Students, sessions &amp; milestones
-              </div>
-            )}
-          </div>
-
           <nav className="mentor-console-nav" aria-label="Mentor navigation" id="mentor-console-sider-nav">
             <div className="mentor-console-nav-group">
               {showLabels && <div className="mentor-console-nav-group-label">Overview</div>}
@@ -408,10 +391,12 @@ export default function MentorConsoleLayout() {
               </div>
             )}
 
-            <div className="mentor-console-nav-group">
-              {showLabels && <div className="mentor-console-nav-group-label">Account</div>}
-              {navGroups[1].items.map(renderNavItem)}
-            </div>
+            {navGroups[1].items.length > 0 && (
+              <div className="mentor-console-nav-group">
+                {showLabels && <div className="mentor-console-nav-group-label">Account</div>}
+                {navGroups[1].items.map(renderNavItem)}
+              </div>
+            )}
           </nav>
 
           <button
@@ -424,7 +409,6 @@ export default function MentorConsoleLayout() {
               size={16}
               className={collapsed ? 'mentor-console-collapse-icon--flipped' : ''}
             />
-            {!collapsed && <span>Collapse</span>}
           </button>
 
           <div className="mentor-console-user-footer">

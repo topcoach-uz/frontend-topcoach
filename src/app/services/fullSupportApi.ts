@@ -31,10 +31,12 @@ export type MentorRosterStudent = {
 
 export type SessionLogDto = {
   id: string;
+  studentUserId?: string;
   dateTime: string;
   duration: string;
   description: string;
   done: boolean;
+  meetingLink?: string | null;
 };
 
 export type TaskDto = {

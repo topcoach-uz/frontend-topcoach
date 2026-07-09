@@ -28,6 +28,8 @@ export type MentorBooking = {
   joinUrl?: string | null;
   /** Submitted post-session report (platform sessions); null while pending. */
   report?: SessionReport | null;
+  /** Student's "Notes for your mentor" left when confirming the booking. */
+  studentNote?: string | null;
   raw: SessionsSchema | SessionLogDto;
 };
 
@@ -59,12 +61,12 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
     ?.[0];
   const studentName = participant?.profile?.name ?? null;
   const studentId = participant?.id ?? null;
-  const calendar = (s as unknown as { calendarInfo?: { link?: string; hangoutLink?: string } })
-    .calendarInfo;
-  const joinUrl = calendar?.link ?? calendar?.hangoutLink ?? null;
+  const calendar = (s as unknown as { calendarInfo?: { meetingLink?: string } }).calendarInfo;
+  const joinUrl = calendar?.meetingLink ?? null;
 
   const isCancelled = !!(s.cancelStatus && (s.cancelStatus as { id?: string }).id);
   const report = (s as unknown as { report?: SessionReport | null }).report ?? null;
+  const studentNote = (s as unknown as { note?: string | null }).note || null;
   const end = new Date(s.date).getTime() + minutes * 60_000;
   const now = Date.now();
 
@@ -90,6 +92,7 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
       (s.cancelStatus as { reason?: string } | undefined)?.reason ?? null,
     joinUrl,
     report,
+    studentNote,
     raw: s,
   };
 }
@@ -117,7 +120,7 @@ function normalizeFullSupportSession(
     studentUserId: s.studentUserId ?? null,
     studentName,
     status,
-    joinUrl: null,
+    joinUrl: s.meetingLink ?? null,
     raw: s,
   };
 }
