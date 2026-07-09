@@ -15,7 +15,9 @@
   position: sticky;
   top: 80px;
   height: calc(100vh - 80px);
-  overflow-y: auto;
+  // visible (not clipped) so the edge-mounted collapse tab can straddle the
+  // right border; the nav itself scrolls internally (.mentor-console-nav).
+  overflow: visible;
 }
 
 .mentor-console-sider-inner {
@@ -207,23 +209,33 @@
   background: var(--mc-warning);
 }
 
+// Edge-mounted collapse tab: a small chevron pinned to the sidebar's right
+// border, vertically centered (straddles the border, half over the main area).
 .mentor-console-collapse-toggle {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  z-index: 6;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px;
+  width: 28px;
+  height: 54px;
+  padding: 0;
   border: 1px solid var(--mc-border);
   background: var(--mc-bg-surface);
   color: var(--mc-text-muted);
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
-  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .mentor-console-collapse-toggle:hover {
   color: var(--mc-accent);
   border-color: var(--mc-accent);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 .mentor-console-collapse-icon--flipped {

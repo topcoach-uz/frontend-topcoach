@@ -12,7 +12,7 @@ import {
   message,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { ArrowRight, CalendarPlus, CheckCircle2, Flag, Plus, Video } from 'lucide-react';
+import { ArrowRight, CalendarPlus, CheckCircle2, Flag, MessageSquare, Plus, Video } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   useCreateMentorSessionMutation,
@@ -189,6 +189,14 @@ export default function MentorConsoleSchedulePage() {
             {b.description ? ` · ${b.description}` : ''}
             {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
           </div>
+          {b.studentNote ? (
+            <div className="mc-sched-row-note">
+              <MessageSquare size={12} />
+              <span>
+                <b>Student&apos;s note:</b> {b.studentNote}
+              </span>
+            </div>
+          ) : null}
         </div>
         <div className="mc-sched-row-actions">
           {b.status === 'upcoming' && upcomingPill(b)}
@@ -325,6 +333,14 @@ export default function MentorConsoleSchedulePage() {
               <b>{timeRange(nextUp)}</b> · {nextUp.durationLabel}
               {nextUp.description ? ` · ${nextUp.description}` : ''}
             </div>
+            {nextUp.studentNote ? (
+              <div className="mc-sched-feature-note">
+                <MessageSquare size={13} />
+                <span>
+                  <b>Student&apos;s note:</b> {nextUp.studentNote}
+                </span>
+              </div>
+            ) : null}
           </div>
           <div className="mc-sched-feature-actions">
             {nextUp.joinUrl ? (
