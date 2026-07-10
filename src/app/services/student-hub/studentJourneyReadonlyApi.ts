@@ -48,6 +48,19 @@ interface StudentDashboard {
   stats: DashboardStats;
 }
 
+// Mirrors TaskDto in backend full-support.service.ts / StudentJourneyReadonlyController#getStudentTasks
+export interface StudentJourneyTask {
+  id: string;
+  task: string;
+  studentUserId: string;
+  deadline: string;
+  hasFeedback: boolean;
+  feedback?: string;
+  submissionText?: string;
+  submissionFileUrls?: { fileName: string; url: string }[];
+  feedbackFileUrls?: { fileName: string; url: string }[];
+}
+
 export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get student profile (for counselors)
@@ -130,6 +143,14 @@ export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
         method: 'GET',
       }),
     }),
+
+    // Get student mentor-assigned tasks (for counselors)
+    getStudentJourneyTasks: builder.query<PaginatedResponse<StudentJourneyTask>, string>({
+      query: (userId) => ({
+        url: `/student-journey/${userId}/tasks`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -144,5 +165,6 @@ export const {
   useGetStudentJourneyDashboardQuery,
   useGetStudentJourneyMentorBookingsQuery,
   useGetStudentJourneyEventsQuery,
+  useGetStudentJourneyTasksQuery,
 } = studentJourneyReadonlyApi;
 

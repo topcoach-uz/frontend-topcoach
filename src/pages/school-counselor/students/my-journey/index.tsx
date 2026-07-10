@@ -12,6 +12,8 @@ import StudentHubApplications from './components/Applications';
 import StudentHubEssays from './components/Essays';
 import StudentHubDocuments from './components/Documents';
 import StudentHubPsychometricAssessment from './components/PsychometricAssessment';
+import StudentHubTasks from './components/Tasks';
+import Chat from './components/Chat';
 import './my-journey.scss';
 
 const StudentMyJourneyView: React.FC = () => {
@@ -104,6 +106,24 @@ const StudentMyJourneyView: React.FC = () => {
       ),
     },
     {
+      key: 'tasks',
+      label: (
+        <span>
+          <UnifiedIcon name="tasks" size="sm" color="primary" style={{ marginRight: 8 }} />
+          {t('Tasks')}
+        </span>
+      ),
+    },
+    {
+      key: 'chat',
+      label: (
+        <span>
+          <UnifiedIcon name="message" size="sm" color="primary" style={{ marginRight: 8 }} />
+          {t('Chat')}
+        </span>
+      ),
+    },
+    {
       key: 'profile',
       label: (
         <span>
@@ -145,6 +165,8 @@ const StudentMyJourneyView: React.FC = () => {
         {activeTab === 'psychometric-assessment' && <StudentHubPsychometricAssessment studentId={studentId} studentName={studentName} />}
         {activeTab === 'essays' && <StudentHubEssays studentId={studentId} studentName={studentName} />}
         {activeTab === 'documents' && <StudentHubDocuments studentId={studentId} studentName={studentName} />}
+        {activeTab === 'tasks' && <StudentHubTasks studentId={studentId} studentName={studentName} />}
+        {activeTab === 'chat' && <Chat studentId={studentId} />}
         {activeTab === 'profile' && <StudentHubProfile studentId={studentId} studentName={studentName} />}
       </div>
     </div>
