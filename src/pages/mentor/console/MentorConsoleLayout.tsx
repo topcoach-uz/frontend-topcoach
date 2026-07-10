@@ -18,7 +18,7 @@ import {
   useGetMentorTasksQuery,
 } from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
-import { useMentorBookings } from './sessionSources';
+import { useMentorBookings, useMentorMentees } from './sessionSources';
 import { avatarStyleForId, initialsFromName } from './utils';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
@@ -93,8 +93,19 @@ export default function MentorConsoleLayout() {
   const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor });
   const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
+  const { mentees, isLoading: menteesLoading } = useMentorMentees();
 
   const roster = rosterRes?.data ?? [];
+
+  // 1:1 platform mentees the mentor isn't formally assigned to — shown in the
+  // same "My students" list, deduped against the Full Support roster.
+  const menteeItems = useMemo(() => {
+    if (!isMentor) return [];
+    const rosterIds = new Set(roster.map((r) => r.id));
+    return mentees.filter((m) => !rosterIds.has(m.id));
+  }, [isMentor, mentees, roster]);
+
+  const hasAnyStudents = roster.length > 0 || menteeItems.length > 0;
 
   const relevantBookings = useMemo(
     () => (hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform')),
@@ -298,7 +309,7 @@ export default function MentorConsoleLayout() {
               {navGroups[0].items.map(renderNavItem)}
             </div>
 
-            {rosterLoading ? (
+            {rosterLoading || menteesLoading ? (
               // Reserve the "My students" slot while the roster loads so the
               // nav doesn't grow and push "Account" down after first paint.
               <div className="mentor-console-nav-group" aria-hidden>
@@ -323,7 +334,7 @@ export default function MentorConsoleLayout() {
                   </div>
                 ))}
               </div>
-            ) : hasFullSupport && (
+            ) : hasAnyStudents && (
               <div className="mentor-console-nav-group">
                 {showLabels && (
                   <div className="mentor-console-nav-group-label">My students</div>
@@ -364,6 +375,46 @@ export default function MentorConsoleLayout() {
                               needsAttention ? 'mentor-console-student-dot--attention' : ''
                             }`}
                             title={needsAttention ? 'Needs attention' : 'All caught up'}
+                          />
+                        </>
+                      )}
+                    </button>
+                  );
+                })}
+                {menteeItems.map((m) => {
+                  const isActive = activeStudentId === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={`mentor-console-student-item ${
+                        isActive ? 'mentor-console-student-item--active' : ''
+                      }`}
+                      onClick={() => {
+                        navigate(`/mentor/students/${m.id}`);
+                        setMobileMenuOpen(false);
+                      }}
+                      title={collapsed && !isMobileConsole ? m.name : undefined}
+                    >
+                      <span
+                        className="mentor-console-student-avatar"
+                        style={avatarStyleForId(m.id)}
+                      >
+                        {initialsFromName(m.name)}
+                      </span>
+                      {showLabels && (
+                        <>
+                          <span className="mentor-console-student-meta">
+                            <span className="mentor-console-student-name">{m.name}</span>
+                            <span className="mentor-console-student-program">
+                              {m.upcomingCount > 0
+                                ? `${m.upcomingCount} upcoming · 1:1`
+                                : `${m.sessionsCount} session${m.sessionsCount === 1 ? '' : 's'} · 1:1`}
+                            </span>
+                          </span>
+                          <span
+                            className="mentor-console-student-dot"
+                            title="1:1 mentee"
                           />
                         </>
                       )}

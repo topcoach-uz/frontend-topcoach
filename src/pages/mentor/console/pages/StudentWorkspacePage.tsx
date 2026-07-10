@@ -7,7 +7,9 @@ import {
   useGetMentorRosterQuery,
   useGetStudentGoalQuery,
 } from 'src/app/services/fullSupportApi';
-import StudentWorkspace from '../components/StudentWorkspace';
+import StudentWorkspace, { type WorkspaceStudent } from '../components/StudentWorkspace';
+import { useMentorMentees } from '../sessionSources';
+import { McPill } from '../components/McPill';
 import { avatarStyleForId, initialsFromName } from '../utils';
 import '../components/StudentWorkspace.scss';
 
@@ -17,7 +19,26 @@ export default function MentorStudentWorkspacePage() {
   const { data, isLoading } = useGetMentorRosterQuery();
   const { data: pipelineRes } = useGetMentorPipelineQuery();
   const { data: goalRes } = useGetStudentGoalQuery(id, { skip: !id });
-  const student = (data?.data ?? []).find((r) => r.id === id) ?? null;
+  const { mentees, isLoading: menteesLoading } = useMentorMentees();
+
+  // A student can reach this page from the Full Support roster or from the
+  // 1:1 mentee list. Prefer the richer Full Support record; otherwise build a
+  // workspace student from the mentee's session history.
+  const rosterStudent = (data?.data ?? []).find((r) => r.id === id) ?? null;
+  const mentee = mentees.find((m) => m.id === id) ?? null;
+  const isFullSupport = !!rosterStudent;
+  const student: WorkspaceStudent | null = rosterStudent
+    ? rosterStudent
+    : mentee
+      ? {
+          id: mentee.id,
+          name: mentee.name,
+          initials: initialsFromName(mentee.name),
+          used: 0,
+          allocated: 0,
+          sessionsCount: mentee.sessionsCount,
+        }
+      : null;
 
   // Mockup-style subtitle: "Oxford PPE · 9 sessions total" — the program comes
   // from the student's first essays/applications row when one exists.
@@ -43,7 +64,7 @@ export default function MentorStudentWorkspacePage() {
     return segments;
   }, [goalRes?.data]);
 
-  if (isLoading) {
+  if (isLoading || menteesLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
         <Spin size="large" />
@@ -81,11 +102,18 @@ export default function MentorStudentWorkspacePage() {
           {initialsFromName(student.name)}
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="mc-ws-identity-name">{student.name}</div>
+          <div className="mc-ws-identity-name">
+            {student.name}
+            {!isFullSupport && (
+              <McPill variant="info" style={{ marginLeft: 10, verticalAlign: 'middle' }}>
+                1:1 mentee
+              </McPill>
+            )}
+          </div>
           <div className="mc-ws-identity-meta">
             {program ? `${program} · ` : ''}
-            {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total ·{' '}
-            {student.used}h of {student.allocated}h used
+            {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
+            {isFullSupport ? ` · ${student.used}h of ${student.allocated}h used` : ''}
           </div>
           {goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">
@@ -100,7 +128,7 @@ export default function MentorStudentWorkspacePage() {
         </div>
       </div>
 
-      <StudentWorkspace student={student} />
+      <StudentWorkspace student={student} isFullSupport={isFullSupport} />
     </div>
   );
 }

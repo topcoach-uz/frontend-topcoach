@@ -125,6 +125,79 @@ function normalizeFullSupportSession(
   };
 }
 
+/**
+ * A student the mentor knows only through 1:1 platform sessions (no Full
+ * Support assignment). One mentee can hold many sessions with the same mentor,
+ * so we collapse the bookings into a unique-by-student roster the sidebar and
+ * Students page render alongside the Full Support roster.
+ */
+export type MentorMentee = {
+  id: string;
+  name: string;
+  sessionsCount: number;
+  upcomingCount: number;
+  nextSessionAt: string | null;
+  lastSessionAt: string | null;
+};
+
+export function useMentorMentees() {
+  const { bookings, isLoading } = useMentorBookings(null, {
+    includeFullSupport: false,
+  });
+
+  const mentees = useMemo<MentorMentee[]>(() => {
+    const byId = new Map<string, MentorMentee>();
+    bookings
+      .filter((b) => b.source === 'platform' && b.studentUserId)
+      .forEach((b) => {
+        const id = b.studentUserId as string;
+        const isUpcoming = b.status === 'upcoming';
+        const existing = byId.get(id);
+        if (!existing) {
+          byId.set(id, {
+            id,
+            name: b.studentName || 'Student',
+            sessionsCount: 1,
+            upcomingCount: isUpcoming ? 1 : 0,
+            nextSessionAt: isUpcoming ? b.dateTime : null,
+            lastSessionAt: isUpcoming ? null : b.dateTime,
+          });
+          return;
+        }
+        existing.sessionsCount += 1;
+        if (b.studentName && existing.name === 'Student') existing.name = b.studentName;
+        if (isUpcoming) {
+          existing.upcomingCount += 1;
+          if (
+            !existing.nextSessionAt ||
+            new Date(b.dateTime).getTime() < new Date(existing.nextSessionAt).getTime()
+          ) {
+            existing.nextSessionAt = b.dateTime;
+          }
+        } else if (
+          !existing.lastSessionAt ||
+          new Date(b.dateTime).getTime() > new Date(existing.lastSessionAt).getTime()
+        ) {
+          existing.lastSessionAt = b.dateTime;
+        }
+      });
+
+    // Soonest upcoming first, then most-recently-seen past mentees.
+    return Array.from(byId.values()).sort((a, b) => {
+      if (a.nextSessionAt && b.nextSessionAt) {
+        return new Date(a.nextSessionAt).getTime() - new Date(b.nextSessionAt).getTime();
+      }
+      if (a.nextSessionAt) return -1;
+      if (b.nextSessionAt) return 1;
+      return (
+        new Date(b.lastSessionAt ?? 0).getTime() - new Date(a.lastSessionAt ?? 0).getTime()
+      );
+    });
+  }, [bookings]);
+
+  return { mentees, isLoading };
+}
+
 export function useMentorBookings(
   studentFilterId?: string | null,
   options?: { includeFullSupport?: boolean },

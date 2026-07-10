@@ -1,0 +1,754 @@
+// ══════════════════════════════════════════════════════════════════
+//  Admissions Mentorship — editorial prospectus
+//  Six distinct section treatments, one identity: serif display +
+//  Inter body + mono labels, maroon on cream, one dark moment.
+// ══════════════════════════════════════════════════════════════════
+
+// ── Palette ──
+$paper:       #faf8f3;
+$paper-2:     #fbfaf6;
+$paper-warm:  #f5f1e7;   // faint band, adds rhythm without a new hue
+$ink:         #1c1a17;
+$ink-soft:    #4b463f;
+$muted:       #6b6258;
+$faint:       #a29a8b;
+$line:        #e5e3da;
+$line-strong: #dcd7ca;
+$brand:       #7b1f2f;
+$brand-deep:  #5d1622;
+$brand-soft:  rgba(123, 31, 47, 0.07);
+
+// Pathway accents — the only place colour enters
+$green:   #285045;
+$amber:   #9a5a17;
+$indigo:  #2a3559;
+
+// ── Type ──
+$serif: 'Iowan Old Style', 'Charter', 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+$sans:  'Inter Tight', 'Inter', 'Söhne', ui-sans-serif, system-ui, -apple-system, sans-serif;
+$mono:  'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+$maxw: 1120px;
+
+// ── Base ──
+.page {
+  background: $paper;
+  color: $ink;
+  font-family: $sans;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.inner {
+  max-width: $maxw;
+  margin: 0 auto;
+  padding: 0 24px;
+  @media (min-width: 768px) { padding: 0 40px; }
+}
+
+// Shared mono eyebrow
+.eyebrow {
+  display: inline-block;
+  font-family: $mono;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $brand;
+}
+
+// ════════════════════════════════════════════════════════
+//  1 · HERO — editorial cover
+// ════════════════════════════════════════════════════════
+.hero {
+  padding-top: clamp(72px, 11vw, 128px);
+
+  // load sequence
+  .kicker,
+  .heroTitle,
+  .heroLede,
+  .heroActions { animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .heroTitle   { animation-delay: 0.06s; }
+  .heroLede    { animation-delay: 0.14s; }
+  .heroActions { animation-delay: 0.22s; }
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 28px;
+  font-family: $mono;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $muted;
+
+  span:last-child { color: $brand; }
+}
+
+.kickerDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: $line-strong;
+  flex: 0 0 auto;
+}
+
+.heroTitle {
+  font-family: $serif;
+  font-weight: 600;
+  font-size: clamp(2.7rem, 7vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.032em;
+  color: $ink;
+  margin: 0;
+  max-width: 15ch;
+}
+
+.heroMark {
+  font-style: italic;
+  color: $brand;
+}
+
+.heroLede {
+  margin: 30px 0 0;
+  max-width: 56ch;
+  font-size: clamp(1.05rem, 1.6vw, 1.22rem);
+  line-height: 1.62;
+  color: $ink-soft;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 40px 0 clamp(48px, 7vw, 76px);
+}
+
+// ── Buttons ──
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 26px;
+  border: none;
+  border-radius: 50px;
+  background: $brand;
+  color: #fff;
+  font-family: $sans;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+
+  svg { transition: transform 0.2s; }
+  &:hover {
+    background: $brand-deep;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(123, 31, 47, 0.22);
+    svg { transform: translateX(3px); }
+  }
+  &:active { transform: translateY(0); }
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border: 1px solid $line-strong;
+  border-radius: 50px;
+  background: transparent;
+  color: $ink;
+  font-family: $sans;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+
+  svg { color: $brand; transition: transform 0.2s; }
+  &:hover {
+    border-color: $ink;
+    background: rgba(28, 26, 23, 0.03);
+    svg { transform: translateY(2px); }
+  }
+}
+
+// ── Spec strip (hairline band, mono) ──
+.specStrip {
+  border-top: 1px solid $line;
+  border-bottom: 1px solid $line;
+  background: $paper-2;
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 24px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+}
+
+.specList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    font-family: $mono;
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    color: $ink-soft;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+
+    &::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: $brand;
+      margin-left: 18px;
+      opacity: 0.5;
+    }
+    &:last-child::after { display: none; }
+  }
+}
+
+.specTail {
+  font-family: $mono;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $faint;
+}
+
+// ════════════════════════════════════════════════════════
+//  2 · WHO IT'S FOR — two-column editorial
+// ════════════════════════════════════════════════════════
+.who {
+  padding: clamp(72px, 10vw, 120px) 0;
+}
+
+.whoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 44px;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 72px;
+    align-items: start;
+  }
+}
+
+.whoLede {
+  .eyebrow { margin-bottom: 6px; }
+}
+
+.whoStatement {
+  font-family: $serif;
+  font-weight: 600;
+  font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  color: $ink;
+  margin: 16px 0 0;
+  max-width: 16ch;
+}
+
+.whoNote {
+  margin: 22px 0 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: $muted;
+  max-width: 44ch;
+}
+
+.criteria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid $line;
+
+  li {
+    display: flex;
+    gap: 22px;
+    padding: 26px 0;
+    border-bottom: 1px solid $line;
+  }
+}
+
+.criteriaNum {
+  font-family: $serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  color: $brand;
+  line-height: 1;
+  flex: 0 0 auto;
+  width: 28px;
+  padding-top: 2px;
+}
+
+.criteriaLabel {
+  font-family: $serif;
+  font-size: 1.32rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: $ink;
+  margin: 0;
+}
+
+.criteriaNote {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: $muted;
+}
+
+// ════════════════════════════════════════════════════════
+//  Shared phase header
+// ════════════════════════════════════════════════════════
+.phaseHead { margin-bottom: clamp(40px, 5vw, 64px); }
+
+.phaseHeadTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 20px;
+  padding-bottom: 20px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid $line;
+}
+
+.phaseTag {
+  font-family: $mono;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $brand;
+}
+
+.phaseMeta {
+  font-family: $mono;
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
+  color: $muted;
+  margin-left: auto;
+}
+
+.phaseTitle {
+  font-family: $serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  color: $ink;
+  margin: 0;
+}
+
+.phaseIntro {
+  margin: 20px 0 0;
+  max-width: 52ch;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: $ink-soft;
+}
+
+// ════════════════════════════════════════════════════════
+//  3 · PHASE 01 — syllabus index on a rail
+// ════════════════════════════════════════════════════════
+.phaseOne {
+  padding: clamp(72px, 10vw, 116px) 0;
+  background: $paper-warm;
+  border-top: 1px solid $line;
+  border-bottom: 1px solid $line;
+}
+
+.syllabus {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+
+  // the rail
+  &::before {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: $line-strong;
+
+    @media (min-width: 720px) { left: 35px; }
+  }
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 20px;
+  padding: 26px 20px 26px 0;
+  border-top: 1px solid rgba(28, 26, 23, 0.06);
+  transition: background 0.2s;
+
+  &:first-child { border-top: none; }
+  &:hover {
+    background: rgba(123, 31, 47, 0.035);
+    .rowKey { background: $brand; color: #fff; border-color: $brand; }
+  }
+
+  @media (min-width: 720px) { grid-template-columns: 72px 1fr; gap: 32px; }
+}
+
+.rowKey {
+  position: relative;
+  z-index: 1;
+  justify-self: start;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $brand;
+  background: $paper;
+  border: 1px solid $line-strong;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+
+  @media (min-width: 720px) { width: 70px; height: 70px; font-size: 1.9rem; }
+}
+
+.rowText { padding-top: 6px; }
+
+.rowTitle {
+  font-family: $serif;
+  font-size: clamp(1.24rem, 2.3vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: $ink;
+  margin: 0;
+}
+
+.rowBody {
+  margin: 8px 0 0;
+  max-width: 60ch;
+  font-size: 0.98rem;
+  line-height: 1.58;
+  color: $muted;
+}
+
+// ════════════════════════════════════════════════════════
+//  4 · PHASE 02 — pathway cards (colour moment)
+// ════════════════════════════════════════════════════════
+.phaseTwo {
+  padding: clamp(72px, 10vw, 116px) 0;
+}
+
+.pathGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+
+  @media (min-width: 760px) { grid-template-columns: repeat(3, 1fr); }
+}
+
+.pathCard {
+  display: flex;
+  flex-direction: column;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s, border-color 0.22s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 42px rgba(28, 26, 23, 0.12);
+  }
+}
+
+.pathCap {
+  height: 132px;
+  padding: 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  // subtle contour texture
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  }
+}
+
+.pathIcon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(2px);
+}
+
+.pathNumber {
+  position: relative;
+  z-index: 1;
+  font-family: $serif;
+  font-size: 2.4rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.accent_research .pathCap { background: linear-gradient(155deg, #33604f 0%, #234840 100%); }
+.accent_venture  .pathCap { background: linear-gradient(155deg, #b06a1e 0%, #874c12 100%); }
+.accent_impact   .pathCap { background: linear-gradient(155deg, #37436f 0%, #232c4b 100%); }
+
+.pathBody {
+  padding: 24px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.pathTitle {
+  font-family: $serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: $ink;
+  margin: 0;
+}
+
+.pathText {
+  margin: 10px 0 0;
+  font-size: 0.94rem;
+  line-height: 1.58;
+  color: $muted;
+  flex: 1;
+}
+
+.pathOutcome {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid $line;
+  font-family: $serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: $ink;
+
+  span {
+    display: block;
+    font-family: $mono;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $faint;
+    margin-bottom: 5px;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  5 · OUTCOMES — spec-sheet ledger
+// ════════════════════════════════════════════════════════
+.outcomes {
+  padding: clamp(72px, 10vw, 116px) 0;
+  background: $paper-warm;
+  border-top: 1px solid $line;
+}
+
+.outcomesHead { margin-bottom: clamp(36px, 5vw, 56px); }
+
+.outcomesTitle {
+  font-family: $serif;
+  font-weight: 600;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+  color: $ink;
+  margin: 12px 0 0;
+}
+
+.ledger {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid $line-strong;
+
+  @media (min-width: 720px) {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 56px;
+  }
+}
+
+.ledgerRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 6px 18px;
+  padding: 24px 0;
+  border-bottom: 1px solid $line;
+}
+
+.ledgerNum {
+  grid-row: span 2;
+  font-family: $mono;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: $brand;
+  padding-top: 4px;
+}
+
+.ledgerTitle {
+  font-family: $serif;
+  font-size: 1.28rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: $ink;
+  margin: 0;
+}
+
+.ledgerBody {
+  grid-column: 2;
+  margin: 4px 0 0;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: $muted;
+  max-width: 46ch;
+}
+
+// ════════════════════════════════════════════════════════
+//  6 · CTA — the single dark moment
+// ════════════════════════════════════════════════════════
+.cta {
+  padding: clamp(64px, 9vw, 104px) 0;
+}
+
+.ctaBox {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: clamp(56px, 8vw, 88px) 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+  background: radial-gradient(120% 140% at 50% 0%, #7b1f2f 0%, #5d1622 55%, #47101a 100%);
+  box-shadow: 0 26px 70px rgba(123, 31, 47, 0.3);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.04) 0,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 26px
+    );
+    pointer-events: none;
+  }
+
+  > * { position: relative; z-index: 1; }
+}
+
+.ctaEyebrow {
+  font-family: $mono;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ctaTitle {
+  font-family: $serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.03;
+  margin: 0;
+}
+
+.ctaBody {
+  font-size: 1.04rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 48ch;
+  margin: 0;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 50px;
+  background: #fff;
+  color: $brand;
+  font-family: $sans;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+
+  svg { transition: transform 0.2s; }
+  &:hover {
+    background: #fdf3f3;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.26);
+    svg { transform: translateX(3px); }
+  }
+  &:active { transform: translateY(0); }
+}
+
+// ── Motion ──
+@keyframes rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .kicker,
+  .hero .heroTitle,
+  .hero .heroLede,
+  .hero .heroActions { animation: none; }
+}

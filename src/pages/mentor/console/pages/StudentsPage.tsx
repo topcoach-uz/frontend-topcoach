@@ -6,20 +6,57 @@ import { useNavigate } from 'react-router-dom';
 import {
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
-  type MentorRosterStudent,
 } from 'src/app/services/fullSupportApi';
 import { McPill } from '../components/McPill';
-import { useMentorBookings } from '../sessionSources';
+import { useMentorBookings, useMentorMentees } from '../sessionSources';
 import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
 
 const { Text } = Typography;
+
+/** Row model unifying Full Support roster students and 1:1 platform mentees. */
+type ConsoleStudent = {
+  id: string;
+  name: string;
+  initials: string;
+  used: number;
+  allocated: number;
+  sessionsCount: number;
+  isFullSupport: boolean;
+};
 
 export default function MentorConsoleStudentsPage() {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
 
   const { data, isLoading, isError } = useGetMentorRosterQuery();
-  const rows = useMemo(() => data?.data ?? [], [data?.data]);
+  const { mentees, isLoading: menteesLoading } = useMentorMentees();
+
+  // Full Support roster first (richer record); then 1:1 mentees the mentor
+  // isn't formally assigned to, deduped against the roster.
+  const rows = useMemo<ConsoleStudent[]>(() => {
+    const fs: ConsoleStudent[] = (data?.data ?? []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      initials: r.initials,
+      used: r.used,
+      allocated: r.allocated,
+      sessionsCount: r.sessionsCount,
+      isFullSupport: true,
+    }));
+    const fsIds = new Set(fs.map((r) => r.id));
+    const oneOnOne: ConsoleStudent[] = mentees
+      .filter((m) => !fsIds.has(m.id))
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        initials: initialsFromName(m.name),
+        used: 0,
+        allocated: 0,
+        sessionsCount: m.sessionsCount,
+        isFullSupport: false,
+      }));
+    return [...fs, ...oneOnOne];
+  }, [data?.data, mentees]);
 
   // Answer "who needs me?" from the list itself — next session + attention.
   const { bookings } = useMentorBookings(null, { includeFullSupport: true });
@@ -64,7 +101,7 @@ export default function MentorConsoleStudentsPage() {
     return rows.filter((r) => r.name.toLowerCase().includes(s));
   }, [q, rows]);
 
-  const columns: ColumnsType<MentorRosterStudent> = [
+  const columns: ColumnsType<ConsoleStudent> = [
     {
       title: 'Student',
       key: 'name',
@@ -79,6 +116,17 @@ export default function MentorConsoleStudentsPage() {
           </div>
         </div>
       ),
+    },
+    {
+      title: 'Type',
+      key: 'type',
+      width: 130,
+      render: (_, row) =>
+        row.isFullSupport ? (
+          <McPill variant="accent">Full Support</McPill>
+        ) : (
+          <McPill variant="info">1:1 mentee</McPill>
+        ),
     },
     {
       title: 'Next session',
@@ -97,11 +145,14 @@ export default function MentorConsoleStudentsPage() {
       title: 'Hours used',
       key: 'hours',
       width: 130,
-      render: (_, row) => (
-        <Text style={{ color: 'var(--mc-text)' }}>
-          {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
-        </Text>
-      ),
+      render: (_, row) =>
+        row.isFullSupport ? (
+          <Text style={{ color: 'var(--mc-text)' }}>
+            {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
+          </Text>
+        ) : (
+          <Text style={{ color: 'var(--mc-text-muted)' }}>—</Text>
+        ),
     },
     {
       title: 'Sessions',
@@ -155,8 +206,8 @@ export default function MentorConsoleStudentsPage() {
         </div>
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
-          Your Full Support students. Open a workspace to manage tasks, sessions, essays and
-          reports in one place.
+          Your Full Support students and 1:1 mentees. Open a workspace to manage tasks, review
+          sessions and message them in one place.
         </p>
       </div>
 
@@ -183,7 +234,7 @@ export default function MentorConsoleStudentsPage() {
           />
         )}
 
-        {isLoading ? (
+        {isLoading || menteesLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
             <Spin size="large" />
           </div>
@@ -191,15 +242,15 @@ export default function MentorConsoleStudentsPage() {
           <Alert
             type="info"
             showIcon
-            message="No students match"
+            message="No students yet"
             description={
               rows.length === 0
-                ? 'An admin assigns Full Support students to you from the admin console.'
+                ? 'Students appear here once you have a 1:1 session booked or an admin assigns you Full Support students.'
                 : 'Try clearing the search.'
             }
           />
         ) : (
-          <Table<MentorRosterStudent>
+          <Table<ConsoleStudent>
             rowKey="id"
             columns={columns}
             dataSource={filtered}

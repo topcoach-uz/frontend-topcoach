@@ -12,8 +12,17 @@ import {
   message,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { ArrowRight, CalendarPlus, CheckCircle2, Flag, MessageSquare, Plus, Video } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CalendarPlus,
+  CheckCircle2,
+  Flag,
+  MessageSquare,
+  Plus,
+} from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { GoogleMeetingSvg } from 'src/assets/svg';
 import {
   useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
@@ -22,6 +31,7 @@ import {
 } from 'src/app/services/fullSupportApi';
 import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
 import { McPill } from '../components/McPill';
+import SessionChatButton from '../components/SessionChatButton';
 import SessionReportModal from '../components/SessionReportModal';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { useMentorBookings, type MentorBooking } from '../sessionSources';
@@ -123,8 +133,6 @@ export default function MentorConsoleSchedulePage() {
     };
   }, [decorated]);
 
-  const nextUp = byScope.upcoming[0] ?? null;
-
   const pendingReport = useMemo(() => {
     const windowMs = PENDING_REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
     const now = Date.now();
@@ -166,56 +174,69 @@ export default function MentorConsoleSchedulePage() {
       .catch(() => message.error('Failed to log'));
   };
 
-  const renderRow = (b: MentorBooking) => {
+  // One editorial card for every scope — a serif date, the student, a status
+  // pill, an optional Google Meet join, then the actions. Rendered in a grid so
+  // cards stay card-sized instead of stretching across the page.
+  const renderSessionCard = (b: MentorBooking) => {
     const d = new Date(b.dateTime);
-    const canViewStudent = hasFullSupport && b.studentUserId && rosterById.has(b.studentUserId);
+    const isUpcoming = b.status === 'upcoming';
+    const statusPill = isUpcoming ? (
+      upcomingPill(b)
+    ) : b.status === 'report-due' ? (
+      <McPill variant="danger">Report due</McPill>
+    ) : b.status === 'completed' ? (
+      <McPill variant="success">Completed</McPill>
+    ) : (
+      <McPill variant="neutral">Cancelled</McPill>
+    );
 
     return (
-      <div key={b.id} className={`mc-sched-row${b.status === 'report-due' ? ' mc-sched-row--due' : ''}`}>
-        <div className="mc-sched-row-date" aria-hidden>
-          <span className="mc-sched-row-day">{d.getDate()}</span>
-          <span className="mc-sched-row-month">
-            {d.toLocaleDateString(undefined, { month: 'short' })}
-          </span>
-        </div>
-        <div className="mc-sched-row-info">
-          <div className="mc-sched-row-name">{b.studentName || 'Student'}</div>
-          <div className="mc-sched-row-when">
-            {d.toLocaleDateString(undefined, { weekday: 'short' })} · {timeRange(b)} ·{' '}
-            {b.durationLabel}
+      <div
+        key={b.id}
+        className={`mc-scard${b.status === 'cancelled' ? ' mc-scard--muted' : ''}${
+          b.status === 'report-due' ? ' mc-scard--due' : ''
+        }${isUpcoming ? ' mc-scard--live' : ''}`}
+      >
+        <div className="mc-scard-top">
+          <div className="mc-scard-date" aria-hidden>
+            <span className="mc-scard-day">{d.getDate()}</span>
+            <span className="mc-scard-month">
+              {d.toLocaleDateString(undefined, { month: 'short' })}
+            </span>
           </div>
-          <div className="mc-sched-row-meta">
-            {b.source === 'full-support' ? 'Full Support' : 'Platform booking'}
-            {b.description ? ` · ${b.description}` : ''}
-            {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
-          </div>
-          {b.studentNote ? (
-            <div className="mc-sched-row-note">
-              <MessageSquare size={12} />
-              <span>
-                <b>Student&apos;s note:</b> {b.studentNote}
-              </span>
-            </div>
-          ) : null}
+          {statusPill}
         </div>
-        <div className="mc-sched-row-actions">
-          {b.status === 'upcoming' && upcomingPill(b)}
-          {b.status === 'report-due' && <McPill variant="danger">Report due</McPill>}
-          {b.status === 'completed' && <McPill variant="success">Completed</McPill>}
-          {b.status === 'cancelled' && <McPill variant="neutral">Cancelled</McPill>}
 
-          {b.status === 'upcoming' && b.joinUrl ? (
-            <Button
-              type="primary"
-              size="small"
-              icon={<Video size={14} />}
-              href={b.joinUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Join Meet
-            </Button>
-          ) : null}
+        <div className="mc-scard-name">{b.studentName || 'Student'}</div>
+        <div className="mc-scard-when">
+          {d.toLocaleDateString(undefined, { weekday: 'short' })} · {timeRange(b)} · {b.durationLabel}
+        </div>
+        <div className="mc-scard-meta">
+          {b.source === 'full-support' ? 'Full Support' : 'Platform booking'}
+          {b.description ? ` · ${b.description}` : ''}
+          {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
+        </div>
+
+        {b.studentNote ? (
+          <div className="mc-scard-note">
+            <MessageSquare size={12} />
+            <span>
+              <b>Note:</b> {b.studentNote}
+            </span>
+          </div>
+        ) : null}
+
+        {isUpcoming && b.joinUrl ? (
+          <a className="mc-scard-meet" href={b.joinUrl} target="_blank" rel="noreferrer">
+            <GoogleMeetingSvg />
+            <span className="mc-scard-meet-link">
+              Join Google Meet <ArrowUpRight size={13} />
+            </span>
+            <span className="mc-scard-live-dot" aria-hidden />
+          </a>
+        ) : null}
+
+        <div className="mc-scard-actions">
           {b.status === 'report-due' &&
             (b.source === 'platform' ? (
               <Button type="primary" size="small" onClick={() => setReportBooking(b)}>
@@ -231,7 +252,15 @@ export default function MentorConsoleSchedulePage() {
               View report
             </Button>
           ) : null}
-          {canViewStudent ? (
+          {b.studentUserId ? (
+            <SessionChatButton
+              mentorId={mentorId}
+              studentId={b.studentUserId}
+              studentName={b.studentName}
+              compact
+            />
+          ) : null}
+          {b.studentUserId ? (
             <Button
               size="small"
               type="text"
@@ -315,54 +344,6 @@ export default function MentorConsoleSchedulePage() {
         </button>
       )}
 
-      {nextUp && (
-        <div className="mc-sched-feature">
-          <div className="mc-sched-feature-date" aria-hidden>
-            <span className="mc-sched-feature-day">{new Date(nextUp.dateTime).getDate()}</span>
-            <span className="mc-sched-feature-month">
-              {new Date(nextUp.dateTime).toLocaleDateString(undefined, {
-                month: 'short',
-                weekday: 'short',
-              })}
-            </span>
-          </div>
-          <div className="mc-sched-feature-body">
-            <span className="mc-sched-feature-pill">Next session</span>
-            <div className="mc-sched-feature-name">{nextUp.studentName || 'Student'}</div>
-            <div className="mc-sched-feature-when">
-              <b>{timeRange(nextUp)}</b> · {nextUp.durationLabel}
-              {nextUp.description ? ` · ${nextUp.description}` : ''}
-            </div>
-            {nextUp.studentNote ? (
-              <div className="mc-sched-feature-note">
-                <MessageSquare size={13} />
-                <span>
-                  <b>Student&apos;s note:</b> {nextUp.studentNote}
-                </span>
-              </div>
-            ) : null}
-          </div>
-          <div className="mc-sched-feature-actions">
-            {nextUp.joinUrl ? (
-              <Button
-                type="primary"
-                icon={<Video size={15} />}
-                href={nextUp.joinUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Join Google Meet
-              </Button>
-            ) : null}
-            {hasFullSupport && nextUp.studentUserId && rosterById.has(nextUp.studentUserId) ? (
-              <Button onClick={() => navigate(`/mentor/students/${nextUp.studentUserId}`)}>
-                View student
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      )}
-
       <div className="mc-sched-tabbar" role="tablist" aria-label="Session scope">
         {(
           [
@@ -418,7 +399,7 @@ export default function MentorConsoleSchedulePage() {
           )}
         </div>
       ) : (
-        <div className="mc-sched-rows">{rows.map(renderRow)}</div>
+        <div className="mc-sched-grid">{rows.map(renderSessionCard)}</div>
       )}
 
       <Modal

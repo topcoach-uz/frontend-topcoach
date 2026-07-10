@@ -189,7 +189,14 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
   );
 }
 
-export default function StudentWorkspace({ student }: { student: WorkspaceStudent }) {
+export default function StudentWorkspace({
+  student,
+  isFullSupport = true,
+}: {
+  student: WorkspaceStudent;
+  /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
+  isFullSupport?: boolean;
+}) {
   const { id: mentorId, hasFullSupport, email, managementRole } = useMentorConsole();
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
@@ -258,6 +265,13 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
       studentBookings
         .filter((b) => b.status === 'upcoming')
         .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()),
+    [studentBookings],
+  );
+  const pastSessions = useMemo(
+    () =>
+      studentBookings
+        .filter((b) => b.status !== 'upcoming')
+        .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()),
     [studentBookings],
   );
   const researchForStudent = useMemo(
@@ -487,6 +501,47 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
     );
   };
 
+  const renderBookingRow = (b: (typeof bookings)[number]) => {
+    const pill =
+      b.status === 'completed' ? (
+        <McPill variant="success">Completed</McPill>
+      ) : b.status === 'report-due' ? (
+        <McPill variant="danger">Report due</McPill>
+      ) : b.status === 'cancelled' ? (
+        <McPill variant="neutral">Cancelled</McPill>
+      ) : (
+        <McPill variant="info">Upcoming</McPill>
+      );
+    return (
+      <div key={b.id} className="mc-ws-booking">
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
+          <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
+            {b.durationLabel}
+            {b.source === 'platform' ? ' · 1:1 session' : ''}
+            {b.description ? ` · ${b.description}` : ''}
+          </div>
+          {b.studentNote ? (
+            <div className="mc-ws-booking-note">
+              <MessageSquare size={12} />
+              <span>
+                <b>Student&apos;s note:</b> {b.studentNote}
+              </span>
+            </div>
+          ) : null}
+        </div>
+        <Space size={8} align="center">
+          {pill}
+          {b.status === 'upcoming' && b.joinUrl ? (
+            <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
+              Join
+            </Button>
+          ) : null}
+        </Space>
+      </div>
+    );
+  };
+
   const sessionColumns: ColumnsType<SessionLogDto> = [
     {
       title: 'When',
@@ -658,30 +713,20 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
             ) : upcomingSessions.length === 0 ? (
               <div className="mc-ws-empty">No upcoming bookings for this student.</div>
             ) : (
-              upcomingSessions.map((b) => (
-                <div key={b.id} className="mc-ws-booking">
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
-                    <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
-                      {b.durationLabel}
-                      {b.description ? ` · ${b.description}` : ''}
-                    </div>
-                    {b.studentNote ? (
-                      <div className="mc-ws-booking-note">
-                        <MessageSquare size={12} />
-                        <span>
-                          <b>Student&apos;s note:</b> {b.studentNote}
-                        </span>
-                      </div>
-                    ) : null}
-                  </div>
-                  {b.joinUrl ? (
-                    <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
-                      Join
-                    </Button>
-                  ) : null}
-                </div>
-              ))
+              upcomingSessions.map(renderBookingRow)
+            )}
+          </div>
+
+          {sectionHead('Past sessions', <CalendarCheck size={18} color="var(--mc-accent)" aria-hidden />)}
+          <div className="mc-ws-card">
+            {loadingBookings ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                <Spin />
+              </div>
+            ) : pastSessions.length === 0 ? (
+              <div className="mc-ws-empty">No past sessions with this student yet.</div>
+            ) : (
+              pastSessions.map(renderBookingRow)
             )}
           </div>
         </>
@@ -873,6 +918,13 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
     },
   ];
 
+  // 1:1 mentees only get the tabs backed by data that exists for them —
+  // Full-Support-only surfaces (essays, FS session log, milestones/research/
+  // curriculum) are hidden.
+  const visibleItems = isFullSupport
+    ? items
+    : items.filter((it) => ['tasks', 'sessions', 'message'].includes(it.key));
+
   return (
     <>
       <div className="mc-stat-grid mc-ws-stats">
@@ -880,7 +932,13 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
           icon={<Calendar size={18} />}
           label="Total sessions"
           value={student.sessionsCount}
-          meta={`${student.used}h of ${student.allocated}h used`}
+          meta={
+            isFullSupport
+              ? `${student.used}h of ${student.allocated}h used`
+              : upcomingSessions.length > 0
+                ? `${upcomingSessions.length} upcoming`
+                : 'All past'
+          }
           tone="info"
         />
         <McStat
@@ -903,16 +961,31 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
           }
           tone={awaitingReviewCount > 0 ? 'warn' : 'neutral'}
         />
-        <McStat
-          icon={<FileText size={18} />}
-          label="Essays"
-          value={pipeline.length}
-          meta="Applications & essays"
-          tone="neutral"
-        />
+        {isFullSupport ? (
+          <McStat
+            icon={<FileText size={18} />}
+            label="Essays"
+            value={pipeline.length}
+            meta="Applications & essays"
+            tone="neutral"
+          />
+        ) : (
+          <McStat
+            icon={<CalendarCheck size={18} />}
+            label="Past sessions"
+            value={pastSessions.length}
+            meta="1:1 sessions held"
+            tone="neutral"
+          />
+        )}
       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} destroyInactiveTabPane />
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={visibleItems}
+        destroyInactiveTabPane
+      />
 
       <Modal
         title={feedbackTask?.hasFeedback ? 'Edit feedback' : 'Give feedback'}
