@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import styles from './ProgramsLanding.module.scss';
 
-type Accent = 'flagship' | 'early' | 'research';
+type Accent = 'flagship' | 'early' | 'research' | 'bootcamp' | 'masters';
 
 interface Chip {
   icon: React.ReactNode;
@@ -35,6 +35,7 @@ interface Program {
   chips: Chip[];
   statValue: string;
   statLabel: string;
+  comingSoon?: boolean;
 }
 
 /**
@@ -100,6 +101,44 @@ const PROGRAMS: Program[] = [
     statValue: '1',
     statLabel: 'completed research paper',
   },
+  {
+    id: 'writing-bootcamp',
+    accent: 'bootcamp',
+    edition: 'Vol. 04 / 04',
+    flag: 'Boot Camp',
+    duration: 'Coming soon',
+    eyebrow: 'Application Writing',
+    title: 'Writing Boot Camp',
+    description:
+      'An intensive sprint to draft, refine, and polish your application essays with expert coaches. Full details coming soon.',
+    href: '',
+    comingSoon: true,
+    chips: [
+      { icon: <FileText size={13} />, label: 'Essay sprints' },
+      { icon: <Users size={13} />, label: 'Expert review' },
+    ],
+    statValue: '',
+    statLabel: '',
+  },
+  {
+    id: 'masters-mba',
+    accent: 'masters',
+    edition: 'Vol. 04 / 05',
+    flag: 'Graduate',
+    duration: 'Coming soon',
+    eyebrow: "Master's & MBA",
+    title: "Master's & MBA Admissions",
+    description:
+      'Strategic guidance for graduate and MBA applicants — school selection, essays, and interview prep. Full details coming soon.',
+    href: '',
+    comingSoon: true,
+    chips: [
+      { icon: <Target size={13} />, label: 'School list' },
+      { icon: <Briefcase size={13} />, label: 'Interview prep' },
+    ],
+    statValue: '',
+    statLabel: '',
+  },
 ];
 
 const ProgramsLanding: React.FC = () => {
@@ -109,7 +148,8 @@ const ProgramsLanding: React.FC = () => {
     document.title = 'Programs - Top Coach';
   }, []);
 
-  const activeCount = PROGRAMS.length;
+  const activeCount = PROGRAMS.filter((p) => !p.comingSoon).length;
+  const soonCount = PROGRAMS.length - activeCount;
 
   return (
     <main className={styles.shell}>
@@ -119,7 +159,10 @@ const ProgramsLanding: React.FC = () => {
           <div className={styles.metaRow}>
             <span className={styles.metaLeft}>The Catalog / 2026</span>
             <span className={styles.metaRule} />
-            <span className={styles.metaRight}>{activeCount} active programs</span>
+            <span className={styles.metaRight}>
+              {activeCount} active
+              {soonCount > 0 ? ` · ${soonCount} coming soon` : ''}
+            </span>
           </div>
 
           <div className={styles.masthead}>
@@ -131,52 +174,71 @@ const ProgramsLanding: React.FC = () => {
 
         {/* Catalog grid */}
         <div className={styles.grid}>
-          {PROGRAMS.map((program) => (
-            <article
-              key={program.id}
-              className={`${styles.card} ${styles[program.accent]}`}
-              onClick={() => navigate(program.href)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') navigate(program.href);
-              }}
-            >
-              <div className={styles.cardVisual}>
-                <span className={styles.flag}>{program.flag}</span>
-                <span className={styles.duration}>
-                  <Calendar size={13} />
-                  {program.duration}
-                </span>
-                <span className={styles.edition}>{program.edition}</span>
-              </div>
-
-              <div className={styles.cardBody}>
-                <span className={styles.eyebrow}>{program.eyebrow}</span>
-                <h2 className={styles.cardTitle}>{program.title}</h2>
-                <p className={styles.cardDesc}>{program.description}</p>
-
-                <div className={styles.chipRow}>
-                  {program.chips.map((chip) => (
-                    <span key={chip.label} className={styles.chip}>
-                      {chip.icon}
-                      {chip.label}
+          {PROGRAMS.map((program) => {
+            const isSoon = !!program.comingSoon;
+            const go = () => {
+              if (!isSoon && program.href) navigate(program.href);
+            };
+            return (
+              <article
+                key={program.id}
+                className={`${styles.card} ${styles[program.accent]} ${
+                  isSoon ? styles.comingSoon : ''
+                }`}
+                onClick={go}
+                role={isSoon ? undefined : 'button'}
+                tabIndex={isSoon ? -1 : 0}
+                aria-disabled={isSoon || undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') go();
+                }}
+              >
+                <div className={styles.cardVisual}>
+                  <span className={styles.flag}>{program.flag}</span>
+                  {isSoon ? (
+                    <span className={styles.soonBadge}>Coming soon</span>
+                  ) : (
+                    <span className={styles.duration}>
+                      <Calendar size={13} />
+                      {program.duration}
                     </span>
-                  ))}
+                  )}
+                  <span className={styles.edition}>{program.edition}</span>
                 </div>
 
-                <div className={styles.cardFooter}>
-                  <span className={styles.stat}>
-                    <strong>{program.statValue}</strong>
-                    <em>{program.statLabel}</em>
-                  </span>
-                  <span className={styles.viewLink}>
-                    View program <ArrowRight size={16} />
-                  </span>
+                <div className={styles.cardBody}>
+                  <span className={styles.eyebrow}>{program.eyebrow}</span>
+                  <h2 className={styles.cardTitle}>{program.title}</h2>
+                  <p className={styles.cardDesc}>{program.description}</p>
+
+                  <div className={styles.chipRow}>
+                    {program.chips.map((chip) => (
+                      <span key={chip.label} className={styles.chip}>
+                        {chip.icon}
+                        {chip.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className={styles.cardFooter}>
+                    {isSoon ? (
+                      <span className={styles.soonNote}>Details announced soon</span>
+                    ) : (
+                      <>
+                        <span className={styles.stat}>
+                          <strong>{program.statValue}</strong>
+                          <em>{program.statLabel}</em>
+                        </span>
+                        <span className={styles.viewLink}>
+                          View program <ArrowRight size={16} />
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
 
         {/* Closing CTA — strategy call */}
