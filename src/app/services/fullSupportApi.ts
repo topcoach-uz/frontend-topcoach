@@ -29,6 +29,18 @@ export type MentorRosterStudent = {
   sessionsCount: number;
 };
 
+export type StudentGoalDto = {
+  careerGoals: string[];
+  intendedMajors: { major: string; rank: number }[];
+  studyAbroadGoals?: {
+    interest: boolean;
+    targetCountries?: string[];
+    targetRegions?: string[];
+    durationPreference?: 'semester' | 'year' | 'full-degree' | 'summer' | 'flexible';
+    priorityLevel?: 'high' | 'medium' | 'low';
+  };
+};
+
 export type SessionLogDto = {
   id: string;
   studentUserId?: string;
@@ -229,6 +241,24 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         return { data: Array.isArray(raw) ? raw : [] };
       },
       providesTags: ['FullSupportMentorRoster'],
+    }),
+    getStudentGoal: builder.query<{ data: StudentGoalDto }, string>({
+      query: (studentUserId) => ({
+        url: `/full-support/mentor/students/${encodeURIComponent(studentUserId)}/profile`,
+        method: 'GET',
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        const data = raw && typeof raw === 'object' ? (raw as Partial<StudentGoalDto>) : {};
+        return {
+          data: {
+            careerGoals: Array.isArray(data.careerGoals) ? data.careerGoals : [],
+            intendedMajors: Array.isArray(data.intendedMajors) ? data.intendedMajors : [],
+            studyAbroadGoals: data.studyAbroadGoals,
+          },
+        };
+      },
+      providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportMentorRoster' as const, id: studentUserId }],
     }),
     getMentorSessions: builder.query<{ data: SessionLogDto[] }, string | null>({
       query: (studentUserId) => ({
@@ -697,6 +727,7 @@ export const {
   useUnassignMentorMutation,
   useAdminUnenrollMutation,
   useGetMentorRosterQuery,
+  useGetStudentGoalQuery,
   useGetMentorSessionsQuery,
   useCreateMentorSessionMutation,
   useUpdateMentorSessionMutation,

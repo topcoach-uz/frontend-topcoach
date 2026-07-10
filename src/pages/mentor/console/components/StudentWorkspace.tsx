@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
   DatePicker,
@@ -28,7 +28,9 @@ import {
   ClipboardList,
   FileText,
   Flag,
+  MessageSquare,
   Plus,
+  RotateCcw,
   X,
 } from 'lucide-react';
 import {
@@ -53,6 +55,9 @@ import {
   type TaskDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetGraderInboxQuery, type ResearchSubmission } from 'src/app/services/research-prep';
+import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
+import MessageList from 'src/components/chat/MessageList';
+import ChatInput from 'src/components/chat/ChatInput';
 import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
 import { useMentorBookings } from '../sessionSources';
 import { useMentorConsole } from '../MentorConsoleContext';
@@ -117,8 +122,75 @@ function tabLabel(label: string, count?: number) {
   );
 }
 
+/**
+ * Inline message thread for the "Message" tab — resolves (or creates) the
+ * mentor↔student PEER conversation lazily on first mount, then reuses the
+ * existing MessageList + ChatInput primitives for the live thread. No
+ * thread picker (mirrors FullSupportMentorDashboard's
+ * `openToGeneralConversation` usage — general conversation, no threadId).
+ */
+function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentId: string }) {
+  const [findOrCreateConversation] = useFindOrCreateConversationMutation();
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState(false);
+  const resolvedForStudentRef = useRef<string | null>(null);
+
+  const resolveConversation = useCallback(() => {
+    if (!mentorId || !studentId) return;
+    resolvedForStudentRef.current = studentId;
+    setResolving(true);
+    setResolveError(false);
+    findOrCreateConversation({ mentorId, studentId })
+      .unwrap()
+      .then((res) => {
+        setConversationId(res?.conversation?.id ?? null);
+        if (!res?.conversation?.id) setResolveError(true);
+      })
+      .catch(() => setResolveError(true))
+      .finally(() => setResolving(false));
+  }, [mentorId, studentId, findOrCreateConversation]);
+
+  useEffect(() => {
+    // Fires once per studentId — guards against StrictMode's double-invoke
+    // and re-renders; a genuine student change resets the guard.
+    if (resolvedForStudentRef.current !== studentId) {
+      setConversationId(null);
+      resolveConversation();
+    }
+  }, [studentId, resolveConversation]);
+
+  if (resolveError) {
+    return (
+      <div className="mc-ws-message-tab mc-ws-message-tab--center">
+        <Text type="secondary">Couldn&apos;t open the conversation.</Text>
+        <Button size="small" icon={<RotateCcw size={14} />} onClick={resolveConversation}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (resolving || !conversationId) {
+    return (
+      <div className="mc-ws-message-tab mc-ws-message-tab--center">
+        <Spin />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mc-ws-message-tab">
+      <div className="mc-ws-message-thread">
+        <MessageList conversationId={conversationId} />
+      </div>
+      <ChatInput conversationId={conversationId} />
+    </div>
+  );
+}
+
 export default function StudentWorkspace({ student }: { student: WorkspaceStudent }) {
-  const { hasFullSupport, email, managementRole } = useMentorConsole();
+  const { id: mentorId, hasFullSupport, email, managementRole } = useMentorConsole();
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
 
@@ -594,6 +666,14 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
                       {b.durationLabel}
                       {b.description ? ` · ${b.description}` : ''}
                     </div>
+                    {b.studentNote ? (
+                      <div className="mc-ws-booking-note">
+                        <MessageSquare size={12} />
+                        <span>
+                          <b>Student&apos;s note:</b> {b.studentNote}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                   {b.joinUrl ? (
                     <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
@@ -606,6 +686,16 @@ export default function StudentWorkspace({ student }: { student: WorkspaceStuden
           </div>
         </>
       ),
+    },
+    {
+      key: 'message',
+      label: (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <MessageSquare size={14} />
+          Message
+        </span>
+      ),
+      children: <StudentMessageTab mentorId={mentorId} studentId={studentId} />,
     },
     {
       key: 'essays',
