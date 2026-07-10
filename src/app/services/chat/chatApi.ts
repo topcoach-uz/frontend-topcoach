@@ -54,6 +54,22 @@ export const chatApi = RtkApi.injectEndpoints({
     }),
 
     /**
+     * Find or create a conversation between the current counselor and a student.
+     * counselorId is derived server-side from the JWT — only studentId is sent.
+     */
+    findOrCreateCounselorConversation: build.mutation<
+      { conversation: Conversation },
+      { studentId: string }
+    >({
+      query: (body) => ({
+        url: '/chat/conversations/find-or-create-counselor',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['ChatConversations'],
+    }),
+
+    /**
      * Mark conversation as read
      */
     markConversationAsRead: build.mutation<{ success: boolean }, string>({
@@ -321,6 +337,7 @@ export const {
   useGetConversationsQuery,
   useGetConversationQuery,
   useFindOrCreateConversationMutation,
+  useFindOrCreateCounselorConversationMutation,
   useMarkConversationAsReadMutation,
   useGetUnreadCountQuery,
   useGetThreadsQuery,
