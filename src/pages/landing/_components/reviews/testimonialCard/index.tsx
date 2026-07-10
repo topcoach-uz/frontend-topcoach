@@ -7,6 +7,7 @@ import styles from './testimonialCard.module.scss';
 interface Props {
   mainQuote: string;
   authorName: string;
+  authorRole?: string;
   imageSrc: string;
   id: string;
   onClick: () => void;
@@ -26,9 +27,16 @@ const QuoteIcon = () => (
   </svg>
 );
 
-export default function TestimonialCard({ mainQuote, authorName, imageSrc, onClick }: Props) {
+const initialsFrom = (name: string) =>
+  (name || '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('') || '?';
+
+export default function TestimonialCard({ mainQuote, authorName, authorRole, imageSrc, onClick }: Props) {
   const colors = useTypedSelector((state) => state.layout.colors);
-  const defaultImage = '/img/success-stories/success-story-1.jpg';
 
   return (
     <button type="button" className={styles.card} onClick={onClick}>
@@ -42,18 +50,32 @@ export default function TestimonialCard({ mainQuote, authorName, imageSrc, onCli
         &ldquo;{mainQuote || 'Success story'}&rdquo;
       </CustomText>
       <div className={styles.authorRow}>
-        <img
-          src={imageSrc || defaultImage}
-          alt={authorName}
-          className={styles.avatar}
-        />
-        <CustomText
-          fontSize={themeFontSize.fontSizeTitle8}
-          fontWeight={themeFontWeight.fontWeightSemibold}
-          color={colors.colorTextBase}
-        >
-          {authorName || 'Student'}
-        </CustomText>
+        {imageSrc ? (
+          <img src={imageSrc} alt={authorName} className={styles.avatar} />
+        ) : (
+          <span className={styles.avatarInitials} aria-hidden="true">
+            {initialsFrom(authorName)}
+          </span>
+        )}
+        <div className={styles.authorMeta}>
+          <CustomText
+            fontSize={themeFontSize.fontSizeTitle8}
+            fontWeight={themeFontWeight.fontWeightSemibold}
+            color={colors.colorTextBase}
+          >
+            {authorName || 'Student'}
+          </CustomText>
+          {authorRole ? (
+            <CustomText
+              fontSize={themeFontSize.fontSizeTitle9}
+              fontWeight={themeFontWeight.fontWeightRegular}
+              color={colors.colorTextSecondary}
+              className={styles.authorRole}
+            >
+              {authorRole}
+            </CustomText>
+          ) : null}
+        </div>
       </div>
     </button>
   );
