@@ -16,7 +16,8 @@
  * until the marketplace opens; Rank has no real signal yet).
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Modal, message } from 'antd';
 import {
   ArrowUpRight,
   Award,
@@ -29,6 +30,7 @@ import {
   PenLine,
   PlayCircle,
   Shirt,
+  ShoppingBag,
   Sparkles,
   Target,
   Trophy,
@@ -41,9 +43,13 @@ import {
   useGetCoinBalanceQuery,
   useGetCoinTransactionsQuery,
   useGetMarketplaceItemsQuery,
+  useGetRedemptionsQuery,
+  useRedeemItemMutation,
   type CoinEventType,
   type MarketplaceCategory,
   type MarketplaceItem,
+  type Redemption,
+  type RedemptionStatus,
 } from 'src/app/services/coinsApi';
 
 import './MyRewardsEditorialView.scss';
@@ -95,7 +101,42 @@ const EVENT_LABEL: Record<CoinEventType, { title: string; Icon: LucideIcon }> = 
   rp_week: { title: 'Completed a Research Prep week', Icon: Trophy },
   ai_match_first: { title: 'Completed AI Major Match', Icon: Compass },
   ai_match_repeat: { title: 'Ran AI Major Match again', Icon: Compass },
+  community_post: { title: 'Posted in the community', Icon: PenLine },
+  community_comment: { title: 'Commented in the community', Icon: PenLine },
+  community_reply: { title: 'Replied in the community', Icon: PenLine },
+  community_revoke: { title: 'Community reward reversed', Icon: PenLine },
+  marketplace_redeem: { title: 'Redeemed a reward', Icon: ShoppingBag },
+  marketplace_refund: { title: 'Reward refunded', Icon: ShoppingBag },
 };
+
+// Backend RedemptionStatus lifecycle (src/modules/coins/coins.service.ts):
+// pending -> fulfilled -> completed, or pending -> rejected / refunded / cancelled.
+const REDEMPTION_STATUS_LABEL: Record<RedemptionStatus, string> = {
+  pending: 'Pending',
+  fulfilled: 'Fulfilled',
+  completed: 'Completed',
+  rejected: 'Rejected',
+  refunded: 'Refunded',
+  cancelled: 'Cancelled',
+};
+
+// Backend error codes thrown from CoinsService.redeem — see
+// src/modules/coins/coins.service.ts. Body shape is `{ code, message }`.
+const REDEEM_ERROR_COPY: Record<string, string> = {
+  INSUFFICIENT_COINS: "You don't have enough coins for this yet. Keep earning and come back.",
+  OUT_OF_STOCK: 'This item just sold out. Check back soon for restock.',
+  REDEMPTION_CAP_REACHED: "You've reached the monthly redemption limit for this item.",
+  ITEM_LOCKED: 'This item is not available for redemption yet.',
+  ITEM_NOT_PRICED: 'This item is not yet available for redemption.',
+  ITEM_INACTIVE: 'This item is no longer available.',
+  ITEM_NOT_FOUND: 'This item could not be found.',
+  SERVICE_UNAVAILABLE: 'Redemptions are temporarily paused. Please try again later.',
+};
+
+const mintIdempotencyKey = (): string =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `redeem-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 const CATEGORY_LABEL: Record<MarketplaceCategory, string> = {
   academic: 'Academic',
@@ -146,6 +187,8 @@ const MyRewardsEditorialView: React.FC = () => {
   const { data: balance } = useGetCoinBalanceQuery();
   const { data: transactions = [] } = useGetCoinTransactionsQuery(10);
   const { data: marketplace = [] } = useGetMarketplaceItemsQuery();
+  const { data: redemptions = [] } = useGetRedemptionsQuery(20);
+  const [redeemItem, { isLoading: isRedeeming }] = useRedeemItemMutation();
 
   // Daily-login self-trigger fires from <DailyLoginCreditTracker /> at
   // the app root — see App.tsx. This page just renders the result.
@@ -153,13 +196,61 @@ const MyRewardsEditorialView: React.FC = () => {
   const currentBalance = balance?.balance ?? 0;
   const lifetimeEarned = balance?.lifetimeEarned ?? 0;
 
-  // Marketplace launch date — pulled from the first locked item so the
-  // copy stays in sync if we shift the date in the seed without
-  // re-deploying the frontend.
+  // Whether the marketplace has actually opened — driven off real item
+  // state (isUnlocked) rather than a hardcoded date, so this stays correct
+  // once items are unlocked without needing a frontend redeploy.
+  const marketplaceOpen = useMemo(() => marketplace.some((m) => m.isUnlocked), [marketplace]);
+
+  // Fallback launch date for the still-locked items' copy — pulled from
+  // the first locked item so it stays in sync with the seed.
   const launchDate = useMemo(() => {
     const locked = marketplace.find((m) => m.isLockedUntil);
-    return formatUnlockDate(locked?.isLockedUntil ?? null) || 'July 1, 2026';
+    return formatUnlockDate(locked?.isLockedUntil ?? null) || 'soon';
   }, [marketplace]);
+
+  // ── Redeem flow ──────────────────────────────────────────────────────
+  const [redeemTarget, setRedeemTarget] = useState<MarketplaceItem | null>(null);
+  const [redeemKey, setRedeemKey] = useState<string | null>(null);
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+
+  const openRedeemConfirm = (item: MarketplaceItem) => {
+    setRedeemTarget(item);
+    // Mint ONCE per confirm attempt and reuse across retries — a retry with
+    // the same key hits the backend's idempotent path instead of
+    // double-spending if the first attempt actually succeeded server-side.
+    setRedeemKey(mintIdempotencyKey());
+    setRedeemError(null);
+  };
+
+  const closeRedeemConfirm = () => {
+    setRedeemTarget(null);
+    setRedeemKey(null);
+    setRedeemError(null);
+  };
+
+  const handleConfirmRedeem = async () => {
+    if (!redeemTarget || !redeemKey) return;
+    setRedeemError(null);
+    try {
+      await redeemItem({ itemId: redeemTarget.id, idempotencyKey: redeemKey }).unwrap();
+      message.success(`Redeemed "${redeemTarget.title}". Your order is now pending fulfillment.`);
+      closeRedeemConfirm();
+    } catch (err: any) {
+      const code: string | undefined = err?.data?.code;
+      const friendly = (code && REDEEM_ERROR_COPY[code]) || err?.data?.message || 'Failed to redeem. Please try again.';
+      setRedeemError(friendly);
+      // Keep the modal open so the user can retry with the same idempotency key.
+    }
+  };
+
+  const itemButtonState = (
+    item: MarketplaceItem,
+  ): { label: string; disabled: boolean; variant: 'redeem' | 'locked' } => {
+    if (!item.isUnlocked) return { label: 'Locked', disabled: true, variant: 'locked' };
+    if (item.costCoins == null) return { label: 'Coming soon', disabled: true, variant: 'locked' };
+    if (currentBalance < item.costCoins) return { label: 'Not enough coins', disabled: true, variant: 'locked' };
+    return { label: 'Redeem', disabled: false, variant: 'redeem' };
+  };
 
   return (
     <div className="rewards">
@@ -169,7 +260,9 @@ const MyRewardsEditorialView: React.FC = () => {
         <h1 className="rewards__title">My Rewards</h1>
         <p className="rewards__subtitle">
           Earn TopCoach coins by completing lessons, modules, and daily check-ins.
-          The marketplace opens {launchDate} — start stacking coins now.
+          {marketplaceOpen
+            ? ' The marketplace is open — redeem your coins for real rewards below.'
+            : ` The marketplace opens ${launchDate} — start stacking coins now.`}
         </p>
       </header>
 
@@ -304,7 +397,9 @@ const MyRewardsEditorialView: React.FC = () => {
           <div>
             <h2 className="rewards__marketplace-title">TopCoach Marketplace</h2>
             <div className="rewards__marketplace-meta">
-              Opens {launchDate} · Preview the rewards you're earning toward.
+              {marketplaceOpen
+                ? 'Redeem your coins for real rewards.'
+                : `Opens ${launchDate} · Preview the rewards you're earning toward.`}
             </div>
           </div>
         </div>
@@ -312,6 +407,7 @@ const MyRewardsEditorialView: React.FC = () => {
         <div className="rewards__grid">
           {marketplace.map((item) => {
             const Icon = itemIcon(item);
+            const btn = itemButtonState(item);
             return (
               <article key={item.id} className="rewards__item">
                 <div
@@ -323,7 +419,7 @@ const MyRewardsEditorialView: React.FC = () => {
                   {!item.isUnlocked && (
                     <div className="rewards__item-thumb-overlay">
                       <span className="rewards__item-thumb-overlay-text">
-                        Coming soon
+                        {item.isLockedUntil ? `Unlocks ${formatUnlockDate(item.isLockedUntil)}` : 'Coming soon'}
                       </span>
                     </div>
                   )}
@@ -334,13 +430,25 @@ const MyRewardsEditorialView: React.FC = () => {
                 <h3 className="rewards__item-title">{item.title}</h3>
                 <p className="rewards__item-desc">{item.description}</p>
                 <div className="rewards__item-foot">
+                  <span className="rewards__item-cost">
+                    {item.costCoins != null ? (
+                      <>
+                        {formatCoins(item.costCoins)}
+                        <span className="rewards__item-coin" aria-hidden>¢</span>
+                      </>
+                    ) : (
+                      <span className="rewards__item-cost-pending">Coming soon</span>
+                    )}
+                  </span>
                   <button
                     type="button"
-                    className="rewards__btn rewards__btn--locked rewards__btn--small"
-                    disabled
-                    title={`Redemptions open ${launchDate}`}
+                    className={`rewards__btn rewards__btn--small ${
+                      btn.variant === 'redeem' ? 'rewards__btn--primary' : 'rewards__btn--locked'
+                    }`}
+                    disabled={btn.disabled}
+                    onClick={() => btn.variant === 'redeem' && openRedeemConfirm(item)}
                   >
-                    {item.isUnlocked ? 'Available' : 'Locked'}
+                    {btn.label}
                   </button>
                 </div>
               </article>
@@ -348,11 +456,80 @@ const MyRewardsEditorialView: React.FC = () => {
           })}
         </div>
 
-        <div className="rewards__marketplace-note">
-          More rewards land before {launchDate} — that's when redemptions open
-          and you can start spending the coins you're stacking now.
-        </div>
+        {!marketplaceOpen && (
+          <div className="rewards__marketplace-note">
+            More rewards land before {launchDate} — that's when redemptions open
+            and you can start spending the coins you're stacking now.
+          </div>
+        )}
       </section>
+
+      {/* Your redemptions ───────────────────────────────────────── */}
+      <section className="rewards__card rewards__redemptions">
+        <div className="rewards__card-head">
+          <div className="rewards__card-head-left">
+            <ShoppingBag size={16} />
+            <h2 className="rewards__card-title">Your redemptions</h2>
+          </div>
+          <span className="rewards__card-meta">
+            {redemptions.length === 0
+              ? 'No redemptions yet'
+              : `Last ${redemptions.length} order${redemptions.length === 1 ? '' : 's'}`}
+          </span>
+        </div>
+        {redemptions.length === 0 ? (
+          <div className="rewards__empty">
+            You haven't redeemed anything yet. Once you do, your orders will show up here.
+          </div>
+        ) : (
+          <ul className="rewards__redemptions-list">
+            {redemptions.map((r: Redemption) => (
+              <li key={r.id} className="rewards__redemption">
+                <div className="rewards__redemption-main">
+                  <div className="rewards__redemption-title">{r.title}</div>
+                  <div className="rewards__redemption-date">{formatDate(r.createdAt)}</div>
+                </div>
+                <span className={`rewards__redemption-status rewards__redemption-status--${r.status}`}>
+                  {REDEMPTION_STATUS_LABEL[r.status] ?? r.status}
+                </span>
+                <span className="rewards__redemption-amount">
+                  -{formatCoins(r.costCoins)}
+                  <span className="rewards__redemption-coin" aria-hidden>¢</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Redeem confirmation modal ─────────────────────────────────── */}
+      <Modal
+        title="Redeem this reward?"
+        open={!!redeemTarget}
+        onCancel={closeRedeemConfirm}
+        onOk={handleConfirmRedeem}
+        okText="Confirm redeem"
+        okButtonProps={{ loading: isRedeeming, disabled: isRedeeming }}
+        cancelButtonProps={{ disabled: isRedeeming }}
+        maskClosable={!isRedeeming}
+        closable={!isRedeeming}
+      >
+        {redeemTarget && (
+          <div className="rewards__redeem-modal">
+            <p className="rewards__redeem-modal-item">
+              <strong>{redeemTarget.title}</strong>
+            </p>
+            <p className="rewards__redeem-modal-cost">
+              This will cost{' '}
+              <strong>
+                {formatCoins(redeemTarget.costCoins ?? 0)} <span aria-hidden>¢</span>
+              </strong>
+              . Your current balance is {formatCoins(currentBalance)} coins.
+            </p>
+            {redeemError && <div className="rewards__redeem-modal-error">{redeemError}</div>}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

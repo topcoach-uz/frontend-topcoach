@@ -723,6 +723,130 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
     line-height: 1;
   }
 
+  &__item-cost-pending {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $rw-muted;
+  }
+
+  /* — your redemptions ────────────────────────────────────────── */
+  &__redemptions {
+    margin-top: 22px;
+  }
+
+  &__redemptions-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+  }
+
+  &__redemption {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 20px;
+    border-bottom: 1px solid $rw-hairline;
+
+    &:last-child { border-bottom: none; }
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  &__redemption-main { min-width: 0; }
+
+  &__redemption-title {
+    font-size: 0.9rem;
+    color: $rw-ink;
+    font-weight: 500;
+  }
+
+  &__redemption-date {
+    color: $rw-muted;
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+
+  &__redemption-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: $rw-brand-soft;
+    color: $rw-brand;
+
+    &--pending { background: $rw-gold-soft; color: $rw-gold; }
+    &--fulfilled { background: $rw-brand-soft; color: $rw-brand; }
+    &--completed { background: rgba(46, 110, 78, 0.1); color: #2e6e4e; }
+    &--rejected,
+    &--cancelled { background: rgba(107, 98, 88, 0.12); color: $rw-muted; }
+    &--refunded { background: rgba(107, 98, 88, 0.12); color: $rw-ink-soft; }
+  }
+
+  &__redemption-amount {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: $rw-ink;
+    justify-self: end;
+
+    @media (max-width: 560px) { justify-self: start; }
+  }
+
+  &__redemption-coin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 999px;
+    background: $rw-ink;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  /* — redeem confirm modal ────────────────────────────────────── */
+  &__redeem-modal {
+    &-item {
+      font-size: 1rem;
+      color: $rw-ink;
+      margin: 0 0 8px;
+    }
+
+    &-cost {
+      font-size: 0.9rem;
+      color: $rw-ink-soft;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    &-error {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(123, 31, 47, 0.08);
+      border: 1px solid rgba(123, 31, 47, 0.25);
+      border-radius: 8px;
+      color: $rw-brand;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+  }
+
   /* — suggest reward strip ────────────────────────────────────── */
   &__suggest {
     margin-top: 22px;
