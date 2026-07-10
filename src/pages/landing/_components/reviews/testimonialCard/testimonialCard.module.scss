@@ -47,10 +47,36 @@
   gap: 12px;
 }
 
+.authorMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+
+.authorRole {
+  line-height: 1.3;
+}
+
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.avatarInitials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #7b1f2f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
 }

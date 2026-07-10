@@ -176,7 +176,7 @@ export default function LandingPage() {
       <MentorsSectionLanding />
 
       {/* Existing content sections */}
-      {/* <ReviewsSection />  // keep hidden for now */}
+      <ReviewsSection />
       <CareerAssessmentSection />
 
       <PricingSection />

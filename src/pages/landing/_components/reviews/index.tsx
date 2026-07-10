@@ -1,41 +1,41 @@
-import { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Keyboard } from 'swiper/modules';
 import 'swiper/css';
-import useApi from 'src/hooks/useApi';
-import { BlogsType } from 'src/pages/success-stories';
 import styles from './reviews.module.scss';
 import TestimonialCard from './testimonialCard';
-import { api } from 'src/app/api';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import { useTypedSelector } from 'src/app/store';
+import { useGetTestimonialsQuery } from 'src/app/services/testimonialsApi';
 
 export default function ReviewsSection() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { colors } = useTypedSelector((state) => state.layout);
-  const { response: blogsData } = useApi<AxiosResponse<BlogsType>>(() =>
-    // @ts-expect-error not a problem
-    api.blogs.findAll()
-  );
 
-  const successStories = blogsData?.data.data;
+  // Real, backend-managed testimonials. The section only renders once
+  // published testimonials exist — until then it is a no-op (nothing shown),
+  // so environments with no testimonial rows are unaffected.
+  const {
+    data: testimonialsData,
+    isLoading,
+    isFetching,
+    isError,
+  } = useGetTestimonialsQuery();
 
-  const testimonialList: ITestimonial[] | undefined = successStories?.map(
-    (story) => ({
-      authorName: story.author,
-      imageSrc: story.media?.[0]?.url || '',
-      mainQuote: story?.title,
-      id: story?.id,
-    })
-  );
+  const ready = !isLoading && !isFetching && !isError;
 
-  if (!testimonialList?.length) return null;
+  const displayList = (testimonialsData?.data ?? []).slice(0, 3).map((item) => ({
+    id: item.id,
+    authorName: item.name,
+    authorRole: item.context ? `${item.role} · ${item.context}` : item.role,
+    imageSrc: item.avatarUrl || '',
+    mainQuote: item.quote,
+  }));
 
-  const displayList = testimonialList.slice(0, 3);
+  if (!ready || displayList.length === 0) return null;
 
   return (
     <section className={styles.section}>
@@ -63,10 +63,7 @@ export default function ReviewsSection() {
           >
             {displayList.map((item, i) => (
               <SwiperSlide key={item.id || i} className={styles.slide}>
-                <TestimonialCard
-                  {...item}
-                  onClick={() => navigate(`/success-stories/${item.id}`)}
-                />
+                <TestimonialCard {...item} onClick={() => {}} />
               </SwiperSlide>
             ))}
           </Swiper>
@@ -77,18 +74,18 @@ export default function ReviewsSection() {
           onClick={() => navigate('/success-stories')}
         >
           {t('landing.viewAll')}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
       </div>
     </section>
   );
-}
-
-interface ITestimonial {
-  mainQuote: string;
-  authorName: string;
-  imageSrc: string;
-  id: string;
 }
