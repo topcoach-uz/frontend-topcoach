@@ -17,7 +17,7 @@ export default function FaqPage() {
         <div className={styles.content}>
           {faqItems?.map((item, index) => (
             <MyCollapse
-              key={item.id}
+              key={item.key}
               question={item.label}
               answer={item.children}
               questionNumber={index + 1}

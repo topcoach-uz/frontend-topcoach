@@ -26,6 +26,62 @@ const itemsEn: CollapseProps['items'] = [
       'TopCoach is a mentorship platform that connects students with experienced mentors who guide them through university applications, test preparation, essay writing, and career advice.',
   },
   {
+    key: 'community-1',
+    label: 'What is TopCoach Community?',
+    children:
+      'TopCoach Community is an all-in-one platform for SAT prep, admissions, research, AI tools, and student networking.',
+  },
+  {
+    key: 'community-2',
+    label: 'Who is TopCoach Community for?',
+    children:
+      'TopCoach Community is designed for high school, gap year, and university students planning to study abroad.',
+  },
+  {
+    key: 'community-3',
+    label: 'What does TopCoach Community include?',
+    children: (
+      <div>
+        <p>Your membership includes:</p>
+        <ul>
+          <li>SAT Prep</li>
+          <li>Research Program</li>
+          <li>Admissions Foundation</li>
+          <li>AI Major Tool</li>
+          <li>Monthly Workshops</li>
+          <li>Study Buddy Matching</li>
+          <li>Unlimited Messaging</li>
+          <li>Rewards</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-4',
+    label: 'How much does TopCoach Community cost?',
+    children: (
+      <div>
+        <p>Choose the plan that fits you:</p>
+        <ul>
+          <li><strong>Monthly:</strong> $12/month</li>
+          <li><strong>Yearly:</strong> $99/year (Save 31%)</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-5',
+    label: 'Does TopCoach Community offer a free trial?',
+    children:
+      'Yes. Every plan includes a 7-day free trial, so you can explore all features before subscribing.',
+  },
+  {
+    key: 'community-6',
+    label: 'Can I cancel or switch my TopCoach Community plan anytime?',
+    children:
+      'Yes. You can cancel or switch between Monthly and Yearly plans at any time.',
+  },
+  {
     key: '2',
     label: 'How do I choose the right mentor?',
     children: (
@@ -162,28 +218,6 @@ const itemsEn: CollapseProps['items'] = [
     ),
   },
   {
-    key: '5',
-    label: "What is the Mentee's Dashboard, and what does it include?",
-    children: (
-      <div>
-        <p>
-          The Mentee’s Dashboard is your personal space on TopCoach, where you
-          can:
-        </p>
-        <ul>
-          <li>View your upcoming and past mentorship sessions</li>
-          <li>View your favourite universities</li>
-          <li>Track registered events</li>
-          <li>Upload essays and application documents</li>
-        </ul>
-        <p>
-          It helps you stay organized and make the most of your mentorship
-          experience.
-        </p>
-      </div>
-    ),
-  },
-  {
     key: '6',
     label: 'How much does a mentorship session cost?',
     children: (
@@ -234,18 +268,6 @@ const itemsEn: CollapseProps['items'] = [
       'If you miss a session without notifying your mentor 24 hours in advance, it will be non-refundable. However, rescheduling is possible if you inform the mentor on time.',
   },
   {
-    key: '8',
-    label: 'How do I know if TopCoach is right for me?',
-    children:
-      'If you are preparing for university applications, need help with essays, or want expert advice from those who have successfully navigated the process, TopCoach is the perfect place for you. You can start with a single session or choose a package for continuous guidance.',
-  },
-  {
-    key: '9',
-    label: 'How do coaches progress through different levels at TopCoach?',
-    children:
-      'Coaches at TopCoach advance based on their experience and success. To move from Junior to Senior, a coach needs to complete 150 hours of mentoring sessions. To progress from Senior to Expert, they must complete an additional 100 hours. Additionally, coaches receive bonuses for each mentee accepted into a top university.',
-  },
-  {
     key: '10',
     label: 'How can one sign up as a Mentor?',
     children: (
@@ -274,6 +296,62 @@ const itemsUz: CollapseProps['items'] = [
     label: 'TopCoach nima?',
     children:
       'TopCoach bu talabalarga universitetga ariza topshirish, testga tayyorgarlik ko‘rish, esse yozish va karyera bo‘yicha maslahat berishda tajribali mentorlar bilan bog‘lanish imkonini beruvchi mentorlik platformasidir.',
+  },
+  {
+    key: 'community-1',
+    label: 'TopCoach Community nima?',
+    children:
+      'TopCoach Community – SAT tayyorgarligi, universitetga qabul, tadqiqot, sun’iy intellekt vositalari va talabalar hamjamiyatini bir joyda jamlagan yagona platforma.',
+  },
+  {
+    key: 'community-2',
+    label: 'TopCoach Community kimlar uchun?',
+    children:
+      'TopCoach Community chet elda o‘qishni rejalashtirayotgan maktab o‘quvchilari, gap year va universitet talabalari uchun mo‘ljallangan.',
+  },
+  {
+    key: 'community-3',
+    label: 'TopCoach Community tarkibiga nimalar kiradi?',
+    children: (
+      <div>
+        <p>Obunangizga quyidagilar kiradi:</p>
+        <ul>
+          <li>SAT tayyorgarligi</li>
+          <li>Tadqiqot dasturi</li>
+          <li>Admissions Foundation</li>
+          <li>AI Major vositasi</li>
+          <li>Oylik seminarlar (workshops)</li>
+          <li>Study Buddy juftlashtirish</li>
+          <li>Cheksiz xabar almashish</li>
+          <li>Mukofotlar</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-4',
+    label: 'TopCoach Community qancha turadi?',
+    children: (
+      <div>
+        <p>O‘zingizga mos tarifni tanlang:</p>
+        <ul>
+          <li><strong>Oylik:</strong> $12/oy</li>
+          <li><strong>Yillik:</strong> $99/yil (31% tejang)</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-5',
+    label: 'TopCoach Community bepul sinov muddatini taklif qiladimi?',
+    children:
+      'Ha. Har bir tarif 7 kunlik bepul sinov muddatini o‘z ichiga oladi, shuning uchun obuna bo‘lishdan oldin barcha imkoniyatlarni sinab ko‘rishingiz mumkin.',
+  },
+  {
+    key: 'community-6',
+    label: 'TopCoach Community tarifimni istalgan vaqtda bekor qilish yoki almashtirish mumkinmi?',
+    children:
+      'Ha. Oylik va Yillik tariflar o‘rtasida istalgan vaqtda bekor qilishingiz yoki almashtirishingiz mumkin.',
   },
   {
     key: '2',
@@ -384,28 +462,6 @@ const itemsUz: CollapseProps['items'] = [
     ),
   },
   {
-    key: '5',
-    label: 'Mentee Dashboard nima va unda nimalar bor?',
-    children: (
-      <div>
-        <p>
-          Mentee Dashboard, TopCoach’dagi shaxsiy maydonchangiz bo‘lib, unda
-          siz:
-        </p>
-        <ul>
-          <li>Kelayotgan va o‘tgan mentorlik seanslaringizni ko‘rishingiz</li>
-          <li>Sevimli universitetlaringizni kuzatishingiz</li>
-          <li>Ro‘yxatdan o‘tkazilgan tadbirlaringizni nazorat qilishingiz</li>
-          <li>Esse va ariza hujjatlaringizni yuklashingiz mumkin</li>
-        </ul>
-        <p>
-          Bu maydoncha sizni tartibli bo‘lishingizga va mentorlik tajribasidan
-          maksimal foyda olishga yordam beradi.
-        </p>
-      </div>
-    ),
-  },
-  {
     key: '6',
     label: 'Mentorlik seansi qancha turadi?',
     children: (
@@ -456,18 +512,6 @@ const itemsUz: CollapseProps['items'] = [
       'Agar siz seansni 24 soat oldin xabardor qilmasdan o‘tkazib yuborsangiz, to‘lov qaytarilmaydi. Ammo, agar mentorni o‘z vaqtida xabardor qilsangiz, seansni qayta belgilash mumkin.',
   },
   {
-    key: '8',
-    label: 'TopCoach menga mos keladimi?',
-    children:
-      'Agar siz universitetga ariza topshirishga tayyorgarlik ko‘rayotgan bo‘lsangiz, esse yozishda yordamga muhtoj bo‘lsangiz yoki muvaffaqiyatli ariza topshirish jarayonidan maslahat olmoqchi bo‘lsangiz, TopCoach siz uchun ideal yechimdir. Siz bitta seansdan boshlashingiz yoki doimiy qo‘llab-quvvatlash uchun paket tanlashingiz mumkin.',
-  },
-  {
-    key: '9',
-    label: 'TopCoach’da murabbiylar turli darajalardan qanday o‘tadi?',
-    children:
-      'TopCoach murabbiylari tajribasi va muvaffaqiyatiga qarab ko‘tariladi. Kichikdan kattaga o‘tish uchun murabbiy 150 soatlik murabbiylik mashg‘ulotlarini o‘tkazishi kerak. Senior darajasidan Ekspert darajasiga o‘tish uchun ular qo‘shimcha 100 soat o‘qishlari kerak. Bundan tashqari, murabbiylar eng yaxshi universitetga qabul qilingan har bir shogird uchun mukofot oladilar.',
-  },
-  {
     key: '10',
     label: 'Qanday qilib murabbiy sifatida ro‘yxatdan o‘tish mumkin?',
     children: (
@@ -496,6 +540,62 @@ const itemsRu: CollapseProps['items'] = [
     label: 'Что такое TopCoach?',
     children:
       'TopCoach: это платформа наставничества, которая соединяет студентов с опытными наставниками, помогающими с поступлением в университет, подготовкой к экзаменам, написанием эссе и карьерным консультированием.',
+  },
+  {
+    key: 'community-1',
+    label: 'Что такое TopCoach Community?',
+    children:
+      'TopCoach Community — это универсальная платформа для подготовки к SAT, поступления, исследований, AI-инструментов и общения между студентами.',
+  },
+  {
+    key: 'community-2',
+    label: 'Для кого предназначен TopCoach Community?',
+    children:
+      'TopCoach Community предназначен для школьников, студентов в gap year и студентов университетов, планирующих учиться за рубежом.',
+  },
+  {
+    key: 'community-3',
+    label: 'Что включает TopCoach Community?',
+    children: (
+      <div>
+        <p>В вашу подписку входят:</p>
+        <ul>
+          <li>Подготовка к SAT</li>
+          <li>Исследовательская программа</li>
+          <li>Admissions Foundation</li>
+          <li>AI Major Tool</li>
+          <li>Ежемесячные воркшопы</li>
+          <li>Подбор Study Buddy</li>
+          <li>Безлимитные сообщения</li>
+          <li>Награды</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-4',
+    label: 'Сколько стоит TopCoach Community?',
+    children: (
+      <div>
+        <p>Выберите подходящий план:</p>
+        <ul>
+          <li><strong>Ежемесячно:</strong> $12/месяц</li>
+          <li><strong>Ежегодно:</strong> $99/год (экономия 31%)</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-5',
+    label: 'Есть ли у TopCoach Community бесплатный пробный период?',
+    children:
+      'Да. Каждый план включает 7-дневный бесплатный пробный период, чтобы вы могли изучить все функции перед оформлением подписки.',
+  },
+  {
+    key: 'community-6',
+    label: 'Можно ли отменить или сменить план TopCoach Community в любое время?',
+    children:
+      'Да. Вы можете отменить подписку или переключаться между ежемесячным и ежегодным планами в любое время.',
   },
   {
     key: '2',
@@ -636,28 +736,6 @@ const itemsRu: CollapseProps['items'] = [
     ),
   },
   {
-    key: '5',
-    label: 'Что такое панель управления для подопечных и что в ней содержится?',
-    children: (
-      <div>
-        <p>
-          Панель управления для подопечных: ваше личное пространство на
-          TopCoach, где вы можете:
-        </p>
-        <ul>
-          <li>Просматривать предстоящие и прошедшие сеансы наставничества</li>
-          <li>Просматривать избранные университеты</li>
-          <li>Отслеживать зарегистрированные мероприятия</li>
-          <li>Загружать эссе и документы для поступления</li>
-        </ul>
-        <p>
-          Это помогает оставаться организованным и максимально использовать
-          возможности наставничества.
-        </p>
-      </div>
-    ),
-  },
-  {
     key: '6',
     label: 'Сколько стоит сеанс наставничества?',
     children: (
@@ -708,18 +786,6 @@ const itemsRu: CollapseProps['items'] = [
       'Если вы пропустите сеанс, не уведомив наставника за 24 часа заранее, оплата не возвращается. Однако при своевременном уведомлении возможно перенести сеанс.',
   },
   {
-    key: '8',
-    label: 'Как понять, подходит ли мне TopCoach?',
-    children:
-      'Если вы готовитесь к поступлению в университет, нуждаетесь в помощи с эссе или хотите получить экспертные советы от тех, кто успешно прошёл этот процесс, TopCoach, отличное решение. Вы можете начать с одного сеанса или выбрать пакет для постоянного сопровождения.',
-  },
-  {
-    key: '9',
-    label: 'Вопрос: Как тренеры проходят различные уровни в TopCoach?',
-    children:
-      'Тренеры в TopCoach продвигаются вверх в зависимости от их опыта и успеха. Чтобы перейти от младшего к старшему, тренер должен пройти 150 часов наставничества. Чтобы пройти путь от Старшего к Эксперту, им необходимо выполнить дополнительные 100 часов. Кроме того, тренеры получают бонусы за каждого студента, поступившего в топ-университет.',
-  },
-  {
     key: '10',
     label: 'Как зарегистрироваться в качестве наставника?',
     children: (
@@ -748,6 +814,62 @@ const itemsKk: CollapseProps['items'] = [
     label: 'TopCoach ne?',
     children:
       'TopCoach – bu oqıwshı jaslarġa universtitetke arza beriw, testke tayarlanıw, esse jazıw hám karyera boyınsha keńes beriwde tájiriybeli mentorlar menen baylanıstırıwshı mentorlıq platforması.',
+  },
+  {
+    key: 'community-1',
+    label: 'TopCoach Community ne?',
+    children:
+      'TopCoach Community – SAT tayarlıq, universitetke qabıl, izertlew, AI quralları hám studentler networkingin bir jerde birleshtiretuǵın platforma.',
+  },
+  {
+    key: 'community-2',
+    label: 'TopCoach Community kimler ushın?',
+    children:
+      'TopCoach Community shet elde oqıwdı jobalastırıp atırǵan mektep oqıwshıları, gap year hám universitet studentleri ushın arnalǵan.',
+  },
+  {
+    key: 'community-3',
+    label: 'TopCoach Community quramına neler kiredi?',
+    children: (
+      <div>
+        <p>Aǵzalıǵıńızǵa tómendegiler kiredi:</p>
+        <ul>
+          <li>SAT tayarlıq</li>
+          <li>Izertlew baǵdarlaması</li>
+          <li>Admissions Foundation</li>
+          <li>AI Major quralı</li>
+          <li>Aylıq seminarlar (workshops)</li>
+          <li>Study Buddy sáykeslendiriw</li>
+          <li>Sheksiz xabar almasıw</li>
+          <li>Sıylıqlar</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-4',
+    label: 'TopCoach Community qansha turadı?',
+    children: (
+      <div>
+        <p>Ózińizge sáykes tarifti saylań:</p>
+        <ul>
+          <li><strong>Aylıq:</strong> $12/ay</li>
+          <li><strong>Jıllıq:</strong> $99/jıl (31% únemlew)</li>
+        </ul>
+      </div>
+    ),
+  },
+  {
+    key: 'community-5',
+    label: 'TopCoach Community biypul sınaq múddetin usına ma?',
+    children:
+      'Awa. Hár bir tarif 7 kúnlik biypul sınaq múddetin óz ishine aladı, sonlıqtan jazılıwdan aldın barlıq múmkinshiliklerdi sınap kóre alasız.',
+  },
+  {
+    key: 'community-6',
+    label: 'TopCoach Community tarifimdi qálegen waqıtta biykar etiw yamasa almastırıw múmkin be?',
+    children:
+      'Awa. Aylıq hám Jıllıq tarifler arasında qálegen waqıtta biykar ete alasız yamasa almastıra alasız.',
   },
   {
     key: '2',
@@ -869,28 +991,6 @@ const itemsKk: CollapseProps['items'] = [
     ),
   },
   {
-    key: '5',
-    label: 'Mentee Dashboard ne hám onda neler bar?',
-    children: (
-      <div>
-        <p>
-          Mentee Dashboard – bu TopCoach-daġı sizdiń jeke ornıńız bolıp, onda
-          siz:
-        </p>
-        <ul>
-          <li>Kelesi hám ótken mentorlıq seanslarıńızdı kóriwińiz.</li>
-          <li>Súyikli universtitetlerińizdi baqlawıńız.</li>
-          <li>Dizimge alınġan ilájlarıńızdı baqlap barıwıńız.</li>
-          <li>Esse hám arza hújjetlerińizdi júklep múmkin.</li>
-        </ul>
-        <p>
-          Bul maydansha sizdi tártipli bolıwıńızġa hám mentorlıq tájriybesinen
-          maksimal paydalanıwǵa kómeklesedi.
-        </p>
-      </div>
-    ),
-  },
-  {
     key: '6',
     label: 'Mentorlıq sessiya qánsha turadı?',
     children: (
@@ -939,18 +1039,6 @@ const itemsKk: CollapseProps['items'] = [
     label: 'Eger belgilengen seanstı ótkerip jiberseńiz ne boladı?',
     children:
       'Eger seanstı 24 saat aldınnan xabar bermey ótkizip jiberseńiz, tólew qaytarılmaydı. Eger mentorǵa óz waqtında xabar berseńiz, seanstı qayta belgilew múmkín.',
-  },
-  {
-    key: '8',
-    label: 'TopCoach maġan mas kelema?',
-    children:
-      'Eger siz universtitetke arza beriwge tayarlıq kórip atırġan bolsańız, esse jazıwda kómek kerek bolsa yamasa hújjet tapsırıw járáyanında másláhát almaqshı bolsańız, TopCoach siz ushın ideal sheshim. Siz bir seanstan baslay alasız yamasa dawamıy qollaw ushın paket ala alasız.',
-  },
-  {
-    key: '9',
-    label: 'Trenerler TopCoachta hár qıylı dárejelerden qalay ótedi?',
-    children:
-      'TopCoach trenerleri óz tájiriybesi hám tabısı tiykarında joqarı basqıshqa kóteriledi. "Junior"dan "Senior"ǵa ótiw ushın trener 150 saatlıq tárbiyalanıw sabaqların ótiwi kerek. "Senior"dan "Expert" dárejesine ótiw ushın qosımsha 100 saat ótiwi kerek. Bunnan tısqarı, trenerlerge joqarı oqıw ornına qabıl etilgen hár bir oqıwshı ushın qosımsha pul beriledi.',
   },
   {
     key: '10',
