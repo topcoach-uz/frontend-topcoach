@@ -872,7 +872,11 @@ const MyProgressEditorialView: React.FC = () => {
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
-                onClick={() => navigate('/events/international-summer-camp-2026')}
+                disabled={iscCard.mode === 'closed'}
+                onClick={() =>
+                  iscCard.mode !== 'closed' &&
+                  navigate('/events/international-summer-camp-2026')
+                }
               >
                 {iscCard.ctaLabel}
               </button>

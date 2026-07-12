@@ -27,6 +27,7 @@ import {
 } from 'src/app/services/iscAdmissionsApi';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
+import { isIscWindowClosed } from 'src/lib/iscAccess';
 import { hasIscLocalDraft } from '../events/_components/useIscCardState';
 
 const ISC_PATH = '/events/international-summer-camp-2026';
@@ -214,7 +215,8 @@ export default function ApplicantSite() {
   const [errors, setErrors] = useState<Errors>({});
   const [maxReached, setMaxReached] = useState(0); // furthest unlocked section
 
-  const { data: config } = useGetIscConfigQuery();
+  const { data: config, isLoading: configLoading } = useGetIscConfigQuery();
+  const windowClosed = isIscWindowClosed(config);
   const [submitApplication, { isLoading: submitting }] = useSubmitIscApplicationMutation();
   const [uploadDoc] = useUploadIscDocumentMutation();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -321,9 +323,12 @@ export default function ApplicantSite() {
   //   • a saved local draft → jump straight into the form (skip the gate)
   //   • otherwise → the "Before you begin" landing
   // A `?phase=` deep-link always wins (preview / returning links).
+  // When the window has closed we never auto-resume into the form — the
+  // landing shows the closed state instead (the backend 403s the submit too).
   useEffect(() => {
     if (bootstrapped.current) return;
     if (isAuthenticated && meAppLoading) return; // wait for the status
+    if (configLoading) return; // wait for the open/close window
     bootstrapped.current = true;
 
     const urlPhase = new URLSearchParams(window.location.search).get('phase');
@@ -331,10 +336,10 @@ export default function ApplicantSite() {
 
     if (existingApp) {
       setPhase('status');
-    } else if (isAuthenticated && hasIscLocalDraft()) {
+    } else if (isAuthenticated && hasIscLocalDraft() && !windowClosed) {
       setPhase('form');
     }
-  }, [isAuthenticated, meAppLoading, existingApp]);
+  }, [isAuthenticated, meAppLoading, existingApp, configLoading, windowClosed]);
 
   // Safety net: if the application disappears (e.g. withdrawn) while we're on
   // the status screen, drop back to the landing instead of a blank screen.
@@ -461,7 +466,11 @@ export default function ApplicantSite() {
       <Shell onExit={exit}>
         <div className={s.landingWrap}>
           <div className={s.landingLeft}>
-            <span className={s.eyebrow}>◷ Applications open · June 22 – July 11, 2026</span>
+            <span className={s.eyebrow}>
+              {windowClosed
+                ? '◷ Applications closed · June 22 – July 11, 2026'
+                : '◷ Applications open · June 22 – July 11, 2026'}
+            </span>
             <h1 className={s.heroTitle}>
               International Summer Camp <b>2026</b>
             </h1>
@@ -478,7 +487,11 @@ export default function ApplicantSite() {
               <div><b>Bachelor&apos;s &amp; Master&apos;s</b></div>
             </div>
             <div className={s.deadlineInline}>
-              Applications close <b>July 11, 2026 · 23:59</b>
+              {windowClosed ? (
+                <>Applications closed on <b>July 11, 2026 · 23:59</b></>
+              ) : (
+                <>Applications close <b>July 11, 2026 · 23:59</b></>
+              )}
             </div>
 
             <ul className={s.expectList}>
@@ -509,9 +522,19 @@ export default function ApplicantSite() {
             </div>
 
             <button className={`${s.btn} ${s.btnPrimary} ${s.fullBtn}`}
-              disabled={!program || !applicantType} onClick={() => setPhase('form')}>
-              Open my application <ArrowRight size={17} />
+              disabled={windowClosed || !program || !applicantType}
+              onClick={() => setPhase('form')}>
+              {windowClosed ? (
+                'Applications closed'
+              ) : (
+                <>Open my application <ArrowRight size={17} /></>
+              )}
             </button>
+            {windowClosed && (
+              <p className={s.cardSub} style={{ marginTop: 12, textAlign: 'center' }}>
+                Applications for the International Summer Camp 2026 closed on July 11, 2026.
+              </p>
+            )}
           </div>
         </div>
       </Shell>

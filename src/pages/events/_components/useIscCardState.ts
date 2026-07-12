@@ -1,14 +1,15 @@
 import {
   useGetIscApplicationMeQuery,
+  useGetIscConfigQuery,
   type IscApplicationStatus,
 } from 'src/app/services/iscAdmissionsApi';
 import { useTypedSelector } from 'src/app/store';
-import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
+import { ISC_2026_ENABLED, isIscWindowClosed } from 'src/lib/iscAccess';
 
 /** localStorage key for the in-progress draft — must match ApplicantSite.tsx. */
 export const ISC_DRAFT_KEY = 'isc-2026-application-draft-v1';
 
-export type IscCardMode = 'apply' | 'resume' | 'status';
+export type IscCardMode = 'apply' | 'resume' | 'status' | 'closed';
 export type IscStatusTone = 'open' | 'pending' | 'success' | 'danger';
 
 export interface IscCardState {
@@ -67,15 +68,32 @@ export function useIscCardState(): IscCardState {
     skip: !isAuthenticated || !ISC_2026_ENABLED,
     refetchOnMountOrArgChange: true,
   });
+  const { data: config } = useGetIscConfigQuery(undefined, {
+    skip: !ISC_2026_ENABLED,
+  });
   const app = data?.application ?? null;
   const mapped = app ? STATUS_MAP[app.status] : null;
 
+  // A submitted application always wins — the applicant can still view its
+  // live status even after the window shuts.
   if (isAuthenticated && app && mapped) {
     return {
       mode: 'status',
       ctaLabel: 'View application',
       statusLabel: mapped.label,
       statusTone: mapped.tone,
+      loading: isLoading,
+    };
+  }
+
+  // Window closed (deadline passed or manually shut): no new / resumed
+  // applications — the backend would 403 the submit anyway.
+  if (isIscWindowClosed(config)) {
+    return {
+      mode: 'closed',
+      ctaLabel: 'Applications closed',
+      statusLabel: 'Applications closed',
+      statusTone: 'danger',
       loading: isLoading,
     };
   }
