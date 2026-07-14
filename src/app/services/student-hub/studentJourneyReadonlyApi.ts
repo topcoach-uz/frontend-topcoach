@@ -34,6 +34,17 @@ interface ScholarshipApplication {
   updatedAt: string;
 }
 
+export interface FullSupportSessionLog {
+  id: string;
+  dateTime: string;
+  duration: string;
+  description: string;
+  done: boolean;
+  meetingLink: string | null;
+  mentorName: string | null;
+  mentorAvatarUrl: string | null;
+}
+
 interface DashboardStats {
   totalApplications: number;
   submittedApplications: number;
@@ -136,6 +147,17 @@ export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
       }),
     }),
 
+    // Get student Full Support 1:1 mentoring session logs (counselor read-only)
+    getStudentJourneyFullSupportSessions: builder.query<
+      { data: FullSupportSessionLog[] },
+      string
+    >({
+      query: (userId) => ({
+        url: `/student-journey/${userId}/full-support-sessions`,
+        method: 'GET',
+      }),
+    }),
+
     // Get student event applications
     getStudentJourneyEvents: builder.query<{ data: any[] }, string>({
       query: (userId) => ({
@@ -164,6 +186,7 @@ export const {
   useGetStudentJourneyDocumentQuery,
   useGetStudentJourneyDashboardQuery,
   useGetStudentJourneyMentorBookingsQuery,
+  useGetStudentJourneyFullSupportSessionsQuery,
   useGetStudentJourneyEventsQuery,
   useGetStudentJourneyTasksQuery,
 } = studentJourneyReadonlyApi;

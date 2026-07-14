@@ -1,0 +1,224 @@
+/* Counselor Console — Staff (Administration).
+   Editorial roster of counselors/owners. Prefixed .cc-staff to avoid
+   collisions with the global console styles. Reuses --cc-* tokens. */
+
+.cc-staff-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cc-staff-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 2px;
+}
+
+.cc-staff-primary.ant-btn {
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  background: var(--cc-accent);
+  border-color: var(--cc-accent);
+
+  &:hover:not(:disabled) {
+    background: var(--cc-accent-hover) !important;
+    border-color: var(--cc-accent-hover) !important;
+  }
+}
+
+/* Table shell */
+.cc-staff-table {
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  background: var(--cc-bg-surface);
+  box-shadow: var(--cc-shadow-sm);
+  overflow: hidden;
+
+  .ant-table {
+    background: transparent;
+  }
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--cc-hairline) !important;
+    padding: 12px 16px;
+  }
+  .ant-table-thead > tr > th {
+    padding: 11px 16px;
+  }
+  .ant-table-tbody > tr:last-child > td {
+    border-bottom: none !important;
+  }
+}
+
+.cc-staff-member {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+/* Avatar base styling lives in CounselorConsoleLayout.scss (.cc-avatar); this
+   just pins the staff-row size. */
+.cc-staff-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.cc-staff-member-meta {
+  min-width: 0;
+}
+
+.cc-staff-member-name {
+  font-weight: 600;
+  color: var(--cc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-staff-member-email {
+  font-size: 12px;
+  color: var(--cc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-staff-date {
+  color: var(--cc-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.cc-staff-muted {
+  color: var(--cc-text-muted);
+}
+
+.cc-staff-remove.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.cc-staff-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--cc-text-muted);
+}
+.cc-staff-empty-title {
+  font-family: var(--cc-serif);
+  font-size: 1.1rem;
+  color: var(--cc-text);
+}
+
+.cc-staff-skeleton {
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  background: var(--cc-bg-surface);
+  box-shadow: var(--cc-shadow-sm);
+  overflow: hidden;
+  padding: 4px 4px 8px;
+}
+
+/* Add-counselor modal */
+.cc-staff-add-tabs {
+  .ant-tabs-tab {
+    padding: 6px 2px;
+  }
+  .ant-tabs-tab + .ant-tabs-tab {
+    margin-left: 22px;
+  }
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--cc-accent);
+  }
+  .ant-tabs-ink-bar {
+    background: var(--cc-accent);
+  }
+}
+
+.cc-staff-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.cc-staff-add-pane {
+  padding-top: 4px;
+}
+
+.cc-staff-add-help {
+  color: var(--cc-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0 0 16px;
+
+  b {
+    color: var(--cc-text);
+    font-weight: 600;
+  }
+}
+
+.cc-staff-user-select {
+  .ant-select-selector {
+    min-height: 40px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--cc-border-strong) !important;
+    background: var(--cc-bg-surface) !important;
+    display: flex;
+    align-items: center;
+  }
+  &.ant-select-focused .ant-select-selector,
+  &:hover .ant-select-selector {
+    border-color: var(--cc-accent-ring) !important;
+  }
+}
+
+.cc-staff-user-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 0;
+  line-height: 1.35;
+}
+.cc-staff-user-opt-name {
+  font-weight: 600;
+  color: var(--cc-text);
+}
+.cc-staff-user-opt-email {
+  font-size: 12px;
+  color: var(--cc-text-muted);
+}
+
+.cc-staff-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--cc-radius-sm);
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  font-size: 0.85rem;
+  color: var(--cc-text-secondary);
+  line-height: 1.5;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--cc-accent);
+  }
+}

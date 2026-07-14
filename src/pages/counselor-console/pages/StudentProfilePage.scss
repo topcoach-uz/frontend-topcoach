@@ -1,0 +1,660 @@
+/* Counselor Console — Student Profile drill-down.
+   Editorial magazine styling, reuses the console's --cc-* tokens.
+   Plain global scss (the console does not use CSS modules). */
+
+.cc-profile {
+  /* ── Back link ── */
+  .cc-profile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--cc-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    svg {
+      transition: transform 0.15s ease;
+    }
+    &:hover {
+      color: var(--cc-accent);
+      svg {
+        transform: translateX(-2px);
+      }
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cc-accent);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+  }
+
+  /* ── Header meta row (email · grade · status pill) ── */
+  .cc-profile-headmeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    margin: 10px 0 4px;
+  }
+  .cc-profile-headmeta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--cc-text-secondary);
+
+    svg {
+      color: var(--cc-text-muted);
+    }
+  }
+
+  /* ── Cards ── */
+  .cc-profile-card {
+    background: var(--cc-bg-surface);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius);
+    box-shadow: var(--cc-shadow-sm);
+    padding: 20px 22px;
+  }
+
+  /* Reused AntD content (sessions bookings) sits inside a console card —
+     tone the nested AntD tabs down to the editorial palette. */
+  .cc-profile-sessions {
+    .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+      color: var(--cc-accent);
+    }
+    .ant-tabs-ink-bar {
+      background: var(--cc-accent);
+    }
+  }
+
+  .cc-profile-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .cc-profile-card-title {
+    font-family: var(--cc-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--cc-text);
+    margin: 0;
+  }
+
+  /* ── Tabs — restyle AntD line tabs into the editorial console ── */
+  .cc-profile-tabs {
+    .ant-tabs-nav {
+      margin-bottom: 22px;
+
+      &::before {
+        border-bottom: 1px solid var(--cc-hairline);
+      }
+    }
+
+    .ant-tabs-tab {
+      padding: 10px 2px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--cc-text-secondary);
+
+      + .ant-tabs-tab {
+        margin-left: 26px;
+      }
+
+      &:hover {
+        color: var(--cc-accent);
+      }
+    }
+
+    .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+      color: var(--cc-accent);
+    }
+
+    .ant-tabs-ink-bar {
+      background: var(--cc-accent);
+      height: 2px;
+    }
+
+    .ant-tabs-tab:focus-visible,
+    .ant-tabs-tab-btn:focus-visible {
+      outline: 2px solid var(--cc-accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+
+  .cc-profile-tab-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    svg {
+      color: currentColor;
+    }
+  }
+
+  .cc-profile-tab-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 0;
+  }
+
+  /* ── Overview layout ── */
+  .cc-profile-overview {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    /* recent activity spans full width under the two summary cards */
+    .cc-profile-card:last-child {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 760px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Definition-list info rows ── */
+  .cc-profile-info {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .cc-profile-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--cc-hairline);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    dt {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cc-text-muted);
+      margin: 0;
+    }
+    dd {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--cc-text);
+      text-align: right;
+    }
+  }
+
+  /* ── Summary mini-grid ── */
+  .cc-profile-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+
+    @media (max-width: 520px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .cc-profile-summary-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    background: var(--cc-bg-subtle);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius-sm);
+  }
+  .cc-profile-summary-value {
+    font-family: var(--cc-serif);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .cc-profile-summary-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--cc-text-muted);
+  }
+
+  /* ── Recent activity list ── */
+  .cc-profile-activity {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .cc-profile-activity-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--cc-hairline);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr auto;
+      row-gap: 4px;
+    }
+  }
+  .cc-profile-activity-kind {
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cc-accent);
+  }
+  .cc-profile-activity-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--cc-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cc-profile-activity-date {
+    font-size: 0.78rem;
+    color: var(--cc-text-muted);
+    white-space: nowrap;
+
+    @media (max-width: 560px) {
+      display: none;
+    }
+  }
+
+  /* ── Programs tab: one editorial card per enrolled program ── */
+  .cc-programs-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (max-width: 760px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .cc-program-card {
+    background: var(--cc-bg-surface);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius);
+    box-shadow: var(--cc-shadow-sm);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cc-program-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cc-program-card-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: var(--cc-accent-soft);
+    color: var(--cc-accent);
+  }
+  .cc-program-card-title {
+    font-family: var(--cc-serif);
+    font-size: 1.08rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--cc-text);
+    margin: 0;
+  }
+
+  /* Metric row */
+  .cc-program-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+  }
+  .cc-program-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .cc-program-metric-value {
+    font-family: var(--cc-serif);
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .cc-program-metric-suffix {
+    font-family: var(--cc-serif);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--cc-text-muted);
+  }
+  .cc-program-metric-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--cc-text-muted);
+  }
+
+  /* Progress bar */
+  .cc-program-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cc-program-progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .cc-program-progress-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--cc-text-muted);
+  }
+  .cc-program-progress-pct {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .cc-program-bar-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--cc-hairline);
+    overflow: hidden;
+  }
+  .cc-program-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--cc-accent);
+    transition: width 0.3s ease;
+  }
+
+  /* Full Support applications mini-list */
+  .cc-program-applist {
+    border-top: 1px solid var(--cc-hairline);
+    padding-top: 12px;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  .cc-program-applist-title {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--cc-text-muted);
+    margin-bottom: 8px;
+  }
+  .cc-program-applist-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--cc-hairline);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  .cc-program-applist-name {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--cc-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cc-program-applist-stage {
+    font-size: 0.74rem;
+    color: var(--cc-text-muted);
+    white-space: nowrap;
+  }
+
+  /* Community card */
+  .cc-program-community {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .cc-program-community-text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--cc-text-secondary);
+  }
+
+  /* ── Empty + error states ── */
+  .cc-profile-empty {
+    padding: 20px 4px;
+    font-size: 0.9rem;
+    color: var(--cc-text-muted);
+  }
+
+  .cc-profile-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    padding: 48px 28px;
+    border: 1px dashed var(--cc-border-strong);
+    border-radius: var(--cc-radius);
+    background: var(--cc-bg-surface);
+    color: var(--cc-danger);
+
+    &.cc-profile-error--inline {
+      padding: 32px 24px;
+    }
+  }
+  .cc-profile-error-title {
+    font-family: var(--cc-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--cc-text);
+  }
+  .cc-profile-error-text {
+    font-size: 0.9rem;
+    color: var(--cc-text-muted);
+    max-width: 420px;
+  }
+
+  /* ── Header row (title + Message action) ── */
+  .cc-profile-headrow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Shared maroon action button (Message / Save / Assign) ── */
+  .cc-profile-action-btn.ant-btn {
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    background: var(--cc-accent);
+    border-color: var(--cc-accent);
+    box-shadow: none;
+
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      background: var(--cc-accent-hover) !important;
+      border-color: var(--cc-accent-hover) !important;
+    }
+  }
+
+  /* ── Notes composer ── */
+  .cc-note-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .cc-note-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 74px;
+    padding: 11px 13px;
+    font: inherit;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--cc-text);
+    background: var(--cc-bg-subtle);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: var(--cc-text-muted);
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--cc-accent-ring);
+      box-shadow: 0 0 0 3px var(--cc-accent-soft);
+      background: var(--cc-bg-surface);
+    }
+  }
+  .cc-note-composer-foot {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ── Notes list ── */
+  .cc-note-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .cc-note {
+    padding: 13px 0;
+    border-bottom: 1px solid var(--cc-hairline);
+
+    &:last-child {
+      border-bottom: none;
+    }
+    &:first-child {
+      padding-top: 4px;
+    }
+  }
+  .cc-note-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .cc-note-author {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--cc-text);
+  }
+  .cc-note-dot {
+    color: var(--cc-text-muted);
+  }
+  .cc-note-time {
+    font-size: 0.76rem;
+    color: var(--cc-text-muted);
+  }
+  .cc-note-del {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    color: var(--cc-text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      color: var(--cc-danger);
+      background: var(--cc-danger-soft);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cc-accent);
+      outline-offset: 2px;
+    }
+  }
+  .cc-note-body {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--cc-text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── Tasks tab toolbar ── */
+  .cc-tasks-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .cc-tasks-toolbar-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .cc-tasks-toolbar-title {
+    font-family: var(--cc-serif);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--cc-text);
+  }
+  .cc-tasks-toolbar-sub {
+    font-size: 0.82rem;
+    color: var(--cc-text-muted);
+  }
+}

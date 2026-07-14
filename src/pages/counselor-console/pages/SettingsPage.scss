@@ -1,0 +1,122 @@
+/* Counselor Console — Settings (Administration).
+   Editorial org-profile form. Prefixed .cc-settings. Reuses --cc-* tokens. */
+
+.cc-settings-card {
+  max-width: 760px;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  background: var(--cc-bg-surface);
+  box-shadow: var(--cc-shadow-sm);
+  padding: 24px 26px;
+}
+
+.cc-settings-section + .cc-settings-divider {
+  margin: 4px 0 20px;
+}
+
+.cc-settings-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cc-accent);
+  margin-bottom: 14px;
+}
+
+.cc-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cc-settings-divider {
+  height: 1px;
+  background: var(--cc-hairline);
+  margin: 4px 0 20px;
+}
+
+.cc-settings-card {
+  .ant-form-item-label > label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--cc-text-secondary);
+  }
+
+  .ant-input,
+  .ant-input-affix-wrapper,
+  textarea.ant-input {
+    border-radius: 10px;
+    border: 1px solid var(--cc-border-strong);
+    background: var(--cc-bg-surface);
+
+    &:hover,
+    &:focus,
+    &.ant-input-affix-wrapper-focused,
+    &-focused {
+      border-color: var(--cc-accent-ring);
+      box-shadow: 0 0 0 3px var(--cc-accent-soft);
+    }
+  }
+}
+
+.cc-settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 18px;
+  border-top: 1px solid var(--cc-hairline);
+}
+
+.cc-settings-primary.ant-btn {
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  background: var(--cc-accent);
+  border-color: var(--cc-accent);
+
+  &:hover:not(:disabled) {
+    background: var(--cc-accent-hover) !important;
+    border-color: var(--cc-accent-hover) !important;
+  }
+}
+
+.cc-settings-ghost.ant-btn {
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border: 1px solid var(--cc-border-strong);
+  background: var(--cc-bg-surface);
+  color: var(--cc-text-secondary);
+
+  &:hover:not(:disabled) {
+    border-color: var(--cc-accent-ring) !important;
+    color: var(--cc-accent) !important;
+  }
+}
+
+.cc-settings-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--cc-text-muted);
+}
+.cc-settings-error-title {
+  font-family: var(--cc-serif);
+  font-size: 1.1rem;
+  color: var(--cc-text);
+}

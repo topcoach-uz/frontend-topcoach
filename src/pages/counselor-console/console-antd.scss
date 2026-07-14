@@ -1,0 +1,148 @@
+/* Counselor Console — editorial AntD overrides.
+   Scoped under `.counselor-console-app` so the magazine styling (cream surfaces,
+   hairline borders, small-caps labels, maroon focus) applies to every console
+   page's AntD controls WITHOUT leaking into the surrounding student/mentor app.
+
+   Portalled popups (Modal, Select/Dropdown panels, message, Tooltip) render
+   under <body>, outside this scope — those are handled per-instance via the
+   `cc-*` classes and the CcMenu component. This file covers the inline controls
+   (inputs, selects, forms, tabs, tables) that make up the bulk of each page. */
+
+.counselor-console-app {
+  /* ── Form labels — editorial small-caps ── */
+  .ant-form-item-label > label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cc-text-muted);
+    height: auto;
+  }
+  .ant-form-item-label > label.ant-form-item-required::before {
+    color: var(--cc-accent);
+  }
+  .ant-form-item-explain-error {
+    font-size: 12px;
+    color: var(--cc-danger);
+  }
+
+  /* ── Text inputs / textareas / number / password ── */
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-input-number-input,
+  textarea.ant-input {
+    border-radius: 10px;
+    border-color: var(--cc-border-strong);
+    background: var(--cc-bg-surface);
+    color: var(--cc-text);
+    box-shadow: none;
+
+    &::placeholder {
+      color: var(--cc-text-muted);
+    }
+  }
+  .ant-input:hover,
+  .ant-input-affix-wrapper:hover,
+  .ant-input-number:hover {
+    border-color: var(--cc-accent-ring);
+  }
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-focused,
+  .ant-input-number-focused {
+    border-color: var(--cc-accent);
+    box-shadow: 0 0 0 3px var(--cc-accent-soft);
+  }
+
+  /* ── Select (closed control — the dropdown panel is portalled) ── */
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    border-radius: 10px !important;
+    border-color: var(--cc-border-strong) !important;
+    background: var(--cc-bg-surface) !important;
+    color: var(--cc-text);
+  }
+  .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+    border-color: var(--cc-accent-ring) !important;
+  }
+  .ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+    border-color: var(--cc-accent) !important;
+    box-shadow: 0 0 0 3px var(--cc-accent-soft) !important;
+  }
+  .ant-select-arrow {
+    color: var(--cc-text-muted);
+  }
+
+  /* ── Tabs — editorial ink underline ── */
+  .ant-tabs-top > .ant-tabs-nav::before {
+    border-bottom-color: var(--cc-border);
+  }
+  .ant-tabs .ant-tabs-tab {
+    padding: 10px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cc-text-muted);
+  }
+  .ant-tabs .ant-tabs-tab:hover {
+    color: var(--cc-text-secondary);
+  }
+  .ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--cc-accent);
+  }
+  .ant-tabs .ant-tabs-ink-bar {
+    background: var(--cc-accent);
+    height: 2px;
+  }
+
+  /* ── Tables — hairline rows + small-caps head (matches CcMenu/roster) ── */
+  .ant-table {
+    background: transparent;
+    font-size: 13.5px;
+    color: var(--cc-text);
+  }
+  .ant-table-thead > tr > th {
+    background: var(--cc-bg-subtle) !important;
+    border-bottom: 1px solid var(--cc-border) !important;
+    padding: 12px 16px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--cc-text-muted);
+  }
+  .ant-table-thead > tr > th::before {
+    display: none !important;
+  }
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--cc-hairline) !important;
+    padding: 12px 16px;
+  }
+  .ant-table-tbody > tr:last-child > td {
+    border-bottom: none !important;
+  }
+  .ant-table-column-sorter {
+    color: var(--cc-text-muted);
+  }
+  .ant-table-column-sort {
+    background: transparent !important;
+  }
+
+  /* ── Pagination ── */
+  .ant-pagination .ant-pagination-item-active {
+    border-color: var(--cc-accent);
+    a {
+      color: var(--cc-accent);
+    }
+  }
+
+  /* ── Empty state text ── */
+  .ant-empty-description {
+    color: var(--cc-text-muted);
+  }
+
+  /* ── Switch (settings toggles) ── */
+  .ant-switch.ant-switch-checked {
+    background: var(--cc-accent);
+  }
+}

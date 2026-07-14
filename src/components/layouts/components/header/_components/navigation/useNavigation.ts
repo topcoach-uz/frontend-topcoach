@@ -37,7 +37,9 @@ export default function useNavigation() {
 
   const navLinks: INavLink[] = [
     ...(showHome ? [{ path: '/', text: t('header.home', 'Home') }] : []),
-    ...(showSchoolCounselor ? [{ path: '/school-counselor', text: t('header.schoolCounselor', 'School Counselor') }] : []),
+    // Org-scoped console for non-superadmin org members. Replaced the legacy
+    // /school-counselor surface (removed in the P5 cutover).
+    ...(showSchoolCounselor ? [{ path: '/counselor-console', text: t('header.counselorConsole', 'Counselor Console') }] : []),
     ...(shouldShowMyJourney
       ? [{ path: '/student-hub', text: t('header.studentHub', 'My Journey') }]
       : []),

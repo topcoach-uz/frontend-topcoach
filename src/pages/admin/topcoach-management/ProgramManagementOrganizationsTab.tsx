@@ -15,6 +15,7 @@ import {
   Table,
   message,
 } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { AcPill } from 'src/pages/admin/console/components/AcPill';
 
@@ -38,10 +39,41 @@ export default function ProgramManagementOrganizationsTab({
   const [editOrgModalVisible, setEditOrgModalVisible] = useState(false);
   const [editingOrgId, setEditingOrgId] = useState<string | null>(null);
   const [assignUserModalVisible, setAssignUserModalVisible] = useState(false);
+  const [viewMembers, setViewMembers] = useState<{
+    orgId: string;
+    orgName: string;
+    members: any[];
+  } | null>(null);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [assignForm] = Form.useForm();
+  const navigate = useNavigate();
+
+  // Drop blank optional fields so backend email/url validators don't reject
+  // empty strings (@IsOptional only skips null/undefined, not '').
+  const stripEmpty = (values: Record<string, any>) =>
+    Object.fromEntries(
+      Object.entries(values).filter(([, v]) => v !== '' && v !== undefined && v !== null),
+    );
+
+  // Turn a backend error (string | string[] | class-validator errors) into a
+  // readable string — never pass raw objects to message.error (it crashes React).
+  const apiErrorMessage = (error: any, fallback: string): string => {
+    const m = error?.response?.data?.message;
+    if (typeof m === 'string') return m;
+    if (Array.isArray(m)) {
+      const parts = m
+        .map((item: any) =>
+          typeof item === 'string'
+            ? item
+            : Object.values(item?.constraints || {}).join(', '),
+        )
+        .filter(Boolean);
+      if (parts.length) return parts.join('; ');
+    }
+    return fallback;
+  };
 
   const handleCreateOrganization = async (values: any) => {
     try {
@@ -49,7 +81,7 @@ export default function ProgramManagementOrganizationsTab({
         path: '/organizations',
         method: 'POST',
         secure: true,
-        body: values,
+        body: stripEmpty(values),
       });
       message.success('Organization created successfully');
       setCreateOrgModalVisible(false);
@@ -57,7 +89,7 @@ export default function ProgramManagementOrganizationsTab({
       await fetchOrganizations(true);
     } catch (error: any) {
       console.error('Error creating organization:', error);
-      message.error(error.response?.data?.message || 'Failed to create organization');
+      message.error(apiErrorMessage(error, 'Failed to create organization'));
     }
   };
 
@@ -85,7 +117,7 @@ export default function ProgramManagementOrganizationsTab({
         path: `/organizations/${editingOrgId}`,
         method: 'PUT',
         secure: true,
-        body: values,
+        body: stripEmpty(values),
       });
       message.success('Organization updated successfully');
       setEditOrgModalVisible(false);
@@ -94,7 +126,7 @@ export default function ProgramManagementOrganizationsTab({
       await fetchOrganizations(true);
     } catch (error: any) {
       console.error('Error updating organization:', error);
-      message.error(error.response?.data?.message || 'Failed to update organization');
+      message.error(apiErrorMessage(error, 'Failed to update organization'));
     }
   };
 
@@ -118,7 +150,7 @@ export default function ProgramManagementOrganizationsTab({
       await fetchAvailableUsers();
     } catch (error: any) {
       console.error('Error assigning user:', error);
-      message.error(error.response?.data?.message || 'Failed to assign user');
+      message.error(apiErrorMessage(error, 'Failed to assign user'));
     }
   };
 
@@ -176,7 +208,13 @@ export default function ProgramManagementOrganizationsTab({
       <Card style={{ marginBottom: 0 }}>
         <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2>School organizations</h2>
-          <Button type="primary" onClick={() => setCreateOrgModalVisible(true)}>
+          <Button
+            type="primary"
+            onClick={() => {
+              void fetchAvailableUsers();
+              setCreateOrgModalVisible(true);
+            }}
+          >
             Create school organization
           </Button>
         </Space>
@@ -254,43 +292,10 @@ export default function ProgramManagementOrganizationsTab({
                           method: 'GET',
                           secure: true,
                         });
-                        Modal.info({
-                          rootClassName: 'ac-dark-modal',
-                          title: `Members of ${record.name}`,
-                          width: 800,
-                          content: (
-                            <Table
-                              dataSource={response.data.members || []}
-                              rowKey="id"
-                              columns={[
-                                { title: 'Name', dataIndex: 'userName', key: 'userName' },
-                                { title: 'Email', dataIndex: 'userEmail', key: 'userEmail' },
-                                {
-                                  title: 'Role',
-                                  dataIndex: 'role',
-                                  key: 'role',
-                                  render: (role) => (
-                                    <AcPill variant={role === 'counselor' ? 'blue' : 'mint'}>{role}</AcPill>
-                                  ),
-                                },
-                                {
-                                  title: 'Actions',
-                                  key: 'actions',
-                                  render: (_, member: any) => (
-                                    <Popconfirm
-                                      title="Remove user from organization?"
-                                      onConfirm={() => handleRemoveUser(record.id, member.userId)}
-                                    >
-                                      <Button size="small" danger>
-                                        Remove
-                                      </Button>
-                                    </Popconfirm>
-                                  ),
-                                },
-                              ]}
-                              pagination={false}
-                            />
-                          ),
+                        setViewMembers({
+                          orgId: record.id,
+                          orgName: record.name,
+                          members: response.data.members || [],
                         });
                       } catch {
                         message.error('Failed to load members');
@@ -298,6 +303,12 @@ export default function ProgramManagementOrganizationsTab({
                     }}
                   >
                     View Members
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/counselor-console?org=${record.id}`)}
+                  >
+                    Open console
                   </Button>
                   <Popconfirm
                     title="Delete Organization"
@@ -322,6 +333,57 @@ export default function ProgramManagementOrganizationsTab({
       <Modal
         rootClassName="ac-dark-modal"
         classNames={{ mask: 'ac-dark-modal-mask' }}
+        title={viewMembers ? `Members of ${viewMembers.orgName}` : 'Members'}
+        open={!!viewMembers}
+        width={800}
+        footer={null}
+        onCancel={() => setViewMembers(null)}
+      >
+        <Table
+          dataSource={viewMembers?.members || []}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            { title: 'Name', dataIndex: 'userName', key: 'userName' },
+            { title: 'Email', dataIndex: 'userEmail', key: 'userEmail' },
+            {
+              title: 'Role',
+              dataIndex: 'role',
+              key: 'role',
+              render: (role: string) => (
+                <AcPill
+                  variant={
+                    role === 'owner' ? 'purple' : role === 'counselor' ? 'blue' : 'mint'
+                  }
+                >
+                  {role}
+                </AcPill>
+              ),
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              render: (_: any, member: any) => (
+                <Popconfirm
+                  title="Remove user from organization?"
+                  onConfirm={() => {
+                    handleRemoveUser(viewMembers!.orgId, member.userId);
+                    setViewMembers(null);
+                  }}
+                >
+                  <Button size="small" danger>
+                    Remove
+                  </Button>
+                </Popconfirm>
+              ),
+            },
+          ]}
+        />
+      </Modal>
+
+      <Modal
+        rootClassName="ac-dark-modal"
+        classNames={{ mask: 'ac-dark-modal-mask' }}
         title="Create Organization"
         open={createOrgModalVisible}
         onOk={() => createForm.submit()}
@@ -333,6 +395,32 @@ export default function ProgramManagementOrganizationsTab({
         <Form form={createForm} onFinish={handleCreateOrganization} layout="vertical">
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="ownerUserId"
+            label="Owner"
+            rules={[{ required: true, message: 'Please select an owner' }]}
+            extra={
+              <span style={{ color: 'rgba(255, 255, 255, 0.55)', display: 'block', marginTop: 8 }}>
+                The owner is the school's admin — they manage counselors, settings, and billing.
+              </span>
+            }
+          >
+            <Select
+              showSearch
+              placeholder="Search by name or email"
+              popupClassName="ac-dark-modal-select-dropdown"
+              optionFilterProp="children"
+              onSearch={(value) => void fetchAvailableUsers(value)}
+              filterOption={false}
+              notFoundContent={<span style={{ color: 'rgba(255, 255, 255, 0.45)' }}>Type a name or email to search</span>}
+            >
+              {availableUsers.map((user) => (
+                <Select.Option key={user.id} value={user.id}>
+                  {user.name} ({user.email})
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item name="description" label="Description">
             <Input.TextArea rows={3} />
@@ -447,7 +535,7 @@ export default function ProgramManagementOrganizationsTab({
               optionFilterProp="children"
               onSearch={(value) => void fetchAvailableUsers(value)}
               filterOption={false}
-              notFoundContent={availableUsers.length === 0 ? <Spin size="small" /> : null}
+              notFoundContent={<span style={{ color: 'rgba(255, 255, 255, 0.45)' }}>Type a name or email to search</span>}
             >
               {availableUsers.map((user) => (
                 <Select.Option key={user.id} value={user.id}>
@@ -458,6 +546,7 @@ export default function ProgramManagementOrganizationsTab({
           </Form.Item>
           <Form.Item name="role" label="Role" rules={[{ required: true }]}>
             <Radio.Group>
+              <Radio value="owner">Owner</Radio>
               <Radio value="counselor">Counselor</Radio>
               <Radio value="student">Student</Radio>
             </Radio.Group>

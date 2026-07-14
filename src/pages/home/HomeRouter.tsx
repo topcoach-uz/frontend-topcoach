@@ -65,7 +65,7 @@ function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
 
   // Students with counselor access → school counselor as home. Mentors with counselor access → stay on mentor home.
   if (isCounselor && email !== SUPER_ADMIN_EMAIL && profile?.role !== 'Mentor') {
-    return <Navigate to="/school-counselor" replace />;
+    return <Navigate to="/counselor-console" replace />;
   }
 
   if (profile?.role === 'Mentor') {

@@ -1984,12 +1984,7 @@ const PostCommentsSection: React.FC<{
   const [replyDraft, setReplyDraft] = useState('');
 
   const comments: Comment[] = useMemo(() => {
-    // Newest top-level comments first (backend returns createdAt ASC). Replies
-    // stay chronological within their own thread — only the top level flips.
-    const sorted = [...(data ?? [])].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    const raw = sorted.map(toUiComment);
+    const raw = (data ?? []).map(toUiComment);
     if (!isQuestion || !answeredCommentId) return raw;
     // Pin the accepted answer to the top — Stack Overflow convention.
     // It still renders in its parent thread; we just promote the

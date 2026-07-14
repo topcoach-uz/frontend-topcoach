@@ -1,0 +1,470 @@
+/* Counselor Console — Dashboard page.
+   Plain global SCSS (the console does NOT use CSS modules). Everything is
+   namespaced under `.cc-dash-` so it can't collide with the Students /
+   Student-profile pages. Reuses the shared `--cc-*` editorial tokens. */
+
+/* ── Working area: main column + right rail, stretched to equal height so
+   neither side leaves a dead gap beside the other. ── */
+.cc-dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 16px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cc-dash-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ── Hairline editorial card ── */
+.cc-dash-card {
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  box-shadow: var(--cc-shadow-sm);
+  padding: 18px 20px 20px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card that should expand to consume leftover column height (kills blank space). */
+.cc-dash-card--fill {
+  flex: 1 1 auto;
+}
+
+.cc-dash-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cc-dash-card-head--tight {
+  margin-bottom: 12px;
+}
+
+/* Quiet inline "jump to section" link in a card header. */
+.cc-dash-card-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-accent);
+  border-radius: 6px;
+  transition: background 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--cc-accent-soft);
+    outline: none;
+  }
+}
+
+.cc-dash-card-title {
+  font-family: var(--cc-serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--cc-text);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.cc-dash-card-sub {
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+  margin: 3px 0 0;
+  line-height: 1.45;
+}
+
+/* ── Chart ── */
+.cc-dash-chart {
+  width: 100%;
+  height: 288px;
+}
+
+/* ── Shared ECharts tooltip (cream-on-ink chip) ──
+   Ink surface/padding/radius/shadow come from the 'cc' ECharts theme
+   (charts/ccEcharts.tsx); these style the inner HTML the formatter emits.
+   Portalled to <body>, so they must be global (top-level) selectors. Kept in
+   sync with AnalyticsPage.scss so either route can be loaded first. */
+.cc-echart-tip {
+  min-width: 128px;
+}
+.cc-echart-tip-head {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #d9cfc0;
+  margin-bottom: 6px;
+}
+.cc-echart-tip-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cc-echart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: #efe9df;
+}
+.cc-echart-tip-name {
+  color: #cbbfad;
+  margin-right: 14px;
+}
+.cc-echart-tip-val {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #fbfaf6;
+}
+
+/* ── Needs-attention list ── */
+.cc-dash-attn-list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Long follow-up lists scroll inside the rail card instead of stretching
+     the whole page — keeps the two columns balanced. */
+  max-height: 460px;
+  overflow-y: auto;
+  margin: -2px -4px 0;
+  padding: 2px 4px 0;
+}
+
+.cc-dash-attn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cc-dash-attn-row + .cc-dash-attn-row {
+  border-top: 1px solid var(--cc-hairline);
+  border-radius: 0;
+}
+.cc-dash-attn-row:hover,
+.cc-dash-attn-row:focus-visible {
+  background: var(--cc-bg-hover);
+  border-color: var(--cc-accent-ring);
+  border-radius: 10px;
+  outline: none;
+}
+.cc-dash-attn-row:focus-visible {
+  outline: 2px solid var(--cc-accent);
+  outline-offset: 1px;
+}
+/* keep the divider from doubling up when the row above is hovered */
+.cc-dash-attn-row:hover + .cc-dash-attn-row,
+.cc-dash-attn-row:focus-visible + .cc-dash-attn-row {
+  border-top-color: transparent;
+}
+
+.cc-dash-attn-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+.cc-dash-attn-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cc-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-attn-arrow {
+  flex-shrink: 0;
+  color: var(--cc-text-muted);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.cc-dash-attn-row:hover .cc-dash-attn-arrow,
+.cc-dash-attn-row:focus-visible .cc-dash-attn-arrow {
+  opacity: 1;
+  transform: none;
+  color: var(--cc-accent);
+}
+
+/* ── Admissions pipeline (proportional horizontal funnel) ── */
+.cc-dash-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+.cc-dash-funnel-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.cc-dash-funnel-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cc-dash-funnel-stage {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-funnel-meta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+
+  strong {
+    font-family: var(--cc-serif);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+}
+.cc-dash-funnel-conv {
+  font-size: 11px;
+  color: var(--cc-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.cc-dash-funnel-track {
+  height: 10px;
+  border-radius: 6px;
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  overflow: hidden;
+}
+.cc-dash-funnel-fill {
+  display: block;
+  height: 100%;
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(
+    90deg,
+    var(--cc-accent),
+    var(--cc-accent-strong, var(--cc-accent))
+  );
+  min-width: 6px;
+  transition: width 0.4s ease;
+}
+.cc-dash-funnel-skel {
+  padding: 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-dash-funnel-fill {
+    transition: none;
+  }
+}
+
+/* ── Quick actions (right-rail navigation) ── */
+.cc-dash-quick {
+  flex-shrink: 0;
+}
+.cc-dash-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  @media (max-width: 1180px) and (min-width: 1025px) {
+    grid-template-columns: 1fr;
+  }
+}
+.cc-dash-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  background: var(--cc-bg-subtle);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  min-width: 0;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--cc-bg-surface);
+    border-color: var(--cc-accent-ring);
+    box-shadow: var(--cc-shadow-sm);
+    outline: none;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 1px;
+  }
+}
+.cc-dash-quick-ico {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cc-accent-soft);
+  color: var(--cc-accent);
+}
+.cc-dash-quick-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cc-dash-quick-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-quick-hint {
+  font-size: 11px;
+  color: var(--cc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-quick-arrow {
+  flex-shrink: 0;
+  color: var(--cc-text-muted);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.cc-dash-quick-btn:hover .cc-dash-quick-arrow,
+.cc-dash-quick-btn:focus-visible .cc-dash-quick-arrow {
+  opacity: 1;
+  transform: none;
+  color: var(--cc-accent);
+}
+
+/* ── Empty / message states ── */
+.cc-dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 32px 20px;
+  color: var(--cc-text-muted);
+}
+.cc-dash-empty-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cc-bg-subtle);
+  color: var(--cc-text-muted);
+}
+.cc-dash-empty-ico--accent {
+  background: var(--cc-accent-soft);
+  color: var(--cc-accent);
+}
+.cc-dash-empty-ico--good {
+  background: var(--cc-success-soft);
+  color: var(--cc-success);
+}
+.cc-dash-empty-ico--danger {
+  background: var(--cc-danger-soft);
+  color: var(--cc-danger);
+}
+.cc-dash-empty-title {
+  font-family: var(--cc-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--cc-text);
+}
+.cc-dash-empty-text {
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* Page-level message state (no org / error) */
+.cc-dash-empty--page {
+  padding: 56px 28px;
+  border: 1px dashed var(--cc-border-strong);
+  border-radius: var(--cc-radius);
+  background: var(--cc-bg-surface);
+  box-shadow: var(--cc-shadow-sm);
+}
+
+/* ── Loading skeleton tiles (AntD Skeleton wrapped in a stat-shaped shell) ── */
+.cc-dash-skel-stat {
+  min-height: 104px;
+  padding: 14px 16px 13px;
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  box-shadow: var(--cc-shadow-sm);
+  overflow: hidden;
+
+  .ant-skeleton-title {
+    margin-top: 2px;
+  }
+}
+
+/* In a fill card, the empty state centers in the reclaimed height. */
+.cc-dash-card--fill .cc-dash-empty {
+  flex: 1 1 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-dash-attn-arrow,
+  .cc-dash-attn-row,
+  .cc-dash-quick-arrow,
+  .cc-dash-quick-btn {
+    transition: none;
+  }
+}

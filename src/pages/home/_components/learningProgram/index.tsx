@@ -323,7 +323,7 @@ export default function LearningProgramSection() {
               <CustomButton
                 size="small"
                 height={40}
-                onClick={() => navigate('/school-counselor')}
+                onClick={() => navigate('/counselor-console')}
                 icon={<LayoutDashboard size={16} />}
                 style={{ 
                   backgroundColor: 'transparent',

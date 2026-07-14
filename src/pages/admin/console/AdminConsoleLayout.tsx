@@ -22,7 +22,6 @@ import {
   LineChart,
   ChevronLeft,
   BookOpen,
-  GraduationCap,
   Building2,
   Search as SearchIcon,
   Brain,
@@ -55,8 +54,7 @@ type NavKey =
   | 'administration'
   | 'community-moderation'
   | 'course-content'
-  | 'organization-management'
-  | 'school-counselor';
+  | 'organization-management';
 
 type NavItem = {
   key: NavKey;
@@ -166,12 +164,6 @@ export default function AdminConsoleLayout() {
             label: 'Users',
             icon: <Users size={18} strokeWidth={1.75} />,
             path: '/new-admin/users',
-          },
-          {
-            key: 'school-counselor',
-            label: 'Organizations',
-            icon: <GraduationCap size={18} strokeWidth={1.75} />,
-            path: '/school-counselor',
           },
           {
             key: 'organization-management',

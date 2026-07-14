@@ -61,7 +61,7 @@ export default function OrganizationManagementPage() {
       <div className="program-dashboard program-dashboard--embed program-dashboard--admin-dark">
         <Card className="dashboard-header dashboard-header--embed">
           <h1>Organization Management</h1>
-          <p>Create schools, assign counselors and students, edit details, and manage members.</p>
+          <p>Create schools, assign an owner, counselors, and students, edit details, and manage members.</p>
         </Card>
 
         <div style={{ marginTop: 16 }}>

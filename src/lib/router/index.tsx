@@ -35,6 +35,7 @@ import ErrorFallback from "src/components/ErrorFallback";
 import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
+import CounselorConsoleGate from "src/pages/counselor-console/CounselorConsoleGate";
 import NavigationProgressBar from "src/components/NavigationProgressBar";
 import PostHogPageView from "src/lib/posthog/PostHogPageView";
 
@@ -188,7 +189,20 @@ const StudentHubGateLazy = lazy(importStudentHubGate);
 const CommunityPostPermalinkLazy = lazy(
   () => import("src/pages/community/CommunityPostPermalinkPage"),
 );
-const SchoolCounselorPageLazy = lazy(() => import("src/pages/school-counselor"));
+// Legacy /school-counselor surface removed in the P5 cutover — the route now
+// redirects to /counselor-console (see below) so old bookmarks keep working.
+const CounselorConsoleLayoutLazy = lazy(() => import("src/pages/counselor-console/CounselorConsoleLayout"));
+const CounselorConsoleDashboardLazy = lazy(() => import("src/pages/counselor-console/pages/DashboardPage"));
+const CounselorConsoleAnalyticsLazy = lazy(() => import("src/pages/counselor-console/pages/AnalyticsPage"));
+const CounselorConsoleStudentsLazy = lazy(() => import("src/pages/counselor-console/pages/StudentsPage"));
+const CounselorConsoleStudentProfileLazy = lazy(() => import("src/pages/counselor-console/pages/StudentProfilePage"));
+const CounselorConsoleInvitationsLazy = lazy(() => import("src/pages/counselor-console/pages/InvitationsPage"));
+const CounselorConsoleReportsLazy = lazy(() => import("src/pages/counselor-console/pages/ReportsPage"));
+const CounselorConsoleAnnouncementsLazy = lazy(() => import("src/pages/counselor-console/pages/AnnouncementsPage"));
+const CounselorConsoleStaffLazy = lazy(() => import("src/pages/counselor-console/pages/StaffPage"));
+const CounselorConsoleSettingsLazy = lazy(() => import("src/pages/counselor-console/pages/SettingsPage"));
+const CounselorConsoleAuditLazy = lazy(() => import("src/pages/counselor-console/pages/AuditPage"));
+const JoinPageLazy = lazy(() => import("src/pages/join/JoinPage"));
 const FullSupportLeadsPageLazy = lazy(() => import("src/pages/full-support-leads"));
 
 const PROGRAM_TAB_SLUG: Record<string, string> = {
@@ -562,9 +576,39 @@ function RouterProvider() {
                   )
                 }
               />
-              <Route 
+              {/* Legacy surface removed — redirect old links to the console. */}
+              <Route
                 path="/school-counselor/*"
-                element={<SchoolCounselorPageLazy />}
+                element={<Navigate to="/counselor-console" replace />}
+              />
+
+              {/* Counselor Console — new org-scoped console, mounted inside
+                  MainLayout so the website header stays. */}
+              <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+                <Route element={<CounselorConsoleLayoutLazy />}>
+                  <Route index element={<CounselorConsoleDashboardLazy />} />
+                  <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                  <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                  <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                  <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
+                  <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                  <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} />
+                  <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                  <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                  <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+                </Route>
+              </Route>
+
+              {/* Public "Join" landing — the org invitation accept step. Public
+                  (no gate) so a prospective member can view it signed-out; the
+                  page itself preserves the token across signup/login. */}
+              <Route
+                path="/join/:token"
+                element={
+                  <Suspense fallback={<Loader height="100vh" />}>
+                    <JoinPageLazy />
+                  </Suspense>
+                }
               />
               <Route path="/course-admin" element={<AdminNavLazy />} />
               <Route path="/course-admin/courses/modules" element={<CourseManagementAdminLazy />} />

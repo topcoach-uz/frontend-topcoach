@@ -69,7 +69,7 @@ export default function MentorHome() {
                     <CustomButton
                       size="small"
                       height={40}
-                      onClick={() => navigate('/school-counselor')}
+                      onClick={() => navigate('/counselor-console')}
                       icon={<LayoutDashboard size={16} />}
                       style={{
                         backgroundColor: 'transparent',
@@ -242,7 +242,7 @@ export default function MentorHome() {
             <CustomButton
               size="small"
               height={40}
-              onClick={() => navigate('/school-counselor')}
+              onClick={() => navigate('/counselor-console')}
               icon={<LayoutDashboard size={16} />}
               style={{
                 backgroundColor: 'transparent',

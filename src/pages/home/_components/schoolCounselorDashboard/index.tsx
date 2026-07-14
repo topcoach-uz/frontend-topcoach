@@ -43,7 +43,7 @@ export default function SchoolCounselorDashboardSection() {
           <div className={styles.dashboard_grid}>
             <div
               className={styles.dashboard_card}
-              onClick={() => handleNavigate('/school-counselor')}
+              onClick={() => handleNavigate('/counselor-console')}
             >
               <LayoutDashboard size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
@@ -56,7 +56,7 @@ export default function SchoolCounselorDashboardSection() {
 
             <div
               className={styles.dashboard_card}
-              onClick={() => handleNavigate('/school-counselor/students')}
+              onClick={() => handleNavigate('/counselor-console/students')}
             >
               <Users size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
@@ -69,7 +69,7 @@ export default function SchoolCounselorDashboardSection() {
 
             <div
               className={styles.dashboard_card}
-              onClick={() => handleNavigate('/school-counselor/analytics')}
+              onClick={() => handleNavigate('/counselor-console/analytics')}
             >
               <BarChart2 size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>
@@ -82,7 +82,7 @@ export default function SchoolCounselorDashboardSection() {
 
             <div
               className={styles.dashboard_card}
-              onClick={() => handleNavigate('/school-counselor/settings')}
+              onClick={() => handleNavigate('/counselor-console/settings')}
             >
               <Settings size={16} className={styles.card_icon} />
               <CustomText fontSize={18} fontWeight={600} mb={8} color={colors.colorTextBase}>

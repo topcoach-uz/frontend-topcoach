@@ -1,0 +1,51 @@
+/* Counselor Console — editorial magazine tokens.
+   Cream surfaces, hairline borders, serif headlines, brand-red #7B1F2F —
+   the same system used across the mentor console / My Journey / My Progress.
+   Namespaced to --cc-* so nothing collides with the mentor (--mc-*) or admin
+   consoles.
+
+   Declared on :root as well as `.counselor-console-app` so that elements AntD
+   portals to <body> — modal footers, CcMenu panels, tooltips, confirm dialogs —
+   can still resolve every var(--cc-*). Those render OUTSIDE
+   `.counselor-console-app`; without the :root copy their backgrounds/borders/
+   text colors would resolve to nothing (transparent, invisible controls).
+   Verified nothing outside the console reads --cc-* (JoinPage self-defines its
+   own), so exposing them globally is collision-free. */
+:root,
+.counselor-console-app {
+  --cc-bg: #f4f2ea;
+  --cc-bg-surface: #fbfaf6;
+  --cc-bg-subtle: #f6f3ec;
+  --cc-bg-hover: #f3ece9;
+
+  --cc-border: #e7e3d8;
+  --cc-border-strong: #ddd6c8;
+  --cc-hairline: #ece6da;
+
+  --cc-text: #1c1a17;
+  --cc-text-secondary: #5b5347;
+  --cc-text-muted: #9a8f7d;
+
+  --cc-accent: #7b1f2f;
+  --cc-accent-hover: #641826;
+  --cc-accent-soft: rgba(123, 31, 47, 0.07);
+  --cc-accent-soft-strong: rgba(123, 31, 47, 0.13);
+  --cc-accent-ring: rgba(123, 31, 47, 0.18);
+
+  --cc-success: #15803d;
+  --cc-success-soft: rgba(21, 128, 61, 0.1);
+  --cc-warning: #b45309;
+  --cc-warning-soft: rgba(180, 83, 9, 0.12);
+  --cc-danger: #b91c1c;
+  --cc-danger-soft: rgba(185, 28, 28, 0.1);
+  --cc-info: #1d4ed8;
+  --cc-info-soft: rgba(29, 78, 216, 0.08);
+
+  /* Magazine headline serif — used for page titles + card/section titles. */
+  --cc-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+
+  --cc-radius: 16px;
+  --cc-radius-sm: 10px;
+  --cc-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04);
+  --cc-shadow-md: 0 12px 32px rgba(123, 31, 47, 0.08);
+}
