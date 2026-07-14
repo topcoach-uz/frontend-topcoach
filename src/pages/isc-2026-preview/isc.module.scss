@@ -417,6 +417,21 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   border-radius: 999px;
   white-space: nowrap;
 }
+/* Policy flag (previous-season attendee) — sits next to the status badge and
+   is deliberately outlined, not filled, so it never reads as a real status. */
+.autoRejectBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: $crimson;
+  background: transparent;
+  border: 1px solid currentColor;
+}
 .bSubmitted { background: #eef2f7; color: #475569; }
 .bUnder { background: $amber-soft; color: $amber; }
 .bReviewed { background: #f3ece4; color: #92400e; }
@@ -886,6 +901,15 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
 .dim { color: $faint; }
 .rowArrow { color: $faint; }
 .minScore { font-size: 13px; color: $slate; display: flex; align-items: center; gap: 8px; }
+.checkFilter {
+  font-size: 13px;
+  color: $slate;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+}
 .assignCluster { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .assignHint { font-size: 12px; color: $muted; }
 .rowMeta { font-size: 12px; color: $muted; }
@@ -905,6 +929,31 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   color: $muted;
   min-width: 120px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+/* Type-a-page-number box. Sized for 4 digits; spinners hidden so the arrows
+   don't compete with Previous / Next. */
+.pageJump {
+  width: 58px;
+  border: 1px solid $line;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: center;
+  background: $surface;
+  color: $ink;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  &:focus-visible { outline: 2px solid $crimson; outline-offset: 1px; }
 }
 
 /* Final-decisions columns: title pinned top, body fills the rest so the

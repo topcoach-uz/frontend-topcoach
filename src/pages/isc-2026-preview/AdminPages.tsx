@@ -219,9 +219,14 @@ function Kpi({ label, value, sub, tone }: { label: string; value: number | strin
 }
 
 /* ── Applications (list ↔ detail) ───────────────────────────── */
-// Hide the bulk "Score all with AI" button for now so admins can't trigger a
-// costly full re-score by accident. Flip to `true` to show it again.
-const SHOW_AI_SCORING = false;
+// Bulk "Score all with AI". The run only targets applications still missing a
+// score (`onlyPending`), so this is safe to leave on for scoring new intake.
+const SHOW_AI_SCORING = true;
+
+// Final decisions are frozen while the cohort is still being triaged — the
+// Accept / Waitlist / Reject buttons render but don't fire. Flip to `true` to
+// hand decision-making back to the admissions team.
+const DECISIONS_ENABLED = false;
 
 /**
  * Bulk AI scoring trigger + live progress. Kicks off a background pass that
@@ -293,6 +298,51 @@ export function ApplicationsPage() {
   );
 }
 
+/**
+ * Type a page number and jump straight to it — 171 pages is far too many to
+ * click through. Commits on Enter or blur, clamps into range, and stays in
+ * sync when `page` moves via Previous / Next or a filter reset.
+ */
+function PageJump({
+  page,
+  totalPages,
+  onJump,
+}: {
+  page: number;
+  totalPages: number;
+  onJump: (p: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(page));
+  useEffect(() => setDraft(String(page)), [page]);
+
+  const commit = () => {
+    const n = Number(draft);
+    if (!Number.isFinite(n) || draft.trim() === '') return setDraft(String(page));
+    onJump(Math.min(totalPages, Math.max(1, Math.trunc(n))));
+  };
+
+  return (
+    <input
+      className={s.pageJump}
+      type="number"
+      min={1}
+      max={totalPages}
+      value={draft}
+      aria-label={`Page number, 1 to ${totalPages}`}
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          commit();
+          e.currentTarget.blur();
+        }
+      }}
+      onBlur={commit}
+      onFocus={(e) => e.currentTarget.select()}
+    />
+  );
+}
+
 function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   const [q, setQ] = useState('');
   const [program, setProgram] = useState('all');
@@ -300,6 +350,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   const [status, setStatus] = useState('all');
   const [minScore, setMinScore] = useState(0);
   const [minAiScore, setMinAiScore] = useState(0);
+  const [excludeAutoRejected, setExcludeAutoRejected] = useState(false);
   const [sort, setSort] = useState<'submittedAt' | 'reviewScoreAvg' | 'aiScore'>('submittedAt');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -315,6 +366,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
     status: status !== 'all' ? (status as IscApplicationStatus) : undefined,
     minScore: minScore > 0 ? minScore : undefined,
     minAiScore: minAiScore > 0 ? minAiScore : undefined,
+    excludeAutoRejected: excludeAutoRejected || undefined,
     sort,
     page,
     limit: PAGE_SIZE,
@@ -330,7 +382,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
   // Any filter change resets to the first page.
   useEffect(() => {
     setPage(1);
-  }, [q, program, applicantType, status, minScore, minAiScore, sort]);
+  }, [q, program, applicantType, status, minScore, minAiScore, excludeAutoRejected, sort]);
 
   // default the assign-to select to the first reviewer once they load
   const effectiveAssignTo = assignTo || reviewers?.[0]?.id || '';
@@ -341,9 +393,9 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); setMinAiScore(0); setSort('submittedAt'); };
+  const reset = () => { setQ(''); setProgram('all'); setApplicantType('all'); setStatus('all'); setMinScore(0); setMinAiScore(0); setExcludeAutoRejected(false); setSort('submittedAt'); };
   const filtersActive =
-    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0 || minAiScore > 0 || sort !== 'submittedAt';
+    !!q || program !== 'all' || applicantType !== 'all' || status !== 'all' || minScore > 0 || minAiScore > 0 || excludeAutoRejected || sort !== 'submittedAt';
   // Server-side exports (ranked, full detail, across ALL matching rows — not
   // just the current page). Three explicit scopes:
   const exportFilters = (): Record<string, string | number | undefined> => ({
@@ -353,6 +405,7 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
     status: status !== 'all' ? status : undefined,
     minScore: minScore > 0 ? minScore : undefined,
     minAiScore: minAiScore > 0 ? minAiScore : undefined,
+    excludeAutoRejected: excludeAutoRejected ? 'true' : undefined,
     sort,
   });
   const exportSelected = () => {
@@ -386,6 +439,14 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
         <Sel value={program} onChange={setProgram} options={[['all', 'All programs'], ['bachelor', "Bachelor's"], ['master', "Master's"]]} />
         <Sel value={applicantType} onChange={setApplicantType} options={[['all', 'All types'], ['local', 'Local'], ['international', 'International']]} />
         <Sel value={status} onChange={setStatus} options={[['all', 'All statuses'], ...ALL_STATUSES.map((st) => [st, STATUS_LABEL[st] ?? st] as [string, string])]} />
+        <label className={s.checkFilter} title="Hide applicants flagged as previous-season camp participants">
+          <input
+            type="checkbox"
+            checked={excludeAutoRejected}
+            onChange={(e) => setExcludeAutoRejected(e.target.checked)}
+          />
+          Hide auto-rejected
+        </label>
         {filtersActive && (
           <button className={s.btn} onClick={reset} title="Clear all filters">
             <X size={15} /> Clear filters
@@ -471,7 +532,14 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
                   <td><span className={s.miniChip}>{TYPE_LABEL(a.applicantType)}</span></td>
                   <td>{draftVal(a, 'personal', 'grade')}</td>
                   <td>{a.submittedAt ? a.submittedAt.slice(0, 10) : '—'}</td>
-                  <td>{STATUS_LABEL[a.status] ? <StatusBadge status={a.status as any} /> : <span className={s.dim}>{a.status}</span>}</td>
+                  <td>
+                    {STATUS_LABEL[a.status] ? <StatusBadge status={a.status as any} /> : <span className={s.dim}>{a.status}</span>}
+                    {a.autoRejectedAt && (
+                      <span className={s.autoRejectBadge} title={a.autoRejectedReason ?? 'Auto-rejected'}>
+                        Auto-rejected
+                      </span>
+                    )}
+                  </td>
                   <td>{ai != null ? <b>{ai}</b> : <span className={s.dim}>—</span>}</td>
                   <td>{avg != null ? <b>{avg}</b> : <span className={s.dim}>—</span>}</td>
                   <td><ArrowRight size={15} className={s.rowArrow} /></td>
@@ -494,7 +562,11 @@ function ApplicationsList({ onOpen }: { onOpen: (id: string) => void }) {
           >
             <ArrowLeft size={15} /> Previous
           </button>
-          <span className={s.paginationInfo}>Page {page} of {totalPages}</span>
+          <span className={s.paginationInfo}>
+            Page
+            <PageJump page={page} totalPages={totalPages} onJump={setPage} />
+            of {totalPages}
+          </span>
           <button
             className={s.btn}
             disabled={page >= totalPages || isFetching}
@@ -592,8 +664,22 @@ function ApplicationDetail({ openId, onBack }: { openId: string; onBack: () => v
           <button className={s.btn} onClick={doRerun}>Re-run AI</button>
           {application.status === 'reviewed' && !decision && (
             <>
-              <button className={`${s.btn} ${s.btnPrimary}`} onClick={() => doDecide('accepted')}>Accept</button>
-              <button className={`${s.btn} ${s.btnDanger}`} onClick={() => doDecide('rejected')}>Reject</button>
+              <button
+                className={`${s.btn} ${s.btnPrimary}`}
+                disabled={!DECISIONS_ENABLED}
+                title={!DECISIONS_ENABLED ? 'Decisions are on hold' : undefined}
+                onClick={() => doDecide('accepted')}
+              >
+                Accept
+              </button>
+              <button
+                className={`${s.btn} ${s.btnDanger}`}
+                disabled={!DECISIONS_ENABLED}
+                title={!DECISIONS_ENABLED ? 'Decisions are on hold' : undefined}
+                onClick={() => doDecide('rejected')}
+              >
+                Reject
+              </button>
             </>
           )}
         </div>
@@ -981,13 +1067,16 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
         onChange={(e) => setRationale(e.target.value)}
       />
       <p className={s.decisionNote}>
-        Reviewers score and recommend — the final decision is the admissions team's call, and can be changed later.
+        {DECISIONS_ENABLED
+          ? "Reviewers score and recommend — the final decision is the admissions team's call, and can be changed later."
+          : 'Final decisions are on hold while the cohort is being triaged. Reviewer scores and recommendations keep coming in.'}
       </p>
       <div style={{ display: 'flex', gap: 10 }}>
         <button
           className={`${s.btn} ${s.btnPrimary} ${current === 'accepted' ? s.decisionActive : ''}`}
           style={{ flex: 1, justifyContent: 'center' }}
-          disabled={deciding}
+          disabled={deciding || !DECISIONS_ENABLED}
+          title={!DECISIONS_ENABLED ? 'Decisions are on hold' : undefined}
           onClick={() => doDecide('accepted')}
         >
           {current === 'accepted' ? '✓ Accepted' : 'Accept'}
@@ -995,7 +1084,8 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
         <button
           className={`${s.btn} ${current === 'waitlisted' ? s.decisionActive : ''}`}
           style={{ flex: 1, justifyContent: 'center' }}
-          disabled={deciding}
+          disabled={deciding || !DECISIONS_ENABLED}
+          title={!DECISIONS_ENABLED ? 'Decisions are on hold' : undefined}
           onClick={() => doDecide('waitlisted')}
         >
           {current === 'waitlisted' ? '✓ Waitlisted' : 'Waitlist'}
@@ -1003,7 +1093,8 @@ function DecisionDetail({ selectedId }: { selectedId: string }) {
         <button
           className={`${s.btn} ${s.btnDanger} ${current === 'rejected' ? s.decisionActive : ''}`}
           style={{ flex: 1, justifyContent: 'center' }}
-          disabled={deciding}
+          disabled={deciding || !DECISIONS_ENABLED}
+          title={!DECISIONS_ENABLED ? 'Decisions are on hold' : undefined}
           onClick={() => doDecide('rejected')}
         >
           {current === 'rejected' ? '✓ Not selected' : 'Reject'}

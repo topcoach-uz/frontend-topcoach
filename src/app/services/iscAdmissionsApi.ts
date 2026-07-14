@@ -42,6 +42,8 @@ export interface IscApplicationRow {
   aiScore?: string | null;
   reviewScoreAvg?: string | null;
   decidedAt?: string | null;
+  autoRejectedAt?: string | null;
+  autoRejectedReason?: string | null;
   createdAt: string;
 }
 
@@ -198,6 +200,8 @@ export interface IscListParams {
   maxScore?: number;
   minAiScore?: number;
   maxAiScore?: number;
+  /** Hide applications auto-rejected as previous-season attendees. */
+  excludeAutoRejected?: boolean;
   sort?: 'submittedAt' | 'aiScore' | 'reviewScoreAvg';
 }
 
