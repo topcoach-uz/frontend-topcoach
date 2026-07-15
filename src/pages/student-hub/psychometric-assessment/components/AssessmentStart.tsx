@@ -207,7 +207,12 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
 
   return (
     <div className="majormatch">
-      {/* Hero ─────────────────────────────────────────────────────── */}
+      {/* Hero ───────────────────────────────────────────────────────
+          Pitch copy, and a pitch only lands on the person deciding whether to
+          take the test. Counselors are here to read a result, so read-only
+          skips the hero entirely — PsychometricAssessmentPage renders a short
+          title + one line of context above this instead. */}
+      {!readOnly && (
       <header className="majormatch__hero">
         <div className="majormatch__hero-text">
           <div className="majormatch__eyebrow">AI Major Match · Psychometric Assessment</div>
@@ -270,12 +275,17 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           </div>
         )}
       </header>
+      )}
 
       {/* The "free attempt used" state is now conveyed by the small note
           under the hero "Unlock unlimited matches" button — the large
           feature-list upsell card that used to sit here was redundant. */}
 
-      {/* Stats strip ──────────────────────────────────────────────── */}
+      {/* Stats strip ───────────────────────────────────────────────
+          Describes the test as a product (length, frameworks, "Not started").
+          That's pre-purchase framing for a student deciding to start; a
+          counselor reading a finished result doesn't need the spec sheet. */}
+      {!readOnly && (
       <section className="majormatch__stats">
         <div className="majormatch__stat">
           <div className="majormatch__stat-label">Questions</div>
@@ -300,6 +310,27 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
           <div className="majormatch__stat-foot">major + career match</div>
         </div>
       </section>
+      )}
+
+      {/* Read-only empty/loading state. Every other block on this step is
+          gated behind !readOnly, so without this a counselor viewing a student
+          who hasn't taken the assessment gets a blank tab. */}
+      {readOnly && assessmentsLoading && (
+        <div className="majormatch__history-loading">
+          {t('common.loading', 'Loading…')}
+        </div>
+      )}
+      {readOnly && !assessmentsLoading && (!allAssessments || allAssessments.length === 0) && (
+        <div className="majormatch__empty">
+          <Compass size={18} />
+          <p className="majormatch__empty-text">
+            {t(
+              'studentHub.psychometric.counselorEmpty',
+              "This student hasn't completed the AI Major Match assessment yet.",
+            )}
+          </p>
+        </div>
+      )}
 
       {/* History (only if there are completed assessments) ───────── */}
       {allAssessments && allAssessments.length > 0 && (

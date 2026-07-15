@@ -198,7 +198,9 @@ const CounselorConsoleStudentsLazy = lazy(() => import("src/pages/counselor-cons
 const CounselorConsoleStudentProfileLazy = lazy(() => import("src/pages/counselor-console/pages/StudentProfilePage"));
 const CounselorConsoleInvitationsLazy = lazy(() => import("src/pages/counselor-console/pages/InvitationsPage"));
 const CounselorConsoleReportsLazy = lazy(() => import("src/pages/counselor-console/pages/ReportsPage"));
-const CounselorConsoleAnnouncementsLazy = lazy(() => import("src/pages/counselor-console/pages/AnnouncementsPage"));
+// Announcements is parked for now — the page and its backend are intact; only
+// the route + sidebar entry are commented out. Restore both to bring it back.
+// const CounselorConsoleAnnouncementsLazy = lazy(() => import("src/pages/counselor-console/pages/AnnouncementsPage"));
 const CounselorConsoleStaffLazy = lazy(() => import("src/pages/counselor-console/pages/StaffPage"));
 const CounselorConsoleSettingsLazy = lazy(() => import("src/pages/counselor-console/pages/SettingsPage"));
 const CounselorConsoleAuditLazy = lazy(() => import("src/pages/counselor-console/pages/AuditPage"));
@@ -592,7 +594,8 @@ function RouterProvider() {
                   <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
                   <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
                   <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                  <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} />
+                  {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                  {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
                   <Route path="staff" element={<CounselorConsoleStaffLazy />} />
                   <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
                   <Route path="audit" element={<CounselorConsoleAuditLazy />} />

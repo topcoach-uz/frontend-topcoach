@@ -1,0 +1,17 @@
+/* Counselor Console — Admissions program tab.
+   Card shell, eyebrow/title type, states, skeletons and the progress track all
+   come from `programs-shared.scss` (via programChrome). Only the handful of
+   rules that are genuinely Admissions-specific live here.
+
+   Admissions' identity hue is published as --cc-prog by programChrome, resolved
+   from the validated CC_PROGRAM_COLOR map — never restated as a hex. */
+
+.cc-adm-bar-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--cc-text-secondary);
+}

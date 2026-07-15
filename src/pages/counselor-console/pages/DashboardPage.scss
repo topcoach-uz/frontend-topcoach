@@ -190,18 +190,52 @@
   border-top-color: transparent;
 }
 
+.cc-dash-attn-avatar {
+  flex-shrink: 0;
+}
+
 .cc-dash-attn-main {
   min-width: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 2px;
 }
 .cc-dash-attn-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--cc-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Reason reads as a status line, not a pill — the dot carries the signal and
+   the text always names it, so it never rests on colour alone. */
+.cc-dash-attn-reason {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--cc-text-secondary);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-attn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--cc-warning);
+}
+.cc-dash-attn-context {
+  font-size: 11.5px;
+  color: var(--cc-text-muted);
+  font-variant-numeric: tabular-nums;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -440,14 +474,32 @@
   box-shadow: var(--cc-shadow-sm);
 }
 
-/* ── Loading skeleton tiles (AntD Skeleton wrapped in a stat-shaped shell) ── */
+/* ── Loading skeleton tiles ──
+   Shaped like the real KPI band, not the retired free-standing cards: chrome on
+   the wrapper, flat hairline-separated cells inside. Otherwise the page shows
+   the OLD design for a beat and then snaps to the band once data lands.
+   Mirrors `.cc-stat-grid:has(> .cc-stat)` in CounselorConsoleLayout.scss — if
+   the band's anatomy changes there, change it here too. */
+.cc-dash-skel-band {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* Same divider mechanism as the real band (`.cc-stat-grid:has(> .cc-stat)` in
+     CounselorConsoleLayout.scss): background = divider colour, revealed through
+     a 1px gap by opaque tiles. Keep the two in step. */
+  gap: 1px;
+  margin-bottom: 18px;
+  background: var(--cc-border);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  overflow: hidden;
+}
+
 .cc-dash-skel-stat {
-  min-height: 104px;
+  min-height: 112px;
   padding: 14px 16px 13px;
   background: var(--cc-bg-surface);
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius-sm);
-  box-shadow: var(--cc-shadow-sm);
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
 
   .ant-skeleton-title {

@@ -219,9 +219,11 @@ function Kpi({ label, value, sub, tone }: { label: string; value: number | strin
 }
 
 /* ── Applications (list ↔ detail) ───────────────────────────── */
-// Bulk "Score all with AI". The run only targets applications still missing a
-// score (`onlyPending`), so this is safe to leave on for scoring new intake.
-const SHOW_AI_SCORING = true;
+// Bulk "Score all with AI" / "Re-run AI". Hidden now that the cohort is fully
+// scored. Flip to `true` to expose them again for a new intake — the run only
+// targets applications still missing a score (`onlyPending`), so it's safe to
+// re-enable without re-charging for work already done.
+const SHOW_AI_SCORING = false;
 
 // Final decisions are frozen while the cohort is still being triaged — the
 // Accept / Waitlist / Reject buttons render but don't fire. Flip to `true` to

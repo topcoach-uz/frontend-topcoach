@@ -77,6 +77,30 @@ const REPORTS: {
   },
 ];
 
+/**
+ * Basenames used for downloaded files. Kept separate from the internal
+ * `ReportKey` / `ServerReportType` unions because the user sees these.
+ */
+const FILE_SLUGS: Record<ReportKey, string> = {
+  roster: 'students',
+  programs: 'programs',
+  engagement: 'engagement',
+};
+
+const SERVER_FILE_SLUGS: Record<ServerReportType, string> = {
+  roster: 'students',
+  progress: 'progress',
+};
+
+/**
+ * Largest `limit` the roster endpoint accepts — `GetOrgRosterQueryDto` declares
+ * `@Max(100)` and the global ValidationPipe 400s anything above it. Full-roster
+ * pulls must page, never ask for one oversized page.
+ */
+const ROSTER_MAX_LIMIT = 100;
+/** Safety net so a bad `total`/`items` pairing can't spin forever. */
+const ROSTER_MAX_PAGES = 200;
+
 function round(n: number | null | undefined): number {
   return Math.round(Number(n ?? 0));
 }
@@ -148,16 +172,44 @@ export default function CounselorConsoleReportsPage() {
     );
   }
 
-  // ── Data loaders (pull the full dataset on demand, not paginated) ──
+  // ── Data loaders (pull the full dataset on demand) ──
+
+  /**
+   * Walk the roster endpoint page by page at the maximum allowed page size and
+   * collect every student. Stops once we've seen `total` rows, once a page
+   * comes back short/empty, or at the hard page cap.
+   */
+  async function fetchAllStudents(): Promise<OrgStudent[]> {
+    const all: OrgStudent[] = [];
+    let total = Infinity;
+
+    for (let page = 1; page <= ROSTER_MAX_PAGES; page++) {
+      const res = await dispatch(
+        counselorConsoleApi.endpoints.getOrgStudents.initiate({
+          orgId: orgId as string,
+          page,
+          limit: ROSTER_MAX_LIMIT,
+        }),
+      ).unwrap();
+
+      const items = res.items ?? [];
+      all.push(...items);
+
+      // Trust `total` from the first response, but only if it looks sane.
+      if (page === 1 && Number.isFinite(res.total) && res.total >= 0) {
+        total = res.total;
+      }
+      // A short or empty page means the server has nothing more to give,
+      // regardless of what `total` claimed.
+      if (items.length < ROSTER_MAX_LIMIT || all.length >= total) break;
+    }
+
+    return all;
+  }
+
   async function loadRoster(): Promise<Dataset> {
-    const first = await dispatch(
-      counselorConsoleApi.endpoints.getOrgStudents.initiate({
-        orgId: orgId as string,
-        page: 1,
-        limit: 1000,
-      }),
-    ).unwrap();
-    const rows = (first.items ?? []).map((s: OrgStudent) => ({
+    const students = await fetchAllStudents();
+    const rows = students.map((s: OrgStudent) => ({
       Name: s.name,
       Email: s.email,
       Grade: s.gradeLevel ?? '—',
@@ -232,7 +284,7 @@ export default function CounselorConsoleReportsPage() {
 
   function fileBase(key: ReportKey): string {
     const slug = org?.slug ? `${org.slug}_` : '';
-    return `${slug}${key}_${dayjs().format('YYYY-MM-DD')}`;
+    return `${slug}${FILE_SLUGS[key]}_${dayjs().format('YYYY-MM-DD')}`;
   }
 
   function writeSpreadsheet(
@@ -276,7 +328,8 @@ export default function CounselorConsoleReportsPage() {
       if (format === 'excel') writeSpreadsheet(ds, key, 'xlsx');
       else if (format === 'csv') writeSpreadsheet(ds, key, 'csv');
       else writePdf(ds, key, title);
-    } catch {
+    } catch (err) {
+      console.error(`[reports] export failed (report=${key}, format=${format})`, err);
       message.error('Could not generate that report. Please try again.');
     } finally {
       setBusy(null);
@@ -308,12 +361,18 @@ export default function CounselorConsoleReportsPage() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
-      const fallback = `${org?.slug ? `${org.slug}_` : ''}${serverType}.${format}`;
+      const fallback = `${org?.slug ? `${org.slug}_` : ''}${
+        SERVER_FILE_SLUGS[serverType]
+      }.${format}`;
       const filename =
         filenameFromDisposition(res.headers.get('content-disposition')) ||
         fallback;
       triggerBlobDownload(blob, filename);
-    } catch {
+    } catch (err) {
+      console.error(
+        `[reports] server download failed (type=${serverType}, format=${format})`,
+        err,
+      );
       message.error('Could not download that report. Please try again.');
     } finally {
       setServerBusy(null);

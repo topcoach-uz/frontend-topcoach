@@ -190,8 +190,14 @@
   line-height: 1.5;
 }
 
-/* A stat row that sits above a section's charts. */
-.cc-analytics-stat-row {
+/* A stat row that sits above a section's charts. Two classes for the same
+   load-order reason as `.cc-analytics-stat-col` below: this must reliably beat
+   `.cc-stat-grid`'s own 18px bottom margin.
+
+   `align-items: stretch` is inherited from `.cc-stat-grid`, and every tile in
+   an auto-fit row shares one track height — so these rows are already equal
+   height and only need the spacing pinned. */
+.cc-stat-grid.cc-analytics-stat-row {
   margin-bottom: 16px;
 }
 
@@ -229,6 +235,41 @@
   @media (max-width: 1024px) {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* A rate meter beside its supporting stat tiles. The meter leads (it carries
+   the answer); the raw counts sit next to it as the workings. */
+.cc-analytics-grid--split {
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  margin-bottom: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A full-width block following another grid in the same section. */
+.cc-analytics-grid--stacked {
+  margin-top: 16px;
+}
+
+/* Stat tiles stacked beside a meter — override the shared grid's auto-fit so
+   they track the meter's height rather than collapsing to one column.
+
+   `margin-bottom: 0` is load-bearing, not tidying. `.cc-stat-grid` carries an
+   18px bottom margin for use as a standalone row; inside `--split` this box is
+   a GRID ITEM, and a stretched item resolves its height minus its own margins.
+   So the tiles came out exactly 18px shorter than the meter card beside them —
+   the unequal-height row on Coins / Sessions / AI. The row is only truly
+   aligned when this box has no margin to subtract. */
+.cc-stat-grid.cc-analytics-stat-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  /* Two classes deliberately: `.cc-stat-grid` lives in another stylesheet, so a
+     single-class selector here would be a coin-flip on route load order. */
+  margin-bottom: 0;
 }
 
 /* ── Editorial hairline card ── */
@@ -274,11 +315,155 @@
 
 /* ── Chart container ──
    Each <CcChart> brings its own explicit height, so the container just needs
-   to fill the card width and stretch. */
+   to fill the card width and stretch.
+
+   `overflow-x: auto` is the guard-rail: if a chart ever needs more width than
+   the card has (a long month axis on a narrow viewport), it scrolls INSIDE its
+   own container. The page body must never scroll sideways. */
 .cc-analytics-chart {
   width: 100%;
   flex: 1;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* Key / caption rail under a plot, above the card's bottom edge. */
+.cc-analytics-card-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cc-hairline);
+}
+
+/* ── Chart key ──
+   A coloured mark carries identity; the TEXT stays in text tokens. Never
+   colour the label to match the series — light hues are illegible as text on
+   cream, and the swatch already does that job. */
+.cc-analytics-key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+.cc-analytics-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.4;
+  min-width: 0;
+}
+.cc-analytics-key-swatch {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.cc-analytics-key-label {
+  color: var(--cc-text-secondary);
+  white-space: nowrap;
+}
+.cc-analytics-key-val {
+  color: var(--cc-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Inline caption for a data caveat under a chart. */
+.cc-analytics-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cc-text-muted);
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--cc-text-muted);
+  }
+
+  em {
+    font-style: italic;
+    color: var(--cc-text-secondary);
+  }
+}
+
+/* ── Rate meter ──
+   A ratio against a limit reads as a meter, not as two bars to divide. The
+   track is a light step of the FILL's own hue, so the whole bar reads as one
+   scale rather than as figure-on-neutral. */
+.cc-analytics-card--meter {
+  justify-content: center;
+}
+
+.cc-analytics-meter {
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-analytics-meter-eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--cc-text-muted);
+  margin-bottom: 10px;
+}
+
+.cc-analytics-meter-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: var(--cc-serif);
+  color: var(--cc-text);
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.cc-analytics-meter-val {
+  font-size: 2.6rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  /* Proportional figures: this is a large standalone number, and tabular-nums
+     would make a value like 78 sit loose at display size. */
+}
+.cc-analytics-meter-unit {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--cc-text-muted);
+}
+.cc-analytics-meter-none {
+  font-size: 2.6rem;
+  font-weight: 500;
+  color: var(--cc-text-muted);
+}
+
+.cc-analytics-meter-track {
+  height: 8px;
+  border-radius: 999px;
+  /* The ramp's own light end — same hue as the fill. */
+  background: #d69ea9;
+  overflow: hidden;
+}
+.cc-analytics-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cc-accent);
+  transition: width 0.3s ease;
+}
+
+.cc-analytics-meter-caption {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--cc-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Empty state inside a card ── */
@@ -417,11 +602,13 @@
   background: var(--cc-bg-subtle);
   overflow: hidden;
 }
+/* Flat fill, not a gradient: a gradient along the bar's length implies the
+   value changes across it. One value, one colour. */
 .cc-analytics-earner-fill {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--cc-accent-hover), var(--cc-accent));
+  background: var(--cc-accent);
 }
 .cc-analytics-earner-coins {
   flex-shrink: 0;

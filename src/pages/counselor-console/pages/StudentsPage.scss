@@ -19,17 +19,11 @@
   padding-bottom: 2px;
 }
 
-.cc-roster-count {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 2px;
-  font-size: 0.82rem;
-  color: var(--cc-text-muted);
+/* Page lead — carries the live student count inline, as in the reference. */
+.cc-roster-lead {
+  max-width: 54ch;
 
   b {
-    font-family: var(--cc-serif);
-    font-size: 1rem;
     font-weight: 600;
     color: var(--cc-text);
     font-variant-numeric: tabular-nums;
@@ -92,20 +86,50 @@
   }
 }
 
-.cc-roster-status {
-  min-width: 150px;
+/* Status filter — pill-segmented control on a subtle track, sitting inline
+   beside the search box. Hand-rolled (not AntD's Segmented) so it matches the
+   console rather than Ant's defaults. */
+.cc-roster-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--cc-border);
+  background: var(--cc-bg-subtle);
+}
 
-  .ant-select-selector {
-    height: 38px !important;
-    border-radius: 10px !important;
-    border: 1px solid var(--cc-border-strong) !important;
-    background: var(--cc-bg-surface) !important;
-    display: flex;
-    align-items: center;
+.cc-roster-seg {
+  appearance: none;
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cc-text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover:not(.cc-roster-seg--on) {
+    color: var(--cc-text);
   }
-  &.ant-select-focused .ant-select-selector,
-  &:hover .ant-select-selector {
-    border-color: var(--cc-accent-ring) !important;
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: -2px;
+  }
+
+  /* Selected: white pill lifted off the track. */
+  &--on {
+    background: var(--cc-bg-surface);
+    color: var(--cc-accent);
+    box-shadow: var(--cc-shadow-sm);
   }
 }
 
@@ -177,10 +201,43 @@
 }
 
 /* Avatar base styling lives in CounselorConsoleLayout.scss (.cc-avatar); this
-   just pins the roster size. */
+   pins the size and varies the initials-fallback hue per student.
+   The hue class is chosen in StudentsPage.tsx from a stable hash of the
+   student's id, so it never changes between renders. Decorative only — the
+   initials and the adjacent name carry the identity. */
 .cc-roster-avatar {
   width: 36px;
   height: 36px;
+}
+
+/* Two classes (`.cc-roster-avatar.cc-roster-avatar--x`) outrank the single-class
+   `.cc-avatar` base in the layout stylesheet, so no !important is needed. */
+.cc-roster-avatar {
+  &.cc-roster-avatar--maroon {
+    color: #a62b3f;
+    background: rgba(166, 43, 63, 0.1);
+    border-color: rgba(166, 43, 63, 0.22);
+  }
+  &.cc-roster-avatar--gold {
+    color: #8a5f00;
+    background: rgba(138, 95, 0, 0.1);
+    border-color: rgba(138, 95, 0, 0.22);
+  }
+  &.cc-roster-avatar--green {
+    color: #0f7a52;
+    background: rgba(15, 122, 82, 0.1);
+    border-color: rgba(15, 122, 82, 0.22);
+  }
+  &.cc-roster-avatar--violet {
+    color: #4a3aa7;
+    background: rgba(74, 58, 167, 0.1);
+    border-color: rgba(74, 58, 167, 0.22);
+  }
+  &.cc-roster-avatar--rose {
+    color: #b5566a;
+    background: rgba(181, 86, 106, 0.1);
+    border-color: rgba(181, 86, 106, 0.22);
+  }
 }
 
 .cc-roster-student-meta {
@@ -212,7 +269,11 @@
   font-size: 12px;
   color: var(--cc-text-muted);
 }
-/* Program chips — small maroon-tinted pills, wrap within the cell */
+/* Program chips — soft tinted pills, one hue per program. The colour itself is
+   set inline from `ccProgramColor()` in StudentsPage.tsx (colour follows the
+   entity; unknown programs get the neutral). The pill always prints the program
+   NAME — under CVD half the program colour pairs sit in the ΔE 8–12 band, so
+   colour must never be the only signal. */
 .cc-roster-programs {
   display: flex;
   flex-wrap: wrap;
@@ -227,9 +288,19 @@
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
-  color: var(--cc-accent);
-  background: var(--cc-accent-soft);
-  border: 1px solid var(--cc-accent-soft-strong);
+  border: 1px solid transparent;
+  /* Fallbacks; the per-program hue arrives inline. */
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-subtle);
+}
+/* Overflow chip (`+1`) — neutral by design: it stands for several programs at
+   once, so it must not borrow any one program's hue. */
+.cc-roster-program-pill--more {
+  color: var(--cc-text-muted);
+  background: var(--cc-bg-subtle);
+  border-color: var(--cc-hairline);
+  font-variant-numeric: tabular-nums;
+  cursor: default;
 }
 .cc-roster-muted {
   color: var(--cc-text-muted);
@@ -249,7 +320,7 @@
   }
 }
 
-/* Progress cell */
+/* Top-program cell — a thin editorial rule with the figure beneath. */
 .cc-roster-progress {
   min-width: 148px;
 
@@ -257,15 +328,20 @@
     margin: 0;
     line-height: 1;
   }
+  .ant-progress-inner {
+    border-radius: 999px;
+  }
   .ant-progress-bg {
-    height: 6px !important;
+    height: 4px !important;
+    border-radius: 999px;
   }
 }
 .cc-roster-progress-label {
   font-size: 11.5px;
   color: var(--cc-text-muted);
-  margin-top: 3px;
+  margin-top: 5px;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 .cc-roster-lastactive {
@@ -301,25 +377,35 @@
   justify-content: flex-end;
 }
 
+/* Bare `···` glyph — no box, muted, and only fully present on row hover/focus.
+   Never fully transparent: an invisible control is an undiscoverable one, and
+   `opacity: 0` would strand keyboard and touch users. */
 .cc-menu-trigger.cc-roster-kebab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  border-radius: 8px;
-  border: 1px solid var(--cc-border-strong);
-  background: var(--cc-bg-surface);
-  color: var(--cc-text-secondary);
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cc-text-muted);
+  opacity: 0.45;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
 
-  &:hover:not(:disabled),
-  &[aria-expanded='true'] {
-    border-color: var(--cc-accent-ring);
-    background: var(--cc-accent-soft);
-    color: var(--cc-accent);
-  }
+.cc-roster-table .ant-table-tbody > tr.cc-roster-row:hover .cc-roster-kebab,
+.cc-menu-trigger.cc-roster-kebab:hover:not(:disabled),
+.cc-menu-trigger.cc-roster-kebab:focus-visible,
+.cc-menu-trigger.cc-roster-kebab[aria-expanded='true'] {
+  opacity: 1;
+  color: var(--cc-accent);
+}
+
+.cc-menu-trigger.cc-roster-kebab:focus-visible {
+  outline: 2px solid var(--cc-accent);
+  outline-offset: 1px;
 }
 
 /* Transfer modal */
@@ -376,7 +462,12 @@
   .cc-roster-search.ant-input-affix-wrapper {
     width: 100%;
   }
-  .cc-roster-status {
+  .cc-roster-segmented {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cc-roster-seg {
     flex: 1;
+    padding: 0 8px;
   }
 }

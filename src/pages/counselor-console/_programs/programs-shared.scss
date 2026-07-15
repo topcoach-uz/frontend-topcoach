@@ -1,0 +1,430 @@
+/* ── Counselor Console — shared chrome for the per-program tabs ───────────────
+   The definition of the program-tab family's anatomy. Every one of the five
+   tabs renders through `programChrome.tsx`, which uses only these classes, so
+   card padding/radii/hairlines, eyebrow + title type, empty/error/loading shape
+   and table treatment are declared ONCE here rather than four times.
+
+   Plain global SCSS (the console does not use CSS modules), namespaced
+   `cc-ptab-*` — distinct from the profile page's `cc-program-*` blocks. Colour
+   comes only from the `--cc-*` tokens plus `--cc-prog`, the program's own
+   identity hue, which programChrome resolves from the validated
+   CC_PROGRAM_COLOR map. Never restate a program hex in this file. */
+
+/* ── Tab root ─────────────────────────────────────────────────────────────── */
+
+.cc-ptab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  /* Every figure in every program tab is tabular. Declared once at the root
+     rather than per-class per-tab: columns of scores, hours, dates and
+     percentages must align down the page. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* The shared stat grid ships with a trailing margin for page use; inside a tab
+   the column gap already provides the rhythm. */
+.cc-ptab > .cc-stat-grid {
+  margin-bottom: 0;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+
+.cc-ptab-card {
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius);
+  box-shadow: var(--cc-shadow-sm);
+  padding: 18px 20px 20px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Full-bleed body (ladder rows, sticky-header tables). The head keeps the
+   card's padding so the type still lines up with a normal card. */
+.cc-ptab-card--flush {
+  padding: 0;
+  overflow: hidden;
+
+  > .cc-ptab-card-head {
+    padding: 18px 20px 14px;
+    margin-bottom: 0;
+  }
+}
+
+.cc-ptab-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--cc-hairline);
+}
+
+.cc-ptab-card-heading {
+  min-width: 0;
+}
+
+.cc-ptab-eyebrow {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  color: var(--cc-text-muted);
+}
+
+.cc-ptab-card-title {
+  font-family: var(--cc-serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--cc-text);
+  margin: 3px 0 0;
+}
+
+.cc-ptab-card-sub {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--cc-text-muted);
+  max-width: 68ch;
+  margin: 3px 0 0;
+}
+
+.cc-ptab-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--cc-text-muted);
+}
+
+/* ── Prose ────────────────────────────────────────────────────────────────── */
+
+.cc-ptab-quiet {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--cc-text-secondary);
+  max-width: 62ch;
+  margin: 0;
+}
+
+.cc-ptab-fine {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--cc-text-muted);
+  max-width: 68ch;
+  margin: 8px 0 0;
+}
+
+.cc-ptab-muted {
+  color: var(--cc-text-muted);
+}
+
+/* A load-bearing explanation of how a figure is measured — ruled in the
+   program's own hue, next to that program's numbers. */
+.cc-ptab-note {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  border-left: 2px solid var(--cc-prog);
+  border-radius: var(--cc-radius-sm);
+
+  strong {
+    color: var(--cc-text);
+    font-weight: 600;
+  }
+}
+
+.cc-ptab-note-key {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-ptab-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Progress track ───────────────────────────────────────────────────────── */
+
+/* One bar, drawn in the program's identity hue, wherever a tab shows "how far
+   through" — Admissions' course progress and Full Support's completion rate are
+   the same object and must not look different. */
+.cc-ptab-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  overflow: hidden;
+}
+
+.cc-ptab-track-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cc-prog);
+  transition: width 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-ptab-track-fill {
+    transition: none;
+  }
+}
+
+/* ── Empty / error / not-enrolled ─────────────────────────────────────────── */
+
+.cc-ptab-state {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 32px 20px;
+  color: var(--cc-text-muted);
+}
+
+.cc-ptab-state--page {
+  padding: 48px 24px;
+}
+
+.cc-ptab-state-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--cc-bg-subtle);
+  color: var(--cc-text-muted);
+}
+
+.cc-ptab-state--danger .cc-ptab-state-ico {
+  background: var(--cc-danger-soft);
+  color: var(--cc-danger);
+}
+
+.cc-ptab-state--good .cc-ptab-state-ico {
+  background: var(--cc-success-soft);
+  color: var(--cc-success);
+}
+
+.cc-ptab-state-title {
+  margin: 0;
+  font-family: var(--cc-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--cc-text);
+}
+
+.cc-ptab-state-text {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cc-ptab-state-action {
+  margin-top: 6px;
+}
+
+.cc-ptab-btn {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--cc-border-strong);
+  background: var(--cc-bg-surface);
+  color: var(--cc-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 7px 18px;
+  border-radius: 999px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--cc-accent-ring);
+    background: var(--cc-bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+
+/* Wide tables scroll inside their own box — the page never scrolls sideways. */
+.cc-ptab-scroll {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.cc-ptab-scroll--tall {
+  max-height: 460px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.cc-ptab-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    text-align: left;
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    color: var(--cc-text-muted);
+    background: var(--cc-bg-subtle);
+    border-bottom: 1px solid var(--cc-border);
+    padding: 9px 14px;
+  }
+
+  td,
+  tbody th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 400;
+    vertical-align: middle;
+    color: var(--cc-text-secondary);
+    border-bottom: 1px solid var(--cc-hairline);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: none;
+  }
+
+  tbody tr:hover > * {
+    background: var(--cc-bg-subtle);
+  }
+}
+
+/* The row's identity column. */
+.cc-ptab-table-strong {
+  color: var(--cc-text);
+  font-weight: 500;
+  min-width: 160px;
+}
+
+.cc-ptab-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cc-ptab-table thead th.cc-ptab-num {
+  text-align: right;
+}
+
+/* ── Rows / lists ─────────────────────────────────────────────────────────── */
+
+/* Hairline-divided list rows — the non-tabular sibling of `.cc-ptab-table`. */
+.cc-ptab-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-ptab-row {
+  min-width: 0;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+
+  & + & {
+    border-top: 1px solid var(--cc-hairline);
+  }
+
+  &:hover {
+    background: var(--cc-bg-subtle);
+  }
+}
+
+/* ── Links ────────────────────────────────────────────────────────────────── */
+
+.cc-ptab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cc-accent);
+  text-decoration: none;
+  border-radius: 4px;
+
+  &:hover {
+    color: var(--cc-accent-hover);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ── Loading ──────────────────────────────────────────────────────────────── */
+
+/* Matches the CcStat footprint exactly, so nothing shifts when data lands. */
+.cc-ptab-skel-stat {
+  min-height: 104px;
+  padding: 14px 16px 13px;
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  box-shadow: var(--cc-shadow-sm);
+  overflow: hidden;
+
+  .ant-skeleton-title {
+    margin-top: 2px;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .cc-ptab-card {
+    padding: 16px 14px 18px;
+  }
+
+  .cc-ptab-card--flush > .cc-ptab-card-head {
+    padding: 16px 14px 12px;
+  }
+}

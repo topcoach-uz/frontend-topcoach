@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Compass, Star, Globe, RotateCcw, Info, Rocket, Lock, ArrowRight, Users, Zap } from 'lucide-react';
+import { Compass, Star, Globe, RotateCcw, Info, Rocket, Lock, ArrowRight, ArrowLeft, Users, Zap } from 'lucide-react';
 import type {
   PsychometricAssessment,
   RecommendationsResponse,
@@ -22,6 +22,13 @@ interface AssessmentResultsProps {
   /** When true, the free attempt is used up — "Retake" becomes an unlock CTA. */
   retakeLocked?: boolean;
   onTakeAptitude?: () => void;
+  /**
+   * Counselor view: the reader is not the test-taker, so student-only actions
+   * (retake, aptitude upsell, "talk to a mentor", "add grades") are hidden.
+   */
+  readOnly?: boolean;
+  /** Read-only only: return to the assessment list, rendered inline (no route change). */
+  onBack?: () => void;
   isLoading: boolean;
   isGeneratingResults?: boolean; // True when initially completing, false when viewing existing
 }
@@ -87,6 +94,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   onRetake,
   retakeLocked = false,
   onTakeAptitude,
+  readOnly = false,
+  onBack,
   isLoading,
   isGeneratingResults = false,
 }) => {
@@ -350,8 +359,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
               hasSTEMMajors={derivedData.hasSTEMMajors}
               riskFlags={assessment.riskFlags || []}
               academicConfidenceScore={assessment.academicConfidenceScore}
-              onBoostAccuracy={onTakeAptitude}
-              onAddGrades={() => navigate('/student-hub/profile')}
+              onBoostAccuracy={readOnly ? undefined : onTakeAptitude}
+              onAddGrades={readOnly ? undefined : () => navigate('/student-hub/profile')}
             />
           </div>
 
@@ -533,7 +542,10 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
         <UniversityMatches studentProfileId={studentProfileId} maxDisplay={6} />
       )}
 
-      {/* Where to go from here — turn the insight into action (and engagement). */}
+      {/* Where to go from here — turn the insight into action (and engagement).
+          Counselors are reading someone else's result, so these student CTAs
+          ("talk to a mentor", "take the aptitude test") don't apply to them. */}
+      {!readOnly && (
       <section className="majormatch-results__next">
         <div className="majormatch-results__next-head">
           <Rocket size={16} />
@@ -592,15 +604,26 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
           )}
         </div>
       </section>
+      )}
 
-      {/* Actions */}
+      {/* Actions. Retake is the test-taker's action and the backend refuses a
+          non-owner start anyway, so read-only gets "back to the list" instead. */}
       <div className="majormatch-results__actions">
-        <button type="button" className="majormatch-results__btn majormatch-results__btn--primary" onClick={onRetake}>
-          {retakeLocked ? <Lock size={15} /> : <RotateCcw size={15} />}
-          {retakeLocked
-            ? t('psychometric.unlockToRetake', 'Unlock to retake')
-            : t('psychometric.retakeAssessment', 'Retake Assessment')}
-        </button>
+        {readOnly ? (
+          onBack && (
+            <button type="button" className="majormatch-results__btn" onClick={onBack}>
+              <ArrowLeft size={15} />
+              {t('studentHub.psychometric.backToAssessments', 'Back to assessments')}
+            </button>
+          )
+        ) : (
+          <button type="button" className="majormatch-results__btn majormatch-results__btn--primary" onClick={onRetake}>
+            {retakeLocked ? <Lock size={15} /> : <RotateCcw size={15} />}
+            {retakeLocked
+              ? t('psychometric.unlockToRetake', 'Unlock to retake')
+              : t('psychometric.retakeAssessment', 'Retake Assessment')}
+          </button>
+        )}
         {/* PDF Export temporarily hidden */}
         {/* <PdfExport assessment={assessment} recommendations={recommendations} /> */}
       </div>

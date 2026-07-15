@@ -352,6 +352,23 @@ $mm-amber: #b6824b;
     letter-spacing: 0.1em;
   }
 
+  /* — read-only empty state (counselor viewing a student with no results) — */
+  &__empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 22px;
+    background: $mm-cream-elevated;
+    border: 1px solid $mm-hairline;
+    border-radius: 4px;
+    color: $mm-muted;
+  }
+
+  &__empty-text {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
   /* — history ─────────────────────────────────────────────────── */
   &__history {
     list-style: none;

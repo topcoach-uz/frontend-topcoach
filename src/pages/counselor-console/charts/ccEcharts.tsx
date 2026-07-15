@@ -9,17 +9,14 @@
    uses, and render with the SVGRenderer for crisp, editorial output. */
 import { useMemo } from 'react';
 import * as echarts from 'echarts/core';
-import {
-  BarChart,
-  LineChart,
-  FunnelChart,
-} from 'echarts/charts';
+import { BarChart, LineChart } from 'echarts/charts';
 import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
   TitleComponent,
   DatasetComponent,
+  AxisPointerComponent,
 } from 'echarts/components';
 import { SVGRenderer } from 'echarts/renderers';
 import type { EChartsCoreOption } from 'echarts/core';
@@ -28,49 +25,50 @@ import ReactEChartsCore from 'echarts-for-react/lib/core';
 echarts.use([
   BarChart,
   LineChart,
-  FunnelChart,
   GridComponent,
   TooltipComponent,
   LegendComponent,
   TitleComponent,
   DatasetComponent,
+  /* Needed to LINK one crosshair across the stacked small-multiple panels on
+     Overview, so a single hover reads every measure at the same date. That
+     linked read is the whole reason small multiples beat a dual axis here. */
+  AxisPointerComponent,
   SVGRenderer,
 ]);
 
-/* ── Editorial palette ──────────────────────────────────────────────────────
-   Maroon leads; a small tasteful warm/cool family covers multi-series and
-   categorical charts. Kept intentionally short so charts never look like a
-   default rainbow. */
-export const CC_ACCENT = '#7b1f2f';
+/* ── Colour system ──────────────────────────────────────────────────────────
+   Program identity + the validated palettes now live in `../colors.ts` so that
+   pages needing only a program colour don't pull echarts in via this module's
+   top-level `echarts.use()` side effect. Re-exported here so every existing
+   chart import keeps working unchanged. */
+export {
+  CC_ACCENT,
+  CC_SERIES,
+  CC_PROGRAM_COLOR,
+  CC_OTHER,
+  ccProgramColor,
+  CC_MAROON_RAMP,
+  ccRampAt,
+  ccRampFor,
+  ccTint,
+  ccAreaWash,
+  CC_SURFACE,
+} from '../colors';
+import {
+  CC_SERIES,
+  CC_MAROON_RAMP,
+  ccTint,
+  CC_SURFACE,
+} from '../colors';
 
-export const CC_SERIES = {
-  maroon: '#7b1f2f',
-  sage: '#3f6b53',
-  gold: '#b08328',
-  navy: '#3f4a63',
-  rose: '#b5566a',
-  slate: '#8a7f6e',
-};
-
-/* Light → maroon sequential ramp for single-metric categorical charts
-   (progress buckets, recency cohorts, funnel stages, AI tools). */
-export const CC_MAROON_RAMP = [
-  '#e7c4ca',
-  '#d295a0',
-  '#bd6675',
-  '#a13c50',
-  '#7b1f2f',
-];
-export const ccRampAt = (i: number) =>
-  CC_MAROON_RAMP[i % CC_MAROON_RAMP.length];
 
 const PALETTE = [
   CC_SERIES.maroon,
-  CC_SERIES.sage,
   CC_SERIES.gold,
-  CC_SERIES.navy,
+  CC_SERIES.green,
+  CC_SERIES.violet,
   CC_SERIES.rose,
-  CC_SERIES.slate,
 ];
 
 const INK = '#1c1a17';
@@ -112,9 +110,11 @@ echarts.registerTheme('cc', {
     axisLine: { show: false },
     axisTick: { show: false },
     axisLabel: { color: AXIS_LABEL, fontSize: 11, fontFamily: SANS },
+    /* Solid hairline, one shade off the surface. Never dashed: dashing adds
+       noise and reads as "projection" or "threshold" when it is just a grid. */
     splitLine: {
       show: true,
-      lineStyle: { color: GRID_LINE, type: 'dashed' },
+      lineStyle: { color: GRID_LINE, type: 'solid' },
     },
   },
   legend: {
@@ -157,8 +157,18 @@ export function ccTooltipFormatter(opts?: {
   valueSuffix?: string;
   /** Use series name as the row label instead of the category name. */
   bySeries?: boolean;
+  /** Per-series suffix override, keyed by series name. Lets one axis-triggered
+   *  tooltip read measures with different units (e.g. a small-multiples panel
+   *  set where one panel is a percentage and the others are counts) without
+   *  falsely implying they share a scale. */
+  suffixBySeries?: Record<string, string>;
 }) {
-  const { heading, valueSuffix = '', bySeries = true } = opts ?? {};
+  const {
+    heading,
+    valueSuffix = '',
+    bySeries = true,
+    suffixBySeries,
+  } = opts ?? {};
   return (params: TooltipParam | TooltipParam[]) => {
     const list = Array.isArray(params) ? params : [params];
     if (list.length === 0) return '';
@@ -172,10 +182,11 @@ export function ccTooltipFormatter(opts?: {
             ? p.value
             : Number((p.data as { value?: number })?.value ?? 0);
         const label = bySeries ? (p.seriesName ?? '') : String(p.name ?? '');
+        const suffix = suffixBySeries?.[p.seriesName ?? ''] ?? valueSuffix;
         return `<div class="cc-echart-tip-row">
           ${p.marker ?? ''}
           <span class="cc-echart-tip-name">${label}</span>
-          <span class="cc-echart-tip-val">${Number.isFinite(v) ? v.toLocaleString() : '0'}${valueSuffix}</span>
+          <span class="cc-echart-tip-val">${Number.isFinite(v) ? v.toLocaleString() : '0'}${suffix}</span>
         </div>`;
       })
       .join('');

@@ -12,32 +12,31 @@ import {
   message,
 } from 'antd';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   ArrowLeft,
-  FileText,
-  FolderOpen,
   GraduationCap,
-  ListChecks,
   CalendarClock,
+  Compass,
   Layers,
-  Tent,
   AlertTriangle,
   Gauge,
   Mail,
   MessageCircle,
-  StickyNote,
   Plus,
-  Trash2,
   Target,
   LifeBuoy,
   FlaskConical,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
   Users,
 } from 'lucide-react';
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { CcStat, type CcStatTone } from '../components/CcStat';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
-import { useTypedSelector, useAppDispatch } from 'src/app/store';
+import { CcAvatar } from '../components/CcAvatar';
+import { CC_PROGRAM_COLOR, CC_OTHER } from '../charts/ccEcharts';
+import { useAppDispatch } from 'src/app/store';
 import { useGetUserByIdQuery } from 'src/app/services/users';
 import { useFindOrCreateCounselorConversationMutation } from 'src/app/services/chat/chatApi';
 import ChatModal from 'src/components/chat/ChatModal';
@@ -45,19 +44,15 @@ import {
   studentJourneyReadonlyApi,
   useGetStudentJourneyDashboardQuery,
   useGetStudentJourneyProfileQuery,
-  useGetStudentJourneyCollegeApplicationsQuery,
-  useGetStudentJourneyEssaysQuery,
-  useGetStudentJourneyDocumentsQuery,
   useGetStudentJourneyMentorBookingsQuery,
+  useGetStudentJourneyTasksQuery,
 } from 'src/app/services/student-hub/studentJourneyReadonlyApi';
-import {
-  useGetStudentNotesQuery,
-  useAddStudentNoteMutation,
-  useDeleteStudentNoteMutation,
-  useAssignStudentTaskMutation,
-} from 'src/app/services/orgStudentActionsApi';
+import { useAssignStudentTaskMutation } from 'src/app/services/orgStudentActionsApi';
 import {
   useGetStudentProgramsQuery,
+  useGetStudentFullSupportDetailQuery,
+  useGetStudentSatDetailQuery,
+  useGetStudentResearchDetailQuery,
   type StudentProgramsResponse,
   type StudentAdmissionsProgram,
   type StudentSatProgram,
@@ -66,51 +61,32 @@ import {
 } from 'src/app/services/counselorConsoleApi';
 import './StudentProfilePage.scss';
 
-dayjs.extend(relativeTime);
-
 // Heavy tab content is reused verbatim from the read-only "My Journey"
 // drill-down (already org-auth'd on the backend) and code-split so each tab's
 // bundle only loads when the counselor opens it.
-const ApplicationsTab = lazy(
-  () => import('src/pages/counselor-console/_journey/Applications'),
-);
-const EssaysTab = lazy(
-  () => import('src/pages/counselor-console/_journey/Essays'),
-);
-const DocumentsTab = lazy(
-  () => import('src/pages/counselor-console/_journey/Documents'),
-);
-const TasksTab = lazy(
-  () => import('src/pages/counselor-console/_journey/Tasks'),
-);
 const SessionsTab = lazy(
   () => import('src/pages/counselor-console/_journey/StudentDataBookingsCard'),
 );
 
+// Per-program deep-dives. Each is mounted only when the student actually has
+// that program, so a counselor never opens a tab into an empty shell.
+const FullSupportTab = lazy(
+  () => import('src/pages/counselor-console/_programs/FullSupportTab'),
+);
+const SatPrepTab = lazy(
+  () => import('src/pages/counselor-console/_programs/SatPrepTab'),
+);
+const ResearchPrepTab = lazy(
+  () => import('src/pages/counselor-console/_programs/ResearchPrepTab'),
+);
+const AdmissionsTab = lazy(
+  () => import('src/pages/counselor-console/_programs/AdmissionsTab'),
+);
+const MajorMatchTab = lazy(
+  () => import('src/pages/counselor-console/_programs/MajorMatchTab'),
+);
+
 // ── status → pill variant maps ──────────────────────────────────────────────
-const APPLICATION_PILL: Record<string, CcPillVariant> = {
-  submitted: 'success',
-  accepted: 'success',
-  admitted: 'success',
-  in_progress: 'info',
-  in_review: 'info',
-  waitlisted: 'warning',
-  deferred: 'warning',
-  rejected: 'danger',
-  denied: 'danger',
-  not_started: 'neutral',
-  planning: 'neutral',
-};
-
-const ESSAY_PILL: Record<string, CcPillVariant> = {
-  final: 'success',
-  submitted: 'success',
-  review: 'info',
-  revision: 'warning',
-  draft: 'neutral',
-  archived: 'neutral',
-};
-
 const PROGRAM_PILL: Record<string, CcPillVariant> = {
   approved: 'success',
   accepted: 'success',
@@ -216,7 +192,6 @@ export default function CounselorConsoleStudentProfilePage() {
     );
 
   const dashboard = dashboardRes?.data;
-  const stats = dashboard?.stats;
   const profile: any = dashboard?.profile ?? profileRes?.data;
 
   const studentName =
@@ -247,14 +222,17 @@ export default function CounselorConsoleStudentProfilePage() {
           <AlertTriangle size={22} />
           <div className="cc-profile-error-title">No student selected</div>
           <div className="cc-profile-error-text">
-            This URL is missing a student id. Return to the roster and pick a
-            student to view their profile.
+            This URL is missing a student id. Return to the student list and
+            pick a student to view their profile.
           </div>
         </div>
       </div>
     );
   }
 
+  // Program tabs appear only for programs the student is actually in, so the
+  // tab bar reflects this student rather than the catalogue. `programsData`
+  // returns null per program when not enrolled.
   const tabItems = [
     {
       key: 'overview',
@@ -265,86 +243,117 @@ export default function CounselorConsoleStudentProfilePage() {
       ),
       children: (
         <OverviewTab
+          orgId={orgId}
           userId={userId!}
           profile={profile}
-          stats={stats}
+          programs={programsData}
+          programsLoading={programsLoading}
           dashboardLoading={dashboardLoading}
           dashboardError={dashboardError}
+          onOpenTab={setActiveTab}
         />
       ),
     },
-    {
-      key: 'programs',
-      label: (
-        <span className="cc-profile-tab-label">
-          <Tent size={15} /> Programs
-        </span>
-      ),
-      children: <ProgramsTab userId={userId!} orgId={orgId} />,
-    },
-    {
-      key: 'applications',
-      label: (
-        <span className="cc-profile-tab-label">
-          <GraduationCap size={15} /> Applications
-        </span>
-      ),
-      children: (
-        <Suspense fallback={<TabFallback />}>
-          <ApplicationsTab studentId={userId!} studentName={studentName} />
-        </Suspense>
-      ),
-    },
-    {
-      key: 'essays',
-      label: (
-        <span className="cc-profile-tab-label">
-          <FileText size={15} /> Essays
-        </span>
-      ),
-      children: (
-        <Suspense fallback={<TabFallback />}>
-          <EssaysTab studentId={userId!} studentName={studentName} />
-        </Suspense>
-      ),
-    },
-    {
-      key: 'documents',
-      label: (
-        <span className="cc-profile-tab-label">
-          <FolderOpen size={15} /> Documents
-        </span>
-      ),
-      children: (
-        <Suspense fallback={<TabFallback />}>
-          <DocumentsTab studentId={userId!} studentName={studentName} />
-        </Suspense>
-      ),
-    },
-    {
-      key: 'tasks',
-      label: (
-        <span className="cc-profile-tab-label">
-          <ListChecks size={15} /> Tasks
-        </span>
-      ),
-      children: (
-        <TasksTabWithActions
-          userId={userId!}
-          studentName={studentName}
-          orgId={orgId}
-        />
-      ),
-    },
-    {
-      key: 'notes',
-      label: (
-        <span className="cc-profile-tab-label">
-          <StickyNote size={15} /> Notes
-        </span>
-      ),
-      children: <NotesTab userId={userId!} orgId={orgId} />,
-    },
+
+    ...(programsData?.fullSupport
+      ? [
+          {
+            key: 'full-support',
+            label: (
+              <span className="cc-profile-tab-label">
+                <LifeBuoy size={15} /> Full Support
+              </span>
+            ),
+            children: (
+              <div className="cc-profile-program-tab">
+                {/* Tasks live in Full Support, so the assign action lives here
+                    too — the tab itself renders the (read-only) task list. */}
+                <AssignTaskBar
+                  userId={userId!}
+                  studentName={studentName}
+                  orgId={orgId}
+                />
+                <Suspense fallback={<TabFallback />}>
+                  <FullSupportTab orgId={orgId!} userId={userId!} />
+                </Suspense>
+              </div>
+            ),
+          },
+        ]
+      : []),
+
+    ...(programsData?.admissions
+      ? [
+          {
+            key: 'admissions',
+            label: (
+              <span className="cc-profile-tab-label">
+                <GraduationCap size={15} /> Admissions
+              </span>
+            ),
+            children: (
+              <Suspense fallback={<TabFallback />}>
+                <AdmissionsTab orgId={orgId!} userId={userId!} />
+              </Suspense>
+            ),
+          },
+        ]
+      : []),
+
+    ...(programsData?.sat
+      ? [
+          {
+            key: 'sat',
+            label: (
+              <span className="cc-profile-tab-label">
+                <Target size={15} /> SAT Prep
+              </span>
+            ),
+            children: (
+              <Suspense fallback={<TabFallback />}>
+                <SatPrepTab orgId={orgId!} userId={userId!} />
+              </Suspense>
+            ),
+          },
+        ]
+      : []),
+
+    ...(programsData?.research
+      ? [
+          {
+            key: 'research',
+            label: (
+              <span className="cc-profile-tab-label">
+                <FlaskConical size={15} /> Research Prep
+              </span>
+            ),
+            children: (
+              <Suspense fallback={<TabFallback />}>
+                <ResearchPrepTab orgId={orgId!} userId={userId!} />
+              </Suspense>
+            ),
+          },
+        ]
+      : []),
+
+    ...(programsData?.majorMatch
+      ? [
+          {
+            key: 'major-match',
+            label: (
+              <span className="cc-profile-tab-label">
+                <Compass size={15} /> Major Match
+              </span>
+            ),
+            children: (
+              <div className="cc-profile-program-tab">
+                <MajorMatchTab userId={userId!} />
+              </div>
+            ),
+          },
+        ]
+      : []),
+
     {
       key: 'sessions',
       label: (
@@ -398,8 +407,7 @@ export default function CounselorConsoleStudentProfilePage() {
         </div>
 
         <p className="cc-page-lead">
-          Read-only academic and application profile — programs, applications,
-          essays, documents, tasks and sessions.
+          Read-only academic profile — programs, tasks and sessions.
         </p>
       </div>
 
@@ -418,13 +426,6 @@ export default function CounselorConsoleStudentProfilePage() {
               : prettify(profileStatus)
           }
           tone={completionTone(overallProgress)}
-        />
-        <CcStat
-          icon={<GraduationCap size={15} />}
-          label="Applications"
-          value={statValue(stats?.totalApplications, dashboardLoading)}
-          meta={stats ? `${stats.submittedApplications ?? 0} submitted` : undefined}
-          tone="info"
         />
         <UpcomingSessionsStat userId={userId!} />
       </div>
@@ -471,11 +472,6 @@ function bestProgramProgress(
   return entries.reduce((a, b) => (b.progress > a.progress ? b : a));
 }
 
-function statValue(n: number | undefined, loading: boolean): number | string {
-  if (loading && n == null) return '—';
-  return n ?? 0;
-}
-
 // Small self-contained stat that derives the upcoming-session count from the
 // mentor-bookings journey endpoint (the dashboard summary doesn't include it).
 function UpcomingSessionsStat({ userId }: { userId: string }) {
@@ -500,96 +496,394 @@ function UpcomingSessionsStat({ userId }: { userId: string }) {
   );
 }
 
-// ── Overview tab: student info + dashboard summary + recent activity ─────────
+// ── Overview tab ────────────────────────────────────────────────────────────
+// Answers "what's going on with this student, and what do I do about it?" in
+// the top third: an attention banner, a chronological activity feed built from
+// sources that actually exist, and a snapshot strip of enrolled programs.
+
+const INACTIVE_DAYS_THRESHOLD = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Program → tab key. Programs with no drill-down tab map to null. */
+const PROGRAM_TAB: Record<string, string | null> = {
+  'Full Support': 'full-support',
+  Admissions: 'admissions',
+  SAT: 'sat',
+  'Research Prep': 'research',
+  'Major Match': 'major-match',
+  Community: null,
+};
+
+function programIcon(program: string, size = 15) {
+  switch (program) {
+    case 'Full Support':
+      return <LifeBuoy size={size} />;
+    case 'Admissions':
+      return <GraduationCap size={size} />;
+    case 'SAT':
+      return <Target size={size} />;
+    case 'Research Prep':
+      return <FlaskConical size={size} />;
+    case 'Major Match':
+      return <Compass size={size} />;
+    default:
+      return <Users size={size} />;
+  }
+}
+
+function formatDateTime(d: Date): string {
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+/** Coarse relative label; falls back to an absolute date past ~4 weeks. */
+function relativeDate(d: Date, now = Date.now()): string {
+  const diff = now - d.getTime();
+  const days = Math.round(diff / DAY_MS);
+  if (diff < 0) {
+    const ahead = Math.abs(days);
+    if (ahead === 0) return 'Today';
+    if (ahead === 1) return 'Tomorrow';
+    return `In ${ahead} days`;
+  }
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) {
+    const w = Math.floor(days / 7);
+    return `${w} week${w > 1 ? 's' : ''} ago`;
+  }
+  return formatDate(d.toISOString());
+}
+
+interface FeedItem {
+  id: string;
+  date: Date;
+  program: string;
+  title: string;
+  meta?: string;
+}
+
+interface AttentionSignal {
+  reason: string;
+  detail: string;
+}
+
 interface OverviewTabProps {
+  orgId: string | null;
   userId: string;
   profile: any;
-  stats:
-    | {
-        totalApplications: number;
-        submittedApplications: number;
-        totalEssays: number;
-        inProgressEssays: number;
-        totalDocuments: number;
-        totalScholarships: number;
-      }
-    | undefined;
+  programs?: StudentProgramsResponse;
+  programsLoading: boolean;
   dashboardLoading: boolean;
   dashboardError: boolean;
+  onOpenTab: (key: string) => void;
 }
 
 function OverviewTab({
+  orgId,
   userId,
   profile,
-  stats,
+  programs,
+  programsLoading,
   dashboardLoading,
   dashboardError,
+  onOpenTab,
 }: OverviewTabProps) {
-  const { data: appsRes } = useGetStudentJourneyCollegeApplicationsQuery(userId, {
-    skip: !userId,
-  });
-  const { data: essaysRes } = useGetStudentJourneyEssaysQuery(userId, {
-    skip: !userId,
-  });
-  const { data: docsRes } = useGetStudentJourneyDocumentsQuery(userId, {
-    skip: !userId,
-  });
+  const canScope = !!orgId && !!userId;
 
-  const apps = appsRes?.data ?? [];
-  const essays = essaysRes?.data?.essays ?? [];
-  const docs = docsRes?.data ?? [];
+  // Per-program detail is fetched ONLY for programs the student is enrolled in,
+  // and shares its cache entry with the matching program tab — so opening that
+  // tab afterwards is instant rather than a second round-trip.
+  const {
+    data: fullSupport,
+    isLoading: fsLoading,
+    isError: fsError,
+  } = useGetStudentFullSupportDetailQuery(
+    { orgId: orgId ?? '', userId },
+    { skip: !canScope || !programs?.fullSupport },
+  );
 
-  const recent = useMemo(() => {
-    type Item = {
-      key: string;
-      kind: string;
-      title: string;
-      status?: string;
-      variant?: CcPillVariant;
-      at: number;
-    };
-    const items: Item[] = [];
-    apps.forEach((a) =>
-      items.push({
-        key: `app-${a.id}`,
-        kind: 'Application',
-        title: a.universityName || 'University application',
-        status: prettify(a.status),
-        variant: APPLICATION_PILL[a.status] ?? 'neutral',
-        at: new Date(a.updatedAt || a.createdAt).getTime(),
-      }),
-    );
-    essays.forEach((e) =>
-      items.push({
-        key: `essay-${e.id}`,
-        kind: 'Essay',
-        title: e.title || prettify(e.essayType),
-        status: prettify(e.status),
-        variant: ESSAY_PILL[e.status] ?? 'neutral',
-        at: new Date(e.updatedAt || e.createdAt || 0).getTime(),
-      }),
-    );
-    docs.forEach((d) =>
-      items.push({
-        key: `doc-${d.id}`,
-        kind: 'Document',
-        title: d.fileName || prettify(d.documentType),
-        status: d.isVerified ? 'Verified' : undefined,
-        variant: d.isVerified ? 'success' : 'neutral',
-        at: new Date(d.updatedAt || d.createdAt || 0).getTime(),
-      }),
-    );
-    return items
-      .filter((i) => !Number.isNaN(i.at))
-      .sort((a, b) => b.at - a.at)
-      .slice(0, 6);
-  }, [apps, essays, docs]);
+  const {
+    data: satDetail,
+    isLoading: satLoading,
+    isError: satError,
+  } = useGetStudentSatDetailQuery(
+    { orgId: orgId ?? '', userId },
+    { skip: !canScope || !programs?.sat },
+  );
 
-  if (dashboardLoading && !profile) {
-    return <TabFallback />;
+  const {
+    data: research,
+    isLoading: researchLoading,
+    isError: researchError,
+  } = useGetStudentResearchDetailQuery(
+    { orgId: orgId ?? '', userId },
+    { skip: !canScope || !programs?.research },
+  );
+
+  const {
+    data: bookingsRes,
+    isLoading: bookingsLoading,
+    isError: bookingsError,
+  } = useGetStudentJourneyMentorBookingsQuery(userId, { skip: !userId });
+
+  const {
+    data: tasksRes,
+    isLoading: tasksLoading,
+    isError: tasksError,
+  } = useGetStudentJourneyTasksQuery(userId, { skip: !userId });
+
+  // ── Feed ──────────────────────────────────────────────────────────────────
+  // Only sources that carry a real timestamp make it in. Mentor tasks are
+  // deliberately absent: the task payload has a deadline but no submitted/
+  // reviewed timestamp, so they cannot be placed on a timeline honestly.
+  const feed = useMemo<FeedItem[]>(() => {
+    const now = Date.now();
+    const out: FeedItem[] = [];
+
+    for (const s of fullSupport?.sessions ?? []) {
+      const date = new Date(s.dateTime);
+      if (Number.isNaN(date.getTime()) || date.getTime() > now) continue;
+      out.push({
+        id: `fs-${s.id}`,
+        date,
+        program: 'Full Support',
+        title: s.description?.trim() || 'Full Support session',
+        meta: s.done ? 'Session completed' : 'Session logged',
+      });
+    }
+
+    for (const b of (bookingsRes?.data ?? []) as any[]) {
+      const date = new Date(b?.date);
+      if (Number.isNaN(date.getTime()) || date.getTime() > now) continue;
+      if (b?.cancelStatus) continue;
+      const mentorName = b?.mentor?.profile?.name as string | undefined;
+      out.push({
+        id: `booking-${b?.id}`,
+        date,
+        program: 'Mentor session',
+        title: mentorName ? `Mentor session with ${mentorName}` : 'Mentor session',
+        meta: 'Attended',
+      });
+    }
+
+    for (const sub of research?.submissions ?? []) {
+      const date = new Date(sub.submittedAt);
+      if (Number.isNaN(date.getTime())) continue;
+      out.push({
+        id: `research-${sub.id}`,
+        date,
+        program: 'Research Prep',
+        title: `Submitted Week ${sub.weekNumber} — ${sub.weekTitle}`,
+        meta: prettify(sub.status),
+      });
+    }
+
+    for (const s of satDetail?.recentSessions ?? []) {
+      const date = new Date(s.completedAt);
+      if (Number.isNaN(date.getTime())) continue;
+      // estimatedScore is a 200–800 PER-SECTION score — never a composite.
+      const score =
+        s.estimatedScore != null ? ` · Est. ${s.estimatedScore} section score` : '';
+      out.push({
+        id: `sat-${s.id}`,
+        date,
+        program: 'SAT',
+        title: s.title || `SAT ${prettify(s.mode)}`,
+        meta: `${s.correctQ}/${s.totalQ} correct${score}`,
+      });
+    }
+
+    return out.sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [fullSupport, bookingsRes, research, satDetail]);
+
+  // ── Program snapshot rows ─────────────────────────────────────────────────
+  const programRows = useMemo(() => {
+    if (!programs) return [];
+    const rows: {
+      name: string;
+      progress: number | null;
+      meta: string;
+    }[] = [];
+
+    if (programs.fullSupport) {
+      const fs = programs.fullSupport;
+      const pending = fs.tasks.pending;
+      rows.push({
+        name: 'Full Support',
+        progress: fs.milestones.progress,
+        meta: `${fs.milestones.done}/${fs.milestones.total} milestones${
+          pending > 0 ? ` · ${pending} task${pending > 1 ? 's' : ''} open` : ''
+        }`,
+      });
+    }
+    if (programs.admissions) {
+      const a = programs.admissions;
+      rows.push({
+        name: 'Admissions',
+        progress: a.progress,
+        meta: `${a.lessons.completed}/${a.lessons.total} lessons`,
+      });
+    }
+    if (programs.sat) {
+      const s = programs.sat;
+      rows.push({
+        name: 'SAT',
+        progress: s.lessonsProgress,
+        // bestScore is a 200–800 per-section score, never "/1600".
+        meta: s.bestScore
+          ? `Best section score ${s.bestScore}`
+          : `${s.questionsAttempted} questions attempted`,
+      });
+    }
+    if (programs.research) {
+      const r = programs.research;
+      rows.push({
+        name: 'Research Prep',
+        progress: r.progress,
+        // Progress counts weeks with a submission — videos/quizzes don't move it.
+        meta: `${r.weeksCompleted}/${r.totalWeeks} weeks submitted`,
+      });
+    }
+    if (programs.majorMatch) {
+      const m = programs.majorMatch;
+      rows.push({
+        name: 'Major Match',
+        progress: null,
+        meta: `${m.assessments} assessment${m.assessments === 1 ? '' : 's'}${
+          m.latestRiasecCode ? ` · ${m.latestRiasecCode}` : ''
+        }`,
+      });
+    }
+    if (programs.community?.active) {
+      rows.push({ name: 'Community', progress: null, meta: 'Active member' });
+    }
+    return rows;
+  }, [programs]);
+
+  // ── Attention signals ─────────────────────────────────────────────────────
+  // Mirrors the org dashboard's needs-attention rules, derived for this one
+  // student from the data already on the page.
+  const overdueTasks = useMemo(() => {
+    const now = Date.now();
+    return (tasksRes?.data ?? []).filter((t) => {
+      // A submission is text OR files — the student app always writes text, but
+      // counting files too keeps us from telling a counselor "nothing submitted"
+      // when the student uploaded their work.
+      const submitted = !!t.submissionText?.trim() || !!t.submissionFileUrls?.length;
+      if (submitted) return false;
+      if (!t.deadline) return false;
+      const d = new Date(t.deadline).getTime();
+      return !Number.isNaN(d) && d < now;
+    }).length;
+  }, [tasksRes]);
+
+  const bestProgram = bestProgramProgress(programs);
+  const progress = bestProgram?.progress ?? null;
+
+  // Last activity = the profile timestamp OR the newest real event in the feed,
+  // whichever is later. `lastWatchedAt` is deliberately not used: it is
+  // fabricated as `now` for students with no course progress rows.
+  const lastActive = useMemo(() => {
+    const candidates: number[] = [];
+    const p = profile?.lastActiveAt ? new Date(profile.lastActiveAt).getTime() : NaN;
+    if (!Number.isNaN(p)) candidates.push(p);
+    if (feed[0]) candidates.push(feed[0].date.getTime());
+    if (candidates.length === 0) return null;
+    return new Date(Math.max(...candidates));
+  }, [profile, feed]);
+
+  const signalsLoading =
+    (programsLoading && !programs) ||
+    (tasksLoading && !tasksRes) ||
+    (fsLoading && !fullSupport) ||
+    (satLoading && !satDetail) ||
+    (researchLoading && !research) ||
+    (bookingsLoading && !bookingsRes);
+
+  const signals = useMemo<AttentionSignal[]>(() => {
+    const out: AttentionSignal[] = [];
+    const inactiveDays = lastActive
+      ? Math.floor((Date.now() - lastActive.getTime()) / DAY_MS)
+      : null;
+    const enrolled = programRows.length > 0;
+
+    if (!lastActive && (progress === null || progress === 0)) {
+      out.push({
+        reason: 'Never signed in',
+        detail: 'No recorded activity and no coursework progress.',
+      });
+    } else if (enrolled && progress === 0) {
+      out.push({
+        reason: 'Hasn’t started any coursework',
+        detail: 'Enrolled, but no program shows any progress yet.',
+      });
+    } else if (inactiveDays !== null && inactiveDays >= INACTIVE_DAYS_THRESHOLD) {
+      out.push({
+        reason: `No activity in ${inactiveDays} days`,
+        detail: `Last seen ${formatDate(lastActive!.toISOString())}.`,
+      });
+    }
+
+    if (overdueTasks > 0) {
+      out.push({
+        reason: `${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}`,
+        detail: 'Past the deadline with nothing submitted.',
+      });
+    }
+    return out;
+  }, [lastActive, progress, programRows, overdueTasks]);
+
+  // ── Support: assigned mentor + next session ───────────────────────────────
+  const nextSession = useMemo<FeedItem | null>(() => {
+    const now = Date.now();
+    const upcoming: FeedItem[] = [];
+
+    for (const s of fullSupport?.sessions ?? []) {
+      const date = new Date(s.dateTime);
+      if (Number.isNaN(date.getTime()) || date.getTime() <= now || s.done) continue;
+      upcoming.push({
+        id: `next-fs-${s.id}`,
+        date,
+        program: 'Full Support',
+        title: s.description?.trim() || 'Full Support session',
+      });
+    }
+    for (const b of (bookingsRes?.data ?? []) as any[]) {
+      const date = new Date(b?.date);
+      if (Number.isNaN(date.getTime()) || date.getTime() <= now) continue;
+      if (b?.cancelStatus) continue;
+      const mentorName = b?.mentor?.profile?.name as string | undefined;
+      upcoming.push({
+        id: `next-booking-${b?.id}`,
+        date,
+        program: 'Mentor session',
+        title: mentorName ? `With ${mentorName}` : 'Mentor session',
+      });
+    }
+    upcoming.sort((a, b) => a.date.getTime() - b.date.getTime());
+    return upcoming[0] ?? null;
+  }, [fullSupport, bookingsRes]);
+
+  const mentor = fullSupport?.mentor ?? null;
+
+  // ── States ────────────────────────────────────────────────────────────────
+  if (dashboardLoading && !profile && programsLoading && !programs) {
+    return (
+      <div className="cc-profile-overview">
+        <div className="cc-profile-overview-main">
+          <Skeleton active paragraph={{ rows: 6 }} />
+        </div>
+      </div>
+    );
   }
 
-  if (dashboardError && !profile) {
+  if (dashboardError && !profile && !programs) {
     return (
       <InlineError
         title="Couldn’t load the summary"
@@ -598,302 +892,255 @@ function OverviewTab({
     );
   }
 
-  const infoRows: { label: string; value: ReactNode }[] = [
-    { label: 'Status', value: prettify(profile?.profileStatus) },
-    { label: 'Completion', value: `${profile?.completionPercentage ?? 0}%` },
-    {
-      label: 'Last active',
-      value: profile?.lastActiveAt ? formatDate(profile.lastActiveAt) : '—',
-    },
-    { label: 'Scholarships', value: stats?.totalScholarships ?? 0 },
-  ];
+  const feedError = fsError || satError || researchError || bookingsError;
+  const feedLoading =
+    (fsLoading && !fullSupport) ||
+    (satLoading && !satDetail) ||
+    (researchLoading && !research) ||
+    (bookingsLoading && !bookingsRes);
 
   return (
     <div className="cc-profile-overview">
-      <Section title="Student information">
-        <dl className="cc-profile-info">
-          {infoRows.map((row) => (
-            <div className="cc-profile-info-row" key={row.label}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </Section>
-
-      <Section title="Application summary">
-        {stats ? (
-          <div className="cc-profile-summary-grid">
-            <SummaryCell label="Applications" value={stats.totalApplications} />
-            <SummaryCell label="Submitted" value={stats.submittedApplications} />
-            <SummaryCell label="Essays" value={stats.totalEssays} />
-            <SummaryCell label="In-progress essays" value={stats.inProgressEssays} />
-            <SummaryCell label="Documents" value={stats.totalDocuments} />
-            <SummaryCell label="Scholarships" value={stats.totalScholarships} />
-          </div>
-        ) : (
-          <EmptyState>No summary data yet.</EmptyState>
-        )}
-      </Section>
-
-      <Section title="Recent activity">
-        {recent.length > 0 ? (
-          <ul className="cc-profile-activity">
-            {recent.map((item) => (
-              <li className="cc-profile-activity-row" key={item.key}>
-                <span className="cc-profile-activity-kind">{item.kind}</span>
-                <span className="cc-profile-activity-title" title={item.title}>
-                  {item.title}
-                </span>
-                {item.status ? (
-                  <CcPill variant={item.variant}>{item.status}</CcPill>
-                ) : (
-                  <span />
-                )}
-                <span className="cc-profile-activity-date">
-                  {formatDate(new Date(item.at).toISOString())}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState>
-            No applications, essays or documents recorded yet.
-          </EmptyState>
-        )}
-      </Section>
-    </div>
-  );
-}
-
-function SummaryCell({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="cc-profile-summary-cell">
-      <span className="cc-profile-summary-value">{value ?? 0}</span>
-      <span className="cc-profile-summary-label">{label}</span>
-    </div>
-  );
-}
-
-// ── Programs tab: one editorial card per enrolled TopCoach program ───────────
-function ProgramsTab({
-  userId,
-  orgId,
-}: {
-  userId: string;
-  orgId: string | null;
-}) {
-  const { data, isLoading, isError } = useGetStudentProgramsQuery(
-    { orgId: orgId ?? '', userId },
-    { skip: !userId || !orgId },
-  );
-
-  if (isLoading) {
-    return <ProgramsSkeleton />;
-  }
-
-  if (isError) {
-    return (
-      <InlineError
-        title="Couldn’t load programs"
-        text="The student’s program enrollments failed to load. Try again shortly."
-      />
-    );
-  }
-
-  const p = data;
-  const hasAny =
-    !!p &&
-    (!!p.admissions ||
-      !!p.sat ||
-      !!p.research ||
-      !!p.fullSupport ||
-      !!p.community?.active);
-
-  if (!p || !hasAny) {
-    return (
-      <Section title="Programs">
-        <EmptyState>Not enrolled in any program yet.</EmptyState>
-      </Section>
-    );
-  }
-
-  return (
-    <div className="cc-programs-grid">
-      {p.admissions ? <AdmissionsCard data={p.admissions} /> : null}
-      {p.sat ? <SatCard data={p.sat} /> : null}
-      {p.fullSupport ? <FullSupportCard data={p.fullSupport} /> : null}
-      {p.research ? <ResearchCard data={p.research} /> : null}
-      {p.community?.active ? <CommunityCard /> : null}
-    </div>
-  );
-}
-
-function ProgramsSkeleton() {
-  return (
-    <div className="cc-programs-grid">
-      {[0, 1].map((i) => (
-        <section className="cc-program-card" key={i}>
-          <Skeleton active title={{ width: '45%' }} paragraph={{ rows: 3 }} />
-        </section>
-      ))}
-    </div>
-  );
-}
-
-// ── Program card primitives ──────────────────────────────────────────────────
-function ProgramCard({
-  icon,
-  title,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="cc-program-card">
-      <div className="cc-program-card-head">
-        <span className="cc-program-card-ico" aria-hidden="true">
-          {icon}
-        </span>
-        <h3 className="cc-program-card-title">{title}</h3>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function ProgMetric({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="cc-program-metric">
-      <span className="cc-program-metric-value">{value}</span>
-      <span className="cc-program-metric-label">{label}</span>
-    </div>
-  );
-}
-
-function ProgBar({ pct, label }: { pct: number; label: string }) {
-  const v = Math.max(0, Math.min(100, Math.round(pct)));
-  return (
-    <div className="cc-program-progress">
-      <div className="cc-program-progress-top">
-        <span className="cc-program-progress-label">{label}</span>
-        <span className="cc-program-progress-pct">{v}%</span>
-      </div>
-      <div className="cc-program-bar-track">
-        <div className="cc-program-bar-fill" style={{ width: `${v}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function AdmissionsCard({ data }: { data: StudentAdmissionsProgram }) {
-  return (
-    <ProgramCard icon={<GraduationCap size={16} />} title="Admissions">
-      <ProgBar pct={data.progress} label="Progress" />
-      <div className="cc-program-metrics">
-        <ProgMetric label="Applications" value={data.applications.total} />
-        <ProgMetric label="Submitted" value={data.applications.submitted} />
-      </div>
-    </ProgramCard>
-  );
-}
-
-function SatCard({ data }: { data: StudentSatProgram }) {
-  return (
-    <ProgramCard icon={<Target size={16} />} title="SAT Prep">
-      <div className="cc-program-metrics">
-        <ProgMetric
-          label="Best mock"
-          value={
-            <>
-              {data.bestScore}
-              <span className="cc-program-metric-suffix"> / 1600</span>
-            </>
-          }
-        />
-        <ProgMetric label="Accuracy" value={`${Math.round(data.accuracy)}%`} />
-        <ProgMetric label="Questions" value={data.questionsAttempted} />
-      </div>
-      <ProgBar pct={data.lessonsProgress} label="Lessons" />
-    </ProgramCard>
-  );
-}
-
-function FullSupportCard({ data }: { data: StudentFullSupportProgram }) {
-  return (
-    <ProgramCard icon={<LifeBuoy size={16} />} title="Full Support">
-      <div className="cc-program-metrics">
-        <ProgMetric
-          label="Sessions"
-          value={`${data.sessions.completed}/${data.sessions.total}`}
-        />
-        <ProgMetric
-          label="Milestones"
-          value={`${data.milestones.done}/${data.milestones.total}`}
-        />
-        <ProgMetric
-          label="Tasks pending"
-          value={`${data.tasks.pending}/${data.tasks.total}`}
-        />
-      </div>
-      <ProgBar pct={data.milestones.progress} label="Milestones" />
-      {data.applications.length > 0 ? (
-        <div className="cc-program-applist">
-          <div className="cc-program-applist-title">Applications</div>
-          <ul>
-            {data.applications.map((a, i) => (
-              <li
-                className="cc-program-applist-row"
-                key={`${a.program}-${a.stage}-${i}`}
-              >
-                <span className="cc-program-applist-name" title={a.program}>
-                  {a.program}
-                </span>
-                <span className="cc-program-applist-stage">
-                  {prettify(a.stage)}
-                </span>
-                <CcPill
-                  variant={PROGRAM_PILL[(a.status || '').toLowerCase()] ?? 'neutral'}
-                >
-                  {prettify(a.status)}
-                </CcPill>
-              </li>
-            ))}
-          </ul>
+      {/* 1. Needs-attention banner */}
+      {signalsLoading ? (
+        <div className="cc-attention cc-attention--loading">
+          <Skeleton active title={false} paragraph={{ rows: 2 }} />
         </div>
-      ) : null}
-    </ProgramCard>
+      ) : tasksError && signals.length === 0 ? (
+        <div className="cc-attention cc-attention--unknown">
+          <span className="cc-attention-ico">
+            <AlertTriangle size={18} />
+          </span>
+          <div className="cc-attention-body">
+            <div className="cc-attention-eyebrow">Attention</div>
+            <h2 className="cc-attention-headline">Couldn’t check for flags</h2>
+            <p className="cc-attention-detail">
+              Some of this student’s data failed to load, so this banner may be
+              incomplete.
+            </p>
+          </div>
+        </div>
+      ) : signals.length > 0 ? (
+        <div className="cc-attention cc-attention--warn">
+          <span className="cc-attention-ico">
+            <AlertTriangle size={18} />
+          </span>
+          <div className="cc-attention-body">
+            <div className="cc-attention-eyebrow">Needs attention</div>
+            <h2 className="cc-attention-headline">{signals[0].reason}</h2>
+            <p className="cc-attention-detail">{signals[0].detail}</p>
+            {signals.length > 1 && (
+              <div className="cc-attention-extra">
+                {signals.slice(1).map((s) => (
+                  <CcPill key={s.reason} variant="warning">
+                    {s.reason}
+                  </CcPill>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="cc-attention cc-attention--clear">
+          <span className="cc-attention-ico">
+            <CheckCircle2 size={18} />
+          </span>
+          <div className="cc-attention-body">
+            <div className="cc-attention-eyebrow">All clear</div>
+            <h2 className="cc-attention-headline">Nothing needs your attention</h2>
+            <p className="cc-attention-detail">
+              No overdue tasks, and activity is recent
+              {lastActive ? ` — last seen ${relativeDate(lastActive).toLowerCase()}` : ''}
+              .
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Program snapshot strip */}
+      <Section title="Programs">
+        {programsLoading && !programs ? (
+          <Skeleton active title={false} paragraph={{ rows: 3 }} />
+        ) : programRows.length === 0 ? (
+          <EmptyState>
+            This student isn’t enrolled in any program yet.
+          </EmptyState>
+        ) : (
+          <ul className="cc-snapshot">
+            {programRows.map((row) => {
+              const tab = PROGRAM_TAB[row.name] ?? null;
+              const color = CC_PROGRAM_COLOR[row.name] ?? CC_OTHER;
+              return (
+                <li key={row.name}>
+                  <button
+                    type="button"
+                    className="cc-snapshot-row"
+                    disabled={!tab}
+                    onClick={tab ? () => onOpenTab(tab) : undefined}
+                  >
+                    <span
+                      className="cc-snapshot-ico"
+                      style={{ color, background: `${color}1f` }}
+                    >
+                      {programIcon(row.name)}
+                    </span>
+                    <span className="cc-snapshot-text">
+                      {/* Colour is never the only signal — the program is always
+                          named, for CVD readers and everyone else. */}
+                      <span className="cc-snapshot-name">{row.name}</span>
+                      <span className="cc-snapshot-meta">{row.meta}</span>
+                    </span>
+                    {row.progress != null ? (
+                      <span className="cc-snapshot-progress">
+                        <span className="cc-snapshot-pct">
+                          {Math.round(row.progress)}%
+                        </span>
+                        <span className="cc-snapshot-track">
+                          <span
+                            className="cc-snapshot-fill"
+                            style={{
+                              width: `${Math.min(100, Math.max(0, row.progress))}%`,
+                              background: color,
+                            }}
+                          />
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="cc-snapshot-progress" />
+                    )}
+                    {tab ? (
+                      <ChevronRight size={15} className="cc-snapshot-chev" />
+                    ) : (
+                      <span className="cc-snapshot-chev" />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Section>
+
+      <div className="cc-profile-overview-cols">
+        {/* 2. Activity feed */}
+        <Section title="Recent activity">
+          {feedLoading ? (
+            <Skeleton active title={false} paragraph={{ rows: 4 }} />
+          ) : feedError && feed.length === 0 ? (
+            <InlineError
+              title="Couldn’t load activity"
+              text="This student’s sessions and submissions failed to load."
+            />
+          ) : feed.length === 0 ? (
+            <EmptyState>
+              No sessions or submissions recorded yet — there’s nothing this
+              student has done for us to show.
+            </EmptyState>
+          ) : (
+            <>
+              <ol className="cc-feed">
+                {feed.slice(0, 8).map((item) => {
+                  const color = CC_PROGRAM_COLOR[item.program] ?? CC_OTHER;
+                  return (
+                    <li className="cc-feed-row" key={item.id}>
+                      <span
+                        className="cc-feed-ico"
+                        style={{ color, background: `${color}1f` }}
+                      >
+                        {programIcon(item.program, 14)}
+                      </span>
+                      <span className="cc-feed-body">
+                        <span className="cc-feed-title">{item.title}</span>
+                        <span className="cc-feed-meta">
+                          {item.program}
+                          {item.meta ? ` · ${item.meta}` : ''}
+                        </span>
+                      </span>
+                      <time
+                        className="cc-feed-date"
+                        dateTime={item.date.toISOString()}
+                        title={formatDateTime(item.date)}
+                      >
+                        {relativeDate(item.date)}
+                      </time>
+                    </li>
+                  );
+                })}
+              </ol>
+              {feed.length > 8 && (
+                <p className="cc-feed-more">
+                  Showing the 8 most recent of {feed.length} events.
+                </p>
+              )}
+            </>
+          )}
+        </Section>
+
+        {/* Support: assigned mentor + next session */}
+        <Section title="Support">
+          {feedLoading ? (
+            <Skeleton active title={false} paragraph={{ rows: 3 }} />
+          ) : (
+            <div className="cc-support">
+              <div className="cc-support-block">
+                <div className="cc-support-eyebrow">Assigned mentor</div>
+                {mentor ? (
+                  <div className="cc-support-mentor">
+                    <CcAvatar name={mentor.name} src={mentor.avatarUrl} size={32} />
+                    <span className="cc-support-mentor-name">{mentor.name}</span>
+                  </div>
+                ) : (
+                  <div className="cc-support-none">
+                    {programs?.fullSupport
+                      ? 'No mentor assigned'
+                      : 'Not in Full Support'}
+                  </div>
+                )}
+              </div>
+
+              <div className="cc-support-block">
+                <div className="cc-support-eyebrow">Next session</div>
+                {nextSession ? (
+                  <div className="cc-support-next">
+                    <span className="cc-support-next-date">
+                      {formatDateTime(nextSession.date)}
+                    </span>
+                    <span className="cc-support-next-meta">
+                      <Clock size={12} /> {relativeDate(nextSession.date)} ·{' '}
+                      {nextSession.program}
+                    </span>
+                    <span className="cc-support-next-title">
+                      {nextSession.title}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="cc-support-none">Nothing scheduled</div>
+                )}
+              </div>
+
+              {profile?.profileStatus ? (
+                <div className="cc-support-block">
+                  <div className="cc-support-eyebrow">Profile</div>
+                  <div className="cc-support-profile">
+                    <CcPill
+                      variant={PROFILE_STATUS_PILL[profile.profileStatus] ?? 'neutral'}
+                    >
+                      {prettify(profile.profileStatus)}
+                    </CcPill>
+                    <span className="cc-support-profile-pct">
+                      {profile?.completionPercentage ?? 0}% complete
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </Section>
+      </div>
+    </div>
   );
 }
 
-function ResearchCard({ data }: { data: StudentResearchProgram }) {
-  return (
-    <ProgramCard icon={<FlaskConical size={16} />} title="Research Prep">
-      <div className="cc-program-metrics">
-        <ProgMetric
-          label="Weeks completed"
-          value={`${data.weeksCompleted}/${data.totalWeeks}`}
-        />
-      </div>
-      <ProgBar pct={data.progress} label="Progress" />
-    </ProgramCard>
-  );
-}
-
-function CommunityCard() {
-  return (
-    <ProgramCard icon={<Users size={16} />} title="Community">
-      <div className="cc-program-community">
-        <CcPill variant="success">Active member</CcPill>
-        <p className="cc-program-community-text">
-          Participating in the TopCoach student community.
-        </p>
-      </div>
-    </ProgramCard>
-  );
-}
 
 // ── Message button: opens a DM with the student ──────────────────────────────
 // Reuses the app's existing counselor↔student chat: `find-or-create-counselor`
@@ -959,131 +1206,15 @@ function MessageButton({
   );
 }
 
-// ── Notes tab: private counselor notes on the student ────────────────────────
-function NotesTab({ userId, orgId }: { userId: string; orgId: string | null }) {
-  const currentUserId = useTypedSelector((s) => s.auth.profile?.id);
-  const [draft, setDraft] = useState('');
-
-  const { data, isLoading, isError } = useGetStudentNotesQuery(
-    { orgId: orgId ?? '', userId },
-    { skip: !orgId || !userId },
-  );
-  const [addNote, { isLoading: adding }] = useAddStudentNoteMutation();
-  const [deleteNote] = useDeleteStudentNoteMutation();
-
-  const notes = useMemo(() => {
-    const items = data?.items ?? [];
-    return [...items].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-  }, [data]);
-
-  const handleAdd = async () => {
-    const body = draft.trim();
-    if (!body || !orgId) return;
-    try {
-      await addNote({ orgId, userId, body }).unwrap();
-      setDraft('');
-      message.success('Note added');
-    } catch {
-      message.error('Could not save the note. Please try again.');
-    }
-  };
-
-  const handleDelete = (noteId: string) => {
-    if (!orgId) return;
-    Modal.confirm({
-      title: 'Delete this note?',
-      content: 'This permanently removes the note and cannot be undone.',
-      okText: 'Delete',
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await deleteNote({ orgId, userId, noteId }).unwrap();
-          message.success('Note deleted');
-        } catch {
-          message.error('Could not delete the note. Please try again.');
-        }
-      },
-    });
-  };
-
-  return (
-    <Section title="Counselor notes">
-      <div className="cc-note-composer">
-        <textarea
-          className="cc-note-input"
-          value={draft}
-          maxLength={2000}
-          rows={3}
-          placeholder="Add a private note about this student — only counselors on this team can see it."
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <div className="cc-note-composer-foot">
-          <Button
-            type="primary"
-            className="cc-profile-action-btn"
-            loading={adding}
-            disabled={!draft.trim() || !orgId}
-            onClick={handleAdd}
-            icon={<Plus size={14} />}
-          >
-            Save note
-          </Button>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <TabFallback />
-      ) : isError ? (
-        <InlineError
-          title="Couldn’t load notes"
-          text="The student’s notes failed to load. Try again shortly."
-        />
-      ) : notes.length > 0 ? (
-        <ul className="cc-note-list">
-          {notes.map((note) => {
-            const mine = !!currentUserId && note.authorUserId === currentUserId;
-            return (
-              <li className="cc-note" key={note.id}>
-                <div className="cc-note-head">
-                  <span className="cc-note-author">
-                    {note.authorName || 'Counselor'}
-                  </span>
-                  <span className="cc-note-dot" aria-hidden="true">
-                    ·
-                  </span>
-                  <span className="cc-note-time">
-                    {dayjs(note.createdAt).fromNow()}
-                  </span>
-                  {mine ? (
-                    <button
-                      type="button"
-                      className="cc-note-del"
-                      aria-label="Delete note"
-                      onClick={() => handleDelete(note.id)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  ) : null}
-                </div>
-                <p className="cc-note-body">{note.body}</p>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <EmptyState>
-          No notes yet. Add the first note to keep the team in the loop.
-        </EmptyState>
-      )}
-    </Section>
-  );
-}
-
 // ── Tasks tab: read-only journey tasks + counselor "Assign task" action ──────
-function TasksTabWithActions({
+/**
+ * The "Assign task" action, mounted at the top of the Full Support tab.
+ *
+ * Tasks are Full Support tasks (`full_support_tasks`), and FullSupportTab
+ * already renders the read-only list — so this contributes only the action, not
+ * a second copy of the list.
+ */
+function AssignTaskBar({
   userId,
   studentName,
   orgId,
@@ -1138,9 +1269,10 @@ function TasksTabWithActions({
     <div className="cc-tasks-tab">
       <div className="cc-tasks-toolbar">
         <div className="cc-tasks-toolbar-text">
-          <span className="cc-tasks-toolbar-title">Tasks</span>
+          <span className="cc-tasks-toolbar-title">Mentor tasks</span>
           <span className="cc-tasks-toolbar-sub">
-            Assign follow-ups and track {firstName}’s to-dos.
+            Assign a follow-up for {firstName} — it appears in their task list
+            below.
           </span>
         </div>
         <Button
@@ -1153,10 +1285,6 @@ function TasksTabWithActions({
           Assign task
         </Button>
       </div>
-
-      <Suspense fallback={<TabFallback />}>
-        <TasksTab studentId={userId} studentName={studentName} />
-      </Suspense>
 
       <Modal
         title="Assign a task"

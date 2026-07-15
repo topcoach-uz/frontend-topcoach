@@ -303,12 +303,27 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
 
   const handleViewResults = (assessmentId?: string) => {
     const idToUse = assessmentId || latestAssessment?.id;
-    if (idToUse) {
-      setAssessmentId(idToUse);
-      setIsGeneratingResults(false); // Mark that we're viewing existing results
-      setCurrentStep('results');
+    if (!idToUse) return;
+
+    setAssessmentId(idToUse);
+    setIsGeneratingResults(false); // Mark that we're viewing existing results
+    setCurrentStep('results');
+
+    // Read-only (counselor console) mounts this page *inside* /counselor-console.
+    // Navigating to the student-hub URL would unmount the console tab and hit
+    // StudentHubGate, which bounces any org member straight back to
+    // /counselor-console — so the click read as "nothing happens". The step is
+    // local state, so simply not navigating renders the results inline.
+    if (!readOnly) {
       navigate('/student-hub/psychometric-assessment?step=results');
     }
+  };
+
+  // Read-only results are shown inline, so "back" is a state transition rather
+  // than a route change — it returns the counselor to the assessment list.
+  const handleBackToHistory = () => {
+    setAssessmentId(null);
+    setCurrentStep('start');
   };
 
   if (profileLoading) {
@@ -408,7 +423,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
             recommendations={recommendations}
             onRetake={requiresEnrollment ? () => navigate(communityGate.destination) : handleAbandon}
             retakeLocked={requiresEnrollment}
-            onTakeAptitude={handleStartAssessment.bind(null, language, true)}
+            onTakeAptitude={readOnly ? undefined : handleStartAssessment.bind(null, language, true)}
+            readOnly={readOnly}
+            onBack={readOnly ? handleBackToHistory : undefined}
             isLoading={assessmentLoading || selectedAssessmentLoading || recommendationsLoading}
             isGeneratingResults={isGeneratingResults}
           />

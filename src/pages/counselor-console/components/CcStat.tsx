@@ -4,10 +4,11 @@ import { ArrowRight } from 'lucide-react';
 export type CcStatTone = 'info' | 'good' | 'warn' | 'alert' | 'neutral';
 
 /**
- * Editorial stat tile for the counselor console — serif numeral, icon chip,
- * semantic tone tint, reveal-on-hover CTA. Cloned from the mentor console's
- * McStat into the `--cc-*` / `cc-*` namespace. Styles live in
- * CounselorConsoleLayout.scss so every page picks them up.
+ * Editorial stat tile for the counselor console — small-caps label, serif
+ * numeral, a small tinted icon in the top-right margin, tone-tinted ink and a
+ * reveal-on-hover CTA. A tile is not a card: put several inside a
+ * `.cc-stat-grid` and they weld into one bordered band divided by hairlines
+ * (see CounselorConsoleLayout.scss, where all the styles live).
  */
 export function CcStat({
   icon,

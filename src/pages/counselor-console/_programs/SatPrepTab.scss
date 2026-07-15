@@ -1,0 +1,452 @@
+/* Counselor Console — SAT Prep program tab.
+   Card shell, eyebrow/title type, states, skeletons, list rows and tabular
+   figures come from `programs-shared.scss` (via programChrome). Only SAT's own
+   forms live here: the personal-best strip, the gauge caption and the skill
+   mastery diagnostics.
+
+   Series hues live in charts/ccEcharts.tsx and are never restated here; SAT's
+   identity hue reaches the chart through `ccProgramColor('SAT')` in the tab.
+
+   Mastery band colours use the design system's STATUS tokens (success /
+   warning / danger) because a band is a state, not a series — and every band
+   ships with a text label (the CcPill beside it), so identity is never carried
+   by colour alone. */
+
+/* ── Personal best / last session notes ──
+   A ruled strip under the tiles: secondary facts that shouldn't compete with
+   the stat grid but must stay visible (personal best is a SECTION score). */
+.cc-sat-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px 22px;
+  padding: 0 2px 16px;
+  border-bottom: 1px solid var(--cc-hairline);
+}
+
+.cc-sat-note {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.88rem;
+}
+
+.cc-sat-note-ico {
+  display: inline-flex;
+  align-self: center;
+  color: var(--cc-text-muted);
+  flex-shrink: 0;
+}
+
+.cc-sat-note-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+  flex-shrink: 0;
+}
+
+.cc-sat-note-value {
+  font-family: var(--cc-serif);
+  font-size: 1.02rem;
+  color: var(--cc-text);
+  flex-shrink: 0;
+}
+
+.cc-sat-note-text {
+  color: var(--cc-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ── Card pair ──
+   auto-fit with a min track keeps the gauge and the mock line side by side on
+   desktop and stacked on narrow screens — never a horizontal page scroll. */
+.cc-sat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ── Gauge caption ──
+   The target tick is drawn inside the chart; this names it in text tokens
+   (a chart legend must never be the only place a threshold is explained). */
+.cc-sat-gauge-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--cc-text-muted);
+  margin-top: 2px;
+}
+
+.cc-sat-gauge-tick {
+  width: 2px;
+  height: 11px;
+  border-radius: 1px;
+  background: var(--cc-text-muted);
+  flex-shrink: 0;
+}
+
+.cc-sat-gauge-gap {
+  padding-left: 8px;
+  margin-left: 2px;
+  border-left: 1px solid var(--cc-hairline);
+  color: var(--cc-text-secondary);
+}
+
+/* ── Mastery: legend + filter row ── */
+.cc-sat-mastery-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--cc-hairline);
+}
+
+.cc-sat-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  min-width: 0;
+}
+
+.cc-sat-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.cc-sat-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.cc-sat-swatch--mastered {
+  background: var(--cc-success);
+}
+.cc-sat-swatch--building {
+  background: var(--cc-warning);
+}
+.cc-sat-swatch--focus {
+  background: var(--cc-danger);
+}
+
+.cc-sat-legend-label {
+  color: var(--cc-text-secondary);
+  font-weight: 600;
+}
+
+.cc-sat-legend-hint {
+  color: var(--cc-text-muted);
+}
+
+.cc-sat-legend-count {
+  color: var(--cc-text);
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  font-size: 0.74rem;
+}
+
+.cc-sat-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-border);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.cc-sat-filter-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--cc-text-secondary);
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: var(--cc-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 2px;
+  }
+}
+
+.cc-sat-filter-btn--active {
+  background: var(--cc-accent);
+  color: #fbfaf6;
+
+  &:hover {
+    color: #fbfaf6;
+  }
+}
+
+/* ── Mastery: domains ── */
+.cc-sat-domains {
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-sat-domain {
+  padding: 16px 0 4px;
+
+  & + & {
+    border-top: 1px solid var(--cc-hairline);
+  }
+}
+
+.cc-sat-domain-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: 6px;
+}
+
+.cc-sat-domain-name {
+  font-family: var(--cc-serif);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--cc-text);
+  margin: 0;
+}
+
+.cc-sat-domain-section {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-sat-domain-stat {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--cc-text-muted);
+
+  b {
+    color: var(--cc-text-secondary);
+    font-weight: 700;
+  }
+}
+
+/* Row: name | bar | % | correct/attempts | band pill.
+   Collapses to a two-line layout on narrow screens so the bar keeps a usable
+   length and the page never scrolls sideways. */
+.cc-sat-skill {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.5fr) minmax(80px, 2fr) 42px 82px 92px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 6px;
+}
+
+.cc-sat-skill-name {
+  font-size: 0.86rem;
+  color: var(--cc-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Thin mark, recessive track. */
+.cc-sat-track {
+  position: relative;
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(28, 25, 23, 0.07);
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Low-attempt rows read as provisional — a hairline outline, so a 0%-of-1 bar
+   is visibly not the same claim as 0%-of-30. */
+.cc-sat-track--low {
+  box-shadow: inset 0 0 0 1px var(--cc-border-strong);
+  background: transparent;
+}
+
+.cc-sat-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  min-width: 2px;
+  transition: width 0.3s ease;
+}
+.cc-sat-fill--mastered {
+  background: var(--cc-success);
+}
+.cc-sat-fill--building {
+  background: var(--cc-warning);
+}
+.cc-sat-fill--focus {
+  background: var(--cc-danger);
+}
+
+.cc-sat-skill-pct {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--cc-text);
+  text-align: right;
+}
+
+.cc-sat-skill-attempts {
+  font-size: 0.78rem;
+  color: var(--cc-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.cc-sat-skill-low {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+  border: 1px dashed var(--cc-border-strong);
+  border-radius: 4px;
+  padding: 0 4px;
+  cursor: help;
+}
+
+/* ── Recent activity ── */
+.cc-sat-activity-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 84px 62px 52px 110px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 6px;
+}
+
+.cc-sat-activity-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cc-sat-activity-title {
+  font-size: 0.88rem;
+  color: var(--cc-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-sat-activity-meta {
+  font-size: 0.74rem;
+  color: var(--cc-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-sat-activity-score {
+  font-size: 0.86rem;
+  color: var(--cc-text-secondary);
+  font-weight: 600;
+  text-align: right;
+}
+
+.cc-sat-activity-acc {
+  font-size: 0.86rem;
+  color: var(--cc-text);
+  font-weight: 700;
+  text-align: right;
+}
+
+.cc-sat-activity-date {
+  font-size: 0.78rem;
+  color: var(--cc-text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Narrow screens ──
+   Both dense row grids reflow to stacked blocks; no horizontal scroll. */
+@media (max-width: 720px) {
+  .cc-sat-skill {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      'name name name'
+      'track pct band'
+      'attempts attempts attempts';
+    gap: 6px 10px;
+    padding: 10px 6px;
+  }
+  .cc-sat-skill-name {
+    grid-area: name;
+    white-space: normal;
+  }
+  .cc-sat-track {
+    grid-area: track;
+  }
+  .cc-sat-skill-pct {
+    grid-area: pct;
+  }
+  .cc-sat-skill-attempts {
+    grid-area: attempts;
+  }
+  .cc-sat-skill .cc-pill {
+    grid-area: band;
+    justify-self: end;
+  }
+
+  .cc-sat-activity-row {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      'main main main'
+      'mode score acc'
+      'date date date';
+    gap: 6px 10px;
+  }
+  .cc-sat-activity-main {
+    grid-area: main;
+  }
+  .cc-sat-activity-row .cc-pill {
+    grid-area: mode;
+    justify-self: start;
+  }
+  .cc-sat-activity-score {
+    grid-area: score;
+  }
+  .cc-sat-activity-acc {
+    grid-area: acc;
+  }
+  .cc-sat-activity-date {
+    grid-area: date;
+    text-align: left;
+  }
+
+  .cc-sat-domain-stat {
+    margin-left: 0;
+  }
+}

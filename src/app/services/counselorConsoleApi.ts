@@ -57,7 +57,10 @@ export interface OrgContext {
 export interface OrgDashboardNeedsAttention {
   userId: string;
   name: string;
+  avatarUrl: string | null;
   reason: string;
+  /** Supporting detail, e.g. "Invited 9 days ago" / "Last active Jun 28". */
+  context: string | null;
 }
 
 export interface OrgDashboardEnrollmentTrend {
@@ -120,7 +123,18 @@ export interface GetOrgStudentsArgs {
 
 export interface StudentAdmissionsProgram {
   enrolled: boolean;
+  /** Admissions course progress, 0-100. */
   progress: number;
+  /** Lessons completed vs. active lessons in the Admissions course. */
+  lessons: { completed: number; total: number };
+  /** Total Admissions lesson time watched, in SECONDS. */
+  totalTimeWatched: number;
+  /** ISO timestamp of last Admissions activity; null when there is none. */
+  lastWatchedAt: string | null;
+  /**
+   * Dead field — application creation was never adopted by users. Kept so
+   * existing consumers keep compiling; don't build new UI on it.
+   */
   applications: { total: number; submitted: number };
 }
 
@@ -157,17 +171,228 @@ export interface StudentCommunityProgram {
   active: boolean;
 }
 
+/**
+ * AI Major Match. Null when the student has never completed an assessment —
+ * that's what gates the Major Match tab (Major Match has no "enrolment", so
+ * presence of assessments is the only meaningful signal).
+ */
+export interface StudentMajorMatchProgram {
+  assessments: number;
+  latestRiasecCode: string | null;
+  lastCompletedAt: string | null;
+}
+
 export interface StudentProgramsResponse {
   admissions: StudentAdmissionsProgram | null;
   sat: StudentSatProgram | null;
   research: StudentResearchProgram | null;
   fullSupport: StudentFullSupportProgram | null;
   community: StudentCommunityProgram;
+  majorMatch: StudentMajorMatchProgram | null;
 }
 
 export interface GetStudentProgramsArgs {
   orgId: string;
   userId: string;
+}
+
+// ── Per-program DETAIL drill-downs ──────────────────────────────────────────
+// Three read-only endpoints backing the per-program tabs on the student
+// profile. All are org-scoped (OrgScopeGuard + @OrgRoles(OWNER, COUNSELOR))
+// and additionally re-verify the target student's membership server-side.
+
+/** `GET /org/:orgId/students/:userId/sat-progress` */
+export interface StudentSatDetailArgs {
+  orgId: string;
+  userId: string;
+}
+
+/**
+ * SAT composite. `estimatedScore` is a 200–800 PER-SECTION score, so `total`
+ * (400–1600) exists only when BOTH sections have been mocked — never infer a
+ * composite from one section.
+ */
+export interface SatComposite {
+  math: number | null;
+  readingWriting: number | null;
+  total: number | null;
+}
+
+export interface SatMasteryRow {
+  skill: string;
+  domain: string;
+  /** 'math' | 'reading-writing' */
+  section: string;
+  attempts: number;
+  correct: number;
+  pct: number;
+}
+
+export interface SatSessionRow {
+  id: string;
+  mode: 'mock' | 'pack' | 'practice';
+  section: string;
+  title: string;
+  totalQ: number;
+  correctQ: number;
+  durationSec: number;
+  /** 200–800, mock mode only. */
+  estimatedScore: number | null;
+  completedAt: string;
+}
+
+export interface StudentSatDetail {
+  enrolled: boolean;
+  composite: SatComposite;
+  personalBest: { score: number; title: string; completedAt: string } | null;
+  lastSession: SatSessionRow | null;
+  streak: { count: number; lastPracticeDate: string | null };
+  focusArea: SatMasteryRow | null;
+  masteryRows: SatMasteryRow[];
+  recentSessions: SatSessionRow[];
+  mockSessions: SatSessionRow[];
+  packSessions: SatSessionRow[];
+}
+
+/** `GET /org/:orgId/students/:userId/research` — null when never enrolled. */
+export interface StudentResearchDetailArgs {
+  orgId: string;
+  userId: string;
+}
+
+export type ResearchSubmissionStatus =
+  | 'submitted'
+  | 'under_review'
+  | 'graded'
+  | 'returned_for_revision';
+
+export type ResearchWeekLockReason =
+  | 'previous-week-not-submitted'
+  | 'video-lessons-incomplete'
+  | 'quiz-not-passed'
+  | 'module-locked';
+
+/** Quiz question with the answer key stripped server-side (no correctIndex). */
+export interface ResearchQuizQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  hint?: string;
+}
+
+export interface ResearchWeek {
+  id: string;
+  weekNumber: number;
+  title: string;
+  tagline: string;
+  videoLessons: { id: string; title: string; durationSeconds: number }[];
+  quiz: { id: string; title: string; questions: ResearchQuizQuestion[] };
+  assignment: { id: string; title: string; instructionsMd: string };
+}
+
+export interface ResearchWeekLockState {
+  weekId: string;
+  weekNumber: number;
+  weekLocked: boolean;
+  weekLockReason?: ResearchWeekLockReason;
+  videos: Record<string, { completed: boolean; progressPercent: number }>;
+  quiz: {
+    locked: boolean;
+    passed: boolean;
+    bestScorePercent: number;
+    attempts: number;
+    lockReason?: ResearchWeekLockReason;
+  };
+  assignment: {
+    locked: boolean;
+    submissionStatus: ResearchSubmissionStatus | 'none';
+    lockReason?: ResearchWeekLockReason;
+  };
+}
+
+export interface ResearchSubmission {
+  id: string;
+  weekNumber: number;
+  weekTitle: string;
+  attemptNumber: number;
+  status: ResearchSubmissionStatus;
+  submittedAt: string;
+  gradedAt?: string;
+  gradedByName?: string;
+  feedbackMd?: string;
+  score?: number;
+  fileName?: string;
+  fileUrl?: string;
+}
+
+export interface StudentResearchDetail {
+  enrolled: boolean;
+  summary: {
+    weeksCompleted: number;
+    overallPercent: number;
+    currentWeekNumber: number;
+    totalAssignmentsGraded: number;
+    totalAssignmentsPending: number;
+  };
+  weeks: ResearchWeek[];
+  lockState: ResearchWeekLockState[];
+  submissions: ResearchSubmission[];
+}
+
+/** `GET /org/:orgId/students/:userId/full-support` — null when not enrolled. */
+export interface StudentFullSupportDetailArgs {
+  orgId: string;
+  userId: string;
+}
+
+export interface FullSupportMentor {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export interface FullSupportSession {
+  id: string;
+  dateTime: string;
+  /** Raw string, e.g. '1h' / '1.5h'. */
+  duration: string;
+  description: string;
+  done: boolean;
+  meetingLink: string | null;
+}
+
+/**
+ * Both figures are LIFETIME totals — the schema has no allocation column and no
+ * monthly bucket, so never label these "this month" or "allocated".
+ */
+export interface FullSupportHours {
+  completed: number;
+  logged: number;
+}
+
+export interface FullSupportMilestone {
+  id: string;
+  label: string;
+  date: string | null;
+  done: boolean;
+}
+
+export interface FullSupportPipelineRow {
+  id: string;
+  program: string;
+  stage: string;
+  status: string;
+  aid: boolean;
+  deadline: string | null;
+}
+
+export interface StudentFullSupportDetail {
+  enrolled: boolean;
+  mentor: FullSupportMentor | null;
+  sessions: FullSupportSession[];
+  hours: FullSupportHours;
+  milestones: FullSupportMilestone[];
+  pipeline: FullSupportPipelineRow[];
 }
 
 export interface RemoveStudentArgs {
@@ -286,17 +511,6 @@ export interface OrgAnalyticsBucket {
   count: number;
 }
 
-export interface OrgAnalyticsFunnelStage {
-  stage: string;
-  count: number;
-}
-
-export interface OrgAnalyticsApplicationsPoint {
-  month: string;
-  started: number;
-  submitted: number;
-}
-
 export interface OrgAnalyticsWeeklyActivePoint {
   week: string;
   count: number;
@@ -339,10 +553,6 @@ export interface OrgAnalytics {
     progressDistribution: OrgAnalyticsBucket[];
     /** Count of the org's students who are active Community members. */
     communityMembers: number;
-  };
-  admissions: {
-    funnel: OrgAnalyticsFunnelStage[];
-    applicationsOverTime: OrgAnalyticsApplicationsPoint[];
   };
   engagement: {
     weeklyActive: OrgAnalyticsWeeklyActivePoint[];
@@ -443,6 +653,43 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
     >({
       query: ({ orgId, userId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/programs`,
+        method: 'GET',
+      }),
+      providesTags: (_res, _err, { userId }) => [
+        { type: 'CounselorStudentPrograms' as const, id: userId },
+      ],
+    }),
+
+    // ── Per-program detail drill-downs ────────────────────────────────────────
+    getStudentSatDetail: builder.query<StudentSatDetail, StudentSatDetailArgs>({
+      query: ({ orgId, userId }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/sat-progress`,
+        method: 'GET',
+      }),
+      providesTags: (_res, _err, { userId }) => [
+        { type: 'CounselorStudentPrograms' as const, id: userId },
+      ],
+    }),
+
+    getStudentResearchDetail: builder.query<
+      StudentResearchDetail | null,
+      StudentResearchDetailArgs
+    >({
+      query: ({ orgId, userId }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/research`,
+        method: 'GET',
+      }),
+      providesTags: (_res, _err, { userId }) => [
+        { type: 'CounselorStudentPrograms' as const, id: userId },
+      ],
+    }),
+
+    getStudentFullSupportDetail: builder.query<
+      StudentFullSupportDetail | null,
+      StudentFullSupportDetailArgs
+    >({
+      query: ({ orgId, userId }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/full-support`,
         method: 'GET',
       }),
       providesTags: (_res, _err, { userId }) => [
@@ -594,6 +841,9 @@ export const {
   useGetOrgAnalyticsQuery,
   useGetOrgStudentsQuery,
   useGetStudentProgramsQuery,
+  useGetStudentSatDetailQuery,
+  useGetStudentResearchDetailQuery,
+  useGetStudentFullSupportDetailQuery,
   useRemoveStudentMutation,
   useSearchOrgUsersQuery,
   useAddOrgMemberMutation,

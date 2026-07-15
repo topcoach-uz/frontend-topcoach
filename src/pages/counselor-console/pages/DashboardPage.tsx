@@ -25,7 +25,7 @@ import {
   type OrgDashboardNeedsAttention,
 } from 'src/app/services/counselorConsoleApi';
 import { CcStat } from '../components/CcStat';
-import { CcPill } from '../components/CcPill';
+import { CcAvatar } from '../components/CcAvatar';
 import {
   CcChart,
   CC_ACCENT,
@@ -68,23 +68,24 @@ export default function CounselorConsoleDashboardPage() {
       { skip: !orgId },
     );
 
-  // Admissions pipeline — where students sit in the application journey. The
-  // backend returns the funnel already ordered widest→narrowest; we render it
-  // as proportional horizontal bars (each stage relative to the first).
-  const funnel = useMemo(() => {
-    const stages = analytics?.admissions.funnel ?? [];
-    const top = stages[0]?.count ?? 0;
-    return stages.map((s, i) => ({
-      key: `${s.stage}-${i}`,
-      stage: s.stage,
-      count: s.count,
-      // width relative to the entry stage; conversion relative to entry.
-      width: top > 0 ? Math.max(4, Math.round((s.count / top) * 100)) : 0,
-      conv: top > 0 ? Math.round((s.count / top) * 100) : 0,
+  // Cohort progress — how the org's students are distributed across progress
+  // bands. Answers the counselor's core question ("who's behind?") from data
+  // students actually generate, and pairs with the Needs-attention rail.
+  const distribution = useMemo(() => {
+    const buckets = analytics?.programs.progressDistribution ?? [];
+    const peak = buckets.reduce((m, b) => Math.max(m, b.count), 0);
+    const total = buckets.reduce((sum, b) => sum + b.count, 0);
+    return buckets.map((b, i) => ({
+      key: `${b.bucket}-${i}`,
+      bucket: b.bucket,
+      count: b.count,
+      // Bar width is relative to the busiest band so small cohorts stay legible.
+      width: peak > 0 ? Math.max(4, Math.round((b.count / peak) * 100)) : 0,
+      share: total > 0 ? Math.round((b.count / total) * 100) : 0,
     }));
-  }, [analytics?.admissions.funnel]);
+  }, [analytics?.programs.progressDistribution]);
 
-  const funnelTotal = funnel.reduce((sum, r) => sum + r.count, 0);
+  const distributionTotal = distribution.reduce((sum, b) => sum + b.count, 0);
 
   const chartData = useMemo(
     () =>
@@ -95,13 +96,23 @@ export default function CounselorConsoleDashboardPage() {
     [data?.enrollmentTrends],
   );
 
+  /* An editorial trend line, per the console's design language.
+     `enrollmentTrends` is students who JOINED each month — NOT total student
+     count over time. The line form is a deliberate design choice; the HONESTY
+     lives in the labelling, so keep it: the series is "New students", the
+     tooltip reads "4 joined", and the card subtitle says "New students per
+     month". Do NOT rename the series back to "Students" or suffix the tooltip
+     with " students" — that made a month reading 4 look like the org had 4
+     students. And never cumsum this into a running total: the backend returns
+     only the last 12 months of joins, so a cumulative line would silently omit
+     every earlier student and contradict the Total students tile above it. */
   const enrollmentOption = useMemo<EChartsCoreOption>(() => {
     const last = chartData.length - 1;
     return {
       grid: { left: 6, right: 14, top: 12, bottom: 6, containLabel: true },
       tooltip: {
         trigger: 'axis',
-        formatter: ccTooltipFormatter({ valueSuffix: ' students' }),
+        formatter: ccTooltipFormatter({ valueSuffix: ' joined' }),
       },
       xAxis: {
         type: 'category',
@@ -112,7 +123,7 @@ export default function CounselorConsoleDashboardPage() {
       series: [
         {
           type: 'line',
-          name: 'Students',
+          name: 'New students',
           smooth: true,
           color: CC_ACCENT,
           showSymbol: true,
@@ -179,8 +190,10 @@ export default function CounselorConsoleDashboardPage() {
     return (
       <div className="cc-dash">
         {header}
-        <div className="cc-stat-grid" aria-hidden>
-          {Array.from({ length: 6 }).map((_, i) => (
+        {/* Band-shaped, matching the real KPI row it replaces — and 5 cells,
+            not 6, so the count doesn't change when data lands. */}
+        <div className="cc-dash-skel-band" aria-hidden>
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="cc-dash-skel-stat">
               <Skeleton
                 active
@@ -310,14 +323,14 @@ export default function CounselorConsoleDashboardPage() {
             )}
           </section>
 
-          {/* Admissions pipeline */}
+          {/* Cohort progress */}
           <section className="cc-dash-card cc-dash-card--fill">
             <div className="cc-dash-card-head">
               <div>
-                <h2 className="cc-dash-card-title">Admissions pipeline</h2>
+                <h2 className="cc-dash-card-title">Cohort progress</h2>
                 <p className="cc-dash-card-sub">
-                  Where your students sit in the application journey — and where
-                  they drop off.
+                  How far along your students are across their programs — spot
+                  who's stalled at a glance.
                 </p>
               </div>
               <button
@@ -341,36 +354,33 @@ export default function CounselorConsoleDashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : funnelTotal === 0 ? (
+            ) : distributionTotal === 0 ? (
               <div className="cc-dash-empty">
                 <span className="cc-dash-empty-ico cc-dash-empty-ico--accent">
                   <GraduationCap size={20} />
                 </span>
-                <div className="cc-dash-empty-title">No pipeline data yet</div>
+                <div className="cc-dash-empty-title">No progress data yet</div>
                 <div className="cc-dash-empty-text">
-                  Stages fill in as students build profiles, draft essays, and
-                  submit applications.
+                  This fills in as students work through their programs.
                 </div>
               </div>
             ) : (
               <div className="cc-dash-funnel">
-                {funnel.map((s, i) => (
-                  <div className="cc-dash-funnel-row" key={s.key}>
+                {distribution.map((b) => (
+                  <div className="cc-dash-funnel-row" key={b.key}>
                     <div className="cc-dash-funnel-top">
-                      <span className="cc-dash-funnel-stage">{s.stage}</span>
+                      <span className="cc-dash-funnel-stage">{b.bucket}</span>
                       <span className="cc-dash-funnel-meta">
-                        <strong>{s.count.toLocaleString()}</strong>
-                        {i > 0 && (
-                          <span className="cc-dash-funnel-conv">
-                            {s.conv}% of entry
-                          </span>
-                        )}
+                        <strong>{b.count.toLocaleString()}</strong>
+                        <span className="cc-dash-funnel-conv">
+                          {b.share}% of cohort
+                        </span>
                       </span>
                     </div>
                     <div className="cc-dash-funnel-track">
                       <span
                         className="cc-dash-funnel-fill"
-                        style={{ width: `${s.width}%` }}
+                        style={{ width: `${b.width}%` }}
                       />
                     </div>
                   </div>
@@ -424,9 +434,27 @@ export default function CounselorConsoleDashboardPage() {
                       navigate(`/counselor-console/students/${s.userId}`)
                     }
                   >
+                    <CcAvatar
+                      name={s.name}
+                      src={s.avatarUrl}
+                      size={34}
+                      className="cc-dash-attn-avatar"
+                    />
                     <span className="cc-dash-attn-main">
                       <span className="cc-dash-attn-name">{s.name}</span>
-                      <CcPill variant="warning">{s.reason}</CcPill>
+                      <span className="cc-dash-attn-reason">
+                        <span
+                          className="cc-dash-attn-dot"
+                          aria-hidden="true"
+                        />
+                        {s.reason}
+                      </span>
+                      {/* Context is what makes the flag actionable — "Invited 9
+                          days ago" tells a counselor what to do; the reason
+                          alone doesn't. Null when there's nothing honest to add. */}
+                      {s.context ? (
+                        <span className="cc-dash-attn-context">{s.context}</span>
+                      ) : null}
                     </span>
                     <ChevronRight size={16} className="cc-dash-attn-arrow" />
                   </button>
@@ -444,7 +472,7 @@ export default function CounselorConsoleDashboardPage() {
               {[
                 {
                   label: 'Students',
-                  hint: 'Manage the roster',
+                  hint: 'Manage your students',
                   icon: <Users size={16} />,
                   to: '/counselor-console/students',
                 },

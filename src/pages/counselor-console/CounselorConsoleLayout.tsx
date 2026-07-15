@@ -13,7 +13,7 @@ import {
   MailPlus,
   BarChart3,
   FileBarChart2,
-  Megaphone,
+  // Megaphone, // parked with the Announcements nav item
   UserCog,
   Settings,
   ScrollText,
@@ -179,13 +179,15 @@ export default function CounselorConsoleLayout() {
       },
     ];
 
+    // Announcements is parked for now. The page, route and backend are intact —
+    // uncomment this item and its <Route> in lib/router/index.tsx to restore.
     const communicationItems: NavItem[] = [
-      {
-        key: 'announcements',
-        label: 'Announcements',
-        icon: <Megaphone size={18} strokeWidth={1.75} />,
-        path: '/counselor-console/announcements',
-      },
+      // {
+      //   key: 'announcements',
+      //   label: 'Announcements',
+      //   icon: <Megaphone size={18} strokeWidth={1.75} />,
+      //   path: '/counselor-console/announcements',
+      // },
     ];
 
     // Administration is owner-only — counselors never see Staff / Settings.
@@ -222,7 +224,9 @@ export default function CounselorConsoleLayout() {
         items: administrationItems,
       });
     }
-    return groups;
+    // Drop empty groups so a parked section (e.g. Communication while
+    // Announcements is off) doesn't leave a dangling header in the sidebar.
+    return groups.filter((g) => g.items.length > 0);
   }, [role]);
 
   const activeKey = useMemo((): NavKey | null => {

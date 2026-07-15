@@ -18,7 +18,7 @@ import {
   Eye,
   FileSpreadsheet,
   FileText,
-  MoreVertical,
+  MoreHorizontal,
   Search as SearchIcon,
   UserMinus,
   Users,
@@ -30,6 +30,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { useCounselorConsole } from '../CounselorConsoleContext';
+// Program identity colours. Import from `../colors`, NOT from `../charts/ccEcharts`:
+// that module has a top-level `echarts.use()` side effect and would drag the whole
+// charting library into this page's bundle.
+import { ccProgramColor, ccTint } from '../colors';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
 import { CcMenu, type CcMenuItem } from '../components/CcMenu';
 import { CcAvatar } from '../components/CcAvatar';
@@ -49,15 +53,47 @@ import './StudentsPage.scss';
 dayjs.extend(relativeTime);
 
 const PAGE_SIZE = 20;
+/**
+ * Largest `limit` the roster endpoint accepts — `GetOrgRosterQueryDto` declares
+ * `@Max(100)` and the global ValidationPipe 400s anything above it. Exports must
+ * page through the roster rather than requesting it in one oversized call.
+ */
+const EXPORT_PAGE_SIZE = 100;
+/** Safety net so a bad `total`/`items` pairing can't spin forever. */
+const EXPORT_MAX_PAGES = 200;
 
 type StatusFilter = 'all' | 'active' | 'invited' | 'archived';
 
+/** Segments of the status filter, in reference order. */
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: 'all', label: 'All statuses' },
+  { value: 'all', label: 'All' },
   { value: 'active', label: 'Active' },
   { value: 'invited', label: 'Invited' },
   { value: 'archived', label: 'Archived' },
 ];
+
+/**
+ * How many program pills a cell shows before collapsing the rest into a `+N`
+ * chip. Two keeps the column on one line at its 210px width.
+ */
+const PROGRAM_PILL_LIMIT = 2;
+
+/**
+ * Avatar hue variants. Initials fallbacks are tinted per student so a list of
+ * them reads as people rather than one repeated maroon disc. The hue is picked
+ * from a stable hash of the student's id (never their index or Math.random), so
+ * a given student keeps the same colour across pages, sorts and re-renders.
+ *
+ * Purely decorative: the avatar always carries the initials, and the name sits
+ * next to it, so nothing is encoded by colour alone.
+ */
+const AVATAR_HUES = ['maroon', 'gold', 'green', 'violet', 'rose'] as const;
+
+function avatarHueClass(key: string): string {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return `cc-roster-avatar--${AVATAR_HUES[h % AVATAR_HUES.length]}`;
+}
 
 const STATUS_PILL: Record<
   OrgStudentStatus,
@@ -164,7 +200,7 @@ export default function CounselorConsoleStudentsPage() {
     Modal.confirm({
       title: `Archive ${s.name}?`,
       content:
-        'Archived students are removed from the active roster but their data is kept. You can filter to “Archived” to find them again.',
+        'Archived students no longer appear in your active students, but their data is kept. You can filter to “Archived” to find them again.',
       okText: 'Archive',
       okButtonProps: { danger: true },
       cancelText: 'Cancel',
@@ -188,7 +224,7 @@ export default function CounselorConsoleStudentsPage() {
         <span className="cc-roster-remove-desc">
           Remove <b>{s.name}</b> from{' '}
           <b>{org?.name ?? 'this organization'}</b>? They keep their TopCoach
-          account, but leave this roster.
+          account, but leave your student list.
         </span>
       ),
       okText: 'Remove',
@@ -267,19 +303,38 @@ export default function CounselorConsoleStudentsPage() {
   // ── Export (Excel + PDF) — pulls the FULL roster for the current filters,
   //    not just the visible page, via a one-off query dispatch. ──────────────
   const rowsForExport = useRef<OrgStudent[]>([]);
+  /**
+   * Walk the roster page by page at the maximum allowed page size, keeping the
+   * current filters/sort, until every matching student is collected. Stops on a
+   * short page, once `total` rows are in hand, or at the hard page cap.
+   */
   async function loadAllForExport(): Promise<OrgStudent[]> {
     if (!orgId) return [];
-    const result = await dispatch(
-      counselorConsoleApi.endpoints.getOrgStudents.initiate({
-        orgId,
-        search: search || undefined,
-        status: status === 'all' ? undefined : status,
-        page: 1,
-        limit: Math.max(total, PAGE_SIZE),
-        sort,
-      }),
-    ).unwrap();
-    return result.items ?? [];
+    const all: OrgStudent[] = [];
+    let expected = Infinity;
+
+    for (let p = 1; p <= EXPORT_MAX_PAGES; p++) {
+      const result = await dispatch(
+        counselorConsoleApi.endpoints.getOrgStudents.initiate({
+          orgId,
+          search: search || undefined,
+          status: status === 'all' ? undefined : status,
+          page: p,
+          limit: EXPORT_PAGE_SIZE,
+          sort,
+        }),
+      ).unwrap();
+
+      const items = result.items ?? [];
+      all.push(...items);
+
+      if (p === 1 && Number.isFinite(result.total) && result.total >= 0) {
+        expected = result.total;
+      }
+      if (items.length < EXPORT_PAGE_SIZE || all.length >= expected) break;
+    }
+
+    return all;
   }
 
   const exportRow = (s: OrgStudent) => ({
@@ -318,8 +373,9 @@ export default function CounselorConsoleStudentsPage() {
         wb,
         `${orgSlug}students_${dayjs().format('YYYY-MM-DD')}.xlsx`,
       );
-    } catch {
-      message.error('Could not export the roster. Please try again.');
+    } catch (err) {
+      console.error('[roster] Excel export failed', err);
+      message.error('Could not export the student list. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -354,8 +410,9 @@ export default function CounselorConsoleStudentsPage() {
       });
       const orgSlug = org?.slug ? `${org.slug}_` : '';
       doc.save(`${orgSlug}students_${dayjs().format('YYYY-MM-DD')}.pdf`);
-    } catch {
-      message.error('Could not export the roster. Please try again.');
+    } catch (err) {
+      console.error('[roster] PDF export failed', err);
+      message.error('Could not export the student list. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -387,7 +444,7 @@ export default function CounselorConsoleStudentsPage() {
           <CcAvatar
             name={s.name}
             src={s.avatarUrl}
-            className="cc-roster-avatar"
+            className={`cc-roster-avatar ${avatarHueClass(s.userId || s.name)}`}
           />
           <div className="cc-roster-student-meta">
             <div className="cc-roster-student-name">{s.name}</div>
@@ -414,18 +471,44 @@ export default function CounselorConsoleStudentsPage() {
       title: 'Program',
       key: 'program',
       width: 210,
-      render: (_, s) =>
-        s.programs.length > 0 ? (
+      render: (_, s) => {
+        if (s.programs.length === 0)
+          return <span className="cc-roster-muted">—</span>;
+        const shown = s.programs.slice(0, PROGRAM_PILL_LIMIT);
+        const rest = s.programs.slice(PROGRAM_PILL_LIMIT);
+        return (
           <div className="cc-roster-programs">
-            {s.programs.map((p) => (
-              <span className="cc-roster-program-pill" key={p}>
-                {p}
+            {shown.map((p) => {
+              // Colour follows the program; unknown programs fall back to the
+              // neutral rather than inventing a hue. Half the program colour
+              // pairs sit in the ΔE 8–12 CVD band, so the pill ALWAYS prints the
+              // program name — colour is never the only signal.
+              const hue = ccProgramColor(p);
+              return (
+                <span
+                  className="cc-roster-program-pill"
+                  key={p}
+                  style={{
+                    color: hue,
+                    background: ccTint(hue, 0.12),
+                    borderColor: ccTint(hue, 0.24),
+                  }}
+                >
+                  {p}
+                </span>
+              );
+            })}
+            {rest.length > 0 ? (
+              <span
+                className="cc-roster-program-pill cc-roster-program-pill--more"
+                title={rest.join(', ')}
+              >
+                +{rest.length}
               </span>
-            ))}
+            ) : null}
           </div>
-        ) : (
-          <span className="cc-roster-muted">—</span>
-        ),
+        );
+      },
     },
     {
       title: 'Top program',
@@ -506,7 +589,7 @@ export default function CounselorConsoleStudentsPage() {
             ariaLabel={`Actions for ${s.name}`}
             triggerClassName="cc-roster-kebab"
           >
-            <MoreVertical size={15} />
+            <MoreHorizontal size={16} />
           </CcMenu>
         </div>
       ),
@@ -523,8 +606,8 @@ export default function CounselorConsoleStudentsPage() {
           </div>
           <h1 className="cc-page-title">Students</h1>
           <p className="cc-page-lead">
-            The full roster for this organization — search, filter and drill into
-            each student.
+            Every student in this organization — search, filter and drill into
+            each one.
           </p>
         </div>
         <div className="cc-placeholder">
@@ -550,15 +633,17 @@ export default function CounselorConsoleStudentsPage() {
               {org ? <span>· {org.name}</span> : null}
             </div>
             <h1 className="cc-page-title">Students</h1>
-            <div className="cc-roster-count">
-              <b>{countLabel}</b> {total === 1 ? 'student' : 'students'}
-            </div>
+            <p className="cc-page-lead cc-roster-lead">
+              <b>{countLabel}</b> {total === 1 ? 'student' : 'students'}{' '}
+              sponsored by your organization. Search, filter, and open any
+              student’s full journey.
+            </p>
           </div>
           <div className="cc-roster-head-actions">
             <CcMenu
               items={exportItems}
               align="right"
-              ariaLabel="Export roster"
+              ariaLabel="Export students"
               disabled={exporting || total === 0}
               triggerClassName="cc-roster-export"
             >
@@ -579,13 +664,27 @@ export default function CounselorConsoleStudentsPage() {
           onChange={(e) => setSearchInput(e.target.value)}
           aria-label="Search students"
         />
-        <Select<StatusFilter>
-          className="cc-roster-status"
-          value={status}
-          onChange={(v) => setStatus(v)}
-          options={STATUS_OPTIONS}
+        {/* Segmented control rather than AntD's <Segmented> so it wears the
+            console's editorial chrome instead of Ant's defaults. */}
+        <div
+          className="cc-roster-segmented"
+          role="group"
           aria-label="Filter by status"
-        />
+        >
+          {STATUS_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              className={`cc-roster-seg${
+                status === o.value ? ' cc-roster-seg--on' : ''
+              }`}
+              aria-pressed={status === o.value}
+              onClick={() => setStatus(o.value)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
@@ -596,7 +695,7 @@ export default function CounselorConsoleStudentsPage() {
         <div className="cc-roster-table">
           <div className="cc-roster-empty">
             <div className="cc-roster-empty-title">Couldn’t load students</div>
-            <div>Something went wrong fetching the roster.</div>
+            <div>Something went wrong fetching your students.</div>
             <Button className="cc-roster-view" onClick={() => refetch()}>
               Retry
             </Button>
@@ -664,8 +763,8 @@ export default function CounselorConsoleStudentsPage() {
         destroyOnClose
       >
         <p className="cc-roster-transfer-lead">
-          Move this student to another organization you manage. They’ll appear on
-          the destination roster and be removed from{' '}
+          Move this student to another organization you manage. They’ll appear
+          in the destination organization and be removed from{' '}
           <b>{org?.name ?? 'this organization'}</b>.
         </p>
         <div className="cc-roster-transfer-field">

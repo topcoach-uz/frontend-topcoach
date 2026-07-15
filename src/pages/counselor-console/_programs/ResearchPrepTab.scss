@@ -1,0 +1,431 @@
+/* Research Prep tab — counselor console student profile.
+   Card shell, eyebrow/title type, the "how this is measured" note, tables,
+   states and skeletons come from `programs-shared.scss` (via programChrome).
+   Only Research Prep's own forms live here: the milestone strip, the week
+   ladder and the submission row internals.
+
+   Research Prep's identity hue arrives as --cc-prog, resolved by programChrome
+   from the validated CC_PROGRAM_COLOR map — never restated as a hex here, and
+   never the sole carrier of a state (every rung prints its status in words). */
+
+/* ---------------- Banner ---------------- */
+
+.cc-rp-banner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  font-size: 13px;
+  color: var(--cc-text-secondary);
+  background: var(--cc-warning-soft);
+  border: 1px solid var(--cc-hairline);
+  border-radius: var(--cc-radius-sm);
+
+  svg {
+    flex-shrink: 0;
+    color: var(--cc-warning);
+  }
+}
+
+/* ---------------- Milestones ---------------- */
+
+.cc-rp-milestones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--cc-hairline); /* hairline rules via grid gap */
+}
+
+.cc-rp-ms {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 18px;
+  background: var(--cc-bg-surface);
+}
+
+.cc-rp-ms-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 3px;
+  border-radius: 50%;
+  color: var(--cc-text-muted);
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-border);
+}
+
+.cc-rp-ms-week {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-rp-ms-title {
+  font-family: var(--cc-serif);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--cc-text);
+}
+
+.cc-rp-ms-sub {
+  font-size: 12px;
+  color: var(--cc-text-secondary);
+}
+
+.cc-rp-ms .cc-pill {
+  margin-top: 5px;
+}
+
+.cc-rp-ms--complete .cc-rp-ms-dot {
+  color: var(--cc-success);
+  background: var(--cc-success-soft);
+  border-color: transparent;
+}
+
+.cc-rp-ms--in-progress .cc-rp-ms-dot {
+  color: var(--cc-accent);
+  background: var(--cc-accent-soft);
+  border-color: var(--cc-accent-ring);
+}
+
+.cc-rp-ms--locked {
+  .cc-rp-ms-title {
+    color: var(--cc-text-secondary);
+  }
+}
+
+/* ---------------- Week ladder (centrepiece) ---------------- */
+
+.cc-rp-ladder {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 620px;
+  overflow-y: auto; /* long lists scroll inside the card, never the page */
+  overscroll-behavior: contain;
+}
+
+.cc-rp-rung {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 10px;
+  padding: 15px 18px 15px 12px;
+
+  & + .cc-rp-rung {
+    border-top: 1px solid var(--cc-hairline);
+  }
+
+  /* the ladder spine */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 34px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--cc-border);
+  }
+
+  &:first-child::before {
+    top: 15px;
+  }
+
+  &:last-child::before {
+    bottom: calc(100% - 40px);
+  }
+}
+
+.cc-rp-rung-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding-top: 1px;
+}
+
+.cc-rp-rung-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-family: var(--cc-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border-strong);
+  border-radius: 50%;
+}
+
+.cc-rp-rung-body {
+  min-width: 0;
+}
+
+.cc-rp-rung-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cc-rp-rung-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--cc-serif);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cc-text);
+}
+
+.cc-rp-rung-wk {
+  font-family: inherit;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-rp-rung-reason {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  border-radius: 999px;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--cc-text-muted);
+  }
+}
+
+.cc-rp-rung-tagline {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--cc-text-secondary);
+}
+
+.cc-rp-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cc-rp-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--cc-text-secondary);
+
+  > svg {
+    flex-shrink: 0;
+    color: var(--cc-text-muted);
+  }
+
+  strong {
+    color: var(--cc-text);
+    font-weight: 650;
+  }
+}
+
+.cc-rp-step-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-rp-step-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Current week — maroon, restrained. */
+.cc-rp-rung--current {
+  background: var(--cc-accent-soft);
+
+  .cc-rp-rung-num {
+    color: #fff;
+    background: var(--cc-accent);
+    border-color: var(--cc-accent);
+  }
+}
+
+/* Submitted-and-graded week — the program's own hue, as a marker only. */
+.cc-rp-rung--done .cc-rp-rung-num {
+  color: var(--cc-prog);
+  background: var(--cc-prog-soft);
+  border-color: var(--cc-prog);
+}
+
+/* Locked weeks recede — but the padlock icon + text reason carry the state,
+   never the dimming alone. Text stays at AA against the cream surface. */
+.cc-rp-rung--locked {
+  background: var(--cc-bg-subtle);
+
+  .cc-rp-rung-title,
+  .cc-rp-rung-num {
+    color: var(--cc-text-secondary);
+  }
+
+  .cc-rp-rung-num {
+    border-style: dashed;
+    border-color: var(--cc-border-strong);
+  }
+
+  .cc-rp-rung-tagline {
+    color: var(--cc-text-muted);
+  }
+}
+
+/* ---------------- Submissions table ---------------- */
+
+/* A submission and its feedback disclosure are ONE record over two rows: the
+   hairline belongs after the pair, not between them. */
+.cc-rp-table tbody tr.cc-rp-row:has(+ .cc-rp-fbrow) > * {
+  border-bottom: none;
+}
+
+.cc-rp-week-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 150px;
+}
+
+.cc-rp-row-wk {
+  font-family: var(--cc-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cc-text);
+}
+
+.cc-rp-row-wt {
+  font-size: 11.5px;
+  color: var(--cc-text-muted);
+}
+
+.cc-rp-file {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--cc-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--cc-accent-hover);
+  }
+
+  &--plain {
+    color: var(--cc-text-muted);
+    text-decoration: none;
+  }
+}
+
+.cc-rp-score {
+  font-family: var(--cc-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cc-text);
+}
+
+/* Feedback disclosure */
+.cc-rp-fbrow > td {
+  padding-top: 0;
+  padding-bottom: 11px;
+}
+
+.cc-rp-fbtoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cc-accent);
+  background: transparent;
+  border: 1px solid var(--cc-hairline);
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--cc-accent-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 2px;
+  }
+}
+
+.cc-rp-chev {
+  transition: transform 0.15s ease;
+
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+
+.cc-rp-fb {
+  margin-top: 8px;
+  padding: 11px 13px;
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 12.5px;
+  line-height: 1.65;
+  /* feedbackMd is markdown source rendered as plain text — no renderer in
+     this app and we don't add one. pre-wrap keeps the author's line breaks. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  border-left: 2px solid var(--cc-prog);
+  border-radius: var(--cc-radius-sm);
+}
+
+/* ---------------- Narrow viewports ---------------- */
+
+@media (max-width: 640px) {
+  .cc-rp-rung {
+    grid-template-columns: 34px 1fr;
+    padding-left: 8px;
+
+    &::before {
+      left: 24px;
+    }
+  }
+
+  .cc-rp-steps {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
