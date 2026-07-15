@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { Phone, CheckCircle2, Clock, AlertCircle, User, Send, Key } from 'lucide-react';
-import { useVerifyTelegramCodeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import { useVerifyTelegramCodeMutation, useUnlinkTelegramMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 import { RtkApi } from 'src/app/services/api';
 
 const { Title, Text } = Typography;
@@ -19,6 +19,7 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [verifyTelegramCode, { isLoading }] = useVerifyTelegramCodeMutation();
+  const [unlinkTelegram, { isLoading: isUnlinking }] = useUnlinkTelegramMutation();
   const { data: telegramStatus, refetch } = useGetTelegramStatusQuery();
   const typedTelegramStatus = telegramStatus as { status: 'pending' | 'connected' | 'failed' | null; phoneNumber?: string; attempts: number; lastAttempt?: string } | undefined;
 
@@ -76,6 +77,31 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       
       setErrorMsg(errorMessage);
     }
+  };
+
+  const handleUnlink = () => {
+    Modal.confirm({
+      title: 'Disconnect Telegram?',
+      content:
+        "You'll stop receiving session confirmations, updates, and cancellations on Telegram until you re-link your account.",
+      okText: 'Disconnect',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await unlinkTelegram().unwrap();
+          message.success('Telegram disconnected');
+          setCode('');
+          setErrorMsg('');
+          RtkApi.util.invalidateTags(['TelegramStatus']);
+          await refetch();
+        } catch (error: any) {
+          const errorMessage =
+            error?.data?.message || error?.error?.data?.message || error?.message || 'Failed to disconnect Telegram';
+          message.error(errorMessage);
+        }
+      },
+    });
   };
 
   // Refetch data when modal opens to ensure we have the latest status
@@ -187,6 +213,15 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
                   <li>Session updates and changes</li>
                   <li>Session cancellations</li>
                 </ul>
+                <Divider style={{ margin: '12px 0' }} />
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Connected to a different Telegram? Disconnect to link another account.
+                </Text>
+                <div style={{ marginTop: 8 }}>
+                  <Button danger size="small" loading={isUnlinking} onClick={handleUnlink}>
+                    Disconnect / Re-link Telegram
+                  </Button>
+                </div>
               </Card>
             )}
 
