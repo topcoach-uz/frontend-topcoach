@@ -57,9 +57,22 @@ export default function JoinPage() {
     return 'This invitation is no longer valid.';
   }, [data]);
 
-  // Preserve the token across auth using the app's redirect convention:
-  // signin/signup/google all read `redirectAfterLogin` from localStorage after
-  // authentication and route there, so we stash the join URL before leaving.
+  /**
+   * Send the invitee to auth, carrying the invitation with them.
+   *
+   * `redirectAfterLogin` is best-effort only — it does NOT survive the signup →
+   * email-verification hop, and it obviously can't follow someone who opens the
+   * link on another device. Membership no longer depends on it: the server
+   * auto-enrols on the authenticated email (see OrgInvitationsService
+   * .onUserAuthenticated). This just gets them back here when it does work.
+   *
+   * Signup goes STRAIGHT to the student form, skipping /auth/signup's
+   * Student-or-Mentor chooser. Asking a counselor to pick is nonsense, and the
+   * choice is irrelevant: the org role comes from the invitation, and the gates
+   * route on org membership rather than the profile role. The invited email is
+   * passed through so the form can lock it — registering with a different
+   * address is what silently breaks the enrolment.
+   */
   const goToAuth = (mode: 'signup' | 'signin') => {
     const target = `/join/${encodeURIComponent(token)}`;
     try {
@@ -67,7 +80,14 @@ export default function JoinPage() {
     } catch {
       /* ignore private-mode write failures */
     }
-    navigate(`/auth/${mode}?redirect=${encodeURIComponent(target)}`);
+    if (mode === 'signin') {
+      navigate(`/auth/signin?redirect=${encodeURIComponent(target)}`);
+      return;
+    }
+    const params = new URLSearchParams({ redirect: target });
+    if (data?.email) params.set('email', data.email);
+    if (orgName) params.set('org', orgName);
+    navigate(`/auth/signup/student?${params.toString()}`);
   };
 
   const handleAccept = async () => {
@@ -75,7 +95,18 @@ export default function JoinPage() {
     try {
       await acceptInvitation(token).unwrap();
       message.success(`You’ve joined ${orgName}.`);
-      navigate('/student-hub');
+      // Land where the invited ROLE belongs. Staff go to their console; only
+      // students belong in the student hub. Sending a counselor to
+      // /student-hub relied on StudentHubGate bouncing them back, which is a
+      // visible detour at best — and silently fails whenever that gate's own
+      // ordering disagrees.
+      //
+      // Full reload, not navigate(): membership is what every gate keys off,
+      // and it was just created. A client-side transition would route on the
+      // stale `/org/me` cache from before the accept and land them right back
+      // in the student hub.
+      const isStaff = data?.role === 'owner' || data?.role === 'counselor';
+      window.location.href = isStaff ? '/counselor-console' : '/student-hub';
     } catch (err: any) {
       const reason =
         err?.data?.message ||

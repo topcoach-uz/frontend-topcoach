@@ -352,6 +352,7 @@
   "signIn.createAcc": "Akkaunt yarating",
   "signIn.description": "Asosiy ma‘lumotlaringizni baham ko‘rish orqali mentor sifatida sayohatingizni boshlang.",
   "signIn.description2": "Asosiy ma‘lumotlaringizni baham ko‘rish orqali mentor sifatida sayohatingizni boshlang.",
+  "signUp.studentDescription": "Asosiy ma’lumotlaringizni kiritib, sayohatingizni boshlang.",
   "signIn.email": "Email",
   "signIn.emailError": "Iltimos, haqiqiy email manzilini kiriting",
   "signIn.emailFormatError": "Iltimos, to'g'ri email manzilini kiriting",

@@ -52,12 +52,21 @@ export default function StudentHubGate() {
     );
   }
 
-  if (isMentor) {
-    return <Navigate to="/" replace />;
-  }
-
+  // Org staff FIRST — before the mentor check.
+  //
+  // `/org/me` returns only owner/counselor memberships, so this means "this
+  // user helps run an organization", which outranks their personal profile
+  // role. The counselor invite flow routes new staff through the ordinary
+  // signup, where they must pick Student or Mentor — so an owner/counselor very
+  // often also carries `profile.role === 'Mentor'`. With the mentor check
+  // first, those accounts were sent to the mentor home and could never reach
+  // their console.
   if (isCounselor) {
     return <Navigate to="/counselor-console" replace />;
+  }
+
+  if (isMentor) {
+    return <Navigate to="/" replace />;
   }
 
   return (

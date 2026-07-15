@@ -63,8 +63,19 @@ function HomeRouterContent({ profile, email }: HomeRouterContentProps) {
     return <Loader height="100vh" />;
   }
 
-  // Students with counselor access → school counselor as home. Mentors with counselor access → stay on mentor home.
-  if (isCounselor && email !== SUPER_ADMIN_EMAIL && profile?.role !== 'Mentor') {
+  // Org staff → the console is home, whatever their personal profile role is.
+  //
+  // `/org/me` returns only owner/counselor memberships, so `isCounselor` means
+  // "helps run an organization" — that outranks being a mentor. This previously
+  // read `&& profile?.role !== 'Mentor'`, which sent any counselor/owner who
+  // was also a mentor to the mentor dashboard and left them with no route to
+  // their console. That is not an edge case: the invite flow puts new staff
+  // through the ordinary signup, where they must pick Student or Mentor, so
+  // staff carrying `role === 'Mentor'` is the norm, not the exception.
+  //
+  // SuperAdmin is still excluded — they reach any org via the admin console's
+  // switcher and shouldn't have their own home hijacked.
+  if (isCounselor && email !== SUPER_ADMIN_EMAIL) {
     return <Navigate to="/counselor-console" replace />;
   }
 

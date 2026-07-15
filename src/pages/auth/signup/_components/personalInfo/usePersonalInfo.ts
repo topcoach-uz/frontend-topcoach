@@ -4,9 +4,16 @@ import { IFormItemType } from 'src/components/form/type';
 
 interface Props {
   form: FormInstance;
+  /**
+   * When signing up from an organization invitation, the email is fixed: org
+   * membership is granted by matching the INVITED address, so letting the user
+   * type a different one would silently drop them out of the org they were
+   * invited to. Locking it makes that impossible rather than merely unlikely.
+   */
+  lockedEmail?: string;
 }
 
-export default function useSignUp({ form }: Props) {
+export default function useSignUp({ form, lockedEmail }: Props) {
   const { t } = useTranslation();
 
   const formItems: IFormItemType[] = [
@@ -27,6 +34,7 @@ export default function useSignUp({ form }: Props) {
       inputType: 'text',
       placeholder: t('signUp.emailPlaceholder'),
       message: t('signUp.emailError'),
+      ...(lockedEmail ? { disabled: true } : {}),
     },
     {
       col: 24,
