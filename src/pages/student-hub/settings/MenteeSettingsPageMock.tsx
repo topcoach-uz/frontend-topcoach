@@ -9,6 +9,8 @@ import {
   Bell,
   Target,
   Map as MapIcon,
+  Send,
+  CheckCircle2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +20,8 @@ import {
   useUpdateUserPreferencesMutation,
   useGetUserPreferencesQuery,
 } from 'src/app/services/student-hub/dashboardApi';
-import { useInvalidateGetMeMutation } from 'src/app/services/users';
+import { useInvalidateGetMeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 import { useTypedSelector } from 'src/app/store';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import {
@@ -64,6 +67,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   const { isCommunityEnrolled, setCommunityEnrolled } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
   const [invalidateGetMe] = useInvalidateGetMeMutation();
+  const { data: tg } = useGetTelegramStatusQuery();
+  const [tgModalOpen, setTgModalOpen] = useState(false);
   const { data: rawPreferences } = useGetUserPreferencesQuery();
   const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences, { isLoading: savingPreferences }] = useUpdateUserPreferencesMutation();
@@ -314,6 +319,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       </nav>
 
       {activeTab === 'profile' && (
+      <>
       <Card className={styles.card} title={<><User size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.account', 'Account')}</>}>
         <div className={styles.profileRow}>
           <div className={styles.avatarBlock}>
@@ -383,6 +389,44 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           </div>
         </div>
       </Card>
+
+      <Card
+        className={styles.card}
+        title={<><Send size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.telegram', 'Telegram')}</>}
+      >
+        {tg?.status === 'connected' ? (
+          <div className={styles.profileRow}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle2 size={20} color="#52c41a" />
+              <div>
+                <Text strong>{t('studentHub.settingsMock.telegramConnected', 'Connected')}</Text>
+                {tg.phoneNumber && (
+                  <div>
+                    <Text type="secondary">{tg.phoneNumber}</Text>
+                  </div>
+                )}
+              </div>
+            </div>
+            <Button onClick={() => setTgModalOpen(true)}>
+              {t('studentHub.settingsMock.telegramRelink', 'Re-link / Disconnect')}
+            </Button>
+          </div>
+        ) : (
+          <div className={styles.profileRow}>
+            <Text type="secondary">
+              {t(
+                'studentHub.settingsMock.telegramNotConnected',
+                'Not connected — get session reminders on Telegram',
+              )}
+            </Text>
+            <Button type="primary" onClick={() => setTgModalOpen(true)}>
+              {t('studentHub.settingsMock.telegramConnect', 'Connect Telegram')}
+            </Button>
+          </div>
+        )}
+      </Card>
+      <TelegramConnectionModal visible={tgModalOpen} onClose={() => setTgModalOpen(false)} />
+      </>
       )}
 
       {/* The legacy "Subscription" card shown above used to live here; it
