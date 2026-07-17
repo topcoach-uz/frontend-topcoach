@@ -52,10 +52,17 @@ const STATUS_VIEW: Record<
     body: 'Your application has been reviewed and is moving through the process.',
     tone: 'pending',
   },
+  /**
+   * `interview_scheduled` is the status the pipeline uses for "advanced to the
+   * interview stage" — it does NOT imply a time has been booked yet, and the
+   * copy must not promise one. Applicants reach this state in a bulk decision
+   * pass with no email sent, so this card is the FIRST place they learn they got
+   * through: it has to stand on its own and not reference a mail we never sent.
+   */
   interview_scheduled: {
-    title: 'Interview scheduled',
-    body: 'You’ve advanced to the interview stage. Check your email for the details.',
-    tone: 'pending',
+    title: 'You’re through to the interview stage',
+    body: 'Congratulations — your application impressed our reviewers and you’ve advanced to the interview stage of the International Summer Camp 2026. We’ll email you with scheduling details and how to prepare. Nothing is needed from you right now.',
+    tone: 'success',
   },
   interview_completed: {
     title: 'Interview completed',
@@ -72,10 +79,18 @@ const STATUS_VIEW: Record<
     body: 'You’ve been accepted to the International Summer Camp 2026. Watch your email for joining details.',
     tone: 'success',
   },
+  /**
+   * Tone is 'pending', not 'danger', on purpose: this is the one card a person
+   * reads on the worst day of their application, and painting it red adds
+   * nothing but sting. The copy leads with the volume of applications so the
+   * outcome reads as scarcity rather than a verdict on them, thanks them
+   * concretely, and closes with a door left open — never "you weren't good
+   * enough", never a reason we can't substantiate at this scale.
+   */
   rejected: {
-    title: 'Application decision',
-    body: 'Thank you for applying. Unfortunately you weren’t selected this year — we hope to see you again.',
-    tone: 'danger',
+    title: 'Your application decision',
+    body: 'Thank you for applying to the International Summer Camp 2026, and for the time and care you put into your application. We received an extraordinary number of applications this year — far more than the places we have — and after careful review we’re not able to offer you a place this time. This reflects how limited our capacity is, not a judgement of your ability or potential. We’d genuinely welcome an application from you in a future season, and we wish you every success.',
+    tone: 'pending',
   },
   withdrawn: null,
 };
