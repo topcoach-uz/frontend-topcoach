@@ -1,13 +1,14 @@
 @import './counselor-console-tokens.scss';
 
-// The console is mounted as a sibling of MainLayout, not inside it, so there is
-// no 80px site header to offset against — it owns the full viewport. Leaving
-// the old `- 80px` compensation in place pushed the sidebar down and left a
-// dead band above it.
+// The console is nested inside MainLayout, so the 80px site header sits above
+// it: org staff keep the normal site navigation and simply land here by
+// default. These offsets keep the sticky sidebar aligned under that header —
+// they must stay in step with the header height and with the inline
+// `minHeight` in CounselorConsoleLayout.tsx.
 .counselor-console-app {
   background: var(--cc-bg);
   color: var(--cc-text);
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   display: flex;
 }
 
@@ -17,8 +18,8 @@
   transition: width 0.2s ease;
   flex-shrink: 0;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: 80px;
+  height: calc(100vh - 80px);
   // visible (not clipped) so the edge-mounted collapse tab can straddle the
   // right border; the nav itself scrolls internally (.counselor-console-nav).
   overflow: visible;
@@ -644,13 +645,13 @@
 
   .counselor-console-app--mobile-layout .counselor-console-sider--mobile {
     position: fixed;
-    top: 0;
+    top: 80px;
     left: 0;
     bottom: 0;
     width: min(288px, 88vw) !important;
     flex: none !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
+    height: calc(100dvh - 80px) !important;
+    max-height: calc(100dvh - 80px) !important;
     z-index: 1060;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
@@ -745,7 +746,7 @@
   .counselor-console-nav-backdrop--visible {
     display: block;
     position: fixed;
-    top: 0;
+    top: 80px;
     left: 0;
     right: 0;
     bottom: 0;

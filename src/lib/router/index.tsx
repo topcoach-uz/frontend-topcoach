@@ -439,31 +439,34 @@ function RouterProvider() {
             </Route>
           </Route>
 
-          {/* Counselor Console — org-scoped console. Mounted as a SIBLING of
-              MainLayout (like /new-admin above), NOT inside it: org staff get
-              the console and nothing else — no marketing site header/footer. */}
-          <Route element={<AddFallbackLayout />}>
-            <Route path="/counselor-console" element={<CounselorConsoleGate />}>
-              <Route element={<CounselorConsoleLayoutLazy />}>
-                <Route index element={<CounselorConsoleDashboardLazy />} />
-                <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
-                <Route path="students" element={<CounselorConsoleStudentsLazy />} />
-                <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
-                {/* /invitations was folded into the Students page as a tab —
-                    keep old links working. */}
-                <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
-                <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
-                {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
-                <Route path="staff" element={<CounselorConsoleStaffLazy />} />
-                <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
-                <Route path="audit" element={<CounselorConsoleAuditLazy />} />
-              </Route>
-            </Route>
-          </Route>
-
           {/* Main Layout */}
           <Route element={<MainLayout />}>
+            {/* Counselor Console — org-scoped console, nested INSIDE MainLayout
+                so the website header stays (same as the mentor console below).
+                Org staff land here by default, but they remain ordinary site
+                users: they can still browse Mentors, Programs, Workshops etc.
+                What they must NOT get is the mentee/mentor dashboard, and that
+                is handled by the gates, not by stripping the header. */}
+            <Route element={<AddFallbackLayout />}>
+              <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+                <Route element={<CounselorConsoleLayoutLazy />}>
+                  <Route index element={<CounselorConsoleDashboardLazy />} />
+                  <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                  <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                  <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                  {/* /invitations was folded into the Students page as a tab —
+                      keep old links working. */}
+                  <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
+                  <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                  {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                  {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
+                  <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                  <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                  <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+                </Route>
+              </Route>
+            </Route>
+
             <Route element={<AddFallbackLayout />}>
               <Route
                 index

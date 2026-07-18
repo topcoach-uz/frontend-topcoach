@@ -65,7 +65,7 @@ export default function CounselorConsoleStudentsPage() {
       eyebrow="People"
       orgName={org?.name}
       title="Students"
-      lead="Every student sponsored by your organization — the working roster, the invitations still outstanding, and everyone you have archived."
+      lead="Every student sponsored by your organization: those currently active, the invitations still outstanding, and everyone you have archived."
     />
   );
 

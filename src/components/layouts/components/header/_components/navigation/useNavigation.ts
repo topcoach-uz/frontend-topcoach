@@ -28,26 +28,21 @@ export default function useNavigation() {
   // Mentors: Home. Org staff: the console is home.
   const showHome = isMentor && !isOrgStaff;
 
-  // Org staff see ONLY the console — no marketing nav (Mentors / Programs /
-  // Events / Learn More). Their entire experience is the organization
-  // console; the site's mentee/mentor surfaces are not theirs to browse.
-  // Platform staff are NOT org staff (see useOrgStaff) and keep the full nav.
-  if (isOrgStaff) {
-    const consoleNav: INavLink[] = [
-      {
-        path: '/counselor-console',
-        text: t('header.counselorConsole', 'Counselor Console'),
-      },
-    ];
-    return {
-      navLinks: consoleNav,
-      isActive: (linkPath?: string) =>
-        !!linkPath && pathname.startsWith(linkPath),
-    };
-  }
-
   const navLinks: INavLink[] = [
     ...(showHome ? [{ path: '/', text: t('header.home', 'Home') }] : []),
+    // Org staff keep the FULL site nav — they are ordinary users who happen to
+    // run an organization, and they browse Mentors/Programs/Events like anyone
+    // else. Landing them on the console is the gates' job (HomeRouter); the nav
+    // only adds the console as an extra destination. What they don't get is
+    // "My Journey", which is the mentee surface — see shouldShowMyJourney.
+    ...(isOrgStaff
+      ? [
+          {
+            path: '/counselor-console',
+            text: t('header.counselorConsole', 'Counselor Console'),
+          },
+        ]
+      : []),
     ...(shouldShowMyJourney
       ? [{ path: '/student-hub', text: t('header.studentHub', 'My Journey') }]
       : []),

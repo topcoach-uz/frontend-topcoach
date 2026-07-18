@@ -314,7 +314,8 @@ export default function CounselorConsoleLayout() {
       className={`counselor-console-app ${
         isMobileConsole ? 'counselor-console-app--mobile-layout' : ''
       }`}
-      style={{ minHeight: '100vh' }}
+      // Nested inside MainLayout — leave room for the 80px site header.
+      style={{ minHeight: 'calc(100vh - 80px)' }}
     >
       {isMobileConsole && mobileMenuOpen ? (
         <button

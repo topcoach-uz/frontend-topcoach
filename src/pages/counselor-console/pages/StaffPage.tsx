@@ -222,7 +222,7 @@ export default function CounselorConsoleStaffPage() {
             {dayjs(s.joinedAt).format('MMM D, YYYY')}
           </span>
         ) : (
-          <span className="cc-staff-muted">—</span>
+          <span className="cc-staff-muted">-</span>
         ),
     },
   ];

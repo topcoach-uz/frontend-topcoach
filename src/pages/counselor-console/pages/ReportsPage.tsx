@@ -53,7 +53,7 @@ const REPORTS: {
     key: 'roster',
     title: 'Students',
     description:
-      'One row per student — name, email, grade, the programs they’re in, progress, and last login. A full student list to review offline or share with your team.',
+      'One row per student: name, email, grade, the programs they’re in, progress, and last login. A full student list to review offline or share with your team.',
     icon: <Users size={18} />,
     tone: 'info',
     serverType: 'roster',
@@ -62,7 +62,7 @@ const REPORTS: {
     key: 'programs',
     title: 'Program progress',
     description:
-      'Each student’s completion in every program they’re enrolled in (Admissions, SAT, Full Support, Research) — who’s ahead, who’s behind, and the average per program.',
+      'Each student’s completion in every program they’re enrolled in (Admissions, SAT, Full Support, Research), showing who’s ahead, who’s behind, and the average per program.',
     icon: <GraduationCap size={18} />,
     tone: 'good',
     serverType: 'progress',
@@ -71,7 +71,7 @@ const REPORTS: {
     key: 'engagement',
     title: 'Engagement',
     description:
-      'Each student’s last-active date and how recently they logged in — so you can spot who’s gone quiet and follow up.',
+      'Each student’s last-active date and how recently they logged in, so you can spot who’s gone quiet and follow up.',
     icon: <BarChart3 size={18} />,
     tone: 'accent',
   },
@@ -212,11 +212,11 @@ export default function CounselorConsoleReportsPage() {
     const rows = students.map((s: OrgStudent) => ({
       Name: s.name,
       Email: s.email,
-      Grade: s.gradeLevel ?? '—',
-      'Graduation Year': s.graduationYear ?? '—',
-      Program: s.programs.length ? s.programs.join(', ') : '—',
+      Grade: s.gradeLevel ?? '-',
+      'Graduation Year': s.graduationYear ?? '-',
+      Program: s.programs.length ? s.programs.join(', ') : '-',
       'Progress (%)': round(s.progress),
-      'Last Active': s.lastActiveAt ? dayjs(s.lastActiveAt).format('YYYY-MM-DD') : '—',
+      'Last Active': s.lastActiveAt ? dayjs(s.lastActiveAt).format('YYYY-MM-DD') : '-',
       Status: s.status,
     }));
     return {
@@ -302,12 +302,12 @@ export default function CounselorConsoleReportsPage() {
   function writePdf(ds: Dataset, key: ReportKey, title: string) {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text(`${title} — ${org?.name ?? 'Organization'}`, 14, 22);
+    doc.text(`${title}: ${org?.name ?? 'Organization'}`, 14, 22);
     doc.setFontSize(11);
     doc.text(`Generated ${dayjs().format('MMM D, YYYY')}`, 14, 30);
     autoTable(doc, {
       head: [ds.columns],
-      body: ds.rows.map((r) => ds.columns.map((c) => String(r[c] ?? '—'))),
+      body: ds.rows.map((r) => ds.columns.map((c) => String(r[c] ?? '-'))),
       startY: 35,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [123, 31, 47] }, // brand maroon

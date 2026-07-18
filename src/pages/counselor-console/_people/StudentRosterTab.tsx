@@ -121,7 +121,7 @@ function gradeSummary(s: OrgStudent): { main: string; sub: string | null } {
   // gradeLevel can arrive as a number (e.g. 11) or a string (e.g. "Grade 11"),
   // so coerce before string ops.
   const raw = s.gradeLevel != null ? String(s.gradeLevel).trim() : '';
-  const main = raw ? (/grade/i.test(raw) ? raw : `Grade ${raw}`) : '—';
+  const main = raw ? (/grade/i.test(raw) ? raw : `Grade ${raw}`) : '-';
   const sub = s.graduationYear ? `Class of ${s.graduationYear}` : null;
   return { main, sub };
 }
@@ -209,7 +209,7 @@ export function StudentRosterTab({
     Modal.confirm({
       title: `Archive ${s.name}?`,
       content:
-        'Archived students no longer appear in your active roster, but their data is kept. You can find them again under the Archived tab.',
+        'Archived students no longer appear in your active students list, but their data is kept. You can find them again under the Archived tab.',
       okText: 'Archive',
       okButtonProps: { danger: true },
       cancelText: 'Cancel',
@@ -345,13 +345,13 @@ export function StudentRosterTab({
   const exportRow = (s: OrgStudent) => ({
     Name: s.name,
     Email: s.email,
-    Grade: s.gradeLevel ?? '—',
-    'Graduation Year': s.graduationYear ?? '—',
-    Programs: s.programs.length ? s.programs.join(', ') : '—',
+    Grade: s.gradeLevel ?? '-',
+    'Graduation Year': s.graduationYear ?? '-',
+    Programs: s.programs.length ? s.programs.join(', ') : '-',
     'Progress (%)': Math.round(s.progress ?? 0),
     'Last Active': s.lastActiveAt
       ? dayjs(s.lastActiveAt).format('YYYY-MM-DD')
-      : '—',
+      : '-',
     Status: MEMBER_STATUS_PILL[s.status]?.label ?? s.status,
   });
 
@@ -395,7 +395,7 @@ export function StudentRosterTab({
       const doc = new jsPDF();
       doc.setFontSize(18);
       doc.text(
-        `${isArchived ? 'Archived students' : 'Students'} — ${org?.name ?? 'Organization'}`,
+        `${isArchived ? 'Archived students' : 'Students'}: ${org?.name ?? 'Organization'}`,
         14,
         22,
       );
@@ -408,9 +408,9 @@ export function StudentRosterTab({
         body: rows.map((s) => [
           s.name,
           s.email,
-          s.gradeLevel ?? '—',
-          s.graduationYear != null ? String(s.graduationYear) : '—',
-          s.programs.length ? s.programs.join(', ') : '—',
+          s.gradeLevel ?? '-',
+          s.graduationYear != null ? String(s.graduationYear) : '-',
+          s.programs.length ? s.programs.join(', ') : '-',
           `${Math.round(s.progress ?? 0)}%`,
           MEMBER_STATUS_PILL[s.status]?.label ?? s.status,
         ]),
@@ -483,7 +483,7 @@ export function StudentRosterTab({
       width: 210,
       render: (_, s) => {
         if (s.programs.length === 0)
-          return <span className="cc-roster-muted">—</span>;
+          return <span className="cc-roster-muted">-</span>;
         const shown = s.programs.slice(0, PROGRAM_PILL_LIMIT);
         const rest = s.programs.slice(PROGRAM_PILL_LIMIT);
         return (
@@ -530,7 +530,7 @@ export function StudentRosterTab({
         const pct = Math.max(0, Math.min(100, Math.round(s.progress ?? 0)));
         const label = s.topProgram ? `${pct}% · ${s.topProgram}` : `${pct}%`;
         const tip = s.topProgram
-          ? `${pct}% in ${s.topProgram} — the student's furthest-along program`
+          ? `${pct}% in ${s.topProgram}, the student's furthest-along program`
           : 'No program progress yet';
         return (
           <div className="cc-roster-progress" title={tip}>
@@ -561,7 +561,7 @@ export function StudentRosterTab({
             {dayjs(s.lastActiveAt).fromNow()}
           </span>
         ) : (
-          <span className="cc-roster-muted">—</span>
+          <span className="cc-roster-muted">-</span>
         ),
     },
     {

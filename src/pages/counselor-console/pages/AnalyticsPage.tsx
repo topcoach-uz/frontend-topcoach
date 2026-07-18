@@ -273,7 +273,7 @@ function CcRateMeter({
             <span className="cc-analytics-meter-unit">%</span>
           </>
         ) : (
-          <span className="cc-analytics-meter-none">—</span>
+          <span className="cc-analytics-meter-none">-</span>
         )}
       </div>
       <div
@@ -665,7 +665,7 @@ export default function CounselorConsoleAnalyticsPage() {
             position: 'right',
             formatter: (params: { dataIndex: number }) => {
               const r = rows[params.dataIndex];
-              return r.enrolled > 0 ? `${pct(r.completed, r.enrolled)}%` : '—';
+              return r.enrolled > 0 ? `${pct(r.completed, r.enrolled)}%` : '-';
             },
             color: TEXT_MUTED,
             fontFamily: SANS,
@@ -1113,7 +1113,7 @@ export default function CounselorConsoleAnalyticsPage() {
                   Counted from each student’s join date, so every month is
                   complete. This chart follows the selected range
                   {hasHistoryTrend
-                    ? ', as do the change figures on the tiles above — their values are counts as of today.'
+                    ? ', as do the change figures on the tiles above; their values are counts as of today.'
                     : '; the tile values above are counts as of today.'}
                 </p>
               }
@@ -1129,7 +1129,7 @@ export default function CounselorConsoleAnalyticsPage() {
             <div className="cc-analytics-grid cc-analytics-grid--stacked">
               <ChartCard
                 title="Growth & activity"
-                sub="Three measures, three scales — hover to read all three at one date."
+                sub="Three measures, three scales. Hover to read all three at one date."
                 hasData
                 className="cc-analytics-card--wide"
               >
@@ -1159,7 +1159,7 @@ export default function CounselorConsoleAnalyticsPage() {
           <SectionHead
             eyebrow="Sessions"
             title="Mentor sessions"
-            sub="How many 1:1 mentor sessions your students book, attend, and have coming up — with monthly volume."
+            sub="How many 1:1 mentor sessions your students book, attend, and have coming up, with monthly volume."
           />
           {hasSessionData ? (
             <>

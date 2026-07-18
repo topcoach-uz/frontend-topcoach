@@ -417,7 +417,7 @@ export default function CounselorConsoleStudentProfilePage() {
           label={bestProgram ? 'Program progress' : 'Profile completion'}
           value={
             programsLoading && !programsData
-              ? '—'
+              ? '-'
               : `${Math.round(overallProgress)}%`
           }
           meta={
@@ -490,7 +490,7 @@ function UpcomingSessionsStat({ userId }: { userId: string }) {
     <CcStat
       icon={<CalendarClock size={15} />}
       label="Upcoming sessions"
-      value={isLoading && !data ? '—' : upcoming}
+      value={isLoading && !data ? '-' : upcoming}
       tone={upcoming > 0 ? 'good' : 'neutral'}
     />
   );
@@ -679,7 +679,7 @@ function OverviewTab({
         id: `research-${sub.id}`,
         date,
         program: 'Research Prep',
-        title: `Submitted Week ${sub.weekNumber} — ${sub.weekTitle}`,
+        title: `Submitted Week ${sub.weekNumber}: ${sub.weekTitle}`,
         meta: prettify(sub.status),
       });
     }
@@ -950,7 +950,7 @@ function OverviewTab({
             <h2 className="cc-attention-headline">Nothing needs your attention</h2>
             <p className="cc-attention-detail">
               No overdue tasks, and activity is recent
-              {lastActive ? ` — last seen ${relativeDate(lastActive).toLowerCase()}` : ''}
+              {lastActive ? `, last seen ${relativeDate(lastActive).toLowerCase()}` : ''}
               .
             </p>
           </div>

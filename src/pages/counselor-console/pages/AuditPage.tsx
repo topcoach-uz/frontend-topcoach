@@ -71,7 +71,7 @@ function hasMetadata(m: OrgAuditEntry['metadata']): boolean {
 function MetadataCell({ entry }: { entry: OrgAuditEntry }) {
   const [open, setOpen] = useState(false);
   if (!hasMetadata(entry.metadata)) {
-    return <span className="cc-audit-muted">—</span>;
+    return <span className="cc-audit-muted">-</span>;
   }
   const json = JSON.stringify(entry.metadata, null, 2);
   const preview = JSON.stringify(entry.metadata);
@@ -187,7 +187,7 @@ export default function CounselorConsoleAuditPage() {
       width: 180,
       render: (_, e) => {
         if (!e.targetType && !e.targetId) {
-          return <span className="cc-audit-muted">—</span>;
+          return <span className="cc-audit-muted">-</span>;
         }
         return (
           <div className="cc-audit-target">

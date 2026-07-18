@@ -11,7 +11,7 @@
      • `composite.total` renders out of **1600** and ONLY when it is non-null —
        the backend returns it non-null exclusively when BOTH sections have a
        mock. A null total is never imputed, doubled or estimated; it renders as
-       an explicit "—" plus copy naming the mock that is missing.
+       an explicit "-" plus copy naming the mock that is missing.
      • `personalBest.score` is a SECTION score and is labelled "/ 800".
    A projected total from one section would be a fabrication, so we decline to
    draw one — including the gauge, which is suppressed entirely when total is
@@ -110,7 +110,7 @@ function bandOf(pct: number): BandKey {
 
 /* ── Formatting ──────────────────────────────────────────────────────────── */
 
-const DASH = '—';
+const DASH = '-';
 
 function isReadingWriting(section: string): boolean {
   return String(section).toLowerCase().startsWith('reading');
@@ -466,7 +466,7 @@ export default function SatPrepTab({
       <ProgramTab program="SAT" className="cc-sat">
         <ProgramMessage
           icon={<Sparkles size={20} />}
-          title="Enrolled — no practice yet"
+          title="Enrolled, no practice yet"
           text="This student is on SAT Prep but hasn’t finished a practice set or mock. Scores, skill mastery and streaks appear here after their first completed session."
         />
       </ProgramTab>
@@ -594,9 +594,9 @@ export default function SatPrepTab({
               title="No composite to project yet"
               text={
                 math != null
-                  ? 'A composite needs a mock in both sections. Math is done — a Reading & Writing mock unlocks the projection.'
+                  ? 'A composite needs a mock in both sections. Math is done; a Reading & Writing mock unlocks the projection.'
                   : rw != null
-                    ? 'A composite needs a mock in both sections. Reading & Writing is done — a Math mock unlocks the projection.'
+                    ? 'A composite needs a mock in both sections. Reading & Writing is done; a Math mock unlocks the projection.'
                     : 'A composite needs one full mock in Math and one in Reading & Writing. Section practice alone cannot produce a 1600-scale score.'
               }
             />
@@ -630,7 +630,7 @@ export default function SatPrepTab({
       <ProgramCard
         eyebrow="Diagnostics"
         title="Skill mastery"
-        sub="Weakest first, grouped by domain. Percentages on few attempts are noisy — read the attempt count next to them."
+        sub="Weakest first, grouped by domain. Percentages on few attempts are noisy, so read the attempt count next to them."
       >
         <div className="cc-sat-mastery-bar">
           <div className="cc-sat-legend">

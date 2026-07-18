@@ -282,7 +282,7 @@ export function InvitationsTab({
             {dayjs(inv.emailSentAt).format('MMM D, YYYY')}
           </span>
         ) : (
-          <span className="cc-invite-muted">—</span>
+          <span className="cc-invite-muted">-</span>
         ),
     },
     {
@@ -298,7 +298,7 @@ export function InvitationsTab({
             {dayjs(inv.createdAt).format('MMM D, YYYY')}
           </span>
         ) : (
-          <span className="cc-invite-muted">—</span>
+          <span className="cc-invite-muted">-</span>
         ),
     },
     {
@@ -314,7 +314,7 @@ export function InvitationsTab({
             {dayjs(inv.expiresAt).format('MMM D, YYYY')}
           </span>
         ) : (
-          <span className="cc-invite-muted">—</span>
+          <span className="cc-invite-muted">-</span>
         ),
     },
     {

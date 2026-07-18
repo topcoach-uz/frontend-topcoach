@@ -101,10 +101,10 @@ const WEEK_LOCK_COPY: Record<ResearchWeekLockReason, string> = {
 
 /** Same reasons, phrased for a single quiz/assignment row inside a week. */
 const STEP_LOCK_COPY: Record<ResearchWeekLockReason, string> = {
-  'previous-week-not-submitted': 'Locked — previous week not submitted',
-  'video-lessons-incomplete': 'Locked — video lessons incomplete',
-  'quiz-not-passed': 'Locked — quiz not passed',
-  'module-locked': 'Locked — not released yet',
+  'previous-week-not-submitted': 'Locked: previous week not submitted',
+  'video-lessons-incomplete': 'Locked: video lessons incomplete',
+  'quiz-not-passed': 'Locked: quiz not passed',
+  'module-locked': 'Locked: not released yet',
 };
 
 const weekLockText = (reason?: ResearchWeekLockReason): string =>
@@ -133,9 +133,9 @@ const SUBMISSION_TONE: Record<ResearchSubmissionStatus | 'none', CcPillVariant> 
 };
 
 const formatDate = (value?: string | null): string => {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = dayjs(value);
-  return d.isValid() ? d.format('MMM D, YYYY') : '—';
+  return d.isValid() ? d.format('MMM D, YYYY') : '-';
 };
 
 /* ------------------------------------------------------------------ */
@@ -253,7 +253,7 @@ export default function ResearchPrepTab({
         <CcStat
           icon={<PlayCircle size={14} aria-hidden="true" />}
           label="Current week"
-          value={summary.currentWeekNumber ? `Week ${summary.currentWeekNumber}` : '—'}
+          value={summary.currentWeekNumber ? `Week ${summary.currentWeekNumber}` : '-'}
           meta={
             ladder.find((r) => r.week.weekNumber === summary.currentWeekNumber)?.week.title ??
             'Not started'
@@ -343,7 +343,7 @@ export default function ResearchPrepTab({
         flush
         eyebrow="The programme"
         title="Week by week"
-        sub={`${totalWeeks} weeks · currently on week ${summary.currentWeekNumber || '—'}`}
+        sub={`${totalWeeks} weeks · currently on week ${summary.currentWeekNumber || '-'}`}
         titleId="cc-rp-ladder-h"
       >
         <ol className="cc-rp-ladder">
@@ -442,7 +442,7 @@ function WeekRung({
             <span className="cc-rp-step-label">Quiz</span>
             <span className="cc-rp-step-val">
               {!lock ? (
-                '—'
+                '-'
               ) : lock.quiz.passed ? (
                 <>
                   Passed · best <strong>{lock.quiz.bestScorePercent}%</strong> ·{' '}
@@ -515,7 +515,7 @@ function SubmissionsCard({ submissions }: { submissions: ResearchSubmission[] })
         <ProgramState
           icon={<ClipboardList size={20} />}
           title="Nothing handed in yet"
-          text="No assignments submitted. Videos and quizzes may still be in progress — see the week ladder above."
+          text="No assignments submitted. Videos and quizzes may still be in progress; see the week ladder above."
         />
       ) : (
         <div className="cc-ptab-scroll cc-ptab-scroll--tall">
@@ -583,9 +583,9 @@ function SubmissionRow({ submission: s }: { submission: ResearchSubmission }) {
         </td>
         <td>{formatDate(s.submittedAt)}</td>
         <td>{formatDate(s.gradedAt)}</td>
-        <td>{s.gradedByName || '—'}</td>
+        <td>{s.gradedByName || '-'}</td>
         <td className="cc-ptab-num cc-rp-score">
-          {typeof s.score === 'number' ? `${s.score}%` : '—'}
+          {typeof s.score === 'number' ? `${s.score}%` : '-'}
         </td>
       </tr>
       {hasFeedback && (

@@ -36,23 +36,23 @@ const previewColumns: ColumnsType<ParsedCsvRow> = [
         <AlertTriangle size={16} className="cc-invite-flag-bad" />
       ),
   },
-  { title: 'Name', dataIndex: 'name', key: 'name', render: (v) => v || '—' },
-  { title: 'Email', dataIndex: 'email', key: 'email', render: (v) => v || '—' },
+  { title: 'Name', dataIndex: 'name', key: 'name', render: (v) => v || '-' },
+  { title: 'Email', dataIndex: 'email', key: 'email', render: (v) => v || '-' },
   {
     title: 'Grade',
     dataIndex: 'grade',
     key: 'grade',
     width: 80,
-    render: (v) => v || '—',
+    render: (v) => v || '-',
   },
   {
     title: 'Grad yr',
     dataIndex: 'graduationYear',
     key: 'graduationYear',
     width: 90,
-    render: (v) => v || '—',
+    render: (v) => v || '-',
   },
-  { title: 'Phone', dataIndex: 'phone', key: 'phone', render: (v) => v || '—' },
+  { title: 'Phone', dataIndex: 'phone', key: 'phone', render: (v) => v || '-' },
   {
     title: 'Result',
     key: 'result',
