@@ -62,6 +62,26 @@ export const authApi = RtkApi.injectEndpoints({
       query: () => ({ url: '/users/telegram-status' }),
       providesTags: ['TelegramStatus']
     }),
+    // Onboarding wizard step-advance/completion (see ONBOARDING_DESIGN.md).
+    // All fields optional — the wizard PATCHes only what the current step
+    // collected. Invalidates GetMe so `onboardingCompletedAt`/`onboardingStep`
+    // refetch immediately (gates read straight off the getMe cache).
+    patchOnboarding: build.mutation<
+      void,
+      {
+        step?: string;
+        hearAboutSource?: string;
+        phoneNumber?: string;
+        completed?: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: '/users/onboarding',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['GetMe'],
+    }),
   }),
 });
 
@@ -75,4 +95,5 @@ export const {
   useVerifyTelegramCodeMutation,
   useUnlinkTelegramMutation,
   useGetTelegramStatusQuery,
+  usePatchOnboardingMutation,
 } = authApi;

@@ -36,6 +36,7 @@ import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
 import CounselorConsoleGate from "src/pages/counselor-console/CounselorConsoleGate";
+import OnboardingGate from "src/pages/onboarding/OnboardingGate";
 import NavigationProgressBar from "src/components/NavigationProgressBar";
 import PostHogPageView from "src/lib/posthog/PostHogPageView";
 
@@ -105,6 +106,7 @@ const AuthLayoutLazy = lazy(
 );
 const SignInPageLazy = lazy(() => import("src/pages/auth/signin"));
 const SignUpPageLazy = lazy(() => import("src/pages/auth/signup"));
+const OnboardingPageLazy = lazy(() => import("src/pages/onboarding"));
 const MentorRegistrationPageLazy = lazy(
   () => import("src/pages/auth/signup/mentor")
 );
@@ -443,15 +445,31 @@ function RouterProvider() {
           {/* Main Layout */}
           <Route element={<MainLayout />}>
             <Route element={<AddFallbackLayout />}>
+              <Route element={<OnboardingGate />}>
+                <Route
+                  index
+                  element={
+                    isAuthenticated ? (
+                      <Suspense fallback={<Loader height="100vh" />}>
+                        <HomeRouter />
+                      </Suspense>
+                    ) : (
+                      <LandingPageLazy />
+                    )
+                  }
+                />
+              </Route>
+              {/* Post-login onboarding wizard — deliberately NOT wrapped by
+                  OnboardingGate (that would self-redirect-loop). */}
               <Route
-                index
+                path="/onboarding"
                 element={
-                  isAuthenticated ? (
-                    <Suspense fallback={<Loader height="100vh" />}>
-                      <HomeRouter />
-                    </Suspense>
+                  !isAuthenticated ? (
+                    <Navigate to="/auth/signin" replace />
                   ) : (
-                    <LandingPageLazy />
+                    <Suspense fallback={<Loader height="100vh" />}>
+                      <OnboardingPageLazy />
+                    </Suspense>
                   )
                 }
               />
@@ -566,18 +584,20 @@ function RouterProvider() {
                 }
               />
               {/* Student Hub: mentees only; mentors/counselors → their own home (see StudentHubGate) */}
-              <Route
-                path="/student-hub/*"
-                element={
-                  !isAuthenticated ? (
-                    <Navigate to="/" replace />
-                  ) : (
-                    <Suspense fallback={<Loader height="100vh" />}>
-                      <StudentHubGateLazy />
-                    </Suspense>
-                  )
-                }
-              />
+              <Route element={<OnboardingGate />}>
+                <Route
+                  path="/student-hub/*"
+                  element={
+                    !isAuthenticated ? (
+                      <Navigate to="/" replace />
+                    ) : (
+                      <Suspense fallback={<Loader height="100vh" />}>
+                        <StudentHubGateLazy />
+                      </Suspense>
+                    )
+                  }
+                />
+              </Route>
               {/* Legacy surface removed — redirect old links to the console. */}
               <Route
                 path="/school-counselor/*"
@@ -586,19 +606,21 @@ function RouterProvider() {
 
               {/* Counselor Console — new org-scoped console, mounted inside
                   MainLayout so the website header stays. */}
-              <Route path="/counselor-console" element={<CounselorConsoleGate />}>
-                <Route element={<CounselorConsoleLayoutLazy />}>
-                  <Route index element={<CounselorConsoleDashboardLazy />} />
-                  <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
-                  <Route path="students" element={<CounselorConsoleStudentsLazy />} />
-                  <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
-                  <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
-                  <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                  {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
-                  {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
-                  <Route path="staff" element={<CounselorConsoleStaffLazy />} />
-                  <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
-                  <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+              <Route element={<OnboardingGate />}>
+                <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+                  <Route element={<CounselorConsoleLayoutLazy />}>
+                    <Route index element={<CounselorConsoleDashboardLazy />} />
+                    <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                    <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                    <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                    <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
+                    <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                    {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                    {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
+                    <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                    <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                    <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+                  </Route>
                 </Route>
               </Route>
 
@@ -671,23 +693,25 @@ function RouterProvider() {
               />
 
               {/* Unified Mentor Console — nested inside MainLayout so the website header stays. */}
-              <Route path="/mentor" element={<MentorConsoleGate />}>
-                <Route element={<MentorConsoleLayoutLazy />}>
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
-                  <Route path="dashboard" element={<MentorConsoleScheduleLazy />} />
-                  <Route path="students" element={<MentorConsoleStudentsLazy />} />
-                  <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
-                  <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
-                  <Route path="feed" element={<MentorConsoleFeedLazy />} />
-                  {/* Sessions merged into the Schedule; per-student review lives in each workspace. */}
-                  <Route path="sessions" element={<Navigate to="/mentor/dashboard" replace />} />
-                  <Route path="to-review" element={<Navigate to="/mentor/students" replace />} />
-                  <Route path="tasks" element={<Navigate to="/mentor/students" replace />} />
-                  <Route path="milestones" element={<Navigate to="/mentor/students" replace />} />
-                  <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
-                  <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
-                  <Route path="profile" element={<MentorConsoleProfileLazy />} />
+              <Route element={<OnboardingGate />}>
+                <Route path="/mentor" element={<MentorConsoleGate />}>
+                  <Route element={<MentorConsoleLayoutLazy />}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
+                    <Route path="dashboard" element={<MentorConsoleScheduleLazy />} />
+                    <Route path="students" element={<MentorConsoleStudentsLazy />} />
+                    <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
+                    <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
+                    <Route path="feed" element={<MentorConsoleFeedLazy />} />
+                    {/* Sessions merged into the Schedule; per-student review lives in each workspace. */}
+                    <Route path="sessions" element={<Navigate to="/mentor/dashboard" replace />} />
+                    <Route path="to-review" element={<Navigate to="/mentor/students" replace />} />
+                    <Route path="tasks" element={<Navigate to="/mentor/students" replace />} />
+                    <Route path="milestones" element={<Navigate to="/mentor/students" replace />} />
+                    <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
+                    <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
+                    <Route path="profile" element={<MentorConsoleProfileLazy />} />
+                  </Route>
                 </Route>
               </Route>
               <Route

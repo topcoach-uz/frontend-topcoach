@@ -1,28 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
 import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
 import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
-import { CustomButton } from 'src/components/common';
 import Loader from 'src/components/loader';
-import { Logo } from 'src/components/logos';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from 'src/constants/storage';
 import useParamsHook from 'src/hooks/params';
-import TitleDescriptionPair from '../signin/_components/title_description_pair';
-import RoleCard from '../signup/_components/role_card';
-import styles from './AuthGoogle.module.scss';
 import { useAppDispatch } from 'src/app/store';
-import { loginCheck, updateProfile } from 'src/app/slices/authSlice';
-import { UserRole, ProfilesSchema } from 'src/app/api/Api';
-import { UserType } from 'src/app/type';
+import { loginCheck } from 'src/app/slices/authSlice';
 import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { isOnboardingComplete } from 'src/lib/onboarding';
 // import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
-
-// Define a partial type for profile updates
-type PartialProfileUpdate = Partial<Pick<ProfilesSchema, 'profileComplete' | 'role'>>;
 
 // Module-level guard: short codes already exchanged during this page load.
 // Survives component remounts (a ref would not), so even if the page is
@@ -32,14 +22,12 @@ const exchangedCodes = new Set<string>();
 
 export default function GoogleAuthenticationPage() {
   const navigate = useNavigate();
-  const [submitting, setSubmitting] = useState(false);
   const { searchParams } = useParamsHook();
   const shortCode = searchParams.get('c') || '';
   const exchangeToken = searchParams.get('exchangeToken') || '';
   const [exchangeSuccess, setExchangeSuccess] = useState(false);
   const exchangedRef = useRef(false);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
   // const [showPhoneModal, setShowPhoneModal] = useState(false);
   // const [pendingPhone, setPendingPhone] = useState<string>('');
 
@@ -50,7 +38,12 @@ export default function GoogleAuthenticationPage() {
 
   // True only once a FRESH profile for the just-exchanged token has arrived.
   const profileReady = exchangeSuccess && !isLoading && !isFetching && !!data;
-  const profileComplete = profileReady && !!data?.profile?.profileComplete;
+  // Google can't ask for a role at OAuth-consent time, so a fresh Google
+  // user has `onboardingCompletedAt: null` the same as a fresh email
+  // signup — both land on /onboarding via the same check (see
+  // ONBOARDING_DESIGN.md §6). Fails open (see src/lib/onboarding.ts) until
+  // the backend companion PR ships `onboardingCompletedAt` on getMe.
+  const onboardingComplete = profileReady && isOnboardingComplete(data);
 
   // Warm the bootstrap data (org membership + community entitlement) in
   // parallel with the profile fetch, and hold the redirect until it's all
@@ -83,13 +76,20 @@ export default function GoogleAuthenticationPage() {
     if (exchangeSuccess) dispatch(loginCheck());
   }, [exchangeSuccess, dispatch]);
 
-  // Only redirect away from the role picker once we KNOW (from fresh data)
-  // the profile is already complete — never on a stale cached profile, which
-  // would skip the picker and leave a new mentor stuck as the default student.
+  // Redirect once we KNOW (from fresh data) where this user needs to go —
+  // never on a stale cached profile, which could skip onboarding for a
+  // genuinely new user. Onboarding-incomplete always wins over the stored
+  // redirect URL: there is nowhere else this user can usefully land first.
   useEffect(() => {
     // Wait for BOTH the fresh profile and the warmed bootstrap data — then
     // the landing page renders instantly, with no second loader.
-    if (!profileComplete || !bootstrapReady) return;
+    if (!profileReady || !bootstrapReady) return;
+
+    if (!onboardingComplete) {
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+
     const redirectUrl = localStorage.getItem('redirectAfterLogin');
     localStorage.removeItem('redirectAfterLogin');
     // Never bounce back to an auth page — fall back to home ('/').
@@ -103,13 +103,7 @@ export default function GoogleAuthenticationPage() {
     } else {
       navigate(target, { replace: true });
     }
-  }, [profileComplete, bootstrapReady, navigate]);
-
-  const [selected, setSelected] = useState<UserType>(UserRole.Student);
-
-  const handleChange = (key: UserType) => {
-    setSelected(key);
-  };
+  }, [profileReady, onboardingComplete, bootstrapReady, navigate]);
 
   useEffect(() => {
     const code = shortCode || exchangeToken;
@@ -169,78 +163,9 @@ export default function GoogleAuthenticationPage() {
       });
   }, [shortCode, exchangeToken, navigate]);
 
-  const handleSubmit = async () => {
-    if (selected === UserRole.Mentor) {
-      setSubmitting(true);
-      const profileUpdatePayload = { profile: { role: UserRole.Mentor } };
-      dispatch(updateProfile(profileUpdatePayload as any))
-        .unwrap()
-        .then(() => {
-          // For mentor signup, we don't redirect to the stored URL yet
-          // as they need to complete their profile first
-          navigate('/auth/signup/mentor?step=1');
-        })
-        .catch((err) => {
-          message.error(err.message, 10);
-        })
-        .finally(() => setSubmitting(false));
-    } else {
-      // Student: complete profile without phone number
-      setSubmitting(true);
-      const profileUpdate: PartialProfileUpdate = {
-        profileComplete: true,
-        role: UserRole.Student
-      };
-      
-      dispatch(updateProfile({ profile: profileUpdate as any }))
-        .unwrap()
-        .then(() => {
-          // Return to where the user came from, but never an auth page.
-          const redirectUrl = localStorage.getItem('redirectAfterLogin');
-          localStorage.removeItem('redirectAfterLogin');
-          if (redirectUrl && !redirectUrl.startsWith('/auth')) {
-            window.location.href = redirectUrl;
-          } else {
-            navigate('/');
-          }
-        })
-        .catch((err) => {
-          message.error(err.message, 10);
-        })
-        .finally(() => setSubmitting(false));
-    }
-  };
-
-  // Show loader until a fresh profile has arrived, and while redirecting an
-  // already-complete profile away. The role picker only renders once we have
-  // confirmed (from fresh data) the profile still needs completing.
-  // Same rings Loader as the route's Suspense fallback and the bootstrap
-  // overlay — visually one continuous loader instead of a design switch.
-  if (!profileReady || profileComplete) {
-    return <Loader height="100vh" instant />;
-  }
-
-  return (
-    <div>
-      <Link className={styles.logo} to="/">
-        <Logo />
-      </Link>
-      <TitleDescriptionPair
-        title="Welcome!"
-        description="Are you a mentor or a student?"
-      />
-
-      <div className={styles.container}>
-        <RoleCard handleChange={handleChange} selected={selected} />
-        <CustomButton
-          onClick={handleSubmit}
-          type="primary"
-          width="100%"
-          loading={submitting}
-        >
-          {t('btn.continue')}
-        </CustomButton>
-      </div>
-    </div>
-  );
+  // This page's only job now is the OAuth code exchange + bootstrap
+  // warm-up; the role choice (formerly rendered here) moved to the
+  // /onboarding wizard's Step 1 (ONBOARDING_DESIGN.md §6). It never renders
+  // any UI of its own — the effect above always navigates away once ready.
+  return <Loader height="100vh" instant />;
 }

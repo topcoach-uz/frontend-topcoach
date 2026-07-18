@@ -6,7 +6,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { RegisterMentorEmailDto, UserRole } from 'src/app/api/Api';
-import { useInvalidateGetMeMutation } from 'src/app/services/users';
+import {
+  useInvalidateGetMeMutation,
+  usePatchOnboardingMutation,
+} from 'src/app/services/users';
 import {
   setProfile,
   setProfileImage,
@@ -30,6 +33,7 @@ export default function useMentorSignup() {
   );
   const fileList = useWatch('avatar', form) as UploadFile[];
   const [invalidateGetMe] = useInvalidateGetMeMutation();
+  const [patchOnboarding] = usePatchOnboardingMutation();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -268,16 +272,27 @@ export default function useMentorSignup() {
               // @ts-ignore
               setProfileImage(results[0]?.value?.data?.media?.url)
             );
-            // Check for stored redirect URL
-            const redirectUrl = localStorage.getItem('redirectAfterLogin');
-            if (redirectUrl) {
-              localStorage.removeItem('redirectAfterLogin');
-              window.location.href = redirectUrl;
-            } else {
-              // Full-page redirect so getMe is refetched with fresh role (Mentor).
-              // navigate('/') leaves stale getMe cache and wrongly sends mentors to student-hub.
-              window.location.href = '/';
-            }
+            const redirect = () => {
+              // Check for stored redirect URL
+              const redirectUrl = localStorage.getItem('redirectAfterLogin');
+              if (redirectUrl) {
+                localStorage.removeItem('redirectAfterLogin');
+                window.location.href = redirectUrl;
+              } else {
+                // Full-page redirect so getMe is refetched with fresh role (Mentor).
+                // navigate('/') leaves stale getMe cache and wrongly sends mentors to student-hub.
+                window.location.href = '/';
+              }
+            };
+            // Mark onboarding complete alongside profileComplete, so this
+            // mentor never gets bounced back to /onboarding on a future
+            // login (ONBOARDING_DESIGN.md §7). Best-effort — the redirect
+            // proceeds either way, awaited only so the request isn't
+            // dropped mid-flight by the page reload below.
+            patchOnboarding({ completed: true })
+              .unwrap()
+              .catch(() => undefined)
+              .finally(redirect);
           } else {
             // Handle the case where one or more promises failed
             // You might want to show an error message to the user here
