@@ -1,9 +1,13 @@
 @import './counselor-console-tokens.scss';
 
+// The console is mounted as a sibling of MainLayout, not inside it, so there is
+// no 80px site header to offset against — it owns the full viewport. Leaving
+// the old `- 80px` compensation in place pushed the sidebar down and left a
+// dead band above it.
 .counselor-console-app {
   background: var(--cc-bg);
   color: var(--cc-text);
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
   display: flex;
 }
 
@@ -13,8 +17,8 @@
   transition: width 0.2s ease;
   flex-shrink: 0;
   position: sticky;
-  top: 80px;
-  height: calc(100vh - 80px);
+  top: 0;
+  height: 100vh;
   // visible (not clipped) so the edge-mounted collapse tab can straddle the
   // right border; the nav itself scrolls internally (.counselor-console-nav).
   overflow: visible;
@@ -321,6 +325,29 @@
   color: var(--cc-text-muted);
 }
 
+// The console renders outside the marketing layout, so its header (and the
+// avatar dropdown that used to hold "Log out") is not on screen here. This
+// footer button is the only sign-out affordance an org-only counselor has.
+.counselor-console-user-logout {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cc-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--cc-accent-soft);
+    color: var(--cc-accent);
+  }
+}
+
 .counselor-console-main {
   flex: 1;
   min-width: 0;
@@ -617,13 +644,13 @@
 
   .counselor-console-app--mobile-layout .counselor-console-sider--mobile {
     position: fixed;
-    top: 80px;
+    top: 0;
     left: 0;
     bottom: 0;
     width: min(288px, 88vw) !important;
     flex: none !important;
-    height: calc(100dvh - 80px) !important;
-    max-height: calc(100dvh - 80px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     z-index: 1060;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
@@ -718,7 +745,7 @@
   .counselor-console-nav-backdrop--visible {
     display: block;
     position: fixed;
-    top: 80px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;

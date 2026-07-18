@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { UserRole } from 'src/app/services/users/type';
 import { useGetMeQuery } from 'src/app/services/users';
-import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 
 interface INavLink {
   path?: string;
@@ -17,29 +17,37 @@ export default function useNavigation() {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   const authProfile = useTypedSelector((state) => state.auth.profile);
   const { data: getMeData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
-  const { data: orgsData } = useGetMyOrganizationsQuery(undefined, { skip: !isAuthenticated });
+  const { isOrgStaff } = useOrgStaff();
   const userProfile = getMeData ?? authProfile;
   const isMentor = userProfile?.profile?.role === UserRole.Mentor;
-  // Superadmin is now driven by managementRole, not a hardcoded email,
-  // so every SuperAdmin / Owner account gets the same treatment.
-  const role = (userProfile as { managementRole?: string } | null | undefined)
-    ?.managementRole;
-  const isSuperAdmin = role === 'SuperAdmin' || role === 'Owner';
-  const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
   // "My Journey" (the student/mentee hub) is a student surface: mentors
   // never get the link — including mentors with SuperAdmin access, who
   // work from their mentor dashboard. Non-mentor SuperAdmins keep it;
-  // non-superadmin counselors get School Counselor as home instead.
-  const shouldShowMyJourney = !isMentor && (isSuperAdmin || !isCounselor);
-  // Mentors: Home. Counselors (non-superadmin): School Counselor as home.
-  const showHome = isMentor && !(isCounselor && !isSuperAdmin);
-  const showSchoolCounselor = isCounselor && !isSuperAdmin;
+  // org staff get the console as home instead.
+  const shouldShowMyJourney = !isMentor && !isOrgStaff;
+  // Mentors: Home. Org staff: the console is home.
+  const showHome = isMentor && !isOrgStaff;
+
+  // Org staff see ONLY the console — no marketing nav (Mentors / Programs /
+  // Events / Learn More). Their entire experience is the organization
+  // console; the site's mentee/mentor surfaces are not theirs to browse.
+  // Platform staff are NOT org staff (see useOrgStaff) and keep the full nav.
+  if (isOrgStaff) {
+    const consoleNav: INavLink[] = [
+      {
+        path: '/counselor-console',
+        text: t('header.counselorConsole', 'Counselor Console'),
+      },
+    ];
+    return {
+      navLinks: consoleNav,
+      isActive: (linkPath?: string) =>
+        !!linkPath && pathname.startsWith(linkPath),
+    };
+  }
 
   const navLinks: INavLink[] = [
     ...(showHome ? [{ path: '/', text: t('header.home', 'Home') }] : []),
-    // Org-scoped console for non-superadmin org members. Replaced the legacy
-    // /school-counselor surface (removed in the P5 cutover).
-    ...(showSchoolCounselor ? [{ path: '/counselor-console', text: t('header.counselorConsole', 'Counselor Console') }] : []),
     ...(shouldShowMyJourney
       ? [{ path: '/student-hub', text: t('header.studentHub', 'My Journey') }]
       : []),

@@ -417,3 +417,218 @@
   color: var(--cc-warning);
   font-size: 0.82rem;
 }
+
+/* ── People section tabs ──
+   The Students and Staff pages each switch between a roster, its invitations
+   and its retired members. Same anatomy as `.cc-analytics-tabs`: a horizontal
+   editorial pill row that scrolls on narrow screens rather than pushing the
+   body into a horizontal scroll. Active tab is maroon. */
+.cc-people-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cc-people-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--cc-text-secondary);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    color: var(--cc-text);
+    background: var(--cc-bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 2px;
+  }
+}
+
+.cc-people-tab-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cc-text-muted);
+  transition: color 0.15s ease;
+}
+
+.cc-people-tab:hover .cc-people-tab-ico {
+  color: var(--cc-text-secondary);
+}
+
+/* Count chip after the label. Tabular numerals so a tab doesn't jitter width
+   as the number changes. */
+.cc-people-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--cc-bg-subtle);
+  color: var(--cc-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cc-people-tab--active {
+  background: var(--cc-accent);
+  color: #fbfaf6;
+  border-color: var(--cc-accent);
+  box-shadow: 0 1px 2px rgba(123, 31, 47, 0.25);
+
+  &:hover {
+    background: var(--cc-accent);
+    color: #fbfaf6;
+  }
+
+  .cc-people-tab-ico,
+  &:hover .cc-people-tab-ico {
+    color: #fbfaf6;
+  }
+
+  .cc-people-tab-count {
+    background: rgba(251, 250, 246, 0.22);
+    color: #fbfaf6;
+  }
+}
+
+/* Recovery/CTA slot under an empty or error state. */
+.cc-people-empty-action {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── Undelivered-invite warning ──
+   An invitation whose email bounced looks IDENTICAL to a delivered one in every
+   other column — same "Pending" pill, same sent date — which is exactly how a
+   silent delivery failure hides. The row says so in words, in the Status cell,
+   with the provider's reason on the tooltip. Never colour alone. */
+.cc-invite-status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.cc-invite-undelivered {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--cc-danger, #a3312c);
+  background: rgba(163, 49, 44, 0.08);
+  color: var(--cc-danger, #a3312c);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: help;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+/* The banner above the table when any invite on the page failed to send. */
+.cc-invite-delivery-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: var(--cc-radius, 10px);
+  border: 1px solid var(--cc-danger, #a3312c);
+  background: rgba(163, 49, 44, 0.06);
+  color: var(--cc-text);
+  font-size: 0.84rem;
+  line-height: 1.5;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--cc-danger, #a3312c);
+  }
+
+  b {
+    font-weight: 700;
+  }
+}
+
+/* Toolbar row that carries both the status filter and the tab's own actions. */
+.cc-invite-toolbar--split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cc-invite-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Row-actions kebab ──
+   Deliberately NOT `.cc-roster-kebab`: that one sits at 45% opacity and only
+   comes up on row hover, which works on the roster because the whole row is a
+   hover target that opens a profile. Invitation rows are not clickable, so the
+   same treatment would leave the only way to delete an invite almost invisible.
+   This one is always legible. */
+.cc-menu-trigger.cc-people-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cc-text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible,
+  &[aria-expanded='true'] {
+    color: var(--cc-accent);
+    background: var(--cc-bg-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 1px;
+  }
+}

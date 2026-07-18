@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
-import { useGetMyOrganizationsQuery } from "src/app/services/organizations";
+import { useGetMyOrgsQuery } from "src/app/services/counselorConsoleApi";
 import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboardApi";
 import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
 import { useListPostsQuery } from "src/app/services/communityFeedApi";
@@ -196,7 +196,6 @@ const CounselorConsoleDashboardLazy = lazy(() => import("src/pages/counselor-con
 const CounselorConsoleAnalyticsLazy = lazy(() => import("src/pages/counselor-console/pages/AnalyticsPage"));
 const CounselorConsoleStudentsLazy = lazy(() => import("src/pages/counselor-console/pages/StudentsPage"));
 const CounselorConsoleStudentProfileLazy = lazy(() => import("src/pages/counselor-console/pages/StudentProfilePage"));
-const CounselorConsoleInvitationsLazy = lazy(() => import("src/pages/counselor-console/pages/InvitationsPage"));
 const CounselorConsoleReportsLazy = lazy(() => import("src/pages/counselor-console/pages/ReportsPage"));
 // Announcements is parked for now — the page and its backend are intact; only
 // the route + sidebar entry are commented out. Restore both to bring it back.
@@ -246,7 +245,7 @@ function RouterProvider() {
   // Also resolve the org/counselor membership here so the home redirect
   // (HomeRouter) and the student-hub gate read it from cache instead of each
   // showing their own loader.
-  const { data: orgsData, isLoading: orgsLoading } = useGetMyOrganizationsQuery(
+  const { data: orgsData, isLoading: orgsLoading } = useGetMyOrgsQuery(
     undefined,
     { skip: !isAuthenticated },
   );
@@ -440,6 +439,29 @@ function RouterProvider() {
             </Route>
           </Route>
 
+          {/* Counselor Console — org-scoped console. Mounted as a SIBLING of
+              MainLayout (like /new-admin above), NOT inside it: org staff get
+              the console and nothing else — no marketing site header/footer. */}
+          <Route element={<AddFallbackLayout />}>
+            <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+              <Route element={<CounselorConsoleLayoutLazy />}>
+                <Route index element={<CounselorConsoleDashboardLazy />} />
+                <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                {/* /invitations was folded into the Students page as a tab —
+                    keep old links working. */}
+                <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
+                <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
+                <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+              </Route>
+            </Route>
+          </Route>
+
           {/* Main Layout */}
           <Route element={<MainLayout />}>
             <Route element={<AddFallbackLayout />}>
@@ -583,24 +605,6 @@ function RouterProvider() {
                 path="/school-counselor/*"
                 element={<Navigate to="/counselor-console" replace />}
               />
-
-              {/* Counselor Console — new org-scoped console, mounted inside
-                  MainLayout so the website header stays. */}
-              <Route path="/counselor-console" element={<CounselorConsoleGate />}>
-                <Route element={<CounselorConsoleLayoutLazy />}>
-                  <Route index element={<CounselorConsoleDashboardLazy />} />
-                  <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
-                  <Route path="students" element={<CounselorConsoleStudentsLazy />} />
-                  <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
-                  <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
-                  <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                  {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
-                  {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
-                  <Route path="staff" element={<CounselorConsoleStaffLazy />} />
-                  <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
-                  <Route path="audit" element={<CounselorConsoleAuditLazy />} />
-                </Route>
-              </Route>
 
               {/* Public "Join" landing — the org invitation accept step. Public
                   (no gate) so a prospective member can view it signed-out; the

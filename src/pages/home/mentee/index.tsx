@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
@@ -18,7 +18,7 @@ import LearningProgramSection from '../_components/learningProgram';
 import SchoolCounselorDashboardSection from '../_components/schoolCounselorDashboard';
 import styles from '../mentor/_components/profile_status/profile_status.module.scss';
 import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
-import { api } from 'src/app/api';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 
 function MenteeHomePage() {
   const navigate = useNavigate();
@@ -27,43 +27,12 @@ function MenteeHomePage() {
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const { data: telegramStatus, refetch: refetchTelegramStatus, isLoading: telegramLoading } = useGetTelegramStatusQuery();
   const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
-  const [isCounselor, setIsCounselor] = useState(false);
-  const [counselorLoading, setCounselorLoading] = useState(true);
-  
-  // Debug logging
-  console.log('Telegram Status:', telegramStatus);
-  
+  // Org membership from the shared `/org/me` cache. Platform staff are
+  // excluded (see useOrgStaff) so a SuperAdmin's mentee home is unchanged.
+  const { isOrgStaff: isCounselor, isLoading: counselorLoading } = useOrgStaff();
+
   // Only show as missing if we have data and it's not connected
   const telegramMissing = !telegramLoading && telegramStatus?.status !== 'connected';
-
-  // Check if user is a counselor
-  useEffect(() => {
-    const checkCounselorStatus = async () => {
-      try {
-        const response = await api.request({
-          path: '/organizations/my-organizations',
-          method: 'GET',
-          secure: true,
-        });
-        
-        if (response.data && response.data.length > 0) {
-          setIsCounselor(true);
-        } else {
-          setIsCounselor(false);
-        }
-      } catch (error: any) {
-        setIsCounselor(false);
-      } finally {
-        setCounselorLoading(false);
-      }
-    };
-
-    if (profile?.id) {
-      checkCounselorStatus();
-    } else {
-      setCounselorLoading(false);
-    }
-  }, [profile?.id]);
 
   const checklist = [
     {

@@ -1,60 +1,65 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Form, Input, Modal, Select, Table, Tabs, message } from 'antd';
+/* ── Counselor Console — Staff ────────────────────────────────────────────────
+   The people who ADMINISTER an organization, as opposed to the students it
+   sponsors. Three tabs, mirroring the Students page exactly so the two read as
+   one surface:
+
+     Staff       — owners and counselors with live access
+     Invitations — counselor-role invites still outstanding
+     Removed     — people whose access was revoked, kept for the record
+
+   Staff and Removed are a pure CLIENT-SIDE partition of one response:
+   `GET /org/:orgId/staff` already returns removed members (status `archived`),
+   so splitting them costs no second request and the two tabs can never disagree
+   about who is where.
+
+   Owner-only. Counselors can manage students and invitations but not the people
+   who can manage them — the gate below is the same one the backend enforces. */
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Button, Modal, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
-  AtSign,
   Building2,
   Lock,
-  Search,
+  MailPlus,
   ShieldCheck,
   Trash2,
   UserCog,
-  UserPlus,
+  UserMinus,
+  Users,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
 import { CcAvatar } from '../components/CcAvatar';
-import TableSkeleton from 'src/components/loading/TableSkeleton';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import {
   useGetStaffQuery,
   useRemoveStaffMutation,
   type OrgStaffMember,
-  type OrgStaffStatus,
 } from 'src/app/services/orgAdminApi';
 import {
-  useAddOrgMemberMutation,
-  useCreateInvitationMutation,
-  useSearchOrgUsersQuery,
-  type OrgMembershipRole,
-} from 'src/app/services/counselorConsoleApi';
+  NoOrgPlaceholder,
+  PeopleEmpty,
+  PeoplePageHead,
+  PeoplePanel,
+  PeopleTableShell,
+  PeopleTabs,
+  type PeopleTab,
+} from '../_people/peopleChrome';
+import { InvitationsTab } from '../_people/InvitationsTab';
+import { MEMBER_STATUS_PILL, ROLE_LABEL, ROLE_PILL } from '../_people/roleLabels';
 import './StaffPage.scss';
 
-type AddMode = 'email' | 'existing';
+type TabKey = 'staff' | 'invitations' | 'removed';
 
-const ROLE_LABEL: Record<OrgMembershipRole, string> = {
-  owner: 'Owner',
-  counselor: 'Counselor',
-  student: 'Student',
-};
-
-const ROLE_PILL: Record<OrgMembershipRole, CcPillVariant> = {
-  owner: 'accent',
-  counselor: 'info',
-  student: 'neutral',
-};
-
-const STATUS_PILL: Record<OrgStaffStatus, { tone: CcPillVariant; label: string }> = {
-  active: { tone: 'success', label: 'Active' },
-  invited: { tone: 'info', label: 'Invited' },
-  archived: { tone: 'neutral', label: 'Archived' },
-};
+const ID_BASE = 'cc-staff';
 
 export default function CounselorConsoleStaffPage() {
   const { orgId, org, role } = useCounselorConsole();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const authProfile = useTypedSelector((state) => state.auth.profile);
@@ -68,142 +73,63 @@ export default function CounselorConsoleStaffPage() {
   );
   const [removeStaff, { isLoading: removing }] = useRemoveStaffMutation();
 
-  // ── Add-counselor modal ──
-  const [addOpen, setAddOpen] = useState(false);
-  const [addMode, setAddMode] = useState<AddMode>('email');
-  const [emailForm] = Form.useForm<{ email: string }>();
+  const items = useMemo(() => data?.items ?? [], [data]);
 
-  // Existing-user search (debounced, min 2 chars)
-  const [userQuery, setUserQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(userQuery.trim()), 250);
-    return () => clearTimeout(t);
-  }, [userQuery]);
-
-  const { data: userResults, isFetching: searching } = useSearchOrgUsersQuery(
-    { orgId: orgId as string, q: debouncedQuery },
-    { skip: !orgId || !addOpen || debouncedQuery.length < 2 },
+  /* One response, two tabs. `archived` is how the backend marks a member whose
+     access was removed; everyone else is live. */
+  const { live, removed } = useMemo(
+    () => ({
+      live: items.filter((s) => s.status !== 'archived'),
+      removed: items.filter((s) => s.status === 'archived'),
+    }),
+    [items],
   );
 
-  const userOptions = useMemo(
-    () =>
-      (userResults ?? []).map((u) => ({
-        value: u.id,
-        label: u.name,
-        email: u.email,
-      })),
-    [userResults],
+  const TABS: PeopleTab<TabKey>[] = useMemo(
+    () => [
+      { key: 'staff', label: 'Staff', icon: <Users size={15} /> },
+      { key: 'invitations', label: 'Invitations', icon: <MailPlus size={15} /> },
+      {
+        key: 'removed',
+        label: 'Removed',
+        icon: <UserMinus size={15} />,
+        count: removed.length,
+      },
+    ],
+    [removed.length],
   );
 
-  const [createInvitation, { isLoading: inviting }] = useCreateInvitationMutation();
-  const [addOrgMember, { isLoading: adding }] = useAddOrgMemberMutation();
+  const activeTab = useMemo<TabKey>(() => {
+    const raw = searchParams.get('tab');
+    return raw === 'invitations' || raw === 'removed' ? raw : 'staff';
+  }, [searchParams]);
 
-  const openAdd = () => {
-    setAddMode('email');
-    emailForm.resetFields();
-    setUserQuery('');
-    setDebouncedQuery('');
-    setSelectedUserId(undefined);
-    setAddOpen(true);
+  const setTab = (key: TabKey) => {
+    const next = new URLSearchParams(searchParams);
+    if (key === 'staff') next.delete('tab');
+    else next.set('tab', key);
+    setSearchParams(next, { replace: true });
   };
 
-  const submitEmail = async () => {
-    if (!orgId) return;
-    let values: { email: string };
-    try {
-      values = await emailForm.validateFields();
-    } catch {
-      return; // inline validation errors
-    }
-    try {
-      await createInvitation({
-        orgId,
-        email: values.email.trim(),
-        role: 'counselor',
-      }).unwrap();
-      message.success(`Counselor invitation sent to ${values.email.trim()}`);
-      setAddOpen(false);
-      refetch();
-    } catch (err: any) {
-      const reason =
-        err?.data?.message ||
-        (Array.isArray(err?.data?.message) ? err.data.message[0] : null) ||
-        'Could not send the invitation. Please try again.';
-      message.error(String(reason));
-    }
-  };
-
-  const submitExisting = async () => {
-    if (!orgId || !selectedUserId) return;
-    const picked = userOptions.find((u) => u.value === selectedUserId);
-    try {
-      await addOrgMember({
-        orgId,
-        userId: selectedUserId,
-        role: 'counselor',
-      }).unwrap();
-      message.success(
-        `${picked?.label ?? 'User'} added as a counselor`,
-      );
-      setAddOpen(false);
-      refetch();
-    } catch (err: any) {
-      const reason =
-        err?.data?.message ||
-        (Array.isArray(err?.data?.message) ? err.data.message[0] : null) ||
-        'Could not add this user. Please try again.';
-      message.error(String(reason));
-    }
-  };
-
-  const submitAdd = () => (addMode === 'email' ? submitEmail() : submitExisting());
-
-  const items = data?.items ?? [];
-
-  const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-staff-head">
-        <div>
-          <div className="cc-page-eyebrow">
-            <span className="cc-page-eyebrow-accent">Administration</span>
-            {org ? <span>· {org.name}</span> : null}
-          </div>
-          <h1 className="cc-page-title">Staff</h1>
-          <p className="cc-page-lead">
-            The counselors and owners with access to this organization. Invite new
-            counselors or remove access as your team changes.
-          </p>
-        </div>
-        {orgId && role === 'owner' ? (
-          <div className="cc-staff-head-actions">
-            <Button
-              className="cc-staff-primary"
-              type="primary"
-              onClick={openAdd}
-            >
-              <UserPlus size={15} /> Add counselor
-            </Button>
-          </div>
-        ) : null}
-      </div>
-    </div>
+  const head = (
+    <PeoplePageHead
+      eyebrow="Administration"
+      orgName={org?.name}
+      title="Staff"
+      lead="The counselors and owners with access to this organization. Invite new counselors, or remove access as your team changes."
+    />
   );
 
   // ── No organization selected ──
   if (!orgId) {
     return (
       <div className="cc-staff">
-        {header}
-        <div className="cc-placeholder">
-          <Building2 size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Select an organization</div>
-          <div className="cc-placeholder-text">
-            Choose an organization from the switcher to manage its staff.
-          </div>
-        </div>
+        {head}
+        <NoOrgPlaceholder
+          icon={<Building2 size={22} color="#7b1f2f" />}
+          title="Select an organization"
+          text="Choose an organization from the switcher to manage its staff."
+        />
       </div>
     );
   }
@@ -212,28 +138,26 @@ export default function CounselorConsoleStaffPage() {
   if (role !== 'owner') {
     return (
       <div className="cc-staff">
-        {header}
-        <div className="cc-placeholder">
-          <Lock size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Owners only</div>
-          <div className="cc-placeholder-text">
-            Staff management is restricted to organization owners. Contact an owner
-            of {org?.name ?? 'this organization'} if you need access changed.
-          </div>
-        </div>
+        {head}
+        <NoOrgPlaceholder
+          icon={<Lock size={22} color="#7b1f2f" />}
+          title="Owners only"
+          text={`Staff management is restricted to organization owners. Contact an owner of ${
+            org?.name ?? 'this organization'
+          } if you need access changed.`}
+        />
       </div>
     );
   }
 
   const handleRemove = (s: OrgStaffMember) => {
-    if (!orgId) return;
     Modal.confirm({
       title: `Remove ${s.name}?`,
       content: (
         <span>
           {s.name} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
-          immediately. Their students and data stay with the organization. You can
-          re-invite them later.
+          immediately. Their students and data stay with the organization. You
+          can re-invite them later.
         </span>
       ),
       okText: 'Remove access',
@@ -251,17 +175,14 @@ export default function CounselorConsoleStaffPage() {
     });
   };
 
-  const columns: ColumnsType<OrgStaffMember> = [
+  /** Shared columns; the Removed tab drops the action column. */
+  const baseColumns: ColumnsType<OrgStaffMember> = [
     {
       title: 'Member',
       key: 'name',
       render: (_, s) => (
         <div className="cc-staff-member">
-          <CcAvatar
-            name={s.name}
-            src={s.avatarUrl}
-            className="cc-staff-avatar"
-          />
+          <CcAvatar name={s.name} src={s.avatarUrl} className="cc-staff-avatar" />
           <div className="cc-staff-member-meta">
             <div className="cc-staff-member-name">{s.name}</div>
             <div className="cc-staff-member-email">{s.email}</div>
@@ -284,7 +205,10 @@ export default function CounselorConsoleStaffPage() {
       key: 'status',
       width: 130,
       render: (_, s) => {
-        const p = STATUS_PILL[s.status] ?? { tone: 'neutral' as CcPillVariant, label: s.status };
+        const p = MEMBER_STATUS_PILL[s.status] ?? {
+          tone: 'neutral' as CcPillVariant,
+          label: s.status,
+        };
         return <CcPill variant={p.tone}>{p.label}</CcPill>;
       },
     },
@@ -301,12 +225,18 @@ export default function CounselorConsoleStaffPage() {
           <span className="cc-staff-muted">—</span>
         ),
     },
+  ];
+
+  const liveColumns: ColumnsType<OrgStaffMember> = [
+    ...baseColumns,
     {
       title: '',
       key: 'actions',
       width: 130,
       align: 'right',
       render: (_, s) => {
+        // An owner is never removable here, and nobody can remove themselves —
+        // both would leave an organization without an administrator.
         const isSelf = !!currentUserId && s.userId === currentUserId;
         const isOwner = s.role === 'owner';
         const disabled = isSelf || isOwner;
@@ -333,161 +263,109 @@ export default function CounselorConsoleStaffPage() {
 
   return (
     <div className="cc-staff" aria-busy={isFetching || removing}>
-      {header}
+      {head}
 
-      {isLoading ? (
-        <div className="cc-staff-skeleton">
-          <TableSkeleton columns={5} rows={6} />
-        </div>
-      ) : isError ? (
-        <div className="cc-staff-table">
-          <div className="cc-staff-empty">
-            <div className="cc-staff-empty-title">Couldn’t load staff</div>
-            <div>Something went wrong fetching your team.</div>
-            <Button className="cc-staff-remove" onClick={() => refetch()}>
-              Retry
-            </Button>
+      <PeopleTabs
+        tabs={TABS}
+        active={activeTab}
+        onChange={setTab}
+        idBase={ID_BASE}
+        ariaLabel="Staff sections"
+      />
+
+      {activeTab === 'staff' && (
+        <PeoplePanel tabKey="staff" idBase={ID_BASE}>
+          <PeopleTableShell
+            isLoading={isLoading}
+            isError={isError}
+            onRetry={() => refetch()}
+            errorTitle="Couldn’t load staff"
+            errorText="Something went wrong fetching your team."
+            skeletonColumns={5}
+            skeletonRows={6}
+          >
+            <Table<OrgStaffMember>
+              columns={liveColumns}
+              dataSource={live}
+              rowKey="userId"
+              loading={isFetching}
+              pagination={false}
+              locale={{
+                emptyText: (
+                  <PeopleEmpty
+                    icon={<UserCog size={22} color="#9a8f7d" />}
+                    title="No staff yet"
+                    text="Invite your first counselor to build your team."
+                    action={
+                      <Button
+                        className="cc-staff-primary"
+                        type="primary"
+                        onClick={() => setTab('invitations')}
+                      >
+                        <MailPlus size={15} /> Invite a counselor
+                      </Button>
+                    }
+                  />
+                ),
+              }}
+            />
+          </PeopleTableShell>
+
+          <div className="cc-staff-note">
+            <ShieldCheck size={15} />
+            <span>
+              Owners have full administration access. Counselors can manage
+              students and invitations but not settings or staff.
+            </span>
           </div>
-        </div>
-      ) : (
-        <div className="cc-staff-table">
-          <Table<OrgStaffMember>
-            columns={columns}
-            dataSource={items}
-            rowKey="userId"
-            loading={isFetching}
-            pagination={false}
-            locale={{
-              emptyText: (
-                <div className="cc-staff-empty">
-                  <UserCog size={22} color="#9a8f7d" />
-                  <div className="cc-staff-empty-title">No staff yet</div>
-                  <div>Invite your first counselor to build your team.</div>
-                  <Button
-                    className="cc-staff-primary"
-                    type="primary"
-                    onClick={openAdd}
-                  >
-                    <UserPlus size={15} /> Add counselor
-                  </Button>
-                </div>
-              ),
-            }}
-          />
-        </div>
+        </PeoplePanel>
       )}
 
-      <div className="cc-staff-note">
-        <ShieldCheck size={15} />
-        <span>
-          Owners have full administration access. Counselors can manage students
-          and invitations but not settings or staff.
-        </span>
-      </div>
+      {activeTab === 'invitations' && (
+        <PeoplePanel tabKey="invitations" idBase={ID_BASE}>
+          <InvitationsTab orgId={orgId} orgName={org?.name} role="counselor" />
+        </PeoplePanel>
+      )}
 
-      {/* ── Add-counselor modal ── */}
-      <Modal
-        title="Add a counselor"
-        open={addOpen}
-        onCancel={() => setAddOpen(false)}
-        onOk={submitAdd}
-        okText={addMode === 'email' ? 'Send invitation' : 'Add counselor'}
-        okButtonProps={{
-          className: 'cc-staff-primary',
-          disabled: addMode === 'existing' && !selectedUserId,
-        }}
-        confirmLoading={inviting || adding}
-        className="cc-staff-add-modal"
-        destroyOnClose
-      >
-        <Tabs
-          activeKey={addMode}
-          onChange={(k) => setAddMode(k as AddMode)}
-          className="cc-staff-add-tabs"
-          items={[
-            {
-              key: 'email',
-              label: (
-                <span className="cc-staff-tab-label">
-                  <AtSign size={14} /> Invite by email
-                </span>
-              ),
-              children: (
-                <div className="cc-staff-add-pane">
-                  <p className="cc-staff-add-help">
-                    Email a counselor who does not yet have a TopCoach account.
-                    They will get an invitation to join{' '}
-                    <b>{org?.name ?? 'this organization'}</b>.
-                  </p>
-                  <Form form={emailForm} layout="vertical" requiredMark={false}>
-                    <Form.Item
-                      name="email"
-                      label="Email"
-                      rules={[
-                        { required: true, message: 'An email is required' },
-                        { type: 'email', message: 'Enter a valid email' },
-                      ]}
-                    >
-                      <Input
-                        placeholder="counselor@example.com"
-                        autoComplete="off"
-                        onPressEnter={submitEmail}
-                      />
-                    </Form.Item>
-                  </Form>
-                </div>
-              ),
-            },
-            {
-              key: 'existing',
-              label: (
-                <span className="cc-staff-tab-label">
-                  <UserPlus size={14} /> Add existing user
-                </span>
-              ),
-              children: (
-                <div className="cc-staff-add-pane">
-                  <p className="cc-staff-add-help">
-                    Search for someone who <b>already has</b> a TopCoach account
-                    and add them straight away — no email needed.
-                  </p>
-                  <Select
-                    className="cc-staff-user-select"
-                    showSearch
-                    labelInValue={false}
-                    value={selectedUserId}
-                    placeholder="Search by name or email…"
-                    filterOption={false}
-                    onSearch={setUserQuery}
-                    onChange={(v) => setSelectedUserId(v)}
-                    notFoundContent={
-                      searching
-                        ? 'Searching…'
-                        : debouncedQuery.length < 2
-                          ? 'Type at least 2 characters'
-                          : 'No matching users'
-                    }
-                    loading={searching}
-                    options={userOptions}
-                    optionRender={(opt) => (
-                      <div className="cc-staff-user-opt">
-                        <span className="cc-staff-user-opt-name">
-                          {opt.data.label}
-                        </span>
-                        <span className="cc-staff-user-opt-email">
-                          {(opt.data as { email?: string }).email}
-                        </span>
-                      </div>
-                    )}
-                    suffixIcon={<Search size={15} />}
-                    style={{ width: '100%' }}
+      {activeTab === 'removed' && (
+        <PeoplePanel tabKey="removed" idBase={ID_BASE}>
+          <PeopleTableShell
+            isLoading={isLoading}
+            isError={isError}
+            onRetry={() => refetch()}
+            errorTitle="Couldn’t load removed staff"
+            errorText="Something went wrong fetching your team."
+            skeletonColumns={4}
+            skeletonRows={4}
+          >
+            <Table<OrgStaffMember>
+              columns={baseColumns}
+              dataSource={removed}
+              rowKey="userId"
+              loading={isFetching}
+              pagination={false}
+              locale={{
+                emptyText: (
+                  <PeopleEmpty
+                    icon={<UserMinus size={22} color="#9a8f7d" />}
+                    title="Nobody removed"
+                    text="Staff whose access you revoke will be listed here."
                   />
-                </div>
-              ),
-            },
-          ]}
-        />
-      </Modal>
+                ),
+              }}
+            />
+          </PeopleTableShell>
+
+          <div className="cc-staff-note">
+            <ShieldCheck size={15} />
+            <span>
+              Removed staff keep their TopCoach account and the work they did
+              stays with the organization. To give someone access again, invite
+              them from the Invitations tab.
+            </span>
+          </div>
+        </PeoplePanel>
+      )}
     </div>
   );
 }

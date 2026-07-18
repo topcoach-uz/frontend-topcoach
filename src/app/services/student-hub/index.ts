@@ -7,3 +7,4 @@ export * from './applicationTrackingApi';
 export * from './essayManagementApi';
 export * from './dashboardApi';
 export * from './psychometricApi';
+export * from './orgMembershipApi';

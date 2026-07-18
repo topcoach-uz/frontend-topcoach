@@ -16,6 +16,8 @@ import {
   useGetInvitationByTokenQuery,
   useAcceptInvitationMutation,
 } from 'src/app/services/publicInvitationsApi';
+import { useGetMyOrgsQuery } from 'src/app/services/counselorConsoleApi';
+import type { OrgMembershipRole } from 'src/app/services/counselorConsoleApi';
 import './JoinPage.scss';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -23,6 +25,13 @@ const ROLE_LABEL: Record<string, string> = {
   counselor: 'Counselor',
   student: 'Student',
 };
+
+/** Staff roles land in the counselor console; only students belong in the hub. */
+const isStaffRole = (role?: OrgMembershipRole | null) =>
+  role === 'owner' || role === 'counselor';
+
+const homeForRole = (role?: OrgMembershipRole | null) =>
+  isStaffRole(role) ? '/counselor-console' : '/student-hub';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -42,9 +51,44 @@ export default function JoinPage() {
   const [acceptInvitation, { isLoading: accepting }] =
     useAcceptInvitationMutation();
 
+  /**
+   * The server auto-enrols an invitee on the authenticated email (see
+   * OrgInvitationsService.onUserAuthenticated), so by the time someone returns
+   * here after signing up + verifying, the invitation is usually ALREADY
+   * `accepted` and `getPublicByToken` reports `valid: false`. Rendering the
+   * "this invitation can't be used" dead end at that point is wrong twice
+   * over: they are signed in, and they are already a member. Look up their
+   * memberships so we can recognise that case and send them onward instead.
+   */
+  const { data: myOrgs, isLoading: orgsLoading } = useGetMyOrgsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
   const org = data?.organization;
   const orgName = org?.name ?? 'this organization';
   const roleLabel = data?.role ? ROLE_LABEL[data.role] ?? data.role : null;
+
+  /** The invitee's existing membership in the invited org, if any. */
+  const membership = useMemo(() => {
+    const invitedOrg = data?.organization;
+    if (!invitedOrg || !myOrgs?.length) return null;
+    // Slug is the identifier; the public DTO exposes no org id and slug is
+    // nullable, so fall back to the (org-unique) name.
+    if (invitedOrg.slug) {
+      const bySlug = myOrgs.find((m) => m.organization.slug === invitedOrg.slug);
+      if (bySlug) return bySlug;
+    }
+    return myOrgs.find((m) => m.organization.name === invitedOrg.name) ?? null;
+  }, [data?.organization, myOrgs]);
+
+  /**
+   * Show the "you're already in" exit instead of the accept/invalid states.
+   * Guarded on the role: a pending invitation that would UPGRADE an existing
+   * member (invited as counselor while already enrolled as a student) still
+   * needs to be accepted, so don't swallow it.
+   */
+  const alreadyIn =
+    !!membership && (!data?.valid || membership.role === data?.role);
 
   const invalidReason = useMemo(() => {
     if (!data) return null;
@@ -66,12 +110,20 @@ export default function JoinPage() {
    * auto-enrols on the authenticated email (see OrgInvitationsService
    * .onUserAuthenticated). This just gets them back here when it does work.
    *
-   * Signup goes STRAIGHT to the student form, skipping /auth/signup's
-   * Student-or-Mentor chooser. Asking a counselor to pick is nonsense, and the
-   * choice is irrelevant: the org role comes from the invitation, and the gates
-   * route on org membership rather than the profile role. The invited email is
-   * passed through so the form can lock it — registering with a different
-   * address is what silently breaks the enrolment.
+   * Signup goes STRAIGHT to the email-registration form, skipping
+   * /auth/signup's Student-or-Mentor chooser. Asking a counselor to pick is
+   * nonsense, and the choice is irrelevant to their access: the org role comes
+   * from the invitation, and the gates route on org membership rather than the
+   * profile role. The invited email is passed through so the form can lock it —
+   * registering with a different address is what silently breaks the enrolment.
+   *
+   * `role` is forwarded so the form can speak in the invitation's terms
+   * ("Join as a counselor") instead of framing everyone as a student. NOTE: the
+   * account is still created through /auth/student/register/email — the only
+   * email-signup endpoint there is — so a counselor invitee ends up with
+   * `profile.role === 'Student'` at the API level. Fixing that properly needs a
+   * backend change (registration that honours the invitation role); it is not
+   * fixable from this page.
    */
   const goToAuth = (mode: 'signup' | 'signin') => {
     const target = `/join/${encodeURIComponent(token)}`;
@@ -87,7 +139,20 @@ export default function JoinPage() {
     const params = new URLSearchParams({ redirect: target });
     if (data?.email) params.set('email', data.email);
     if (orgName) params.set('org', orgName);
+    if (data?.role) params.set('role', data.role);
     navigate(`/auth/signup/student?${params.toString()}`);
+  };
+
+  /** Leave the join flow for the surface this person's org role belongs to. */
+  const goToConsole = (role?: OrgMembershipRole | null) => {
+    try {
+      localStorage.removeItem('redirectAfterLogin');
+    } catch {
+      /* ignore private-mode failures */
+    }
+    // Full reload rather than navigate(): the gates key off `/org/me`, which
+    // may have been cached before the server auto-enrolled this user.
+    window.location.href = homeForRole(role);
   };
 
   const handleAccept = async () => {
@@ -105,8 +170,7 @@ export default function JoinPage() {
       // and it was just created. A client-side transition would route on the
       // stale `/org/me` cache from before the accept and land them right back
       // in the student hub.
-      const isStaff = data?.role === 'owner' || data?.role === 'counselor';
-      window.location.href = isStaff ? '/counselor-console' : '/student-hub';
+      goToConsole(data?.role);
     } catch (err: any) {
       const reason =
         err?.data?.message ||
@@ -137,6 +201,48 @@ export default function JoinPage() {
               Go to homepage
             </Button>
           </div>
+        ) : isAuthenticated && orgsLoading ? (
+          // Don't decide between "already a member" and "can't be used" until
+          // the memberships are in — guessing early is exactly what produced
+          // the dead end this branch exists to remove.
+          <div className="cc-join-loading">
+            <Skeleton.Avatar active size={64} shape="square" />
+            <Skeleton active paragraph={{ rows: 3 }} title />
+          </div>
+        ) : alreadyIn && membership ? (
+          <div className="cc-join-state">
+            <div className="cc-join-state-icon cc-join-state-icon--ok">
+              <CheckCircle2 size={26} />
+            </div>
+            <div className="cc-join-eyebrow">
+              <span className="cc-join-eyebrow-accent">You’re in</span>
+            </div>
+            <h1 className="cc-join-title">You’ve already joined {orgName}</h1>
+            <p className="cc-join-lead">
+              Your account is connected to {orgName}
+              {membership.role ? (
+                <>
+                  {' '}as a{' '}
+                  <b>
+                    {(ROLE_LABEL[membership.role] ?? membership.role).toLowerCase()}
+                  </b>
+                </>
+              ) : null}
+              . Nothing left to accept — head straight in.
+            </p>
+            <div className="cc-join-actions">
+              <Button
+                className="cc-join-primary"
+                type="primary"
+                onClick={() => goToConsole(membership.role)}
+              >
+                {isStaffRole(membership.role)
+                  ? 'Go to your console'
+                  : 'Go to your hub'}{' '}
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+          </div>
         ) : !data.valid ? (
           <div className="cc-join-state">
             <div className="cc-join-state-icon cc-join-state-icon--warn">
@@ -147,15 +253,42 @@ export default function JoinPage() {
             </div>
             <h1 className="cc-join-title">This invitation can’t be used</h1>
             <p className="cc-join-lead">{invalidReason}</p>
-            <p className="cc-join-help">
-              Ask {orgName} to send you a fresh invitation, or sign in if you’ve
-              already joined.
-            </p>
-            <div className="cc-join-actions">
-              <Button className="cc-join-secondary" onClick={() => goToAuth('signin')}>
-                <LogIn size={16} /> Sign in
-              </Button>
-            </div>
+            {/* Authenticated but not a member of the invited org — almost
+                always someone signed in under a DIFFERENT address than the one
+                invited, since the server enrols by matching the email. Offering
+                them "Sign in" would be a no-op loop. */}
+            {isAuthenticated ? (
+              <>
+                <p className="cc-join-help">
+                  You’re signed in, but this account isn’t a member of {orgName}.
+                  If you were invited at a different email address, sign in with
+                  that one — or ask {orgName} to send a fresh invitation.
+                </p>
+                <div className="cc-join-actions">
+                  <Button
+                    className="cc-join-secondary"
+                    onClick={() => navigate('/')}
+                  >
+                    Go to homepage
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="cc-join-help">
+                  Ask {orgName} to send you a fresh invitation, or sign in if
+                  you’ve already joined.
+                </p>
+                <div className="cc-join-actions">
+                  <Button
+                    className="cc-join-secondary"
+                    onClick={() => goToAuth('signin')}
+                  >
+                    <LogIn size={16} /> Sign in
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <>

@@ -21,7 +21,8 @@ export type PublicInvitationStatus =
 export interface PublicInvitationOrg {
   name: string;
   logoUrl: string | null;
-  slug: string;
+  /** Nullable server-side (PublicInvitationOrgDto) — never assume it's set. */
+  slug: string | null;
 }
 
 /** `GET /invitations/:token` — the invitation as seen by the invitee. */

@@ -8,7 +8,7 @@ import useColors from 'src/hooks/useColors';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
-import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { useGetMentorRosterQuery } from 'src/app/services/fullSupportApi';
 import { LayoutDashboard, BookOpen, Settings, Users, FileCheck, Sparkles } from 'lucide-react';
 import { Space, Row, Col } from 'antd';
@@ -23,13 +23,10 @@ export default function MentorHome() {
   const { data: userData } = useGetMeQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { data: orgsData } = useGetMyOrganizationsQuery(undefined, {
-    skip: !isAuthenticated,
-  });
+  const { isOrgStaff } = useOrgStaff();
   const currentUser = userData || user;
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
   const isYouthLeadersApplicationsAdmin = currentUser?.managementRole === 'SuperAdmin';
-  const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
   const { data: mentorRosterData } = useGetMentorRosterQuery(undefined, { skip: !isAuthenticated });
   const hasFullSupportAssignments = (mentorRosterData?.data?.length ?? 0) > 0;
 
@@ -223,8 +220,10 @@ export default function MentorHome() {
           </>
         )}
       </div>
-      {/* School Counselor card for mentors with counselor access (non-SuperAdmin) */}
-      {isCounselor && !isSuperAdmin && (
+      {/* School Counselor card for mentors with counselor access (non-SuperAdmin).
+          In practice org staff are redirected to the console before this page
+          renders — this stays as a fallback for any direct mentor-home hit. */}
+      {isOrgStaff && (
         <div className="container" style={{ paddingTop: 24, marginBottom: sectionSpacing }}>
           <CustomCard
             bgColor={colors.colorBgContainer}

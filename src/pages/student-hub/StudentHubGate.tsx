@@ -1,32 +1,32 @@
 /**
- * Gate for /student-hub: redirect ALL mentors (SuperAdmin or not — they work
- * from the mentor dashboard) and counselors to their own home surfaces.
- * Always allow sheraliozodov6@gmail.com.
+ * Gate for /student-hub: redirect ALL mentors (platform staff or not — they
+ * work from the mentor dashboard) and org staff to their own home surfaces.
+ *
+ * Platform staff (SuperAdmin/Owner `managementRole`) keep the hub: `/org/me`
+ * returns every org for them, so they must not be treated as org staff here.
  *
  * Hook-order fix: useCounselorStatus (useState/useEffect) + useGetMeQuery(skip) caused
- * "change in order of Hooks" on refresh. We use Redux for profile and RTK Query
- * getMyOrganizations instead; no useCounselorStatus.
+ * "change in order of Hooks" on refresh. We use Redux for profile and the
+ * RTK Query `/org/me` membership instead; no useCounselorStatus.
  */
 
 import { Navigate } from 'react-router-dom';
 import Loader from 'src/components/loader';
 import { useTypedSelector } from 'src/app/store';
-import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { JourneyExperienceProvider } from 'src/contexts/JourneyExperienceContext';
 import StudentHubRoutes from './StudentHubRoutes';
-
-const SUPER_ADMIN_EMAIL = 'sheraliozodov6@gmail.com';
 
 export default function StudentHubGate() {
   const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
   const profile = useTypedSelector((s) => s.auth.profile);
-  const email = profile?.email;
   const isMentor = profile?.profile?.role === 'Mentor';
 
-  const { data: orgsData, isLoading: counselorLoading } = useGetMyOrganizationsQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-  const isCounselor = Array.isArray(orgsData) && orgsData.length > 0;
+  const {
+    isOrgStaff,
+    isPlatformStaff,
+    isLoading: counselorLoading,
+  } = useOrgStaff();
 
   const profileLoading = isAuthenticated && !profile?.id;
 
@@ -44,7 +44,9 @@ export default function StudentHubGate() {
     );
   }
 
-  if (email === SUPER_ADMIN_EMAIL) {
+  // Platform staff (SuperAdmin/Owner) keep the hub — unless they are mentors,
+  // who fall through to the mentor check below like any other mentor.
+  if (isPlatformStaff && !isMentor) {
     return (
       <JourneyExperienceProvider>
         <StudentHubRoutes />
@@ -61,7 +63,7 @@ export default function StudentHubGate() {
   // often also carries `profile.role === 'Mentor'`. With the mentor check
   // first, those accounts were sent to the mentor home and could never reach
   // their console.
-  if (isCounselor) {
+  if (isOrgStaff) {
     return <Navigate to="/counselor-console" replace />;
   }
 

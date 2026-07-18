@@ -480,7 +480,8 @@ export default function CounselorConsoleDashboardPage() {
                   label: 'Invite',
                   hint: 'Add new students',
                   icon: <MailPlus size={16} />,
-                  to: '/counselor-console/invitations',
+                  // Deep-links the Students page's Invitations tab.
+                  to: '/counselor-console/students?tab=invitations',
                 },
                 {
                   label: 'Analytics',

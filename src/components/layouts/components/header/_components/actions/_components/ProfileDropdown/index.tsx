@@ -10,6 +10,7 @@ import styles from './ProfileDropdown.module.scss';
 import { CustomButton } from 'src/components/common';
 import { t, use } from 'i18next';
 import { logout } from 'src/app/slices/authSlice';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { themeColors } from 'src/constants/theme';
 
 interface Props {
@@ -44,9 +45,13 @@ export default function ProfileDropdown({ profileMenuItems }: Props) {
 
   const role = userData?.profile?.role;
 
+  // Invited org staff may carry NEITHER Mentor nor Student as their profile
+  // role, which left them with no avatar menu and therefore no way to log out.
+  const { isOrgStaff } = useOrgStaff();
+
   return (
     <div>
-      {(role === UserRole.Mentor || role === UserRole.Student) ? (
+      {(role === UserRole.Mentor || role === UserRole.Student || isOrgStaff) ? (
         <Dropdown menu={{ items: profileMenuItems }} trigger={['click']}>
           <Flex style={{ cursor: 'pointer' }} gap={4}>
             <div className={styles.avatar_wrapper}>
