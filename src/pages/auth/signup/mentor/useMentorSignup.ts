@@ -150,7 +150,6 @@ export default function useMentorSignup() {
           mentoringExperience: val.mentoringExperience?.trim(),
           whyDoICoach: val.whyDoICoach?.trim(),
           tags: val.tags || [],
-          level: val.isUzCombinatorMentor ? 'uzcombinator' : undefined,
           ...university,
         },
         selectedUniversities,
@@ -225,7 +224,6 @@ export default function useMentorSignup() {
               background: val.background?.trim(),
               mentorshipValue: val.mentorshipValue?.trim(),
               mentoringExperience: val.mentoringExperience?.trim(),
-              ...(val.isUzCombinatorMentor && { level: 'uzcombinator' }),
               ...university,
             },
             // Just giving the id itself
