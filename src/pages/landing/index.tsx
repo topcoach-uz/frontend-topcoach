@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import HeroSection from './_components/hero';
 import LandingAISearch from './_components/AISearch';
 import LandingEventsSection from './_components/events';
@@ -13,84 +12,9 @@ import styles from './landing.module.scss';
 import { useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useParamsHook from 'src/hooks/params';
-import LeadCapturePopup from 'src/components/lead-capture/LeadCapturePopup';
-import { useScrollTrigger } from 'src/hooks/useScrollTrigger';
-import { useTypedSelector } from 'src/app/store';
 
 export default function LandingPage() {
   const { searchParams } = useParamsHook();
-  const [popupVisible, setPopupVisible] = useState(false);
-  const { isAuthenticated } = useTypedSelector((state) => state.auth);
-  
-  // Use scroll trigger for popup
-  const { shouldShow } = useScrollTrigger({
-    threshold: 0.03, // Show after 5% scroll (very early - user just started scrolling)
-    checkAuth: true,
-    isAuthenticated,
-  });
-  
-  // Debug: Log current domain and status (works on both domains)
-  useEffect(() => {
-    const hostname = window.location.hostname;
-    const shouldLog = import.meta.env.DEV || hostname.includes('topcoach');
-    
-    if (shouldLog) {
-      console.log('[LandingPage] ===== Lead Capture Status =====');
-      console.log('[LandingPage] Domain:', hostname);
-      console.log('[LandingPage] Is authenticated:', isAuthenticated);
-      console.log('[LandingPage] Should show popup (from hook):', shouldShow);
-      console.log('[LandingPage] Popup visible (state):', popupVisible);
-      console.log('[LandingPage] localStorage.submitted:', localStorage.getItem('lead-capture-popup-submitted'));
-      console.log('[LandingPage] sessionStorage.closed:', sessionStorage.getItem('lead-capture-popup-closed'));
-      console.log('[LandingPage] =================================');
-    }
-  }, [isAuthenticated, shouldShow, popupVisible]);
-
-  // Debug helper: expose popup control to window for testing (works in both dev and production)
-  useLayoutEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      const shouldExpose = import.meta.env.DEV || hostname.includes('topcoach');
-      
-      if (shouldExpose) {
-        (window as any).__leadCaptureDebug = {
-          show: () => {
-            localStorage.removeItem('lead-capture-popup-submitted');
-            sessionStorage.removeItem('lead-capture-popup-closed');
-            setPopupVisible(true);
-            console.log('✅ Popup forced to show via debug helper');
-          },
-          hide: () => {
-            setPopupVisible(false);
-            console.log('✅ Popup hidden via debug helper');
-          },
-          clear: () => {
-            localStorage.removeItem('lead-capture-popup-submitted');
-            sessionStorage.removeItem('lead-capture-popup-closed');
-            console.log('✅ Cleared all lead capture storage. Reload page to test.');
-          },
-          reset: () => {
-            localStorage.removeItem('lead-capture-popup-submitted');
-            sessionStorage.removeItem('lead-capture-popup-closed');
-            window.location.reload();
-          },
-          status: () => {
-            console.log('=== Lead Capture Debug Status ===');
-            console.log('Domain:', hostname);
-            console.log('localStorage.submitted:', localStorage.getItem('lead-capture-popup-submitted'));
-            console.log('sessionStorage.closed:', sessionStorage.getItem('lead-capture-popup-closed'));
-            console.log('shouldShow:', shouldShow);
-            console.log('popupVisible:', popupVisible);
-            console.log('isAuthenticated:', isAuthenticated);
-          },
-        };
-        console.log('🔧 Lead Capture Debug Helper available!');
-        console.log('   Use window.__leadCaptureDebug.show() to force show popup');
-        console.log('   Use window.__leadCaptureDebug.reset() to clear and reload');
-        console.log('   Or add ?reset-popup=true to the URL');
-      }
-    }
-  }, [shouldShow, popupVisible, isAuthenticated]);
 
   const verified =
     searchParams.get('verified') && !!searchParams.get('verified');
@@ -102,66 +26,6 @@ export default function LandingPage() {
       navigate('/auth/verification?verified=true');
     }
   }, []);
-
-  // Show popup when scroll threshold is reached
-  // Works for unauthenticated users
-  // Since topcoachuni.com is now the main domain, this ensures it works there too
-  useLayoutEffect(() => {
-    const hostname = window.location.hostname;
-    const shouldLog = import.meta.env.DEV || hostname.includes('topcoach');
-
-    // Don't show popup if user is authenticated (on any domain)
-    if (isAuthenticated) {
-      if (shouldLog) console.log('[LandingPage] Not showing popup: user is authenticated on', hostname);
-      return;
-    }
-
-    // Check for reset parameter in URL (for testing/debugging)
-    const urlParams = new URLSearchParams(window.location.search);
-    const resetPopup = urlParams.get('reset-popup');
-    if (resetPopup === 'true') {
-      localStorage.removeItem('lead-capture-popup-submitted');
-      sessionStorage.removeItem('lead-capture-popup-closed');
-      if (shouldLog) console.log('[LandingPage] Reset popup flags via URL parameter on', hostname);
-      // Remove the parameter from URL without reload
-      const newUrl = window.location.pathname + window.location.search.replace(/[?&]reset-popup=true/, '').replace(/^\?/, '?').replace(/^&/, '?');
-      window.history.replaceState({}, '', newUrl || window.location.pathname);
-    }
-
-    // Only check if form was submitted - if yes, never show (domain-specific localStorage)
-    // localStorage is domain-specific
-    // However, we allow reset via URL parameter for testing
-    const wasSubmitted = localStorage.getItem('lead-capture-popup-submitted');
-    if (wasSubmitted === 'true') {
-      if (shouldLog) console.log('[LandingPage] Not showing popup: form was submitted on', hostname);
-      if (shouldLog) console.log('[LandingPage] To reset, add ?reset-popup=true to the URL');
-      return;
-    }
-
-    // Check sessionStorage - only prevents in current page session
-    // After page reload or browser restart, sessionStorage clears, so popup can show again
-    const wasClosedInSession = sessionStorage.getItem('lead-capture-popup-closed');
-    if (wasClosedInSession === 'true') {
-      if (shouldLog) console.log('[LandingPage] Not showing popup: closed in session on', hostname);
-      return;
-    }
-
-    // If scroll threshold reached and not closed/submitted, show popup
-    // Works for unauthenticated users
-    if (shouldShow && !popupVisible) {
-      if (shouldLog) console.log('[LandingPage] ✅ Showing popup now on', hostname);
-      // Small delay for better UX
-      const timer = setTimeout(() => {
-        setPopupVisible(true);
-        if (shouldLog) console.log('[LandingPage] Popup visibility set to true on', hostname);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if (shouldLog && shouldShow && popupVisible) {
-      console.log('[LandingPage] Popup already visible on', hostname);
-    } else if (shouldLog) {
-      console.log('[LandingPage] Waiting for scroll threshold on', hostname, { shouldShow, popupVisible, isAuthenticated });
-    }
-  }, [shouldShow, popupVisible, isAuthenticated]);
 
   return (
     <main className={styles.main}>
@@ -181,10 +45,6 @@ export default function LandingPage() {
 
       <PricingSection />
       <FaqSection />
-      <LeadCapturePopup
-        visible={popupVisible}
-        onClose={() => setPopupVisible(false)}
-      />
     </main>
   );
 }
