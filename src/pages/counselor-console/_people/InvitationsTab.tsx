@@ -427,7 +427,7 @@ export function InvitationsTab({
           locale={{
             emptyText: (
               <PeopleEmpty
-                icon={<MailPlus size={22} color="#9a8f7d" />}
+                icon={<MailPlus size={22} />}
                 title={
                   status === 'actionable'
                     ? 'Nothing outstanding'

@@ -30,11 +30,14 @@ import {
   ChevronRight,
   Clock,
   Users,
+  UserRound,
 } from 'lucide-react';
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { CcStat, type CcStatTone } from '../components/CcStat';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
 import { CcAvatar } from '../components/CcAvatar';
+import { CcPageHead } from '../components/CcPageHead';
+import { CcEmpty } from '../components/CcEmpty';
 import { CC_PROGRAM_COLOR, CC_OTHER } from '../charts/ccEcharts';
 import { useAppDispatch } from 'src/app/store';
 import { useGetUserByIdQuery } from 'src/app/services/users';
@@ -86,6 +89,13 @@ const MajorMatchTab = lazy(
   () => import('src/pages/counselor-console/_programs/MajorMatchTab'),
 );
 
+// Flat read-only rendering of the student hub profile. Deliberately not the
+// student-facing ProfilePage: that one owns `?tab=` URL state which would
+// collide with this page's own tab state, and it renders its own header chrome.
+const ProfileDetailTab = lazy(
+  () => import('src/pages/counselor-console/_profile/StudentProfileDetailTab'),
+);
+
 // ── status → pill variant maps ──────────────────────────────────────────────
 const PROGRAM_PILL: Record<string, CcPillVariant> = {
   approved: 'success',
@@ -132,8 +142,17 @@ function TabFallback() {
   );
 }
 
-function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="cc-profile-empty">{children}</div>;
+/* Thin wrapper so this page's many `<EmptyState>Nothing here yet.</EmptyState>`
+   call sites keep reading naturally. It used to render a bare left-aligned
+   paragraph; it is now the console's one empty state. */
+function EmptyState({
+  children,
+  icon,
+}: {
+  children: ReactNode;
+  icon?: ReactNode;
+}) {
+  return <CcEmpty icon={icon ?? <Layers size={20} />} title={children} />;
 }
 
 function InlineError({ title, text }: { title: string; text: string }) {
@@ -252,6 +271,20 @@ export default function CounselorConsoleStudentProfilePage() {
           dashboardError={dashboardError}
           onOpenTab={setActiveTab}
         />
+      ),
+    },
+
+    {
+      key: 'profile',
+      label: (
+        <span className="cc-profile-tab-label">
+          <UserRound size={15} /> Profile
+        </span>
+      ),
+      children: (
+        <Suspense fallback={<TabFallback />}>
+          <ProfileDetailTab userId={userId!} />
+        </Suspense>
       ),
     },
 
@@ -375,41 +408,36 @@ export default function CounselorConsoleStudentProfilePage() {
     <div className="cc-profile" key={orgId ?? 'no-org'}>
       <BackLink />
 
-      <div className="cc-page-head--ruled">
-        <div className="cc-page-eyebrow">
-          <span className="cc-page-eyebrow-accent">Student</span>
-          {org ? <span>· {org.name}</span> : null}
-        </div>
-        <div className="cc-profile-headrow">
-          <h1 className="cc-page-title">
-            {userLoading && studentName === 'Student' ? 'Loading…' : studentName}
-          </h1>
-          <MessageButton userId={userId!} studentName={studentName} />
-        </div>
+      {/* Deck-less: the meta row (email, class, status) is this page's deck. */}
+      <CcPageHead
+        eyebrow="Student"
+        orgName={org?.name}
+        title={
+          userLoading && studentName === 'Student' ? 'Loading…' : studentName
+        }
+        actions={<MessageButton userId={userId!} studentName={studentName} />}
+        meta={
+          <>
+            {studentEmail ? (
+              <span className="cc-profile-headmeta-item">
+                <Mail size={13} /> {studentEmail}
+              </span>
+            ) : null}
+            {graduationYear ? (
+              <span className="cc-profile-headmeta-item">
+                <GraduationCap size={13} /> Class of {graduationYear}
+                {curriculum ? ` · ${curriculum}` : ''}
+              </span>
+            ) : null}
+            {profileStatus ? (
+              <CcPill variant={PROFILE_STATUS_PILL[profileStatus] ?? 'neutral'}>
+                {prettify(profileStatus)}
+              </CcPill>
+            ) : null}
+          </>
+        }
+      />
 
-        <div className="cc-profile-headmeta">
-          {studentEmail ? (
-            <span className="cc-profile-headmeta-item">
-              <Mail size={13} /> {studentEmail}
-            </span>
-          ) : null}
-          {graduationYear ? (
-            <span className="cc-profile-headmeta-item">
-              <GraduationCap size={13} /> Class of {graduationYear}
-              {curriculum ? ` · ${curriculum}` : ''}
-            </span>
-          ) : null}
-          {profileStatus ? (
-            <CcPill variant={PROFILE_STATUS_PILL[profileStatus] ?? 'neutral'}>
-              {prettify(profileStatus)}
-            </CcPill>
-          ) : null}
-        </div>
-
-        <p className="cc-page-lead">
-          Read-only academic profile — programs, tasks and sessions.
-        </p>
-      </div>
 
       <div className="cc-stat-grid">
         <CcStat

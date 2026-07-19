@@ -21,11 +21,11 @@ import { Archive, MailPlus, Users } from 'lucide-react';
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import {
   NoOrgPlaceholder,
-  PeoplePageHead,
   PeoplePanel,
   PeopleTabs,
   type PeopleTab,
 } from '../_people/peopleChrome';
+import { CcPageHead } from '../components/CcPageHead';
 import { StudentRosterTab } from '../_people/StudentRosterTab';
 import { InvitationsTab } from '../_people/InvitationsTab';
 
@@ -61,7 +61,7 @@ export default function CounselorConsoleStudentsPage() {
   };
 
   const head = (
-    <PeoplePageHead
+    <CcPageHead
       eyebrow="People"
       orgName={org?.name}
       title="Students"

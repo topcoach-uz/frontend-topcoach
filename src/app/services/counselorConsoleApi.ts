@@ -107,6 +107,12 @@ export interface OrgStudent {
   progress: number;
   /** Program the `progress` value comes from (its furthest-along program). */
   topProgram: string | null;
+  /**
+   * Student profile completeness 0-100, from `student_profiles.completionPercentage`.
+   * 0 when the student has no profile row yet. Same source as the dashboard's
+   * `avgProfileCompletion`, so the two always agree.
+   */
+  profileCompletion: number;
   lastActiveAt: string | null;
   status: OrgStudentStatus;
   telegramStatus: TelegramStatus;
@@ -560,6 +566,9 @@ export interface OrgAnalyticsTopEarner {
   userId: string;
   name: string;
   coins: number;
+  /** Profile photo. Null when the student has never uploaded one — the avatar
+   *  component falls back to initials. */
+  avatarUrl: string | null;
 }
 
 export interface OrgAnalyticsSessionMonth {

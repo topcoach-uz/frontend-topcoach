@@ -699,7 +699,7 @@ export function StudentRosterTab({
           locale={{
             emptyText: (
               <PeopleEmpty
-                icon={<Users size={22} color="#9a8f7d" />}
+                icon={<Users size={22} />}
                 title={
                   isArchived ? 'Nothing archived' : 'No students found'
                 }

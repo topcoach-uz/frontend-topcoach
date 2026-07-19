@@ -348,7 +348,7 @@ export default function CounselorConsoleLayout() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#6b6258',
+                color: 'var(--cc-text-secondary)',
                 font: 'inherit',
                 fontSize: '0.78rem',
                 padding: '4px 6px',

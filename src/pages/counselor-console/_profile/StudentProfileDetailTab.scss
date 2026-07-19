@@ -1,0 +1,229 @@
+/* Counselor Console — flat read-only student profile detail.
+   Uses only the console's --cc-* tokens; no hardcoded colours. */
+
+.cc-pd {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  /* ── Completion summary ── */
+  .cc-pd-summary {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+
+  .cc-pd-summary-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 108px;
+  }
+
+  .cc-pd-summary-pct {
+    font-family: var(--cc-serif);
+    font-size: 2.1rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cc-pd-summary-cap {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cc-text-muted);
+  }
+
+  .cc-pd-summary-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cc-pd-summary-text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--cc-text-secondary);
+    max-width: 52ch;
+  }
+
+  .cc-pd-summary-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--cc-bg-subtle);
+  }
+  .cc-pd-summary-fill {
+    display: block;
+    height: 100%;
+    background: var(--cc-accent);
+  }
+
+  /* ── Definition-list sections ── */
+  .cc-pd-note {
+    margin: -4px 0 14px;
+    font-size: 0.85rem;
+    color: var(--cc-text-muted);
+  }
+
+  .cc-pd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0;
+    margin: 0;
+  }
+
+  .cc-pd-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 11px 0;
+    border-top: 1px solid var(--cc-hairline);
+    min-width: 0;
+
+    /* Wide rows (chip lists, prose) span the whole card. */
+    &--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .cc-pd-field-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--cc-text-muted);
+    margin: 0;
+  }
+
+  .cc-pd-field-value {
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.5;
+    color: var(--cc-text);
+    word-break: break-word;
+  }
+
+  .cc-pd-num {
+    font-family: var(--cc-serif);
+    font-size: 1.12rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--cc-text);
+  }
+  .cc-pd-num-suffix {
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--cc-text-muted);
+  }
+
+  .cc-pd-prose {
+    display: block;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--cc-text-secondary);
+    white-space: pre-wrap;
+    max-width: 72ch;
+  }
+
+  /* ── Chips ── */
+  .cc-pd-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 3px;
+  }
+  .cc-pd-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border: 1px solid var(--cc-border);
+    border-radius: 999px;
+    background: var(--cc-bg-subtle);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--cc-text-secondary);
+  }
+
+  /* ── Activities ── */
+  .cc-pd-activities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px 28px;
+  }
+
+  .cc-pd-activity-group {
+    min-width: 0;
+  }
+
+  .cc-pd-activity-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--cc-hairline);
+    margin-bottom: 8px;
+  }
+  .cc-pd-activity-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--cc-text-muted);
+  }
+  .cc-pd-activity-count {
+    font-family: var(--cc-serif);
+    font-size: 0.95rem;
+    color: var(--cc-text-secondary);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+  }
+
+  .cc-pd-activity-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .cc-pd-activity-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .cc-pd-activity-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--cc-text);
+  }
+  .cc-pd-activity-meta {
+    font-size: 0.82rem;
+    color: var(--cc-text-muted);
+  }
+  .cc-pd-activity-desc {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--cc-text-secondary);
+  }
+
+  @media (max-width: 600px) {
+    .cc-pd-summary-pct {
+      font-size: 1.8rem;
+    }
+  }
+}

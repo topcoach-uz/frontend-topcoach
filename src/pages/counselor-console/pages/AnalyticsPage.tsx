@@ -1,7 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Skeleton } from 'antd';
 import {
-  Building2,
   AlertTriangle,
   TrendingUp,
   GraduationCap,
@@ -22,6 +21,9 @@ import {
   type OrgAnalyticsRange,
 } from 'src/app/services/counselorConsoleApi';
 import { CcStat } from '../components/CcStat';
+import { CcPageHead } from '../components/CcPageHead';
+import { CcEmpty, NoOrgPlaceholder } from '../components/CcEmpty';
+import { CcAvatar } from '../components/CcAvatar';
 import {
   CcChart,
   CC_SERIES,
@@ -149,19 +151,6 @@ const TEXT_MUTED = '#9a8f7d';
 const SANS =
   "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-/** Headline serif, mirroring --cc-serif. Used for big numerals inside charts. */
-const SERIF = "'Iowan Old Style', 'Charter', Georgia, serif";
-
-/** Categorical hues for nominal splits (AI tools are not ordered). */
-const NOMINAL_HUES = [
-  CC_SERIES.maroon,
-  CC_SERIES.green,
-  CC_SERIES.violet,
-  CC_SERIES.gold,
-  CC_SERIES.rose,
-];
-
-
 /** Small-caps eyebrow used as a panel title inside a chart. */
 const panelTitleStyle = {
   fontFamily: SANS,
@@ -249,17 +238,7 @@ function ChartCard({
           ) : null}
         </>
       ) : (
-        <div className="cc-analytics-empty">
-          {emptyIcon ? (
-            <span className="cc-analytics-empty-ico">{emptyIcon}</span>
-          ) : null}
-          {emptyTitle ? (
-            <div className="cc-analytics-empty-title">{emptyTitle}</div>
-          ) : null}
-          {emptyText ? (
-            <div className="cc-analytics-empty-text">{emptyText}</div>
-          ) : null}
-        </div>
+        <CcEmpty icon={emptyIcon} title={emptyTitle} text={emptyText} />
       )}
     </section>
   );
@@ -348,6 +327,63 @@ function CcKey({
         </li>
       ))}
     </ul>
+  );
+}
+
+/* ── Segmented part-to-whole band ────────────────────────────────────────────
+   Parts that provably sum to one stated total, drawn as one bar so the reader
+   can see the addition rather than being asked to trust three separate tiles.
+
+   Drawn in the DOM rather than through <CcChart> deliberately. The segments
+   carry STATUS (happened / did not happen / not yet), and status colour lives
+   in --cc-* tokens; an ECharts series takes a literal colour string, so putting
+   this through the chart layer would mean copying the token values into this
+   file as a second source of truth that silently rots when the tokens move.
+
+   Every segment's value is printed in the key below the bar, so no part has to
+   be measured off the track and a segment too thin to see still reads. */
+function CcSplitBand({
+  total,
+  totalCaption,
+  segments,
+}: {
+  total: number;
+  totalCaption: string;
+  segments: { label: string; value: number; color: string }[];
+}) {
+  const drawn = segments.filter((s) => s.value > 0);
+  return (
+    <div className="cc-analytics-band">
+      <div className="cc-analytics-band-total">
+        <span className="cc-analytics-band-total-val">{num(total)}</span>
+        <span className="cc-analytics-band-total-label">{totalCaption}</span>
+      </div>
+      <div
+        className="cc-analytics-band-track"
+        role="img"
+        aria-label={`${num(total)} ${totalCaption}: ${segments
+          .map((s) => `${num(s.value)} ${s.label.toLowerCase()}`)
+          .join(', ')}.`}
+      >
+        {drawn.map((s) => (
+          <span
+            key={s.label}
+            className="cc-analytics-band-seg"
+            style={{
+              width: `${total > 0 ? (s.value / total) * 100 : 0}%`,
+              background: s.color,
+            }}
+          />
+        ))}
+      </div>
+      <CcKey
+        items={segments.map((s) => ({
+          color: s.color,
+          label: s.label,
+          value: num(s.value),
+        }))}
+      />
+    </div>
   );
 }
 
@@ -979,118 +1015,103 @@ export default function CounselorConsoleAnalyticsPage() {
     };
   }, [distributionData]);
 
-  /* ══ AI usage by type — NOMINAL, so ONE hue ═══════════════════════════════
-     AI tool names have no natural order. The old chart ramped them light→dark
-     by slot index, which double-encodes bar length as hue: it makes the biggest
-     bar darkest, implying a magnitude scale the categories don't have, and
-     re-colours every tool the moment the ranking shifts. One measure across
-     nominal categories → one colour for every bar, ranked, labelled at the tip. */
-  /* ══ AI usage by tool — a donut ═══════════════════════════════════════════
-     A handful of unordered categories that sum to "all AI interactions", which
-     is part-to-whole, so a donut reads the split faster than a bar length
-     comparison does. Kept a donut rather than a full pie: the hole carries the
-     total, which is the number a counselor actually wants first.
+  /* ══ AI usage by tool — NOMINAL, one measure, so RANKED BARS in ONE hue ════
+     The reader's job here is "which tools are students actually reaching for,
+     and by how much" — a magnitude comparison across at most three unordered
+     names. That is a bar chart. It was briefly a donut, which was wrong twice
+     over: part-to-whole is not the question being asked, and the backend drops
+     any tool with zero usage, so a single-tool org got a closed 100% ring that
+     carries no information at all. A bar of length 1-of-1 at least still prints
+     a number.
 
-     Every slice carries its own name and value as a label. The palette is
-     validated for colour-vision deficiency but its worst-case separation sits
-     below the ideal, so labels are load-bearing here, not decoration: a slice
-     must be identifiable without relying on its colour. */
+     ONE colour for every bar (CC_SERIES.maroon, the dark end of the maroon
+     family) because this is a single measure over nominal categories. Not the
+     categorical NOMINAL palette: hue would be a second encoding of an identity
+     the y-axis label already states. Not the sequential ramp either, however
+     "ordered" a sorted list looks — ccRampFor is documented for genuinely
+     ordered bands, and shading by rank double-encodes bar length as darkness
+     and re-colours every tool the instant the ranking shifts.
+
+     Sorted descending, direct-labelled at the tip, thin marks with a 4px
+     rounded data-end and a square end at the baseline. */
   const aiUsageOption = useMemo<EChartsCoreOption>(() => {
-    const rows = [...aiUsageData].sort((a, b) => b.count - a.count);
-    const total = rows.reduce((sum, a) => sum + a.count, 0);
+    const rows = [...aiUsageData]
+      .filter((a) => a.count > 0)
+      .sort((a, b) => b.count - a.count);
 
     return {
+      grid: { left: 6, right: 48, top: 8, bottom: 4, containLabel: true },
+      legend: { show: false },
+      /* Item-triggered, so the row label must be the CATEGORY name (the tool),
+         not the single series name — hence bySeries: false. */
       tooltip: {
         trigger: 'item',
         formatter: ccTooltipFormatter({ valueSuffix: ' uses', bySeries: false }),
       },
-      legend: { show: false },
-      title: {
-        text: num(total),
-        subtext: total === 1 ? 'interaction' : 'interactions',
-        left: '34%',
-        top: 'center',
-        textAlign: 'center',
-        textStyle: {
-          fontFamily: SERIF,
-          fontSize: 26,
-          fontWeight: 500,
+      xAxis: { type: 'value', minInterval: 1 },
+      yAxis: {
+        type: 'category',
+        data: rows.map((a) => a.type),
+        inverse: true,
+        axisLabel: {
           color: TEXT,
-        },
-        subtextStyle: {
-          fontFamily: SANS,
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 600,
-          color: TEXT_MUTED,
+          fontFamily: SANS,
         },
       },
       series: [
         {
-          type: 'pie',
-          name: 'AI usage',
-          // Donut, offset left so the labels have room on the right.
-          radius: ['52%', '76%'],
-          center: ['34%', '50%'],
-          avoidLabelOverlap: true,
-          itemStyle: {
-            borderColor: CC_SURFACE,
-            borderWidth: 2,
-          },
-          data: rows.map((a, i) => ({
-            value: a.count,
-            name: a.type,
-            // Categorical hues, NOT the maroon ramp: AI tools are nominal, and
-            // a single-hue ordinal ramp would imply a rank that does not exist
-            // (ccRampFor is documented for ordered bands only).
-            itemStyle: { color: NOMINAL_HUES[i % NOMINAL_HUES.length] },
-          })),
+          type: 'bar',
+          name: 'Uses',
+          data: rows.map((a) => ({ value: a.count, name: a.type })),
+          color: CC_SERIES.maroon,
+          barMaxWidth: 20,
+          /* 4px rounded data-end, square where it meets the baseline. */
+          itemStyle: { borderRadius: [0, 4, 4, 0] },
           label: {
             show: true,
-            formatter: '{b}\n{c}',
-            color: TEXT,
+            position: 'right',
+            formatter: (p: { value: number }) => num(p.value),
+            color: TEXT_MUTED,
             fontFamily: SANS,
             fontSize: 11.5,
             fontWeight: 600,
-            lineHeight: 15,
           },
-          labelLine: { length: 10, length2: 10 },
         },
       ],
     };
   }, [aiUsageData]);
 
   const header = (
-    <div className="cc-analytics-header">
-      <div className="cc-analytics-header-copy">
-        <div className="cc-page-eyebrow">
-          <span className="cc-page-eyebrow-accent">Insights</span>
-          {org ? <span>· {org.name}</span> : null}
+    <CcPageHead
+      eyebrow="Insights"
+      orgName={org?.name}
+      title="Analytics"
+      lead="How your organization is using TopCoach: sessions booked, program progress, AI activity and coins earned. Change the window to compare a recent stretch against a longer trend."
+      actionsAlign="top"
+      actions={
+        <div
+          className="cc-analytics-range"
+          role="group"
+          aria-label="Analytics time range"
+        >
+          {RANGES.map((r) => (
+            <button
+              key={r.value}
+              type="button"
+              className={`cc-analytics-range-btn ${
+                range === r.value ? 'cc-analytics-range-btn--active' : ''
+              }`}
+              aria-pressed={range === r.value}
+              onClick={() => setRange(r.value)}
+            >
+              {r.label}
+            </button>
+          ))}
         </div>
-        <h1 className="cc-page-title">Analytics</h1>
-        <p className="cc-page-lead">
-          Sessions, programs, AI usage, and coins across your selected window.
-        </p>
-      </div>
-      <div
-        className="cc-analytics-range"
-        role="group"
-        aria-label="Analytics time range"
-      >
-        {RANGES.map((r) => (
-          <button
-            key={r.value}
-            type="button"
-            className={`cc-analytics-range-btn ${
-              range === r.value ? 'cc-analytics-range-btn--active' : ''
-            }`}
-            aria-pressed={range === r.value}
-            onClick={() => setRange(r.value)}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-    </div>
+      }
+    />
   );
 
   // ── No organization selected ──
@@ -1098,17 +1119,10 @@ export default function CounselorConsoleAnalyticsPage() {
     return (
       <div className="cc-analytics">
         {header}
-        <div className="cc-analytics-message">
-          <span className="cc-analytics-message-ico cc-analytics-message-ico--accent">
-            <Building2 size={20} />
-          </span>
-          <div className="cc-analytics-message-title">
-            Select an organization
-          </div>
-          <div className="cc-analytics-message-text">
-            Choose an organization from the switcher to see its analytics.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+          title="Select an organization"
+          text="Choose an organization from the switcher to see its analytics."
+        />
       </div>
     );
   }
@@ -1145,24 +1159,20 @@ export default function CounselorConsoleAnalyticsPage() {
     return (
       <div className="cc-analytics">
         {header}
-        <div className="cc-analytics-message">
-          <span className="cc-analytics-message-ico cc-analytics-message-ico--danger">
-            <AlertTriangle size={20} />
-          </span>
-          <div className="cc-analytics-message-title">
-            Couldn’t load analytics
-          </div>
-          <div className="cc-analytics-message-text">
-            Something went wrong fetching this organization’s analytics. Please
-            refresh, or switch organizations and back.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+          icon={<AlertTriangle size={22} />}
+          title="Couldn’t load analytics"
+          text="Something went wrong fetching this organization’s analytics. Please refresh, or switch organizations and back."
+        />
       </div>
     );
   }
 
   const mmAttempts = data.ai.majorMatchAttempts ?? 0;
   const mmCompleted = data.ai.majorMatchCompleted ?? 0;
+  /* The backend drops zero rows, but belt-and-braces: a payload of all-zero
+     tools must show the empty state, never three bars of length nothing. */
+  const aiToolsUsed = aiUsageData.filter((a) => a.count > 0);
   const topEarners = data.coins.topEarners ?? [];
   const maxEarner = topEarners.reduce((m, e) => Math.max(m, e.coins), 0);
   const communityMembers = data.programs.communityMembers ?? 0;
@@ -1180,14 +1190,32 @@ export default function CounselorConsoleAnalyticsPage() {
   const hasRecency = recencyCohorts.length >= 2 && recencyTotal > 0;
   const recencyRamp = ccRampFor(recencyCohorts.length);
 
+  /* ── Sessions: what the three server numbers actually mean ──
+     Verified against buildSessions() in org-analytics.service.ts:
+       booked   = every session dated on or after the window start, INCLUDING
+                  ones still in the future and NOT excluding cancelled ones
+       attended = past, not cancelled, inside the window
+       upcoming = dated on or after now, so a strict SUBSET of booked
+     So attended/booked divides a past-only numerator by a denominator that
+     still contains everything scheduled. That rate falls whenever an org books
+     MORE future work, which is exactly backwards. The honest denominator is the
+     sessions that have already had their chance to happen. */
   const sessionsBooked = data.sessions.booked ?? 0;
-  const sessionsAttended = data.sessions.attended ?? 0;
-  const sessionsUpcoming = data.sessions.upcoming ?? 0;
-  const hasSessionData =
-    sessionsBooked > 0 ||
-    sessionsAttended > 0 ||
-    sessionsUpcoming > 0 ||
-    sessionsByMonth.length > 0;
+  const sessionsUpcoming = Math.min(
+    Math.max(data.sessions.upcoming ?? 0, 0),
+    sessionsBooked,
+  );
+  /* Sessions whose date has passed. The three parts below are clamped so they
+     always sum to exactly `booked`, even if a clock skew or a mid-request
+     boundary crossing makes the server's three counts briefly disagree. */
+  const sessionsConcluded = Math.max(0, sessionsBooked - sessionsUpcoming);
+  const sessionsAttended = Math.min(
+    Math.max(data.sessions.attended ?? 0, 0),
+    sessionsConcluded,
+  );
+  /* Past sessions that were cancelled or simply did not happen. */
+  const sessionsMissed = Math.max(0, sessionsConcluded - sessionsAttended);
+  const hasSessionData = sessionsBooked > 0 || sessionsByMonth.length > 0;
 
   const coinsEarned = data.coins.totalEarned ?? 0;
   const coinsRedeemed = data.coins.totalRedeemed ?? 0;
@@ -1400,43 +1428,69 @@ export default function CounselorConsoleAnalyticsPage() {
           <SectionHead
             eyebrow="Sessions"
             title="Mentor sessions"
-            sub="Sessions booked, attended, and coming up."
+            sub="What share of the sessions that have already happened were attended, and what is still on the calendar."
           />
           {hasSessionData ? (
             <>
               <div className="cc-analytics-grid cc-analytics-grid--split">
                 <section className="cc-analytics-card cc-analytics-card--meter">
+                  {/* Measured against sessions that have ALREADY happened, not
+                      against everything booked. Dividing by booked counts every
+                      session still in the future as a miss. */}
                   <CcRateMeter
                     eyebrow="Attendance rate"
                     part={sessionsAttended}
-                    whole={sessionsBooked}
-                    caption={`${num(sessionsAttended)} of ${num(sessionsBooked)} booked sessions were attended.`}
-                    emptyCaption="No sessions booked in this window."
+                    whole={sessionsConcluded}
+                    /* Written short deliberately: this is the longest of the
+                       three meter captions, and the meter sets the height of
+                       the whole row it sits in. Both facts survive the cut —
+                       the ratio, and that upcoming sessions are excluded. */
+                    caption={`${num(sessionsAttended)} of ${num(sessionsConcluded)} sessions already held were attended. Upcoming sessions are not counted.`}
+                    emptyCaption="No session has been held yet in this window, so there is no rate."
                   />
                 </section>
-                <div className="cc-stat-grid cc-analytics-stat-col">
-                  <CcStat
-                    tone="info"
-                    icon={<CalendarClock size={15} />}
-                    label="Booked"
-                    value={num(sessionsBooked)}
-                    meta="sessions booked in this window"
+                <section className="cc-analytics-card">
+                  <div className="cc-analytics-card-head">
+                    <div>
+                      <h3 className="cc-analytics-card-title">
+                        Where every booked session stands
+                      </h3>
+                      <p className="cc-analytics-card-sub">
+                        The three parts add up to every session booked in this
+                        window
+                      </p>
+                    </div>
+                  </div>
+                  <CcSplitBand
+                    total={sessionsBooked}
+                    totalCaption="sessions booked in this window"
+                    segments={[
+                      {
+                        label: 'Attended',
+                        value: sessionsAttended,
+                        color: 'var(--cc-success)',
+                      },
+                      {
+                        label: 'Cancelled or missed',
+                        value: sessionsMissed,
+                        color: 'var(--cc-warning)',
+                      },
+                      {
+                        label: 'Still upcoming',
+                        value: sessionsUpcoming,
+                        color: 'var(--cc-text-muted)',
+                      },
+                    ]}
                   />
-                  <CcStat
-                    tone="good"
-                    icon={<CalendarClock size={15} />}
-                    label="Attended"
-                    value={num(sessionsAttended)}
-                    meta="sessions that took place"
-                  />
-                  <CcStat
-                    tone="neutral"
-                    icon={<CalendarClock size={15} />}
-                    label="Upcoming"
-                    value={num(sessionsUpcoming)}
-                    meta="scheduled but not yet held"
-                  />
-                </div>
+                  <div className="cc-analytics-card-foot">
+                    <p className="cc-analytics-caption">
+                      <Info size={13} />
+                      Booked counts every session dated inside this window,
+                      including ones still ahead. Attended counts past sessions
+                      that were not cancelled.
+                    </p>
+                  </div>
+                </section>
               </div>
               <div className="cc-analytics-grid">
                 <ChartCard
@@ -1462,16 +1516,11 @@ export default function CounselorConsoleAnalyticsPage() {
           ) : (
             <div className="cc-analytics-grid">
               <section className="cc-analytics-card cc-analytics-card--wide">
-                <div className="cc-analytics-empty">
-                  <span className="cc-analytics-empty-ico">
-                    <CalendarClock size={20} />
-                  </span>
-                  <div className="cc-analytics-empty-title">No sessions yet</div>
-                  <div className="cc-analytics-empty-text">
-                    Booked, attended, and upcoming counts appear here once your
-                    students start booking 1:1 mentor sessions.
-                  </div>
-                </div>
+                <CcEmpty
+                  icon={<CalendarClock size={20} />}
+                  title="No sessions yet"
+                  text="Booked, attended, and upcoming counts appear here once your students start booking 1:1 mentor sessions."
+                />
               </section>
             </div>
           )}
@@ -1617,16 +1666,27 @@ export default function CounselorConsoleAnalyticsPage() {
           <div className="cc-analytics-grid cc-analytics-grid--stacked">
             <ChartCard
               title="AI usage by tool"
-              sub="Interactions per tool, most used first"
-              hasData={aiUsageData.length > 0}
+              sub="Uses per tool, most used first"
+              hasData={aiToolsUsed.length > 0}
               emptyIcon={<Sparkles size={20} />}
               emptyTitle="No AI usage yet"
-              emptyText="Usage appears here as students use AI tools."
+              emptyText="Usage appears here as students use the AI tools."
               className="cc-analytics-card--wide"
+              /* Major Match counts differently from the two tiles above it, and
+                 saying so is cheaper than fielding the bug report. */
+              footer={
+                <p className="cc-analytics-caption">
+                  <Info size={13} />
+                  Major Match counts students who reached the tool at all, so it
+                  can sit above both Attempts and Completed above.
+                </p>
+              }
             >
+              {/* One row per tool: a fixed row height plus the grid's padding,
+                  which is the bar form's own metric. */}
               <CcChart
                 option={aiUsageOption}
-                height={Math.max(160, aiUsageData.length * 40 + 24)}
+                height={Math.max(120, aiToolsUsed.length * 44 + 24)}
               />
             </ChartCard>
           </div>
@@ -1687,20 +1747,30 @@ export default function CounselorConsoleAnalyticsPage() {
                 </div>
               </div>
               {topEarners.length === 0 ? (
-                <div className="cc-analytics-empty">
-                  <span className="cc-analytics-empty-ico">
-                    <Trophy size={20} />
-                  </span>
-                  <div className="cc-analytics-empty-title">No earners yet</div>
-                  <div className="cc-analytics-empty-text">
-                    Top earners appear here as students start earning coins.
-                  </div>
-                </div>
+                <CcEmpty
+                  icon={<Trophy size={20} />}
+                  title="No earners yet"
+                  text="Top earners appear here as students start earning coins."
+                />
               ) : (
                 <ol className="cc-analytics-earners">
                   {topEarners.map((e, i) => (
                     <li className="cc-analytics-earner" key={e.userId}>
-                      <span className="cc-analytics-earner-rank">{i + 1}</span>
+                      {/* The ordinal is a plain numeral, not a filled disc, so
+                          the avatar is the only round element in the row —
+                          same treatment as the Dashboard's ranked list. */}
+                      <span
+                        className="cc-analytics-earner-rank"
+                        aria-hidden="true"
+                      >
+                        {i + 1}
+                      </span>
+                      <CcAvatar
+                        name={e.name}
+                        src={e.avatarUrl}
+                        size={34}
+                        className="cc-analytics-earner-avatar"
+                      />
                       <span className="cc-analytics-earner-main">
                         <span className="cc-analytics-earner-name">
                           {e.name}

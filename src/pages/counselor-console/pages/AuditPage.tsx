@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Button, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Building2, ChevronDown, Lock, ScrollText } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Lock, ScrollText } from 'lucide-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
+import { CcEmpty, NoOrgPlaceholder } from '../components/CcEmpty';
+import { CcPageHead } from '../components/CcPageHead';
 import TableSkeleton from 'src/components/loading/TableSkeleton';
 import {
   useGetAuditQuery,
@@ -117,18 +119,12 @@ export default function CounselorConsoleAuditPage() {
   const total = data?.total ?? 0;
 
   const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-page-eyebrow">
-        <span className="cc-page-eyebrow-accent">Administration</span>
-        {org ? <span>· {org.name}</span> : null}
-      </div>
-      <h1 className="cc-page-title">Audit log</h1>
-      <p className="cc-page-lead">
-        A running record of every administrative action in this organization —
-        invitations, student changes, announcements and settings. Use it to see
-        who changed what, and when.
-      </p>
-    </div>
+    <CcPageHead
+      eyebrow="Administration"
+      orgName={org?.name}
+      title="Audit log"
+      lead="A running record of every administrative action in this organization: invitations, student changes, announcements and settings. Use it to see who changed what, and when."
+    />
   );
 
   // ── No organization selected ──
@@ -136,13 +132,10 @@ export default function CounselorConsoleAuditPage() {
     return (
       <div className="cc-audit">
         {header}
-        <div className="cc-placeholder">
-          <Building2 size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Select an organization</div>
-          <div className="cc-placeholder-text">
-            Choose an organization from the switcher to view its audit log.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+            title="Select an organization"
+            text="Choose an organization from the switcher to view its audit log."
+          />
       </div>
     );
   }
@@ -152,14 +145,16 @@ export default function CounselorConsoleAuditPage() {
     return (
       <div className="cc-audit">
         {header}
-        <div className="cc-placeholder">
-          <Lock size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Owners only</div>
-          <div className="cc-placeholder-text">
-            The audit log is restricted to organization owners. Contact an owner
+        <NoOrgPlaceholder
+            icon={<Lock size={22} />}
+            title="Owners only"
+            text={
+              <>
+                The audit log is restricted to organization owners. Contact an owner
             of {org?.name ?? 'this organization'} if you need access.
-          </div>
-        </div>
+              </>
+            }
+          />
       </div>
     );
   }
@@ -231,13 +226,17 @@ export default function CounselorConsoleAuditPage() {
         </div>
       ) : isError ? (
         <div className="cc-audit-table">
-          <div className="cc-audit-empty">
-            <div className="cc-audit-empty-title">Couldn’t load the audit log</div>
-            <div>Something went wrong fetching your organization’s activity.</div>
-            <Button className="cc-audit-retry" onClick={() => refetch()}>
-              Retry
-            </Button>
-          </div>
+          <CcEmpty
+            icon={<AlertTriangle size={20} />}
+            tone="danger"
+            title="Couldn’t load the audit log"
+            text="Something went wrong fetching your organization’s activity."
+            action={
+              <Button className="cc-audit-retry" onClick={() => refetch()}>
+                Retry
+              </Button>
+            }
+          />
         </div>
       ) : (
         <div className="cc-audit-table">
@@ -258,13 +257,11 @@ export default function CounselorConsoleAuditPage() {
             }}
             locale={{
               emptyText: (
-                <div className="cc-audit-empty">
-                  <ScrollText size={22} color="#9a8f7d" />
-                  <div className="cc-audit-empty-title">No activity yet</div>
-                  <div>
-                    Administrative actions will appear here as your team works.
-                  </div>
-                </div>
+                <CcEmpty
+                  icon={<ScrollText size={20} />}
+                  title="No activity yet"
+                  text="Administrative actions will appear here as your team works."
+                />
               ),
             }}
           />

@@ -16,9 +16,10 @@
    pills everywhere else a section is switched. */
 import type { ReactNode } from 'react';
 import { Button } from 'antd';
-import { Users } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 import TableSkeleton from 'src/components/loading/TableSkeleton';
+import { CcEmpty } from '../components/CcEmpty';
 import './people-shared.scss';
 
 /* ── Error text ───────────────────────────────────────────────────────────── */
@@ -123,8 +124,8 @@ export function PeoplePanel({
 /* ── States ───────────────────────────────────────────────────────────────── */
 
 /**
- * The one empty-state shape, for a table's `locale.emptyText`. Icon, serif
- * title, one guiding sentence, an optional recovery action.
+ * A table's `locale.emptyText`. Thin wrapper over the console-wide `CcEmpty` so
+ * the People tables keep a call signature their column code already uses.
  */
 export function PeopleEmpty({
   icon,
@@ -137,14 +138,7 @@ export function PeopleEmpty({
   text: ReactNode;
   action?: ReactNode;
 }) {
-  return (
-    <div className="cc-invite-empty">
-      {icon}
-      <div className="cc-invite-empty-title">{title}</div>
-      <div>{text}</div>
-      {action ? <div className="cc-people-empty-action">{action}</div> : null}
-    </div>
-  );
+  return <CcEmpty icon={icon} title={title} text={text} action={action} />;
 }
 
 /**
@@ -184,77 +178,28 @@ export function PeopleTableShell({
   if (isError) {
     return (
       <div className="cc-invite-table">
-        <div className="cc-invite-empty">
-          <div className="cc-invite-empty-title">{errorTitle}</div>
-          <div>{errorText}</div>
-          <div className="cc-people-empty-action">
+        <CcEmpty
+          icon={<AlertTriangle size={20} />}
+          tone="danger"
+          title={errorTitle}
+          text={errorText}
+          action={
             <Button className="cc-invite-ghost" onClick={onRetry}>
               Retry
             </Button>
-          </div>
-        </div>
+          }
+        />
       </div>
     );
   }
   return <div className="cc-invite-table">{children}</div>;
 }
 
-/**
- * Shown in place of a People page's body when no organization is selected.
- * The page header still renders above it, so the counselor keeps their bearings.
- */
-export function NoOrgPlaceholder({
-  title = 'No organization selected',
-  text,
-  icon,
-}: {
-  title?: string;
-  text: string;
-  icon?: ReactNode;
-}) {
-  return (
-    <div className="cc-placeholder">
-      {icon ?? <Users size={22} color="#7b1f2f" />}
-      <div className="cc-placeholder-title">{title}</div>
-      <div className="cc-placeholder-text">{text}</div>
-    </div>
-  );
-}
+/* `NoOrgPlaceholder` moved to components/CcEmpty.tsx — it is a console-wide
+   page state, not a People-family part. Re-exported here so the People tabs
+   that already import it keep working. */
+export { NoOrgPlaceholder } from '../components/CcEmpty';
 
-/* ── Page header ──────────────────────────────────────────────────────────── */
-
-/**
- * The console's `cc-page-head--ruled` header: eyebrow → title → lead, with an
- * optional action cluster pinned to the baseline on the right.
- */
-export function PeoplePageHead({
-  eyebrow,
-  orgName,
-  title,
-  lead,
-  actions,
-}: {
-  eyebrow: string;
-  orgName?: string | null;
-  title: string;
-  lead: ReactNode;
-  actions?: ReactNode;
-}) {
-  return (
-    <div className="cc-page-head--ruled">
-      <div className="cc-invite-head">
-        <div>
-          <div className="cc-page-eyebrow">
-            <span className="cc-page-eyebrow-accent">{eyebrow}</span>
-            {orgName ? <span>· {orgName}</span> : null}
-          </div>
-          <h1 className="cc-page-title">{title}</h1>
-          <p className="cc-page-lead">{lead}</p>
-        </div>
-        {actions ? (
-          <div className="cc-invite-head-actions">{actions}</div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+/* The page header used to live here as `PeoplePageHead`, which was a naming
+   smell: it was the console's ONE header, not a People-family part. It now lives
+   at components/CcPageHead.tsx and every page uses it. */

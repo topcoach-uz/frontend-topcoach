@@ -24,14 +24,10 @@
   min-width: 0;
 }
 
-/* ── Hairline editorial card ── */
+/* Shell (surface, border, radius, shadow, padding) comes from the shared
+   `.cc-card` rule in CounselorConsoleLayout.scss. Only the column layout, which
+   `--fill` below depends on, is this page's own. */
 .cc-dash-card {
-  background: var(--cc-bg-surface);
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  box-shadow: var(--cc-shadow-sm);
-  padding: 18px 20px 20px;
-  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -112,7 +108,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #d9cfc0;
+  color: var(--cc-inverse-eyebrow);
   margin-bottom: 6px;
 }
 .cc-echart-tip-rows {
@@ -126,17 +122,17 @@
   gap: 7px;
   font-size: 12.5px;
   line-height: 1.3;
-  color: #efe9df;
+  color: var(--cc-inverse-text-secondary);
 }
 .cc-echart-tip-name {
-  color: #cbbfad;
+  color: var(--cc-inverse-text-muted);
   margin-right: 14px;
 }
 .cc-echart-tip-val {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
 }
 
 /* ── Needs-attention list ── */
@@ -190,18 +186,6 @@
   border-top-color: transparent;
 }
 
-/* Rank numeral on the top-performers list. Serif + tabular so the column of
-   numbers aligns and reads as editorial rather than as a badge. */
-.cc-dash-rank {
-  flex: none;
-  width: 18px;
-  font-family: var(--cc-serif);
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-  color: var(--cc-text-muted);
-  text-align: right;
-}
-
 .cc-dash-attn-avatar {
   flex-shrink: 0;
 }
@@ -244,15 +228,6 @@
   flex-shrink: 0;
   background: var(--cc-warning);
 }
-.cc-dash-attn-context {
-  font-size: 11.5px;
-  color: var(--cc-text-muted);
-  font-variant-numeric: tabular-nums;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .cc-dash-attn-arrow {
   flex-shrink: 0;
   color: var(--cc-text-muted);
@@ -267,79 +242,320 @@
   color: var(--cc-accent);
 }
 
-/* ── Admissions pipeline (proportional horizontal funnel) ── */
-.cc-dash-funnel {
+/* ── Program progress card ───────────────────────────────────────────────────
+   Two modes, one card. Under 8 students it is a NAMED LIST (avatar, name,
+   program, bar, percent); at 8 and above it collapses to a single 100% stacked
+   band plus the named flagged students.
+
+   The rule both modes obey: the bar length and the printed number are the SAME
+   quantity. The card this replaced drew count/peak and printed count/total, so
+   the geometry and the caption disagreed. If you add a mode, keep the rule. */
+.cc-dash-prog {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   flex: 1 1 auto;
-  justify-content: center;
-}
-.cc-dash-funnel-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   min-width: 0;
 }
-.cc-dash-funnel-top {
+
+/* ── Named mode ── */
+.cc-dash-prog-list {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
 }
-.cc-dash-funnel-stage {
-  font-size: 13px;
+
+.cc-dash-prog-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  min-width: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--cc-bg-hover);
+    border-color: var(--cc-accent-ring);
+    outline: none;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--cc-accent);
+    outline-offset: 1px;
+  }
+}
+.cc-dash-prog-row + .cc-dash-prog-row {
+  border-top: 1px solid var(--cc-hairline);
+}
+.cc-dash-prog-row:hover + .cc-dash-prog-row,
+.cc-dash-prog-row:focus-visible + .cc-dash-prog-row {
+  border-top-color: transparent;
+}
+
+.cc-dash-prog-main {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.cc-dash-prog-name {
+  font-size: 14px;
   font-weight: 600;
   color: var(--cc-text);
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.cc-dash-funnel-meta {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
+.cc-dash-prog-program {
+  font-size: 11.5px;
+  color: var(--cc-text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  strong {
-    font-family: var(--cc-serif);
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: var(--cc-text);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
+/* Warning chip. The icon plus the text carry the meaning; the tint is the
+   third channel, never the only one. */
+.cc-dash-prog-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  max-width: 100%;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--cc-warning-soft);
+  color: var(--cc-warning);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  svg {
+    flex-shrink: 0;
   }
 }
-.cc-dash-funnel-conv {
-  font-size: 11px;
+
+.cc-dash-prog-track {
+  flex: 0 1 128px;
+  min-width: 56px;
+  height: 8px;
+  border-radius: 5px;
+  background: var(--cc-bg-subtle);
+  border: 1px solid var(--cc-hairline);
+  overflow: hidden;
+
+  @media (max-width: 560px) {
+    display: none;
+  }
+}
+.cc-dash-prog-fill {
+  display: block;
+  height: 100%;
+  border-radius: 5px 0 0 5px;
+  background: linear-gradient(
+    90deg,
+    var(--cc-accent),
+    var(--cc-accent-strong)
+  );
+  transition: width 0.4s ease;
+}
+.cc-dash-prog-pct {
+  flex: none;
+  width: 38px;
+  text-align: right;
+  font-family: var(--cc-serif);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--cc-text);
+}
+
+.cc-dash-prog-skel {
+  padding: 4px 0;
+}
+.cc-dash-prog-note {
+  margin: 0;
+  padding: 4px 0 8px;
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+}
+
+.cc-dash-prog-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cc-hairline);
+  font-size: 12px;
   color: var(--cc-text-muted);
   font-variant-numeric: tabular-nums;
 }
-.cc-dash-funnel-track {
+
+/* ── Distribution mode: one 100% stacked band ──
+   Segments are separated by a 2px gap in the SURFACE colour, never by a stroke
+   drawn around them (house convention, see colors.ts). Colours come from
+   `ccRampFor` because the bands are ORDERED. */
+.cc-dash-band {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cc-dash-band-bar {
+  display: flex;
+  gap: 2px;
+  background: var(--cc-bg-surface);
+  height: 26px;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.cc-dash-band-seg {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.cc-dash-band-seg-label {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: inherit;
+}
+
+.cc-dash-band-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 12px;
+}
+.cc-dash-band-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+.cc-dash-band-swatch {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+.cc-dash-band-key-label {
+  color: var(--cc-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-dash-band-key-val {
+  color: var(--cc-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Profile completeness ──
+   The average leads as a serif number with one meter of the SAME length below
+   it, then either named rows (reusing the .cc-dash-prog-* row chrome) or a
+   plain aggregate line. A 0% reading draws an empty track on purpose: the
+   emptiness is the reading, and the note underneath says what it costs. */
+.cc-dash-pc {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cc-dash-pc-hero {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.cc-dash-pc-num {
+  font-family: var(--cc-serif);
+  font-size: 2.25rem;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--cc-text);
+}
+.cc-dash-pc-cap {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--cc-text-muted);
+}
+.cc-dash-pc-track {
+  display: block;
+  width: 100%;
   height: 10px;
+  margin-top: 12px;
   border-radius: 6px;
   background: var(--cc-bg-subtle);
   border: 1px solid var(--cc-hairline);
   overflow: hidden;
 }
-.cc-dash-funnel-fill {
+.cc-dash-pc-fill {
   display: block;
   height: 100%;
   border-radius: 6px 0 0 6px;
   background: linear-gradient(
     90deg,
     var(--cc-accent),
-    var(--cc-accent-strong, var(--cc-accent))
+    var(--cc-accent-strong)
   );
-  min-width: 6px;
   transition: width 0.4s ease;
 }
-.cc-dash-funnel-skel {
-  padding: 2px 0;
+
+/* Named rows sit under the meter, with breathing room from it. */
+.cc-dash-pc .cc-dash-prog-list {
+  margin-top: 14px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cc-dash-funnel-fill {
+  .cc-dash-pc-fill {
+    transition: none;
+  }
+}
+
+/* Flagged students, named, under the band. */
+.cc-dash-prog-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0 -4px;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--cc-hairline);
+}
+.cc-dash-prog-flags-head {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--cc-text-muted);
+  padding: 0 12px 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-dash-prog-fill,
+  .cc-dash-prog-row {
     transition: none;
   }
 }
@@ -432,59 +648,10 @@
   color: var(--cc-accent);
 }
 
-/* ── Empty / message states ── */
-.cc-dash-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 8px;
-  padding: 32px 20px;
-  color: var(--cc-text-muted);
-}
-.cc-dash-empty-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cc-bg-subtle);
-  color: var(--cc-text-muted);
-}
-.cc-dash-empty-ico--accent {
-  background: var(--cc-accent-soft);
-  color: var(--cc-accent);
-}
-.cc-dash-empty-ico--good {
-  background: var(--cc-success-soft);
-  color: var(--cc-success);
-}
-.cc-dash-empty-ico--danger {
-  background: var(--cc-danger-soft);
-  color: var(--cc-danger);
-}
-.cc-dash-empty-title {
-  font-family: var(--cc-serif);
-  font-size: 1.05rem;
-  font-weight: 500;
-  color: var(--cc-text);
-}
-.cc-dash-empty-text {
-  font-size: 13px;
-  max-width: 320px;
-  line-height: 1.5;
-}
-
-/* Page-level message state (no org / error) */
-.cc-dash-empty--page {
-  padding: 56px 28px;
-  border: 1px dashed var(--cc-border-strong);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-}
+/* Empty states are `CcEmpty` (see components/CcEmpty.tsx); the page-level
+   no-org / error states are `NoOrgPlaceholder`. The third variant this page had,
+   `.cc-dash-empty--page`, was a hand-rolled copy of `.cc-placeholder` and is
+   gone. */
 
 /* ── Loading skeleton tiles ──
    Shaped like the real KPI band, not the retired free-standing cards: chrome on
@@ -507,8 +674,8 @@
 }
 
 .cc-dash-skel-stat {
-  min-height: 112px;
-  padding: 14px 16px 13px;
+  min-height: 96px;
+  padding: 13px 16px 14px;
   background: var(--cc-bg-surface);
   border: 0;
   border-radius: 0;
@@ -520,7 +687,7 @@
 }
 
 /* In a fill card, the empty state centers in the reclaimed height. */
-.cc-dash-card--fill .cc-dash-empty {
+.cc-dash-card--fill .cc-empty {
   flex: 1 1 auto;
 }
 

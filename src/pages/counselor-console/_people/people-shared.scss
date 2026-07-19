@@ -3,20 +3,9 @@
    tokens and the .cc-page-* primitives. Everything is prefixed .cc-invite to
    avoid colliding with the roster or global console styles. */
 
-.cc-invite-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.cc-invite-head-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 2px;
-}
+/* `.cc-invite-head` / `.cc-invite-head-actions` were the page header's layout,
+   named after Invitations because that is where it was first written. They are
+   now `.cc-page-head-row` / `.cc-page-head-actions` in CounselorConsoleLayout.scss. */
 
 .cc-invite-count {
   display: inline-flex;
@@ -46,14 +35,14 @@
   font-weight: 600;
   background: var(--cc-accent);
   border-color: var(--cc-accent);
-  color: #fbfaf6 !important;
+  color: var(--cc-inverse-text) !important;
   box-shadow: none;
 
   &:hover:not(:disabled),
   &:focus:not(:disabled) {
     background: var(--cc-accent-hover) !important;
     border-color: var(--cc-accent-hover) !important;
-    color: #fbfaf6 !important;
+    color: var(--cc-inverse-text) !important;
   }
   /* Disabled: soft tint + muted text (no more gray-on-solid-maroon). */
   &:disabled,
@@ -155,27 +144,10 @@
   }
 }
 
-/* Table shell */
+/* Table shell — the shell itself is `.cc-table-shell` in
+   CounselorConsoleLayout.scss (this class is aliased onto it). Only pagination,
+   which the Staff and Audit tables don't have, is local. */
 .cc-invite-table {
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-  overflow: hidden;
-
-  .ant-table {
-    background: transparent;
-  }
-  .ant-table-tbody > tr > td {
-    border-bottom: 1px solid var(--cc-hairline) !important;
-    padding: 12px 16px;
-  }
-  .ant-table-thead > tr > th {
-    padding: 11px 16px;
-  }
-  .ant-table-tbody > tr:last-child > td {
-    border-bottom: none !important;
-  }
   .ant-table-pagination.ant-pagination {
     margin: 14px 16px;
   }
@@ -216,30 +188,8 @@
   justify-content: flex-end;
 }
 
-/* States */
-.cc-invite-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--cc-text-muted);
-}
-.cc-invite-empty-title {
-  font-family: var(--cc-serif);
-  font-size: 1.1rem;
-  color: var(--cc-text);
-}
-
-.cc-invite-skeleton {
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-  overflow: hidden;
-  padding: 4px 4px 8px;
-}
+/* States — the empty state is `CcEmpty` and the loading shell is
+   `.cc-skeleton-shell`, both in the shared layer. */
 
 /* Modal form */
 .cc-invite-form-row {
@@ -500,23 +450,23 @@
 
 .cc-people-tab--active {
   background: var(--cc-accent);
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
   border-color: var(--cc-accent);
   box-shadow: 0 1px 2px rgba(123, 31, 47, 0.25);
 
   &:hover {
     background: var(--cc-accent);
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 
   .cc-people-tab-ico,
   &:hover .cc-people-tab-ico {
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 
   .cc-people-tab-count {
     background: rgba(251, 250, 246, 0.22);
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 }
 

@@ -43,12 +43,12 @@ import {
 import {
   NoOrgPlaceholder,
   PeopleEmpty,
-  PeoplePageHead,
   PeoplePanel,
   PeopleTableShell,
   PeopleTabs,
   type PeopleTab,
 } from '../_people/peopleChrome';
+import { CcPageHead } from '../components/CcPageHead';
 import { InvitationsTab } from '../_people/InvitationsTab';
 import { MEMBER_STATUS_PILL, ROLE_LABEL, ROLE_PILL } from '../_people/roleLabels';
 import './StaffPage.scss';
@@ -112,7 +112,7 @@ export default function CounselorConsoleStaffPage() {
   };
 
   const head = (
-    <PeoplePageHead
+    <CcPageHead
       eyebrow="Administration"
       orgName={org?.name}
       title="Staff"
@@ -126,7 +126,7 @@ export default function CounselorConsoleStaffPage() {
       <div className="cc-staff">
         {head}
         <NoOrgPlaceholder
-          icon={<Building2 size={22} color="#7b1f2f" />}
+          icon={<Building2 size={22} />}
           title="Select an organization"
           text="Choose an organization from the switcher to manage its staff."
         />
@@ -140,7 +140,7 @@ export default function CounselorConsoleStaffPage() {
       <div className="cc-staff">
         {head}
         <NoOrgPlaceholder
-          icon={<Lock size={22} color="#7b1f2f" />}
+          icon={<Lock size={22} />}
           title="Owners only"
           text={`Staff management is restricted to organization owners. Contact an owner of ${
             org?.name ?? 'this organization'
@@ -293,7 +293,7 @@ export default function CounselorConsoleStaffPage() {
               locale={{
                 emptyText: (
                   <PeopleEmpty
-                    icon={<UserCog size={22} color="#9a8f7d" />}
+                    icon={<UserCog size={22} />}
                     title="No staff yet"
                     text="Invite your first counselor to build your team."
                     action={
@@ -347,7 +347,7 @@ export default function CounselorConsoleStaffPage() {
               locale={{
                 emptyText: (
                   <PeopleEmpty
-                    icon={<UserMinus size={22} color="#9a8f7d" />}
+                    icon={<UserMinus size={22} />}
                     title="Nobody removed"
                     text="Staff whose access you revoke will be listed here."
                   />

@@ -4,14 +4,11 @@ import { Skeleton } from 'antd';
 import {
   Users,
   UserCheck,
-  UserPlus,
   TrendingUp,
   CalendarClock,
   AlertTriangle,
-  CheckCircle2,
   LineChart as LineChartIcon,
   ChevronRight,
-  Building2,
   GraduationCap,
   MailPlus,
   BarChart3,
@@ -22,9 +19,12 @@ import { useCounselorConsole } from '../CounselorConsoleContext';
 import {
   useGetOrgDashboardQuery,
   useGetOrgAnalyticsQuery,
-  type OrgDashboardTopPerformer,
+  useGetOrgStudentsQuery,
+  type OrgDashboardNeedsAttention,
 } from 'src/app/services/counselorConsoleApi';
 import { CcStat } from '../components/CcStat';
+import { CcEmpty, NoOrgPlaceholder } from '../components/CcEmpty';
+import { CcPageHead } from '../components/CcPageHead';
 import { CcAvatar } from '../components/CcAvatar';
 import {
   CcChart,
@@ -32,6 +32,7 @@ import {
   ccTooltipFormatter,
   type EChartsCoreOption,
 } from '../charts/ccEcharts';
+import { ccRampFor } from '../colors';
 import './DashboardPage.scss';
 
 /* One chart system — the dashboard's enrollment trend renders through the same
@@ -52,6 +53,32 @@ function pct(value: number | null | undefined): string {
   return `${Number.isFinite(n) ? Math.round(n) : 0}%`;
 }
 
+/** Clamp a 0-100 progress reading to a whole percent. */
+function clampPct(value: number | null | undefined): number {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+/**
+ * Readable ink for a label sitting ON a ramp segment. `ccRampFor` returns
+ * `rgb(...)` strings; the light end of the maroon ramp needs dark ink and the
+ * dark end needs cream. Both returns are tokens, never raw hex.
+ */
+function inkOnBand(color: string): string {
+  const parts = color.match(/\d+/g);
+  if (!parts || parts.length < 3) return 'var(--cc-bg-surface)';
+  const [r, g, b] = parts.map(Number);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.62 ? 'var(--cc-text)' : 'var(--cc-bg-surface)';
+}
+
+/** Below this many students a distribution is noise, so we name names instead. */
+const NAMED_LIST_MAX = 8;
+
+/** A segment narrower than this can't hold its own label; the key carries it. */
+const DIRECT_LABEL_MIN_SHARE = 12;
+
 export default function CounselorConsoleDashboardPage() {
   const { org, orgId } = useCounselorConsole();
   const navigate = useNavigate();
@@ -68,24 +95,132 @@ export default function CounselorConsoleDashboardPage() {
       { skip: !orgId },
     );
 
-  // Cohort progress — how the org's students are distributed across progress
-  // bands. Answers the counselor's core question ("who's behind?") from data
-  // students actually generate, and pairs with the Needs-attention rail.
-  const distribution = useMemo(() => {
+  /* ── Progress card, adaptive ──────────────────────────────────────────────
+     Small orgs get NAMES; large orgs get a distribution. A 4-bucket histogram
+     over 2 students told the counselor nothing they couldn't see by looking at
+     their two students, and it silently folded "hasn't started a program" in
+     with "is genuinely early" — the two cases that need opposite responses.
+
+     THE INVARIANT, in both modes: bar length and the printed number encode the
+     SAME quantity. The old card drew count/peak and printed count/total, so a
+     full-width bar could be captioned 40%. Don't reintroduce a second scale. */
+  const totalStudents = data?.totalStudents ?? 0;
+  const useNamedList = totalStudents > 0 && totalStudents < NAMED_LIST_MAX;
+
+  /* Only the named-list mode needs per-student rows, so the students query is
+     skipped entirely for larger orgs. Its loading/error states degrade inside
+     the card; they never block it (the flagged students below come from the
+     dashboard query and render regardless). */
+  const {
+    data: studentsPage,
+    isLoading: studentsLoading,
+    isError: studentsError,
+  } = useGetOrgStudentsQuery(
+    {
+      orgId: orgId as string,
+      page: 1,
+      limit: NAMED_LIST_MAX,
+      // Server-side sort, so the furthest-along student leads the list.
+      sort: 'progress:desc',
+    },
+    { skip: !orgId || !useNamedList },
+  );
+
+  const needsAttention: OrgDashboardNeedsAttention[] = useMemo(
+    () => data?.needsAttention ?? [],
+    [data?.needsAttention],
+  );
+
+  /** userId → flag, so a named row can show WHY a student is flagged. */
+  const attentionByUser = useMemo(() => {
+    const map = new Map<string, OrgDashboardNeedsAttention>();
+    needsAttention.forEach((n) => map.set(n.userId, n));
+    return map;
+  }, [needsAttention]);
+
+  /* Ordered progress bands. `ccRampFor` — NOT the categorical CC_SERIES hues:
+     these bands have a natural order, and a nominal palette would throw that
+     ordering away. Share is kept unrounded for geometry and rounded only for
+     display, so the segments always sum to the full width. */
+  const bands = useMemo(() => {
     const buckets = analytics?.programs.progressDistribution ?? [];
-    const peak = buckets.reduce((m, b) => Math.max(m, b.count), 0);
     const total = buckets.reduce((sum, b) => sum + b.count, 0);
-    return buckets.map((b, i) => ({
-      key: `${b.bucket}-${i}`,
-      bucket: b.bucket,
-      count: b.count,
-      // Bar width is relative to the busiest band so small cohorts stay legible.
-      width: peak > 0 ? Math.max(4, Math.round((b.count / peak) * 100)) : 0,
-      share: total > 0 ? Math.round((b.count / total) * 100) : 0,
-    }));
+    const ramp = ccRampFor(buckets.length);
+    return buckets.map((b, i) => {
+      const color = ramp[i] ?? ramp[ramp.length - 1];
+      return {
+        key: `${b.bucket}-${i}`,
+        bucket: b.bucket,
+        count: b.count,
+        share: total > 0 ? (b.count / total) * 100 : 0,
+        color,
+        ink: inkOnBand(color),
+      };
+    });
   }, [analytics?.programs.progressDistribution]);
 
-  const distributionTotal = distribution.reduce((sum, b) => sum + b.count, 0);
+  const bandTotal = bands.reduce((sum, b) => sum + b.count, 0);
+
+  /* ── Profile completeness ─────────────────────────────────────────────────
+     `avgProfileCompletion` is a 0-100 integer averaged over every student in
+     the org, taken from `student_profiles.completionPercentage` — a column the
+     student profile service genuinely writes on every save, so unlike the old
+     last-active reading this one reflects real work.
+
+     A 0% average is therefore a FINDING, not a broken card: Major Match and the
+     AI essay and major guidance read from these profiles, so 0% means those
+     features are running on nothing. The card is built to make that legible. */
+  const avgCompletion = clampPct(data?.avgProfileCompletion);
+
+  /* Per-student rows, reusing the SAME students query the progress card already
+     runs in named-list mode (same 8-student threshold, no second request). The
+     rows are re-sorted here by completion, so the emptiest profile is easy to
+     find; the query's own sort is by program progress. */
+  const completionRows = useMemo(() => {
+    const items = studentsPage?.items ?? [];
+    return items
+      .map((s) => ({
+        userId: s.userId,
+        name: s.name,
+        avatarUrl: s.avatarUrl,
+        completion: clampPct(s.profileCompletion),
+      }))
+      .sort(
+        (a, b) => a.completion - b.completion || a.name.localeCompare(b.name),
+      );
+  }, [studentsPage?.items]);
+
+  /* Profile completion splits into three states a counselor can act on
+     differently: untouched, part-filled, and done. Counting them here keeps
+     the summary line factual rather than advisory, and lets the all-untouched
+     and all-done cases read as their own plain statements instead of being
+     described as if they were the mixed case. */
+  const profileSplit = useMemo(() => {
+    const notStarted = completionRows.filter((r) => r.completion === 0).length;
+    const complete = completionRows.filter((r) => r.completion === 100).length;
+    return {
+      notStarted,
+      complete,
+      inProgress: completionRows.length - notStarted - complete,
+      total: completionRows.length,
+    };
+  }, [completionRows]);
+
+  /* Reads as a list of what is actually there: empty categories are dropped
+     rather than printed as "0 complete". */
+  const profileSummary = useMemo(() => {
+    const { notStarted, inProgress, complete, total } = profileSplit;
+    if (!total) return '';
+    if (complete === total) return 'All profiles complete.';
+    if (notStarted === total) return 'No profiles started yet.';
+    return [
+      notStarted ? `${notStarted} not started` : '',
+      inProgress ? `${inProgress} in progress` : '',
+      complete ? `${complete} complete` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }, [profileSplit]);
 
   const chartData = useMemo(
     () =>
@@ -154,17 +289,12 @@ export default function CounselorConsoleDashboardPage() {
   }, [chartData]);
 
   const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-page-eyebrow">
-        <span className="cc-page-eyebrow-accent">Overview</span>
-        {org ? <span>· {org.name}</span> : null}
-      </div>
-      <h1 className="cc-page-title">Dashboard</h1>
-      <p className="cc-page-lead">
-        A live snapshot of your organization — enrollment, engagement,
-        application progress, and the students who need attention right now.
-      </p>
-    </div>
+    <CcPageHead
+      eyebrow="Overview"
+      orgName={org?.name}
+      title="Dashboard"
+      lead="A live snapshot of your organization: enrollment, engagement and application progress. It also surfaces the students who need attention right now."
+    />
   );
 
   // ── No organization selected ──
@@ -172,15 +302,10 @@ export default function CounselorConsoleDashboardPage() {
     return (
       <div className="cc-dash">
         {header}
-        <div className="cc-dash-empty cc-dash-empty--page">
-          <span className="cc-dash-empty-ico cc-dash-empty-ico--accent">
-            <Building2 size={20} />
-          </span>
-          <div className="cc-dash-empty-title">Select an organization</div>
-          <div className="cc-dash-empty-text">
-            Choose an organization from the switcher to see its overview.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+          title="Select an organization"
+          text="Choose an organization from the switcher to see its overview."
+        />
       </div>
     );
   }
@@ -220,21 +345,174 @@ export default function CounselorConsoleDashboardPage() {
     return (
       <div className="cc-dash">
         {header}
-        <div className="cc-dash-empty cc-dash-empty--page">
-          <span className="cc-dash-empty-ico cc-dash-empty-ico--danger">
-            <AlertTriangle size={20} />
-          </span>
-          <div className="cc-dash-empty-title">Couldn’t load the dashboard</div>
-          <div className="cc-dash-empty-text">
-            Something went wrong fetching this organization’s overview. Please
-            refresh, or switch organizations and back.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+          icon={<AlertTriangle size={22} />}
+          title="Couldn’t load the dashboard"
+          text="Something went wrong fetching this organization’s overview. Please refresh, or switch organizations and back."
+        />
       </div>
     );
   }
 
-  const topPerformers: OrgDashboardTopPerformer[] = data.topPerformers ?? [];
+  const students = studentsPage?.items ?? [];
+
+  /* The flagged students, named. This array was already being fetched and was
+     rendered nowhere except as a bare count in the KPI tile above. */
+  const flaggedBlock =
+    needsAttention.length > 0 ? (
+      <div className="cc-dash-prog-flags">
+        <div className="cc-dash-prog-flags-head">
+          Needs attention ({needsAttention.length})
+        </div>
+        {needsAttention.map((s) => (
+          <button
+            key={s.userId}
+            type="button"
+            className="cc-dash-attn-row"
+            onClick={() => navigate(`/counselor-console/students/${s.userId}`)}
+          >
+            <CcAvatar
+              name={s.name}
+              src={s.avatarUrl}
+              size={32}
+              className="cc-dash-attn-avatar"
+            />
+            <span className="cc-dash-attn-main">
+              <span className="cc-dash-attn-name">{s.name}</span>
+              <span className="cc-dash-attn-reason">
+                <span className="cc-dash-attn-dot" aria-hidden="true" />
+                {s.reason}
+              </span>
+            </span>
+            <ChevronRight size={16} className="cc-dash-attn-arrow" />
+          </button>
+        ))}
+      </div>
+    ) : null;
+
+  /* One 100% stacked bar, four ordered bands. Segment width and the printed
+     number are the same share, and the key repeats every value so the bands are
+     never told apart by colour alone. */
+  const bandBlock = (
+    <div className="cc-dash-band">
+      <div className="cc-dash-band-bar">
+        {bands
+          .filter((b) => b.share > 0)
+          .map((b) => (
+            <span
+              key={b.key}
+              className="cc-dash-band-seg"
+              style={{ flexGrow: b.share, background: b.color, color: b.ink }}
+              title={`${b.bucket}: ${Math.round(b.share)}% (${b.count})`}
+            >
+              {b.share >= DIRECT_LABEL_MIN_SHARE ? (
+                <span className="cc-dash-band-seg-label">
+                  {Math.round(b.share)}%
+                </span>
+              ) : null}
+            </span>
+          ))}
+      </div>
+      <div className="cc-dash-band-key">
+        {bands.map((b) => (
+          <span key={b.key} className="cc-dash-band-key-item">
+            <span
+              className="cc-dash-band-swatch"
+              style={{ background: b.color }}
+              aria-hidden="true"
+            />
+            <span className="cc-dash-band-key-label">{b.bucket}</span>
+            <span className="cc-dash-band-key-val">
+              {Math.round(b.share)}%
+            </span>
+          </span>
+        ))}
+      </div>
+      <div className="cc-dash-prog-foot">
+        {bandTotal.toLocaleString()} student{bandTotal === 1 ? '' : 's'} with
+        program progress · {pct(data.avgProgress)} average
+      </div>
+    </div>
+  );
+
+  /* Named rows: bar length IS the printed percentage. */
+  const namedBlock = studentsLoading ? (
+    <div className="cc-dash-prog-list" aria-hidden>
+      {Array.from({ length: Math.min(totalStudents, 4) || 3 }).map((_, i) => (
+        <div key={i} className="cc-dash-prog-skel">
+          <Skeleton
+            active
+            avatar={{ size: 34 }}
+            title={{ width: '38%' }}
+            paragraph={{ rows: 1, width: ['70%'] }}
+          />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <>
+      {studentsError || students.length === 0 ? (
+        <p className="cc-dash-prog-note">
+          Per student progress isn’t available right now. Open Students for the
+          full list.
+        </p>
+      ) : (
+        <>
+          <div className="cc-dash-prog-list">
+            {students.map((s) => {
+              const flag = attentionByUser.get(s.userId);
+              const p = clampPct(s.progress);
+              return (
+                <button
+                  key={s.userId}
+                  type="button"
+                  className="cc-dash-prog-row"
+                  onClick={() =>
+                    navigate(`/counselor-console/students/${s.userId}`)
+                  }
+                >
+                  <CcAvatar
+                    name={s.name}
+                    src={s.avatarUrl}
+                    size={34}
+                    className="cc-dash-attn-avatar"
+                  />
+                  <span className="cc-dash-prog-main">
+                    <span className="cc-dash-prog-name">{s.name}</span>
+                    <span className="cc-dash-prog-program">
+                      {s.topProgram ?? 'No program started'}
+                    </span>
+                    {flag ? (
+                      <span className="cc-dash-prog-chip">
+                        <AlertTriangle size={11} aria-hidden="true" />
+                        {flag.reason}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span
+                    className="cc-dash-prog-track"
+                    role="img"
+                    aria-label={`${p}% complete`}
+                  >
+                    <span
+                      className="cc-dash-prog-fill"
+                      style={{ width: `${p}%` }}
+                    />
+                  </span>
+                  <span className="cc-dash-prog-pct">{p}%</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="cc-dash-prog-foot">
+            {totalStudents.toLocaleString()} student
+            {totalStudents === 1 ? '' : 's'} · {pct(data.avgProgress)} average
+            progress
+          </div>
+        </>
+      )}
+    </>
+  );
 
   return (
     <div className="cc-dash" aria-busy={isFetching}>
@@ -307,15 +585,11 @@ export default function CounselorConsoleDashboardPage() {
             </div>
 
             {chartData.length === 0 ? (
-              <div className="cc-dash-empty">
-                <span className="cc-dash-empty-ico cc-dash-empty-ico--accent">
-                  <LineChartIcon size={20} />
-                </span>
-                <div className="cc-dash-empty-title">No trend data yet</div>
-                <div className="cc-dash-empty-text">
-                  Enrollment history will appear here as students join over time.
-                </div>
-              </div>
+              <CcEmpty
+                icon={<LineChartIcon size={20} />}
+                title="No trend data yet"
+                text="Enrollment history will appear here as students join over time."
+              />
             ) : (
               <div className="cc-dash-chart">
                 <CcChart option={enrollmentOption} />
@@ -323,14 +597,18 @@ export default function CounselorConsoleDashboardPage() {
             )}
           </section>
 
-          {/* Cohort progress */}
+          {/* Program progress — named list for a small org, a distribution
+              once names stop fitting. */}
           <section className="cc-dash-card cc-dash-card--fill">
             <div className="cc-dash-card-head">
               <div>
-                <h2 className="cc-dash-card-title">Cohort progress</h2>
+                <h2 className="cc-dash-card-title">
+                  {useNamedList ? 'Progress by student' : 'Progress spread'}
+                </h2>
                 <p className="cc-dash-card-sub">
-                  How far along your students are across their programs — spot
-                  who's stalled at a glance.
+                  {useNamedList
+                    ? 'Each student, their furthest-along program, and why anyone is flagged.'
+                    : 'Share of students in each progress band, with everyone flagged for follow-up named below.'}
                 </p>
               </div>
               <button
@@ -342,49 +620,20 @@ export default function CounselorConsoleDashboardPage() {
               </button>
             </div>
 
-            {analyticsLoading ? (
-              <div className="cc-dash-funnel" aria-hidden>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="cc-dash-funnel-skel">
-                    <Skeleton
-                      active
-                      title={{ width: '40%' }}
-                      paragraph={{ rows: 1, width: ['85%'] }}
-                    />
-                  </div>
-                ))}
+            {!useNamedList && analyticsLoading ? (
+              <div className="cc-dash-prog-list" aria-hidden>
+                <Skeleton active title={{ width: '30%' }} paragraph={{ rows: 3 }} />
               </div>
-            ) : distributionTotal === 0 ? (
-              <div className="cc-dash-empty">
-                <span className="cc-dash-empty-ico cc-dash-empty-ico--accent">
-                  <GraduationCap size={20} />
-                </span>
-                <div className="cc-dash-empty-title">No progress data yet</div>
-                <div className="cc-dash-empty-text">
-                  This fills in as students work through their programs.
-                </div>
-              </div>
+            ) : totalStudents === 0 || (!useNamedList && bandTotal === 0) ? (
+              <CcEmpty
+                icon={<GraduationCap size={20} />}
+                title="No progress data yet"
+                text="This fills in as students work through their programs."
+              />
             ) : (
-              <div className="cc-dash-funnel">
-                {distribution.map((b) => (
-                  <div className="cc-dash-funnel-row" key={b.key}>
-                    <div className="cc-dash-funnel-top">
-                      <span className="cc-dash-funnel-stage">{b.bucket}</span>
-                      <span className="cc-dash-funnel-meta">
-                        <strong>{b.count.toLocaleString()}</strong>
-                        <span className="cc-dash-funnel-conv">
-                          {b.share}% of cohort
-                        </span>
-                      </span>
-                    </div>
-                    <div className="cc-dash-funnel-track">
-                      <span
-                        className="cc-dash-funnel-fill"
-                        style={{ width: `${b.width}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+              <div className="cc-dash-prog">
+                {useNamedList ? namedBlock : bandBlock}
+                {useNamedList ? null : flaggedBlock}
               </div>
             )}
           </section>
@@ -392,71 +641,129 @@ export default function CounselorConsoleDashboardPage() {
 
         {/* Right rail */}
         <aside className="cc-dash-col cc-dash-col--rail">
+          {/* Profile completeness — the average leads, as a number and as one
+              meter of the same length. Below it, either every student named
+              (small org) or a plain aggregate line. A 0% reading is a real
+              finding and is written as one. */}
           <section className="cc-dash-card cc-dash-card--fill">
             <div className="cc-dash-card-head">
               <div>
-                <h2 className="cc-dash-card-title">Top performers</h2>
+                <h2 className="cc-dash-card-title">Profile completeness</h2>
                 <p className="cc-dash-card-sub">
-                  {topPerformers.length > 0
-                    ? `Your ${topPerformers.length} furthest-along student${topPerformers.length === 1 ? '' : 's'}.`
-                    : 'Students with program progress show up here.'}
+                  How complete your students' profiles are.
                 </p>
               </div>
-              {topPerformers.length > 0 ? (
-                <button
-                  type="button"
-                  className="cc-dash-card-link"
-                  onClick={() => navigate('/counselor-console/students')}
-                >
-                  All students <ArrowUpRight size={13} />
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="cc-dash-card-link"
+                onClick={() => navigate('/counselor-console/students')}
+              >
+                Students <ArrowUpRight size={13} />
+              </button>
             </div>
 
-            {topPerformers.length === 0 ? (
-              <div className="cc-dash-empty">
-                <span className="cc-dash-empty-ico cc-dash-empty-ico--good">
-                  <CheckCircle2 size={20} />
-                </span>
-                <div className="cc-dash-empty-title">No progress recorded yet</div>
-                <div className="cc-dash-empty-text">
-                  Once your students start a program, the furthest along appear
-                  here.
-                </div>
-              </div>
+            {totalStudents === 0 ? (
+              /* No students at all. Genuinely nothing to measure, which is a
+                 different situation from students who have measured 0%. */
+              <CcEmpty
+                icon={<Users size={20} />}
+                title="No students yet"
+                text="Invite students and their profile completeness will appear here."
+              />
             ) : (
-              <div className="cc-dash-attn-list">
-                {topPerformers.map((s, i) => (
-                  <button
-                    key={s.userId}
-                    type="button"
-                    className="cc-dash-attn-row"
-                    onClick={() =>
-                      navigate(`/counselor-console/students/${s.userId}`)
-                    }
-                  >
-                    <span className="cc-dash-rank" aria-hidden="true">
-                      {i + 1}
-                    </span>
-                    <CcAvatar
-                      name={s.name}
-                      src={s.avatarUrl}
-                      size={34}
-                      className="cc-dash-attn-avatar"
+              <div className="cc-dash-pc">
+                <div className="cc-dash-pc-hero">
+                  <span className="cc-dash-pc-num">{avgCompletion}%</span>
+                  <span className="cc-dash-pc-cap">
+                    average profile completion across{' '}
+                    {totalStudents.toLocaleString()} student
+                    {totalStudents === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                {/* Meter length IS the printed number. One quantity, one scale;
+                    nothing here is normalised against a peak. */}
+                <span
+                  className="cc-dash-pc-track"
+                  role="img"
+                  aria-label={`${avgCompletion}% average profile completion`}
+                >
+                  <span
+                    className="cc-dash-pc-fill"
+                    style={{ width: `${avgCompletion}%` }}
+                  />
+                </span>
+
+                {useNamedList && studentsLoading ? (
+                  <div className="cc-dash-prog-list" aria-hidden>
+                    <Skeleton
+                      active
+                      title={{ width: '35%' }}
+                      paragraph={{ rows: 3 }}
                     />
-                    <span className="cc-dash-attn-main">
-                      <span className="cc-dash-attn-name">{s.name}</span>
-                      <span className="cc-dash-attn-context">
-                        {s.progress}% program progress
-                      </span>
-                    </span>
-                    <ChevronRight size={16} className="cc-dash-attn-arrow" />
-                  </button>
-                ))}
+                  </div>
+                ) : useNamedList && !studentsError && completionRows.length ? (
+                  <>
+                    {/* Least-complete first, so the next action is the top row.
+                        Row bar length is that student's own percentage. */}
+                    <div className="cc-dash-prog-list">
+                      {completionRows.map((r) => (
+                        <button
+                          key={r.userId}
+                          type="button"
+                          className="cc-dash-prog-row"
+                          onClick={() =>
+                            navigate(`/counselor-console/students/${r.userId}`)
+                          }
+                        >
+                          <CcAvatar
+                            name={r.name}
+                            src={r.avatarUrl}
+                            size={34}
+                            className="cc-dash-attn-avatar"
+                          />
+                          <span className="cc-dash-prog-main">
+                            <span className="cc-dash-prog-name">{r.name}</span>
+                            <span className="cc-dash-prog-program">
+                              {r.completion === 0
+                                ? 'Not started'
+                                : r.completion === 100
+                                  ? 'Complete'
+                                  : 'In progress'}
+                            </span>
+                          </span>
+                          <span
+                            className="cc-dash-prog-track"
+                            role="img"
+                            aria-label={`${r.completion}% of profile complete`}
+                          >
+                            <span
+                              className="cc-dash-prog-fill"
+                              style={{ width: `${r.completion}%` }}
+                            />
+                          </span>
+                          <span className="cc-dash-prog-pct">
+                            {r.completion}%
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="cc-dash-prog-foot">{profileSummary}</div>
+                  </>
+                ) : (
+                  /* Too many students to name. Only the org average is
+                     available at this size, so state its coverage and stop.
+                     The per-student split needs the students list, which is
+                     deliberately not fetched for large orgs. */
+                  <div className="cc-dash-prog-foot">
+                    {studentsError
+                      ? 'Individual profiles could not be loaded.'
+                      : `Averaged across ${totalStudents.toLocaleString()} students. Open Students for individual profiles.`}
+                  </div>
+                )}
               </div>
             )}
           </section>
-
 
           {/* Quick navigation */}
           <section className="cc-dash-card cc-dash-quick">
