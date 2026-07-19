@@ -54,6 +54,16 @@ export interface OrgContext {
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 
+/** A student near the top of the cohort by program progress. */
+export interface OrgDashboardTopPerformer {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** Average progress across enrolled programs, 0-100. Always > 0. */
+  progress: number;
+  context: string | null;
+}
+
 export interface OrgDashboardNeedsAttention {
   userId: string;
   name: string;
@@ -78,6 +88,7 @@ export interface OrgDashboard {
   applicationsSubmitted: number;
   upcomingSessions: number;
   needsAttention: OrgDashboardNeedsAttention[];
+  topPerformers: OrgDashboardTopPerformer[];
   enrollmentTrends: OrgDashboardEnrollmentTrend[];
 }
 

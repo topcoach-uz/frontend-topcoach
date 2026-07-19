@@ -190,6 +190,18 @@
   border-top-color: transparent;
 }
 
+/* Rank numeral on the top-performers list. Serif + tabular so the column of
+   numbers aligns and reads as editorial rather than as a badge. */
+.cc-dash-rank {
+  flex: none;
+  width: 18px;
+  font-family: var(--cc-serif);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cc-text-muted);
+  text-align: right;
+}
+
 .cc-dash-attn-avatar {
   flex-shrink: 0;
 }

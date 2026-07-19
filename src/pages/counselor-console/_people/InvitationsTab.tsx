@@ -392,7 +392,7 @@ export function InvitationsTab({
             <b>
               {undeliverable} invitation{undeliverable === 1 ? '' : 's'}
             </b>{' '}
-            on this page could not be delivered — {undeliverable === 1 ? 'it' : 'they'}{' '}
+            on this page could not be delivered, so {undeliverable === 1 ? 'it' : 'they'}{' '}
             never reached the {undeliverable === 1 ? 'invitee' : 'invitees'}.
             Check the address for a typo, then use <b>Resend</b>. Hover “Not
             delivered” on a row for the reason.

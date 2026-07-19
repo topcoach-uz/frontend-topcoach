@@ -27,17 +27,34 @@ const initials = (name: string): string =>
 
 const OrgMembershipCard: React.FC<OrgMembershipCardProps> = ({ skip }) => {
   const { t } = useTranslation();
-  const { data: memberships, isLoading, isError } = useGetMyOrgMembershipQuery(undefined, {
-    skip: !!skip,
-  });
+  const {
+    data: memberships,
+    isLoading,
+    isError,
+    error,
+  } = useGetMyOrgMembershipQuery(undefined, { skip: !!skip });
 
   // Ambient info: stay silent while loading, on error, and when there is no
   // membership. Never render a placeholder or an error box.
+  //
+  // Silence is right for the user but was miserable to debug: a 404 from a
+  // backend that predates GET /org/my-membership looked identical to "this
+  // student has no organization", and cost real time working out which it was.
+  // Announce the failure to the console in development only.
+  if (isError && import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[OrgMembershipCard] hidden because GET /org/my-membership failed. ' +
+        'A 404 usually means the backend is older than this endpoint.',
+      error,
+    );
+  }
+
   if (skip || isLoading || isError) return null;
   if (!memberships?.length) return null;
 
-  // A student can belong to more than one organization — the membership unique
-  // index is (organization, user), not user alone — so render one card each
+  // A student can belong to more than one organization: the membership unique
+  // index is (organization, user), not user alone, so render one card each
   // rather than silently hiding all but the first.
   return (
     <div style={{ marginBottom: 24 }}>

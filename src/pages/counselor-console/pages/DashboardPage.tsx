@@ -22,7 +22,7 @@ import { useCounselorConsole } from '../CounselorConsoleContext';
 import {
   useGetOrgDashboardQuery,
   useGetOrgAnalyticsQuery,
-  type OrgDashboardNeedsAttention,
+  type OrgDashboardTopPerformer,
 } from 'src/app/services/counselorConsoleApi';
 import { CcStat } from '../components/CcStat';
 import { CcAvatar } from '../components/CcAvatar';
@@ -234,7 +234,7 @@ export default function CounselorConsoleDashboardPage() {
     );
   }
 
-  const needsAttention: OrgDashboardNeedsAttention[] = data.needsAttention ?? [];
+  const topPerformers: OrgDashboardTopPerformer[] = data.topPerformers ?? [];
 
   return (
     <div className="cc-dash" aria-busy={isFetching}>
@@ -395,14 +395,14 @@ export default function CounselorConsoleDashboardPage() {
           <section className="cc-dash-card cc-dash-card--fill">
             <div className="cc-dash-card-head">
               <div>
-                <h2 className="cc-dash-card-title">Needs attention</h2>
+                <h2 className="cc-dash-card-title">Top performers</h2>
                 <p className="cc-dash-card-sub">
-                  {needsAttention.length > 0
-                    ? `${needsAttention.length} student${needsAttention.length === 1 ? '' : 's'} to follow up with.`
-                    : 'Flagged students show up here.'}
+                  {topPerformers.length > 0
+                    ? `Your ${topPerformers.length} furthest-along student${topPerformers.length === 1 ? '' : 's'}.`
+                    : 'Students with program progress show up here.'}
                 </p>
               </div>
-              {needsAttention.length > 0 ? (
+              {topPerformers.length > 0 ? (
                 <button
                   type="button"
                   className="cc-dash-card-link"
@@ -413,19 +413,20 @@ export default function CounselorConsoleDashboardPage() {
               ) : null}
             </div>
 
-            {needsAttention.length === 0 ? (
+            {topPerformers.length === 0 ? (
               <div className="cc-dash-empty">
                 <span className="cc-dash-empty-ico cc-dash-empty-ico--good">
                   <CheckCircle2 size={20} />
                 </span>
-                <div className="cc-dash-empty-title">All students on track</div>
+                <div className="cc-dash-empty-title">No progress recorded yet</div>
                 <div className="cc-dash-empty-text">
-                  No students are flagged for attention right now.
+                  Once your students start a program, the furthest along appear
+                  here.
                 </div>
               </div>
             ) : (
               <div className="cc-dash-attn-list">
-                {needsAttention.map((s) => (
+                {topPerformers.map((s, i) => (
                   <button
                     key={s.userId}
                     type="button"
@@ -434,6 +435,9 @@ export default function CounselorConsoleDashboardPage() {
                       navigate(`/counselor-console/students/${s.userId}`)
                     }
                   >
+                    <span className="cc-dash-rank" aria-hidden="true">
+                      {i + 1}
+                    </span>
                     <CcAvatar
                       name={s.name}
                       src={s.avatarUrl}
@@ -442,19 +446,9 @@ export default function CounselorConsoleDashboardPage() {
                     />
                     <span className="cc-dash-attn-main">
                       <span className="cc-dash-attn-name">{s.name}</span>
-                      <span className="cc-dash-attn-reason">
-                        <span
-                          className="cc-dash-attn-dot"
-                          aria-hidden="true"
-                        />
-                        {s.reason}
+                      <span className="cc-dash-attn-context">
+                        {s.progress}% program progress
                       </span>
-                      {/* Context is what makes the flag actionable — "Invited 9
-                          days ago" tells a counselor what to do; the reason
-                          alone doesn't. Null when there's nothing honest to add. */}
-                      {s.context ? (
-                        <span className="cc-dash-attn-context">{s.context}</span>
-                      ) : null}
                     </span>
                     <ChevronRight size={16} className="cc-dash-attn-arrow" />
                   </button>
@@ -462,6 +456,7 @@ export default function CounselorConsoleDashboardPage() {
               </div>
             )}
           </section>
+
 
           {/* Quick navigation */}
           <section className="cc-dash-card cc-dash-quick">

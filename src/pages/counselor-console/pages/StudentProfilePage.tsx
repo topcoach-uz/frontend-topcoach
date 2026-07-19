@@ -813,12 +813,21 @@ function OverviewTab({
       : null;
     const enrolled = programRows.length > 0;
 
-    if (!lastActive && (progress === null || progress === 0)) {
+    // NEVER claim "Never signed in" here. This page has no sign-in signal at
+    // all: it infers activity from `user_daily_activity` and
+    // `studentProfile.lastActiveAt`, both of which are sparse and frequently
+    // null for people who are demonstrably using the product. The backend
+    // makes this claim only when membership status is INVITED (see
+    // org-students.service.ts), which is the one trustworthy signal, and this
+    // page does not have it. Inferring it from missing rows told counselors a
+    // signed-in student had never logged in.
+    if (!enrolled) {
       out.push({
-        reason: 'Never signed in',
-        detail: 'No recorded activity and no coursework progress.',
+        reason: 'Not enrolled in a program',
+        detail:
+          'Nothing to track yet. Enrol them in a program to see progress here.',
       });
-    } else if (enrolled && progress === 0) {
+    } else if (progress === 0) {
       out.push({
         reason: 'Hasn’t started any coursework',
         detail: 'Enrolled, but no program shows any progress yet.',
