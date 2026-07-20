@@ -65,6 +65,7 @@ import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { canUseMyRewards } from 'src/lib/myRewardsAccess';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
+import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
@@ -589,6 +590,12 @@ export default function CommunityHubMockPage() {
             </div>
           </Card>
         )}
+
+        {/* Organization membership. Lives here rather than on a single page so
+            it is visible throughout the hub: its previous mount point was the
+            legacy Dashboard, which no longer renders, so students in an org
+            were never told they were in one. */}
+        <OrgMembershipSidebar />
 
         <div className={styles.leftNav}>
           {!isCommunityEnrolled && (
