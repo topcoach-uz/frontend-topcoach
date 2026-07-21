@@ -1,9 +1,8 @@
 /**
  * Onboarding wizard step machinery shared by the shell (index.tsx) and each
  * step component. Order matches ONBOARDING_DESIGN.md's step numbering
- * (role=1 .. contact=6). Steps 7 (trial) and 8 (academic handoff) are a
- * later PR — see the TEMP comment on the 'contact' step's completion call
- * in index.tsx.
+ * (role=1 .. academic=8). Completion (`onboardingCompletedAt`) now fires at
+ * the 'academic' step (StepAcademic.tsx), not at 'contact' anymore.
  */
 export type OnboardingStepId =
   | 'role'
@@ -11,7 +10,9 @@ export type OnboardingStepId =
   | 'telegram'
   | 'video'
   | 'community'
-  | 'contact';
+  | 'contact'
+  | 'trial'
+  | 'academic';
 
 export const STEP_ORDER: OnboardingStepId[] = [
   'role',
@@ -20,6 +21,8 @@ export const STEP_ORDER: OnboardingStepId[] = [
   'video',
   'community',
   'contact',
+  'trial',
+  'academic',
 ];
 
 export function isOnboardingStepId(value: unknown): value is OnboardingStepId {

@@ -2049,5 +2049,18 @@
   "onboarding.contact.subtitle": "Bu raqamdan faqat muhim hisob va sessiya yangilanishlari uchun foydalanamiz.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "To'g'ri telefon raqamini kiriting.",
-  "onboarding.contact.skip": "Hozircha o'tkazib yuborish"
+  "onboarding.contact.skip": "Hozircha o'tkazib yuborish",
+  "onboarding.trial.title": "7 kun bepul sinab ko'ring",
+  "onboarding.trial.subtitle": "To'liq Jamoani — mentorlar, sessiyalar va yo'l xaritasi — bepul sinov muddati bilan oching.",
+  "onboarding.trial.pitch": "7 kun bepul, biz hisobimizdan. Sinov muddati tugashidan oldin istalgan vaqtda bekor qiling — hech narsa yechilmaydi.",
+  "onboarding.trial.telegramRequired": "Avval Telegramni ulang — Jamoa yangiliklari va sessiya eslatmalari o'sha yerga keladi va bu sinov muddatini boshlash uchun shart.",
+  "onboarding.trial.loadingPlans": "Tariflar yuklanmoqda…",
+  "onboarding.trial.skip": "Keyinroq",
+  "onboarding.academic.title": "Akademik darajangizni aniqlaymiz",
+  "onboarding.academic.subtitle": "Jamoani ochish va yo'l xaritangizni shaxsiylashtirish uchun so'nggi qadam.",
+  "onboarding.academic.benefit1": "Ingliz tili darajangizni bilish uchun qisqa test (taxminan 10 daqiqa).",
+  "onboarding.academic.benefit2": "Shaxsiy yo'l xaritangiz va Jamoani ochadigan tezkor akademik anketa.",
+  "onboarding.academic.start": "Testni boshlash",
+  "onboarding.academic.skip": "Hozircha o'tkazib yuborish — boshqaruv paneliga o'tish",
+  "onboarding.academic.skipping": "Bir soniya…"
 }

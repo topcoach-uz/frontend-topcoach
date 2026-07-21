@@ -19,14 +19,17 @@ import StepTelegram from './steps/StepTelegram';
 import StepVideo from './steps/StepVideo';
 import StepCommunity from './steps/StepCommunity';
 import StepContact from './steps/StepContact';
+import StepTrial from './steps/StepTrial';
+import StepAcademic from './steps/StepAcademic';
 import styles from './onboarding.module.scss';
 
 /**
- * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships steps 1-6
- * (role -> source -> telegram -> video -> community -> contact) in this PR.
- * Steps 7-8 (trial + academic handoff) are a follow-up PR — the 'contact'
- * step currently finishes the wizard directly (see the TEMP comment on
- * handleContactNext below).
+ * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 8 steps
+ * (role -> source -> telegram -> video -> community -> contact -> trial ->
+ * academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
+ * step now (StepAcademic.tsx owns its own patchOnboarding call — see the
+ * comment on that component for why it deviates from the generic
+ * advance()/onNext pattern used by every other step).
  *
  * Reached whenever OnboardingGate decides a signed-in user's
  * `onboardingCompletedAt` is `null` (see src/lib/onboarding.ts and
@@ -136,13 +139,11 @@ export default function OnboardingWizardPage() {
   };
 
   const handleContactNext = async (phoneNumber?: string) => {
+    const next = nextStepId('contact') ?? 'contact';
     setSubmitting(true);
     try {
-      // TEMP: completion moves to the academic-handoff step once steps 7-8
-      // (trial + academic) ship in a follow-up PR — for now the wizard
-      // finishes right here, at the end of the contact step.
-      await patchOnboarding({ phoneNumber, completed: true }).unwrap();
-      navigate('/student-hub');
+      await patchOnboarding({ phoneNumber, step: next }).unwrap();
+      setStep(next);
     } catch (err: any) {
       showError(err);
     } finally {
@@ -194,6 +195,20 @@ export default function OnboardingWizardPage() {
       subtitle: t(
         'onboarding.contact.subtitle',
         "We'll only use this for important account and session updates.",
+      ),
+    },
+    trial: {
+      title: t('onboarding.trial.title', 'Try 7 days free'),
+      subtitle: t(
+        'onboarding.trial.subtitle',
+        'Unlock the full Community — mentors, sessions, and roadmap — with a free trial.',
+      ),
+    },
+    academic: {
+      title: t('onboarding.academic.title', "Let's find your academic level"),
+      subtitle: t(
+        'onboarding.academic.subtitle',
+        "One last step to unlock the Community and personalize your roadmap.",
       ),
     },
   };
@@ -268,6 +283,10 @@ export default function OnboardingWizardPage() {
             onNext={handleContactNext}
           />
         )}
+
+        {step === 'trial' && <StepTrial onNext={() => advance()} />}
+
+        {step === 'academic' && <StepAcademic />}
       </div>
     </div>
   );

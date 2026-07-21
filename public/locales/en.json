@@ -2323,5 +2323,18 @@
   "onboarding.contact.subtitle": "We'll only use this for important account and session updates.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Enter a valid phone number.",
-  "onboarding.contact.skip": "Skip for now"
+  "onboarding.contact.skip": "Skip for now",
+  "onboarding.trial.title": "Try 7 days free",
+  "onboarding.trial.subtitle": "Unlock the full Community — mentors, sessions, and roadmap — with a free trial.",
+  "onboarding.trial.pitch": "7 days free, on us. Cancel anytime before the trial ends and you will not be charged.",
+  "onboarding.trial.telegramRequired": "Connect Telegram first — Community updates and session reminders are delivered there, and it is required to start a trial.",
+  "onboarding.trial.loadingPlans": "Loading plans…",
+  "onboarding.trial.skip": "Maybe later",
+  "onboarding.academic.title": "Let's find your academic level",
+  "onboarding.academic.subtitle": "One last step to unlock the Community and personalize your roadmap.",
+  "onboarding.academic.benefit1": "A short placement test (about 10 minutes) so we know your English level.",
+  "onboarding.academic.benefit2": "A quick academic profile that unlocks your personalized roadmap and the Community.",
+  "onboarding.academic.start": "Start placement test",
+  "onboarding.academic.skip": "Skip for now — go to my dashboard",
+  "onboarding.academic.skipping": "One moment…"
 }

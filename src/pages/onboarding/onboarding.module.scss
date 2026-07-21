@@ -214,6 +214,49 @@ $brand: #7b1f2f;
   color: $brand;
 }
 
+// Step 7 (trial) — plan-picker wrapper + telegram-gate + pitch copy block.
+// AvailablePlans/TelegramConnectionContent are AntD-heavy components built
+// for the (left-aligned, full-width) settings page, so we scope a left
+// text-align here to override the wizard card's centered default and give
+// them a bit of breathing room instead of inventing parallel plan-card CSS.
+.trialPitch {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid $hairline;
+  border-radius: 12px;
+  background: #faf9f5;
+  text-align: left;
+  color: $ink;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.trialTelegramGate {
+  width: 100%;
+  text-align: left;
+}
+
+.trialTelegramNote {
+  margin: 0 0 12px;
+  color: $ink-soft;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.trialPlanPicker {
+  width: 100%;
+  text-align: left;
+}
+
+.trialPlansLoading {
+  padding: 24px 0;
+  text-align: center;
+  color: $ink-soft;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 28px 20px 24px;

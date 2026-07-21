@@ -2068,5 +2068,18 @@
   "onboarding.contact.subtitle": "Мы используем его только для важных обновлений об аккаунте и сессиях.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Введите корректный номер телефона.",
-  "onboarding.contact.skip": "Пропустить пока"
+  "onboarding.contact.skip": "Пропустить пока",
+  "onboarding.trial.title": "Попробуйте бесплатно 7 дней",
+  "onboarding.trial.subtitle": "Откройте полный доступ к сообществу — менторы, сессии и дорожная карта — с бесплатным пробным периодом.",
+  "onboarding.trial.pitch": "7 дней бесплатно, за наш счёт. Отмените в любой момент до окончания пробного периода — и с вас ничего не спишут.",
+  "onboarding.trial.telegramRequired": "Сначала подключите Telegram — обновления сообщества и напоминания о сессиях приходят туда, и это обязательно для начала пробного периода.",
+  "onboarding.trial.loadingPlans": "Загружаем тарифы…",
+  "onboarding.trial.skip": "Может быть позже",
+  "onboarding.academic.title": "Определим ваш академический уровень",
+  "onboarding.academic.subtitle": "Последний шаг, чтобы открыть сообщество и персонализировать вашу дорожную карту.",
+  "onboarding.academic.benefit1": "Короткий тест на уровень (около 10 минут), чтобы узнать ваш уровень английского.",
+  "onboarding.academic.benefit2": "Быстрая академическая анкета, которая открывает персональную дорожную карту и сообщество.",
+  "onboarding.academic.start": "Начать тест на уровень",
+  "onboarding.academic.skip": "Пропустить — перейти в личный кабинет",
+  "onboarding.academic.skipping": "Один момент…"
 }

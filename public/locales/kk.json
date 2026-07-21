@@ -1961,5 +1961,18 @@
   "onboarding.contact.subtitle": "Bul nomerdi tek maańizli akkaunt hám sessiya jańalıqları ushın paydalanamız.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Durıs telefon nomerin kirgiziń.",
-  "onboarding.contact.skip": "Házirshe ótkerip jiberiw"
+  "onboarding.contact.skip": "Házirshe ótkerip jiberiw",
+  "onboarding.trial.title": "7 kún biykar sınap kóriń",
+  "onboarding.trial.subtitle": "Tolıq Jámáátti — mentorlar, sessiyalar hám jol xaritasın — biykar sınaw dáwiri menen ashıń.",
+  "onboarding.trial.pitch": "7 kún biykar, bizdiń esabımızdan. Sınaw dáwiri tawsılǵansha qálegen waqıtta biykarlań — hesh nárse tólemeysiz.",
+  "onboarding.trial.telegramRequired": "Aldın Telegramdı jalǵań — Jámáát jańalıqları hám sessiya eskertiwleri sonda keledi, bul sınaw dáwirin baslaw ushın shárt.",
+  "onboarding.trial.loadingPlans": "Tarifler júklenip atır…",
+  "onboarding.trial.skip": "Keyinirek",
+  "onboarding.academic.title": "Akademiyalıq dárejeńizdi anıqlayıq",
+  "onboarding.academic.subtitle": "Jámáátti ashıw hám jol xaritańızdı jekelestiriw ushın aqırǵı qádem.",
+  "onboarding.academic.benefit1": "Ingliz til dárejeńizdi biliw ushın qısqa test (shama menen 10 minut).",
+  "onboarding.academic.benefit2": "Jekelestirilgen jol xaritańızdı hám Jámáátti ashatuǵın tez akademiyalıq anketa.",
+  "onboarding.academic.start": "Testti baslaw",
+  "onboarding.academic.skip": "Házirshe ótkerip jiberiw — bashqarıw paneline ótiw",
+  "onboarding.academic.skipping": "Bir sekund…"
 }
