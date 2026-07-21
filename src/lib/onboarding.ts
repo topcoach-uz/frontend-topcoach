@@ -14,6 +14,8 @@
 
 export interface OnboardingStatus {
   onboardingCompletedAt?: string | null;
+  onboardingStep?: string | null;
+  hearAboutSource?: string | null;
 }
 
 export function isOnboardingComplete(
