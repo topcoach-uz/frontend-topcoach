@@ -35,6 +35,7 @@ import ResearchPrepPage from '../research/ResearchPrepPage';
 // The in-hub branch no longer renders the blurred preview.
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
 import { useGetCoinBalanceQuery } from '../../../app/services/coinsApi';
+import { useStudentProfile } from '../../../hooks/useStudentHub';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import PsychometricAssessmentPage from '../psychometric-assessment/PsychometricAssessmentPage';
 import OpportunitiesPage from '../opportunities/OpportunitiesPage';
@@ -170,6 +171,13 @@ export default function CommunityHubMockPage() {
   const { data: coinBalance } = useGetCoinBalanceQuery(undefined, {
     skip: !isCommunityEnrolled,
   });
+  // Profile-completion percentage for the sidebar card's progress bar.
+  // Reuses the same student-profile query the profile/dashboard pages
+  // already subscribe to (see Dashboard.tsx / MyProgressEditorialView.tsx),
+  // so this is a cache hit, not an extra request, once either page has loaded.
+  const { profile: studentProfileForCard, isLoading: studentProfileCardLoading } =
+    useStudentProfile();
+  const profileCompletionPercentage = studentProfileForCard?.completionPercentage;
   const researchPrepLive = useMemo(
     () =>
       canUseResearchPrepLive(
@@ -567,6 +575,46 @@ export default function CommunityHubMockPage() {
                 </div>
               </div>
             </div>
+            {!studentProfileCardLoading && typeof profileCompletionPercentage === 'number' && (
+              profileCompletionPercentage >= 100 ? (
+                <button
+                  type="button"
+                  className={styles.profileCompletionDone}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/student-hub/profile');
+                  }}
+                >
+                  {t('studentHub.profileCard.complete', 'Profile complete ✓')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.profileCompletion}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/student-hub/profile');
+                  }}
+                  aria-label={t(
+                    'studentHub.profileCard.completionAria',
+                    'Profile {{percent}}% complete — go to profile',
+                    { percent: profileCompletionPercentage },
+                  )}
+                >
+                  <span className={styles.profileCompletionLabel}>
+                    {t('studentHub.profileCard.completion', 'Profile {{percent}}% complete', {
+                      percent: profileCompletionPercentage,
+                    })}
+                  </span>
+                  <span className={styles.profileCompletionTrack}>
+                    <span
+                      className={styles.profileCompletionFill}
+                      style={{ width: `${Math.min(100, Math.max(0, profileCompletionPercentage))}%` }}
+                    />
+                  </span>
+                </button>
+              )
+            )}
             <div className={styles.profileBottomRow}>
               <button
                 type="button"
