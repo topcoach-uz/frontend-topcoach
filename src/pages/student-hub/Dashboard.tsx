@@ -254,7 +254,7 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
     },
     {
       key: 'psychometric',
-      label: 'Psychometric Test',
+      label: t('studentHub.dashboard.psychometricTest', 'Psychometric Test'),
       icon: <FontAwesomeIcon icon="chart-line" style={{ color: '#8b0000' }} />,
       onClick: () => navigate('/student-hub/psychometric-assessment'),
     },
@@ -439,10 +439,14 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
           out.push({
             id: `prioritize-${appId}`,
             type: 'application',
-            title: 'Prioritize application',
-            description: `${days} days left. Complete the checklist to stay on track.`,
+            title: t('studentHub.dashboard.prioritizeApplication', 'Prioritize application'),
+            description: t(
+              'studentHub.dashboard.prioritizeApplicationDesc',
+              '{{days}} days left. Complete the checklist to stay on track.',
+              { days },
+            ),
             priority: 'high',
-            actionLabel: 'Complete now',
+            actionLabel: t('studentHub.dashboard.completeNow', 'Complete now'),
             actionPath: appId ? `/student-hub/applications/${appId}/edit` : '/student-hub/applications',
             applicationId: appId,
             universityId: uniId,
@@ -458,10 +462,18 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         out.push({
           id: `essay-${appId}`,
           type: 'essay',
-          title: 'Work on essays',
-          description: hasWhy ? 'You listed goals for this school. Make progress on essays.' : 'Complete required essays for this application.',
+          title: t('studentHub.dashboard.workOnEssays', 'Work on essays'),
+          description: hasWhy
+            ? t(
+                'studentHub.dashboard.workOnEssaysDescWithGoals',
+                'You listed goals for this school. Make progress on essays.',
+              )
+            : t(
+                'studentHub.dashboard.workOnEssaysDesc',
+                'Complete required essays for this application.',
+              ),
           priority: 'medium',
-          actionLabel: 'Open Essays Hub',
+          actionLabel: t('studentHub.dashboard.openEssaysHub', 'Open Essays Hub'),
           actionPath: '/student-hub/essays',
           applicationId: appId,
           universityId: uniId,
@@ -472,10 +484,14 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         out.push({
           id: `rec-${appId}`,
           type: 'recommendation',
-          title: 'Request recommendation',
-          description: `Get recommendation letters: ${recs.submitted || 0} of ${recs.required} submitted.`,
+          title: t('studentHub.dashboard.requestRecommendation', 'Request recommendation'),
+          description: t(
+            'studentHub.dashboard.requestRecommendationDesc',
+            'Get recommendation letters: {{submitted}} of {{required}} submitted.',
+            { submitted: recs.submitted || 0, required: recs.required },
+          ),
           priority: 'medium',
-          actionLabel: 'Open Documents',
+          actionLabel: t('studentHub.dashboard.openDocuments', 'Open Documents'),
           actionPath: '/student-hub/documents',
           applicationId: appId,
           universityId: uniId,
@@ -486,10 +502,13 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
         out.push({
           id: `mentor-${appId}`,
           type: 'mentor',
-          title: 'Assign mentor',
-          description: 'Link a mentor to this application for guidance.',
+          title: t('studentHub.dashboard.assignMentor', 'Assign mentor'),
+          description: t(
+            'studentHub.dashboard.assignMentorDesc',
+            'Link a mentor to this application for guidance.',
+          ),
           priority: 'low',
-          actionLabel: 'Assign mentor',
+          actionLabel: t('studentHub.dashboard.assignMentor', 'Assign mentor'),
           actionPath: '/student-hub/applications',
           applicationId: appId,
           universityId: uniId,
@@ -502,10 +521,16 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       out.push({
         id: 'psychometric',
         type: 'psychometric',
-        title: 'Complete psychometric assessment',
-        description: 'Unlock match scores and university fit insights.',
+        title: t(
+          'studentHub.dashboard.completePsychometricAssessment',
+          'Complete psychometric assessment',
+        ),
+        description: t(
+          'studentHub.dashboard.completePsychometricAssessmentDesc',
+          'Unlock match scores and university fit insights.',
+        ),
         priority: 'high',
-        actionLabel: 'Start assessment',
+        actionLabel: t('studentHub.dashboard.startAssessment', 'Start assessment'),
         actionPath: '/student-hub/psychometric-assessment',
       });
     }
@@ -513,10 +538,13 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
       out.push({
         id: 'profile',
         type: 'profile',
-        title: 'Complete your profile',
-        description: 'Unlock personalized recommendations and journey insights.',
+        title: t('studentHub.dashboard.completeYourProfile', 'Complete your profile'),
+        description: t(
+          'studentHub.dashboard.completeYourProfileDesc',
+          'Unlock personalized recommendations and journey insights.',
+        ),
         priority: 'medium',
-        actionLabel: 'Complete profile',
+        actionLabel: t('studentHub.dashboard.completeProfile'),
         actionPath: '/student-hub/profile',
       });
     }

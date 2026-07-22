@@ -631,7 +631,7 @@ export default function CommunityHubMockPage() {
                 </span>
               </button>
               <div className={styles.profileFooter}>
-                <span>View profile</span>
+                <span>{t('studentHub.hub.viewProfile', 'View profile')}</span>
                 <span className={styles.profileFooterArrow} aria-hidden>→</span>
               </div>
             </div>
@@ -661,7 +661,7 @@ export default function CommunityHubMockPage() {
               onClick={() => navigate('/isc-2026/review')}
             >
               <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>ISC Reviewer</span>
+              <span className={styles.navLabel}>{t('studentHub.hub.iscReviewer', 'ISC Reviewer')}</span>
             </button>
           )}
 
@@ -893,30 +893,38 @@ export default function CommunityHubMockPage() {
             {activeSection === 'messages' && (
               <header className={styles.editorialHeader}>
                 <div className={styles.editorialEyebrow}>
-                  Inbox
+                  {t('studentHub.hub.inbox', 'Inbox')}
                   <span className={styles.editorialEyebrowSep}>·</span>
                   <span className={styles.editorialEyebrowAccent}>
-                    mentors, peers, support
+                    {t('studentHub.hub.inboxAccent', 'mentors, peers, support')}
                   </span>
                 </div>
-                <h1 className={styles.editorialTitle}>Messages</h1>
+                <h1 className={styles.editorialTitle}>{t('studentHub.hub.messagesTitle', 'Messages')}</h1>
                 <p className={styles.editorialDesc}>
-                  All your conversations in one place — chat with your mentors, study
-                  buddies you've connected with, and the Top Coach team.
+                  {t(
+                    'studentHub.hub.messagesDesc',
+                    "All your conversations in one place — chat with your mentors, study buddies you've connected with, and the Top Coach team.",
+                  )}
                 </p>
               </header>
             )}
             {activeSection === 'buddies' && buddyConsented && (
               <header className={styles.editorialHeader}>
                 <div className={styles.editorialEyebrow}>
-                  Study buddies
+                  {t('studentHub.hub.studyBuddiesEyebrow', 'Study buddies')}
                   <span className={styles.editorialEyebrowSep}>·</span>
-                  <span className={styles.editorialEyebrowAccent}>match by goal</span>
+                  <span className={styles.editorialEyebrowAccent}>
+                    {t('studentHub.hub.matchByGoal', 'match by goal')}
+                  </span>
                 </div>
-                <h1 className={styles.editorialTitle}>Find someone on the same path.</h1>
+                <h1 className={styles.editorialTitle}>
+                  {t('studentHub.hub.findSomeoneTitle', 'Find someone on the same path.')}
+                </h1>
                 <p className={styles.editorialDesc}>
-                  Connect with peers who share your goals, prep schedules, and target schools.
-                  Match scores are based on overlap in tests, timelines, and study windows.
+                  {t(
+                    'studentHub.hub.findSomeoneDesc',
+                    'Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in tests, timelines, and study windows.',
+                  )}
                 </p>
               </header>
             )}
@@ -958,10 +966,12 @@ export default function CommunityHubMockPage() {
                 <div className={styles.admissionsShellInner}>
                   <div className={styles.admissionsCrumb}>
                     <span className={styles.admissionsCrumbBadge}>
-                      <BookOpen size={13} /> Admissions Program
+                      <BookOpen size={13} /> {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
                     </span>
                     <span className={styles.admissionsCrumbSep}>›</span>
-                    <span className={styles.admissionsCrumbCurrent}>Lessons catalog</span>
+                    <span className={styles.admissionsCrumbCurrent}>
+                      {t('studentHub.hub.lessonsCatalog', 'Lessons catalog')}
+                    </span>
                   </div>
                   <button
                     type="button"
@@ -969,17 +979,24 @@ export default function CommunityHubMockPage() {
                     onClick={() => navigate(defaultHubSectionPath)}
                   >
                     <ArrowLeft size={13} />
-                    Back to main menu
+                    {t('studentHub.hub.backToMainMenu', 'Back to main menu')}
                   </button>
                 </div>
                 <div className={styles.admissionsHero}>
-                  <div className={styles.admissionsEyebrow}>Top Coach · Admissions track</div>
+                  <div className={styles.admissionsEyebrow}>
+                    {t('studentHub.hub.admissionsTrackEyebrow', 'Top Coach · Admissions track')}
+                  </div>
                   <h1 className={styles.admissionsTitle}>
-                    Get into your dream school — one lesson at a time.
+                    {t(
+                      'studentHub.hub.admissionsHeroTitle',
+                      'Get into your dream school — one lesson at a time.',
+                    )}
                   </h1>
                   <p className={styles.admissionsSub}>
-                    Continue your admissions lessons from the learning catalog. Bite-sized videos
-                    from mentors at Harvard, Oxford, Yale, Babson, and beyond.
+                    {t(
+                      'studentHub.hub.admissionsHeroDesc',
+                      'Continue your admissions lessons from the learning catalog. Bite-sized videos from mentors at Harvard, Oxford, Yale, Babson, and beyond.',
+                    )}
                   </p>
                 </div>
               </header>
@@ -1021,23 +1038,23 @@ export default function CommunityHubMockPage() {
 
           {activeSection === 'more' && (
             <Card className={styles.sectionCard} bordered={false}>
-              <div className={styles.sectionSubHeader}>Browse</div>
+              <div className={styles.sectionSubHeader}>{t('studentHub.hub.browse', 'Browse')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                 {[
                   {
                     key: 'buddies' as const,
-                    label: 'Find Study Buddy',
+                    label: t('studentHub.hub.findStudyBuddy', 'Find Study Buddy'),
                     icon: <UserPlus size={18} color="#8b0000" />,
                     count: MOCK_COUNTS.buddies,
-                    preview: 'Accountability: SAT Math 3x/week',
+                    preview: t('studentHub.hub.buddiesPreview', 'Accountability: SAT Math 3x/week'),
                     accent: '#b91c1c',
                   },
                   {
                     key: 'mentors' as const,
-                    label: 'Mentors',
+                    label: t('studentHub.hub.mentors', 'Mentors'),
                     icon: <GraduationCap size={18} color="#8b0000" />,
                     count: MOCK_COUNTS.mentors,
-                    preview: 'Admissions + Research',
+                    preview: t('studentHub.hub.mentorsPreview', 'Admissions + Research'),
                     accent: '#b91c1c',
                   },
                 ].map((c) => (
@@ -1068,7 +1085,7 @@ export default function CommunityHubMockPage() {
                           navigate(`/student-hub?section=${c.key}`, { replace: true });
                         }}
                       >
-                        Open
+                        {t('studentHub.hub.open', 'Open')}
                       </Button>
                     </div>
                   </div>
@@ -1103,16 +1120,18 @@ export default function CommunityHubMockPage() {
                 </div>
               ) : (
                 <Card className={styles.sectionCard} bordered={false}>
-                  <div className={styles.sectionSubHeader}>Your Journey shortcuts</div>
+                  <div className={styles.sectionSubHeader}>
+                    {t('studentHub.hub.yourJourneyShortcuts', 'Your Journey shortcuts')}
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                     {[
-                      { label: 'Full Support', route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
-                      { label: 'College Lists', route: '/student-hub?section=others&target=college-lists', icon: 'applications' },
-                      { label: 'Major Match', route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
-                      { label: 'Opportunities', route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
-                      { label: 'Essays', route: '/student-hub?section=others&target=essays', icon: 'essays' },
-                      { label: 'Documents', route: '/student-hub?section=others&target=documents', icon: 'documents' },
-                      { label: 'My Profile', route: '/student-hub?section=others&target=profile', icon: 'profile' },
+                      { label: t('fullSupport.navLabel', 'Full Support'), route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
+                      { label: t('studentHub.hub.collegeLists', 'College Lists'), route: '/student-hub?section=others&target=college-lists', icon: 'applications' },
+                      { label: t('studentHub.hub.majorMatchLabel', 'Major Match'), route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
+                      { label: t('studentHub.hub.opportunitiesLabel', 'Opportunities'), route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
+                      { label: t('studentHub.hub.essaysLabel', 'Essays'), route: '/student-hub?section=others&target=essays', icon: 'essays' },
+                      { label: t('studentHub.hub.documentsLabel', 'Documents'), route: '/student-hub?section=others&target=documents', icon: 'documents' },
+                      { label: t('studentHub.hub.myProfileLabel', 'My Profile'), route: '/student-hub?section=others&target=profile', icon: 'profile' },
                     ].map((item) => (
                       <div key={item.route} className={styles.groupCard} style={{ padding: 14 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -1121,11 +1140,11 @@ export default function CommunityHubMockPage() {
                             <div style={{ fontWeight: 900, color: '#0f172a' }}>{item.label}</div>
                           </div>
                           <Button type="primary" onClick={() => navigate(item.route)}>
-                            Open
+                            {t('studentHub.hub.open', 'Open')}
                           </Button>
                         </div>
                         <div style={{ color: '#64748b', fontWeight: 700, fontSize: 12, marginTop: 8 }}>
-                          Integrated open (real page).
+                          {t('studentHub.hub.integratedOpenRealPage', 'Integrated open (real page).')}
                         </div>
                       </div>
                     ))}
@@ -1155,9 +1174,14 @@ export default function CommunityHubMockPage() {
               )}
               {accountTarget !== 'rewards' && accountTarget !== 'settings' && (
                 <Card className={styles.sectionCard} bordered={false}>
-                  <div className={styles.sectionSubHeader}>My Rewards</div>
+                  <div className={styles.sectionSubHeader}>
+                    {t('studentHub.hub.myRewards', 'My Rewards')}
+                  </div>
                   <div style={{ color: '#64748b', fontWeight: 700 }}>
-                    Select “My Rewards” or “Settings” in the sidebar.
+                    {t(
+                      'studentHub.hub.selectRewardsOrSettings',
+                      'Select "My Rewards" or "Settings" in the sidebar.',
+                    )}
                   </div>
                 </Card>
               )}
@@ -1278,14 +1302,17 @@ export default function CommunityHubMockPage() {
               <div className={styles.admissionsBody}>
                 <div className={styles.admissionsListHeader}>
                   <div>
-                    <h2 className={styles.admissionsListTitle}>Featured lessons</h2>
+                    <h2 className={styles.admissionsListTitle}>
+                      {t('studentHub.hub.featuredLessons', 'Featured lessons')}
+                    </h2>
                     <div className={styles.admissionsListMeta}>
-                      {ADMISSIONS_YOUTUBE_PREVIEW_SPECS.length} videos · ~{
-                        ADMISSIONS_YOUTUBE_PREVIEW_SPECS.reduce((n, s) => {
+                      {t('studentHub.hub.videosMinTotal', '{{count}} videos · ~{{minutes}} min total', {
+                        count: ADMISSIONS_YOUTUBE_PREVIEW_SPECS.length,
+                        minutes: ADMISSIONS_YOUTUBE_PREVIEW_SPECS.reduce((n, s) => {
                           const [m, sec] = s.duration.split(':').map(Number);
                           return n + (m || 0) + (sec || 0) / 60;
-                        }, 0).toFixed(0)
-                      } min total
+                        }, 0).toFixed(0),
+                      })}
                     </div>
                   </div>
                   <Button
