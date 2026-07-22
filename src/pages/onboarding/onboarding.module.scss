@@ -257,6 +257,29 @@ $brand: #7b1f2f;
   font-size: 0.9rem;
 }
 
+// Generic muted helper-copy line — used by steps that need a short
+// explanatory note next to a disabled/hidden action (e.g. majorMatch's
+// no-profile / no-attempts states) without inventing a one-off class per
+// step the way trialTelegramNote did.
+.infoNote {
+  width: 100%;
+  margin: 0 0 4px;
+  color: $ink-soft;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+// Step (majorMatch) — the embedded PsychometricAssessmentPage is a full
+// dashboard-style surface (cards, tables, a multi-column results view)
+// built for wide viewports, not the wizard's centered 560px copy column.
+// Widen just this step's card instead of the shared default so every
+// other step keeps its compact look.
+.stepWide {
+  max-width: 960px;
+  text-align: left;
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 28px 20px 24px;

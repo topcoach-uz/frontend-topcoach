@@ -2508,5 +2508,21 @@
   "studentHub.hub.yourJourneyShortcuts": "Your Journey shortcuts",
   "studentHub.nav.adminConsole": "Admin console",
   "studentHub.nav.settings": "Settings",
-  "common.user": "User"
+  "common.user": "User",
+  "onboarding.majorMatch.title": "Discover your best-fit major",
+  "onboarding.majorMatch.subtitle": "A short AI-powered assessment to help point you toward majors that fit you.",
+  "onboarding.majorMatch.bullet1": "AI-powered analysis of your interests, values, and strengths",
+  "onboarding.majorMatch.bullet2": "Takes about 15 minutes",
+  "onboarding.majorMatch.bullet3": "Free first attempt — and you'll earn coins for finishing it",
+  "onboarding.majorMatch.start": "Start the assessment",
+  "onboarding.majorMatch.skip": "Skip for now",
+  "onboarding.majorMatch.noProfileNote": "Complete your profile first to unlock this.",
+  "onboarding.majorMatch.noAttemptsNote": "You've already used your free attempt for this assessment.",
+  "onboarding.majorMatch.laterHint": "You can take it later from Discover.",
+  "studentHub.profile.majorMatch.cardTitle": "Major Match",
+  "studentHub.profile.majorMatch.notTakenText": "Find out which majors fit you best with a short AI-powered assessment.",
+  "studentHub.profile.majorMatch.takeButton": "Take the assessment",
+  "studentHub.profile.majorMatch.riasecLabel": "Your RIASEC code",
+  "studentHub.profile.majorMatch.viewResults": "View full results",
+  "studentHub.hub.myDashboard": "My dashboard"
 }

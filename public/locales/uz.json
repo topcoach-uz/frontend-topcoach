@@ -2508,5 +2508,21 @@
   "studentHub.hub.yourJourneyShortcuts": "Yo'lingizning tezkor havolalari",
   "studentHub.nav.adminConsole": "Admin paneli",
   "studentHub.nav.settings": "Sozlamalar",
-  "common.user": "Foydalanuvchi"
+  "common.user": "Foydalanuvchi",
+  "onboarding.majorMatch.title": "O'zingizga eng mos mutaxassislikni aniqlang",
+  "onboarding.majorMatch.subtitle": "Sizga mos mutaxassisliklarni topishga yordam beradigan qisqa AI-baholash.",
+  "onboarding.majorMatch.bullet1": "Qiziqishlaringiz, qadriyatlaringiz va kuchli tomonlaringizning AI tahlili",
+  "onboarding.majorMatch.bullet2": "Taxminan 15 daqiqa vaqt oladi",
+  "onboarding.majorMatch.bullet3": "Birinchi urinish bepul — va uni yakunlaganingiz uchun tanga olasiz",
+  "onboarding.majorMatch.start": "Baholashni boshlash",
+  "onboarding.majorMatch.skip": "Hozircha o'tkazib yuborish",
+  "onboarding.majorMatch.noProfileNote": "Buni ochish uchun avval profilingizni to'ldiring.",
+  "onboarding.majorMatch.noAttemptsNote": "Siz bu baholash uchun bepul urinishingizni allaqachon ishlatib bo'ldingiz.",
+  "onboarding.majorMatch.laterHint": "Uni keyinroq Discover bo'limidan topishingiz mumkin.",
+  "studentHub.profile.majorMatch.cardTitle": "Mutaxassislik mosligi",
+  "studentHub.profile.majorMatch.notTakenText": "Qisqa AI-baholash yordamida sizga qaysi mutaxassisliklar mosligini bilib oling.",
+  "studentHub.profile.majorMatch.takeButton": "Baholashni topshirish",
+  "studentHub.profile.majorMatch.riasecLabel": "Sizning RIASEC kodingiz",
+  "studentHub.profile.majorMatch.viewResults": "To'liq natijalarni ko'rish",
+  "studentHub.hub.myDashboard": "Mening boshqaruv panelim"
 }

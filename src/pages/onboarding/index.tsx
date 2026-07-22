@@ -20,13 +20,14 @@ import StepVideo from './steps/StepVideo';
 import StepCommunity from './steps/StepCommunity';
 import StepContact from './steps/StepContact';
 import StepTrial from './steps/StepTrial';
+import StepMajorMatch from './steps/StepMajorMatch';
 import StepAcademic from './steps/StepAcademic';
 import styles from './onboarding.module.scss';
 
 /**
- * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 8 steps
+ * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 9 steps
  * (role -> source -> telegram -> video -> community -> contact -> trial ->
- * academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
+ * majorMatch -> academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
  * step now (StepAcademic.tsx owns its own patchOnboarding call — see the
  * comment on that component for why it deviates from the generic
  * advance()/onNext pattern used by every other step).
@@ -204,6 +205,13 @@ export default function OnboardingWizardPage() {
         'Unlock the full Community — mentors, sessions, and roadmap — with a free trial.',
       ),
     },
+    majorMatch: {
+      title: t('onboarding.majorMatch.title', 'Discover your best-fit major'),
+      subtitle: t(
+        'onboarding.majorMatch.subtitle',
+        'A short AI-powered assessment to help point you toward majors that fit you.',
+      ),
+    },
     academic: {
       title: t('onboarding.academic.title', "Let's find your academic level"),
       subtitle: t(
@@ -220,7 +228,7 @@ export default function OnboardingWizardPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
+      <div className={`${styles.card} ${step === 'majorMatch' ? styles.stepWide : ''}`}>
         {back && (
           <button
             type="button"
@@ -285,6 +293,8 @@ export default function OnboardingWizardPage() {
         )}
 
         {step === 'trial' && <StepTrial onNext={() => advance()} />}
+
+        {step === 'majorMatch' && <StepMajorMatch onNext={() => advance()} />}
 
         {step === 'academic' && <StepAcademic />}
       </div>

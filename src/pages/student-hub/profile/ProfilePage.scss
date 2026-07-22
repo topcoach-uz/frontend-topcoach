@@ -154,6 +154,51 @@
     }
   }
 
+  // Slim Major Match status card, sits between the header and the tabs card.
+  .profile-major-match-card {
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-light;
+    margin-bottom: $space-6;
+
+    .ant-card-body {
+      padding: $space-4 $space-6;
+    }
+
+    &__body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $space-4;
+      flex-wrap: wrap;
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      gap: $space-1;
+      min-width: 0;
+    }
+
+    &__title {
+      display: flex;
+      align-items: center;
+      gap: $space-2;
+      font-size: $text-base;
+      font-weight: $font-semibold;
+      color: $text-primary;
+    }
+
+    &__desc {
+      font-size: $text-sm;
+      color: $text-secondary;
+    }
+
+    &__action {
+      flex-shrink: 0;
+    }
+  }
+
   .profile-tabs-card {
     border-radius: $radius-xl;
     box-shadow: $shadow-sm;

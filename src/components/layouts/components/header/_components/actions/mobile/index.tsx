@@ -5,8 +5,6 @@ import LanguageSelect from 'src/components/language_select';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import HamburgerMenu from '../../hamburger';
 import ProfileDropdown from '../_components/ProfileDropdown';
-import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
-import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from '../actions.module.scss';
 import { Link } from 'react-router-dom';
 import { Mail } from 'lucide-react';
@@ -36,18 +34,6 @@ export default function ActionsMobileVersion({
 
   return (
     <div className={styles.actions_wrapper}>
-      {/* AI Major Match Button - Commented out
-      <Link to="/ai-major-match" className={styles.aiMajorMatchButton}>
-        <div className={styles.aiIconWrapper}>
-          <AiSearchStarsSvg 
-            className={styles.aiIcon}
-            style={{ width: '20px', height: '20px', fill: 'white' }}
-          />
-        </div>
-        Major Match
-      </Link>
-      */}
-
       {/* Dark mode toggle disabled
       <button className={styles.mode_switch} onClick={handleDarkMode}>
         {isDark ? <SunIcon /> : <MoonIcon />}

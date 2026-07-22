@@ -7,6 +7,7 @@ import { STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/ic
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
 import { InlineLoader, PageSkeleton } from '../../../components/loading';
+import { useGetLatestAssessmentQuery } from '../../../app/services/student-hub/psychometricApi';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
@@ -32,6 +33,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Pass studentId to hook when in read-only mode to fetch correct student data
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, isLoading, error, isProfileComplete, profileStatus } = useStudentProfile(hookOptions);
+
+  // Major Match (psychometric assessment) status card — own account only,
+  // never in the counselor's read-only embed (see the `!isReadOnly` guard
+  // around the card below). `getLatestAssessment` 404s / comes back empty
+  // when the student hasn't taken it yet, which we read as "not taken".
+  const {
+    data: latestMajorMatchAssessment,
+    isLoading: majorMatchLoading,
+    isError: majorMatchError,
+  } = useGetLatestAssessmentQuery(profile?.id || '', {
+    skip: isReadOnly || !profile?.id,
+  });
+  const hasTakenMajorMatch =
+    !isReadOnly && !majorMatchLoading && !majorMatchError && !!latestMajorMatchAssessment;
 
   // Handle URL parameters for tab navigation (gpa-calculator not available in read-only)
   useEffect(() => {
@@ -207,6 +222,53 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
           </div>
         </div>
       </div>
+
+      {/* Major Match status — own account only, hidden in the counselor's
+          read-only embed of this page. */}
+      {!isReadOnly && (
+        <Card className="profile-major-match-card">
+          <div className="profile-major-match-card__body">
+            <div className="profile-major-match-card__text">
+              <span className="profile-major-match-card__title">
+                <UnifiedIcon name="major-match" size="sm" color="primary" />
+                {t('studentHub.profile.majorMatch.cardTitle', 'Major Match')}
+              </span>
+              {majorMatchLoading ? (
+                <InlineLoader />
+              ) : (
+                <span className="profile-major-match-card__desc">
+                  {hasTakenMajorMatch
+                    ? latestMajorMatchAssessment?.riasecCode && (
+                        <>
+                          {t('studentHub.profile.majorMatch.riasecLabel', 'Your RIASEC code')}:{' '}
+                          <strong>{latestMajorMatchAssessment.riasecCode}</strong>
+                        </>
+                      )
+                    : t(
+                        'studentHub.profile.majorMatch.notTakenText',
+                        'Find out which majors fit you best with a short AI-powered assessment.',
+                      )}
+                </span>
+              )}
+            </div>
+            <div className="profile-major-match-card__action">
+              {!majorMatchLoading &&
+                (hasTakenMajorMatch ? (
+                  <Button onClick={() => navigate('/student-hub/psychometric-assessment?step=results')}>
+                    {t('studentHub.profile.majorMatch.viewResults', 'View full results')}
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    onClick={() => navigate('/student-hub/psychometric-assessment')}
+                  >
+                    {t('studentHub.profile.majorMatch.takeButton', 'Take the assessment')}
+                  </Button>
+                ))}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Profile Tabs */}
       <Card className="profile-tabs-card">

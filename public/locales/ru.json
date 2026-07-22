@@ -2508,5 +2508,21 @@
   "studentHub.hub.yourJourneyShortcuts": "Быстрые ссылки вашего пути",
   "studentHub.nav.adminConsole": "Админ-консоль",
   "studentHub.nav.settings": "Настройки",
-  "common.user": "Пользователь"
+  "common.user": "Пользователь",
+  "onboarding.majorMatch.title": "Узнайте, какая специальность подходит вам лучше всего",
+  "onboarding.majorMatch.subtitle": "Короткая оценка на основе AI, которая поможет подобрать подходящие специальности.",
+  "onboarding.majorMatch.bullet1": "AI-анализ ваших интересов, ценностей и сильных сторон",
+  "onboarding.majorMatch.bullet2": "Занимает около 15 минут",
+  "onboarding.majorMatch.bullet3": "Первая попытка бесплатна — и вы получите монеты за прохождение",
+  "onboarding.majorMatch.start": "Начать оценку",
+  "onboarding.majorMatch.skip": "Пропустить пока",
+  "onboarding.majorMatch.noProfileNote": "Сначала заполните профиль, чтобы получить доступ.",
+  "onboarding.majorMatch.noAttemptsNote": "Вы уже использовали бесплатную попытку для этой оценки.",
+  "onboarding.majorMatch.laterHint": "Вы сможете пройти её позже в разделе Discover.",
+  "studentHub.profile.majorMatch.cardTitle": "Подбор специальности",
+  "studentHub.profile.majorMatch.notTakenText": "Узнайте, какие специальности подходят вам лучше всего, с помощью короткой AI-оценки.",
+  "studentHub.profile.majorMatch.takeButton": "Пройти оценку",
+  "studentHub.profile.majorMatch.riasecLabel": "Ваш код RIASEC",
+  "studentHub.profile.majorMatch.viewResults": "Смотреть полные результаты",
+  "studentHub.hub.myDashboard": "Моя панель"
 }

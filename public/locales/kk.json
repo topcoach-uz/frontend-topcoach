@@ -2508,5 +2508,21 @@
   "studentHub.hub.yourJourneyShortcuts": "Jolıńızdıń tez sılтemeleri",
   "studentHub.nav.adminConsole": "Admin paneli",
   "studentHub.nav.settings": "Sazlawlar",
-  "common.user": "Paydalanıwshı"
+  "common.user": "Paydalanıwshı",
+  "onboarding.majorMatch.title": "Ózińizge eń say kásipti anıqlań",
+  "onboarding.majorMatch.subtitle": "Sizge say kásiplerdi tabıwǵa járdem beretuǵın qısqa AI-bahalaw.",
+  "onboarding.majorMatch.bullet1": "Qızıǵıwshılıqlarıńız, qádriyatlarıńız hám kúshli táreplerińizdiń AI tallawı",
+  "onboarding.majorMatch.bullet2": "Shama menen 15 minut waqıt aladı",
+  "onboarding.majorMatch.bullet3": "Birinshi ureniw biykar — hám onı juwmaqlaǵanıńız ushın tańga alasız",
+  "onboarding.majorMatch.start": "Bahalawdı baslaw",
+  "onboarding.majorMatch.skip": "Házirshe ótkerip jiberiw",
+  "onboarding.majorMatch.noProfileNote": "Munı ashıw ushın aldın profilińizdi tolıqtırıń.",
+  "onboarding.majorMatch.noAttemptsNote": "Siz bul bahalaw ushın biykar ureniwińizdi ámelde paydalandıńız.",
+  "onboarding.majorMatch.laterHint": "Onı keyinirek Discover bólıminen tabasız.",
+  "studentHub.profile.majorMatch.cardTitle": "Kásip sáykesligi",
+  "studentHub.profile.majorMatch.notTakenText": "Qısqa AI-bahalaw járdeminde sizge qaysı kásipler sáykes keletuǵının biliń.",
+  "studentHub.profile.majorMatch.takeButton": "Bahalawdı tapsırıw",
+  "studentHub.profile.majorMatch.riasecLabel": "Sizniń RIASEC kodıńız",
+  "studentHub.profile.majorMatch.viewResults": "Tolıq nátiyjelerdi kóriw",
+  "studentHub.hub.myDashboard": "Meniń bashqarıw panelim"
 }
