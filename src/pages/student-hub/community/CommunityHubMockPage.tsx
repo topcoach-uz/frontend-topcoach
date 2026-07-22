@@ -689,20 +689,6 @@ export default function CommunityHubMockPage() {
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navCommunity', 'COMMUNITY')}</div>
           <button
             type="button"
-            className={`${styles.navItem} ${activeSection === 'messages' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('messages');
-              navigate('/student-hub?section=messages', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <MessageCircle size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.messages', 'Messages')}</span>
-          </button>
-
-          <button
-            type="button"
             className={`${styles.navItem} ${activeSection === 'buddies' ? styles.navItemActive : ''}`}
             onClick={() => {
               setActiveSection('buddies');
