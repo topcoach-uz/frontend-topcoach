@@ -2070,6 +2070,7 @@
   "onboarding.contact.subtitle": "Bu raqamdan faqat muhim hisob va sessiya yangilanishlari uchun foydalanamiz.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "To'g'ri telefon raqamini kiriting.",
+  "onboarding.contact.required": "Davom etish uchun telefon raqamingizni kiriting.",
   "onboarding.contact.skip": "Hozircha o'tkazib yuborish",
   "onboarding.trial.title": "7 kun bepul sinab ko'ring",
   "onboarding.trial.subtitle": "To'liq Jamoani — mentorlar, sessiyalar va yo'l xaritasi — bepul sinov muddati bilan oching.",

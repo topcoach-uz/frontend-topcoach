@@ -21,11 +21,15 @@ export default function StepContact({ initialValue, submitting, onNext }: Props)
 
   const handleContinue = () => {
     const trimmed = phone.trim();
-    if (trimmed && !PHONE_PATTERN.test(trimmed)) {
+    if (!trimmed) {
+      setError(t('onboarding.contact.required', 'Please enter your phone number to continue.'));
+      return;
+    }
+    if (!PHONE_PATTERN.test(trimmed)) {
       setError(t('onboarding.contact.invalid', 'Enter a valid phone number.'));
       return;
     }
-    onNext(trimmed || undefined);
+    onNext(trimmed);
   };
 
   return (
@@ -48,9 +52,6 @@ export default function StepContact({ initialValue, submitting, onNext }: Props)
       >
         {t('btn.continue')}
       </CustomButton>
-      <button type="button" className={styles.skipLink} onClick={() => onNext(undefined)}>
-        {t('onboarding.contact.skip', 'Skip for now')}
-      </button>
     </div>
   );
 }

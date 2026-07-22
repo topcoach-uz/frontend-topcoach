@@ -1982,6 +1982,7 @@
   "onboarding.contact.subtitle": "Bul nomerdi tek maańizli akkaunt hám sessiya jańalıqları ushın paydalanamız.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Durıs telefon nomerin kirgiziń.",
+  "onboarding.contact.required": "Dawam etiw ushın telefon nomerińizdi kirgiziń.",
   "onboarding.contact.skip": "Házirshe ótkerip jiberiw",
   "onboarding.trial.title": "7 kún biykar sınap kóriń",
   "onboarding.trial.subtitle": "Tolıq Jámáátti — mentorlar, sessiyalar hám jol xaritasın — biykar sınaw dáwiri menen ashıń.",

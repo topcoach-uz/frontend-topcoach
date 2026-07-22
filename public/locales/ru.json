@@ -2089,6 +2089,7 @@
   "onboarding.contact.subtitle": "Мы используем его только для важных обновлений об аккаунте и сессиях.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Введите корректный номер телефона.",
+  "onboarding.contact.required": "Пожалуйста, укажите номер телефона, чтобы продолжить.",
   "onboarding.contact.skip": "Пропустить пока",
   "onboarding.trial.title": "Попробуйте бесплатно 7 дней",
   "onboarding.trial.subtitle": "Откройте полный доступ к сообществу — менторы, сессии и дорожная карта — с бесплатным пробным периодом.",

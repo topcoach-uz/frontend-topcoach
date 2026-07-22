@@ -2344,6 +2344,7 @@
   "onboarding.contact.subtitle": "We'll only use this for important account and session updates.",
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Enter a valid phone number.",
+  "onboarding.contact.required": "Please enter your phone number to continue.",
   "onboarding.contact.skip": "Skip for now",
   "onboarding.trial.title": "Try 7 days free",
   "onboarding.trial.subtitle": "Unlock the full Community — mentors, sessions, and roadmap — with a free trial.",
