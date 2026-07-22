@@ -24,10 +24,7 @@ import {
   BookOpen,
   FlaskConical,
   GraduationCap,
-  User as UserIcon,
   Building2,
-  PenLine,
-  LineChart,
   FileUp,
   MoreVertical,
   Sparkles,
@@ -441,30 +438,15 @@ const MyProgressEditorialView: React.FC = () => {
   // Quick Add dropdown — mirrors the legacy Dashboard menu so the
   // common "I want to do X" entry points stay one click away from the
   // editorial header.
+  // Trimmed to genuinely additive actions — profile completion lives on the
+  // sidebar card, essays keep their nav entry, and Major Match already has
+  // the adjacent Discover pill + sidebar + profile-card entries.
   const quickAddItems = [
-    {
-      key: 'profile',
-      label: t('studentHub.myProgress.quickAddCompleteProfile', 'Complete profile'),
-      icon: <UserIcon size={14} />,
-      onClick: () => navigate('/student-hub/profile'),
-    },
     {
       key: 'application',
       label: t('studentHub.myProgress.quickAddCollegeList', 'Add to college list'),
       icon: <Building2 size={14} />,
       onClick: () => navigate('/student-hub?section=others&target=college-lists&applicationFlow=new'),
-    },
-    {
-      key: 'essay',
-      label: t('studentHub.myProgress.quickAddEssay', 'Start an essay'),
-      icon: <PenLine size={14} />,
-      onClick: () => navigate('/student-hub/essays'),
-    },
-    {
-      key: 'psychometric',
-      label: t('studentHub.myProgress.quickAddPsychometric', 'Psychometric test'),
-      icon: <LineChart size={14} />,
-      onClick: () => navigate('/student-hub/psychometric-assessment'),
     },
     {
       key: 'document',
