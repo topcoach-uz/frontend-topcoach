@@ -256,6 +256,55 @@ $pl-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
   }
 }
 
+/* Cards with cover art: the photo replaces the decorative gradient pattern */
+.cardVisual.hasImage {
+  /* drop the contour lines + hexagon, keep ::before as a legibility scrim */
+  &::after {
+    content: none;
+  }
+
+  &::before {
+    z-index: 1;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.45) 0%,
+      rgba(0, 0, 0, 0) 32%,
+      rgba(0, 0, 0, 0) 62%,
+      rgba(0, 0, 0, 0.5) 100%
+    );
+  }
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+}
+
+/* Keep the overlay chips legible over the photo */
+.cardVisual.hasImage {
+  background: #1a0d10;
+
+  .flag,
+  .duration,
+  .soonBadge {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.card:hover .cover,
+.card:focus-visible .cover {
+  transform: scale(1.04);
+}
+
+.card.comingSoon:hover .cover {
+  transform: none;
+}
+
 .flag {
   position: absolute;
   top: 18px;
@@ -287,18 +336,6 @@ $pl-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
   backdrop-filter: blur(6px);
   font-size: 0.78rem;
   font-weight: 500;
-}
-
-.edition {
-  position: absolute;
-  left: 20px;
-  bottom: 18px;
-  z-index: 1;
-  font-family: $pl-mono;
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
 }
 
 .cardBody {

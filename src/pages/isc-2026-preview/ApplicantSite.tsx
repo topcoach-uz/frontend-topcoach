@@ -32,6 +32,9 @@ import { hasIscLocalDraft } from '../events/_components/useIscCardState';
 
 const ISC_PATH = '/events/international-summer-camp-2026';
 
+/** Celebration film shown on the acceptance screen (youtu.be/Cu2NE4IUYhQ). */
+const ISC_ACCEPTED_VIDEO_ID = 'Cu2NE4IUYhQ';
+
 /** Backend status → applicant-facing status screen copy. */
 const STATUS_VIEW: Record<
   IscApplicationStatus,
@@ -69,9 +72,18 @@ const STATUS_VIEW: Record<
     body: 'Thanks for interviewing. We’ll share the final decision by email soon.',
     tone: 'pending',
   },
+  /**
+   * The waitlist card has to do something the accept and reject cards don't:
+   * hold someone in genuine uncertainty without letting them read it as a soft
+   * no. So it says plainly that this IS a strong result, explains the only
+   * mechanic that matters (places open when accepted applicants decline), and
+   * is explicit that nothing is required from them — waitlisted applicants
+   * otherwise tend to email asking what they should be doing. No promised
+   * date, because we don't control when declines land.
+   */
   waitlisted: {
-    title: 'Waitlisted',
-    body: 'You’re on the waitlist. We’ll reach out by email if a place opens up.',
+    title: 'You’re on the waitlist',
+    body: 'Your application came through our review strongly — you’re on the waitlist for the International Summer Camp 2026. That means we couldn’t offer you a place in this round, but you are still very much in consideration. Places open up as accepted applicants confirm or decline theirs, and we work down the waitlist as that happens. There’s nothing you need to do right now: keep an eye on your email and we’ll contact you the moment your place is confirmed either way. Thank you for your patience while we finalise the cohort.',
     tone: 'pending',
   },
   accepted: {
@@ -1040,6 +1052,22 @@ function AcceptedScreen({
             of a competitive field, your application stood out — we can’t wait
             to meet you this summer.
           </p>
+
+          {/* Celebration film, hosted on YouTube rather than shipped as an
+              asset — the source file is ~190MB and most applicants here are on
+              mobile data. No autoplay: the confetti already carries the moment,
+              and browsers block sound-on autoplay anyway, so a muted auto-start
+              would just play the film silently past someone who missed it. */}
+          <div className={s.acceptedVideoWrap}>
+            <iframe
+              className={s.acceptedVideo}
+              src={`https://www.youtube-nocookie.com/embed/${ISC_ACCEPTED_VIDEO_ID}?rel=0`}
+              title="International Summer Camp 2026"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
 
           <div className={s.acceptedDivider}>
             <span>✦</span>

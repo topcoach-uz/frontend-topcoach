@@ -25,13 +25,14 @@ interface Chip {
 interface Program {
   id: string;
   accent: Accent;
-  edition: string;
   flag: string;
   duration: string;
   eyebrow: string;
   title: string;
   description: string;
   href: string;
+  /** Cover art in public/img. Falls back to the accent gradient when absent. */
+  image?: string;
   chips: Chip[];
   statValue: string;
   statLabel: string;
@@ -47,7 +48,6 @@ const PROGRAMS: Program[] = [
   {
     id: 'full-support',
     accent: 'flagship',
-    edition: 'Vol. 04 / 01',
     flag: 'Flagship',
     duration: '12 months',
     eyebrow: 'Mentorship · Grade 10',
@@ -66,7 +66,6 @@ const PROGRAMS: Program[] = [
   {
     id: 'admissions',
     accent: 'early',
-    edition: 'Vol. 04 / 02',
     flag: 'Early Start',
     duration: '6 months',
     eyebrow: 'Early Admissions · Grade 8–9',
@@ -74,6 +73,7 @@ const PROGRAMS: Program[] = [
     description:
       'A two-phase head start for Grade 8–9 students — explore global universities, then build a university-ready portfolio project with a mentor.',
     href: '/programs/admissions-mentorship',
+    image: '/img/admissions.jpeg',
     chips: [
       { icon: <Clock size={13} />, label: '6 hrs / mo' },
       { icon: <CircleDollarSign size={13} />, label: 'Sponsored SAT' },
@@ -85,7 +85,6 @@ const PROGRAMS: Program[] = [
   {
     id: 'research',
     accent: 'research',
-    edition: 'Vol. 04 / 03',
     flag: 'Research',
     duration: '12 weeks',
     eyebrow: 'Academic Research · Grades 8–12',
@@ -93,6 +92,7 @@ const PROGRAMS: Program[] = [
     description:
       'An intensive 12-week path from research question to a finished paper, one-on-one with an experienced academic mentor.',
     href: '/programs/research',
+    image: '/img/research_program.jpeg',
     chips: [
       { icon: <Users size={13} />, label: '12 hrs 1:1' },
       { icon: <Layers size={13} />, label: '3 phases' },
@@ -104,7 +104,6 @@ const PROGRAMS: Program[] = [
   {
     id: 'writing-bootcamp',
     accent: 'bootcamp',
-    edition: 'Vol. 04 / 04',
     flag: 'Boot Camp',
     duration: 'Coming soon',
     eyebrow: 'Application Writing',
@@ -112,6 +111,7 @@ const PROGRAMS: Program[] = [
     description:
       'An intensive sprint to draft, refine, and polish your application essays with expert coaches. Full details coming soon.',
     href: '',
+    image: '/img/writing_bootcamp.jpeg',
     comingSoon: true,
     chips: [
       { icon: <FileText size={13} />, label: 'Essay sprints' },
@@ -123,7 +123,6 @@ const PROGRAMS: Program[] = [
   {
     id: 'masters-mba',
     accent: 'masters',
-    edition: 'Vol. 04 / 05',
     flag: 'Graduate',
     duration: 'Coming soon',
     eyebrow: "Master's & MBA",
@@ -131,6 +130,7 @@ const PROGRAMS: Program[] = [
     description:
       'Strategic guidance for graduate and MBA applicants — school selection, essays, and interview prep. Full details coming soon.',
     href: '',
+    image: '/img/masters_mba.jpeg',
     comingSoon: true,
     chips: [
       { icon: <Target size={13} />, label: 'School list' },
@@ -193,7 +193,21 @@ const ProgramsLanding: React.FC = () => {
                   if (e.key === 'Enter' || e.key === ' ') go();
                 }}
               >
-                <div className={styles.cardVisual}>
+                <div
+                  className={`${styles.cardVisual} ${
+                    program.image ? styles.hasImage : ''
+                  }`}
+                >
+                  {program.image && (
+                    <img
+                      className={styles.cover}
+                      src={program.image}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                   <span className={styles.flag}>{program.flag}</span>
                   {isSoon ? (
                     <span className={styles.soonBadge}>Coming soon</span>
@@ -203,7 +217,6 @@ const ProgramsLanding: React.FC = () => {
                       {program.duration}
                     </span>
                   )}
-                  <span className={styles.edition}>{program.edition}</span>
                 </div>
 
                 <div className={styles.cardBody}>

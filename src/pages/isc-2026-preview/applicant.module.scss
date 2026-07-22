@@ -502,6 +502,24 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   font-size: 1.02rem;
   line-height: 1.6;
 }
+.acceptedVideoWrap {
+  position: relative;
+  margin: 22px auto 4px;
+  max-width: 520px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid $line;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  background: #000;
+  line-height: 0; // kill the inline-element gap under the video
+}
+.acceptedVideo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
 .acceptedDivider {
   position: relative;
   display: flex;
