@@ -9,32 +9,56 @@ import { useTranslation } from 'react-i18next';
 interface Props {
   selected: UserType;
   handleChange: (key: UserType) => void;
+  /** 'onboarding' swaps the signup-era "Join as…" copy for post-signup wording */
+  variant?: 'signup' | 'onboarding';
 }
 
-export default function RoleCard({ handleChange, selected }: Props) {
+export default function RoleCard({ handleChange, selected, variant = 'signup' }: Props) {
   const colors = useColors();
   const { t } = useTranslation();
 
-  const options = [
-    {
-      key: UserRole.Student,
-      title: t('signUp.joinAsStudent'),
-      description: [
-        t('signUp.description1'),
-        t('signUp.description2'),
-        t('signUp.description3'),
-      ],
-    },
-    {
-      key: UserRole.Mentor,
-      title: t('signUp.joinAsMentor'),
-      description: [
-        t('signUp.description4'),
-        t('signUp.description5'),
-        t('signUp.description6'),
-      ],
-    },
-  ];
+  const options =
+    variant === 'onboarding'
+      ? [
+          {
+            key: UserRole.Student,
+            title: t('onboarding.role.studentTitle', "I'm a student"),
+            description: [
+              t('onboarding.role.studentBullet1', 'Book 1:1 sessions with mentors'),
+              t('onboarding.role.studentBullet2', 'Join the student community'),
+              t('onboarding.role.studentBullet3', 'Discover top universities'),
+            ],
+          },
+          {
+            key: UserRole.Mentor,
+            title: t('onboarding.role.mentorTitle', "I'm a mentor"),
+            description: [
+              t('onboarding.role.mentorBullet1', 'Share your knowledge with students'),
+              t('onboarding.role.mentorBullet2', 'Run sessions with your students'),
+              t('onboarding.role.mentorBullet3', 'Guide ambitious applicants'),
+            ],
+          },
+        ]
+      : [
+          {
+            key: UserRole.Student,
+            title: t('signUp.joinAsStudent'),
+            description: [
+              t('signUp.description1'),
+              t('signUp.description2'),
+              t('signUp.description3'),
+            ],
+          },
+          {
+            key: UserRole.Mentor,
+            title: t('signUp.joinAsMentor'),
+            description: [
+              t('signUp.description4'),
+              t('signUp.description5'),
+              t('signUp.description6'),
+            ],
+          },
+        ];
   return (
     <div className={styles.container}>
       {options.map((option) => (

@@ -157,7 +157,7 @@ export default function OnboardingWizardPage() {
 
   const meta: Record<OnboardingStepId, { title: string; subtitle: string }> = {
     role: {
-      title: t('onboarding.role.title', 'Are you a mentor or a mentee?'),
+      title: t('onboarding.role.title', 'Are you a student or a mentor?'),
       subtitle: t(
         'onboarding.role.subtitle',
         'Tell us how you plan to use TopCoach so we can take you to the right place.',
@@ -258,7 +258,7 @@ export default function OnboardingWizardPage() {
 
         {step === 'role' && (
           <div className={styles.body}>
-            <RoleCard handleChange={setRoleChoice} selected={roleChoice} />
+            <RoleCard handleChange={setRoleChoice} selected={roleChoice} variant="onboarding" />
             <CustomButton
               onClick={() => advance()}
               type="primary"
