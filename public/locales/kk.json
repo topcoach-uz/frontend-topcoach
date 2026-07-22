@@ -2541,5 +2541,11 @@
   "studentHub.profile.majorMatch.takeButton": "Bahalawdı tapsırıw",
   "studentHub.profile.majorMatch.riasecLabel": "Sizniń RIASEC kodıńız",
   "studentHub.profile.majorMatch.viewResults": "Tolıq nátiyjelerdi kóriw",
-  "studentHub.hub.myDashboard": "Meniń bashqarıw panelim"
+  "studentHub.hub.myDashboard": "Meniń bashqarıw panelim",
+  "studentHub.feed.upcomingSessionsTitle": "ALDAǴI SESSIYALAR",
+  "studentHub.feed.noUpcomingSessions": "Aldaǵı sessiya joq.",
+  "studentHub.feed.bookAMentor": "Mentordı bronlaw",
+  "studentHub.feed.minSession": "{{min}} minutlıq sessiya",
+  "studentHub.feed.joinSession": "Qosılıw",
+  "studentHub.feed.viewAllSessions": "Barlıǵın kóriw"
 }

@@ -57,7 +57,7 @@ import {
   formatCaafRegistrationFeeUsd,
   isPastCaafRegistrationDeadline,
 } from 'src/pages/events/central-asian-admissions-forum/constants';
-import { SessionTypeEnum } from 'src/app/api/Api';
+import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useIscCardState } from '../events/_components/useIscCardState';
@@ -79,15 +79,6 @@ interface AiRecItem {
   title: string;
   desc: string;
   minutes: number;
-}
-
-interface SessionItem {
-  id: string;
-  date: string;       // ISO
-  mentor: string;
-  mentorId?: string;
-  durationMin: number;
-  meetingLink?: string;
 }
 
 const MyProgressEditorialView: React.FC = () => {
@@ -215,7 +206,9 @@ const MyProgressEditorialView: React.FC = () => {
     : null;
 
   // ── Real mentor sessions from auth profile.joinedSessions ────────
-  const joinedSessions = (profile as any)?.joinedSessions as any[] | undefined;
+  // Shared with the community feed's "Upcoming sessions" rail widget via
+  // `useMentorSessions` so the two surfaces can never disagree.
+  const { upcomingSessions, pastSessions, cancelledSessions } = useMentorSessions();
   // Tab state for the Mentor sessions card. Declared up here so the
   // `visibleSessions` memo below can read it without TDZ errors.
   const [sessionTab, setSessionTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
@@ -272,48 +265,6 @@ const MyProgressEditorialView: React.FC = () => {
       );
     }
   };
-  /** Map a raw joinedSession row to a normalized SessionItem. */
-  const mapSession = (s: any, i: number): SessionItem => ({
-    id: String(s.id ?? i),
-    date: s.date,
-    mentor: s.mentor?.profile?.name || s.mentorName || 'Mentor',
-    mentorId: s.mentor?.id,
-    durationMin: s.type === SessionTypeEnum.Individual30M ? 30 : 60,
-    meetingLink: s.calendarInfo?.meetingLink,
-  });
-
-  const upcomingSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    const now = Date.now();
-    return joinedSessions
-      .filter((s) => s?.date && new Date(s.date).getTime() > now && !s.cancelStatus)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
-  /** Past sessions = ended (start + duration < now) AND not cancelled. */
-  const pastSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    return joinedSessions
-      .filter((s) => {
-        if (!s?.date || s.cancelStatus) return false;
-        const dur = s.type === SessionTypeEnum.Individual30M ? 30 : 60;
-        return Date.now() > new Date(s.date).getTime() + dur * 60 * 1000;
-      })
-      // Newest past session first.
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
-  /** Cancelled sessions — status object is non-null. */
-  const cancelledSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    return joinedSessions
-      .filter((s) => s.cancelStatus !== null && s.cancelStatus?.id)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
   /**
    * Sessions shown in the body. We render the full list so the user can
    * scroll to access older meetings (the list itself is height-capped via

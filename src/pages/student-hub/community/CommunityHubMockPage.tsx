@@ -1047,6 +1047,7 @@ export default function CommunityHubMockPage() {
                     (profile?.managementRole as string) === 'Owner',
                   canPin: profile?.managementRole === 'SuperAdmin',
                 }}
+                showUpcomingSessions
               />
             )}
 

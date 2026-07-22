@@ -2541,5 +2541,11 @@
   "studentHub.profile.majorMatch.takeButton": "Baholashni topshirish",
   "studentHub.profile.majorMatch.riasecLabel": "Sizning RIASEC kodingiz",
   "studentHub.profile.majorMatch.viewResults": "To'liq natijalarni ko'rish",
-  "studentHub.hub.myDashboard": "Mening boshqaruv panelim"
+  "studentHub.hub.myDashboard": "Mening boshqaruv panelim",
+  "studentHub.feed.upcomingSessionsTitle": "YAQINLASHIB KELAYOTGAN SESSIYALAR",
+  "studentHub.feed.noUpcomingSessions": "Bo'lajak sessiyalar yo'q.",
+  "studentHub.feed.bookAMentor": "Mentorni bron qilish",
+  "studentHub.feed.minSession": "{{min}} daqiqalik sessiya",
+  "studentHub.feed.joinSession": "Qo'shilish",
+  "studentHub.feed.viewAllSessions": "Barchasini ko'rish"
 }

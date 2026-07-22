@@ -2541,5 +2541,11 @@
   "studentHub.profile.majorMatch.takeButton": "Take the assessment",
   "studentHub.profile.majorMatch.riasecLabel": "Your RIASEC code",
   "studentHub.profile.majorMatch.viewResults": "View full results",
-  "studentHub.hub.myDashboard": "My dashboard"
+  "studentHub.hub.myDashboard": "My dashboard",
+  "studentHub.feed.upcomingSessionsTitle": "UPCOMING SESSIONS",
+  "studentHub.feed.noUpcomingSessions": "No upcoming sessions.",
+  "studentHub.feed.bookAMentor": "Book a mentor",
+  "studentHub.feed.minSession": "{{min}} min session",
+  "studentHub.feed.joinSession": "Join",
+  "studentHub.feed.viewAllSessions": "View all"
 }

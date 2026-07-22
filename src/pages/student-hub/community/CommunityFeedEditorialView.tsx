@@ -39,8 +39,13 @@ import {
   HelpCircle,
   Check,
   CheckCheck,
+  Calendar,
+  ArrowUpRight,
 } from 'lucide-react';
+import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import {
   useCreateCommentMutation,
   useCreatePostMutation,
@@ -417,10 +422,25 @@ type Props = {
     /** SuperAdmin only — controls Pin/Unpin in the ⋯ menu. */
     canPin: boolean;
   };
+  /**
+   * Shows the "Upcoming sessions" rail widget (a student's own booked
+   * mentor sessions). This view is reused by the mentor console's Feed
+   * page — mentors/counselors don't have `joinedSessions` as a
+   * *student*, so the widget only makes sense for the student-hub
+   * consumer. Defaults to `false`; the student-hub feed passes `true`
+   * explicitly.
+   */
+  showUpcomingSessions?: boolean;
 };
 
-const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
+const CommunityFeedEditorialView: React.FC<Props> = ({
+  currentUser,
+  showUpcomingSessions = false,
+}) => {
   const navigate = useNavigate();
+  // Only the "Upcoming sessions" widget's strings are localized via `t()` —
+  // the rest of this view's copy is hardcoded English (pre-existing).
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<'ALL' | Category>('ALL');
   /**
    * Optional secondary filters layered on top of the category pills:
@@ -564,6 +584,11 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
   const { data: trending = [] } = useTrendingQuery(3);
   const { data: topMentors = [] } = useTopMentorsQuery(3);
   const { data: trendingTags = [] } = useTrendingHashtagsQuery(8);
+  // Same source + classification as My Progress's "Mentor sessions" card
+  // (`useMentorSessions` → `profile.joinedSessions`) so the two surfaces
+  // never disagree. Only rendered for the student-hub consumer — see
+  // `showUpcomingSessions` on Props.
+  const { upcomingSessions } = useMentorSessions();
 
   /** Persisted dismiss for House Rules. */
   const [houseRulesDismissed, setHouseRulesDismissed] = useState<boolean>(() => {
@@ -1710,6 +1735,76 @@ const CommunityFeedEditorialView: React.FC<Props> = ({ currentUser }) => {
         {/* ═══ RIGHT RAIL ═══════════════════════════════════════════ */}
         <aside className="cf__rail">
           <div className="cf__rail-inner">
+
+          {/* ─── Upcoming sessions (student only) ─── */}
+          {showUpcomingSessions && (
+            <section className="cf__widget cf__sessions-widget">
+              <div className="cf__widget-head">
+                <Calendar size={13} /> {t('studentHub.feed.upcomingSessionsTitle', 'UPCOMING SESSIONS')}
+              </div>
+              {upcomingSessions.length === 0 ? (
+                <div className="cf__sessions-empty">
+                  <p>{t('studentHub.feed.noUpcomingSessions', 'No upcoming sessions.')}</p>
+                  <button
+                    type="button"
+                    className="cf__sessions-book"
+                    onClick={() => navigate('/mentors')}
+                  >
+                    {t('studentHub.feed.bookAMentor', 'Book a mentor')}
+                  </button>
+                </div>
+              ) : (
+                <ul className="cf__sessions-list">
+                  {upcomingSessions.slice(0, 3).map((s) => {
+                    const date = dayjs(s.date);
+                    return (
+                      <li key={s.id} className="cf__session-item">
+                        <div
+                          className="cf__session-main"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => s.mentorId && navigate(`/mentors/${s.mentorId}`)}
+                          onKeyDown={(e) => {
+                            if ((e.key === 'Enter' || e.key === ' ') && s.mentorId) {
+                              navigate(`/mentors/${s.mentorId}`);
+                            }
+                          }}
+                        >
+                          <div className="cf__session-mentor">{s.mentor}</div>
+                          <div className="cf__session-meta">
+                            {date.format('MMM D, h:mm A')} ·{' '}
+                            {t('studentHub.feed.minSession', '{{min}} min session', {
+                              min: s.durationMin,
+                            })}
+                          </div>
+                        </div>
+                        {s.meetingLink ? (
+                          <a
+                            className="cf__session-join"
+                            href={s.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {t('studentHub.feed.joinSession', 'Join')}
+                            <ArrowUpRight size={11} />
+                          </a>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <button
+                type="button"
+                className="cf__sessions-viewall"
+                onClick={() => navigate('/student-hub?section=my-learning')}
+              >
+                {t('studentHub.feed.viewAllSessions', 'View all')}
+                <ArrowUpRight size={11} />
+              </button>
+            </section>
+          )}
 
           {/* ─── Trending this week ─── */}
           {trending.length > 0 && (
