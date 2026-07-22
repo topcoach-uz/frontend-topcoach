@@ -2542,6 +2542,8 @@
   "studentHub.profile.majorMatch.riasecLabel": "Ваш код RIASEC",
   "studentHub.profile.majorMatch.viewResults": "Смотреть полные результаты",
   "studentHub.hub.myDashboard": "Моя панель",
+  "studentHub.hub.myDashboardProgress": "Прогресс",
+  "studentHub.hub.myDashboardProfile": "Профиль",
   "studentHub.feed.upcomingSessionsTitle": "БЛИЖАЙШИЕ СЕССИИ",
   "studentHub.feed.noUpcomingSessions": "Нет предстоящих сессий.",
   "studentHub.feed.bookAMentor": "Забронировать ментора",

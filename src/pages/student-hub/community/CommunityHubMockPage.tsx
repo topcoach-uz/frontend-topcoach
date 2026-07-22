@@ -20,6 +20,8 @@ import {
   ArrowLeft,
   BookOpen,
   ClipboardCheck,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -225,6 +227,18 @@ export default function CommunityHubMockPage() {
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(null);
   const [accountTarget, setAccountTarget] = useState<string | null>(null);
+  // "My dashboard" sidebar group (Progress + Profile). Defaults to
+  // expanded on first render when a deep link/refresh lands directly on
+  // one of its children, so the active row is never hidden behind a
+  // collapsed parent. Read straight off location.search (not the
+  // activeSection/othersTarget state, which aren't populated by the URL
+  // sync effect until after this first render).
+  const [isMyDashboardExpanded, setIsMyDashboardExpanded] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    const section = params.get('section');
+    const target = params.get('target');
+    return section === 'my-learning' || (section === 'others' && target === 'profile');
+  });
   // Study Buddy is free; the editorial header shows once the user has accepted
   // the community guidelines (the consent gate renders the standalone intro
   // until then). Only fetched while on the buddies section.
@@ -390,8 +404,19 @@ export default function CommunityHubMockPage() {
     } else {
       setAccountTarget(null);
     }
-     
+
   }, [location.search]);
+
+  /** Keep the "My dashboard" group expanded whenever one of its children
+   * (Progress / Profile) becomes the active section — e.g. in-app
+   * navigation (back/forward, links) that doesn't remount the page, so
+   * the lazy useState default above wouldn't otherwise catch it. Only
+   * forces OPEN; never auto-collapses a group the user opened manually. */
+  useEffect(() => {
+    if (activeSection === 'myLearning' || (activeSection === 'others' && othersTarget === 'profile')) {
+      setIsMyDashboardExpanded(true);
+    }
+  }, [activeSection, othersTarget]);
 
   // Feed is open to community-enrolled users and staff — see
   // `communityFeedAccess.ts` (kept in sync with the backend guard).
@@ -686,20 +711,60 @@ export default function CommunityHubMockPage() {
             </button>
           )}
 
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'profile' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setOthersTarget('profile');
-              setActiveSection('others');
-              navigate('/student-hub?section=others&target=profile', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <UnifiedIcon name="dashboard" size="md" color="primary" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.myDashboard', 'My dashboard')}</span>
-          </button>
+          {(() => {
+            const isProgressActive = activeSection === 'myLearning';
+            const isProfileActive = activeSection === 'others' && othersTarget === 'profile';
+            const isMyDashboardActive = isProgressActive || isProfileActive;
+            return (
+              <>
+                <button
+                  type="button"
+                  className={`${styles.navItem} ${isMyDashboardActive ? styles.navItemActive : ''}`}
+                  onClick={() => setIsMyDashboardExpanded((v) => !v)}
+                  aria-expanded={isMyDashboardExpanded}
+                >
+                  <span className={styles.navIconCircle}>
+                    <UnifiedIcon name="dashboard" size="md" color="primary" />
+                  </span>
+                  <span className={styles.navLabel}>{t('studentHub.hub.myDashboard', 'My dashboard')}</span>
+                  {isMyDashboardExpanded ? (
+                    <ChevronDown size={16} className={styles.navGroupChevron} />
+                  ) : (
+                    <ChevronRight size={16} className={styles.navGroupChevron} />
+                  )}
+                </button>
+
+                {isMyDashboardExpanded && (
+                  <div className={styles.navSubGroup}>
+                    <button
+                      type="button"
+                      className={`${styles.navItem} ${styles.navSubItem} ${isProgressActive ? styles.navItemActive : ''}`}
+                      onClick={() => {
+                        setActiveSection('myLearning');
+                        navigate('/student-hub?section=my-learning', { replace: true });
+                      }}
+                    >
+                      <span className={styles.navIconCircle}><PlayCircle size={18} color="#8b0000" /></span>
+                      <span className={styles.navLabel}>{t('studentHub.hub.myDashboardProgress', 'Progress')}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.navItem} ${styles.navSubItem} ${isProfileActive ? styles.navItemActive : ''}`}
+                      onClick={() => {
+                        setOthersTarget('profile');
+                        setActiveSection('others');
+                        navigate('/student-hub?section=others&target=profile', { replace: true });
+                      }}
+                    >
+                      <span className={styles.navIconCircle}><UnifiedIcon name="profile" size="md" color="primary" /></span>
+                      <span className={styles.navLabel}>{t('studentHub.hub.myDashboardProfile', 'Profile')}</span>
+                    </button>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navCommunity', 'COMMUNITY')}</div>
           <button
@@ -726,19 +791,6 @@ export default function CommunityHubMockPage() {
           </button>
 
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navLearning', 'LEARNING')}</div>
-          {isCommunityEnrolled && (
-            <button
-              type="button"
-              className={`${styles.navItem} ${activeSection === 'myLearning' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSection('myLearning');
-                navigate('/student-hub?section=my-learning', { replace: true });
-              }}
-            >
-              <span className={styles.navIconCircle}><PlayCircle size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
-            </button>
-          )}
 
           <button
             type="button"

@@ -736,6 +736,39 @@
   line-height: 0;
 }
 
+/* "My dashboard" expandable group — chevron on the parent row + an
+ * indented, rail-guided list of children (Progress / Profile). Reuses
+ * .navItem/.navItemActive for the children so active/hover states stay
+ * identical to every other sidebar row. */
+.navGroupChevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: color 0.18s ease;
+}
+
+.navItem:hover .navGroupChevron {
+  color: #1f2937;
+}
+
+.navItemActive .navGroupChevron {
+  color: #7B1F2F;
+}
+
+.navSubGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px 22px;
+  padding-left: 12px;
+  border-left: 1px solid #ece9df;
+}
+
+.navSubItem {
+  padding: 7px 10px;
+  font-size: 0.88rem;
+}
+
 .leftNavCollapse {
   margin-top: 2px;
 }

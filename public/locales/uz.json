@@ -2542,6 +2542,8 @@
   "studentHub.profile.majorMatch.riasecLabel": "Sizning RIASEC kodingiz",
   "studentHub.profile.majorMatch.viewResults": "To'liq natijalarni ko'rish",
   "studentHub.hub.myDashboard": "Mening boshqaruv panelim",
+  "studentHub.hub.myDashboardProgress": "Progress",
+  "studentHub.hub.myDashboardProfile": "Profil",
   "studentHub.feed.upcomingSessionsTitle": "YAQINLASHIB KELAYOTGAN SESSIYALAR",
   "studentHub.feed.noUpcomingSessions": "Bo'lajak sessiyalar yo'q.",
   "studentHub.feed.bookAMentor": "Mentorni bron qilish",

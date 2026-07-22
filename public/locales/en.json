@@ -2542,6 +2542,8 @@
   "studentHub.profile.majorMatch.riasecLabel": "Your RIASEC code",
   "studentHub.profile.majorMatch.viewResults": "View full results",
   "studentHub.hub.myDashboard": "My dashboard",
+  "studentHub.hub.myDashboardProgress": "Progress",
+  "studentHub.hub.myDashboardProfile": "Profile",
   "studentHub.feed.upcomingSessionsTitle": "UPCOMING SESSIONS",
   "studentHub.feed.noUpcomingSessions": "No upcoming sessions.",
   "studentHub.feed.bookAMentor": "Book a mentor",
