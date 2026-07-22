@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Skeleton } from 'antd';
+import { Input, Skeleton } from 'antd';
+import { Search, X } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import { getLatestCreatedImg } from 'src/utils';
@@ -11,9 +12,20 @@ import { MentorExperienceLevel, MentorsResponseDto } from 'src/app/api/Api';
 import { useGetGiveawaySessionsQuery } from 'src/app/services/sessions';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 
+const RATING_OPTIONS = [
+  { value: 'all', threshold: 0 },
+  { value: '4', threshold: 4 },
+  { value: '4.5', threshold: 4.5 },
+] as const;
+
 export default function MentorsPage() {
   const { data: mentorsData, isLoading, isError } = useGetMentorsQuery();
   const [selectedLevel, setSelectedLevel] = useState('all');
+  const [nameQuery, setNameQuery] = useState('');
+  const [selectedUniversity, setSelectedUniversity] = useState('all');
+  const [selectedMajor, setSelectedMajor] = useState('all');
+  const [selectedLanguage, setSelectedLanguage] = useState('all');
+  const [selectedRating, setSelectedRating] = useState<string>('all');
   const { isAuthenticated, profile: meData } = useTypedSelector(
     (state) => state.auth
   );
@@ -43,6 +55,66 @@ export default function MentorsPage() {
     { label: 'Expert', value: MentorExperienceLevel.Expert },
   ];
 
+  // Options derived from the loaded mentor list — nothing hardcoded, so the
+  // filter bar always reflects whatever universities/majors/languages
+  // actually exist across the current mentor roster.
+  const universityOptions = useMemo(() => {
+    if (!mentorsData) return [];
+    const set = new Set<string>();
+    mentorsData.forEach((mentor) => {
+      const uni = mentor.mentorProfile?.university?.trim();
+      if (uni) set.add(uni);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [mentorsData]);
+
+  const majorOptions = useMemo(() => {
+    if (!mentorsData) return [];
+    const set = new Set<string>();
+    mentorsData.forEach((mentor) => {
+      const major = mentor.mentorProfile?.major?.trim();
+      if (major) set.add(major);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [mentorsData]);
+
+  const languageOptions = useMemo(() => {
+    if (!mentorsData) return [];
+    const set = new Set<string>();
+    mentorsData.forEach((mentor) => {
+      (mentor.mentorProfile?.languages || []).forEach((lang) => {
+        const trimmed = lang?.trim();
+        if (trimmed) set.add(trimmed);
+      });
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [mentorsData]);
+
+  const ratingSelectOptions = RATING_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label:
+      opt.value === 'all'
+        ? t('mentors.filters.allRatings', 'All ratings')
+        : t('mentors.filters.ratingPlus', '{{value}}+', { value: opt.value }),
+  }));
+
+  const hasActiveFilters =
+    selectedLevel !== 'all' ||
+    nameQuery.trim() !== '' ||
+    selectedUniversity !== 'all' ||
+    selectedMajor !== 'all' ||
+    selectedLanguage !== 'all' ||
+    selectedRating !== 'all';
+
+  const clearFilters = () => {
+    setSelectedLevel('all');
+    setNameQuery('');
+    setSelectedUniversity('all');
+    setSelectedMajor('all');
+    setSelectedLanguage('all');
+    setSelectedRating('all');
+  };
+
   // Dynamic title and subtitle based on selected filter
   let title = t('mentors.mentorTitle');
   let subtitle = t('mentors.mentorText');
@@ -62,17 +134,63 @@ export default function MentorsPage() {
 
   const filteredMentors = useMemo(() => {
     if (!mentorsData) return [];
-    
-    let mentors = mentorsData;
-    
-    if (selectedLevel !== 'all') {
-      mentors = mentors.filter(
-        (mentor) => mentor.mentorProfile?.level === selectedLevel
-      );
-    }
-    
-    return mentors;
-  }, [mentorsData, selectedLevel]);
+
+    const query = nameQuery.trim().toLowerCase();
+    const ratingThreshold =
+      RATING_OPTIONS.find((opt) => opt.value === selectedRating)?.threshold ??
+      0;
+
+    return mentorsData.filter((mentor) => {
+      if (
+        selectedLevel !== 'all' &&
+        mentor.mentorProfile?.level !== selectedLevel
+      ) {
+        return false;
+      }
+
+      if (query && !mentor.profile?.name?.toLowerCase().includes(query)) {
+        return false;
+      }
+
+      if (
+        selectedUniversity !== 'all' &&
+        mentor.mentorProfile?.university !== selectedUniversity
+      ) {
+        return false;
+      }
+
+      if (
+        selectedMajor !== 'all' &&
+        mentor.mentorProfile?.major !== selectedMajor
+      ) {
+        return false;
+      }
+
+      if (
+        selectedLanguage !== 'all' &&
+        !(mentor.mentorProfile?.languages || []).includes(selectedLanguage)
+      ) {
+        return false;
+      }
+
+      if (
+        ratingThreshold > 0 &&
+        (mentor.profile?.overallRating || 0) < ratingThreshold
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    mentorsData,
+    selectedLevel,
+    nameQuery,
+    selectedUniversity,
+    selectedMajor,
+    selectedLanguage,
+    selectedRating,
+  ]);
 
   const sortedMentors = useMemo(() => {
     return [...filteredMentors].sort((a, b) => {
@@ -105,15 +223,110 @@ export default function MentorsPage() {
               description={subtitle}
             />
           </div>
-          {/* // Mentor Level Filter */}
-          <div className={styles.level}>
-            <CustomSelect
-              defaultValue={'all'}
-              style={{ width: 100 }}
-              options={mentorLevelOptions}
-              onChange={(value) => setSelectedLevel(value)}
-            />
+          {/* Filter bar — level (existing) + name/university/major/language/
+              rating (new). Options for the data-driven selects are derived
+              from the loaded mentors, and a select is only rendered when
+              there's at least one real value to filter by. */}
+          <div className={styles.filterBar}>
+            <div className={styles.filterField}>
+              <Input
+                allowClear
+                prefix={<Search size={15} style={{ opacity: 0.45 }} />}
+                placeholder={t('mentors.filters.searchPlaceholder', 'Search by name')}
+                value={nameQuery}
+                onChange={(e) => setNameQuery(e.target.value)}
+              />
+            </div>
+
+            {universityOptions.length > 0 && (
+              <div className={styles.filterField}>
+                <CustomSelect
+                  value={selectedUniversity}
+                  style={{ width: '100%' }}
+                  options={[
+                    {
+                      label: t('mentors.filters.allUniversities', 'All universities'),
+                      value: 'all',
+                    },
+                    ...universityOptions.map((u) => ({ label: u, value: u })),
+                  ]}
+                  onChange={(value) => setSelectedUniversity(value)}
+                />
+              </div>
+            )}
+
+            {majorOptions.length > 0 && (
+              <div className={styles.filterField}>
+                <CustomSelect
+                  value={selectedMajor}
+                  style={{ width: '100%' }}
+                  options={[
+                    {
+                      label: t('mentors.filters.allMajors', 'All majors'),
+                      value: 'all',
+                    },
+                    ...majorOptions.map((m) => ({ label: m, value: m })),
+                  ]}
+                  onChange={(value) => setSelectedMajor(value)}
+                />
+              </div>
+            )}
+
+            {languageOptions.length > 0 && (
+              <div className={styles.filterField}>
+                <CustomSelect
+                  value={selectedLanguage}
+                  style={{ width: '100%' }}
+                  options={[
+                    {
+                      label: t('mentors.filters.allLanguages', 'All languages'),
+                      value: 'all',
+                    },
+                    ...languageOptions.map((l) => ({ label: l, value: l })),
+                  ]}
+                  onChange={(value) => setSelectedLanguage(value)}
+                />
+              </div>
+            )}
+
+            <div className={styles.filterField}>
+              <CustomSelect
+                value={selectedRating}
+                style={{ width: '100%' }}
+                options={ratingSelectOptions}
+                onChange={(value) => setSelectedRating(value)}
+              />
+            </div>
+
+            <div className={styles.filterField}>
+              <CustomSelect
+                value={selectedLevel}
+                style={{ width: '100%' }}
+                options={mentorLevelOptions}
+                onChange={(value) => setSelectedLevel(value)}
+              />
+            </div>
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className={styles.clearFilters}
+                onClick={clearFilters}
+              >
+                <X size={14} />
+                {t('mentors.filters.clearFilters', 'Clear filters')}
+              </button>
+            )}
           </div>
+
+          {!isLoading && !isError && (
+            <div className={styles.resultCount}>
+              {t('mentors.filters.resultCount', '{{count}} mentors found', {
+                count: sortedMentors.length,
+              })}
+            </div>
+          )}
+
           <div className={styles.cards}>
             {/* Skeleton grid while mentors load — same footprint as the real
                 cards, so the grid doesn't render blank and then pop in. */}
@@ -138,6 +351,14 @@ export default function MentorsPage() {
                 {t(
                   'mentors.loadError',
                   "Couldn't load mentors. Please refresh the page to try again."
+                )}
+              </p>
+            )}
+            {!isLoading && !isError && sortedMentors.length === 0 && (
+              <p className={styles.cardsEmpty}>
+                {t(
+                  'mentors.filters.noResults',
+                  'No mentors match your filters. Try clearing some filters.'
                 )}
               </p>
             )}

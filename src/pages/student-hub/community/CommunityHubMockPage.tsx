@@ -1140,13 +1140,13 @@ export default function CommunityHubMockPage() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                     {[
-                      { label: t('fullSupport.navLabel', 'Full Support'), route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
-                      { label: t('studentHub.hub.collegeLists', 'College Lists'), route: '/student-hub?section=others&target=college-lists', icon: 'applications' },
-                      { label: t('studentHub.hub.majorMatchLabel', 'Major Match'), route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
-                      { label: t('studentHub.hub.opportunitiesLabel', 'Opportunities'), route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
-                      { label: t('studentHub.hub.essaysLabel', 'Essays'), route: '/student-hub?section=others&target=essays', icon: 'essays' },
-                      { label: t('studentHub.hub.documentsLabel', 'Documents'), route: '/student-hub?section=others&target=documents', icon: 'documents' },
-                      { label: t('studentHub.hub.myProfileLabel', 'My Profile'), route: '/student-hub?section=others&target=profile', icon: 'profile' },
+                      { label: t('fullSupport.navLabel', 'Full Support'), description: t('studentHub.hub.fullSupportDesc', 'Work with your dedicated mentor'), route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
+                      { label: t('studentHub.hub.collegeLists', 'College Lists'), description: t('studentHub.hub.collegeListsDesc', 'Build and track your college list'), route: '/student-hub?section=others&target=college-lists', icon: 'applications' },
+                      { label: t('studentHub.hub.majorMatchLabel', 'Major Match'), description: t('studentHub.hub.majorMatchDesc', 'Discover your best-fit major'), route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
+                      { label: t('studentHub.hub.opportunitiesLabel', 'Opportunities'), description: t('studentHub.hub.opportunitiesDesc', 'Find programs and competitions'), route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
+                      { label: t('studentHub.hub.essaysLabel', 'Essays'), description: t('studentHub.hub.essaysDesc', 'Draft and refine your essays'), route: '/student-hub?section=others&target=essays', icon: 'essays' },
+                      { label: t('studentHub.hub.documentsLabel', 'Documents'), description: t('studentHub.hub.documentsDesc', 'Keep your files in one place'), route: '/student-hub?section=others&target=documents', icon: 'documents' },
+                      { label: t('studentHub.hub.myProfileLabel', 'My Profile'), description: t('studentHub.hub.myProfileDesc', 'Your personal, academic and activities profile'), route: '/student-hub?section=others&target=profile', icon: 'profile' },
                     ].map((item) => (
                       <div key={item.route} className={styles.groupCard} style={{ padding: 14 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -1159,7 +1159,7 @@ export default function CommunityHubMockPage() {
                           </Button>
                         </div>
                         <div style={{ color: '#64748b', fontWeight: 700, fontSize: 12, marginTop: 8 }}>
-                          {t('studentHub.hub.integratedOpenRealPage', 'Integrated open (real page).')}
+                          {item.description}
                         </div>
                       </div>
                     ))}
