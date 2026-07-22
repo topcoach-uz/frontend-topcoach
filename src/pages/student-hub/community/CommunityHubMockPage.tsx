@@ -539,12 +539,12 @@ export default function CommunityHubMockPage() {
             bordered={false}
             role="button"
             tabIndex={0}
-            aria-label="Open account and settings"
-            onClick={() => navigate('/student-hub?section=account&target=settings')}
+            aria-label="View my profile"
+            onClick={() => navigate('/student-hub?section=others&target=profile')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                navigate('/student-hub?section=account&target=settings');
+                navigate('/student-hub?section=others&target=profile');
               }
             }}
           >
