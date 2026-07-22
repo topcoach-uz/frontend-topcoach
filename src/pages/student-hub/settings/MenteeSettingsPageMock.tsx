@@ -38,7 +38,6 @@ import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
 import { RoadmapTab } from './roadmap/RoadmapTab';
-import StudentProfileTab from './StudentProfileTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -92,7 +91,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
    */
   type SettingsTabKey =
     | 'profile'
-    | 'studentProfile'
     | 'studyBuddy'
     | 'experience'
     | 'notifications'
@@ -108,7 +106,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     const allowed: SettingsTabKey[] = [
       'profile',
-      'studentProfile',
       'studyBuddy',
       'experience',
       'notifications',
@@ -129,7 +126,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       const fromUrl = new URLSearchParams(window.location.search).get('tab');
       const allowed: SettingsTabKey[] = [
         'profile',
-        'studentProfile',
         'studyBuddy',
         'experience',
         'notifications',
@@ -142,6 +138,19 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  // The rich "Profile" tab (Personal / Academic / Activities) used to
+  // live here as `?tab=studentProfile`, duplicating the profile hub at
+  // `?section=others&target=profile`. It's been removed in favor of the
+  // hub — old deep-links redirect there instead of rendering blank.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const fromUrl = new URLSearchParams(window.location.search).get('tab');
+    if (fromUrl === 'studentProfile') {
+      navigate('/student-hub?section=others&target=profile', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const email = profile?.email ?? 'you@example.com';
@@ -273,15 +282,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         >
           {t('studentHub.settingsMock.account', 'Account')}
         </button>
-        {/* "Profile" = the rich student profile (Personal / Academic /
-            Activities) that powers AI recommendations. */}
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'studentProfile' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('studentProfile')}
-        >
-          {t('studentHub.settingsMock.studentProfile', 'Profile')}
-        </button>
         <button
           type="button"
           className={`${styles.tab} ${activeTab === 'studyBuddy' ? styles.tabActive : ''}`}
@@ -317,6 +317,24 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             ships — surfacing static text felt half-baked. The render
             block below stays in place so re-enabling is a one-line flip. */}
       </nav>
+
+      {/* Pointer to the rich profile hub (Personal / Academic /
+          Activities) — that editing surface now lives at
+          `?section=others&target=profile` on the My Journey side, not
+          as a Settings tab, so students who came here looking for it
+          aren't stranded. */}
+      <div className={styles.profileHubHint}>
+        {t(
+          'studentHub.settingsMock.profileHubHintText',
+          'Looking to edit your personal, academic & activities profile?',
+        )}
+        <a
+          className={styles.profileHubHintLink}
+          onClick={() => navigate('/student-hub?section=others&target=profile')}
+        >
+          {t('studentHub.settingsMock.profileHubHintLink', 'Edit your profile →')}
+        </a>
+      </div>
 
       {activeTab === 'profile' && (
       <>
@@ -432,11 +450,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       {/* The legacy "Subscription" card shown above used to live here; it
           has been removed. The new Phase 1B "Subscription & billing" tab
           (rendered below when activeTab === 'subscription') replaces it. */}
-
-      {/* Rich student profile (Personal / Academic / Activities) — the
-          three-tab profile that used to live at /student-hub/profile,
-          re-skinned editorial and surfaced here in settings. */}
-      {activeTab === 'studentProfile' && <StudentProfileTab />}
 
       {activeTab === 'studyBuddy' && (
       <Card

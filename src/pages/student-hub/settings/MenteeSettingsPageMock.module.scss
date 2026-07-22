@@ -95,6 +95,26 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
   font-weight: 600;
 }
 
+/* Small pointer to the rich profile hub (Personal / Academic /
+   Activities), shown since that editing surface no longer lives as a
+   Settings tab. Deliberately understated — a hint, not a CTA. */
+.profileHubHint {
+  margin: -6px 0 18px;
+  font-size: 0.85rem;
+  color: $st-muted;
+}
+
+.profileHubHintLink {
+  color: $st-brand;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 /* Legacy heading styles kept for backward compat (used in standalone
    non-embedded view). */
 .pageTitle {

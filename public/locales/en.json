@@ -2549,5 +2549,7 @@
   "studentHub.feed.bookAMentor": "Book a mentor",
   "studentHub.feed.minSession": "{{min}} min session",
   "studentHub.feed.joinSession": "Join",
-  "studentHub.feed.viewAllSessions": "View all"
+  "studentHub.feed.viewAllSessions": "View all",
+  "studentHub.settingsMock.profileHubHintText": "Looking to edit your personal, academic & activities profile?",
+  "studentHub.settingsMock.profileHubHintLink": "Edit your profile →"
 }

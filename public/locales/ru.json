@@ -2549,5 +2549,7 @@
   "studentHub.feed.bookAMentor": "Забронировать ментора",
   "studentHub.feed.minSession": "Сессия {{min}} мин",
   "studentHub.feed.joinSession": "Присоединиться",
-  "studentHub.feed.viewAllSessions": "Смотреть все"
+  "studentHub.feed.viewAllSessions": "Смотреть все",
+  "studentHub.settingsMock.profileHubHintText": "Хотите отредактировать личный, академический профиль и профиль активностей?",
+  "studentHub.settingsMock.profileHubHintLink": "Редактировать профиль →"
 }

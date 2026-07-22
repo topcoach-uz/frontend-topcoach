@@ -2549,5 +2549,7 @@
   "studentHub.feed.bookAMentor": "Mentordı bronlaw",
   "studentHub.feed.minSession": "{{min}} minutlıq sessiya",
   "studentHub.feed.joinSession": "Qosılıw",
-  "studentHub.feed.viewAllSessions": "Barlıǵın kóriw"
+  "studentHub.feed.viewAllSessions": "Barlıǵın kóriw",
+  "studentHub.settingsMock.profileHubHintText": "Jеке, oqıw hám iskerlik profilińizdi tahrirlewdi qáleysiz be?",
+  "studentHub.settingsMock.profileHubHintLink": "Profildi tahrirlew →"
 }

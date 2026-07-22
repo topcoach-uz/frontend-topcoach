@@ -2549,5 +2549,7 @@
   "studentHub.feed.bookAMentor": "Mentorni bron qilish",
   "studentHub.feed.minSession": "{{min}} daqiqalik sessiya",
   "studentHub.feed.joinSession": "Qo'shilish",
-  "studentHub.feed.viewAllSessions": "Barchasini ko'rish"
+  "studentHub.feed.viewAllSessions": "Barchasini ko'rish",
+  "studentHub.settingsMock.profileHubHintText": "Shaxsiy, akademik va faoliyat profilingizni tahrirlashni xohlaysizmi?",
+  "studentHub.settingsMock.profileHubHintLink": "Profilni tahrirlash →"
 }
