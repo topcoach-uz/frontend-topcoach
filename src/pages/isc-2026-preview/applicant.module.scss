@@ -585,21 +585,61 @@ $serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   pointer-events: none;
   z-index: 60;
 }
-.confettiPiece {
+/* Party-popper burst. Each piece is three nested spans so the horizontal
+   travel, the gravity arc and the tumble can each carry their own timing
+   function — a single element only gets one. */
+.burstX {
   position: absolute;
-  top: -12%;
+  bottom: 0;
   display: block;
-  opacity: 0;
-  animation-name: confetti-fall;
-  animation-timing-function: ease-in;
+  animation-name: isc-burst-x;
+  animation-timing-function: cubic-bezier(0.16, 0.62, 0.36, 1); // air drag
   animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+  animation-fill-mode: both;
+  will-change: transform;
 }
-@keyframes confetti-fall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-  8% { opacity: 1; }
-  100% { transform: translateY(108vh) rotate(620deg); opacity: 0.9; }
+.burstY {
+  display: block;
+  animation-name: isc-burst-y;
+  animation-timing-function: linear; // gravity lives in the keyframes below
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+  will-change: transform;
 }
+.burstSpin {
+  display: block;
+  animation-name: isc-burst-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes isc-burst-x {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(var(--dx)); }
+}
+
+/* y(t) = v·t − ½g·t², sampled by hand. Apex at ~35%, then an accelerating
+   fall well past the viewport so nothing visibly stops mid-air. */
+@keyframes isc-burst-y {
+  0%   { transform: translateY(0); opacity: 1; }
+  7%   { transform: translateY(calc(var(--rise) * -0.36)); }
+  14%  { transform: translateY(calc(var(--rise) * -0.63)); }
+  21%  { transform: translateY(calc(var(--rise) * -0.83)); }
+  28%  { transform: translateY(calc(var(--rise) * -0.96)); }
+  35%  { transform: translateY(calc(var(--rise) * -1)); }
+  45%  { transform: translateY(calc(var(--rise) * -0.9)); }
+  55%  { transform: translateY(calc(var(--rise) * -0.66)); }
+  65%  { transform: translateY(calc(var(--rise) * -0.28)); }
+  75%  { transform: translateY(calc(var(--rise) * 0.24)); opacity: 1; }
+  100% { transform: translateY(calc(var(--rise) * 1.6 + 60vh)); opacity: 0; }
+}
+
+@keyframes isc-burst-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(var(--spin)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .confetti { display: none; }
   .acceptedSeal { animation: none; }

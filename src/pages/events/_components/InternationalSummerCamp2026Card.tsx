@@ -79,9 +79,15 @@ export default function InternationalSummerCamp2026Card() {
               </span>
             ) : (
               <>
-                <span className={`${styles.deadline} ${styles[`tone_${statusTone}`]}`}>
-                  {mode === 'apply' ? 'Apply by July 11, 2026' : statusLabel}
-                </span>
+                {/* No status pill once an application is in — the outcome is
+                    the applicant's to read on the status screen, not something
+                    to surface on a public-facing card they may be scrolling
+                    past in company. The CTA alone carries it. */}
+                {mode !== 'status' && (
+                  <span className={`${styles.deadline} ${styles[`tone_${statusTone}`]}`}>
+                    {mode === 'apply' ? 'Apply by July 11, 2026' : statusLabel}
+                  </span>
+                )}
                 <Button
                   type="primary"
                   size="large"
