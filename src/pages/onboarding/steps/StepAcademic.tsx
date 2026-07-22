@@ -10,15 +10,15 @@ import { posthog, posthogEnabled } from 'src/lib/posthog';
 import styles from '../onboarding.module.scss';
 
 /**
- * Wizard Step 8 — academic qualification / placement-test handoff. This is
- * the FINAL step: onboarding completion (`patchOnboarding({completed:true})`)
- * fires from the two buttons here, not from the 'contact' step anymore (see
- * the removed TEMP comment in StepContact.tsx / index.tsx).
+ * Wizard Step (final) — academic qualification / placement-test handoff.
+ * This is the FINAL step: onboarding completion
+ * (`patchOnboarding({completed:true})`) fires from the two buttons here.
  *
  * Deviates from the shell's usual "step calls onNext, index.tsx owns the
- * PATCH" convention (see StepSource/StepContact handlers in index.tsx):
- * this step doesn't advance to another wizard step, it exits the wizard
- * entirely, and its destination depends on `useCommunityAccessGate()` —
+ * PATCH" convention (see StepSource/StepInfo for other steps that own
+ * their own PATCH calls): this step doesn't advance to another wizard step,
+ * it exits the wizard entirely, and its destination depends on
+ * `useCommunityAccessGate()` —
  * a hook that's cheapest to mount only while this step is actually visible
  * (it fires 2 extra queries). Keeping the mutation + hook + navigate calls
  * together here, self-contained, avoids mounting those queries from step 1

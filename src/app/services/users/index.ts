@@ -71,6 +71,7 @@ export const authApi = RtkApi.injectEndpoints({
       {
         step?: string;
         hearAboutSource?: string;
+        usageReasons?: string[];
         phoneNumber?: string;
         completed?: boolean;
       }

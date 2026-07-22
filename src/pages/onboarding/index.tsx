@@ -13,32 +13,42 @@ import { updateProfile } from 'src/app/slices/authSlice';
 import { useGetMeQuery, usePatchOnboardingMutation } from 'src/app/services/users';
 import RoleCard from 'src/pages/auth/signup/_components/role_card';
 import { OnboardingStatus } from 'src/lib/onboarding';
-import { OnboardingStepId, STEP_ORDER, isOnboardingStepId, nextStepId, prevStepId } from './steps/types';
+import {
+  OnboardingStepId,
+  STEP_ORDER,
+  nextStepId,
+  prevStepId,
+  resolveResumeStepId,
+} from './steps/types';
+import StepInfo from './steps/StepInfo';
 import StepSource from './steps/StepSource';
+import StepOpportunity from './steps/StepOpportunity';
 import StepTelegram from './steps/StepTelegram';
-import StepVideo from './steps/StepVideo';
-import StepCommunity from './steps/StepCommunity';
-import StepContact from './steps/StepContact';
 import StepTrial from './steps/StepTrial';
 import StepMajorMatch from './steps/StepMajorMatch';
 import StepAcademic from './steps/StepAcademic';
 import styles from './onboarding.module.scss';
 
 /**
- * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 9 steps
- * (role -> source -> telegram -> video -> community -> contact -> trial ->
- * majorMatch -> academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
- * step now (StepAcademic.tsx owns its own patchOnboarding call — see the
+ * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 8 steps
+ * (role -> info -> source -> opportunity -> telegram -> trial -> majorMatch
+ * -> academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
+ * step (StepAcademic.tsx owns its own patchOnboarding call — see the
  * comment on that component for why it deviates from the generic
- * advance()/onNext pattern used by every other step).
+ * advance()/onNext pattern used by every other step; StepInfo.tsx deviates
+ * the same way, for the same reason: it needs to fan out to multiple
+ * backend writes before advancing).
  *
  * Reached whenever OnboardingGate decides a signed-in user's
  * `onboardingCompletedAt` is `null` (see src/lib/onboarding.ts and
  * src/pages/onboarding/OnboardingGate.tsx).
  *
- * Resume: on mount, jumps straight to `onboardingStep` from getMe (falls
- * back to 'role' if that field is missing/unrecognized). Every "Next"
- * PATCHes the step forward so a refresh always resumes correctly.
+ * Resume: on mount, jumps straight to `onboardingStep` from getMe, mapping
+ * any legacy step value ('video'/'community'/'contact', from before this
+ * step order was restructured) onto its closest surviving step, falling
+ * back to 'role' if unrecognized (see `resolveResumeStepId` in
+ * ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
+ * always resumes correctly.
  */
 export default function OnboardingWizardPage() {
   const navigate = useNavigate();
@@ -77,9 +87,7 @@ export default function OnboardingWizardPage() {
     if (resolvedInitialStep) return;
     if (meLoading && !currentUser?.id) return;
     if (role === UserRole.Mentor) return; // handled by the redirect effect above
-    if (isOnboardingStepId(onboardingUser?.onboardingStep)) {
-      setStep(onboardingUser!.onboardingStep as OnboardingStepId);
-    }
+    setStep(resolveResumeStepId(onboardingUser?.onboardingStep));
     setResolvedInitialStep(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedInitialStep, meLoading, currentUser, role]);
@@ -100,8 +108,8 @@ export default function OnboardingWizardPage() {
   };
 
   // Generic "PATCH the next step and move on" used by steps that don't
-  // collect their own payload beyond the step pointer (role, telegram,
-  // video, community).
+  // collect their own payload beyond the step pointer (role, opportunity,
+  // telegram).
   const advance = async (extraPatch: Record<string, unknown> = {}) => {
     const next = nextStepId(step);
     if (!next) return;
@@ -116,11 +124,11 @@ export default function OnboardingWizardPage() {
     }
   };
 
-  const handleSourceNext = async (value?: string) => {
+  const handleSourceNext = async (value?: string, reasons?: string[]) => {
     const next = nextStepId('source') ?? 'source';
     setSubmitting(true);
     try {
-      await patchOnboarding({ hearAboutSource: value, step: next }).unwrap();
+      await patchOnboarding({ hearAboutSource: value, usageReasons: reasons, step: next }).unwrap();
       if (roleChoice === UserRole.Mentor) {
         // Mirrors the existing Google-signup role PATCH (proven pattern,
         // ONBOARDING_DESIGN.md §1/§6) — step=1, never step=0, since an
@@ -131,19 +139,6 @@ export default function OnboardingWizardPage() {
         navigate('/auth/signup/mentor?step=1');
         return;
       }
-      setStep(next);
-    } catch (err: any) {
-      showError(err);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleContactNext = async (phoneNumber?: string) => {
-    const next = nextStepId('contact') ?? 'contact';
-    setSubmitting(true);
-    try {
-      await patchOnboarding({ phoneNumber, step: next }).unwrap();
       setStep(next);
     } catch (err: any) {
       showError(err);
@@ -163,6 +158,13 @@ export default function OnboardingWizardPage() {
         'Tell us how you plan to use TopCoach so we can take you to the right place.',
       ),
     },
+    info: {
+      title: t('onboarding.info.title', 'Tell us about yourself'),
+      subtitle: t(
+        'onboarding.info.subtitle',
+        "A few basics to personalize your TopCoach experience — we'll only use these to tailor your account.",
+      ),
+    },
     source: {
       title: t('onboarding.source.title', 'Where did you hear about us?'),
       subtitle: t(
@@ -170,32 +172,18 @@ export default function OnboardingWizardPage() {
         'This helps us understand how students find TopCoach.',
       ),
     },
+    opportunity: {
+      title: t('onboarding.opportunity.title', 'What you get with TopCoach'),
+      subtitle: t(
+        'onboarding.opportunity.subtitle',
+        'Everything you need to build a winning application, in one place.',
+      ),
+    },
     telegram: {
       title: t('onboarding.telegram.title', 'Connect Telegram'),
       subtitle: t(
         'onboarding.telegram.subtitle',
         "Get session confirmations, reminders, and updates the moment they happen.",
-      ),
-    },
-    video: {
-      title: t('onboarding.video.title', 'See what TopCoach is about'),
-      subtitle: t(
-        'onboarding.video.subtitle',
-        'A 2-minute look at how mentors and students work together on TopCoach.',
-      ),
-    },
-    community: {
-      title: t('onboarding.community.title', "Let's join the community"),
-      subtitle: t(
-        'onboarding.community.subtitle',
-        "You're not doing this alone — thousands of students and mentors are already here.",
-      ),
-    },
-    contact: {
-      title: t('onboarding.contact.title', "What's the best number to reach you?"),
-      subtitle: t(
-        'onboarding.contact.subtitle',
-        "We'll only use this for important account and session updates.",
       ),
     },
     trial: {
@@ -270,27 +258,26 @@ export default function OnboardingWizardPage() {
           </div>
         )}
 
+        {step === 'info' && (
+          <StepInfo
+            initialName={currentUser?.profile?.name}
+            initialPhone={currentUser?.phoneNumber}
+            onNext={() => setStep(nextStepId('info') ?? 'source')}
+          />
+        )}
+
         {step === 'source' && (
           <StepSource
             initialValue={onboardingUser?.hearAboutSource}
+            initialReasons={onboardingUser?.usageReasons}
             submitting={submitting}
             onNext={handleSourceNext}
           />
         )}
 
+        {step === 'opportunity' && <StepOpportunity onNext={() => advance()} />}
+
         {step === 'telegram' && <StepTelegram onNext={() => advance()} />}
-
-        {step === 'video' && <StepVideo onNext={() => advance()} />}
-
-        {step === 'community' && <StepCommunity onNext={() => advance()} />}
-
-        {step === 'contact' && (
-          <StepContact
-            initialValue={currentUser?.phoneNumber}
-            submitting={submitting}
-            onNext={handleContactNext}
-          />
-        )}
 
         {step === 'trial' && <StepTrial onNext={() => advance()} />}
 

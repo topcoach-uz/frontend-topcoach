@@ -136,6 +136,7 @@ export const studentProfileApi = RtkApi.injectEndpoints({
 
 export const {
   useGetMyStudentProfileQuery,
+  useLazyGetMyStudentProfileQuery,
   useGetStudentProfileQuery,
   useGetStudentProfileByUserIdQuery,
   useGetStudentProfilesQuery,
