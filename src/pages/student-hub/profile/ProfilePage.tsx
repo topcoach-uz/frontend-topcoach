@@ -59,10 +59,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
     }
   }, [searchParams, isReadOnly]);
 
-  // Handle tab changes
+  // Handle tab changes — merge into the existing params so shell params
+  // like ?section=others&target=profile survive the tab switch
   const handleTabChange = (key: string) => {
     setActiveTab(key);
-    setSearchParams({ tab: key });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('tab', key);
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   // Show loading state with unified skeleton

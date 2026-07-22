@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import Loader from 'src/components/loader';
 import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
@@ -27,6 +27,15 @@ const RouteFallback = () => <Loader height="60vh" />;
 const withSuspense = (node: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 
 /** Full-width shell for standalone psychometric route — matches hub vertical rhythm (hubDashEmbed ≈ 20px) */
+/** Redirect /student-hub/profile → hub shell, preserving extra params like ?tab= */
+const ProfileRedirect = () => {
+  const [params] = useSearchParams();
+  const next = new URLSearchParams(params);
+  next.set('section', 'others');
+  next.set('target', 'profile');
+  return <Navigate to={`/student-hub?${next.toString()}`} replace />;
+};
+
 const PsychometricRouteShell = ({ children }: { children: React.ReactNode }) => (
   <div style={{ paddingTop: 20, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>{children}</div>
 );
@@ -108,8 +117,8 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/" element={<CommunityHubMockPage />} />
           <Route path="/dashboard" element={<Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/rewards" element={<Navigate to="/student-hub?section=account&target=rewards" replace />} />
-          <Route path="/profile" element={<Navigate to="/student-hub?section=others&target=profile" replace />} />
-          <Route path="/profile/*" element={<Navigate to="/student-hub?section=others&target=profile" replace />} />
+          <Route path="/profile" element={<ProfileRedirect />} />
+          <Route path="/profile/*" element={<ProfileRedirect />} />
 
           {/* College list flows must be real routes — ApplicationsPage switches on pathname for new/edit */}
           <Route
