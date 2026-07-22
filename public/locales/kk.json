@@ -2481,7 +2481,7 @@
   "studentHub.hub.fullSupportDesc": "Жеке менторыңызбен жұмыс істеңіз",
   "studentHub.hub.feed": "Lenta",
   "studentHub.hub.feedLocked": "Jámáátke kirıw kerek",
-  "studentHub.hub.findSomeoneDesc": "Maqsetleri, tayarlıq kestesi hám maqset mekteplerи uqsas dosлардıńız penen baylanısıń. Sáykeslik ballı testler, múddetler hám oqıw waqıtlarınıń sáykesligine tiykarlanǵan.",
+  "studentHub.hub.findSomeoneDesc": "Maqsetleri, tayarlıq kestesi hám maqset mekteplerи uqsas dosлардıńız penen baylanısıń. Sáykeslik ballı emtihanğa tayarlıq, maqset baǵdarları, saylanǵan mamanlıqlar hám qollap-quwatlaw baǵdarlarınıń sáykesligine tiykarlanǵan.",
   "studentHub.hub.findSomeoneTitle": "Bir jolda barǵan adamdı tabıń.",
   "studentHub.hub.findStudyBuddy": "Oqıw dosın tabıw",
   "studentHub.hub.goToAdmissionsLessons": "Kirıw sabaqlarına ótiw",
@@ -2551,5 +2551,16 @@
   "studentHub.feed.joinSession": "Qosılıw",
   "studentHub.feed.viewAllSessions": "Barlıǵın kóriw",
   "studentHub.settingsMock.profileHubHintText": "Jеке, oqıw hám iskerlik profilińizdi tahrirlewdi qáleysiz be?",
-  "studentHub.settingsMock.profileHubHintLink": "Profildi tahrirlew →"
+  "studentHub.settingsMock.profileHubHintLink": "Profildi tahrirlew →",
+  "studentHub.buddyPrefs.title": "Sáykeslik ushın ústinliklerińiz",
+  "studentHub.buddyPrefs.descHelper": "Bulardı sáykes dosлардı tabıw ushın paydalanamız.",
+  "studentHub.buddyPrefs.editButton": "Ústinliklerdi tahrirlew",
+  "studentHub.buddyPrefs.saveButton": "Ústinliklerdi saqlaw",
+  "studentHub.buddyPrefs.cancelButton": "Biykar etiw",
+  "studentHub.buddyPrefs.moreChips": "+{{count}} tağı",
+  "studentHub.buddyConsent.guidelineVisibilityBody": "Qosılğannan soń, dosлардıńız sizdi tabıp, ulıwma maqsetler tiykarında sorаw jibere aladı.",
+  "studentHub.hub.studyBuddyGoalsBannerCta": "Dos tabıw",
+  "studentHub.hub.studyBuddyGoalsBannerTitle": "Dos tabıw ushın oqıw maqsetlerińizdi belgileń",
+  "studentHub.settingsMock.studyBuddyMovedHintText": "Oqıw dosı ústinlikleri «Dos tabıw» bólimine kóshirildi.",
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Dos tabıw →"
 }

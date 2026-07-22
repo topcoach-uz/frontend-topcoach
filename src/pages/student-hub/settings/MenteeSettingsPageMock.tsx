@@ -15,24 +15,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import {
-  useCreateUserPreferencesMutation,
-  useUpdateUserPreferencesMutation,
-  useGetUserPreferencesQuery,
-} from 'src/app/services/student-hub/dashboardApi';
 import { useInvalidateGetMeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
 import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 import { useTypedSelector } from 'src/app/store';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import {
-  APPLICATION_GOAL_OPTIONS,
-  EXAM_PREP_OPTIONS,
-  FOCUS_AREA_OPTIONS,
-  INTENDED_MAJOR_OPTIONS,
-  EMPTY_STUDY_BUDDY_INTEREST_PROFILE,
-  normalizeStudyBuddyInterestProfile,
-  type StudyBuddyInterestProfile,
-} from 'src/constants/studyBuddyInterests';
 import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
@@ -68,10 +54,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   const [invalidateGetMe] = useInvalidateGetMeMutation();
   const { data: tg } = useGetTelegramStatusQuery();
   const [tgModalOpen, setTgModalOpen] = useState(false);
-  const { data: rawPreferences } = useGetUserPreferencesQuery();
-  const [createUserPreferences] = useCreateUserPreferencesMutation();
-  const [updateUserPreferences, { isLoading: savingPreferences }] = useUpdateUserPreferencesMutation();
-  const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
   const [displayName, setDisplayName] = useState(
     () => profile?.profile?.name || '',
   );
@@ -79,19 +61,16 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     () => normalizeUsernameInput((profile?.profile as any)?.username || ''),
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [studyBuddyInterests, setStudyBuddyInterests] = useState<StudyBuddyInterestProfile>(() =>
-    ({ ...EMPTY_STUDY_BUDDY_INTEREST_PROFILE }),
-  );
 
   /**
-   * Editorial tab state. We expose Profile / Study buddy / Experience /
-   * Notifications. Security is intentionally omitted — password resets
-   * happen via email today and there's no UI to manage 2FA yet, so
-   * surfacing an empty tab would feel broken.
+   * Editorial tab state. We expose Profile / Experience / Notifications.
+   * Security is intentionally omitted — password resets happen via email
+   * today and there's no UI to manage 2FA yet, so surfacing an empty tab
+   * would feel broken. Study buddy preferences moved into the Find Study
+   * Buddy hub (see the `?tab=studyBuddy` redirect below).
    */
   type SettingsTabKey =
     | 'profile'
-    | 'studyBuddy'
     | 'experience'
     | 'notifications'
     | 'subscription'
@@ -106,7 +85,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     const allowed: SettingsTabKey[] = [
       'profile',
-      'studyBuddy',
       'experience',
       'notifications',
       'subscription',
@@ -126,7 +104,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       const fromUrl = new URLSearchParams(window.location.search).get('tab');
       const allowed: SettingsTabKey[] = [
         'profile',
-        'studyBuddy',
         'experience',
         'notifications',
         'subscription',
@@ -149,6 +126,18 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     if (fromUrl === 'studentProfile') {
       navigate('/student-hub?section=others&target=profile', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The "Study buddy" tab used to live here too — those preferences now
+  // live directly inside Find Study Buddy (right where they're used to
+  // rank Discover), so old `?tab=studyBuddy` deep-links redirect there.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const fromUrl = new URLSearchParams(window.location.search).get('tab');
+    if (fromUrl === 'studyBuddy') {
+      navigate('/student-hub?section=buddies', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -180,12 +169,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       normalizeUsernameInput(existingUsername || fallback),
     );
   }, [profile?.profile?.name, (profile?.profile as any)?.username]);
-
-  useEffect(() => {
-    const persisted = preferences?.applicationSettings?.studyBuddyInterests;
-    if (!persisted) return;
-    setStudyBuddyInterests(normalizeStudyBuddyInterestProfile(persisted));
-  }, [preferences?.applicationSettings?.studyBuddyInterests]);
 
   const beforeUpload = async (file: File) => {
     if (!PROFILE_PHOTO_ALLOWED_TYPES.has(file.type)) {
@@ -221,27 +204,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     return false;
   };
 
-  const upsertUserPreferences = async (patch: any) => {
-    const updatePayload = {
-      ...(preferences?.id ? { id: preferences.id } : {}),
-      ...patch,
-    };
-    try {
-      await updateUserPreferences(updatePayload).unwrap();
-      return;
-    } catch (error: any) {
-      const msg = error?.data?.message || error?.message || '';
-      if (
-        msg.includes('Resource id not provided') ||
-        msg.includes('Resource not found')
-      ) {
-        await createUserPreferences(patch).unwrap();
-        return;
-      }
-      throw error;
-    }
-  };
-
   return (
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
       {/* Editorial header — single serif title + subtitle. The "Account"
@@ -260,8 +222,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         </Paragraph>
       </div>
 
-      {/* Tab strip — Profile / Study buddy / Experience / Notifications.
-          Security tab intentionally omitted (no UI to back it). */}
+      {/* Tab strip — Subscription / Account / Roadmap / Experience /
+          Notifications. Security tab intentionally omitted (no UI to
+          back it). */}
       <nav className={styles.tabs} aria-label="Settings sections">
         {/* Subscription first — it's the most common reason students open
             settings, and the default tab on a bare ?tab-less load. */}
@@ -281,13 +244,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => setActiveTab('profile')}
         >
           {t('studentHub.settingsMock.account', 'Account')}
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'studyBuddy' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('studyBuddy')}
-        >
-          {t('studentHub.settingsMock.studyBuddy', 'Study buddy')}
         </button>
         <button
           type="button"
@@ -333,6 +289,22 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => navigate('/student-hub?section=others&target=profile')}
         >
           {t('studentHub.settingsMock.profileHubHintLink', 'Edit your profile →')}
+        </a>
+      </div>
+
+      {/* Pointer to Study Buddy preferences — that editing surface moved
+          into the Find Study Buddy hub itself (right where matching
+          happens), so it's no longer a Settings tab. */}
+      <div className={styles.profileHubHint}>
+        {t(
+          'studentHub.settingsMock.studyBuddyMovedHintText',
+          'Study buddy preferences moved to Find Study Buddy.',
+        )}
+        <a
+          className={styles.profileHubHintLink}
+          onClick={() => navigate('/student-hub?section=buddies')}
+        >
+          {t('studentHub.settingsMock.studyBuddyMovedHintLink', 'Find a study buddy →')}
         </a>
       </div>
 
@@ -450,113 +422,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       {/* The legacy "Subscription" card shown above used to live here; it
           has been removed. The new Phase 1B "Subscription & billing" tab
           (rendered below when activeTab === 'subscription') replaces it. */}
-
-      {activeTab === 'studyBuddy' && (
-      <Card
-        className={styles.card}
-        title={
-          <>
-            <UsersIcon size={18} style={{ marginRight: 8 }} />
-            {t('studentHub.settingsMock.studyBuddyInterestsTitle', 'Study Buddy Interests')}
-          </>
-        }
-      >
-        <Paragraph type="secondary" className={styles.studyBuddyHelper}>
-          {t(
-            'studentHub.settingsMock.studyBuddyInterestsDesc',
-            'Add your current exam prep, destinations, and major goals so buddy requests are based on alignment.',
-          )}
-        </Paragraph>
-        <div className={styles.studyBuddyFields}>
-          <div>
-            <label className={styles.label}>
-              {t('studentHub.settingsMock.currentPrep', 'What are you preparing now?')}
-            </label>
-            <Select
-              mode="multiple"
-              size="large"
-              className={styles.studyBuddySelect}
-              value={studyBuddyInterests.examPrep}
-              onChange={(values) => setStudyBuddyInterests((prev) => ({ ...prev, examPrep: values }))}
-              options={EXAM_PREP_OPTIONS}
-              placeholder={t('studentHub.settingsMock.selectPrep', 'Select exam prep interests')}
-            />
-          </div>
-          <div>
-            <label className={styles.label}>
-              {t('studentHub.settingsMock.applicationGoals', 'Application destination goals')}
-            </label>
-            <Select
-              mode="multiple"
-              size="large"
-              className={styles.studyBuddySelect}
-              value={studyBuddyInterests.applicationGoals}
-              onChange={(values) =>
-                setStudyBuddyInterests((prev) => ({ ...prev, applicationGoals: values }))
-              }
-              options={APPLICATION_GOAL_OPTIONS}
-              placeholder={t('studentHub.settingsMock.selectDestinationGoals', 'Select destination goals')}
-            />
-          </div>
-          <div>
-            <label className={styles.label}>
-              {t('studentHub.settingsMock.intendedMajors', 'Intended major(s)')}
-            </label>
-            <Select
-              mode="multiple"
-              size="large"
-              className={styles.studyBuddySelect}
-              value={studyBuddyInterests.intendedMajors}
-              onChange={(values) =>
-                setStudyBuddyInterests((prev) => ({ ...prev, intendedMajors: values }))
-              }
-              options={INTENDED_MAJOR_OPTIONS}
-              placeholder={t('studentHub.settingsMock.selectMajors', 'Select intended majors')}
-            />
-          </div>
-          <div>
-            <label className={styles.label}>
-              {t('studentHub.settingsMock.focusAreas', 'Support focus areas (optional)')}
-            </label>
-            <Select
-              mode="multiple"
-              size="large"
-              className={styles.studyBuddySelect}
-              value={studyBuddyInterests.focusAreas}
-              onChange={(values) => setStudyBuddyInterests((prev) => ({ ...prev, focusAreas: values }))}
-              options={FOCUS_AREA_OPTIONS}
-              placeholder={t('studentHub.settingsMock.selectFocusAreas', 'Select support areas')}
-            />
-          </div>
-        </div>
-        <div className={styles.btnRow}>
-          <Button
-            type="primary"
-            loading={savingPreferences}
-            onClick={async () => {
-              try {
-                await upsertUserPreferences({
-                  applicationSettings: {
-                    ...(preferences?.applicationSettings || {}),
-                    studyBuddyInterests: normalizeStudyBuddyInterestProfile(studyBuddyInterests),
-                  },
-                });
-                message.success(
-                  t(
-                    'studentHub.settingsMock.studyBuddyInterestsSaved',
-                    'Study buddy interests saved.',
-                  ),
-                );
-              } catch (error: any) {
-                message.error(error?.data?.message || t('common.error', 'Failed to save interests'));
-              }
-            }}
-          >
-            {t('studentHub.settingsMock.saveStudyBuddyInterests', 'Save study buddy interests')}
-          </Button>
-        </div>
-      </Card>
-      )}
 
       {activeTab === 'experience' && isSuperAdmin && (
         <Card

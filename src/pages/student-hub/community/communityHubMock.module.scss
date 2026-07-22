@@ -2803,6 +2803,66 @@
   }
 }
 
+// —— Study Buddy matching preferences (relocated from Settings) ——
+.buddyPrefsCard {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 20px;
+}
+
+.buddyPrefsHelper {
+  margin-bottom: 16px !important;
+}
+
+.buddyPrefsSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.buddyPrefsChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.buddyPrefsChip {
+  margin: 0;
+}
+
+.buddyPrefsFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+  margin-bottom: 16px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.buddyPrefsFieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 6px;
+}
+
+.buddyPrefsSelect {
+  width: 100%;
+}
+
+.buddyPrefsActions {
+  display: flex;
+  gap: 10px;
+}
+
 .studyBuddyHub {
   width: 100%;
 }

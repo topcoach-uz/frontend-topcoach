@@ -346,28 +346,6 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
   font-size: 13px;
 }
 
-.btnRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.studyBuddyHelper {
-  margin-bottom: 14px !important;
-  font-size: 13px;
-}
-
-.studyBuddyFields {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.studyBuddySelect {
-  width: 100%;
-}
-
 .compareHeading {
   display: block;
   margin-bottom: 4px !important;

@@ -61,7 +61,6 @@ import {
   admissionsPreviewEmbedUrl,
   type AdmissionsYoutubePreviewSpec,
 } from 'src/constants/admissionsPreviewVideos';
-import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterests';
 import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
@@ -100,54 +99,6 @@ const MOCK_COUNTS = {
   mentors: 0,
   admissions: 6,
 };
-
-type BuddyCandidate = {
-  id: string;
-  name: string;
-  goal: string;
-  distance: string;
-  interests: StudyBuddyInterestProfile;
-};
-
-const MOCK_BUDDY_CANDIDATES: BuddyCandidate[] = [
-  {
-    id: 'bd1',
-    name: 'Priya Nair',
-    goal: 'Looking for SAT math accountability (3x/week).',
-    distance: 'Same schedule',
-    interests: {
-      examPrep: ['sat'],
-      applicationGoals: ['apply-usa'],
-      intendedMajors: ['major-medicine'],
-      focusAreas: ['focus-deadlines', 'focus-essays'],
-    },
-  },
-  {
-    id: 'bd2',
-    name: 'Omar Hassan',
-    goal: 'Need a buddy for essay reviews and IELTS prep.',
-    distance: 'Same timeline',
-    interests: {
-      examPrep: ['ielts'],
-      applicationGoals: ['apply-uk'],
-      intendedMajors: ['major-law'],
-      focusAreas: ['focus-essays', 'focus-interview'],
-    },
-  },
-  {
-    id: 'bd3',
-    name: 'Sofia Ivanova',
-    goal: 'Research portfolio partner for STEM applications.',
-    distance: '2h timezone difference',
-    interests: {
-      examPrep: ['sat', 'toefl'],
-      applicationGoals: ['apply-usa', 'scholarships'],
-      intendedMajors: ['major-engineering', 'major-cs'],
-      focusAreas: ['focus-research', 'focus-activities'],
-    },
-  },
-];
-
 
 /**
  * Wraps ResearchPrepPage and resolves the current user's Full Support
@@ -990,7 +941,7 @@ export default function CommunityHubMockPage() {
                 <p className={styles.editorialDesc}>
                   {t(
                     'studentHub.hub.findSomeoneDesc',
-                    'Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in tests, timelines, and study windows.',
+                    'Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in exam prep, destination goals, intended majors, and focus areas.',
                   )}
                 </p>
               </header>

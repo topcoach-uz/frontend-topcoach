@@ -2481,7 +2481,7 @@
   "studentHub.hub.fullSupportDesc": "Работайте со своим персональным ментором",
   "studentHub.hub.feed": "Лента",
   "studentHub.hub.feedLocked": "Требуется доступ к сообществу",
-  "studentHub.hub.findSomeoneDesc": "Общайтесь с ровесниками, у которых похожие цели, расписание подготовки и целевые школы. Оценка совпадения основана на пересечении тестов, сроков и учебных окон.",
+  "studentHub.hub.findSomeoneDesc": "Общайтесь с ровесниками, у которых похожие цели, расписание подготовки и целевые школы. Оценка совпадения основана на пересечении в подготовке к экзаменам, целях по поступлению, специальностях и направлениях поддержки.",
   "studentHub.hub.findSomeoneTitle": "Найдите единомышленника.",
   "studentHub.hub.findStudyBuddy": "Найти учебного партнёра",
   "studentHub.hub.goToAdmissionsLessons": "Перейти к урокам поступления",
@@ -2551,5 +2551,16 @@
   "studentHub.feed.joinSession": "Присоединиться",
   "studentHub.feed.viewAllSessions": "Смотреть все",
   "studentHub.settingsMock.profileHubHintText": "Хотите отредактировать личный, академический профиль и профиль активностей?",
-  "studentHub.settingsMock.profileHubHintLink": "Редактировать профиль →"
+  "studentHub.settingsMock.profileHubHintLink": "Редактировать профиль →",
+  "studentHub.buddyPrefs.title": "Ваши предпочтения для подбора",
+  "studentHub.buddyPrefs.descHelper": "Мы используем это, чтобы найти подходящих напарников.",
+  "studentHub.buddyPrefs.editButton": "Изменить предпочтения",
+  "studentHub.buddyPrefs.saveButton": "Сохранить предпочтения",
+  "studentHub.buddyPrefs.cancelButton": "Отмена",
+  "studentHub.buddyPrefs.moreChips": "+{{count}} ещё",
+  "studentHub.buddyConsent.guidelineVisibilityBody": "После присоединения сверстники смогут найти вас и отправить запрос на основе общих целей.",
+  "studentHub.hub.studyBuddyGoalsBannerCta": "Найти напарника",
+  "studentHub.hub.studyBuddyGoalsBannerTitle": "Укажите свои учебные цели, чтобы найти напарника",
+  "studentHub.settingsMock.studyBuddyMovedHintText": "Настройки напарника по учёбе перенесены в раздел «Найти напарника».",
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Найти напарника →"
 }

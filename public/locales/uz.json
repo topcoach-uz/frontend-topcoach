@@ -2481,7 +2481,7 @@
   "studentHub.hub.fullSupportDesc": "Shaxsiy mentoringiz bilan ishlang",
   "studentHub.hub.feed": "Lenta",
   "studentHub.hub.feedLocked": "Jamoaga kirish talab qilinadi",
-  "studentHub.hub.findSomeoneDesc": "Maqsadlari, tayyorgarlik jadvali va maqsadli maktablari o'xshash tengdoshlaringiz bilan bog'laning. Moslik balli testlar, muddatlar va o'qish vaqtlarining mosligiga asoslangan.",
+  "studentHub.hub.findSomeoneDesc": "Maqsadlari, tayyorgarlik jadvali va maqsadli maktablari o'xshash tengdoshlaringiz bilan bog'laning. Moslik balli imtihonlarga tayyorgarlik, maqsadli yo'nalishlar, mo'ljallangan mutaxassisliklar va yordam yo'nalishlari mosligiga asoslangan.",
   "studentHub.hub.findSomeoneTitle": "Bir yo'lda ketayotgan hamrohni toping.",
   "studentHub.hub.findStudyBuddy": "O'quv hamrohini topish",
   "studentHub.hub.goToAdmissionsLessons": "Qabul darslariga o'tish",
@@ -2551,5 +2551,16 @@
   "studentHub.feed.joinSession": "Qo'shilish",
   "studentHub.feed.viewAllSessions": "Barchasini ko'rish",
   "studentHub.settingsMock.profileHubHintText": "Shaxsiy, akademik va faoliyat profilingizni tahrirlashni xohlaysizmi?",
-  "studentHub.settingsMock.profileHubHintLink": "Profilni tahrirlash →"
+  "studentHub.settingsMock.profileHubHintLink": "Profilni tahrirlash →",
+  "studentHub.buddyPrefs.title": "Moslashtirish afzalliklaringiz",
+  "studentHub.buddyPrefs.descHelper": "Bularni mos hamrohlarni topish uchun ishlatamiz.",
+  "studentHub.buddyPrefs.editButton": "Afzalliklarni tahrirlash",
+  "studentHub.buddyPrefs.saveButton": "Afzalliklarni saqlash",
+  "studentHub.buddyPrefs.cancelButton": "Bekor qilish",
+  "studentHub.buddyPrefs.moreChips": "+{{count}} yana",
+  "studentHub.buddyConsent.guidelineVisibilityBody": "Qo'shilganingizdan so'ng, tengdoshlaringiz sizni topib, umumiy maqsadlaringiz asosida so'rov yuborishlari mumkin.",
+  "studentHub.hub.studyBuddyGoalsBannerCta": "Hamroh topish",
+  "studentHub.hub.studyBuddyGoalsBannerTitle": "Hamroh topish uchun o'quv maqsadlaringizni belgilang",
+  "studentHub.settingsMock.studyBuddyMovedHintText": "O'quv hamrohi afzalliklari “Hamroh topish” bo'limiga ko'chirildi.",
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Hamroh topish →"
 }

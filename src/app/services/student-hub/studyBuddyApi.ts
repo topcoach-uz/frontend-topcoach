@@ -102,9 +102,6 @@ export const studyBuddyApi = RtkApi.injectEndpoints({
       query: (id) => ({ url: `/study-buddy/requests/${id}/reject`, method: 'POST' }),
       invalidatesTags: ['StudyBuddy'],
     }),
-    studyBuddyPeerPreviews: build.mutation<{ previews: Record<string, string[]> }, { userIds: string[] }>({
-      query: (body) => ({ url: '/study-buddy/peer-previews', method: 'POST', body }),
-    }),
   }),
 });
 
@@ -117,5 +114,4 @@ export const {
   useStudyBuddyCancelRequestMutation,
   useStudyBuddyAcceptRequestMutation,
   useStudyBuddyRejectRequestMutation,
-  useStudyBuddyPeerPreviewsMutation,
 } = studyBuddyApi;

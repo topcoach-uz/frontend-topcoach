@@ -2481,7 +2481,7 @@
   "studentHub.hub.fullSupportDesc": "Work with your dedicated mentor",
   "studentHub.hub.feed": "Feed",
   "studentHub.hub.feedLocked": "Community access required",
-  "studentHub.hub.findSomeoneDesc": "Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in tests, timelines, and study windows.",
+  "studentHub.hub.findSomeoneDesc": "Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in exam prep, destination goals, intended majors, and focus areas.",
   "studentHub.hub.findSomeoneTitle": "Find someone on the same path.",
   "studentHub.hub.findStudyBuddy": "Find Study Buddy",
   "studentHub.hub.goToAdmissionsLessons": "Go to admissions lessons",
@@ -2551,5 +2551,16 @@
   "studentHub.feed.joinSession": "Join",
   "studentHub.feed.viewAllSessions": "View all",
   "studentHub.settingsMock.profileHubHintText": "Looking to edit your personal, academic & activities profile?",
-  "studentHub.settingsMock.profileHubHintLink": "Edit your profile →"
+  "studentHub.settingsMock.profileHubHintLink": "Edit your profile →",
+  "studentHub.buddyPrefs.title": "Your matching preferences",
+  "studentHub.buddyPrefs.descHelper": "We use these to find aligned buddies.",
+  "studentHub.buddyPrefs.editButton": "Edit preferences",
+  "studentHub.buddyPrefs.saveButton": "Save preferences",
+  "studentHub.buddyPrefs.cancelButton": "Cancel",
+  "studentHub.buddyPrefs.moreChips": "+{{count}} more",
+  "studentHub.buddyConsent.guidelineVisibilityBody": "Once you join, peers can discover you and send buddy requests based on your shared goals.",
+  "studentHub.hub.studyBuddyGoalsBannerCta": "Find a study buddy",
+  "studentHub.hub.studyBuddyGoalsBannerTitle": "Set your study goals to find a buddy",
+  "studentHub.settingsMock.studyBuddyMovedHintText": "Study buddy preferences moved to Find Study Buddy.",
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Find a study buddy →"
 }
