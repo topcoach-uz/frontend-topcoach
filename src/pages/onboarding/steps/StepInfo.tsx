@@ -1,15 +1,16 @@
-import { useState } from 'react';
-import { Input, Select, InputNumber, message } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { Input, Select, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { CustomButton } from 'src/components/common';
 import { useAppDispatch } from 'src/app/store';
 import { updateProfile } from 'src/app/slices/authSlice';
 import { usePatchOnboardingMutation } from 'src/app/services/users';
 import {
-  useLazyGetMyStudentProfileQuery,
+  useEnsureMyProfileMutation,
   useUpdateMyStudentProfileMutation,
 } from 'src/app/services/student-hub/studentProfileApi';
 import { COUNTRY_NATIONALITY_OPTIONS } from 'src/pages/events/youth-leaders-application/countryNationalityOptions';
+import i18n from 'src/lib/i18n';
 import { nextStepId } from './types';
 import styles from '../onboarding.module.scss';
 
@@ -19,55 +20,60 @@ interface Props {
   onNext: () => void;
 }
 
+type LanguageCode = 'en' | 'uz' | 'ru' | 'kk';
+
+// Endonyms (a language's name for itself) are never run through t() —
+// mirrors src/components/language_select/index.tsx, the app's one existing
+// language switcher, which hardcodes these same 4 labels for the same reason.
+const LANGUAGE_OPTIONS: { value: LanguageCode; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'uz', label: "O'zbek" },
+  { value: 'ru', label: 'Русский' },
+  { value: 'kk', label: 'Qoraqalpoq' },
+];
+
 /**
- * Wizard Step 2 — "Tell us about yourself" (first/last name, country,
- * optional phone, optional SAT score).
+ * Wizard Step 2 — "Tell us about yourself" (first/last name, grade level,
+ * school, country, study destination, preferred language, optional phone).
+ *
+ * SAT was REMOVED from this step — it's now collected in the major-match
+ * dashboard popup instead (see CLAUDE.md session notes).
  *
  * Deviates from the shell's usual "step calls onNext, index.tsx owns the
  * PATCH" convention (see StepTelegram.tsx for the established precedent)
- * because Continue here fans out to THREE different backend writes:
+ * because Continue here fans out to several backend writes:
  *
  *   1. profile.name -> PUT /users (the same `updateProfile` thunk the
- *      Google-signup role step and StepSource's mentor-exit already use —
- *      `dispatch(updateProfile({ profile: {...} })).unwrap()`).
+ *      Google-signup role step and StepSource's mentor-exit already use).
  *      REQUIRED — gates advancement.
  *
- *   2. country/SAT -> PATCH /student-profile/my-profile — BEST EFFORT ONLY,
- *      never gates advancement. Verified live against a running :8085 with
- *      a brand-new account:
- *        - the endpoint 404s ("Student profile not found for this user")
- *          until the student has a `student_profiles` row at all — the
- *          common case for a user who just signed up and is on step 2 of
- *          onboarding;
- *        - even once a row exists, the `personalProfile` nested DTO
- *          validates `languages`/`personalInterests`/`careerGoals`/
- *          `intendedMajors` as required non-empty arrays on ANY PATCH that
- *          includes `personalProfile` at all (unlike `academicProfile`,
- *          which is a true partial/optional DTO) — fields this step does
- *          not collect (they come later, in the full profile builder /
- *          major-match flow).
- *      So: we only attempt this write when a `student_profiles` row
- *      already exists; we only send `country` when the existing
- *      `personalProfile` already carries those four required arrays
- *      (spreading the *whole* existing object so we never clobber other
- *      fields — the same "load full object, submit full object" merge
- *      discipline `AcademicProfile.tsx` relies on); we always spread the
- *      existing `academicProfile.testScores` before overriding `sat.total`
- *      so other test scores (ACT/IELTS/TOEFL/etc.) already on file survive.
- *      Any failure here is swallowed (console.warn) — for a brand-new
- *      account this section is a no-op today, which is fine: country/SAT
- *      are collected again in the real profile builder before Community.
+ *   2. POST /student-profile/management/ensure-profile — fired ONCE on
+ *      mount (ref-guarded), best-effort. This is the reliability fix for
+ *      the known gap where a brand-new account has no `student_profiles`
+ *      row yet when it reaches this step, which made the my-profile PATCH
+ *      below silently 404. The Continue handler awaits this same in-flight
+ *      promise (if it hasn't settled yet) before attempting #3, so the
+ *      ensure-profile call always resolves BEFORE the PATCH is sent,
+ *      regardless of how quickly the user fills the form.
  *
- *   3. phoneNumber + step -> PATCH /users/onboarding (the shell's usual
+ *   3. ONE combined PATCH /student-profile/my-profile with
+ *      personalProfile{country, studyAbroadGoals} + academicProfile
+ *      {gradeLevel, currentSchool} — BEST EFFORT ONLY, never gates
+ *      advancement. The backend's UpdatePersonalProfileDto /
+ *      UpdateAcademicProfileDto are true partial DTOs (every field
+ *      optional, service merges onto the existing row) — no need to
+ *      fetch+merge the existing profile client-side first.
+ *
+ *   4. phoneNumber + step -> PATCH /users/onboarding (the shell's usual
  *      per-step pointer advance), done here (not in index.tsx) since it
- *      must run after #1/#2 resolve. REQUIRED — gates advancement.
+ *      must run after #1/#3 resolve. REQUIRED — gates advancement.
  */
 export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [patchOnboarding] = usePatchOnboardingMutation();
+  const [ensureMyProfile] = useEnsureMyProfileMutation();
   const [updateMyStudentProfile] = useUpdateMyStudentProfileMutation();
-  const [fetchMyStudentProfile] = useLazyGetMyStudentProfileQuery();
 
   const [{ first: initialFirst, last: initialLast }] = useState(() => {
     const trimmed = (initialName ?? '').trim();
@@ -78,11 +84,29 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
 
   const [firstName, setFirstName] = useState(initialFirst);
   const [lastName, setLastName] = useState(initialLast);
+  const [gradeLevel, setGradeLevel] = useState<string | undefined>(undefined);
+  const [school, setSchool] = useState('');
   const [country, setCountry] = useState<string | undefined>(undefined);
+  const [destinations, setDestinations] = useState<string[]>([]);
+  const [language, setLanguage] = useState<LanguageCode>(
+    () => (localStorage.getItem('i18nextLng') as LanguageCode) || 'en',
+  );
   const [phone, setPhone] = useState(initialPhone ?? '');
-  const [satTotal, setSatTotal] = useState<number | null>(null);
   const [errors, setErrors] = useState<{ firstName?: string; lastName?: string; country?: string }>({});
   const [submitting, setSubmitting] = useState(false);
+
+  // Fire-and-forget, ref-guarded — see class-level comment above (#2).
+  const ensureProfileRef = useRef<Promise<unknown> | null>(null);
+  useEffect(() => {
+    if (ensureProfileRef.current) return;
+    ensureProfileRef.current = ensureMyProfile()
+      .unwrap()
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn('[onboarding] ensure-profile failed (best-effort, non-blocking)', err);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const clearError = (key: keyof typeof errors) => {
     setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
@@ -103,52 +127,48 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
     return Object.keys(next).length === 0;
   };
 
-  // Best-effort — see class-level comment above. Never throws to the caller.
-  const persistCountryAndSat = async () => {
-    if (!country && satTotal == null) return;
+  const handleDestinationChange = (values: string[]) => {
+    const justAddedNotSure = values.includes('not-sure') && !destinations.includes('not-sure');
+    if (justAddedNotSure) {
+      setDestinations(['not-sure']);
+      return;
+    }
+    setDestinations(values.filter((v) => v !== 'not-sure'));
+  };
+
+  const handleLanguageChange = (lng: LanguageCode) => {
+    setLanguage(lng);
+    // Live switch (no reload) — i18next-browser-languagedetector persists
+    // to localStorage['i18nextLng'] automatically on changeLanguage, same
+    // as src/components/language_select/index.tsx.
+    i18n.changeLanguage(lng);
+  };
+
+  // Best-effort — see class-level comment above (#3). Never throws to the caller.
+  const persistProfileFields = async () => {
+    const personalProfile: Record<string, unknown> = {};
+    if (country) personalProfile.country = country;
+    if (destinations.length > 0) {
+      personalProfile.studyAbroadGoals = destinations.includes('not-sure')
+        ? { interest: true }
+        : { interest: true, targetCountries: destinations };
+    }
+
+    const academicProfile: Record<string, unknown> = {};
+    if (gradeLevel) academicProfile.gradeLevel = gradeLevel;
+    if (school.trim()) academicProfile.currentSchool = school.trim();
+
+    const patch: Record<string, unknown> = {};
+    if (Object.keys(personalProfile).length > 0) patch.personalProfile = personalProfile;
+    if (Object.keys(academicProfile).length > 0) patch.academicProfile = academicProfile;
+    if (Object.keys(patch).length === 0) return;
+
     try {
-      const existing = await fetchMyStudentProfile().unwrap().catch(() => null);
-      if (!existing) return; // no student_profiles row yet — nothing to merge into, skip silently
-
-      const patch: Record<string, unknown> = {};
-
-      if (country) {
-        const existingPersonal = existing.personalProfile as any;
-        const hasRequiredArrays =
-          existingPersonal &&
-          Array.isArray(existingPersonal.languages) &&
-          existingPersonal.languages.length > 0 &&
-          Array.isArray(existingPersonal.personalInterests) &&
-          existingPersonal.personalInterests.length > 0 &&
-          Array.isArray(existingPersonal.careerGoals) &&
-          existingPersonal.careerGoals.length > 0 &&
-          Array.isArray(existingPersonal.intendedMajors) &&
-          existingPersonal.intendedMajors.length > 0;
-        if (hasRequiredArrays) {
-          patch.personalProfile = { ...existingPersonal, country };
-        }
-        // else: skip — sending country alone would 400 (backend requires
-        // those four arrays on any personalProfile write) and we won't
-        // fabricate placeholder data for real AI-recommendation fields.
-      }
-
-      if (satTotal != null) {
-        const existingAcademic = (existing.academicProfile as any) ?? {};
-        patch.academicProfile = {
-          ...existingAcademic,
-          testScores: {
-            ...(existingAcademic.testScores ?? {}),
-            sat: { ...(existingAcademic.testScores?.sat ?? {}), total: satTotal },
-          },
-        };
-      }
-
-      if (Object.keys(patch).length > 0) {
-        await updateMyStudentProfile(patch as any).unwrap();
-      }
+      if (ensureProfileRef.current) await ensureProfileRef.current;
+      await updateMyStudentProfile(patch as any).unwrap();
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.warn('[onboarding] could not save country/SAT to student profile (best-effort, non-blocking)', err);
+      console.warn('[onboarding] could not save profile fields (best-effort, non-blocking)', err);
     }
   };
 
@@ -159,7 +179,7 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
       await dispatch(updateProfile({ profile: { name: fullName } } as any)).unwrap();
 
-      await persistCountryAndSat();
+      await persistProfileFields();
 
       const next = nextStepId('info') ?? 'source';
       await patchOnboarding({ phoneNumber: phone.trim() || undefined, step: next }).unwrap();
@@ -173,6 +193,25 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
       setSubmitting(false);
     }
   };
+
+  const GRADE_LEVEL_OPTIONS = [
+    { value: '9', label: t('onboarding.info.gradeLevel9', '9th grade') },
+    { value: '10', label: t('onboarding.info.gradeLevel10', '10th grade') },
+    { value: '11', label: t('onboarding.info.gradeLevel11', '11th grade') },
+    { value: '12', label: t('onboarding.info.gradeLevel12', '12th grade') },
+    { value: 'gap-year', label: t('onboarding.info.gradeLevelGapYear', 'Gap year') },
+    { value: 'graduated', label: t('onboarding.info.gradeLevelGraduated', 'Already graduated') },
+  ];
+
+  const DESTINATION_OPTIONS = [
+    { value: 'usa', label: t('onboarding.info.destinationUsa', 'USA') },
+    { value: 'uk', label: t('onboarding.info.destinationUk', 'UK') },
+    { value: 'canada', label: t('onboarding.info.destinationCanada', 'Canada') },
+    { value: 'europe', label: t('onboarding.info.destinationEurope', 'Europe') },
+    { value: 'asia', label: t('onboarding.info.destinationAsia', 'Asia') },
+    { value: 'australia', label: t('onboarding.info.destinationAustralia', 'Australia') },
+    { value: 'not-sure', label: t('onboarding.info.destinationNotSure', 'Not sure yet') },
+  ];
 
   return (
     <div className={styles.body}>
@@ -215,56 +254,102 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
         </div>
       </div>
 
-      <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel} htmlFor="onboarding-country">
-          {t('onboarding.info.country', 'Country')}
-        </label>
-        <Select
-          id="onboarding-country"
-          size="large"
-          showSearch
-          value={country}
-          onChange={(v) => {
-            setCountry(v);
-            clearError('country');
-          }}
-          placeholder={t('onboarding.info.countryPlaceholder', 'Select your country')}
-          options={COUNTRY_NATIONALITY_OPTIONS as unknown as { value: string; label: string }[]}
-          filterOption={(input, option) =>
-            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-          }
-          status={errors.country ? 'error' : undefined}
-        />
-        {errors.country && <div className={styles.errorMsg}>{errors.country}</div>}
+      <div className={styles.fieldRow}>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-grade-level">
+            {t('onboarding.info.gradeLevel', 'Grade level')}
+          </label>
+          <Select
+            id="onboarding-grade-level"
+            size="large"
+            allowClear
+            value={gradeLevel}
+            onChange={(v) => setGradeLevel(v)}
+            placeholder={t('onboarding.info.gradeLevelPlaceholder', 'Select your grade level')}
+            options={GRADE_LEVEL_OPTIONS}
+          />
+        </div>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-school">
+            {t('onboarding.info.school', 'Your school')}
+          </label>
+          <Input
+            id="onboarding-school"
+            size="large"
+            value={school}
+            onChange={(e) => setSchool(e.target.value)}
+            placeholder={t('onboarding.info.schoolPlaceholder', 'Your school name')}
+            maxLength={160}
+          />
+        </div>
       </div>
 
-      <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel} htmlFor="onboarding-phone">
-          {t('onboarding.info.phone', 'Phone number (optional)')}
-        </label>
-        <Input
-          id="onboarding-phone"
-          size="large"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder={t('onboarding.info.phonePlaceholder', '+998 90 123 45 67')}
-        />
+      <div className={styles.fieldRow}>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-country">
+            {t('onboarding.info.country', 'Country')}
+          </label>
+          <Select
+            id="onboarding-country"
+            size="large"
+            showSearch
+            value={country}
+            onChange={(v) => {
+              setCountry(v);
+              clearError('country');
+            }}
+            placeholder={t('onboarding.info.countryPlaceholder', 'Select your country')}
+            options={COUNTRY_NATIONALITY_OPTIONS as unknown as { value: string; label: string }[]}
+            filterOption={(input, option) =>
+              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+            status={errors.country ? 'error' : undefined}
+          />
+          {errors.country && <div className={styles.errorMsg}>{errors.country}</div>}
+        </div>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-destination">
+            {t('onboarding.info.destination', 'Where do you want to study?')}
+          </label>
+          <Select
+            id="onboarding-destination"
+            size="large"
+            mode="multiple"
+            allowClear
+            value={destinations}
+            onChange={handleDestinationChange}
+            placeholder={t('onboarding.info.destinationPlaceholder', 'Select destinations')}
+            options={DESTINATION_OPTIONS}
+          />
+        </div>
       </div>
 
-      <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel} htmlFor="onboarding-sat">
-          {t('onboarding.info.sat', 'SAT score (optional)')}
-        </label>
-        <InputNumber
-          id="onboarding-sat"
-          size="large"
-          min={400}
-          max={1600}
-          style={{ width: '100%' }}
-          value={satTotal}
-          onChange={(v) => setSatTotal(v ?? null)}
-          placeholder={t('onboarding.info.satPlaceholder', 'e.g. 1450')}
-        />
+      <div className={styles.fieldRow}>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-language">
+            {t('onboarding.info.language', 'Preferred language')}
+          </label>
+          <Select
+            id="onboarding-language"
+            size="large"
+            value={language}
+            onChange={handleLanguageChange}
+            placeholder={t('onboarding.info.languagePlaceholder', 'Select language')}
+            options={LANGUAGE_OPTIONS}
+          />
+        </div>
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel} htmlFor="onboarding-phone">
+            {t('onboarding.info.phone', 'Phone number (optional)')}
+          </label>
+          <Input
+            id="onboarding-phone"
+            size="large"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={t('onboarding.info.phonePlaceholder', '+998 90 123 45 67')}
+          />
+        </div>
       </div>
 
       <CustomButton type="primary" width="100%" onClick={handleContinue} loading={submitting}>

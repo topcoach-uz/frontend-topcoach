@@ -135,6 +135,8 @@ export interface AcademicProfile {
   gapYear: boolean;
   firstGeneration: boolean;
   financialAid: boolean;
+  gradeLevel?: string;
+  currentSchool?: string;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
   academicStrengthsAndInterests?: {
@@ -162,6 +164,8 @@ export interface CreateAcademicProfileRequest {
   gapYear?: boolean;
   firstGeneration?: boolean;
   financialAid?: boolean;
+  gradeLevel?: string;
+  currentSchool?: string;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
   academicStrengthsAndInterests?: {

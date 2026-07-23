@@ -91,6 +91,19 @@ export const studentProfileApi = RtkApi.injectEndpoints({
       invalidatesTags: ['StudentProfile'],
     }),
 
+    // Ensure the current user has a student_profiles row (+ child rows).
+    // Best-effort bootstrap for brand-new accounts — see StepInfo.tsx.
+    ensureMyProfile: builder.mutation<
+      { message: string; profile: Record<string, unknown> },
+      void
+    >({
+      query: () => ({
+        url: '/student-profile/management/ensure-profile',
+        method: 'POST',
+      }),
+      invalidatesTags: ['StudentProfile'],
+    }),
+
     // Delete student profile
     deleteStudentProfile: builder.mutation<void, string>({
       query: (id) => ({
@@ -143,6 +156,7 @@ export const {
   useCreateStudentProfileMutation,
   useUpdateStudentProfileMutation,
   useUpdateMyStudentProfileMutation,
+  useEnsureMyProfileMutation,
   useDeleteStudentProfileMutation,
   useCalculateCompletionMutation,
   useGetProfileStatsQuery,
