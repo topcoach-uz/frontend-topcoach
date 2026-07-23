@@ -2354,6 +2354,7 @@
   "onboarding.telegram.title": "Connect Telegram",
   "onboarding.telegram.subtitle": "Get session confirmations, reminders, and updates the moment they happen.",
   "onboarding.telegram.skip": "Skip for now",
+  "onboarding.telegram.completing": "One moment…",
   "onboarding.opportunity.title": "What you get with TopCoach",
   "onboarding.opportunity.subtitle": "Everything you need to build a winning application, in one place.",
   "onboarding.opportunity.benefit1": "Work 1:1 with real mentors who have been through the process.",

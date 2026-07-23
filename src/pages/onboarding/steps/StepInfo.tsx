@@ -24,7 +24,7 @@ interface Props {
  * optional phone, optional SAT score).
  *
  * Deviates from the shell's usual "step calls onNext, index.tsx owns the
- * PATCH" convention (see StepAcademic.tsx for the established precedent)
+ * PATCH" convention (see StepTelegram.tsx for the established precedent)
  * because Continue here fans out to THREE different backend writes:
  *
  *   1. profile.name -> PUT /users (the same `updateProfile` thunk the

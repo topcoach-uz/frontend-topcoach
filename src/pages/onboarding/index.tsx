@@ -24,20 +24,16 @@ import StepInfo from './steps/StepInfo';
 import StepSource from './steps/StepSource';
 import StepOpportunity from './steps/StepOpportunity';
 import StepTelegram from './steps/StepTelegram';
-import StepTrial from './steps/StepTrial';
-import StepMajorMatch from './steps/StepMajorMatch';
-import StepAcademic from './steps/StepAcademic';
 import styles from './onboarding.module.scss';
 
 /**
- * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 8 steps
- * (info -> source -> role -> opportunity -> telegram -> trial -> majorMatch
- * -> academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
- * step (StepAcademic.tsx owns its own patchOnboarding call — see the
- * comment on that component for why it deviates from the generic
- * advance()/onNext pattern used by every other step; StepInfo.tsx deviates
- * the same way, for the same reason: it needs to fan out to multiple
- * backend writes before advancing).
+ * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships 5 steps
+ * (info -> source -> role -> opportunity -> telegram). Completion
+ * (`onboardingCompletedAt`) fires at the 'telegram' step (StepTelegram.tsx
+ * owns its own patchOnboarding call — see the comment on that component for
+ * why it deviates from the generic advance()/onNext pattern used by every
+ * other step; StepInfo.tsx deviates the same way, for the same reason: it
+ * needs to fan out to multiple backend writes before advancing).
  *
  * 'role' now runs THIRD (after info + source). A student choosing 'role'
  * just advances to 'opportunity' like any other step; a mentor EXITS the
@@ -45,13 +41,18 @@ import styles from './onboarding.module.scss';
  * PUT /users mechanism the Google-signup role step uses, then navigate into
  * the mentor signup wizard at ?step=1) — see `handleRoleNext` below.
  *
+ * 'trial', 'majorMatch' and 'academic' were REMOVED (2026-07 trimmed-tail
+ * pass) — onboarding now ends after Telegram; the trial pitch, major-match
+ * assessment and placement-test handoff are reached later from inside the
+ * product itself, not during onboarding.
+ *
  * Reached whenever OnboardingGate decides a signed-in user's
  * `onboardingCompletedAt` is `null` (see src/lib/onboarding.ts and
  * src/pages/onboarding/OnboardingGate.tsx).
  *
  * Resume: on mount, jumps straight to `onboardingStep` from getMe, mapping
- * any legacy step value ('video'/'community'/'contact', from before this
- * step order was restructured) onto its closest surviving step, falling
+ * any legacy step value (from before this step order was restructured, or
+ * from before the tail was trimmed) onto its closest surviving step, falling
  * back to STEP_ORDER[0] ('info') if unrecognized (see `resolveResumeStepId`
  * in ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
  * always resumes correctly.
@@ -205,27 +206,6 @@ export default function OnboardingWizardPage() {
         "Get session confirmations, reminders, and updates the moment they happen.",
       ),
     },
-    trial: {
-      title: t('onboarding.trial.title', 'Try 7 days free'),
-      subtitle: t(
-        'onboarding.trial.subtitle',
-        'Unlock the full Community — mentors, sessions, and roadmap — with a free trial.',
-      ),
-    },
-    majorMatch: {
-      title: t('onboarding.majorMatch.title', 'Discover your best-fit major'),
-      subtitle: t(
-        'onboarding.majorMatch.subtitle',
-        'A short AI-powered assessment to help point you toward majors that fit you.',
-      ),
-    },
-    academic: {
-      title: t('onboarding.academic.title', "Let's find your academic level"),
-      subtitle: t(
-        'onboarding.academic.subtitle',
-        "One last step to unlock the Community and personalize your roadmap.",
-      ),
-    },
   };
 
   const current = meta[step];
@@ -235,7 +215,7 @@ export default function OnboardingWizardPage() {
 
   return (
     <div className={styles.page}>
-      <div className={`${styles.card} ${step === 'majorMatch' ? styles.stepWide : ''}`}>
+      <div className={styles.card}>
         {back && (
           <button
             type="button"
@@ -296,13 +276,7 @@ export default function OnboardingWizardPage() {
 
         {step === 'opportunity' && <StepOpportunity onNext={() => advance()} />}
 
-        {step === 'telegram' && <StepTelegram onNext={() => advance()} />}
-
-        {step === 'trial' && <StepTrial onNext={() => advance()} />}
-
-        {step === 'majorMatch' && <StepMajorMatch onNext={() => advance()} />}
-
-        {step === 'academic' && <StepAcademic />}
+        {step === 'telegram' && <StepTelegram />}
       </div>
     </div>
   );
