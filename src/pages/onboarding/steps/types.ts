@@ -2,14 +2,18 @@
  * Onboarding wizard step machinery shared by the shell (index.tsx) and each
  * step component.
  *
- * Restructured step order (2026-07): role -> info -> source -> opportunity
- * -> telegram -> trial -> majorMatch -> academic. 'info' (name/country/
- * phone/SAT) now runs right after role; 'source' gained a second
- * "why are you using TopCoach" question; the old 'video' + 'community'
- * interstitials were merged into a single 'opportunity' step; 'contact'
- * was folded into 'info' (phone is now collected there). Completion
- * (`onboardingCompletedAt`) still fires at the 'academic' step
- * (StepAcademic.tsx).
+ * Restructured step order (2026-07, general-info-first pass): info -> source
+ * -> role -> opportunity -> telegram -> trial -> majorMatch -> academic.
+ * 'info' (name/country/phone/SAT) now runs FIRST, before any role choice;
+ * 'source' (hear-about + "why are you using TopCoach") comes next; 'role'
+ * moved to third — a student there just advances to 'opportunity' like any
+ * other step, while a mentor EXITS the wizard entirely (profile.role ->
+ * Mentor via PUT /users, then navigate to the mentor signup wizard at
+ * ?step=1 — see the 'role' step's onNext handler in index.tsx). The old
+ * 'video' + 'community' interstitials were merged into a single
+ * 'opportunity' step; 'contact' was folded into 'info' (phone is now
+ * collected there). Completion (`onboardingCompletedAt`) still fires at the
+ * 'academic' step (StepAcademic.tsx).
  */
 export type OnboardingStepId =
   | 'role'
@@ -22,9 +26,9 @@ export type OnboardingStepId =
   | 'academic';
 
 export const STEP_ORDER: OnboardingStepId[] = [
-  'role',
   'info',
   'source',
+  'role',
   'opportunity',
   'telegram',
   'trial',
@@ -35,7 +39,7 @@ export const STEP_ORDER: OnboardingStepId[] = [
 // A user may have `onboardingStep` persisted from before this restructure
 // ('video'/'community'/'contact' no longer exist as steps). Map those to
 // their closest surviving step so a resuming user lands somewhere sane
-// instead of falling back all the way to 'role'.
+// instead of falling back all the way to STEP_ORDER[0].
 const LEGACY_STEP_REMAP: Record<string, OnboardingStepId> = {
   video: 'opportunity',
   community: 'opportunity',
@@ -49,14 +53,14 @@ export function isOnboardingStepId(value: unknown): value is OnboardingStepId {
 /**
  * Resolves a persisted `onboardingStep` (possibly a legacy value from
  * before the restructure, possibly unknown/missing) to a valid current
- * step, falling back to 'role'.
+ * step, falling back to the first step in STEP_ORDER ('info').
  */
 export function resolveResumeStepId(value: unknown): OnboardingStepId {
   if (isOnboardingStepId(value)) return value;
   if (typeof value === 'string' && LEGACY_STEP_REMAP[value]) {
     return LEGACY_STEP_REMAP[value];
   }
-  return 'role';
+  return STEP_ORDER[0];
 }
 
 export function nextStepId(current: OnboardingStepId): OnboardingStepId | null {

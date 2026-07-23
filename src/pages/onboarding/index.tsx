@@ -31,13 +31,19 @@ import styles from './onboarding.module.scss';
 
 /**
  * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships all 8 steps
- * (role -> info -> source -> opportunity -> telegram -> trial -> majorMatch
+ * (info -> source -> role -> opportunity -> telegram -> trial -> majorMatch
  * -> academic). Completion (`onboardingCompletedAt`) fires at the 'academic'
  * step (StepAcademic.tsx owns its own patchOnboarding call — see the
  * comment on that component for why it deviates from the generic
  * advance()/onNext pattern used by every other step; StepInfo.tsx deviates
  * the same way, for the same reason: it needs to fan out to multiple
  * backend writes before advancing).
+ *
+ * 'role' now runs THIRD (after info + source). A student choosing 'role'
+ * just advances to 'opportunity' like any other step; a mentor EXITS the
+ * wizard entirely there (profile.role -> Mentor via the same `updateProfile`
+ * PUT /users mechanism the Google-signup role step uses, then navigate into
+ * the mentor signup wizard at ?step=1) — see `handleRoleNext` below.
  *
  * Reached whenever OnboardingGate decides a signed-in user's
  * `onboardingCompletedAt` is `null` (see src/lib/onboarding.ts and
@@ -46,8 +52,8 @@ import styles from './onboarding.module.scss';
  * Resume: on mount, jumps straight to `onboardingStep` from getMe, mapping
  * any legacy step value ('video'/'community'/'contact', from before this
  * step order was restructured) onto its closest surviving step, falling
- * back to 'role' if unrecognized (see `resolveResumeStepId` in
- * ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
+ * back to STEP_ORDER[0] ('info') if unrecognized (see `resolveResumeStepId`
+ * in ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
  * always resumes correctly.
  */
 export default function OnboardingWizardPage() {
@@ -67,7 +73,7 @@ export default function OnboardingWizardPage() {
   // through the same OnboardingStatus shape OnboardingGate already uses.
   const onboardingUser = currentUser as (typeof currentUser & OnboardingStatus) | undefined;
 
-  const [step, setStep] = useState<OnboardingStepId>('role');
+  const [step, setStep] = useState<OnboardingStepId>(STEP_ORDER[0]);
   const [roleChoice, setRoleChoice] = useState<UserType>(UserRole.Student);
   const [submitting, setSubmitting] = useState(false);
   const [resolvedInitialStep, setResolvedInitialStep] = useState(false);
@@ -129,22 +135,35 @@ export default function OnboardingWizardPage() {
     setSubmitting(true);
     try {
       await patchOnboarding({ hearAboutSource: value, usageReasons: reasons, step: next }).unwrap();
-      if (roleChoice === UserRole.Mentor) {
-        // Mirrors the existing Google-signup role PATCH (proven pattern,
-        // ONBOARDING_DESIGN.md §1/§6) — step=1, never step=0, since an
-        // already-authenticated user hitting step 0's email-check 422s.
-        await dispatch(
-          updateProfile({ profile: { role: UserRole.Mentor } } as any),
-        ).unwrap();
-        navigate('/auth/signup/mentor?step=1');
-        return;
-      }
       setStep(next);
     } catch (err: any) {
       showError(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // 'role' now runs after info + source. A student just advances like any
+  // other step; a mentor EXITS the wizard here instead — mirrors the
+  // existing Google-signup role PATCH (proven pattern, ONBOARDING_DESIGN.md
+  // §1/§6) — step=1, never step=0, since an already-authenticated user
+  // hitting step 0's email-check 422s.
+  const handleRoleNext = async () => {
+    if (roleChoice === UserRole.Mentor) {
+      setSubmitting(true);
+      try {
+        await dispatch(
+          updateProfile({ profile: { role: UserRole.Mentor } } as any),
+        ).unwrap();
+        navigate('/auth/signup/mentor?step=1');
+      } catch (err: any) {
+        showError(err);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+    await advance();
   };
 
   const stepIndex = STEP_ORDER.indexOf(step);
@@ -248,7 +267,7 @@ export default function OnboardingWizardPage() {
           <div className={styles.body}>
             <RoleCard handleChange={setRoleChoice} selected={roleChoice} variant="onboarding" />
             <CustomButton
-              onClick={() => advance()}
+              onClick={handleRoleNext}
               type="primary"
               width="100%"
               loading={submitting}
