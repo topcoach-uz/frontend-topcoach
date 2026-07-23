@@ -2586,5 +2586,19 @@
   "studentHub.hub.studyBuddyGoalsBannerCta": "Hamroh topish",
   "studentHub.hub.studyBuddyGoalsBannerTitle": "Hamroh topish uchun o'quv maqsadlaringizni belgilang",
   "studentHub.settingsMock.studyBuddyMovedHintText": "O'quv hamrohi afzalliklari “Hamroh topish” bo'limiga ko'chirildi.",
-  "studentHub.settingsMock.studyBuddyMovedHintLink": "Hamroh topish →"
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Hamroh topish →",
+  "studentHub.majorMatchPrompt.title": "O'zingizga eng mos yo'nalishni toping",
+  "studentHub.majorMatchPrompt.lede": "Qisqa sun'iy intellekt asosidagi baholash sizning qiziqishlaringiz, qadriyatlaringiz va kuchli tomonlaringizni sizga chinakam mos keladigan yo'nalishlar bilan solishtiradi — shaxsiylashtirilgan, umumiy emas.",
+  "studentHub.majorMatchPrompt.fieldsHint": "Ixtiyoriy — agar ma'lumotlaringiz bo'lsa, natijalarni aniqlashtiradi.",
+  "studentHub.majorMatchPrompt.satLabel": "SAT umumiy bali (ixtiyoriy)",
+  "studentHub.majorMatchPrompt.satPlaceholder": "masalan, 1450",
+  "studentHub.majorMatchPrompt.ieltsLabel": "IELTS umumiy bali (ixtiyoriy)",
+  "studentHub.majorMatchPrompt.ieltsPlaceholder": "masalan, 7.0",
+  "studentHub.majorMatchPrompt.unlockNote": "Bepul urinishingizdan foydalandingiz — cheklovsiz moslashuvlar uchun Community obunasiga o'ting.",
+  "studentHub.majorMatchPrompt.startCta": "Baholashni boshlash (~15 daqiqa)",
+  "studentHub.majorMatchPrompt.unlockCta": "Cheklovsiz moslashuvlarni oching",
+  "studentHub.majorMatchPrompt.later": "Keyinroq",
+  "studentHub.hub.majorMatchBannerTitle": "O'zingizga eng mos yo'nalishni toping",
+  "studentHub.hub.majorMatchBannerDesc": "Qiziqishlaringiz, qadriyatlaringiz va kuchli tomonlaringizga mos yo'nalishlarni ko'rish uchun bepul sun'iy intellekt asosidagi baholashni bajaring.",
+  "studentHub.hub.majorMatchBannerCta": "Baholashni boshlash"
 }

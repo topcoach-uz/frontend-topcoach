@@ -2586,5 +2586,19 @@
   "studentHub.hub.studyBuddyGoalsBannerCta": "Найти напарника",
   "studentHub.hub.studyBuddyGoalsBannerTitle": "Укажите свои учебные цели, чтобы найти напарника",
   "studentHub.settingsMock.studyBuddyMovedHintText": "Настройки напарника по учёбе перенесены в раздел «Найти напарника».",
-  "studentHub.settingsMock.studyBuddyMovedHintLink": "Найти напарника →"
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Найти напарника →",
+  "studentHub.majorMatchPrompt.title": "Найдите свою идеальную специальность",
+  "studentHub.majorMatchPrompt.lede": "Короткая оценка на основе ИИ сопоставляет ваши интересы, ценности и сильные стороны со специальностями, которые действительно вам подходят — персонально, а не обобщённо.",
+  "studentHub.majorMatchPrompt.fieldsHint": "Необязательно — уточняет результаты, если данные под рукой.",
+  "studentHub.majorMatchPrompt.satLabel": "Общий балл SAT (необязательно)",
+  "studentHub.majorMatchPrompt.satPlaceholder": "например, 1450",
+  "studentHub.majorMatchPrompt.ieltsLabel": "Общий балл IELTS (необязательно)",
+  "studentHub.majorMatchPrompt.ieltsPlaceholder": "например, 7.0",
+  "studentHub.majorMatchPrompt.unlockNote": "Вы уже использовали бесплатную попытку — оформите подписку Community для неограниченных подборов.",
+  "studentHub.majorMatchPrompt.startCta": "Пройти оценку (~15 мин)",
+  "studentHub.majorMatchPrompt.unlockCta": "Разблокировать неограниченные подборы",
+  "studentHub.majorMatchPrompt.later": "Позже",
+  "studentHub.hub.majorMatchBannerTitle": "Найдите свою идеальную специальность",
+  "studentHub.hub.majorMatchBannerDesc": "Пройдите бесплатную оценку на основе ИИ, чтобы увидеть специальности, которые подходят вашим интересам, ценностям и сильным сторонам.",
+  "studentHub.hub.majorMatchBannerCta": "Пройти оценку"
 }

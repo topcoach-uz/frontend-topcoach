@@ -1,0 +1,78 @@
+// Standalone stylesheet (not nested inside StudentHubLayout.scss) so this
+// banner can be dropped in/out independently of that file's build-up of
+// nested selectors. Visual weight mirrors .study-goals-sticky-banner-* —
+// burgundy-tinted instead of the amber "study goals" treatment so the two
+// read as related but distinct nudges.
+.major-match-sticky-banner-outer {
+  position: sticky;
+  top: 0;
+  z-index: 26;
+  flex-shrink: 0;
+  margin: 0;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fbf1f2;
+  border-bottom: 1px solid rgba(123, 31, 47, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+.major-match-sticky-banner-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.major-match-sticky-banner-copy {
+  flex: 1;
+  min-width: min(100%, 240px);
+}
+
+.major-match-sticky-banner-title {
+  margin: 0 0 4px;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.35;
+  color: #7b1f2f;
+}
+
+.major-match-sticky-banner-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.major-match-sticky-banner-cta {
+  flex-shrink: 0;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  height: auto !important;
+  padding: 8px 22px !important;
+  background: #7b1f2f !important;
+  border: 2px solid #7b1f2f !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background: #611825 !important;
+    border-color: #611825 !important;
+    color: #ffffff !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .major-match-sticky-banner-inner {
+    padding: 12px 12px;
+  }
+
+  .major-match-sticky-banner-cta {
+    width: 100%;
+  }
+}

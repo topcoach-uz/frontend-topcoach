@@ -2586,5 +2586,19 @@
   "studentHub.hub.studyBuddyGoalsBannerCta": "Dos tabıw",
   "studentHub.hub.studyBuddyGoalsBannerTitle": "Dos tabıw ushın oqıw maqsetlerińizdi belgileń",
   "studentHub.settingsMock.studyBuddyMovedHintText": "Oqıw dosı ústinlikleri «Dos tabıw» bólimine kóshirildi.",
-  "studentHub.settingsMock.studyBuddyMovedHintLink": "Dos tabıw →"
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Dos tabıw →",
+  "studentHub.majorMatchPrompt.title": "Óz-ózińizge eń sáykes bagdardı tabıń",
+  "studentHub.majorMatchPrompt.lede": "Qisqa jasalma intellekt tiykarındaǵı test qızıǵıwshılıqlarıńızdı, qádiriyatlarıńızdı hám kúshli tárepiińizdi haqıyqıy sáykes bagdarlar menen salıstıradı — jeke, ulıwma emes.",
+  "studentHub.majorMatchPrompt.fieldsHint": "Ixtiyariy — maǵlıwmatlarıńız bolsa nátiyjelerdi anıqlaydı.",
+  "studentHub.majorMatchPrompt.satLabel": "SAT jámi ballı (ixtiyariy)",
+  "studentHub.majorMatchPrompt.satPlaceholder": "mısalı, 1450",
+  "studentHub.majorMatchPrompt.ieltsLabel": "IELTS jámi ballı (ixtiyariy)",
+  "studentHub.majorMatchPrompt.ieltsPlaceholder": "mısalı, 7.0",
+  "studentHub.majorMatchPrompt.unlockNote": "Siz bepul urınısıńızdı paydalandıńız — sheksiz sáykestikler ushın Community jazılıwın alıń.",
+  "studentHub.majorMatchPrompt.startCta": "Testti baslaw (~15 minut)",
+  "studentHub.majorMatchPrompt.unlockCta": "Sheksiz sáykestiklerdi ashıw",
+  "studentHub.majorMatchPrompt.later": "Keyinirek",
+  "studentHub.hub.majorMatchBannerTitle": "Óz-ózińizge eń sáykes bagdardı tabıń",
+  "studentHub.hub.majorMatchBannerDesc": "Qızıǵıwshılıqlarıńızǵa, qádiriyatlarıńızǵa hám kúshli tárepiińizge sáykes bagdarlardı kóriw ushın bepul JI test ótiń.",
+  "studentHub.hub.majorMatchBannerCta": "Testti baslaw"
 }

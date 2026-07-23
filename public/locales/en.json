@@ -2586,5 +2586,19 @@
   "studentHub.hub.studyBuddyGoalsBannerCta": "Find a study buddy",
   "studentHub.hub.studyBuddyGoalsBannerTitle": "Set your study goals to find a buddy",
   "studentHub.settingsMock.studyBuddyMovedHintText": "Study buddy preferences moved to Find Study Buddy.",
-  "studentHub.settingsMock.studyBuddyMovedHintLink": "Find a study buddy →"
+  "studentHub.settingsMock.studyBuddyMovedHintLink": "Find a study buddy →",
+  "studentHub.majorMatchPrompt.title": "Find your best-fit major",
+  "studentHub.majorMatchPrompt.lede": "A short AI-powered assessment matches your interests, values, and strengths to majors that actually fit you — personalized, not generic.",
+  "studentHub.majorMatchPrompt.fieldsHint": "Optional — sharpens your results if you have them handy.",
+  "studentHub.majorMatchPrompt.satLabel": "SAT total (optional)",
+  "studentHub.majorMatchPrompt.satPlaceholder": "e.g. 1450",
+  "studentHub.majorMatchPrompt.ieltsLabel": "IELTS overall (optional)",
+  "studentHub.majorMatchPrompt.ieltsPlaceholder": "e.g. 7.0",
+  "studentHub.majorMatchPrompt.unlockNote": "You've used your free attempt — subscribe to Community for unlimited matches.",
+  "studentHub.majorMatchPrompt.startCta": "Take the assessment (~15 min)",
+  "studentHub.majorMatchPrompt.unlockCta": "Unlock unlimited matches",
+  "studentHub.majorMatchPrompt.later": "Later",
+  "studentHub.hub.majorMatchBannerTitle": "Find your best-fit major",
+  "studentHub.hub.majorMatchBannerDesc": "Take the free AI-powered assessment to see majors that fit your interests, values, and strengths.",
+  "studentHub.hub.majorMatchBannerCta": "Take the assessment"
 }
