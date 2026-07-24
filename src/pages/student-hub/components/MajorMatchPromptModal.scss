@@ -60,6 +60,20 @@
     color: #333;
   }
 
+  &__field--full {
+    flex: 1 1 100%;
+  }
+
+  &__field-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .ant-select {
+      flex-shrink: 0;
+    }
+  }
+
   &__unlock-note {
     margin: 0 0 20px;
     font-size: 13px;

@@ -56,6 +56,7 @@ import {
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
+import MajorMatchCollectModal from './components/MajorMatchCollectModal';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useIscCardState } from '../events/_components/useIscCardState';
 import './MyProgressEditorialView.scss';
@@ -209,6 +210,7 @@ const MyProgressEditorialView: React.FC = () => {
   const { upcomingSessions, pastSessions, cancelledSessions } = useMentorSessions();
   // Tab state for the Mentor sessions card. Declared up here so the
   // `visibleSessions` memo below can read it without TDZ errors.
+  const [mmCollectOpen, setMmCollectOpen] = useState(false);
   const [sessionTab, setSessionTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   /* — Withdraw flow state ────────────────────────────────────────
@@ -554,7 +556,7 @@ const MyProgressEditorialView: React.FC = () => {
                     <button
                       type="button"
                       className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
-                      onClick={() => navigate(mm.destination)}
+                      onClick={() => setMmCollectOpen(true)}
                     >
                       {t('studentHub.myProgress.majorMatchCta', 'Try this free AI major tool')}
                       <ArrowRight size={14} />
@@ -1215,6 +1217,8 @@ const MyProgressEditorialView: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <MajorMatchCollectModal open={mmCollectOpen} onClose={() => setMmCollectOpen(false)} />
     </div>
   );
 };

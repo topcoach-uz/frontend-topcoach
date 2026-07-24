@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal, InputNumber } from 'antd';
+import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Compass, Lock } from 'lucide-react';
 import { CustomButton } from 'src/components/common';
 import { useUpdateMyStudentProfileMutation } from 'src/app/services/student-hub/studentProfileApi';
 import { MAJOR_MATCH_PROMPT_CLOSED_KEY, useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import {
+  useMajorMatchProfileFieldsState,
+  MajorMatchProfileFieldsBody,
+} from './MajorMatchProfileFields';
 import './MajorMatchPromptModal.scss';
 
 /** Same chrome-less surfaces StudentHubLayout already excludes from other
@@ -39,8 +43,7 @@ export default function MajorMatchPromptModal() {
 
   const [open, setOpen] = useState(false);
   const hasAutoOpened = useRef(false);
-  const [satTotal, setSatTotal] = useState<number | null>(null);
-  const [ieltsOverall, setIeltsOverall] = useState<number | null>(null);
+  const fields = useMajorMatchProfileFieldsState();
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -68,37 +71,18 @@ export default function MajorMatchPromptModal() {
   const handleTakeAssessment = async () => {
     setSubmitting(true);
     try {
-      if (satTotal != null || ieltsOverall != null) {
-        // Best-effort only — never blocks navigation. Same merge discipline
-        // as StepInfo.tsx's persistCountryAndSat: spread the existing
-        // academicProfile/testScores so nothing else on file gets clobbered,
-        // and never touch personalProfile (its DTO 400s on partial writes).
+      // Best-effort only — never blocks navigation. See
+      // MajorMatchProfileFields.tsx's buildPatch for the merge discipline
+      // (spreads the existing academicProfile/testScores so nothing else on
+      // file gets clobbered).
+      const patch = fields.buildPatch(profile);
+      if (patch) {
         try {
-          const existingAcademic = (profile?.academicProfile as any) ?? {};
-          const patch: Record<string, unknown> = {
-            academicProfile: {
-              ...existingAcademic,
-              testScores: {
-                ...(existingAcademic.testScores ?? {}),
-                ...(satTotal != null
-                  ? { sat: { ...(existingAcademic.testScores?.sat ?? {}), total: satTotal } }
-                  : {}),
-                ...(ieltsOverall != null
-                  ? {
-                      ielts: {
-                        ...(existingAcademic.testScores?.ielts ?? {}),
-                        overall: ieltsOverall,
-                      },
-                    }
-                  : {}),
-              },
-            },
-          };
           await updateMyStudentProfile(patch as any).unwrap();
         } catch (err) {
           // eslint-disable-next-line no-console
           console.warn(
-            '[majorMatchPrompt] could not save SAT/IELTS to student profile (best-effort, non-blocking)',
+            '[majorMatchPrompt] could not save profile fields to student profile (best-effort, non-blocking)',
             err,
           );
         }
@@ -118,7 +102,7 @@ export default function MajorMatchPromptModal() {
       onCancel={handleLater}
       footer={null}
       centered
-      width={480}
+      width={520}
       maskClosable={false}
       className="major-match-prompt-modal"
     >
@@ -135,41 +119,7 @@ export default function MajorMatchPromptModal() {
         )}
       </p>
 
-      {!showUnlockCta && (
-        <div className="major-match-prompt-modal__fields">
-          <p className="major-match-prompt-modal__fields-hint">
-            {t(
-              'studentHub.majorMatchPrompt.fieldsHint',
-              "Optional — sharpens your results if you have them handy.",
-            )}
-          </p>
-          <div className="major-match-prompt-modal__field-row">
-            <label className="major-match-prompt-modal__field">
-              <span>{t('studentHub.majorMatchPrompt.satLabel', 'SAT total (optional)')}</span>
-              <InputNumber
-                min={400}
-                max={1600}
-                placeholder={t('studentHub.majorMatchPrompt.satPlaceholder', 'e.g. 1450')}
-                value={satTotal}
-                onChange={(v) => setSatTotal(typeof v === 'number' ? v : null)}
-                style={{ width: '100%' }}
-              />
-            </label>
-            <label className="major-match-prompt-modal__field">
-              <span>{t('studentHub.majorMatchPrompt.ieltsLabel', 'IELTS overall (optional)')}</span>
-              <InputNumber
-                min={0}
-                max={9}
-                step={0.5}
-                placeholder={t('studentHub.majorMatchPrompt.ieltsPlaceholder', 'e.g. 7.0')}
-                value={ieltsOverall}
-                onChange={(v) => setIeltsOverall(typeof v === 'number' ? v : null)}
-                style={{ width: '100%' }}
-              />
-            </label>
-          </div>
-        </div>
-      )}
+      {!showUnlockCta && <MajorMatchProfileFieldsBody {...fields} />}
 
       {showUnlockCta && (
         <p className="major-match-prompt-modal__unlock-note">
