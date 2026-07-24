@@ -32,7 +32,6 @@ import {
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
 import { useInvalidateGetMeMutation } from 'src/app/services/users';
-import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import dayjs from 'dayjs';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -55,6 +54,7 @@ import {
   isPastCaafRegistrationDeadline,
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
+import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useIscCardState } from '../events/_components/useIscCardState';
@@ -84,10 +84,11 @@ const MyProgressEditorialView: React.FC = () => {
   const { data: me } = useGetMeQuery(undefined);
   const profile = useTypedSelector((s) => s.auth.profile);
   const { isCommunityEnrolled } = useJourneyExperience();
-  // Funnel-aware Community CTA — sends the user to the right next-step
-  // (placement test → profile → roadmap → subscription) based on how
-  // far they've made it through the funnel.
-  const communityGate = useCommunityAccessGate();
+  // Major-Match hero (non-Community dashboard) — knows whether the
+  // student has already completed the assessment and where the CTA
+  // should route (assessment start, or the community gate destination
+  // if their one free attempt is already used).
+  const mm = useMajorMatchPromptState();
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -464,7 +465,10 @@ const MyProgressEditorialView: React.FC = () => {
     <div className="myprog">
       <header className="myprog__header">
         <div className="myprog__head-left">
-          <h1 className="myprog__title">{greeting}</h1>
+          <h1 className="myprog__title">
+            {t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
+          </h1>
+          <p className="myprog__greeting">{greeting}</p>
           <p className="myprog__desc">
             {t(
               'studentHub.myProgress.desc',
@@ -498,55 +502,66 @@ const MyProgressEditorialView: React.FC = () => {
           the tracking telegram bot still pings notifications elsewhere. */}
       <TelegramConnectionChecklist />
 
-      {/* Non-Community users see a two-column "Join Community" hero in
-          place of the learning-progress card — the progress card is
-          useless when they're enrolled in nothing AND we have a better
-          story to tell about Community. Community users see the real
-          progress card below. The standalone community upsell strip is
-          retired since this hero replaces it. */}
+      {/* Non-Community users see the AI Major Match hero in place of the
+          learning-progress card — the progress card is useless when
+          they're enrolled in nothing, and Major Match is the highest-signal
+          free tool we can put in front of a not-yet-enrolled student.
+          Community users see the real progress card below. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
-          <article className="myprog__card myprog__joinhero">
-            <div className="myprog__joinhero__left">
-              <span className="myprog__joinhero__eyebrow">
-                {t('studentHub.myProgress.communityEyebrow', 'The Community')}
+          <article className="myprog__card myprog__mmhero">
+            <div className="myprog__mmhero__left">
+              <span className="myprog__mmhero__eyebrow">
+                {t('studentHub.myProgress.majorMatchEyebrow', 'AI Major Match')}
               </span>
-              <h2 className="myprog__joinhero__title">
-                {t('studentHub.myProgress.communityTitleLine1', 'Your admissions journey')}
-                <br />
-                <em>{t('studentHub.myProgress.communityTitleEm', 'starts here.')}</em>
-              </h2>
-              <p className="myprog__joinhero__lede">
-                {t(
-                  'studentHub.myProgress.communityLede',
-                  'One membership unlocks every tool you need to get into your dream university.',
-                )}
-              </p>
-              <ul
-                className="myprog__joinhero__chips"
-                aria-label={t('studentHub.myProgress.communityChipsAriaLabel', 'Community unlocks')}
-              >
-                <li>{t('studentHub.myProgress.chipSat', 'Full SAT Prep')}</li>
-                <li>{t('studentHub.myProgress.chipMajorMatch', 'AI Major Match')}</li>
-                <li>{t('studentHub.myProgress.chipResearch', 'Research Prep · 8 weeks')}</li>
-                <li>{t('studentHub.myProgress.chipMentors', '1:1 Mentors')}</li>
-                <li>{t('studentHub.myProgress.chipBuddies', 'Study Buddies')}</li>
-                <li>{t('studentHub.myProgress.chipWorkshops', 'Live Workshops')}</li>
-              </ul>
-              <div className="myprog__joinhero__actions">
-                <button
-                  type="button"
-                  className="myprog__btn myprog__btn--primary myprog__joinhero__cta"
-                  onClick={() => navigate(communityGate.destination)}
-                  disabled={communityGate.state === 'loading'}
-                >
-                  {t('studentHub.myProgress.joinCommunity', 'Join the Community')}
-                  <ArrowRight size={14} />
-                </button>
-                <p className="myprog__joinhero__micro">
-                  {t('studentHub.myProgress.trialMicro', '7-day free trial · cancel anytime')}
-                </p>
-              </div>
+              {mm.hasCompletedAssessment ? (
+                <>
+                  <h2 className="myprog__mmhero__title">
+                    {t('studentHub.myProgress.majorMatchTakenTitle', 'Your major match is ready')}
+                  </h2>
+                  <p className="myprog__mmhero__lede">
+                    {t(
+                      'studentHub.myProgress.majorMatchTakenLede',
+                      'Revisit your best-fit majors and recommendations.',
+                    )}
+                  </p>
+                  <div className="myprog__mmhero__actions">
+                    <button
+                      type="button"
+                      className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
+                      onClick={() => navigate('/student-hub/psychometric-assessment')}
+                    >
+                      {t('studentHub.myProgress.majorMatchViewResults', 'View your results')}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="myprog__mmhero__title">
+                    {t(
+                      'studentHub.myProgress.majorMatchNotTakenTitle',
+                      'Struggling with finding the right major?',
+                    )}
+                  </h2>
+                  <p className="myprog__mmhero__lede">
+                    {t(
+                      'studentHub.myProgress.majorMatchNotTakenLede',
+                      'Try our free AI major tool — answer a few questions and get your best-fit majors in ~15 minutes.',
+                    )}
+                  </p>
+                  <div className="myprog__mmhero__actions">
+                    <button
+                      type="button"
+                      className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
+                      onClick={() => navigate(mm.destination)}
+                    >
+                      {t('studentHub.myProgress.majorMatchCta', 'Try this free AI major tool')}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Trailer — the right column is itself shaped 16:9 so
@@ -554,9 +569,9 @@ const MyProgressEditorialView: React.FC = () => {
                 letterbox. Card height is driven by the video's
                 natural aspect ratio; the editorial copy on the left
                 centers vertically to match. */}
-            <div className="myprog__joinhero__video">
+            <div className="myprog__mmhero__video">
               <iframe
-                className="myprog__joinhero__video-iframe"
+                className="myprog__mmhero__video-iframe"
                 src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
                 title="Top Coach Community"
                 loading="lazy"
@@ -565,6 +580,37 @@ const MyProgressEditorialView: React.FC = () => {
               />
             </div>
           </article>
+
+          {/* Faint program links — low-key, secondary entry points that
+              sit under the hero without competing with the Major Match CTA. */}
+          <nav
+            className="myprog__mmlinks"
+            aria-label={t('studentHub.myProgress.programLinksAriaLabel', 'Program links')}
+          >
+            <button
+              type="button"
+              className="myprog__mmlinks__item"
+              onClick={() => navigate('/student-hub/sat-prep')}
+            >
+              {t('studentHub.myProgress.linkTestPrep', 'Test prep')}
+            </button>
+            <span className="myprog__mmlinks__sep" aria-hidden="true">·</span>
+            <button
+              type="button"
+              className="myprog__mmlinks__item"
+              onClick={() => navigate('/student-hub/research-prep')}
+            >
+              {t('studentHub.myProgress.linkResearch', 'Research')}
+            </button>
+            <span className="myprog__mmlinks__sep" aria-hidden="true">·</span>
+            <button
+              type="button"
+              className="myprog__mmlinks__item"
+              onClick={() => navigate('/student-hub?section=others&target=essays')}
+            >
+              {t('studentHub.myProgress.linkPersonalStatement', 'Personal statement')}
+            </button>
+          </nav>
         </section>
       ) : null}
 
