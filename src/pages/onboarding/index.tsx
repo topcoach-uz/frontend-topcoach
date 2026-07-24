@@ -28,18 +28,18 @@ import styles from './onboarding.module.scss';
 
 /**
  * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships 5 steps
- * (info -> source -> role -> opportunity -> telegram). Completion
+ * (role -> info -> source -> opportunity -> telegram). Completion
  * (`onboardingCompletedAt`) fires at the 'telegram' step (StepTelegram.tsx
  * owns its own patchOnboarding call — see the comment on that component for
  * why it deviates from the generic advance()/onNext pattern used by every
  * other step; StepInfo.tsx deviates the same way, for the same reason: it
  * needs to fan out to multiple backend writes before advancing).
  *
- * 'role' now runs THIRD (after info + source). A student choosing 'role'
- * just advances to 'opportunity' like any other step; a mentor EXITS the
- * wizard entirely there (profile.role -> Mentor via the same `updateProfile`
- * PUT /users mechanism the Google-signup role step uses, then navigate into
- * the mentor signup wizard at ?step=1) — see `handleRoleNext` below.
+ * 'role' now runs FIRST. A student choosing 'role' just advances to 'info'
+ * like any other step; a mentor EXITS the wizard entirely there
+ * (profile.role -> Mentor via the same `updateProfile` PUT /users mechanism
+ * the Google-signup role step uses, then navigate into the mentor signup
+ * wizard at ?step=1) — see `handleRoleNext` below.
  *
  * 'trial', 'majorMatch' and 'academic' were REMOVED (2026-07 trimmed-tail
  * pass) — onboarding now ends after Telegram; the trial pitch, major-match
@@ -53,7 +53,7 @@ import styles from './onboarding.module.scss';
  * Resume: on mount, jumps straight to `onboardingStep` from getMe, mapping
  * any legacy step value (from before this step order was restructured, or
  * from before the tail was trimmed) onto its closest surviving step, falling
- * back to STEP_ORDER[0] ('info') if unrecognized (see `resolveResumeStepId`
+ * back to STEP_ORDER[0] ('role') if unrecognized (see `resolveResumeStepId`
  * in ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
  * always resumes correctly.
  */
