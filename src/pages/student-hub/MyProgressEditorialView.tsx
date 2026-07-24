@@ -529,7 +529,7 @@ const MyProgressEditorialView: React.FC = () => {
                     <button
                       type="button"
                       className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
-                      onClick={() => navigate('/student-hub/psychometric-assessment')}
+                      onClick={() => navigate('/student-hub?section=ai-major-match')}
                     >
                       {t('studentHub.myProgress.majorMatchViewResults', 'View your results')}
                       <ArrowRight size={14} />

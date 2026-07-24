@@ -59,7 +59,7 @@ export function useMajorMatchPromptState() {
     () =>
       !canStart && requiresCommunityEnrollment
         ? gate.destination
-        : '/student-hub/psychometric-assessment',
+        : '/student-hub?section=ai-major-match',
     [canStart, requiresCommunityEnrollment, gate.destination],
   );
 
