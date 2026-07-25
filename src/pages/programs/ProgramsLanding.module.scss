@@ -371,29 +371,6 @@ $pl-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
   margin: 0 0 18px;
 }
 
-.chipRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 22px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 50px;
-  background: rgba(123, 31, 47, 0.06);
-  color: $pl-brand;
-  font-size: 0.78rem;
-  font-weight: 500;
-
-  svg {
-    flex-shrink: 0;
-  }
-}
-
 .status {
   display: inline-flex;
   align-items: center;
@@ -509,6 +486,7 @@ $pl-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', ui-monospace, monospace;
   border-radius: 50px;
   background: $pl-brand;
   color: #fff;
+  text-decoration: none;
   font-family: inherit;
   font-size: 0.92rem;
   font-weight: 600;

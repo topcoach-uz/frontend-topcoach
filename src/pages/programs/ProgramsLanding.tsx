@@ -1,26 +1,9 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight,
-  Calendar,
-  Target,
-  FlaskConical,
-  Briefcase,
-  Clock,
-  CircleDollarSign,
-  GitBranch,
-  Users,
-  Layers,
-  FileText,
-} from 'lucide-react';
+import { ArrowRight, Calendar } from 'lucide-react';
 import styles from './ProgramsLanding.module.scss';
 
 type Accent = 'flagship' | 'early' | 'research' | 'bootcamp' | 'masters';
-
-interface Chip {
-  icon: React.ReactNode;
-  label: string;
-}
 
 interface Program {
   id: string;
@@ -33,7 +16,6 @@ interface Program {
   href: string;
   /** Cover art in public/img. Falls back to the accent gradient when absent. */
   image?: string;
-  chips: Chip[];
   statValue: string;
   statLabel: string;
   comingSoon?: boolean;
@@ -55,11 +37,7 @@ const PROGRAMS: Program[] = [
     description:
       'A 12-month strategic roadmap for Grade 10 students — SAT, a research project, a finished essay draft, and full application support, phased across the year.',
     href: '/programs/full-support',
-    chips: [
-      { icon: <Target size={13} />, label: 'Early SAT' },
-      { icon: <FlaskConical size={13} />, label: 'Research project' },
-      { icon: <FileText size={13} />, label: 'Essay by July' },
-    ],
+    image: '/img/full-support.jpeg',
     statValue: '26+',
     statLabel: 'hours of 1:1 mentorship',
   },
@@ -74,11 +52,6 @@ const PROGRAMS: Program[] = [
       'A two-phase head start for Grade 8–9 students — explore global universities, then build a university-ready portfolio project with a mentor.',
     href: '/programs/admissions-mentorship',
     image: '/img/admissions.jpeg',
-    chips: [
-      { icon: <Clock size={13} />, label: '6 hrs / mo' },
-      { icon: <CircleDollarSign size={13} />, label: 'Sponsored SAT' },
-      { icon: <GitBranch size={13} />, label: '3 pathways' },
-    ],
     statValue: '2–3 yrs',
     statLabel: 'profile head start',
   },
@@ -93,11 +66,6 @@ const PROGRAMS: Program[] = [
       'An intensive 12-week path from research question to a finished paper, one-on-one with an experienced academic mentor.',
     href: '/programs/research',
     image: '/img/research_program.jpeg',
-    chips: [
-      { icon: <Users size={13} />, label: '12 hrs 1:1' },
-      { icon: <Layers size={13} />, label: '3 phases' },
-      { icon: <FileText size={13} />, label: 'Final paper' },
-    ],
     statValue: '1',
     statLabel: 'completed research paper',
   },
@@ -113,10 +81,6 @@ const PROGRAMS: Program[] = [
     href: '',
     image: '/img/writing_bootcamp.jpeg',
     comingSoon: true,
-    chips: [
-      { icon: <FileText size={13} />, label: 'Essay sprints' },
-      { icon: <Users size={13} />, label: 'Expert review' },
-    ],
     statValue: '',
     statLabel: '',
   },
@@ -132,10 +96,6 @@ const PROGRAMS: Program[] = [
     href: '',
     image: '/img/masters_mba.jpeg',
     comingSoon: true,
-    chips: [
-      { icon: <Target size={13} />, label: 'School list' },
-      { icon: <Briefcase size={13} />, label: 'Interview prep' },
-    ],
     statValue: '',
     statLabel: '',
   },
@@ -224,15 +184,6 @@ const ProgramsLanding: React.FC = () => {
                   <h2 className={styles.cardTitle}>{program.title}</h2>
                   <p className={styles.cardDesc}>{program.description}</p>
 
-                  <div className={styles.chipRow}>
-                    {program.chips.map((chip) => (
-                      <span key={chip.label} className={styles.chip}>
-                        {chip.icon}
-                        {chip.label}
-                      </span>
-                    ))}
-                  </div>
-
                   <div className={styles.cardFooter}>
                     {isSoon ? (
                       <span className={styles.soonNote}>Details announced soon</span>
@@ -264,13 +215,14 @@ const ProgramsLanding: React.FC = () => {
               program is right for you.
             </p>
           </div>
-          <button
-            type="button"
+          <a
             className={styles.ctaButton}
-            onClick={() => navigate('/contact')}
+            href="https://docs.google.com/forms/d/e/1FAIpQLSd7MSHdk0f1QImSZBinty38AzJXvTJy9rlha-Lg3UMX_tpfYA/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Book a strategy call <ArrowRight size={16} />
-          </button>
+          </a>
         </aside>
       </div>
     </main>
