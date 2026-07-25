@@ -13,6 +13,7 @@ import {
   useGetRecommendationsQuery,
 } from '../../../app/services/student-hub/psychometricApi';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import MajorMatchCollectModal from '../components/MajorMatchCollectModal';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
@@ -73,6 +74,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // "unlock unlimited matches" edge — see useMajorMatchPrompt.ts.
   const mm = useMajorMatchPromptState();
   const majorMatchStudentProfileId = !isReadOnly ? mm.studentProfileId : undefined;
+
+  // Opened by the not-taken CTA below instead of navigating straight to the
+  // assessment — same pre-assessment profile-field collection step as the
+  // dashboard hero (MyProgressEditorialView's setMmCollectOpen). The modal
+  // handles the used-attempt/community-unlock swap internally.
+  const [mmCollectOpen, setMmCollectOpen] = useState(false);
 
   // Pulled independently (not just from the shared hook) because we also
   // need the actual riasecCode/recommendations payloads, not just the
@@ -362,7 +369,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                     {t('studentHub.profile.majorMatch.viewResults', 'View full results')}
                   </Button>
                 ) : (
-                  <Button type="primary" onClick={() => navigate(mm.destination)}>
+                  <Button type="primary" onClick={() => setMmCollectOpen(true)}>
                     {majorMatchShowUnlockCta && <Lock size={14} style={{ marginRight: 6 }} />}
                     {majorMatchShowUnlockCta
                       ? t('studentHub.majorMatchPrompt.unlockCta', 'Unlock unlimited matches')
@@ -383,6 +390,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
           className="profile-tabs"
         />
       </Card>
+
+      {!isReadOnly && (
+        <MajorMatchCollectModal open={mmCollectOpen} onClose={() => setMmCollectOpen(false)} />
+      )}
     </div>
   );
 };

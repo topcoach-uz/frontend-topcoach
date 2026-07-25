@@ -2,6 +2,12 @@
   .ant-modal-content {
     border-radius: 16px;
     padding: 32px 28px 28px;
+    // The field set grew (6 questions across MajorMatchProfileFields.tsx)
+    // — cap the whole modal to the viewport and let IT scroll, rather than
+    // only the fields block, so the title/CTA never get pushed off-screen
+    // on short mobile viewports.
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   &__icon {
@@ -64,13 +70,33 @@
     flex: 1 1 100%;
   }
 
+  &__field-hint {
+    font-weight: 400;
+    font-size: 11px;
+    color: #8a8a8a;
+  }
+
   &__field-inline {
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
 
     .ant-select {
       flex-shrink: 0;
+    }
+  }
+
+  &__activities {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .ant-modal-content {
+      padding: 24px 16px 20px;
+      max-height: 92vh;
     }
   }
 

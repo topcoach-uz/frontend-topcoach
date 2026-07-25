@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { InputNumber, Select, Segmented } from 'antd';
+import { InputNumber, Select, Segmented, Rate, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+const { TextArea } = Input;
+
 export type EnglishTestType = 'ielts' | 'toefl';
+export type ScoreTestType = 'sat' | 'act';
 
 export interface MajorMatchProfileFieldsState {
-  satTotal: number | null;
-  setSatTotal: (v: number | null) => void;
+  scoreType: ScoreTestType;
+  setScoreType: (v: ScoreTestType) => void;
+  scoreValue: number | null;
+  setScoreValue: (v: number | null) => void;
   englishTestType: EnglishTestType;
   setEnglishTestType: (v: EnglishTestType) => void;
   englishScore: number | null;
@@ -17,14 +22,20 @@ export interface MajorMatchProfileFieldsState {
   setGpaScale: (v: number | null) => void;
   major: string | undefined;
   setMajor: (v: string | undefined) => void;
-  countries: string[];
-  setCountries: (v: string[]) => void;
+  majorConfidence: number;
+  setMajorConfidence: (v: number) => void;
+  careerGoals: string;
+  setCareerGoals: (v: string) => void;
+  /** Fixed-length-3 tuple of free-text "notable activity" strings. */
+  activities: string[];
+  setActivity: (index: number, value: string) => void;
   /** Builds the /student-profile/my-profile PATCH payload from whatever
-   * fields are non-empty, merged onto `profile`'s existing academicProfile
-   * (same spread-and-override discipline MajorMatchPromptModal already used
-   * for SAT/IELTS, and StepInfo.tsx uses for personalProfile). Returns null
-   * when nothing was filled in — callers should treat that as "nothing to
-   * save", not send an empty patch. */
+   * fields are non-empty, merged onto `profile`'s existing academicProfile/
+   * personalProfile/activitiesProfile (same spread-and-override discipline
+   * MajorMatchPromptModal already used for SAT/IELTS, and StepInfo.tsx uses
+   * for personalProfile). Returns null when nothing was filled in —
+   * callers should treat that as "nothing to save", not send an empty
+   * patch. */
   buildPatch: (profile: any) => Record<string, unknown> | null;
 }
 
@@ -53,39 +64,41 @@ const GPA_SCALE_OPTIONS = [
   { value: 20, label: '20' },
 ];
 
-/** Same destination taxonomy + "not sure" exclusivity as
- * onboarding/steps/StepInfo.tsx's DESTINATION_OPTIONS/handleDestinationChange
- * — duplicated (StepInfo builds its options inline with local t() calls) so
- * this stays self-contained; keep the two lists in sync manually if the
- * destination taxonomy ever changes. */
-function useDestinationOptions() {
-  const { t } = useTranslation();
-  return [
-    { value: 'usa', label: t('onboarding.info.destinationUsa', 'USA') },
-    { value: 'uk', label: t('onboarding.info.destinationUk', 'UK') },
-    { value: 'canada', label: t('onboarding.info.destinationCanada', 'Canada') },
-    { value: 'europe', label: t('onboarding.info.destinationEurope', 'Europe') },
-    { value: 'asia', label: t('onboarding.info.destinationAsia', 'Asia') },
-    { value: 'australia', label: t('onboarding.info.destinationAustralia', 'Australia') },
-    { value: 'not-sure', label: t('onboarding.info.destinationNotSure', 'Not sure yet') },
-  ];
-}
+const ACTIVITY_SLOT_COUNT = 3;
 
 /**
  * Local state + PATCH-builder for the optional profile fields shown in both
- * MajorMatchPromptModal (auto-popup) and MajorMatchCollectModal (hero CTA) —
- * the two surfaces must stay in lockstep, so this is the single place their
- * shared fields (SAT, English test, GPA, intended major, target countries)
- * live. See MajorMatchProfileFieldsBody below for the matching JSX.
+ * MajorMatchPromptModal (auto-popup) and MajorMatchCollectModal (hero /
+ * profile-card CTA) — the two surfaces must stay in lockstep, so this is the
+ * single place their shared fields live. Field set (per the engine audit
+ * that established which fields actually move the ranking): SAT-or-ACT
+ * score, GPA + scale, intended major + confidence, career goals, notable
+ * activities, and an (explicitly optional, ranking-neutral) English test
+ * score. Target countries was REMOVED from here — the engine never reads
+ * it; see PersonalProfile.tsx's Target Countries field for where study-
+ * destination collection now lives on the profile side.
+ * See MajorMatchProfileFieldsBody below for the matching JSX.
  */
 export function useMajorMatchProfileFieldsState(): MajorMatchProfileFieldsState {
-  const [satTotal, setSatTotal] = useState<number | null>(null);
+  const [scoreType, setScoreTypeRaw] = useState<ScoreTestType>('sat');
+  const [scoreValue, setScoreValue] = useState<number | null>(null);
   const [englishTestType, setEnglishTestTypeRaw] = useState<EnglishTestType>('ielts');
   const [englishScore, setEnglishScore] = useState<number | null>(null);
   const [gpa, setGpa] = useState<number | null>(null);
   const [gpaScale, setGpaScale] = useState<number | null>(null);
   const [major, setMajor] = useState<string | undefined>(undefined);
-  const [countries, setCountriesRaw] = useState<string[]>([]);
+  const [majorConfidence, setMajorConfidence] = useState<number>(3);
+  const [careerGoals, setCareerGoals] = useState('');
+  const [activities, setActivitiesRaw] = useState<string[]>(
+    () => Array.from({ length: ACTIVITY_SLOT_COUNT }, () => ''),
+  );
+
+  // SAT (400-1600) and ACT (1-36) don't convert — clear the score when the
+  // test type toggles so a stale value on the wrong scale can't be sent.
+  const setScoreType = (v: ScoreTestType) => {
+    setScoreTypeRaw(v);
+    setScoreValue(null);
+  };
 
   // IELTS (0-9) and TOEFL (0-120) don't convert — clear the score when the
   // test type changes so a stale value on the wrong scale can't be sent.
@@ -94,26 +107,21 @@ export function useMajorMatchProfileFieldsState(): MajorMatchProfileFieldsState 
     setEnglishScore(null);
   };
 
-  // Mirrors StepInfo.tsx's handleDestinationChange: picking "not sure yet"
-  // clears every other selection (mutually exclusive with real countries).
-  const setCountries = (values: string[]) => {
-    const justAddedNotSure = values.includes('not-sure') && !countries.includes('not-sure');
-    if (justAddedNotSure) {
-      setCountriesRaw(['not-sure']);
-      return;
-    }
-    setCountriesRaw(values.filter((v) => v !== 'not-sure'));
+  const setActivity = (index: number, value: string) => {
+    setActivitiesRaw((prev) => prev.map((v, i) => (i === index ? value : v)));
   };
 
   const buildPatch = (profile: any): Record<string, unknown> | null => {
     const existingAcademic = (profile?.academicProfile as any) ?? {};
     const academicProfile: Record<string, unknown> = {};
 
-    if (satTotal != null || englishScore != null) {
+    if (scoreValue != null || englishScore != null) {
       academicProfile.testScores = {
         ...(existingAcademic.testScores ?? {}),
-        ...(satTotal != null
-          ? { sat: { ...(existingAcademic.testScores?.sat ?? {}), total: satTotal } }
+        ...(scoreValue != null
+          ? scoreType === 'sat'
+            ? { sat: { ...(existingAcademic.testScores?.sat ?? {}), total: scoreValue } }
+            : { act: { ...(existingAcademic.testScores?.act ?? {}), composite: scoreValue } }
           : {}),
         ...(englishScore != null
           ? englishTestType === 'ielts'
@@ -133,23 +141,48 @@ export function useMajorMatchProfileFieldsState(): MajorMatchProfileFieldsState 
 
     const personalProfile: Record<string, unknown> = {};
     if (major) {
-      personalProfile.intendedMajors = [{ major, rank: 1 }];
+      personalProfile.intendedMajors = [{ major, rank: 1, confidence: majorConfidence }];
     }
-    if (countries.length > 0) {
-      personalProfile.studyAbroadGoals = countries.includes('not-sure')
-        ? { interest: true }
-        : { interest: true, targetCountries: countries };
+    const careerGoalsList = careerGoals
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (careerGoalsList.length > 0) {
+      personalProfile.careerGoals = careerGoalsList;
+    }
+
+    // Spread-before-override: keep whatever activities already exist that
+    // the student didn't just re-type here (matched case-insensitively by
+    // name), then append the new ones — never wipes out entries from the
+    // full Activities tab (leadershipRoles/awards are untouched entirely
+    // since this form never sends those keys).
+    const activitiesProfile: Record<string, unknown> = {};
+    const newActivities = activities
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .map((name) => ({ name }));
+    if (newActivities.length > 0) {
+      const existingActivities: Array<{ name?: string }> =
+        (profile?.activitiesProfile as any)?.extracurricularActivities ?? [];
+      const newNames = new Set(newActivities.map((a) => a.name.toLowerCase()));
+      const keptExisting = existingActivities.filter(
+        (a) => !newNames.has((a.name ?? '').toLowerCase()),
+      );
+      activitiesProfile.extracurricularActivities = [...keptExisting, ...newActivities];
     }
 
     const patch: Record<string, unknown> = {};
     if (Object.keys(academicProfile).length > 0) patch.academicProfile = academicProfile;
     if (Object.keys(personalProfile).length > 0) patch.personalProfile = personalProfile;
+    if (Object.keys(activitiesProfile).length > 0) patch.activitiesProfile = activitiesProfile;
     return Object.keys(patch).length > 0 ? patch : null;
   };
 
   return {
-    satTotal,
-    setSatTotal,
+    scoreType,
+    setScoreType,
+    scoreValue,
+    setScoreValue,
     englishTestType,
     setEnglishTestType,
     englishScore,
@@ -160,8 +193,12 @@ export function useMajorMatchProfileFieldsState(): MajorMatchProfileFieldsState 
     setGpaScale,
     major,
     setMajor,
-    countries,
-    setCountries,
+    majorConfidence,
+    setMajorConfidence,
+    careerGoals,
+    setCareerGoals,
+    activities,
+    setActivity,
     buildPatch,
   };
 }
@@ -172,7 +209,6 @@ export function useMajorMatchProfileFieldsState(): MajorMatchProfileFieldsState 
  * classes (imported by both modal files already). */
 export function MajorMatchProfileFieldsBody(fields: MajorMatchProfileFieldsState) {
   const { t } = useTranslation();
-  const destinationOptions = useDestinationOptions();
 
   return (
     <div className="major-match-prompt-modal__fields">
@@ -185,15 +221,30 @@ export function MajorMatchProfileFieldsBody(fields: MajorMatchProfileFieldsState
 
       <div className="major-match-prompt-modal__field-row">
         <label className="major-match-prompt-modal__field">
-          <span>{t('studentHub.majorMatchPrompt.satLabel', 'SAT total (optional)')}</span>
-          <InputNumber
-            min={400}
-            max={1600}
-            placeholder={t('studentHub.majorMatchPrompt.satPlaceholder', 'e.g. 1450')}
-            value={fields.satTotal}
-            onChange={(v) => fields.setSatTotal(typeof v === 'number' ? v : null)}
-            style={{ width: '100%' }}
-          />
+          <span>{t('studentHub.majorMatchPrompt.scoreLabel', 'SAT / ACT score (optional)')}</span>
+          <div className="major-match-prompt-modal__field-inline">
+            <Segmented
+              value={fields.scoreType}
+              onChange={(v) => fields.setScoreType(v as ScoreTestType)}
+              options={[
+                { value: 'sat', label: t('studentHub.majorMatchPrompt.scoreTypeSat', 'SAT') },
+                { value: 'act', label: t('studentHub.majorMatchPrompt.scoreTypeAct', 'ACT') },
+              ]}
+            />
+            <InputNumber
+              min={fields.scoreType === 'sat' ? 400 : 1}
+              max={fields.scoreType === 'sat' ? 1600 : 36}
+              step={fields.scoreType === 'sat' ? 10 : 1}
+              placeholder={
+                fields.scoreType === 'sat'
+                  ? t('studentHub.majorMatchPrompt.satPlaceholder', 'e.g. 1450')
+                  : t('studentHub.majorMatchPrompt.actPlaceholder', 'e.g. 30')
+              }
+              value={fields.scoreValue}
+              onChange={(v) => fields.setScoreValue(typeof v === 'number' ? v : null)}
+              style={{ width: '100%' }}
+            />
+          </div>
         </label>
         <label className="major-match-prompt-modal__field">
           <span>{t('studentHub.majorMatchPrompt.gpaLabel', 'GPA (optional)')}</span>
@@ -221,7 +272,43 @@ export function MajorMatchProfileFieldsBody(fields: MajorMatchProfileFieldsState
 
       <div className="major-match-prompt-modal__field-row">
         <label className="major-match-prompt-modal__field">
-          <span>{t('studentHub.majorMatchPrompt.englishTestLabel', 'English test (optional)')}</span>
+          <span>
+            {t('studentHub.majorMatchPrompt.majorLabel', 'Intended major (optional)')}{' '}
+            {fields.major && (
+              <span className="major-match-prompt-modal__field-hint">
+                {t('studentHub.majorMatchPrompt.majorConfidenceHint', 'How confident are you?')}
+              </span>
+            )}
+          </span>
+          <div className="major-match-prompt-modal__field-inline">
+            <Select
+              showSearch
+              allowClear
+              placeholder={t('studentHub.majorMatchPrompt.majorPlaceholder', 'Select your intended major')}
+              value={fields.major}
+              onChange={(v) => fields.setMajor(v)}
+              options={MAJOR_OPTIONS.map((m) => ({ value: m, label: m }))}
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+              style={{ width: '100%' }}
+            />
+            <Rate
+              count={5}
+              value={fields.majorConfidence}
+              onChange={(v) => fields.setMajorConfidence(v)}
+              disabled={!fields.major}
+              style={{ flexShrink: 0, fontSize: 16 }}
+            />
+          </div>
+        </label>
+        <label className="major-match-prompt-modal__field">
+          <span>
+            {t('studentHub.majorMatchPrompt.englishTestLabel', 'English test (optional)')}{' '}
+            <span className="major-match-prompt-modal__field-hint">
+              {t('studentHub.majorMatchPrompt.englishTestHint', "doesn't affect your ranking")}
+            </span>
+          </span>
           <div className="major-match-prompt-modal__field-inline">
             <Segmented
               value={fields.englishTestType}
@@ -246,37 +333,56 @@ export function MajorMatchProfileFieldsBody(fields: MajorMatchProfileFieldsState
             />
           </div>
         </label>
-        <label className="major-match-prompt-modal__field">
-          <span>{t('studentHub.majorMatchPrompt.majorLabel', 'Intended major (optional)')}</span>
-          <Select
-            showSearch
-            allowClear
-            placeholder={t('studentHub.majorMatchPrompt.majorPlaceholder', 'Select your intended major')}
-            value={fields.major}
-            onChange={(v) => fields.setMajor(v)}
-            options={MAJOR_OPTIONS.map((m) => ({ value: m, label: m }))}
-            filterOption={(input, option) =>
-              (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-            }
-            style={{ width: '100%' }}
+      </div>
+
+      <div className="major-match-prompt-modal__field-row">
+        <label className="major-match-prompt-modal__field major-match-prompt-modal__field--full">
+          <span>{t('studentHub.majorMatchPrompt.careerGoalsLabel', 'Career goals (optional)')}</span>
+          <TextArea
+            rows={2}
+            maxLength={500}
+            placeholder={t(
+              'studentHub.majorMatchPrompt.careerGoalsPlaceholder',
+              'e.g. Become a software engineer working on climate tech',
+            )}
+            value={fields.careerGoals}
+            onChange={(e) => fields.setCareerGoals(e.target.value)}
           />
         </label>
       </div>
 
       <div className="major-match-prompt-modal__field-row">
         <label className="major-match-prompt-modal__field major-match-prompt-modal__field--full">
-          <span>
-            {t('studentHub.majorMatchPrompt.countriesLabel', 'Where do you want to study? (optional)')}
-          </span>
-          <Select
-            mode="multiple"
-            allowClear
-            placeholder={t('studentHub.majorMatchPrompt.countriesPlaceholder', 'Select destinations')}
-            value={fields.countries}
-            onChange={fields.setCountries}
-            options={destinationOptions}
-            style={{ width: '100%' }}
-          />
+          <span>{t('studentHub.majorMatchPrompt.activitiesLabel', 'Notable activities (optional)')}</span>
+          <div className="major-match-prompt-modal__activities">
+            <Input
+              maxLength={120}
+              placeholder={t(
+                'studentHub.majorMatchPrompt.activitiesPlaceholder1',
+                'e.g. Debate team captain',
+              )}
+              value={fields.activities[0]}
+              onChange={(e) => fields.setActivity(0, e.target.value)}
+            />
+            <Input
+              maxLength={120}
+              placeholder={t(
+                'studentHub.majorMatchPrompt.activitiesPlaceholder2',
+                'e.g. Volunteer at a local hospital',
+              )}
+              value={fields.activities[1]}
+              onChange={(e) => fields.setActivity(1, e.target.value)}
+            />
+            <Input
+              maxLength={120}
+              placeholder={t(
+                'studentHub.majorMatchPrompt.activitiesPlaceholder3',
+                'e.g. Regional robotics competition',
+              )}
+              value={fields.activities[2]}
+              onChange={(e) => fields.setActivity(2, e.target.value)}
+            />
+          </div>
         </label>
       </div>
     </div>
