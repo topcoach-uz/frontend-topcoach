@@ -78,37 +78,35 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
 
   return (
     <div className={styles.mobileDrawerNav}>
-      {isCommunityEnrolled && (
-        <Card
-          className={styles.profileCard}
-          bordered={false}
-          role="button"
-          tabIndex={0}
-          aria-label={t('studentHub.settingsMock.title', 'Account & settings')}
-          onClick={() => go('/student-hub?section=account&target=settings')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              go('/student-hub?section=account&target=settings');
-            }
-          }}
-        >
-          <div className={styles.profileTop}>
-            <Avatar
-              size={48}
-              src={currentProfile.avatar || undefined}
-              icon={<User size={16} />}
-              className={styles.profileAvatar}
-            />
-            <div>
-              <div className={styles.profileName}>{currentProfile.name}</div>
-              <div className={styles.profileHandle}>
-                {currentProfile.username}
-              </div>
+      <Card
+        className={styles.profileCard}
+        bordered={false}
+        role="button"
+        tabIndex={0}
+        aria-label={t('studentHub.settingsMock.title', 'Account & settings')}
+        onClick={() => go('/student-hub?section=account&target=settings')}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            go('/student-hub?section=account&target=settings');
+          }
+        }}
+      >
+        <div className={styles.profileTop}>
+          <Avatar
+            size={48}
+            src={currentProfile.avatar || undefined}
+            icon={<User size={16} />}
+            className={styles.profileAvatar}
+          />
+          <div>
+            <div className={styles.profileName}>{currentProfile.name}</div>
+            <div className={styles.profileHandle}>
+              {currentProfile.username}
             </div>
           </div>
-        </Card>
-      )}
+        </div>
+      </Card>
 
       <div className={styles.leftNav}>
         {!isCommunityEnrolled && (

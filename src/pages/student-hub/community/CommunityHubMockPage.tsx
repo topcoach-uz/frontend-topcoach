@@ -116,12 +116,10 @@ export default function CommunityHubMockPage() {
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney, isEntitlementLoading } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
-  // Coin balance for the sidebar card. Skip the call until we know the
-  // user is community-enrolled — non-members don't see the rewards page
-  // and shouldn't trigger an extra request on every account/* page load.
-  const { data: coinBalance } = useGetCoinBalanceQuery(undefined, {
-    skip: !isCommunityEnrolled,
-  });
+  // Coin balance for the sidebar card. The profile card (and its coin
+  // chip) now renders for every student, not just community-enrolled
+  // ones, so this query always runs for any authenticated user.
+  const { data: coinBalance } = useGetCoinBalanceQuery();
   // Profile-completion percentage for the sidebar card's progress bar.
   // Reuses the same student-profile query the profile/dashboard pages
   // already subscribe to (see Dashboard.tsx / MyProgressEditorialView.tsx),
@@ -481,113 +479,114 @@ export default function CommunityHubMockPage() {
         } ${isAdmissionsFullBleed ? styles.admissionsShellHub : ''}`}
       >
       <div
-        className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''} ${isFullBleed ? styles.leftColHidden : ''}`}
+        className={`${styles.leftCol} ${isFullBleed ? styles.leftColHidden : ''}`}
       >
         <div className={styles.leftColInner}>
-        {isCommunityEnrolled && (
-          <Card
-            className={styles.profileCard}
-            bordered={false}
-            role="button"
-            tabIndex={0}
-            aria-label="View my profile"
-            onClick={() => navigate('/student-hub?section=others&target=profile')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate('/student-hub?section=others&target=profile');
-              }
-            }}
-          >
-            {/* Compact row + coin chip layout (Option B from the design
-                explorations). Avatar + identity on one row, coin chip +
-                "View profile" CTA on the next. Drops the hero photo band
-                and shadow that the old single-column layout used. */}
-            <div className={styles.profileTopRow}>
-              <div className={styles.profilePhoto}>
-                {currentProfile.avatar ? (
-                  <img
-                    src={currentProfile.avatar}
-                    alt={currentProfile.name}
-                    className={styles.profilePhotoImg}
-                  />
-                ) : (
-                  <div className={styles.profilePhotoFallback} aria-hidden>
-                    <User size={28} />
-                  </div>
-                )}
+        <Card
+          className={styles.profileCard}
+          bordered={false}
+          role="button"
+          tabIndex={0}
+          aria-label="View my profile"
+          onClick={() => navigate('/student-hub?section=others&target=profile')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/student-hub?section=others&target=profile');
+            }
+          }}
+        >
+          {/* Compact row + coin chip layout (Option B from the design
+              explorations). Avatar + identity on one row, coin chip +
+              "View profile" CTA on the next. Drops the hero photo band
+              and shadow that the old single-column layout used. Renders
+              for every student, not just community-enrolled ones — the
+              coin balance and completion bar are both real, per-user
+              data that any student has. */}
+          <div className={styles.profileTopRow}>
+            <div className={styles.profilePhoto}>
+              {currentProfile.avatar ? (
+                <img
+                  src={currentProfile.avatar}
+                  alt={currentProfile.name}
+                  className={styles.profilePhotoImg}
+                />
+              ) : (
+                <div className={styles.profilePhotoFallback} aria-hidden>
+                  <User size={28} />
+                </div>
+              )}
+            </div>
+            <div className={styles.profileMeta}>
+              <div className={styles.profileName} title={currentProfile.name}>
+                {currentProfile.name}
               </div>
-              <div className={styles.profileMeta}>
-                <div className={styles.profileName} title={currentProfile.name}>
-                  {currentProfile.name}
-                </div>
-                <div className={styles.profileHandle} title={currentProfile.username}>
-                  {currentProfile.username}
-                </div>
+              <div className={styles.profileHandle} title={currentProfile.username}>
+                {currentProfile.username}
               </div>
             </div>
-            {!studentProfileCardLoading && typeof profileCompletionPercentage === 'number' && (
-              profileCompletionPercentage >= 100 ? (
-                <button
-                  type="button"
-                  className={styles.profileCompletionDone}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/student-hub/profile');
-                  }}
-                >
-                  {t('studentHub.profileCard.complete', 'Profile complete ✓')}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.profileCompletion}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/student-hub/profile');
-                  }}
-                  aria-label={t(
-                    'studentHub.profileCard.completionAria',
-                    'Profile {{percent}}% complete — go to profile',
-                    { percent: profileCompletionPercentage },
-                  )}
-                >
-                  <span className={styles.profileCompletionLabel}>
-                    {t('studentHub.profileCard.completion', 'Profile {{percent}}% complete', {
-                      percent: profileCompletionPercentage,
-                    })}
-                  </span>
-                  <span className={styles.profileCompletionTrack}>
-                    <span
-                      className={styles.profileCompletionFill}
-                      style={{ width: `${Math.min(100, Math.max(0, profileCompletionPercentage))}%` }}
-                    />
-                  </span>
-                </button>
-              )
-            )}
-            <div className={styles.profileBottomRow}>
+          </div>
+          {!studentProfileCardLoading && typeof profileCompletionPercentage === 'number' && (
+            profileCompletionPercentage >= 100 ? (
               <button
                 type="button"
-                className={styles.profileCoinsInline}
+                className={styles.profileCompletionDone}
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate('/student-hub?section=account&target=rewards');
+                  navigate('/student-hub/profile');
                 }}
-                aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
               >
-                <Coins size={13} aria-hidden />
-                <span className={styles.profileCoinsValue}>
-                  {(coinBalance?.balance ?? 0).toLocaleString()}
+                {t('studentHub.profileCard.complete', 'Profile complete ✓')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.profileCompletion}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/student-hub/profile');
+                }}
+                aria-label={t(
+                  'studentHub.profileCard.completionAria',
+                  'Profile {{percent}}% complete — go to profile',
+                  { percent: profileCompletionPercentage },
+                )}
+              >
+                <span className={styles.profileCompletionLabel}>
+                  {t('studentHub.profileCard.completion', 'Profile {{percent}}% complete', {
+                    percent: profileCompletionPercentage,
+                  })}
+                </span>
+                <span className={styles.profileCompletionTrack}>
+                  <span
+                    className={styles.profileCompletionFill}
+                    style={{ width: `${Math.min(100, Math.max(0, profileCompletionPercentage))}%` }}
+                  />
                 </span>
               </button>
-              <div className={styles.profileFooter}>
-                <span>{t('studentHub.hub.viewProfile', 'View profile')}</span>
-                <span className={styles.profileFooterArrow} aria-hidden>→</span>
-              </div>
+            )
+          )}
+          <div className={styles.profileBottomRow}>
+            <button
+              type="button"
+              className={styles.profileCoinsInline}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/student-hub?section=account&target=rewards');
+              }}
+              aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
+            >
+              <Coins size={13} aria-hidden />
+              <span className={styles.profileCoinsValue}>
+                {(coinBalance?.balance ?? 0).toLocaleString()}
+              </span>
+            </button>
+            <div className={styles.profileFooter}>
+              <span>{t('studentHub.hub.viewProfile', 'View profile')}</span>
+              <span className={styles.profileFooterArrow} aria-hidden>→</span>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
 
         <div className={styles.leftNav}>
           {!isCommunityEnrolled && (
