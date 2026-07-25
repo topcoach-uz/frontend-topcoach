@@ -637,21 +637,6 @@ export default function CommunityHubMockPage() {
             </button>
           )}
 
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'profile' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setOthersTarget('profile');
-              setActiveSection('others');
-              navigate('/student-hub?section=others&target=profile', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <UnifiedIcon name="dashboard" size="md" color="primary" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.myDashboard', 'My dashboard')}</span>
-          </button>
-
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navCommunity', 'COMMUNITY')}</div>
           <button
             type="button"
