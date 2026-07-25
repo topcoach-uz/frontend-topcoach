@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Tabs, Progress, Button, Statistic, Badge, Alert } from 'antd';
+import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -7,7 +8,11 @@ import { STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/ic
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
 import { InlineLoader, PageSkeleton } from '../../../components/loading';
-import { useGetLatestAssessmentQuery } from '../../../app/services/student-hub/psychometricApi';
+import {
+  useGetLatestAssessmentQuery,
+  useGetRecommendationsQuery,
+} from '../../../app/services/student-hub/psychometricApi';
+import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
@@ -16,6 +21,33 @@ import GpaCalculatorPage from '../gpa-calculator/GpaCalculatorPage';
 import './ProfilePage.scss';
 
 const { TabPane } = Tabs;
+
+// RIASEC letter → translation key / English fallback, used to spell out a
+// student's code (e.g. "AIR" → "Artistic · Investigative · Realistic").
+const RIASEC_LETTER_KEYS: Record<string, string> = {
+  R: 'studentHub.profile.majorMatch.riasec.realistic',
+  I: 'studentHub.profile.majorMatch.riasec.investigative',
+  A: 'studentHub.profile.majorMatch.riasec.artistic',
+  S: 'studentHub.profile.majorMatch.riasec.social',
+  E: 'studentHub.profile.majorMatch.riasec.enterprising',
+  C: 'studentHub.profile.majorMatch.riasec.conventional',
+};
+const RIASEC_LETTER_FALLBACK: Record<string, string> = {
+  R: 'Realistic',
+  I: 'Investigative',
+  A: 'Artistic',
+  S: 'Social',
+  E: 'Enterprising',
+  C: 'Conventional',
+};
+
+// How long the card is allowed to show a loading skeleton before it just
+// renders its best-effort state off whatever data has landed. Guards
+// against the known app-wide runaway-refetch bug in the psychometric
+// queries, where `loading` can fail to settle to false (see
+// useMajorMatchPrompt.ts callers) — without this cap the card could be
+// stuck in a skeleton forever.
+const MAJOR_MATCH_LOADING_CAP_MS = 4000;
 
 // Props interface for ProfilePage - supports both normal and read-only mode
 export interface ProfilePageProps {
@@ -36,17 +68,63 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
 
   // Major Match (psychometric assessment) status card — own account only,
   // never in the counselor's read-only embed (see the `!isReadOnly` guard
-  // around the card below). `getLatestAssessment` 404s / comes back empty
-  // when the student hasn't taken it yet, which we read as "not taken".
+  // around the card below). Reuses the same shared hook the dashboard
+  // hero / prompt modal use for the taken/canStart/community-gate
+  // derivation, so all three surfaces agree on when to show the
+  // "unlock unlimited matches" edge — see useMajorMatchPrompt.ts.
+  const mm = useMajorMatchPromptState();
+  const majorMatchStudentProfileId = !isReadOnly ? mm.studentProfileId : undefined;
+
+  // Pulled independently (not just from the shared hook) because we also
+  // need the actual riasecCode/recommendations payloads, not just the
+  // taken/not-taken boolean. Same query key as the one the hook already
+  // subscribes to, so RTK Query serves this from the same cache entry —
+  // no extra network call.
   const {
     data: latestMajorMatchAssessment,
-    isLoading: majorMatchLoading,
-    isError: majorMatchError,
-  } = useGetLatestAssessmentQuery(profile?.id || '', {
-    skip: isReadOnly || !profile?.id,
+  } = useGetLatestAssessmentQuery(majorMatchStudentProfileId ?? '', {
+    skip: isReadOnly || !majorMatchStudentProfileId,
   });
-  const hasTakenMajorMatch =
-    !isReadOnly && !majorMatchLoading && !majorMatchError && !!latestMajorMatchAssessment;
+  const { data: majorMatchRecommendations } = useGetRecommendationsQuery(
+    majorMatchStudentProfileId ?? '',
+    { skip: isReadOnly || !majorMatchStudentProfileId || !mm.hasCompletedAssessment },
+  );
+
+  const topMajorMatches = useMemo(
+    () =>
+      [...(majorMatchRecommendations?.recommendations ?? [])]
+        .sort((a, b) => (b.fitScore ?? 0) - (a.fitScore ?? 0))
+        .slice(0, 3),
+    [majorMatchRecommendations],
+  );
+
+  const riasecSpelledOut = useMemo(() => {
+    const code = latestMajorMatchAssessment?.riasecCode;
+    if (!code) return null;
+    const parts = code
+      .toUpperCase()
+      .split('')
+      .filter((letter) => RIASEC_LETTER_KEYS[letter])
+      .map((letter) => t(RIASEC_LETTER_KEYS[letter], RIASEC_LETTER_FALLBACK[letter]));
+    return parts.length > 0 ? parts.join(' · ') : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestMajorMatchAssessment?.riasecCode, t]);
+
+  const majorMatchShowUnlockCta = !mm.canStart && mm.requiresCommunityEnrollment;
+
+  // Only meaningful while genuinely nothing has landed yet — capped by a
+  // timer so the runaway-refetch bug (loading never settling) can never
+  // pin the card in a skeleton state forever. Once we've shown real
+  // content once we never go back to the skeleton.
+  const [majorMatchInitializing, setMajorMatchInitializing] = useState(!isReadOnly);
+  useEffect(() => {
+    if (isReadOnly || !mm.loading) {
+      setMajorMatchInitializing(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setMajorMatchInitializing(false), MAJOR_MATCH_LOADING_CAP_MS);
+    return () => clearTimeout(timer);
+  }, [isReadOnly, mm.loading]);
 
   // Handle URL parameters for tab navigation (gpa-calculator not available in read-only)
   useEffect(() => {
@@ -232,7 +310,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       </div>
 
       {/* Major Match status — own account only, hidden in the counselor's
-          read-only embed of this page. */}
+          read-only embed of this page. Always renders something: a
+          skeleton while genuinely loading, a pitch+CTA when not taken, a
+          RIASEC code + top majors summary when taken, and never a blank
+          box (see states 1-5 in the task spec this card was rebuilt for). */}
       {!isReadOnly && (
         <Card className="profile-major-match-card">
           <div className="profile-major-match-card__body">
@@ -241,36 +322,67 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                 <UnifiedIcon name="major-match" size="sm" color="primary" />
                 {t('studentHub.profile.majorMatch.cardTitle', 'Major Match')}
               </span>
-              {majorMatchLoading ? (
-                <InlineLoader />
+
+              {majorMatchInitializing ? (
+                <InlineLoader
+                  size="small"
+                  text={t('studentHub.profile.majorMatch.loading', 'Checking your major match status…')}
+                />
+              ) : mm.hasCompletedAssessment ? (
+                <div className="profile-major-match-card__result">
+                  <span className="profile-major-match-card__desc">
+                    {t('studentHub.profile.majorMatch.riasecLabel', 'Your RIASEC code')}:{' '}
+                    <strong>{latestMajorMatchAssessment?.riasecCode ?? '—'}</strong>
+                    {riasecSpelledOut && (
+                      <span className="profile-major-match-card__riasec-spelled">
+                        {' '}
+                        ({riasecSpelledOut})
+                      </span>
+                    )}
+                  </span>
+                  {topMajorMatches.length > 0 ? (
+                    <div className="profile-major-match-card__majors">
+                      <span className="profile-major-match-card__majors-label">
+                        {t('studentHub.profile.majorMatch.topMajorsLabel', 'Top matches')}
+                      </span>
+                      <ul className="profile-major-match-card__majors-list">
+                        {topMajorMatches.map((rec) => (
+                          <li key={rec.majorName} className="profile-major-match-card__major-chip">
+                            {rec.majorName}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <span className="profile-major-match-card__desc profile-major-match-card__desc--muted">
+                      {t(
+                        'studentHub.profile.majorMatch.majorsUnavailable',
+                        'Your top majors will appear here shortly.',
+                      )}
+                    </span>
+                  )}
+                </div>
               ) : (
                 <span className="profile-major-match-card__desc">
-                  {hasTakenMajorMatch
-                    ? latestMajorMatchAssessment?.riasecCode && (
-                        <>
-                          {t('studentHub.profile.majorMatch.riasecLabel', 'Your RIASEC code')}:{' '}
-                          <strong>{latestMajorMatchAssessment.riasecCode}</strong>
-                        </>
-                      )
-                    : t(
-                        'studentHub.profile.majorMatch.notTakenText',
-                        'Find out which majors fit you best with a short AI-powered assessment.',
-                      )}
+                  {t(
+                    'studentHub.profile.majorMatch.notTakenText',
+                    'Find out which majors fit you best with a short AI-powered assessment.',
+                  )}
                 </span>
               )}
             </div>
             <div className="profile-major-match-card__action">
-              {!majorMatchLoading &&
-                (hasTakenMajorMatch ? (
-                  <Button onClick={() => navigate('/student-hub/psychometric-assessment?step=results')}>
+              {!majorMatchInitializing &&
+                (mm.hasCompletedAssessment ? (
+                  <Button onClick={() => navigate('/student-hub?section=ai-major-match')}>
                     {t('studentHub.profile.majorMatch.viewResults', 'View full results')}
                   </Button>
                 ) : (
-                  <Button
-                    type="primary"
-                    onClick={() => navigate('/student-hub/psychometric-assessment')}
-                  >
-                    {t('studentHub.profile.majorMatch.takeButton', 'Take the assessment')}
+                  <Button type="primary" onClick={() => navigate(mm.destination)}>
+                    {majorMatchShowUnlockCta && <Lock size={14} style={{ marginRight: 6 }} />}
+                    {majorMatchShowUnlockCta
+                      ? t('studentHub.majorMatchPrompt.unlockCta', 'Unlock unlimited matches')
+                      : t('studentHub.profile.majorMatch.tryButton', 'Try the AI Major Match')}
                   </Button>
                 ))}
             </div>

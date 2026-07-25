@@ -192,6 +192,54 @@
     &__desc {
       font-size: $text-sm;
       color: $text-secondary;
+
+      &--muted {
+        color: $text-tertiary;
+        font-style: italic;
+      }
+    }
+
+    &__result {
+      display: flex;
+      flex-direction: column;
+      gap: $space-2;
+    }
+
+    &__riasec-spelled {
+      color: $text-tertiary;
+      font-weight: $font-normal;
+    }
+
+    &__majors {
+      display: flex;
+      flex-direction: column;
+      gap: $space-1;
+    }
+
+    &__majors-label {
+      font-size: $text-xs;
+      font-weight: $font-medium;
+      color: $text-tertiary;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    &__majors-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: $space-2;
+      margin: 0;
+      padding: 0;
+    }
+
+    &__major-chip {
+      font-size: $text-sm;
+      font-weight: $font-medium;
+      color: $primary-600;
+      background: $primary-50;
+      border-radius: $radius-md;
+      padding: 2px $space-3;
     }
 
     &__action {
