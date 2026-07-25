@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { PROFILE_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
+import { COUNTRY_NATIONALITY_OPTIONS } from '../../events/youth-leaders-application/countryNationalityOptions';
 import './PersonalProfile.scss';
 
 const { Option } = Select;
@@ -74,11 +75,9 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         
         // Problem Solving
         problemSolvingApproach: personalData.problemSolvingApproach || [],
-        
-        // Additional Information
-        ethnicity: personalData.demographics?.ethnicity?.[0] || '',
-        citizenship: personalData.demographics?.citizenship || '',
-        visaStatus: personalData.demographics?.visaStatus || '',
+        // NOTE: ethnicity/citizenship/visaStatus are intentionally NOT loaded
+        // here — this form has no input for them (see handleSave's comment),
+        // so there's nothing to populate and nothing to round-trip.
       };
       
       form.setFieldsValue(formData);
@@ -100,31 +99,21 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         return lang;
       }) || [];
       
-      // Transform form data to match backend DTO structure
+      // Transform form data to match backend DTO structure.
+      // IMPORTANT: only send fields this form actually renders/owns. This
+      // form has no UI for ethnicity/citizenship/visaStatus/familyBackground
+      // (or gender/disability/militaryService), so none of those are
+      // included below — sending hardcoded placeholder values for them here
+      // would clobber whatever onboarding or the major-match modal already
+      // wrote (and gender/disability/militaryService were never even backed
+      // by a real UI, just literals). Omitting them entirely lets the
+      // backend's partial-merge leave the existing stored values untouched.
       const personalProfileData = {
         country: values.country || null,
         state: values.state,
         city: values.city,
-        demographics: {
-          ethnicity: values.ethnicity ? [values.ethnicity] : [],
-          gender: 'prefer-not-to-say',
-          disability: false,
-          militaryService: false,
-          citizenship: values.citizenship,
-          visaStatus: values.visaStatus,
-        },
         languages: languagesFormatted,
-        familyBackground: {
-          parentEducation: {
-            mother: 'unknown',
-            father: 'unknown',
-          },
-          familyIncome: 'prefer-not-to-say',
-          siblings: 0,
-          firstGeneration: false,
-          singleParent: false,
-        },
-        personalInterests: Array.isArray(values.interests) 
+        personalInterests: Array.isArray(values.interests)
           ? values.interests 
           : (values.interests && typeof values.interests === 'string' 
               ? values.interests.split(',').map((s: string) => s.trim()).filter(Boolean)
@@ -170,6 +159,9 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
     }
   };
 
+  // Target-countries (study-abroad) multi-select below intentionally keeps
+  // this shorter curated list — its vocabulary is a separate, not-yet-decided
+  // product question. Do NOT repoint it to COUNTRY_NATIONALITY_OPTIONS.
   const countryOptions = [
     { value: 'Uzbekistan', label: 'Uzbekistan' },
     { value: 'Kazakhstan', label: 'Kazakhstan' },
@@ -286,13 +278,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
                 label={t('studentHub.profile.country')}
                 rules={[{ required: true, message: t('studentHub.profile.selectCountryMessage') }]}
               >
-                <Select placeholder={t('studentHub.profile.selectCountry')} className="form-select">
-                  {countryOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+                <Select
+                  showSearch
+                  placeholder={t('studentHub.profile.selectCountry')}
+                  className="form-select"
+                  filterOption={(input, option) =>
+                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={COUNTRY_NATIONALITY_OPTIONS}
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
