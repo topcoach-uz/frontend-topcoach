@@ -4,6 +4,7 @@ import { Button } from 'antd';
 import { ArrowRight, Globe2, CalendarClock, Users, Lock } from 'lucide-react';
 import styles from './InternationalSummerCamp2026Card.module.scss';
 import { useIscCardState } from './useIscCardState';
+import IscPayNowButton from './IscPayNowButton';
 
 const ISC_PATH = '/events/international-summer-camp-2026';
 
@@ -101,6 +102,9 @@ export default function InternationalSummerCamp2026Card() {
                 </Button>
               </>
             )}
+            {/* Shown only for invoiced (accepted) students, regardless of
+                whether the application window is open or closed. */}
+            <IscPayNowButton />
           </div>
         </div>
       </div>
