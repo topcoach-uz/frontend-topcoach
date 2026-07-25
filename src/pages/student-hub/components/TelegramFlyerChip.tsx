@@ -13,6 +13,7 @@
  */
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Send } from 'lucide-react';
 import { useGetTelegramStatusQuery } from 'src/app/services/users';
@@ -33,7 +34,13 @@ const TelegramFlyerChip: React.FC = () => {
       ? t('studentHub.myProgress.telegramFlyerContinue', 'Continue on Telegram')
       : t('studentHub.myProgress.telegramFlyerConnect', 'Connect Telegram');
 
-  return (
+  // Portaled straight to <body> — MyProgressEditorialView renders inside
+  // CommunityHubMockPage's section-swap transition wrapper, which sets a
+  // (identity) CSS `transform`. Any non-`none` transform on an ancestor
+  // becomes the containing block for `position: fixed` descendants, so
+  // without the portal this tab would anchor to that wrapper instead of
+  // the viewport. Still page-scoped: it unmounts with MyProgressEditorialView.
+  return createPortal(
     <>
       <button
         type="button"
@@ -54,7 +61,8 @@ const TelegramFlyerChip: React.FC = () => {
           setTimeout(() => refetch(), 500);
         }}
       />
-    </>
+    </>,
+    document.body,
   );
 };
 
