@@ -55,7 +55,7 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
-import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
+import TelegramFlyerChip from './components/TelegramFlyerChip';
 import MajorMatchCollectModal from './components/MajorMatchCollectModal';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useIscCardState } from '../events/_components/useIscCardState';
@@ -499,16 +499,14 @@ const MyProgressEditorialView: React.FC = () => {
         </div>
       </header>
 
-      {/* Telegram connect prompt — auto-hides once the student links
-          their Telegram account. Only the *checklist UI* is shown here;
-          the tracking telegram bot still pings notifications elsewhere. */}
-      <TelegramConnectionChecklist />
-
       {/* Non-Community users see the AI Major Match hero in place of the
           learning-progress card — the progress card is useless when
           they're enrolled in nothing, and Major Match is the highest-signal
           free tool we can put in front of a not-yet-enrolled student.
-          Community users see the real progress card below. */}
+          Community users see the real progress card below.
+
+          Layout order: hero (single column) → video → Telegram flyer
+          chip → faint program links. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
           <article className="myprog__card myprog__mmhero">
@@ -565,23 +563,27 @@ const MyProgressEditorialView: React.FC = () => {
                 </>
               )}
             </div>
-
-            {/* Trailer — the right column is itself shaped 16:9 so
-                the iframe fills the cell edge-to-edge with no
-                letterbox. Card height is driven by the video's
-                natural aspect ratio; the editorial copy on the left
-                centers vertically to match. */}
-            <div className="myprog__mmhero__video">
-              <iframe
-                className="myprog__mmhero__video-iframe"
-                src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
-                title="Top Coach Community"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-            </div>
           </article>
+
+          {/* Trailer — now a full-width block below the hero instead of
+              a right-hand column. Fixed 16:9 box, rounded to match the
+              card radius. */}
+          <div className="myprog__mmvideo">
+            <iframe
+              className="myprog__mmvideo-iframe"
+              src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
+              title="Top Coach Community"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+
+          {/* Telegram connect prompt — small "flyer" chip, auto-hides
+              once the student links their Telegram account. */}
+          <div className="myprog__tg-flyer-row">
+            <TelegramFlyerChip />
+          </div>
 
           {/* Faint program links — low-key, secondary entry points that
               sit under the hero without competing with the Major Match CTA. */}

@@ -1,0 +1,59 @@
+/**
+ * Small dark "flyer" chip — a compact ribbon/tag nudging Telegram
+ * connection. Near-black body, one angled/notched corner (clip-path),
+ * softly rounded otherwise. Sits left-aligned under the Major Match
+ * video on the non-Community dashboard.
+ */
+
+.tg-flyer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px 9px 13px;
+  background: #1c1a17;
+  color: #f4f2ea;
+  border: none;
+  border-radius: 10px;
+  // Cut corner on the top-right (~14px), softly rounded everywhere the
+  // clip-path doesn't touch a straight edge.
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(15, 13, 10, 0.22);
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: #0088cc;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(15, 13, 10, 0.28);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+  &:focus-visible {
+    outline: 2px solid #7b1f2f;
+    outline-offset: 2px;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: #64d2ff;
+    transition: color 0.15s ease;
+  }
+  &:hover &__icon,
+  &:focus-visible &__icon {
+    color: #fff;
+  }
+  &__label {
+    white-space: nowrap;
+  }
+  &__chevron {
+    opacity: 0.65;
+    font-size: 0.95em;
+    margin-left: 1px;
+  }
+}

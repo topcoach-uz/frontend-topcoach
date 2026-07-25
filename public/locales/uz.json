@@ -2433,6 +2433,8 @@
   "studentHub.myProgress.majorMatchNotTakenTitle": "To'g'ri mutaxassislikni tanlashda qiynalyapsizmi?",
   "studentHub.myProgress.majorMatchNotTakenLede": "Bepul AI vositamizni sinab ko'ring — bir nechta savolga javob bering va taxminan 15 daqiqada sizga mos mutaxassisliklarni oling.",
   "studentHub.myProgress.majorMatchCta": "Ushbu bepul AI vositasini sinab ko'rish",
+  "studentHub.myProgress.telegramFlyerConnect": "Telegramni ulash",
+  "studentHub.myProgress.telegramFlyerContinue": "Telegramda davom etish",
   "studentHub.myProgress.programLinksAriaLabel": "Dastur havolalari",
   "studentHub.myProgress.linkTestPrep": "Testga tayyorgarlik",
   "studentHub.myProgress.linkResearch": "Tadqiqot",

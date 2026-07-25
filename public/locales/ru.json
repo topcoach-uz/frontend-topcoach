@@ -2433,6 +2433,8 @@
   "studentHub.myProgress.majorMatchNotTakenTitle": "Не можете определиться со специальностью?",
   "studentHub.myProgress.majorMatchNotTakenLede": "Попробуйте наш бесплатный ИИ-инструмент — ответьте на несколько вопросов и получите подходящие специальности примерно за 15 минут.",
   "studentHub.myProgress.majorMatchCta": "Попробовать бесплатный ИИ-инструмент",
+  "studentHub.myProgress.telegramFlyerConnect": "Подключить Telegram",
+  "studentHub.myProgress.telegramFlyerContinue": "Продолжить в Telegram",
   "studentHub.myProgress.programLinksAriaLabel": "Ссылки на программы",
   "studentHub.myProgress.linkTestPrep": "Подготовка к тестам",
   "studentHub.myProgress.linkResearch": "Исследования",

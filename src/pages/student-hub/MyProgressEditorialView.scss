@@ -505,32 +505,16 @@
 
   /* ── AI Major Match hero (non-Community users only) ───────────── */
   /* Replaces the "0 programs enrolled" learning-progress card when the
-     user hasn't joined Community yet. Editorial split: pitch on the
-     left, full-bleed trailer on the right. Stacks on mobile.
-
-     Layout contract: the row height is driven entirely by the left
-     (text) column; the trailer iframe is absolutely positioned so it
-     fills its half edge-to-edge at whatever that height is and never
-     contributes dead space. The cell lands close to 16:9, so the
-     player shows at most a thin, normal-looking black letterbox —
-     never an awkward colored gap. */
+     user hasn't joined Community yet. Single-column editorial pitch —
+     eyebrow, title, lede, CTA. The trailer used to live in a right-hand
+     column of this same card; it's now its own full-width block below
+     (see `__mmvideo`) so the hero reads as a focused headline instead
+     of a split layout. */
   &__mmhero {
-    padding: 0;
+    padding: 36px 38px;
     overflow: hidden;
     border: 1px solid #e5e3da;
     box-shadow: 0 4px 20px rgba(28, 26, 23, 0.06);
-    background: #fff;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
-    align-items: stretch;
-
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__mmhero__left {
-    padding: 36px 38px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -545,8 +529,16 @@
 
     @media (max-width: 900px) {
       padding: 30px 24px 26px;
-      border-bottom: 1px solid #f0d9cf;
     }
+    @media (max-width: 480px) {
+      padding: 26px 20px 22px;
+    }
+  }
+
+  &__mmhero__left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   &__mmhero__eyebrow {
@@ -618,26 +610,38 @@
     }
   }
 
-  /* ── Trailer (right column) — full-bleed ──────────────────────── */
-  &__mmhero__video {
+  /* ── Trailer — full-width block below the hero ─────────────────── */
+  /* Was a right-hand column inside `__mmhero`; now its own block so it
+     stacks under the single-column hero card. Fixed 16:9 box, rounded
+     to match the surrounding card radius, centered in the content
+     column. */
+  &__mmvideo {
     position: relative;
-    min-width: 0; // prevent grid blowout
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
     background: #000;
+    border-radius: 16px;
     overflow: hidden;
-
-    @media (max-width: 900px) {
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
+    box-shadow: 0 4px 20px rgba(28, 26, 23, 0.06);
   }
 
-  &__mmhero__video-iframe {
+  &__mmvideo-iframe {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
     display: block;
+  }
+
+  /* ── Telegram flyer chip row ────────────────────────────────────── */
+  /* Left-aligned wrapper so the compact flyer chip doesn't stretch to
+     the section's full width. Renders nothing (0-height) when
+     TelegramFlyerChip hides itself (connected / loading). */
+  &__tg-flyer-row {
+    display: flex;
+    justify-content: flex-start;
   }
 
   /* ── Faint program links (under the Major Match hero) ─────────── */
