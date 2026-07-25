@@ -16,7 +16,6 @@ import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
-import GpaCalculatorPage from '../gpa-calculator/GpaCalculatorPage';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
@@ -126,16 +125,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
     return () => clearTimeout(timer);
   }, [isReadOnly, mm.loading]);
 
-  // Handle URL parameters for tab navigation (gpa-calculator not available in read-only)
+  // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    const allowedTabs = isReadOnly ? ['personal', 'academic', 'activities'] : ['personal', 'academic', 'activities', 'gpa-calculator'];
+    const allowedTabs = ['personal', 'academic', 'activities'];
     if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     } else {
       setActiveTab('personal');
     }
-  }, [searchParams, isReadOnly]);
+  }, [searchParams]);
 
   // Handle tab changes — merge into the existing params so shell params
   // like ?section=others&target=profile survive the tab switch
@@ -261,21 +260,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       ),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
-    // GPA Calculator tab hidden in read-only (counselor) view
-    ...(!isReadOnly
-      ? [
-          {
-            key: 'gpa-calculator',
-            label: (
-              <div className="tab-label">
-                <UnifiedIcon name="calculator" size="sm" color="primary" />
-                <span>{t('studentHub.profile.gpaCalculator', 'GPA Calculator')}</span>
-              </div>
-            ),
-            children: <GpaCalculatorPage />,
-          },
-        ]
-      : []),
     // Settings tab hidden for now
     // {
     //   key: 'settings',
