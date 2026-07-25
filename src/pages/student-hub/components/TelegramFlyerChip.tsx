@@ -3,10 +3,12 @@
  *
  * Replaces the old full-width `TelegramConnectionChecklist` card on the
  * non-Community dashboard with a small dark ribbon/tag pinned as a
- * floating tab on the LEFT edge of the viewport (vertically centered) —
- * the bottom-right corner is already occupied by the global chat FAB, so
- * left was picked to avoid collision. Same show/hide + Connect vs.
- * Continue logic as the checklist it replaces (mirrors
+ * floating tab in the empty cream gutter on the RIGHT edge of the
+ * viewport, just below the burgundy app header (fixed top offset, not
+ * vertically centered — see TelegramFlyerChip.scss for the measured
+ * header height). The global chat FAB sits bottom-right, but this tab
+ * sits near the top so the two don't collide. Same show/hide + Connect
+ * vs. Continue logic as the checklist it replaces (mirrors
  * `TelegramConnectionChecklist.tsx`, which is still used elsewhere —
  * e.g. `Dashboard.tsx` — so it was left untouched). Mounted page-scoped
  * from `MyProgressEditorialView`, not a global layout.
