@@ -465,6 +465,11 @@ const MyProgressEditorialView: React.FC = () => {
 
   return (
     <div className="myprog">
+      {/* Telegram connect prompt — floating "flyer" tab pinned to the
+          left viewport edge (fixed position; DOM placement doesn't
+          affect layout). Auto-hides once the student links Telegram. */}
+      <TelegramFlyerChip />
+
       <header className="myprog__header">
         <div className="myprog__head-left">
           <h1 className="myprog__title">
@@ -577,12 +582,6 @@ const MyProgressEditorialView: React.FC = () => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
-          </div>
-
-          {/* Telegram connect prompt — small "flyer" chip, auto-hides
-              once the student links their Telegram account. */}
-          <div className="myprog__tg-flyer-row">
-            <TelegramFlyerChip />
           </div>
 
           {/* Faint program links — low-key, secondary entry points that

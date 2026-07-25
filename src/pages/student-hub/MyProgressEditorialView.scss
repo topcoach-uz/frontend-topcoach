@@ -635,15 +635,6 @@
     display: block;
   }
 
-  /* ── Telegram flyer chip row ────────────────────────────────────── */
-  /* Left-aligned wrapper so the compact flyer chip doesn't stretch to
-     the section's full width. Renders nothing (0-height) when
-     TelegramFlyerChip hides itself (connected / loading). */
-  &__tg-flyer-row {
-    display: flex;
-    justify-content: flex-start;
-  }
-
   /* ── Faint program links (under the Major Match hero) ─────────── */
   /* Deliberately muted/secondary — these are not competing CTAs, just
      quiet pointers to the other programs for a student who scrolled

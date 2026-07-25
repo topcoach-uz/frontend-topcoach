@@ -1,8 +1,14 @@
 /**
- * Small dark "flyer" chip — a compact ribbon/tag nudging Telegram
- * connection. Near-black body, one angled/notched corner (clip-path),
- * softly rounded otherwise. Sits left-aligned under the Major Match
- * video on the non-Community dashboard.
+ * Small dark "flyer" chip — a floating tab pinned flush to the LEFT
+ * viewport edge, vertically centered. Near-black body, square on the
+ * edge-side (left) corners so it reads as attached to the edge, softly
+ * rounded on the outward (right) side with the original angled/notched
+ * top-right corner (clip-path) preserved. `position: fixed` so it stays
+ * put while the page scrolls; z-index sits above normal page content but
+ * below AntD's popup layer (Modal/Drawer default to 1000 in this app —
+ * see MajorMatchPromptModal/MajorMatchCollectModal + the student-hub
+ * mobile nav Drawer, none of which override `zIndexPopupBase`) so those
+ * always render on top of this tab.
  */
 
 .tg-flyer {
@@ -13,26 +19,36 @@
   background: #1c1a17;
   color: #f4f2ea;
   border: none;
-  border-radius: 10px;
-  // Cut corner on the top-right (~14px), softly rounded everywhere the
-  // clip-path doesn't touch a straight edge.
+  // Flush/square on the left (edge-attached) side, rounded on the right.
+  border-radius: 0 10px 10px 0;
+  // Cut corner on the top-right (~14px); left edge stays a flat vertical
+  // line so it sits flush against the viewport edge.
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 3px 10px rgba(15, 13, 10, 0.22);
   transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
 
+  // Floating side-tab anchoring.
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  // Above normal page content, below AntD Modal/Drawer (default 1000).
+  z-index: 900;
+
   &:hover,
   &:focus-visible {
     background: #0088cc;
-    transform: translateY(-1px);
+    transform: translateY(calc(-50% - 1px));
     box-shadow: 0 5px 14px rgba(15, 13, 10, 0.28);
   }
   &:active {
-    transform: translateY(0);
+    transform: translateY(-50%);
   }
   &:focus-visible {
     outline: 2px solid #7b1f2f;
@@ -55,5 +71,25 @@
     opacity: 0.65;
     font-size: 0.95em;
     margin-left: 1px;
+  }
+
+  // Shrink on tablet/mobile so it never covers meaningful content.
+  @media (max-width: 768px) {
+    padding: 7px 12px 7px 10px;
+    font-size: 0.72rem;
+    gap: 5px;
+  }
+
+  // Collapse to icon-only on narrow phones — label + chevron hide,
+  // accessible name still provided via the button's aria-label.
+  @media (max-width: 480px) {
+    padding: 10px 9px;
+    border-radius: 0 8px 8px 0;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+
+    .tg-flyer__label,
+    .tg-flyer__chevron {
+      display: none;
+    }
   }
 }

@@ -2,12 +2,14 @@
  * Compact "flyer" chip that prompts the student to connect Telegram.
  *
  * Replaces the old full-width `TelegramConnectionChecklist` card on the
- * non-Community dashboard with a small, left-aligned dark ribbon/tag —
- * a lighter-weight nudge that sits under the Major Match video instead
- * of occupying a full header-width card. Same show/hide + Connect vs.
+ * non-Community dashboard with a small dark ribbon/tag pinned as a
+ * floating tab on the LEFT edge of the viewport (vertically centered) —
+ * the bottom-right corner is already occupied by the global chat FAB, so
+ * left was picked to avoid collision. Same show/hide + Connect vs.
  * Continue logic as the checklist it replaces (mirrors
  * `TelegramConnectionChecklist.tsx`, which is still used elsewhere —
- * e.g. `Dashboard.tsx` — so it was left untouched).
+ * e.g. `Dashboard.tsx` — so it was left untouched). Mounted page-scoped
+ * from `MyProgressEditorialView`, not a global layout.
  */
 
 import React, { useState } from 'react';
@@ -33,7 +35,12 @@ const TelegramFlyerChip: React.FC = () => {
 
   return (
     <>
-      <button type="button" className="tg-flyer" onClick={() => setShowModal(true)}>
+      <button
+        type="button"
+        className="tg-flyer"
+        onClick={() => setShowModal(true)}
+        aria-label={label}
+      >
         <Send size={13} className="tg-flyer__icon" aria-hidden="true" />
         <span className="tg-flyer__label">{label}</span>
         <span className="tg-flyer__chevron" aria-hidden="true">
