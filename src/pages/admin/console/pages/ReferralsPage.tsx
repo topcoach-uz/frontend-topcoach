@@ -70,35 +70,27 @@ function statusPill(status: string): { label: string; variant: AcPillVariant } {
   }
 }
 
+/**
+ * Uses the console's own `ac-kpi-*` classes rather than a hand-rolled tile.
+ * AntD Typography defaults to dark text, which is invisible on this dark
+ * console, and these classes already resolve against the `--ac-*` theme.
+ */
 function Stat({
   label,
   value,
   hint,
+  accent,
 }: {
   label: string;
   value: string;
   hint?: string;
+  accent: 'green' | 'amber' | 'red' | 'blue';
 }) {
   return (
-    <Card size="small" style={{ height: '100%' }}>
-      <Text type="secondary" style={{ fontSize: 12, letterSpacing: '0.08em' }}>
-        {label.toUpperCase()}
-      </Text>
-      <div
-        style={{
-          fontSize: 24,
-          fontWeight: 600,
-          fontVariantNumeric: 'tabular-nums',
-          lineHeight: 1.3,
-        }}
-      >
-        {value}
-      </div>
-      {hint && (
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          {hint}
-        </Text>
-      )}
+    <Card bordered={false} className={`ac-kpi-card ac-kpi-card--accent-${accent}`}>
+      <div className="ac-kpi-label">{label}</div>
+      <div className="ac-kpi-value">{value}</div>
+      {hint && <div className="ac-kpi-meta">{hint}</div>}
     </Card>
   );
 }
@@ -221,19 +213,26 @@ function UserDetailModal({
               ever grows and the console keeps asking you to pay someone you
               already paid. */}
           <Card size="small" title="Record a payout">
-            <Space.Compact style={{ width: '100%' }}>
+            {/* A plain flex row rather than Space.Compact: Compact merges
+                borders and radii, which the dark-modal overrides then fight,
+                leaving the button a different height to its inputs. Explicit
+                matching sizes keep the row on one baseline. */}
+            <div className="ac-referral-actionRow">
               <Input
-                style={{ width: 200 }}
+                size="middle"
+                style={{ width: 190 }}
                 placeholder={`Blank = full ${usd(balance)}`}
                 value={payoutAmount}
                 onChange={(e) => setPayoutAmount(e.target.value)}
               />
               <Input
-                placeholder="Payment reference (also the idempotency key)"
+                size="middle"
+                placeholder="Payment reference"
                 value={payoutRef}
                 onChange={(e) => setPayoutRef(e.target.value)}
               />
               <Button
+                size="middle"
                 type="primary"
                 loading={payingOut}
                 disabled={balance <= 0}
@@ -241,28 +240,34 @@ function UserDetailModal({
               >
                 Mark paid
               </Button>
-            </Space.Compact>
+            </div>
+            <div className="ac-referral-actionHint">
+              The reference is also the idempotency key, so submitting the same
+              one twice records a single payout.
+            </div>
           </Card>
 
           {/* Writes a ledger row rather than editing history: a balance that can
               be silently rewritten is not auditable. */}
           <Card size="small" title="Adjust balance">
-            <Space.Compact style={{ width: '100%' }}>
+            <div className="ac-referral-actionRow">
               <Input
-                style={{ width: 200 }}
+                size="middle"
+                style={{ width: 190 }}
                 placeholder="Amount, negative claws back"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
               <Input
+                size="middle"
                 placeholder="Reason (recorded on the ledger)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
-              <Button loading={adjusting} onClick={submitAdjust}>
+              <Button size="middle" loading={adjusting} onClick={submitAdjust}>
                 Apply
               </Button>
-            </Space.Compact>
+            </div>
           </Card>
 
           <Card size="small" title={`Redemptions (${data?.usage?.length ?? 0})`}>
@@ -536,23 +541,24 @@ export default function ReferralsPage() {
 
   return (
     <div>
-      <Typography.Title level={3} style={{ marginBottom: 4 }}>
+      <h1 className="ac-page-title">
         <Gift size={20} style={{ marginRight: 8, verticalAlign: '-3px' }} />
         Referrals
-      </Typography.Title>
-      <Paragraph type="secondary">
+      </h1>
+      <p className="ac-page-lead">
         Every code, who used it, and what is owed. Amounts in USD.
-      </Paragraph>
+      </p>
 
       {summaryLoading ? (
         <Spin />
       ) : (
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Row gutter={[16, 16]} className="ac-kpi-row">
           <Col xs={24} sm={12} lg={6}>
             <Stat
               label="Outstanding liability"
               value={usd(summary?.outstandingLiabilityUsd)}
               hint="What we owe referrers right now"
+              accent="amber"
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
@@ -560,6 +566,7 @@ export default function ReferralsPage() {
               label="Bonus accrued"
               value={usd(summary?.totalBonusAccruedUsd)}
               hint="All time, excluding reversals"
+              accent="green"
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
@@ -567,12 +574,14 @@ export default function ReferralsPage() {
               label="Discount given"
               value={usd(summary?.totalDiscountGivenUsd)}
               hint="All time, excluding reversals"
+              accent="red"
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Stat
               label="Redemptions"
               value={String(summary?.totalRedemptions ?? 0)}
+              accent="blue"
               hint={`${summary?.activeCodes ?? 0} active codes · ${summary?.reversedRedemptions ?? 0} reversed`}
             />
           </Col>
