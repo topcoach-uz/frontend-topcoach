@@ -1,552 +1,454 @@
-@import "src/styles/variables.scss";
+/* Checkout — Stripe's structure, TopCoach's skin.
+ *
+ * The page previously hardcoded Inter on a #f9fafb gray, matching nothing else
+ * in the product. These are the canonical editorial tokens (see
+ * src/styles/_editorial-tokens.scss), declared inline to match the convention
+ * the other My Journey surfaces already use. */
+$cream-page: #faf8f3;
+$cream-elev: #fbfaf6;
+$ink: #1c1a17;
+$ink-soft: #4b463f;
+$muted: #6b6258;
+$hairline: #e5e3da;
+$brand: #7b1f2f;
+$brand-tint: rgba(123, 31, 47, 0.08);
+$success: #047857;
 
-// Page Container
-.pageContainer {
+$serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+$mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+.page {
   min-height: 100vh;
-  background: #f9fafb;
-  padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  
-  :global(body),
-  :global(html) {
-    background: #f9fafb !important;
-  }
+  background: $cream-page;
+  color: $ink;
 }
 
-// Header Section
 .header {
-  background: white;
-  padding: 20px 32px;
-  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  background: $cream-page;
+  border-bottom: 1px solid $hairline;
   position: sticky;
   top: 0;
   z-index: 10;
-  
-  .backButton {
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    padding: 8px 0;
-    font-weight: 500;
-    font-size: 14px;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $ink-soft;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 6px 0;
+
+  &:hover {
+    color: $ink;
+  }
+  &:focus-visible {
+    outline: 2px solid $brand;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+.secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $muted;
+  font-size: 0.8rem;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px 96px;
+  }
+}
+
+/* ── Order summary ─────────────────────────────────────────────────────── */
+
+.summary {
+  background: $cream-elev;
+  border: 1px solid $hairline;
+  border-radius: 14px;
+  padding: 24px;
+  position: sticky;
+  top: 88px;
+
+  @media (max-width: 991px) {
+    position: static;
+  }
+
+  /* On mobile the summary is driven by the toggle above it. */
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.summaryOpen {
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+.summaryInner {
+  display: block;
+}
+
+.product {
+  margin-bottom: 20px;
+}
+
+/* The one serif on the page. It ties checkout to the reading surfaces where
+   the product actually lives. */
+.productTitle {
+  font-family: $serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 4px;
+  color: $ink;
+}
+
+.productSubtitle {
+  margin: 0;
+  color: $muted;
+  font-size: 0.9rem;
+}
+
+/* Amounts are tabular mono aligned to one hard right edge, so the arithmetic
+   can be checked by scanning straight down. This is the page where someone
+   confirms a discount actually came off. */
+.receipt {
+  border-top: 1px solid $hairline;
+  padding-top: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  font-size: 0.92rem;
+}
+
+.rowLabel {
+  color: $ink-soft;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowDetail {
+  color: $muted;
+  font-size: 0.78rem;
+}
+
+.rowAmount {
+  font-family: $mono;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: $ink;
+}
+
+.subtotalRow {
+  border-top: 1px solid $hairline;
+}
+
+.discountRow {
+  .rowLabel,
+  .rowAmount {
+    color: $success;
+  }
+}
+
+.totalRow {
+  border-top: 1px solid $hairline;
+  margin-top: 4px;
+  padding-top: 14px;
+
+  .rowLabel {
+    font-weight: 600;
+    color: $ink;
+    font-size: 1rem;
+  }
+}
+
+.totalAmount {
+  font-family: $mono;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $ink;
+  white-space: nowrap;
+}
+
+.chargeNote {
+  margin: 10px 0 0;
+  color: $muted;
+  font-size: 0.8rem;
+}
+
+.referralSection {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid $hairline;
+}
+
+/* ── Mobile summary toggle ─────────────────────────────────────────────── */
+
+.summaryToggle {
+  display: none;
+
+  @media (max-width: 768px) {
     display: flex;
     align-items: center;
-    gap: 8px;
-    
-    &:hover {
-      color: #374151;
-    }
-  }
-}
-
-// Main Payment Container
-.paymentContainer {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 24px;
-  background: #f9fafb;
-  
-  @media (max-width: 768px) {
-    padding: 24px 16px;
-  }
-}
-
-// Payment Summary Card
-.summaryCard {
-  height: fit-content;
-  
-  :global(.ant-card-head) {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 20px 24px;
-    
-    :global(.ant-card-head-title) {
-      font-size: 18px;
-      font-weight: 600;
-      color: #111827;
-      padding: 0;
-    }
-  }
-  
-  :global(.ant-card-body) {
-    padding: 24px;
-  }
-  
-  .summaryContent {
-    .orderSummary {
-      margin-bottom: 20px;
-      padding: 16px;
-      background: #f9fafb;
-      border-radius: 8px;
-
-      .orderSummaryTitle {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 12px;
-      }
-
-      .orderSummaryRow {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 8px;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-    }
-
-    .amountSection {
-      margin-bottom: 24px;
-
-      .totalRow {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-top: 1px solid #e5e7eb;
-
-        .amount {
-          font-size: 16px;
-          font-weight: 600;
-          color: #111827;
-          margin: 0 !important;
-        }
-      }
-    }
-    
-    .referralSection {
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid #e5e7eb;
-    }
-  }
-}
-
-// Payment Methods Card
-.paymentMethodsCard {
-  :global(.ant-card-head) {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 20px 24px;
-    
-    :global(.ant-card-head-title) {
-      font-size: 18px;
-      font-weight: 600;
-      color: #111827;
-      padding: 0;
-    }
-  }
-  
-  :global(.ant-card-body) {
-    padding: 24px;
-  }
-  
-  .paymentMethodRadio {
+    justify-content: space-between;
     width: 100%;
-    
-    :global(.ant-radio-group) {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    gap: 12px;
+    padding: 14px 16px;
+    background: $cream-elev;
+    border: none;
+    border-bottom: 1px solid $hairline;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: $ink-soft;
+
+    strong {
+      font-family: $mono;
+      font-variant-numeric: tabular-nums;
+      color: $ink;
+      font-size: 1.05rem;
     }
-    
-    .methodOption {
-      width: 100%;
-      height: auto;
-      padding: 0;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: all 0.2s ease;
-      
-      :global(.ant-radio-button-input) {
-        display: none;
-      }
-      
-      :global(.ant-radio-button-wrapper-checked) {
-        border-color: #8b0000;
-        background: #fef2f2;
-        box-shadow: 0 0 0 1px #8b0000;
-      }
-      
-      &:hover {
-        border-color: #d1d5db;
-      }
-      
-      &.methodOptionDisabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        background: #f9fafb;
-        
-        &:hover {
-          border-color: #e5e7eb;
-        }
-      }
-      
-      .methodOptionContent {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 16px;
-        width: 100%;
-      }
-      
-      .paymentLogo {
-        width: 48px;
-        height: 48px;
-        object-fit: contain;
-        border-radius: 8px;
-        background: white;
-        padding: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-      }
-      
-      .paymentLogoPlaceholder {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        background: #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        
-        .placeholderIcon {
-          font-size: 24px;
-          color: #9ca3af;
-        }
-      }
-      
-      .methodIcon {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #8b0000 0%, #a52a2a 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        flex-shrink: 0;
-        
-        svg {
-          color: white !important;
-        }
-      }
-      
-      .methodText {
-        flex: 1;
-        min-width: 0;
-        
-        :global(.ant-typography) {
-          display: block;
-          margin: 0;
-          
-          &:first-child {
-            font-size: 16px;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 4px;
-          }
-        }
-        
-        .methodSubtext {
-          font-size: 14px;
-          color: #6b7280;
-        }
-      }
-      
-      .cardIcons {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        
-        .cardIcon {
-          height: 24px;
-          object-fit: contain;
-        }
-      }
-      
-      .arrowIcon {
-        color: #9ca3af;
-        transition: transform 0.2s ease;
-        flex-shrink: 0;
-      }
-    }
-  }
-  
-  // Payme Coming Soon - Standalone (outside Radio.Group)
-  .methodOptionDisabled {
-    width: 100%;
-    height: auto;
-    padding: 0;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 12px;
-    background: #f9fafb;
-    cursor: not-allowed;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      border-color: #e5e7eb;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    .methodOptionContent {
-      padding: 16px;
-      display: flex;
+
+    span {
+      display: inline-flex;
       align-items: center;
-      gap: 16px;
-      
-      .paymentLogoPlaceholder {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        background: #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        
-        .placeholderIcon {
-          font-size: 24px;
-          color: #9ca3af;
-        }
-      }
-      
-      .methodText {
-        flex: 1;
-        min-width: 0;
-        
-        :global(.ant-typography) {
-          display: block;
-          margin: 0;
-          
-          &:first-child {
-            font-size: 16px;
-            font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 4px;
-          }
-        }
-        
-        .methodSubtext {
-          font-size: 14px;
-          color: #9ca3af;
-        }
-      }
-    }
-  }
-  
-  // Card Form
-  .cardForm {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
-    
-    :global(.ant-form-item-label) {
-      padding-bottom: 8px;
-      
-      label {
-        font-size: 14px;
-        font-weight: 500;
-        color: #374151;
-      }
-    }
-    
-    .cardInput {
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      padding: 10px 12px;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      
-      &:hover {
-        border-color: #9ca3af;
-      }
-      
-      &:focus,
-      &:focus-within {
-        border-color: #8b0000;
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
-      }
-      
-      // Remove default Select dropdown arrow and rounded elements
-      :global(.ant-select-selector) {
-        border-radius: 8px !important;
-        padding-right: 12px !important;
-        
-        :global(.ant-select-selection-item) {
-          padding-right: 0 !important;
-        }
-        
-        :global(.ant-select-selection-placeholder) {
-          padding-right: 0 !important;
-        }
-        
-        :global(.ant-select-selection-search) {
-          border-radius: 0 !important;
-        }
-      }
-      
-      // Remove the dropdown arrow icon completely
-      :global(.ant-select-arrow),
-      :global(.ant-select-suffix) {
-        display: none !important;
-      }
-      
-      // Remove any rounded background elements inside
-      :global(.ant-select-selection-item),
-      :global(.ant-select-selection-placeholder) {
-        border-radius: 0 !important;
-      }
-    }
-    
-    .submitButton {
-      height: 48px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      background: #8b0000;
-      border-color: #8b0000;
-      margin-top: 8px;
-      
-      &:hover {
-        background: #660000;
-        border-color: #660000;
-      }
-    }
-  }
-  
-  // Payment Action Button
-  .paymentAction {
-    margin-top: 24px;
-    
-    .submitButton {
-      height: 48px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      background: #8b0000;
-      border-color: #8b0000;
-      
-      &:hover {
-        background: #660000;
-        border-color: #660000;
-      }
-    }
-  }
-  
-}
-
-// Responsive Design
-@media (max-width: 768px) {
-  .header {
-    padding: 16px 20px;
-  }
-  
-  .paymentContainer {
-    padding: 24px 16px;
-  }
-  
-  .summaryCard,
-  .paymentMethodsCard {
-    :global(.ant-card-head) {
-      padding: 16px 20px;
-    }
-    
-    :global(.ant-card-body) {
-      padding: 20px;
-    }
-  }
-  
-  .summaryCard {
-    .summaryContent {
-      .amountSection {
-        .amountDisplay {
-          .amount {
-            font-size: 28px !important;
-          }
-          
-          .currency {
-            font-size: 18px;
-          }
-        }
-      }
-    }
-  }
-  
-  .paymentMethodsCard {
-    .paymentMethodRadio {
-      .methodOption {
-        .methodOptionContent {
-          padding: 12px;
-          
-          .paymentLogo,
-          .paymentLogoPlaceholder,
-          .methodIcon {
-            width: 40px;
-            height: 40px;
-          }
-          
-          .methodText {
-            :global(.ant-typography) {
-              &:first-child {
-                font-size: 14px;
-              }
-            }
-            
-            .methodSubtext {
-              font-size: 12px;
-            }
-          }
-        }
-      }
-    }
-    
-    .cardForm {
-      .submitButton {
-        height: 44px;
-        font-size: 14px;
-      }
-    }
-    
-    .paymentAction {
-      .submitButton {
-        height: 44px;
-        font-size: 14px;
-      }
+      gap: 6px;
     }
   }
 }
 
-// Loading States
-.loadingContainer {
+.chevron,
+.chevronOpen {
+  transition: transform 160ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron,
+  .chevronOpen {
+    transition: none;
+  }
+}
+
+/* ── Payment methods ───────────────────────────────────────────────────── */
+
+.sectionLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $muted;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.method {
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: #f9fafb;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: $cream-elev;
+  border: 1px solid $hairline;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+
+  &:hover {
+    border-color: rgba(123, 31, 47, 0.35);
+  }
+  &:focus-visible {
+    outline: 2px solid $brand;
+    outline-offset: 2px;
+  }
 }
 
-.loadingContent {
+.methodActive {
+  border-color: $brand;
+  background: $brand-tint;
+
+  .radio {
+    border-color: $brand;
+    &::after {
+      transform: scale(1);
+    }
+  }
+}
+
+.methodDisabled {
+  opacity: 0.55;
+  cursor: default;
+  &:hover {
+    border-color: $hairline;
+  }
+}
+
+.radio {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid $muted;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: $brand;
+    transform: scale(0);
+    transition: transform 140ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio::after {
+    transition: none;
+  }
+}
+
+/* A white tile behind each logo. click.jpg is a JPEG with no alpha channel,
+   so on the cream panel its background would read as a white block; the tile
+   turns that into a deliberate, consistent chip for every provider. */
+.logoTile {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 38px;
+  padding: 5px 8px;
+  background: #fff;
+  border: 1px solid $hairline;
+  border-radius: 8px;
+}
+
+.logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.methodText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    color: $ink;
+    font-size: 0.95rem;
+  }
+  small {
+    color: $muted;
+    font-size: 0.8rem;
+  }
+}
+
+/* ── Action ────────────────────────────────────────────────────────────── */
+
+.action {
+  margin-top: 22px;
+}
+
+.payButton {
+  &:global(.ant-btn-primary) {
+    background: $brand !important;
+    border-color: $brand !important;
+    border-radius: 999px !important;
+    height: 48px !important;
+    font-weight: 600 !important;
+
+    &:hover,
+    &:focus {
+      background: #5d1622 !important;
+      border-color: #5d1622 !important;
+    }
+  }
+}
+
+.actionNote {
+  margin: 12px 0 0;
+  color: $muted;
+  font-size: 0.82rem;
   text-align: center;
-  padding: 50px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  
+}
+
+@media (max-width: 768px) {
+  .action {
+    position: sticky;
+    bottom: 0;
+    background: $cream-page;
+    padding: 12px 0 16px;
+    border-top: 1px solid $hairline;
+    margin-top: 18px;
+  }
+}
+
+.cardForm {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid $hairline;
+}
+
+/* ── States ────────────────────────────────────────────────────────────── */
+
+.errorState {
+  max-width: 460px;
+  margin: 90px auto;
+  text-align: center;
+  padding: 0 20px;
+
+  h1 {
+    font-family: $serif;
+    font-size: 1.6rem;
+    margin: 0 0 10px;
+    color: $ink;
+  }
+
   p {
-    margin-top: 20px;
-    color: #6b7280;
-    font-size: 16px;
+    color: $muted;
+    margin: 0 0 22px;
+  }
+}
+
+.inlineError {
+  text-align: center;
+  padding: 18px 0;
+  color: $muted;
+
+  p {
+    margin: 0 0 14px;
   }
 }

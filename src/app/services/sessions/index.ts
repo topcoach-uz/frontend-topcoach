@@ -128,12 +128,12 @@ export const sessionsApi = RtkApi.injectEndpoints({
     }),
     paySessionWithSavedCard: build.mutation<
       { status: 'paid' | 'pending'; sessionId: string; message: string },
-      { sessionId: string; paymentMethodId: string }
+      { sessionId: string; paymentMethodId: string; referralCode?: string }
     >({
-      query: ({ sessionId, paymentMethodId }) => ({
+      query: ({ sessionId, paymentMethodId, referralCode }) => ({
         url: `/sessions/${sessionId}/pay`,
         method: 'POST',
-        body: { paymentMethodId },
+        body: { paymentMethodId, ...(referralCode && { referralCode }) },
       }),
       invalidatesTags: (result) =>
         (result as any)?.status === 'paid'

@@ -149,6 +149,7 @@ const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/p
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
+const MentorConsoleReferralsLazy = lazy(() => import("src/pages/mentor/console/pages/ReferralsPage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
 );
@@ -164,6 +165,7 @@ const AdminConsoleAdministrationLazy = lazy(
   () => import("src/pages/admin/console/pages/AdministrationPage"),
 );
 const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/pages/PaymentsPage"));
+const AdminConsoleReferralsLazy = lazy(() => import("src/pages/admin/console/pages/ReferralsPage"));
 const AdminConsoleSubscriptionsLazy = lazy(() => import("src/pages/admin/console/pages/SubscriptionsPage"));
 const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
 const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
@@ -407,6 +409,7 @@ function RouterProvider() {
 
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
+                <Route path="referrals" element={<AdminConsoleReferralsLazy />} />
                 <Route path="subscriptions" element={<AdminConsoleSubscriptionsLazy />} />
                 <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
                 <Route path="events" element={<AdminConsoleEventsLazy />} />
@@ -695,6 +698,7 @@ function RouterProvider() {
                   <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
                   <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
                   <Route path="profile" element={<MentorConsoleProfileLazy />} />
+                  <Route path="referrals" element={<MentorConsoleReferralsLazy />} />
                 </Route>
               </Route>
               <Route

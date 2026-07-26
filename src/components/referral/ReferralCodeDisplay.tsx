@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Button, message, Typography, Space, Tag, Tooltip, Modal } from 'antd';
 import { Gift, Copy, Share2, Trophy, CircleDollarSign, User } from 'lucide-react';
 import { useGetMyReferralCodeQuery, useGetReferralStatsQuery } from '../../app/services/referralApi';
+import { REFERRAL_DEFAULT_PERCENT } from '../../constants/referral';
 import './ReferralCodeDisplay.scss';
 
 const { Text, Title, Paragraph } = Typography;
@@ -13,19 +14,6 @@ export const ReferralCodeDisplay: React.FC = () => {
   const { data: statsData, isLoading: isLoadingStats, error: statsError } = useGetReferralStatsQuery();
 
   const referralCode = referralCodeData?.code;
-
-  // Debug logging
-  console.log('Referral stats data:', statsData);
-  console.log('Stats error:', statsError);
-  
-  // Handle loading and error states
-  if (isLoadingStats) {
-    console.log('Loading referral stats...');
-  }
-  
-  if (statsError) {
-    console.error('Referral stats error:', statsError);
-  }
 
   const handleCopyCode = async () => {
     if (referralCode) {
@@ -44,10 +32,14 @@ export const ReferralCodeDisplay: React.FC = () => {
     }
   };
 
+  // Single source for the share copy: the modal previews this exact string, and
+  // when the two were written out separately they drifted apart.
+  const shareText = `Get ${REFERRAL_DEFAULT_PERCENT}% off at TopCoach with my referral code: ${referralCode}`;
+
   const shareToSocialMedia = (platform: string) => {
-    const text = `🎓 Get 5% off your TopCoach course with my referral code: ${referralCode}! Join me in this amazing learning journey! 🚀`;
+    const text = shareText;
     const url = 'https://topcoachuni.com/programs';
-    
+
     let shareUrl = '';
     
     switch (platform) {
@@ -110,7 +102,8 @@ export const ReferralCodeDisplay: React.FC = () => {
               Your Referral Code
             </Title>
             <Text type="secondary" className="referral-subtitle">
-              Share this code with friends and earn 5% commission on their purchases!
+              Share this code. They take {REFERRAL_DEFAULT_PERCENT}% off, and you
+              earn {REFERRAL_DEFAULT_PERCENT}% back on what they buy.
             </Text>
           </div>
         </div>
@@ -180,8 +173,10 @@ export const ReferralCodeDisplay: React.FC = () => {
           </div>
           <ul className="benefits-list">
             <li>Share your referral code with friends</li>
-            <li>They get 5% off their course purchase</li>
-            <li>You earn 5% commission on their purchase</li>
+            <li>They get {REFERRAL_DEFAULT_PERCENT}% off their purchase</li>
+            <li>
+              You earn {REFERRAL_DEFAULT_PERCENT}% back on what they spend
+            </li>
             <li>Unlimited referrals - no expiration!</li>
           </ul>
         </div>
@@ -204,10 +199,7 @@ export const ReferralCodeDisplay: React.FC = () => {
         <div className="share-content">
           <div className="share-preview">
             <Text strong>Preview:</Text>
-            <div className="share-text">
-              🎓 Get 5% off your TopCoach course with my referral code: <Text code>{referralCode}</Text>! 
-              Join me in this amazing learning journey! 🚀
-            </div>
+            <div className="share-text">{shareText}</div>
           </div>
           
           <div className="share-buttons">

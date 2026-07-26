@@ -380,6 +380,67 @@ function unwrap<T>(res: unknown): T {
   return res as T;
 }
 
+// ─────────────── Referrals ───────────────
+
+export type AdminReferralSummary = {
+  totalCodes: number;
+  activeCodes: number;
+  totalRedemptions: number;
+  reversedRedemptions: number;
+  totalDiscountGivenUsd: number;
+  totalBonusAccruedUsd: number;
+  /** What the platform currently owes referrers. */
+  outstandingLiabilityUsd: number;
+};
+
+export type AdminReferralCodeRow = {
+  id: string;
+  code: string;
+  userId: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  isActive: boolean;
+  discountPercentage: string | number;
+  bonusPercentage: string | number;
+  source: string;
+  createdAt: string;
+  timesUsed: string | number;
+  totalEarnedUsd: string | number;
+  walletUsd: string | number;
+};
+
+export type AdminReferralUsageRow = {
+  id: string;
+  createdAt: string;
+  orderId: string | null;
+  productType: string | null;
+  status: string;
+  grossAmount: string | number;
+  discountAmount: string | number;
+  commissionAmount: string | number;
+  currency: string;
+  refereeName: string | null;
+  ownerUserId: string | null;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  code: string | null;
+};
+
+export type AdminReferralWalletRow = {
+  userId: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  balanceUsd: string | number;
+  lifetimeEarnedUsd: string | number;
+};
+
+export type AdminReferralPaged<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export const adminConsoleApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminDashboardStats: builder.query<AdminDashboardStats, void>({
@@ -405,6 +466,107 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
         };
       },
       providesTags: ['AdminConsoleDirectory'],
+    }),
+
+    getAdminReferralSummary: builder.query<AdminReferralSummary, void>({
+      query: () => ({ url: '/admin/referral/summary', method: 'GET' }),
+      providesTags: ['AdminConsoleReferral'],
+    }),
+
+    getAdminReferralCodes: builder.query<
+      AdminReferralPaged<AdminReferralCodeRow>,
+      { search?: string; page?: number; pageSize?: number }
+    >({
+      query: (params) => ({
+        url: '/admin/referral/codes',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['AdminConsoleReferral'],
+    }),
+
+    getAdminReferralUsage: builder.query<
+      AdminReferralPaged<AdminReferralUsageRow>,
+      { search?: string; status?: string; page?: number; pageSize?: number }
+    >({
+      query: (params) => ({
+        url: '/admin/referral/usage',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['AdminConsoleReferral'],
+    }),
+
+    getAdminReferralWallets: builder.query<
+      AdminReferralPaged<AdminReferralWalletRow>,
+      { page?: number; pageSize?: number }
+    >({
+      query: (params) => ({
+        url: '/admin/referral/wallets',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['AdminConsoleReferral'],
+    }),
+
+    getAdminReferralUserDetail: builder.query<any, string>({
+      query: (userId) => ({
+        url: `/admin/referral/users/${userId}`,
+        method: 'GET',
+      }),
+      providesTags: ['AdminConsoleReferral'],
+    }),
+
+    setAdminReferralCodeActive: builder.mutation<
+      unknown,
+      { id: string; isActive: boolean }
+    >({
+      query: ({ id, isActive }) => ({
+        url: `/admin/referral/codes/${id}/active`,
+        method: 'POST',
+        body: { isActive },
+      }),
+      invalidatesTags: ['AdminConsoleReferral'],
+    }),
+
+    adjustAdminReferralBalance: builder.mutation<
+      unknown,
+      { userId: string; amountUsd: number; reason: string; reference?: string }
+    >({
+      query: (body) => ({
+        url: '/admin/referral/adjust',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AdminConsoleReferral'],
+    }),
+
+    recordAdminReferralPayout: builder.mutation<
+      {
+        paidUsd: number;
+        redemptionsMarkedPaid: number;
+        remainingBalanceUsd: number;
+      },
+      { userId: string; amountUsd?: number; reference: string; note?: string }
+    >({
+      query: (body) => ({
+        url: '/admin/referral/payout',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AdminConsoleReferral'],
+    }),
+
+    reverseAdminReferralUsage: builder.mutation<
+      unknown,
+      { usageId: string; reason: string }
+    >({
+      query: ({ usageId, reason }) => ({
+        url: `/admin/referral/usage/${usageId}/reverse`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: ['AdminConsoleReferral'],
     }),
 
     getAdminPayments: builder.query<
@@ -654,6 +816,15 @@ export const {
   useGetAdminDashboardStatsQuery,
   useGetAdminUsersDirectoryQuery,
   useGetAdminPaymentsQuery,
+  useGetAdminReferralSummaryQuery,
+  useGetAdminReferralCodesQuery,
+  useGetAdminReferralUsageQuery,
+  useGetAdminReferralWalletsQuery,
+  useGetAdminReferralUserDetailQuery,
+  useSetAdminReferralCodeActiveMutation,
+  useAdjustAdminReferralBalanceMutation,
+  useRecordAdminReferralPayoutMutation,
+  useReverseAdminReferralUsageMutation,
   useGetAdminSessionsOverviewQuery,
   useGetAdminEventsQuery,
   useGetAdminUserDetailQuery,

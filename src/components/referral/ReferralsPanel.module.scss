@@ -1,0 +1,91 @@
+/* Editorial palette — same values the rest of My Journey declares inline.
+   Kept local to match MenteeSettingsPageMock.module.scss rather than pulling
+   in the shared token file, so the two stay visually locked together. */
+$st-cream-elevated: #fbfaf6;
+$st-ink: #1c1a17;
+$st-muted: #6b6258;
+$st-hairline: #e5e3da;
+$st-brand: #7b1f2f;
+
+.card {
+  margin-bottom: 20px;
+  border-radius: 14px !important;
+  border: 1px solid $st-hairline !important;
+  background: $st-cream-elevated !important;
+  box-shadow: none !important;
+
+  :global(.ant-card-head) {
+    background: transparent !important;
+    border-bottom: 1px solid $st-hairline !important;
+    padding: 14px 20px !important;
+    min-height: auto !important;
+  }
+
+  :global(.ant-card-head-title) {
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    color: $st-ink !important;
+  }
+
+  :global(.ant-card-body) {
+    padding: 18px 20px !important;
+  }
+}
+
+.codeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The code is the one thing on this page people retype by hand or read out
+   loud, so it gets monospace and generous tracking. */
+.code {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: $st-ink;
+  background: rgba(123, 31, 47, 0.06);
+  border: 1px solid rgba(123, 31, 47, 0.18);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+
+.balance {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-size: 2rem;
+  font-weight: 600;
+  color: $st-brand;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.explainer {
+  margin: 10px 0 0 !important;
+  color: $st-muted !important;
+  font-size: 0.88rem;
+}
+
+.empty {
+  padding: 22px 12px;
+  text-align: center;
+
+  p {
+    margin: 6px auto 0 !important;
+    max-width: 380px;
+  }
+}
+
+@media (max-width: 560px) {
+  .codeRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .code {
+    text-align: center;
+  }
+}
