@@ -66,10 +66,9 @@ export default function SubscriptionTab() {
   const [searchParams] = useSearchParams();
   const stateParam = searchParams.get('state');
 
-  // Funnel gate. Users who haven't passed the placement test (or who
-  // haven't completed the admissions profile) can't enter the Community
-  // subscription flow. Admin-granted users + already-subscribed users
-  // are `eligible` and see the normal tab below.
+  // Funnel gate. Users who haven't completed the admissions profile
+  // can't enter the Community subscription flow. Admin-granted users +
+  // already-subscribed users are `eligible` and see the normal tab below.
   const communityGate = useCommunityAccessGate();
 
   // Mock mode: `?state=mock` always pulls fixtures (defaults to 'active').
@@ -412,16 +411,13 @@ export default function SubscriptionTab() {
   }
 
   // Funnel gate. Before the user is allowed to subscribe (or even see
-  // the plan picker / card-add CTA), they must pass the English
-  // placement test and complete the admissions profile. Show a focused
-  // "complete this first" card instead of the full tab.
+  // the plan picker / card-add CTA), they must complete the admissions
+  // profile. Show a focused "complete this first" card instead of the
+  // full tab.
   //
   // Mock mode (`?state=...`) bypasses the gate so designers can still
   // flip through every fixture variant offline.
-  const showGate =
-    !mockMode &&
-    (communityGate.state === 'needs_placement_test' ||
-      communityGate.state === 'needs_profile');
+  const showGate = !mockMode && communityGate.state === 'needs_profile';
 
   if (showGate) {
     return (
@@ -434,17 +430,10 @@ export default function SubscriptionTab() {
             'settings.subscription.gate.title',
             'One quick step before you can subscribe',
           )}
-          description={
-            communityGate.state === 'needs_placement_test'
-              ? t(
-                  'settings.subscription.gate.descPlacement',
-                  'Pass the short English placement test to unlock the Community subscription. It takes about 10 minutes and you can retake it as many times as you need.',
-                )
-              : t(
-                  'settings.subscription.gate.descProfile',
-                  'Finish your admissions profile (a few quick questions) so we can personalize your roadmap before you start your trial.',
-                )
-          }
+          description={t(
+            'settings.subscription.gate.descProfile',
+            'Finish your admissions profile (a few quick questions) so we can personalize your roadmap before you start your trial.',
+          )}
           action={
             <button
               type="button"
@@ -467,9 +456,7 @@ export default function SubscriptionTab() {
               }}
             >
               <BookOpen size={14} />
-              {communityGate.state === 'needs_placement_test'
-                ? t('settings.subscription.gate.ctaPlacement', 'Take the test')
-                : t('settings.subscription.gate.ctaProfile', 'Continue profile')}
+              {t('settings.subscription.gate.ctaProfile', 'Continue profile')}
               <ArrowRight size={14} />
             </button>
           }
@@ -511,12 +498,17 @@ export default function SubscriptionTab() {
         <CurrentPlanCard
           subscription={subscription}
           paymentMethod={defaultPaymentMethod}
+          plans={plans}
           onChangePlan={() => {
             planPickerRef.current?.scrollIntoView({
               behavior: 'smooth',
               block: 'start',
             });
           }}
+          // Cancel flow step 3 ("too expensive") hands the target plan
+          // here — reuse the SAME confirm-before-change modal the
+          // AvailablePlans picker triggers, no parallel switch logic.
+          onOfferPlanSwitch={(plan) => setPlanChangeConfirm(plan)}
         />
       )}
 
