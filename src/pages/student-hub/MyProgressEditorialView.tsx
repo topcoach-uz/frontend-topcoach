@@ -19,13 +19,10 @@ import { App, Dropdown, Form, Input, Modal, Skeleton } from 'antd';
 import {
   ArrowRight,
   Plus,
-  Search,
   Wand2,
   BookOpen,
   FlaskConical,
   GraduationCap,
-  Building2,
-  FileUp,
   MoreVertical,
   Sparkles,
 } from 'lucide-react';
@@ -55,7 +52,6 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
-import TelegramFlyerChip from './components/TelegramFlyerChip';
 import MajorMatchCollectModal from './components/MajorMatchCollectModal';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import { useIscCardState } from '../events/_components/useIscCardState';
@@ -353,7 +349,7 @@ const MyProgressEditorialView: React.FC = () => {
         desc: `${daysToDeadline} day${daysToDeadline === 1 ? '' : 's'} until the deadline. Open the checklist and tackle the next open item.`,
         minutes: 20,
         priority: urgency === 'urgent' ? 0 : urgency === 'soon' ? 1 : 2,
-        ctaPath: '/student-hub?section=others&target=college-lists',
+        ctaPath: '/student-hub?section=others&target=profile&tab=college-lists',
       });
     }
 
@@ -407,7 +403,7 @@ const MyProgressEditorialView: React.FC = () => {
           desc: 'Track deadlines and progress per school. The next 60 seconds will save you weeks.',
           minutes: 1,
           priority: 2,
-          ctaPath: '/student-hub?section=others&target=college-lists',
+          ctaPath: '/student-hub?section=others&target=profile&tab=college-lists',
         });
       }
       if (recs.length < 3) {
@@ -429,78 +425,16 @@ const MyProgressEditorialView: React.FC = () => {
       .map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
   }, [nearestDeadline, daysToDeadline, tracks, upcomingSessions, applications.length]);
 
-  const greeting = (
-    <>
-      {t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName })}{' '}
-      <span className="myprog__title-muted">
-        {t('studentHub.myProgress.greetingSub', "Let's keep moving.")}
-      </span>
-    </>
-  );
-
-  // Quick Add dropdown — mirrors the legacy Dashboard menu so the
-  // common "I want to do X" entry points stay one click away from the
-  // editorial header.
-  // Trimmed to genuinely additive actions — profile completion lives on the
-  // sidebar card, essays keep their nav entry, and Major Match already has
-  // the adjacent Discover pill + sidebar + profile-card entries.
-  const quickAddItems = [
-    {
-      key: 'application',
-      label: t('studentHub.myProgress.quickAddCollegeList', 'Add to college list'),
-      icon: <Building2 size={14} />,
-      onClick: () => navigate('/student-hub?section=others&target=college-lists&applicationFlow=new'),
-    },
-    {
-      key: 'document',
-      label: t('studentHub.myProgress.quickAddDocument', 'Upload a document'),
-      icon: <FileUp size={14} />,
-      onClick: () => navigate('/student-hub/documents'),
-    },
-  ];
-
-  // Discover entry → AI Major Match. Same target the legacy "Discover"
-  // pill in the dashboard top bar opens.
-  const handleDiscover = () => navigate('/student-hub?section=ai-major-match');
+  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName });
 
   return (
     <div className="myprog">
-      {/* Telegram connect prompt — floating "flyer" tab pinned to the
-          left viewport edge (fixed position; DOM placement doesn't
-          affect layout). Auto-hides once the student links Telegram. */}
-      <TelegramFlyerChip />
-
       <header className="myprog__header">
         <div className="myprog__head-left">
           <h1 className="myprog__title">
             {t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
           </h1>
           <p className="myprog__greeting">{greeting}</p>
-          <p className="myprog__desc">
-            {t(
-              'studentHub.myProgress.desc',
-              "Below: where you left off, what's next, and who's expecting you.",
-            )}
-          </p>
-        </div>
-        <div className="myprog__head-actions">
-          <button
-            type="button"
-            className="myprog__btn myprog__btn--ghost"
-            onClick={handleDiscover}
-          >
-            <Search size={14} /> {t('studentHub.myProgress.discover', 'Discover')}
-          </button>
-          <Dropdown
-            menu={{ items: quickAddItems }}
-            trigger={['click']}
-            placement="bottomRight"
-            overlayClassName="myprog__quickadd-menu"
-          >
-            <button type="button" className="myprog__btn myprog__btn--primary">
-              <Plus size={14} /> {t('studentHub.myProgress.quickAdd', 'Quick add')}
-            </button>
-          </Dropdown>
         </div>
       </header>
 
@@ -510,8 +444,11 @@ const MyProgressEditorialView: React.FC = () => {
           free tool we can put in front of a not-yet-enrolled student.
           Community users see the real progress card below.
 
-          Layout order: hero (single column) → video → Telegram flyer
-          chip → faint program links. */}
+          Layout: one card, two columns — hero copy on the left, trailer
+          on the right, vertically centered against each other. DOM order
+          stays text-then-video (it collapses to a single stacked column
+          on narrow viewports, text above video). Below the hero: Telegram
+          faint program links. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
           <article className="myprog__card myprog__mmhero">
@@ -568,52 +505,24 @@ const MyProgressEditorialView: React.FC = () => {
                 </>
               )}
             </div>
+
+            {/* Trailer — right column at desktop widths, stacks below the
+                text on collapse. Keeps its own 16:9 box (no stretching to
+                match the text column's height); the row centers the two
+                columns against each other instead. */}
+            <div className="myprog__mmhero__media">
+              <div className="myprog__mmvideo">
+                <iframe
+                  className="myprog__mmvideo-iframe"
+                  src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
+                  title="Top Coach Community"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
           </article>
-
-          {/* Trailer — now a full-width block below the hero instead of
-              a right-hand column. Fixed 16:9 box, rounded to match the
-              card radius. */}
-          <div className="myprog__mmvideo">
-            <iframe
-              className="myprog__mmvideo-iframe"
-              src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
-              title="Top Coach Community"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-
-          {/* Faint program links — low-key, secondary entry points that
-              sit under the hero without competing with the Major Match CTA. */}
-          <nav
-            className="myprog__mmlinks"
-            aria-label={t('studentHub.myProgress.programLinksAriaLabel', 'Program links')}
-          >
-            <button
-              type="button"
-              className="myprog__mmlinks__item"
-              onClick={() => navigate('/student-hub/sat-prep')}
-            >
-              {t('studentHub.myProgress.linkTestPrep', 'Test prep')}
-            </button>
-            <span className="myprog__mmlinks__sep" aria-hidden="true">·</span>
-            <button
-              type="button"
-              className="myprog__mmlinks__item"
-              onClick={() => navigate('/student-hub/research-prep')}
-            >
-              {t('studentHub.myProgress.linkResearch', 'Research')}
-            </button>
-            <span className="myprog__mmlinks__sep" aria-hidden="true">·</span>
-            <button
-              type="button"
-              className="myprog__mmlinks__item"
-              onClick={() => navigate('/student-hub?section=others&target=essays')}
-            >
-              {t('studentHub.myProgress.linkPersonalStatement', 'Personal statement')}
-            </button>
-          </nav>
         </section>
       ) : null}
 

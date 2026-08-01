@@ -16,7 +16,6 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { isFeedAllowed } from './communityFeedAccess';
 import { useTypedSelector } from 'src/app/store';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
@@ -63,11 +62,12 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
     onNavigate();
   };
 
-  const isDashboard = !isCommunityEnrolled && section === 'dashboard';
+  const isDashboard = section === 'dashboard';
   const isFeed = section === 'feed';
   const isMyLearning = section === 'my-learning';
   const isMessages = section === 'messages';
   const isBuddies = section === 'buddies';
+  const isMentors = section === 'mentors';
   const isOthers = (targ: string) => section === 'others' && target === targ;
   const isAiMajor = section === 'ai-major-match';
   const isAdmissions = section === 'admissions-program';
@@ -109,22 +109,25 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
       </Card>
 
       <div className={styles.leftNav}>
-        {!isCommunityEnrolled && (
-          <button
-            type="button"
-            className={`${styles.navItem} ${isDashboard ? styles.navItemActive : ''}`}
-            onClick={() => go('/student-hub?section=dashboard')}
-          >
-            <span className={styles.navIconCircle}>
-              <Home size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
-          </button>
-        )}
+        {/* Dashboard is reachable for every student, enrolled or not —
+            renders the same MyProgressEditorialView as "My progress"
+            below (see the isCommunityEnrolled branch in that component). */}
+        <button
+          type="button"
+          className={`${styles.navItem} ${isDashboard ? styles.navItemActive : ''}`}
+          onClick={() => go('/student-hub?section=dashboard')}
+        >
+          <span className={styles.navIconCircle}>
+            <Home size={20} color="#8b0000" />
+          </span>
+          <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
+        </button>
 
-        {/* Feed is open to community-enrolled users and staff — shared
-            check lives in `communityFeedAccess.ts`. */}
-        {ENABLE_COMMUNITY_FEED && isFeedAllowed(profile, isCommunityEnrolled) && (
+        {/* Feed is always shown when the flag is on, even to students who
+            aren't community-enrolled — they get the lock icon + tooltip
+            and land on the CommunityLockedPage pitch when they tap it,
+            same as the desktop sidebar. */}
+        {ENABLE_COMMUNITY_FEED && (
           <button
             type="button"
             className={`${styles.navItem} ${isFeed ? styles.navItemActive : ''}`}
@@ -161,7 +164,11 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           <span className={styles.navLabel}>{t('studentHub.hub.findStudyBuddy', 'Find study buddy')}</span>
           {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
         </button>
-        <button type="button" className={styles.navItem} onClick={() => { onNavigate(); navigate('/mentors'); }}>
+        <button
+          type="button"
+          className={`${styles.navItem} ${isMentors ? styles.navItemActive : ''}`}
+          onClick={() => go('/student-hub?section=mentors')}
+        >
           <span className={styles.navIconCircle}>
             <UnifiedIcon name="mentors" size="md" color="primary" />
           </span>
