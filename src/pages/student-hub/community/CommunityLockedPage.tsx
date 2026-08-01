@@ -71,12 +71,12 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
         title: t('studentHub.communityLock.feedTitle', 'A live feed of admissions wins, advice, and questions'),
         lead: t(
           'studentHub.communityLock.feedLead',
-          'The Community Feed is your inside line to what other TopCoach students are doing right now — acceptance posts, scholarship news, application tips, and questions you can ask a real coach. Available with Community enrollment.',
+          'TopCoach staff and mentors post acceptance stories, scholarship news, and application tips here — real updates, not stock content. Once you enroll you can read every post, comment, react, and vote in polls, and your sidebar surfaces your upcoming mentor sessions, this week’s top mentors, and the community leaderboard.',
         ),
         bullets: [
-          { icon: 'message', text: t('studentHub.communityLock.feedBPost', 'Ask a question, post a win, vote in polls, react with a single tap') },
-          { icon: 'users', text: t('studentHub.communityLock.feedBPeople', 'See who’s applying where — and follow trending #admissions, #SAT, #studyabroad') },
-          { icon: 'sparkles', text: t('studentHub.communityLock.feedBCoins', 'Earn coins for posts and helpful replies; redeem them on session perks') },
+          { icon: 'message', text: t('studentHub.communityLock.feedBPost', 'Comment, react, and vote in polls on posts from TopCoach staff and mentors') },
+          { icon: 'users', text: t('studentHub.communityLock.feedBPeople', 'Your sidebar shows upcoming mentor sessions, this week’s top mentors, and the community leaderboard') },
+          { icon: 'sparkles', text: t('studentHub.communityLock.feedBCoins', 'Earn coins for helpful comments and replies; redeem them on session perks') },
         ],
       },
       'ai-major-match': {
@@ -177,10 +177,10 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
   const isResearchComingSoon = variant === 'research-prep-coming-soon';
 
   // Funnel-aware destination. The gate decides whether to send the user
-  // to the placement test, the profile wizard, the roadmap preview, or
-  // the subscription tab — based on how far they've made it through the
-  // Community-membership funnel. Admin-granted users land back in
-  // /student-hub (the gate's "eligible" branch).
+  // to the profile wizard, the roadmap preview, or the subscription tab —
+  // based on how far they've made it through the Community-membership
+  // funnel. Admin-granted users land back in /student-hub (the gate's
+  // "eligible" branch).
   const gate = useCommunityAccessGate();
 
   const handleUpgrade = () => {

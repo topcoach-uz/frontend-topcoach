@@ -506,12 +506,15 @@ function RouterProvider() {
               {/* Legacy placement-test URLs — redirect to the hub
                   sections where the pages now live (so the sidebar
                   shows). Direct deep-links + external bookmarks stay
-                  functional. */}
+                  functional. The English placement test that used to
+                  gate this funnel has been removed, so the bare
+                  `/placement-test` bookmark now skips straight to the
+                  profile wizard, the funnel's new entry point. */}
               <Route
                 path="/placement-test"
                 element={
                   <Navigate
-                    to="/student-hub?section=placement-test"
+                    to="/student-hub?section=placement-profile"
                     replace
                   />
                 }
