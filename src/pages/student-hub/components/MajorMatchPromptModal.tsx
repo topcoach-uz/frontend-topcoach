@@ -37,8 +37,14 @@ export default function MajorMatchPromptModal() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, shouldPrompt, canStart, requiresCommunityEnrollment, destination } =
-    useMajorMatchPromptState();
+  const {
+    profile,
+    shouldPrompt,
+    hasCompletedAssessment,
+    canStart,
+    requiresCommunityEnrollment,
+    destination,
+  } = useMajorMatchPromptState();
   const [updateMyStudentProfile] = useUpdateMyStudentProfileMutation();
 
   const [open, setOpen] = useState(false);
@@ -57,9 +63,20 @@ export default function MajorMatchPromptModal() {
   // The assessment was completed elsewhere (e.g. the user opened it from
   // the sidebar directly) while this was queued to reopen — don't show a
   // stale prompt for a test that's already done.
+  //
+  // IMPORTANT: this must key off `hasCompletedAssessment`, NOT `shouldPrompt`.
+  // `shouldPrompt` also flips to false whenever either underlying query
+  // (getLatestAssessment / getMajorMatchAccessStatus) is transiently
+  // *loading* — e.g. an RTK Query refetch mid-session — or whenever
+  // `studentProfileId` is briefly undefined for any reason. Gating the
+  // auto-close on `shouldPrompt` made the modal flicker open/closed on its
+  // own with no user action, because a loading blip looked identical to
+  // "assessment completed". `hasCompletedAssessment` only becomes true once
+  // `getLatestAssessment` actually returns a completed assessment, so this
+  // effect now only closes the modal for the real reason it exists for.
   useEffect(() => {
-    if (open && !shouldPrompt) setOpen(false);
-  }, [open, shouldPrompt]);
+    if (open && hasCompletedAssessment) setOpen(false);
+  }, [open, hasCompletedAssessment]);
 
   if (isExcludedPath(location.pathname)) return null;
 

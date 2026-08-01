@@ -4,26 +4,26 @@ import { ProgramSkeletonCard, ProgramTab } from './programChrome';
 /**
  * Counselor-side AI Major Match.
  *
- * The student-facing PsychometricAssessmentPage already supports a counselor
- * view: `readOnly` skips the active-session and access-status queries, blocks
- * `handleStartAssessment`, short-circuits the session-recovery effect, and
- * hides the Delete action in AssessmentStart. The backend independently
- * authorises the read (psychometric-assessment.controller's
- * canAccessStudentData) and refuses deletes from non-owners. So this tab is a
- * thin pass-through rather than a re-implementation — one surface, one set of
- * bugs to fix.
+ * MAJOR_MATCH_V2_PLAN.md Stage 5 cutover: this tab now embeds
+ * `MajorMatchV2Page` instead of the legacy `PsychometricAssessmentPage`.
+ * v2 honors the same `readOnly`/`studentId` contract the legacy page did:
+ * `readOnly` renders only a "view results" CTA (or an empty-state notice if
+ * the student hasn't completed it) via MM2Intro — there is no way for a
+ * counselor to start or retake an assessment through this tab, and
+ * MM2Results likewise hides its retake action when `readOnly`. The backend
+ * independently authorizes the read (major-match module ports the same
+ * `canAccessStudentData` ownership-guard pattern the legacy controller
+ * used), so this stays a thin pass-through rather than a re-implementation.
  *
- * Because it is a pass-through, it is the ONE program tab that does not own its
- * content's styling: the assessment page brings its own. What it does share
- * with its four siblings is the loading state — a counselor switching between
- * program tabs must not meet a different kind of "wait" on this one.
+ * Because it is a pass-through, it is the ONE program tab that does not own
+ * its content's styling: the assessment page brings its own. What it does
+ * share with its four siblings is the loading state — a counselor switching
+ * between program tabs must not meet a different kind of "wait" on this one.
  *
- * Lazily loaded: the assessment page pulls in the whole results/recharts tree,
+ * Lazily loaded: the assessment page pulls in its own results/scoring tree,
  * which no other counselor tab needs in its chunk.
  */
-const PsychometricAssessmentPage = lazy(
-  () => import('../../student-hub/psychometric-assessment/PsychometricAssessmentPage'),
-);
+const MajorMatchV2Page = lazy(() => import('../../student-hub/major-match-v2/MajorMatchV2Page'));
 
 /* Major Match is an AI assessment rather than one of the five pinned programs,
    so it has no slot in CC_PROGRAM_COLOR. It borrows Admissions' identity for
@@ -41,7 +41,7 @@ export default function MajorMatchTab({ userId }: { userId: string }) {
           </>
         }
       >
-        <PsychometricAssessmentPage readOnly studentId={userId} />
+        <MajorMatchV2Page readOnly studentId={userId} />
       </Suspense>
     </ProgramTab>
   );
