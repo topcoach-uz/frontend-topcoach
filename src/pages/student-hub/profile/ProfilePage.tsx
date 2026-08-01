@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Tabs, Progress, Button, Statistic, Badge, Alert } from 'antd';
-import { Lock } from 'lucide-react';
+import { Lock, Map as MapIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -8,38 +8,26 @@ import { STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/ic
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
 import { InlineLoader, PageSkeleton } from '../../../components/loading';
-import {
-  useGetLatestAssessmentQuery,
-  useGetRecommendationsQuery,
-} from '../../../app/services/student-hub/psychometricApi';
+// MAJOR_MATCH_V2_PLAN.md Stage 5 cutover: this card used to pull
+// `useGetLatestAssessmentQuery`/`useGetRecommendationsQuery` from the legacy
+// `psychometricApi` slice — part of the same runaway-refetch-prone bare-tag
+// group `MAJOR_MATCH_LOADING_CAP_MS` below was originally built to defend
+// against. It now reads the new, properly-scoped `majorMatchApi` status
+// endpoint instead, which removes this file from that storm entirely.
+import { useGetMajorMatchStatusQuery } from '../../../app/services/student-hub/majorMatchApi';
+import { MM2_DIMENSION_KEYS } from '../major-match-v2/content';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import MajorMatchCollectModal from '../components/MajorMatchCollectModal';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
+import ApplicationsPage from '../applications/ApplicationsPage';
+import DocumentsPage from '../documents/DocumentsPage';
+import { RoadmapTab } from '../settings/roadmap/RoadmapTab';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
 const { TabPane } = Tabs;
-
-// RIASEC letter → translation key / English fallback, used to spell out a
-// student's code (e.g. "AIR" → "Artistic · Investigative · Realistic").
-const RIASEC_LETTER_KEYS: Record<string, string> = {
-  R: 'studentHub.profile.majorMatch.riasec.realistic',
-  I: 'studentHub.profile.majorMatch.riasec.investigative',
-  A: 'studentHub.profile.majorMatch.riasec.artistic',
-  S: 'studentHub.profile.majorMatch.riasec.social',
-  E: 'studentHub.profile.majorMatch.riasec.enterprising',
-  C: 'studentHub.profile.majorMatch.riasec.conventional',
-};
-const RIASEC_LETTER_FALLBACK: Record<string, string> = {
-  R: 'Realistic',
-  I: 'Investigative',
-  A: 'Artistic',
-  S: 'Social',
-  E: 'Enterprising',
-  C: 'Conventional',
-};
 
 // How long the card is allowed to show a loading skeleton before it just
 // renders its best-effort state off whatever data has landed. Guards
@@ -82,39 +70,37 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const [mmCollectOpen, setMmCollectOpen] = useState(false);
 
   // Pulled independently (not just from the shared hook) because we also
-  // need the actual riasecCode/recommendations payloads, not just the
-  // taken/not-taken boolean. Same query key as the one the hook already
-  // subscribes to, so RTK Query serves this from the same cache entry —
-  // no extra network call.
-  const {
-    data: latestMajorMatchAssessment,
-  } = useGetLatestAssessmentQuery(majorMatchStudentProfileId ?? '', {
+  // need the actual result payload (dimension scores, primary major slug),
+  // not just the taken/not-taken boolean. Same query key as the one the
+  // hook already subscribes to (useMajorMatchPromptState → same
+  // studentProfileId), so RTK Query serves this from the same cache entry
+  // — no extra network call.
+  const { data: majorMatchStatus } = useGetMajorMatchStatusQuery(majorMatchStudentProfileId ?? '', {
     skip: isReadOnly || !majorMatchStudentProfileId,
   });
-  const { data: majorMatchRecommendations } = useGetRecommendationsQuery(
-    majorMatchStudentProfileId ?? '',
-    { skip: isReadOnly || !majorMatchStudentProfileId || !mm.hasCompletedAssessment },
-  );
 
-  const topMajorMatches = useMemo(
-    () =>
-      [...(majorMatchRecommendations?.recommendations ?? [])]
-        .sort((a, b) => (b.fitScore ?? 0) - (a.fitScore ?? 0))
-        .slice(0, 3),
-    [majorMatchRecommendations],
-  );
+  // v2 result available → the normal "taken" display. A student who only
+  // ever completed the OLD/legacy engine (hasCompletedLegacy but no v2
+  // `latest`) gets a distinct, honest state instead of trying to render a
+  // v1-shaped result (riasecCode) through v2's display — see the
+  // `majorMatchLegacyOnly` branch below. This is a Stage 5 judgment call,
+  // not a spec'd requirement: the alternative (also querying the legacy
+  // `psychometricApi` here to still show the old riasecCode) would put this
+  // file back on the runaway-refetch-prone tag group we just removed it
+  // from, for a state that's about to be superseded by a retake anyway.
+  const majorMatchHasV2Result = !!majorMatchStatus?.hasCompletedV2 && !!majorMatchStatus?.latest;
+  const majorMatchLegacyOnly = !majorMatchHasV2Result && !!majorMatchStatus?.hasCompletedLegacy;
 
-  const riasecSpelledOut = useMemo(() => {
-    const code = latestMajorMatchAssessment?.riasecCode;
-    if (!code) return null;
-    const parts = code
-      .toUpperCase()
-      .split('')
-      .filter((letter) => RIASEC_LETTER_KEYS[letter])
-      .map((letter) => t(RIASEC_LETTER_KEYS[letter], RIASEC_LETTER_FALLBACK[letter]));
-    return parts.length > 0 ? parts.join(' · ') : null;
+  const topDimensionLabels = useMemo(() => {
+    const indices = majorMatchStatus?.latest?.topDimensions;
+    if (!indices || indices.length === 0) return null;
+    const labels = indices
+      .map((i) => MM2_DIMENSION_KEYS[i])
+      .filter((key): key is (typeof MM2_DIMENSION_KEYS)[number] => !!key)
+      .map((key) => t(`majorMatch.dimension.${key}.label`));
+    return labels.length > 0 ? labels.join(' · ') : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latestMajorMatchAssessment?.riasecCode, t]);
+  }, [majorMatchStatus?.latest?.topDimensions, t]);
 
   const majorMatchShowUnlockCta = !mm.canStart && mm.requiresCommunityEnrollment;
 
@@ -135,7 +121,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    const allowedTabs = ['personal', 'academic', 'activities'];
+    const allowedTabs = ['personal', 'academic', 'activities', 'college-lists', 'documents', 'roadmap'];
     if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     } else {
@@ -267,6 +253,36 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       ),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
+    {
+      key: 'college-lists',
+      label: (
+        <div className="tab-label">
+          <UnifiedIcon name="applications" size="sm" color="primary" />
+          <span>{t('studentHub.hub.collegeLists', 'College Lists')}</span>
+        </div>
+      ),
+      children: <ApplicationsPage readOnly={isReadOnly} studentId={studentId} />,
+    },
+    {
+      key: 'documents',
+      label: (
+        <div className="tab-label">
+          <UnifiedIcon name="documents" size="sm" color="primary" />
+          <span>{t('studentHub.hub.documentsLabel', 'Documents')}</span>
+        </div>
+      ),
+      children: <DocumentsPage readOnly={isReadOnly} studentId={studentId} />,
+    },
+    {
+      key: 'roadmap',
+      label: (
+        <div className="tab-label">
+          <MapIcon size={16} />
+          <span>{t('settings.roadmap.tab', 'Roadmap')}</span>
+        </div>
+      ),
+      children: <RoadmapTab readOnly={isReadOnly} studentId={studentId} />,
+    },
     // Settings tab hidden for now
     // {
     //   key: 'settings',
@@ -303,8 +319,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       {/* Major Match status — own account only, hidden in the counselor's
           read-only embed of this page. Always renders something: a
           skeleton while genuinely loading, a pitch+CTA when not taken, a
-          RIASEC code + top majors summary when taken, and never a blank
-          box (see states 1-5 in the task spec this card was rebuilt for). */}
+          dimension + primary-major summary when a v2 result exists, a
+          distinct notice for a legacy-only completer (Stage 5 cutover —
+          see the `majorMatchLegacyOnly` comment above), and never a blank
+          box (see states 1-5 in the task spec this card was originally
+          built for). */}
       {!isReadOnly && (
         <Card className="profile-major-match-card">
           <div className="profile-major-match-card__body">
@@ -319,40 +338,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                   size="small"
                   text={t('studentHub.profile.majorMatch.loading', 'Checking your major match status…')}
                 />
-              ) : mm.hasCompletedAssessment ? (
+              ) : majorMatchHasV2Result ? (
                 <div className="profile-major-match-card__result">
-                  <span className="profile-major-match-card__desc">
-                    {t('studentHub.profile.majorMatch.riasecLabel', 'Your RIASEC code')}:{' '}
-                    <strong>{latestMajorMatchAssessment?.riasecCode ?? '—'}</strong>
-                    {riasecSpelledOut && (
-                      <span className="profile-major-match-card__riasec-spelled">
-                        {' '}
-                        ({riasecSpelledOut})
-                      </span>
-                    )}
-                  </span>
-                  {topMajorMatches.length > 0 ? (
-                    <div className="profile-major-match-card__majors">
-                      <span className="profile-major-match-card__majors-label">
-                        {t('studentHub.profile.majorMatch.topMajorsLabel', 'Top matches')}
-                      </span>
-                      <ul className="profile-major-match-card__majors-list">
-                        {topMajorMatches.map((rec) => (
-                          <li key={rec.majorName} className="profile-major-match-card__major-chip">
-                            {rec.majorName}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <span className="profile-major-match-card__desc profile-major-match-card__desc--muted">
-                      {t(
-                        'studentHub.profile.majorMatch.majorsUnavailable',
-                        'Your top majors will appear here shortly.',
-                      )}
+                  {topDimensionLabels && (
+                    <span className="profile-major-match-card__desc">
+                      {t('studentHub.profile.majorMatch.topDimensionsLabel', 'Your top strengths')}:{' '}
+                      <strong>{topDimensionLabels}</strong>
                     </span>
                   )}
+                  <div className="profile-major-match-card__majors">
+                    <span className="profile-major-match-card__majors-label">
+                      {t('studentHub.profile.majorMatch.topMajorsLabel', 'Top matches')}
+                    </span>
+                    <ul className="profile-major-match-card__majors-list">
+                      <li className="profile-major-match-card__major-chip">
+                        {t(`majorMatch.major.${majorMatchStatus?.latest?.primaryMajorSlug}.name`)}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
+              ) : majorMatchLegacyOnly ? (
+                <span className="profile-major-match-card__desc">
+                  {t(
+                    'studentHub.profile.majorMatch.legacyNotice',
+                    'You completed a previous version of this assessment. Retake it for updated results.',
+                  )}
+                </span>
               ) : (
                 <span className="profile-major-match-card__desc">
                   {t(
@@ -364,7 +375,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
             </div>
             <div className="profile-major-match-card__action">
               {!majorMatchInitializing &&
-                (mm.hasCompletedAssessment ? (
+                (majorMatchHasV2Result ? (
                   <Button onClick={() => navigate('/student-hub?section=ai-major-match')}>
                     {t('studentHub.profile.majorMatch.viewResults', 'View full results')}
                   </Button>
@@ -373,7 +384,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                     {majorMatchShowUnlockCta && <Lock size={14} style={{ marginRight: 6 }} />}
                     {majorMatchShowUnlockCta
                       ? t('studentHub.majorMatchPrompt.unlockCta', 'Unlock unlimited matches')
-                      : t('studentHub.profile.majorMatch.tryButton', 'Try the AI Major Match')}
+                      : majorMatchLegacyOnly
+                        ? t('majorMatch.results.retakeCta', 'Retake the assessment')
+                        : t('studentHub.profile.majorMatch.tryButton', 'Try the AI Major Match')}
                   </Button>
                 ))}
             </div>

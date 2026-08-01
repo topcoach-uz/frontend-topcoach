@@ -1,6 +1,7 @@
 import { Card } from 'antd';
 import { ArrowRight, Lock, Map as MapIcon } from 'lucide-react';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
@@ -14,13 +15,33 @@ import styles from './RoadmapTab.module.scss';
 const SUBSCRIPTION_TAB_PATH =
   '/student-hub?section=account&target=settings&tab=subscription';
 
+export interface RoadmapTabProps {
+  /** Counselor read-only embed (see ProfilePage's other tabs for the same
+   *  contract). There is currently no read-only backend endpoint for a
+   *  counselor to fetch ANOTHER student's roadmap (`GET /roadmap/me` is
+   *  hard-scoped to the caller's own JWT, and the
+   *  `student-journey-readonly` controller family has no roadmap route)
+   *  — so instead of silently calling `/roadmap/me` under the counselor's
+   *  OWN account (which would show the wrong person's roadmap, or 403
+   *  since counselors have no admissions profile), this renders a plain
+   *  "not available in this view yet" card. See PATTERNS note in the
+   *  handoff report for the follow-up if a real read-only view is wanted. */
+  readOnly?: boolean;
+  studentId?: string;
+}
+
 /**
- * Roadmap inside the settings page.
+ * Roadmap — a tab inside the student profile hub (`ProfilePage`), reached
+ * at `?section=others&target=profile&tab=roadmap`. Used to live inside
+ * Settings; moved here so it sits alongside the rest of the student's
+ * profile instead of account/billing settings. Old `?tab=roadmap`
+ * Settings deep-links redirect to the new location — see
+ * `MenteeSettingsPageMock.tsx`.
  *
- * Visibility rules (the parent only mounts this when `tab === 'roadmap'`,
- * so we only need to handle the "what to show" part here):
+ * Visibility rules (the parent only mounts this when its own tab is
+ * active, so we only need to handle the "what to show" part here):
  *
- *   - placement test not passed     → "Take the test first" pointer
+ *   - readOnly (counselor embed)     → "not available in this view" card
  *   - profile not completed          → "Finish your profile" pointer
  *   - roadmap exists, no sub         → blurred preview + paywall (same as funnel)
  *   - roadmap exists, active sub     → full content + Regenerate
@@ -28,16 +49,23 @@ const SUBSCRIPTION_TAB_PATH =
  * This is the "if user happens to exit and come back" surface — the
  * blurred preview lives here for as long as the user is in that state.
  */
-export function RoadmapTab() {
+export function RoadmapTab({ readOnly = false, studentId }: RoadmapTabProps = {}) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  // Silence the unused-var lint until a real read-only roadmap endpoint
+  // exists — kept in the prop contract now so callers don't need a second
+  // change later, matching every sibling profile-hub tab.
+  void studentId;
 
-  const { data: status, isLoading: statusLoading } =
-    useGetPlacementTestStatusQuery();
+  const { data: status, isLoading: statusLoading } = useGetPlacementTestStatusQuery(
+    undefined,
+    { skip: readOnly },
+  );
 
-  const profileReady = !!status?.passed && !!status?.profile.completed;
+  const profileReady = !readOnly && !!status?.profile.completed;
 
   const { data, isLoading, isError } = useGetRoadmapQuery(undefined, {
-    skip: !profileReady,
+    skip: readOnly || !profileReady,
   });
 
   const handleChoosePlan = useCallback(() => {
@@ -46,26 +74,28 @@ export function RoadmapTab() {
 
   // ── Gates before content ───────────────────────────────────────────────
 
+  if (readOnly) {
+    return (
+      <Card className={styles.card} title={titleEl(t)}>
+        <div className={styles.centered}>
+          {t(
+            'studentHub.profile.roadmap.readOnlyUnavailable',
+            "Roadmap isn't available in this read-only view yet.",
+          )}
+        </div>
+      </Card>
+    );
+  }
+
   if (statusLoading) {
     return (
-      <Card className={styles.card} title={titleEl()}>
+      <Card className={styles.card} title={titleEl(t)}>
         <div className={styles.centered}>Loading your roadmap…</div>
       </Card>
     );
   }
 
-  if (!status?.passed) {
-    return (
-      <LockedCard
-        title="Pass the English placement test first"
-        body="The roadmap unlocks once you’ve passed the short English check. Takes 10 minutes."
-        cta="Start the test"
-        onCta={() => navigate('/placement-test')}
-      />
-    );
-  }
-
-  if (!status.profile.completed) {
+  if (!status?.profile.completed) {
     return (
       <LockedCard
         title="Finish your admissions profile"
@@ -78,7 +108,7 @@ export function RoadmapTab() {
 
   if (isLoading || !data) {
     return (
-      <Card className={styles.card} title={titleEl()}>
+      <Card className={styles.card} title={titleEl(t)}>
         <div className={styles.centered}>
           {isError
             ? 'Roadmap not available right now.'
@@ -103,11 +133,11 @@ export function RoadmapTab() {
 
 // ── Pieces ───────────────────────────────────────────────────────────────
 
-function titleEl() {
+function titleEl(t: (key: string, fallback: string) => string) {
   return (
     <>
       <MapIcon size={18} style={{ marginRight: 8 }} />
-      Roadmap
+      {t('settings.roadmap.tab', 'Roadmap')}
     </>
   );
 }

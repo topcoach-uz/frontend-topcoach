@@ -155,8 +155,12 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
     const onHubList =
       (location.pathname === '/student-hub' || location.pathname === '/student-hub/') &&
       !p.get('applicationFlow') &&
-      (p.get('section') === 'others' && p.get('target') === 'college-lists') ||
-      p.get('section') === 'ai-major-match';
+      // College List now lives as a tab inside the Profile hub
+      // (target=profile&tab=college-lists) rather than its own others-target.
+      ((p.get('section') === 'others' &&
+        p.get('target') === 'profile' &&
+        p.get('tab') === 'college-lists') ||
+        p.get('section') === 'ai-major-match');
     const legacyList = location.pathname === '/student-hub/applications';
     if (onHubList || legacyList) {
       refetchApplications();
@@ -225,17 +229,25 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const handleNewApplication = () => {
     const p = new URLSearchParams(location.search);
     const section = p.get('section');
+    // `?section=ai-major-match` no longer hosts a College lists tab (it was
+    // removed once college lists moved into the profile hub), so send the
+    // new-application flow to the profile tab that actually renders it rather
+    // than back to a panel that can no longer show it.
     if (section === 'ai-major-match') {
-      navigate('/student-hub?section=ai-major-match&applicationFlow=new');
+      navigate('/student-hub?section=others&target=profile&tab=college-lists&applicationFlow=new');
       return;
     }
     if (section === 'others' && p.get('target')) {
-      navigate(
-        `/student-hub?section=others&target=${encodeURIComponent(p.get('target')!)}&applicationFlow=new`,
-      );
+      // Preserve every existing param (notably `tab`, when this page is
+      // mounted as the College Lists tab inside the Profile hub) instead
+      // of only carrying section/target forward — otherwise the tab param
+      // is dropped and the hub silently falls back to the Personal tab.
+      const next = new URLSearchParams(p);
+      next.set('applicationFlow', 'new');
+      navigate(`/student-hub?${next.toString()}`);
       return;
     }
-    navigate('/student-hub?section=others&target=college-lists&applicationFlow=new');
+    navigate('/student-hub?section=others&target=profile&tab=college-lists&applicationFlow=new');
   };
 
 

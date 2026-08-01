@@ -36,10 +36,18 @@
     flex-wrap: wrap;
   }
 
+  // AntD renders `prefix`/`allowClear` inputs inside an
+  // `.ant-input-affix-wrapper` which owns the border. The inner `.ant-input`
+  // must stay borderless or a global `.ant-input` border rule paints a second
+  // box inside the first (the "double border" bug).
   .documents-search-input {
-    width: 260px;
+    width: 320px;
+    border-radius: 8px;
+
     .ant-input {
-      border-radius: 8px;
+      border: none;
+      box-shadow: none;
+      background: transparent;
     }
   }
 

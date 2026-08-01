@@ -8,7 +8,6 @@ import {
   Users as UsersIcon,
   Bell,
   Target,
-  Map as MapIcon,
   Send,
   CheckCircle2,
 } from 'lucide-react';
@@ -23,7 +22,6 @@ import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
-import { RoadmapTab } from './roadmap/RoadmapTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -73,8 +71,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'profile'
     | 'experience'
     | 'notifications'
-    | 'subscription'
-    | 'roadmap';
+    | 'subscription';
 
   // Read initial tab from URL `?tab=` so other pages can deep-link
   // (e.g. the Community lock popup → subscription tab). When no tab is
@@ -88,7 +85,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       'experience',
       'notifications',
       'subscription',
-      'roadmap',
     ];
     return allowed.includes(fromUrl as SettingsTabKey)
       ? (fromUrl as SettingsTabKey)
@@ -107,7 +103,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         'experience',
         'notifications',
         'subscription',
-        'roadmap',
       ];
       if (allowed.includes(fromUrl as SettingsTabKey)) {
         setActiveTab(fromUrl as SettingsTabKey);
@@ -138,6 +133,21 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     if (fromUrl === 'studyBuddy') {
       navigate('/student-hub?section=buddies', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The "Roadmap" tab used to live here too — it's now a tab inside the
+  // profile hub (`ProfilePage`), alongside Personal/Academic/Activities,
+  // rather than account/billing settings. Old `?tab=roadmap` deep-links
+  // redirect there instead of rendering blank.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const fromUrl = new URLSearchParams(window.location.search).get('tab');
+    if (fromUrl === 'roadmap') {
+      navigate('/student-hub?section=others&target=profile&tab=roadmap', {
+        replace: true,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -222,9 +232,9 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         </Paragraph>
       </div>
 
-      {/* Tab strip — Subscription / Account / Roadmap / Experience /
-          Notifications. Security tab intentionally omitted (no UI to
-          back it). */}
+      {/* Tab strip — Subscription / Account / Experience / Notifications.
+          Roadmap moved to the profile hub (see the redirect effect
+          above). Security tab intentionally omitted (no UI to back it). */}
       <nav className={styles.tabs} aria-label="Settings sections">
         {/* Subscription first — it's the most common reason students open
             settings, and the default tab on a bare ?tab-less load. */}
@@ -244,14 +254,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => setActiveTab('profile')}
         >
           {t('studentHub.settingsMock.account', 'Account')}
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'roadmap' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('roadmap')}
-        >
-          <MapIcon size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
-          {t('settings.roadmap.tab', 'Roadmap')}
         </button>
         {/* Experience tab is the SuperAdmin/Owner toggle between the
             standard and community experiences. Regular students never
@@ -477,12 +479,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           mocked from `subscription/_mocks/subscription.fixtures.ts`;
           flip states with `?state=active|trialing|past_due|canceled|none`. */}
       {activeTab === 'subscription' && <SubscriptionTab />}
-
-      {/* Roadmap — same content as `/placement-test/roadmap`, but in
-          the persistent settings surface. Handles the "I passed but
-          haven't paid yet" returning-visitor state with a blurred
-          preview + paywall. */}
-      {activeTab === 'roadmap' && <RoadmapTab />}
 
       {/* Notifications — placeholder card. The toggle matrix
           (Email / Push / SMS × event types) ships alongside the
