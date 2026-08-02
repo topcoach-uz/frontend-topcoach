@@ -1,7 +1,7 @@
-import { Checkbox, Divider, Form } from 'antd';
+import { Divider, Form } from 'antd';
 import { FormInstance } from 'antd/lib';
 import { useNavigate } from 'react-router-dom';
-import { CustomButton, CustomText } from 'src/components/common';
+import { CustomButton } from 'src/components/common';
 import FormMaker from 'src/components/form/FormMaker';
 import RegisterGoogleButton from 'src/components/RegisterGoogleButton';
 import { themeFontSize } from 'src/constants/theme';
@@ -55,22 +55,6 @@ export default function PersonalInfo({
 
       <Form form={form} layout="vertical" onFinish={formButtonsProps?.onNext}>
         <FormMaker formItems={formItems} formError={error} />
-
-        {/* Mentor-only. It was rendering on the student signup too, asking
-            students whether they were applying as a UzCombinator mentor. */}
-        {isMentor ? (
-          <Form.Item
-            name="isUzCombinatorMentor"
-            valuePropName="checked"
-            style={{ marginTop: 16 }}
-          >
-            <Checkbox>
-              <CustomText fontSize={14} fontWeight={400}>
-                Are you applying as a UzCombinator mentor?
-              </CustomText>
-            </Checkbox>
-          </Form.Item>
-        ) : null}
 
         <CustomButton
           type="primary"
