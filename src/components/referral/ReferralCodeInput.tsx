@@ -1,10 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { Input, Button, message, Spin, Tag, Space, Typography } from 'antd';
-import { Gift, CheckCircle2, XCircle, Copy } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Input, Button, message, Tag, Typography } from 'antd';
+import { CheckCircle2, XCircle, Copy } from 'lucide-react';
 import { useValidateReferralCodeMutation } from '../../app/services/referralApi';
+import { REFERRAL_DEFAULT_PERCENT } from '../../constants/referral';
 import './ReferralCodeInput.scss';
 
 const { Text, Title } = Typography;
+
+const roundToCents = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * A real gift box, drawn rather than borrowed.
+ *
+ * lucide's <Gift /> is a single-stroke outline, so every part of it inherits
+ * one `currentColor` and it cannot be made multi-coloured from CSS. This is a
+ * flat gift: gold box, lighter lid, red ribbon and bow.
+ */
+function GiftBoxIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="26"
+      height="26"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {/* Bow, sitting above the lid */}
+      <path
+        d="M12 6.9C10.7 3.9 9.2 2.6 7.7 3.1a2.05 2.05 0 0 0-.35 3.62c.9.58 2.4.83 4.65.98Z"
+        fill="#D64541"
+      />
+      <path
+        d="M12 6.9c1.3-3 2.8-4.3 4.3-3.8a2.05 2.05 0 0 1 .35 3.62c-.9.58-2.4.83-4.65.98Z"
+        fill="#D64541"
+      />
+      {/* Box body, then the lid over it */}
+      <rect x="4" y="11.2" width="16" height="9.8" rx="1.3" fill="#EFA53A" />
+      <rect x="2.6" y="6.8" width="18.8" height="4.6" rx="1.15" fill="#F7C566" />
+      {/* Ribbon runs over both */}
+      <rect x="10.35" y="6.8" width="3.3" height="14.2" fill="#D64541" />
+    </svg>
+  );
+}
 
 interface ReferralCodeInputProps {
   onCodeApplied: (code: string, discount: number, finalAmount: number) => void;
@@ -22,117 +60,95 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
   disabled = false,
 }) => {
   const [code, setCode] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState(originalAmount);
-  const [discountPercentage, setDiscountPercentage] = useState(5);
+  const [discountPercentage, setDiscountPercentage] = useState(
+    REFERRAL_DEFAULT_PERCENT,
+  );
 
   const [validateCode, { isLoading }] = useValidateReferralCodeMutation();
 
-  // Update final amount when original amount changes
+  // The parent recreates these handlers on every render, and calling one of
+  // them sets parent state. Holding them in a ref keeps them out of the effect
+  // dependencies below; with them in, applying a code re-rendered the parent,
+  // which re-ran the effect, which called the parent again, forever.
+  const callbacks = useRef({ onCodeApplied, onCodeRemoved });
+  callbacks.current = { onCodeApplied, onCodeRemoved };
+
+  const discountAmount = appliedCode
+    ? roundToCents(originalAmount * (discountPercentage / 100))
+    : 0;
+  const finalAmount = roundToCents(originalAmount - discountAmount);
+
+  // Keep the parent's total in step when the price changes underneath us, for
+  // instance when a currency rate resolves. Recomputed locally from the rate
+  // the server already returned rather than re-validating: the code has not
+  // changed, so there is nothing new to ask.
   useEffect(() => {
     if (appliedCode) {
-      // Re-validate the code to get the correct discount percentage
-      validateCode({ code: appliedCode }).unwrap().then(result => {
-        if (result.valid) {
-          const discountPercentage = result.discountPercentage || 5;
-          const discount = originalAmount * (discountPercentage / 100);
-          const final = originalAmount - discount;
-          setDiscountPercentage(discountPercentage);
-          setDiscountAmount(discount);
-          setFinalAmount(final);
-          onCodeApplied(appliedCode, discount, final);
-        }
-      }).catch(() => {
-        // Fallback to 5% if validation fails
-        const discount = originalAmount * 0.05;
-        const final = originalAmount - discount;
-        setDiscountPercentage(5);
-        setDiscountAmount(discount);
-        setFinalAmount(final);
-        onCodeApplied(appliedCode, discount, final);
-      });
+      callbacks.current.onCodeApplied(appliedCode, discountAmount, finalAmount);
     } else {
-      setFinalAmount(originalAmount);
-      onCodeRemoved();
+      callbacks.current.onCodeRemoved();
     }
-  }, [originalAmount, appliedCode, onCodeApplied, onCodeRemoved, validateCode]);
+  }, [appliedCode, discountAmount, finalAmount]);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-    setCode(value);
+    setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
   };
 
   const handleApplyCode = async () => {
-    if (!code.trim()) {
-      message.error('Please enter a referral code');
+    const trimmed = code.trim();
+    if (!trimmed) {
+      message.error('Enter a referral code to apply it.');
       return;
     }
 
-    if (code.trim().length < 6) {
-      message.error('Referral code must be at least 6 characters');
-      return;
-    }
-
-    setIsValidating(true);
     try {
-      const result = await validateCode({ code: code.trim() }).unwrap();
-      
-      if (result.valid) {
-        const discountPercentage = result.discountPercentage || 5; // Default to 5% if not provided
-        const discount = originalAmount * (discountPercentage / 100);
-        const final = originalAmount - discount;
-        
-        setAppliedCode(code.trim());
-        setDiscountPercentage(discountPercentage);
-        setDiscountAmount(discount);
-        setFinalAmount(final);
-        
-        message.success(`🎉 ${result.message}`);
-        onCodeApplied(code.trim(), discount, final);
-      } else {
-        message.error(result.message || 'Invalid referral code');
+      const result = await validateCode({ code: trimmed }).unwrap();
+
+      if (!result.valid) {
+        message.error(result.message || "That code isn't valid.");
+        return;
       }
+
+      setDiscountPercentage(
+        result.discountPercentage || REFERRAL_DEFAULT_PERCENT,
+      );
+      setAppliedCode(trimmed);
+      message.success(result.message || 'Referral code applied.');
     } catch (error: any) {
-      const errorMessage = error?.data?.message || 'Failed to validate referral code';
-      message.error(errorMessage);
-    } finally {
-      setIsValidating(false);
+      message.error(
+        error?.data?.message || "We couldn't check that code. Try again.",
+      );
     }
   };
 
   const handleRemoveCode = () => {
     setAppliedCode(null);
-    setDiscountAmount(0);
-    setFinalAmount(originalAmount);
-    setDiscountPercentage(5);
+    setDiscountPercentage(REFERRAL_DEFAULT_PERCENT);
     setCode('');
-    onCodeRemoved();
-    message.info('Referral code removed');
+    message.info('Referral code removed.');
   };
 
   const handleCopyCode = () => {
     if (appliedCode) {
       navigator.clipboard.writeText(appliedCode);
-      message.success('Referral code copied to clipboard!');
+      message.success('Code copied.');
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency,
       minimumFractionDigits: 2,
     }).format(amount);
-  };
 
   return (
     <div className="referral-code-container">
       <div className="referral-code-header">
-        <Gift size={16} className="referral-icon" />
+        <GiftBoxIcon className="referral-icon" />
         <Title level={5} className="referral-title">
-          Have a Referral Code?
+          Have a referral code?
         </Title>
       </div>
 
@@ -147,11 +163,11 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
             className="referral-input"
             maxLength={15}
           />
-          
+
           <Button
             type="primary"
             onClick={handleApplyCode}
-            loading={isLoading || isValidating}
+            loading={isLoading}
             disabled={disabled || !code.trim()}
             className="apply-button"
           >
@@ -174,6 +190,7 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
               onClick={handleCopyCode}
               size="small"
               className="copy-button"
+              aria-label="Copy referral code"
             />
             <Button
               type="text"
@@ -182,24 +199,25 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
               size="small"
               danger
               className="remove-button"
+              aria-label="Remove referral code"
             />
           </div>
-          
+
           <div className="discount-breakdown">
             <div className="price-row">
-              <Text>Original Price:</Text>
+              <Text>Original price</Text>
               <Text className="original-price">
                 {formatCurrency(originalAmount)}
               </Text>
             </div>
             <div className="price-row discount-row">
-              <Text>Referral Discount ({discountPercentage}%):</Text>
+              <Text>Referral discount ({discountPercentage}%)</Text>
               <Text className="discount-amount">
                 -{formatCurrency(discountAmount)}
               </Text>
             </div>
             <div className="price-row final-price-row">
-              <Text strong>Final Price:</Text>
+              <Text strong>Final price</Text>
               <Text strong className="final-price">
                 {formatCurrency(finalAmount)}
               </Text>
@@ -208,11 +226,15 @@ export const ReferralCodeInput: React.FC<ReferralCodeInputProps> = ({
         </div>
       )}
 
-      <div className="referral-info">
-        <Text className="info-text">
-          🎁 Get 5% off your purchase with a valid referral code from a TopCoach student!
-        </Text>
-      </div>
+      {/* Only shown before a code is applied. Once one is on, the receipt above
+          already states the discount, so repeating the offer is noise. */}
+      {!appliedCode && (
+        <div className="referral-info">
+          <Text className="info-text">
+            A code from another student takes {REFERRAL_DEFAULT_PERCENT}% off.
+          </Text>
+        </div>
+      )}
     </div>
   );
-}; 
+};

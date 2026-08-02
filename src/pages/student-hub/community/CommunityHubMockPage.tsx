@@ -19,7 +19,6 @@ import {
   Shield,
   ArrowLeft,
   BookOpen,
-  ClipboardCheck,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -63,8 +62,8 @@ import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { canUseMyRewards } from 'src/lib/myRewardsAccess';
-import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
+import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { getLatestCreatedImg } from 'src/utils';
 
 type CommunitySectionKey =
@@ -410,11 +409,6 @@ export default function CommunityHubMockPage() {
     []
   );
 
-  const iscRole = profile?.managementRole as string | undefined;
-  const canReviewIsc =
-    ISC_2026_ENABLED &&
-    (iscRole === 'Reviewer' || iscRole === 'SuperAdmin' || iscRole === 'Owner');
-
   const yourJourneyOthersNav = useMemo(
     () => [
       { label: 'Full Support', route: '/student-hub/full-support', icon: <UnifiedIcon name="full-support" size="sm" color="#fff" />, bg: '#8b0000' },
@@ -590,6 +584,12 @@ export default function CommunityHubMockPage() {
           </Card>
         )}
 
+        {/* Organization membership. Lives here rather than on a single page so
+            it is visible throughout the hub: its previous mount point was the
+            legacy Dashboard, which no longer renders, so students in an org
+            were never told they were in one. */}
+        <OrgMembershipSidebar />
+
         <div className={styles.leftNav}>
           {!isCommunityEnrolled && (
             <button
@@ -605,17 +605,9 @@ export default function CommunityHubMockPage() {
             </button>
           )}
 
-          {/* ISC 2026 reviewer console — only for users granted the Reviewer role. */}
-          {canReviewIsc && (
-            <button
-              type="button"
-              className={styles.navItem}
-              onClick={() => navigate('/isc-2026/review')}
-            >
-              <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>ISC Reviewer</span>
-            </button>
-          )}
+          {/* ISC Reviewer link removed from the sidebar. The console itself is
+              untouched and still reachable at /isc-2026/review; only the nav
+              entry is gone, so restoring it is a small revert. */}
 
           {ENABLE_COMMUNITY_FEED && isFeedAllowed && (
             <button

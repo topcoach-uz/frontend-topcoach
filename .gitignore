@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# TypeScript incremental build caches (produced by `tsc -b`)
+*.tsbuildinfo
+
 # Local env files (keep secrets/keys out of git); the template is tracked.
 .env
 .env.*

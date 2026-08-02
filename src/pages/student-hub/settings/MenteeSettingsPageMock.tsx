@@ -11,6 +11,7 @@ import {
   Map as MapIcon,
   Send,
   CheckCircle2,
+  Gift,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
 import { RoadmapTab } from './roadmap/RoadmapTab';
+import ReferralsTab from './ReferralsTab';
 import StudentProfileTab from './StudentProfileTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
@@ -97,7 +99,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'experience'
     | 'notifications'
     | 'subscription'
-    | 'roadmap';
+    | 'roadmap'
+    | 'referrals';
 
   // Read initial tab from URL `?tab=` so other pages can deep-link
   // (e.g. the Community lock popup → subscription tab). When no tab is
@@ -114,6 +117,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       'notifications',
       'subscription',
       'roadmap',
+      'referrals',
     ];
     return allowed.includes(fromUrl as SettingsTabKey)
       ? (fromUrl as SettingsTabKey)
@@ -296,6 +300,14 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         >
           <MapIcon size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
           {t('settings.roadmap.tab', 'Roadmap')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'referrals' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('referrals')}
+        >
+          <Gift size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+          {t('settings.referrals.tab', 'Referrals')}
         </button>
         {/* Experience tab is the SuperAdmin/Owner toggle between the
             standard and community experiences. Regular students never
@@ -605,6 +617,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           haven't paid yet" returning-visitor state with a blurred
           preview + paywall. */}
       {activeTab === 'roadmap' && <RoadmapTab />}
+
+      {activeTab === 'referrals' && <ReferralsTab />}
 
       {/* Notifications — placeholder card. The toggle matrix
           (Email / Push / SMS × event types) ships alongside the

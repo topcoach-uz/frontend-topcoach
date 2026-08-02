@@ -1,9 +1,11 @@
 import { Button, Form, Input, Skeleton, message } from 'antd';
-import { Building2, Megaphone, Send, Users } from 'lucide-react';
+import { AlertTriangle, Megaphone, Send, Users } from 'lucide-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { useCounselorConsole } from '../CounselorConsoleContext';
+import { CcPageHead } from '../components/CcPageHead';
+import { CcEmpty, NoOrgPlaceholder } from '../components/CcEmpty';
 import {
   useGetAnnouncementsQuery,
   useCreateAnnouncementMutation,
@@ -30,17 +32,14 @@ export default function CounselorConsoleAnnouncementsPage() {
   const items: OrgAnnouncement[] = data?.items ?? [];
 
   const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-page-eyebrow">
-        <span className="cc-page-eyebrow-accent">Communication</span>
-        {org ? <span>· {org.name}</span> : null}
-      </div>
-      <h1 className="cc-page-title">Announcements</h1>
-      <p className="cc-page-lead">
-        Send an announcement to every student in {org?.name ?? 'your organization'}.
-        They’ll receive it in their notifications.
-      </p>
-    </div>
+    <CcPageHead
+      eyebrow="Communication"
+      orgName={org?.name}
+      title="Announcements"
+      lead={`Send an announcement to every student in ${
+        org?.name ?? 'your organization'
+      }. They’ll receive it in their notifications, and everything you have sent stays listed below.`}
+    />
   );
 
   // ── No organization selected ──
@@ -48,13 +47,10 @@ export default function CounselorConsoleAnnouncementsPage() {
     return (
       <div className="cc-ann">
         {header}
-        <div className="cc-placeholder">
-          <Building2 size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Select an organization</div>
-          <div className="cc-placeholder-text">
-            Choose an organization from the switcher to send announcements.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+            title="Select an organization"
+            text="Choose an organization from the switcher to send announcements."
+          />
       </div>
     );
   }
@@ -162,21 +158,23 @@ export default function CounselorConsoleAnnouncementsPage() {
               ))}
             </div>
           ) : isError ? (
-            <div className="cc-ann-empty">
-              <div className="cc-ann-empty-title">Couldn’t load history</div>
-              <div>Something went wrong fetching announcements.</div>
-              <Button className="cc-ann-ghost" onClick={() => refetch()}>
-                Retry
-              </Button>
-            </div>
+            <CcEmpty
+              icon={<AlertTriangle size={20} />}
+              tone="danger"
+              title="Couldn’t load history"
+              text="Something went wrong fetching announcements."
+              action={
+                <Button className="cc-ann-ghost" onClick={() => refetch()}>
+                  Retry
+                </Button>
+              }
+            />
           ) : items.length === 0 ? (
-            <div className="cc-ann-empty">
-              <span className="cc-ann-empty-ico">
-                <Megaphone size={20} />
-              </span>
-              <div className="cc-ann-empty-title">No announcements yet</div>
-              <div>Your first announcement to students will show up here.</div>
-            </div>
+            <CcEmpty
+              icon={<Megaphone size={20} />}
+              title="No announcements yet"
+              text="Your first announcement to students will show up here."
+            />
           ) : (
             <ul className="cc-ann-list" aria-busy={isFetching}>
               {items.map((a) => (

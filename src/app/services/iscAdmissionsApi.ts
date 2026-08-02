@@ -44,6 +44,8 @@ export interface IscApplicationRow {
   decidedAt?: string | null;
   autoRejectedAt?: string | null;
   autoRejectedReason?: string | null;
+  /** ISC 2026 participation-fee Atmos link; present only for invoiced students. */
+  paymentLink?: string | null;
   createdAt: string;
 }
 

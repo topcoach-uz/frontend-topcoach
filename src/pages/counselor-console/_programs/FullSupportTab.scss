@@ -223,7 +223,7 @@
 
 .cc-fs-check--done .cc-fs-check__mark {
   background: var(--cc-prog);
-  color: #fff;
+  color: var(--cc-inverse-text);
 }
 
 .cc-fs-check__label {

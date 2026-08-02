@@ -28,7 +28,7 @@ dayjs.extend(relativeTime);
 
 /** Seconds → "4h 20m" / "18m" / "—". Watch time is stored in seconds. */
 function humaniseWatchTime(seconds: number): string {
-  if (!seconds || seconds < 60) return seconds > 0 ? '<1m' : '—';
+  if (!seconds || seconds < 60) return seconds > 0 ? '<1m' : '-';
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.round((seconds % 3600) / 60);
   if (!hours) return `${minutes}m`;
@@ -119,7 +119,7 @@ export default function AdmissionsTab({
         <CcStat
           icon={<GraduationCap size={14} />}
           label="Last activity"
-          value={lastWatchedAt ? dayjs(lastWatchedAt).fromNow() : '—'}
+          value={lastWatchedAt ? dayjs(lastWatchedAt).fromNow() : '-'}
           meta={
             lastWatchedAt
               ? dayjs(lastWatchedAt).format('D MMM YYYY')

@@ -54,6 +54,16 @@ export interface OrgContext {
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 
+/** A student near the top of the cohort by program progress. */
+export interface OrgDashboardTopPerformer {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** Average progress across enrolled programs, 0-100. Always > 0. */
+  progress: number;
+  context: string | null;
+}
+
 export interface OrgDashboardNeedsAttention {
   userId: string;
   name: string;
@@ -78,6 +88,7 @@ export interface OrgDashboard {
   applicationsSubmitted: number;
   upcomingSessions: number;
   needsAttention: OrgDashboardNeedsAttention[];
+  topPerformers: OrgDashboardTopPerformer[];
   enrollmentTrends: OrgDashboardEnrollmentTrend[];
 }
 
@@ -96,6 +107,12 @@ export interface OrgStudent {
   progress: number;
   /** Program the `progress` value comes from (its furthest-along program). */
   topProgram: string | null;
+  /**
+   * Student profile completeness 0-100, from `student_profiles.completionPercentage`.
+   * 0 when the student has no profile row yet. Same source as the dashboard's
+   * `avgProfileCompletion`, so the two always agree.
+   */
+  profileCompletion: number;
   lastActiveAt: string | null;
   status: OrgStudentStatus;
   telegramStatus: TelegramStatus;
@@ -415,11 +432,19 @@ export interface OrgInvitation {
   role: OrgMembershipRole;
   status: OrgInvitationStatus;
   inviteeName: string | null;
-  gradeLevel: string | null;
+  /** `smallint` on the backend — a NUMBER, never a string like "11th". */
+  gradeLevel: number | null;
   graduationYear: number | null;
   invitedBy: string | null;
   expiresAt: string | null;
   createdAt: string;
+  /** When the invite email actually left the server. `null` = never sent. */
+  emailSentAt: string | null;
+  /**
+   * Why the last send attempt failed. When this is set the invitee NEVER got
+   * the email — the console must surface it rather than implying success.
+   */
+  lastEmailError: string | null;
 }
 
 export interface OrgInvitationsResponse {
@@ -431,7 +456,13 @@ export interface OrgInvitationsResponse {
 
 export interface GetInvitationsArgs {
   orgId: string;
+  /**
+   * Omit for the actionable list (pending + expired). Accepted and revoked
+   * invitations are only returned when asked for by name.
+   */
   status?: OrgInvitationStatus | string;
+  /** Splits the Students and Staff invitation tabs. */
+  role?: OrgMembershipRole;
   page?: number;
   limit?: number;
 }
@@ -441,7 +472,8 @@ export interface CreateInvitationBody {
   email: string;
   role: OrgMembershipRole;
   name?: string;
-  gradeLevel?: string;
+  /** `@IsInt() @Min(1) @Max(13)` server-side — send a number or omit it. */
+  gradeLevel?: number;
   graduationYear?: number;
   phone?: string;
 }
@@ -462,7 +494,11 @@ export interface BulkInviteSkipped {
 }
 
 export interface BulkInviteResult {
-  created: number;
+  /**
+   * The invitations that were actually created — an ARRAY of rows, not a
+   * count. Render `created.length`; rendering the array itself throws.
+   */
+  created: OrgInvitation[];
   skipped: BulkInviteSkipped[];
 }
 
@@ -530,6 +566,9 @@ export interface OrgAnalyticsTopEarner {
   userId: string;
   name: string;
   coins: number;
+  /** Profile photo. Null when the student has never uploaded one — the avatar
+   *  component falls back to initials. */
+  avatarUrl: string | null;
 }
 
 export interface OrgAnalyticsSessionMonth {
@@ -748,11 +787,12 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
 
     // ── Invitations ──────────────────────────────────────────────────────────
     getInvitations: builder.query<OrgInvitationsResponse, GetInvitationsArgs>({
-      query: ({ orgId, status, page, limit }) => ({
+      query: ({ orgId, status, role, page, limit }) => ({
         url: `/org/${encodeURIComponent(orgId)}/invitations`,
         method: 'GET',
         params: {
           ...(status ? { status } : {}),
+          ...(role ? { role } : {}),
           ...(page != null ? { page } : {}),
           ...(limit != null ? { limit } : {}),
         },
@@ -806,6 +846,21 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
       ],
     }),
 
+    /**
+     * Soft-removes the invitation record entirely (204). Distinct from
+     * `revokeInvitation`, which only flips the status and leaves the row in
+     * place — this is how a counselor clears a dead invite for good.
+     */
+    deleteInvitation: builder.mutation<void, InvitationMutationArgs>({
+      query: ({ orgId, id }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/invitations/${encodeURIComponent(id)}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_res, _err, { orgId }) => [
+        { type: 'CounselorInvitations' as const, id: orgId },
+      ],
+    }),
+
     // ── Member admin (archive / transfer) ────────────────────────────────────
     archiveStudent: builder.mutation<void, ArchiveStudentArgs>({
       query: ({ orgId, userId }) => ({
@@ -852,6 +907,7 @@ export const {
   useBulkInviteMutation,
   useResendInvitationMutation,
   useRevokeInvitationMutation,
+  useDeleteInvitationMutation,
   useArchiveStudentMutation,
   useTransferStudentMutation,
 } = counselorConsoleApi;

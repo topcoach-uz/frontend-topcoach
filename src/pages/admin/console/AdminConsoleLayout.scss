@@ -1275,3 +1275,62 @@
   color: var(--ac-text-muted);
   margin-top: 2px;
 }
+
+
+/* ── Referrals: money-action rows inside the detail modal ──────────────────
+   The amount / reference / button rows. Kept as a plain flex row with one
+   shared control height so the button sits on the same baseline as its
+   inputs; AntD's Space.Compact merged radii in a way the dark-modal
+   overrides then fought, leaving the button visibly offset.
+
+   Hex + !important for the same reason `.ac-dark-modal` uses them: this
+   content is portalled to <body>, where the `--ac-*` variables scoped to
+   :root lose to AntD's late-injected CSS-in-JS. */
+.ac-dark-modal .ac-referral-actionRow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+
+  .ant-input,
+  .ant-input-affix-wrapper {
+    flex: 1 1 180px;
+    min-width: 0;
+    height: 34px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    color: #f4f4f5 !important;
+    border-radius: 8px !important;
+
+    &::placeholder {
+      color: #8b90a0 !important;
+    }
+    &:focus,
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.32) !important;
+    }
+  }
+
+  .ant-btn {
+    flex: 0 0 auto;
+    height: 34px !important;
+    border-radius: 8px !important;
+    padding-inline: 18px !important;
+    font-weight: 600 !important;
+  }
+}
+
+.ac-dark-modal .ac-referral-actionHint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #8b90a0;
+  line-height: 1.5;
+}
+
+/* Row actions in the modal's tables (Reverse), matched to the same height. */
+.ac-dark-modal .ant-table .ant-btn-sm {
+  height: 28px !important;
+  border-radius: 6px !important;
+  padding-inline: 12px !important;
+}
