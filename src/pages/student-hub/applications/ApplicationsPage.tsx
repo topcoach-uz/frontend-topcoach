@@ -576,51 +576,32 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
 
   return (
     <div className="applications-page student-hub-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <h1 className="student-hub-page-title">{t('studentHub.applications.title')}</h1>
-          <p className="student-hub-page-subtitle" style={{ marginTop: 4 }}>
-            {isReadOnly ? t('studentHub.applications.counselorSubtitle', "View the student's college lists") : t('studentHub.applications.subtitle')}
-          </p>
-        </div>
-      </div>
+      <header className="apps-head">
+        <h2 className="apps-title">{t('studentHub.applications.title')}</h2>
+        <p className="apps-standfirst">
+          {isReadOnly ? t('studentHub.applications.counselorSubtitle', "View the student's college lists") : t('studentHub.applications.subtitle')}
+        </p>
+      </header>
 
-      {/* Simplified Stats - Only show key metrics, compact design */}
+      {/* Counts read as a masthead dateline: label above, figure below,
+          separated by rules rather than sitting in a grey pill. */}
       {totalApps > 0 && (
-        <div style={{ 
-          display: 'flex', 
-          gap: 16, 
-          marginBottom: 24, 
-          padding: '16px 20px', 
-          background: '#f9fafb', 
-          borderRadius: 12,
-          alignItems: 'center',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <UnifiedIcon name="layers" size="sm" color="primary" />
-            <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.total', 'Total')}:</span>
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>{totalApps}</span>
+        <dl className="apps-stats">
+          <div className="apps-stat">
+            <dt className="apps-stat__label">{t('studentHub.applications.total', 'Total')}</dt>
+            <dd className="apps-stat__value">{totalApps}</dd>
           </div>
-          <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <UnifiedIcon name="check-circle" size="sm" color="success" />
-            <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.submitted', 'Submitted')}:</span>
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#22c55e' }}>{applicationsData.overview.submitted}</span>
+          <div className="apps-stat">
+            <dt className="apps-stat__label">{t('studentHub.applications.submitted', 'Submitted')}</dt>
+            <dd className="apps-stat__value">{applicationsData.overview.submitted}</dd>
           </div>
           {averageMatchScore && (
-            <>
-              <div style={{ width: 1, height: 20, background: '#e5e7eb' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <UnifiedIcon name="target" size="sm" color="primary" />
-                <span style={{ fontSize: 14, color: '#666' }}>{t('studentHub.applications.avgMatch', 'Avg Match')}:</span>
-                <span style={{ fontSize: 16, fontWeight: 600, color: averageMatchScore >= 70 ? '#22c55e' : averageMatchScore >= 50 ? '#f59e0b' : '#666' }}>
-                  {averageMatchScore}%
-                </span>
-              </div>
-            </>
+            <div className="apps-stat">
+              <dt className="apps-stat__label">{t('studentHub.applications.avgMatch', 'Avg Match')}</dt>
+              <dd className="apps-stat__value">{averageMatchScore}%</dd>
+            </div>
           )}
-        </div>
+        </dl>
       )}
 
       {/* Removed Next Action Banner - redundant with Upcoming Deadlines sidebar */}
@@ -628,16 +609,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
       {/* Strategy section removed per user request - not needed */}
 
       {/* Enhanced Filters and Actions Bar - Modern Design */}
-      <Card 
-        className="applications-filters-card"
-        style={{ 
-          marginBottom: 24,
-          borderRadius: 16,
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-        styles={{ body: { padding: '16px 24px' } }}
-      >
+      <div className="applications-filters-card">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} sm={24} md={14} lg={15}>
             {applicationsTab === 'applications' && (
@@ -698,17 +670,11 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                 Add Scholarship
               </Button>
               */}
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 size="middle"
-                icon={<UnifiedIcon name="plus" size="sm" color="white" />} 
+                icon={<UnifiedIcon name="plus" size="sm" color="white" />}
                 onClick={handleNewApplication}
-                style={{
-                  height: 40,
-                  borderRadius: 10,
-                  fontWeight: 600,
-                  boxShadow: '0 2px 8px rgba(139, 0, 0, 0.2)',
-                }}
               >
                 {t('studentHub.applications.addApplication', 'Add to List')}
               </Button>
@@ -716,20 +682,29 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
           </Col>
           )}
         </Row>
-      </Card>
+      </div>
 
       {/* Tabs only for non–read-only; counselor sees merged list + timeline in one view */}
+      {/* Same underline strip as the profile section nav, so a tab set
+          nested inside a tab set doesn't introduce a second visual idiom. */}
       {!isReadOnly && (
-      <Tabs
-        activeKey={applicationsTab}
-        onChange={(k) => setApplicationsTab((k || 'applications') as 'applications' | 'timeline')}
-        size="middle"
-        style={{ marginBottom: 16 }}
-        items={[
-          { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
+        <nav className="apps-tabs" role="tablist">
+          {([
+            { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
             { key: 'timeline', label: t('studentHub.applications.timeline', 'Timeline') },
-        ]}
-      />
+          ] as const).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={applicationsTab === tab.key}
+              className={`apps-tab ${applicationsTab === tab.key ? 'apps-tab--active' : ''}`}
+              onClick={() => setApplicationsTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       )}
 
       <Row gutter={[24, 24]}>
@@ -1058,7 +1033,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                             onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              isSch ? handleDeleteScholarship(item) : handleDeleteApplication(item);
+                              if (isSch) handleDeleteScholarship(item);
+                              else handleDeleteApplication(item);
                             }}
                           >
                             {t('studentHub.applications.delete')}

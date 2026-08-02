@@ -1,271 +1,283 @@
-/* AvailablePlans — two side-by-side, fully self-contained plan cards. */
+/* Plan picker, a SaaS pricing surface built from editorial materials.
+ *
+ * Structure is what a pricing page is expected to do: period switch, one
+ * price, one call to action, then what you get. Materials are the ones the
+ * rest of My Journey uses, paper, hairlines, serif for anything the reader
+ * is meant to weigh, and a single maroon accent.
+ */
 
-$ap-brand: #7a1f2b;
-$ap-brand-soft: rgba(122, 31, 43, 0.06);
-$ap-brand-bg: #fdf6f4;
-$ap-ink: #1c1a17;
-$ap-muted: #6b6258;
-$ap-hairline: #e8e4dd;
+@import 'src/styles/editorial-tokens';
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.card {
-  position: relative;
-  border: 1px solid $ap-hairline;
-  border-radius: 16px;
-  padding: 24px;
+.picker {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  cursor: pointer;
-  /* Soft ice-cream gradient — warm white melts into a hint of blush so
-     the card has subtle depth without competing with the content. */
-  background:
-    linear-gradient(155deg, #ffffff 0%, #fffaf6 55%, #fdeee6 100%);
-  box-shadow: 0 1px 2px rgba(28, 26, 23, 0.04);
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease,
-    background 0.18s ease;
-
-  &:hover {
-    border-color: $ap-brand;
-    box-shadow: 0 6px 24px rgba(122, 31, 43, 0.1);
-    transform: translateY(-1px);
-  }
 }
 
-.cardSelected {
-  border-color: $ap-brand;
-  /* Selected card warms up further — the same scoop, deeper saturation. */
-  background:
-    linear-gradient(150deg, #fce5dc 0%, #fdf2ec 45%, #fff8f4 100%);
-  box-shadow:
-    0 0 0 1px $ap-brand inset,
-    0 6px 20px rgba(122, 31, 43, 0.1);
-}
+/* ── Period switch ─────────────────────────────────────────────── */
 
-.cardCurrent {
-  // Slightly muted "you're already on this" appearance.
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    pointer-events: none;
-  }
-}
-
-.cardHead {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.headLine {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.radio {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid $ap-hairline;
+.periodSwitch {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 4px;
+  background: $cream-sidebar;
+  border: 1px solid $hairline;
   border-radius: 999px;
-  flex-shrink: 0;
-  position: relative;
-  transition: border-color 0.18s ease;
 }
 
-.radioSelected {
-  border-color: $ap-brand;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    background: $ap-brand;
-    border-radius: 999px;
-  }
-}
-
-.eyebrow {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: $ap-muted;
-}
-
-.saveBadge {
+.periodOption {
   display: inline-flex;
   align-items: center;
-  background: $ap-brand;
-  color: #fff;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  padding: 3px 8px;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 0;
   border-radius: 999px;
-  text-transform: uppercase;
-  margin-left: auto;
+  background: transparent;
+  color: $muted;
+  font-family: $sans;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+
+  &:hover {
+    color: $ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $brand;
+    outline-offset: 2px;
+  }
 }
 
-.planName {
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: $ap-ink;
-  margin: 0;
+.periodOptionActive {
+  background: #fff;
+  color: $ink;
+  box-shadow: 0 1px 2px rgba(28, 26, 23, 0.08);
+}
+
+/* The discount rides inside the segment it applies to, so the saving is
+   attached to the choice rather than shouted from a corner. */
+.periodSave {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $success;
+  background: $success-bg;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* ── Plan panel ────────────────────────────────────────────────── */
+
+.panel {
+  background: #fff;
+  border: 1px solid $hairline;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.panelTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  background: $cream-elev;
+  border-bottom: 1px solid $hairline;
 }
 
 .priceBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid $ap-hairline;
+  min-width: 0;
 }
 
+.planLabel {
+  @include label-smcaps;
+  margin: 0 0 10px;
+}
+
+/* The number is the one place this page raises its voice: serif, large,
+   with the unit set small and quiet beside it. */
 .price {
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
   display: flex;
   align-items: baseline;
-  gap: 2px;
-  color: $ap-ink;
+  gap: 4px;
+  margin: 0;
+  color: $ink;
+  font-family: $serif;
   line-height: 1;
 }
 
 .priceCurrency {
   font-size: 1.4rem;
   font-weight: 500;
-  margin-right: 2px;
+  align-self: flex-start;
+  padding-top: 6px;
 }
 
 .priceAmount {
-  font-size: 2.2rem;
+  font-size: 3.4rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .pricePer {
-  font-size: 0.95rem;
+  font-family: $sans;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: $ap-muted;
-  margin-left: 6px;
-}
-
-/* "If billed monthly" anchor — single struck-through anchor price.
-   Pairs with the SAVE 30% header pill (two signals max). The strike
-   uses a custom angled pseudo-element so we can color/weight it
-   ourselves rather than relying on browser `line-through`. */
-.priceAnchor {
-  margin-left: 14px;
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  align-self: baseline;
-}
-
-.priceAnchor__was {
-  position: relative;
-  display: inline-block;
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 1.05rem;
-  font-weight: 500;
-  color: $ap-muted;
-  padding: 0 4px;
-  letter-spacing: -0.01em;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: -4px;
-    right: -4px;
-    top: 52%;
-    height: 2px;
-    border-radius: 2px;
-    background: $ap-brand;
-    transform: rotate(-10deg);
-    transform-origin: center;
-    opacity: 0.85;
-  }
-}
-
-.priceUzs {
-  color: $ap-muted;
-  font-size: 0.85rem;
-  margin-top: 2px;
+  color: $muted;
+  margin-left: 4px;
 }
 
 .subline {
-  color: $ap-muted;
-  font-size: 0.82rem;
-  font-style: italic;
+  margin: 10px 0 0;
+  font-family: $sans;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $ink-soft;
 }
 
-/* Compact tick-list — single line per bullet, just the title with a
-   small filled tick. Keeps the card height tight so two cards fit on
-   one screen without scrolling. */
-.featureList {
+.billingNote {
+  margin: 6px 0 0;
+  font-family: $sans;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: $muted;
+  max-width: 42ch;
+}
+
+.actionBlock {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 240px;
+}
+
+.currentBadge {
+  @include label-smcaps;
+  color: $success;
+  margin: 0;
+  text-align: center;
+}
+
+.cta {
+  &:global(.ant-btn) {
+    height: 46px;
+    border-radius: 999px;
+    background: $brand;
+    border-color: $brand;
+    box-shadow: none;
+    font-family: $sans;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding-inline: 28px;
+  }
+
+  &:global(.ant-btn):hover,
+  &:global(.ant-btn):focus {
+    background: $brand-hover !important;
+    border-color: $brand-hover !important;
+  }
+
+  &:global(.ant-btn):disabled,
+  &:global(.ant-btn):disabled:hover {
+    background: transparent !important;
+    border-color: $hairline !important;
+    color: $muted-2 !important;
+  }
+}
+
+.reassurance {
+  margin: 0;
+  font-family: $sans;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: $muted-2;
+  text-align: center;
+}
+
+/* ── Features ──────────────────────────────────────────────────── */
+
+.featureBlock {
+  padding: 24px 28px 28px;
+}
+
+.featureHeading {
+  @include label-smcaps;
+  color: $ink;
+  margin: 0 0 18px;
+}
+
+.featureList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px 32px;
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
-  flex-grow: 1;
+
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .featureItem {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
 }
 
 .featureTick {
+  color: $brand;
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  padding: 3px;
-  border-radius: 999px;
-  background: rgba(122, 31, 43, 0.1);
-  color: $ap-brand;
+  margin-top: 3px;
 }
 
 .featureTitle {
-  color: $ap-ink;
+  margin: 0;
+  font-family: $sans;
   font-size: 0.9rem;
-  font-weight: 500;
-  line-height: 1.35;
+  font-weight: 600;
+  color: $ink;
 }
 
-.ctaButton {
-  margin-top: 4px;
-  background: $ap-brand !important;
-  border-color: $ap-brand !important;
-  color: #fff !important;
-  border-radius: 999px !important;
-  font-weight: 600 !important;
-  height: 44px !important;
+.featureDesc {
+  margin: 3px 0 0;
+  font-family: $sans;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: $muted;
+}
 
-  &:hover,
-  &:focus {
-    background: darken($ap-brand, 6%) !important;
-    border-color: darken($ap-brand, 6%) !important;
-    color: #fff !important;
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .panelTop {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 22px 20px;
   }
 
-  &[disabled],
-  &.ant-btn[disabled] {
-    background: $ap-hairline !important;
-    border-color: $ap-hairline !important;
-    color: $ap-muted !important;
+  .actionBlock {
+    min-width: 0;
+  }
+
+  .priceAmount {
+    font-size: 2.8rem;
+  }
+
+  .featureBlock {
+    padding: 20px 20px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .periodOption {
+    transition: none;
   }
 }

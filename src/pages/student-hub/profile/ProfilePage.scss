@@ -1,11 +1,15 @@
-// 🎓 Student Profile Page Styles
-@import '../../../styles/student-hub-design-system.scss';
+// Student profile, editorial shell.
+//
+// The page used to be three stacked AntD Cards (header, Major Match, a
+// card wrapping a Tabs whose panes each held more cards). Everything that
+// boxed content has been removed: the page is now a masthead, a rail, a
+// tab strip and a reading column, all separated by hairlines. The section
+// and control chrome inside each tab comes from `_profile-editorial.scss`
+// so the three form tabs can't drift apart.
 
-// ========================================
-// 🔄 LOADING & ERROR STATES
-// ========================================
+@import 'src/styles/editorial-tokens';
+@import './profile-editorial';
 
-// Loading state - perfectly centered in main content area
 .profile-loading-content {
   position: relative;
   width: 100%;
@@ -15,413 +19,315 @@
 }
 
 .student-profile-page {
-  position: relative; // Ensure loading overlay positions correctly
+  position: relative;
+  color: $ink;
 
-  // Header content (used with or without card for consistent My Journey content start)
-  .profile-header-content {
-    .profile-status {
-      display: flex;
-      align-items: center;
-      gap: $space-4;
-      margin-top: 8px;
+  // ────────────────────────────────────────────────────────────
+  // Masthead
+  // ────────────────────────────────────────────────────────────
+
+  .pf-masthead {
+    padding-bottom: 20px;
+    border-bottom: 1px solid $hairline;
+    margin-bottom: 22px;
+  }
+
+  .pf-title {
+    font-family: $serif;
+    font-size: $display-lg;
+    line-height: 1.14;
+    font-weight: 600;
+    color: $ink;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .pf-standfirst {
+    font-family: $sans;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: $muted;
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  .pf-statusline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 16px;
+  }
+
+  // Status is a word plus a dot, not a component. Colour is the only
+  // signal that changes between states.
+  .pf-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: $sans;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: $ink-soft;
+
+    &__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: $muted-2;
+      flex-shrink: 0;
+    }
+
+    // Written out rather than `&--success &__dot`: nesting `&` twice
+    // repeats the whole ancestor chain and the rule never matches.
+    &--success .pf-status__dot {
+      background: $success;
+    }
+
+    &--processing .pf-status__dot {
+      background: $warn;
+    }
+
+    &__meta {
+      font-family: $sans;
+      font-size: 0.78rem;
+      color: $muted-2;
     }
   }
 
-  .profile-header-card {
-    border-radius: $radius-xl;
-    box-shadow: $shadow-sm;
-    border: 1px solid $border-light;
-    margin-bottom: $space-6;
+  // ────────────────────────────────────────────────────────────
+  // Major Match rail
+  // ────────────────────────────────────────────────────────────
+  //
+  // A single quiet panel between the masthead and the sections. Marked by
+  // a maroon edge rather than a full border so it reads as an aside in the
+  // margin, not another card in the stack.
 
-    .profile-header-content {
-      .profile-title {
-        font-size: $text-3xl;
-        font-weight: $font-bold;
-        color: $text-primary;
-        margin: 0 0 $space-2 0;
-      }
-
-      .profile-subtitle {
-        font-size: $text-lg;
-        color: $text-secondary;
-        margin: 0 0 $space-4 0;
-      }
-
-      .profile-status {
-        display: flex;
-        align-items: center;
-        gap: $space-4;
-
-        .last-updated {
-          font-size: $text-sm;
-          color: $text-tertiary;
-        }
-      }
-    }
-
-    .profile-stats {
-      text-align: center;
-
-      .profile-completion-header {
-        margin-bottom: $space-3;
-
-        .completion-title {
-          color: $text-secondary;
-          font-size: $text-sm;
-          font-weight: $font-medium;
-        }
-      }
-
-      .ant-statistic {
-        .ant-statistic-title {
-          color: $text-secondary;
-          font-size: $text-sm;
-          font-weight: $font-medium;
-          margin-bottom: $space-2;
-        }
-
-        .ant-statistic-content {
-          color: $primary-500;
-          font-size: $text-3xl;
-          font-weight: $font-bold;
-        }
-      }
-
-      .completion-progress {
-        margin-top: $space-3;
-      }
-    }
+  .pf-rail {
+    display: block;
+    background: $cream-elev;
+    border: 1px solid $hairline;
+    border-left: 3px solid $brand;
+    border-radius: 0 $radius-lg $radius-lg 0;
+    padding: 18px 22px;
+    margin-bottom: 26px;
   }
 
-  .sections-overview-card {
-    border-radius: $radius-xl;
-    box-shadow: $shadow-sm;
-    border: 1px solid $border-light;
-    margin-bottom: $space-6;
-
-    .sections-title {
-      font-size: $text-xl;
-      font-weight: $font-semibold;
-      color: $text-primary;
-      margin: 0 0 $space-4 0;
-    }
-
-    .section-card {
-      display: flex;
-      align-items: center;
-      gap: $space-3;
-      padding: $space-4;
-      border: 1px solid $border-light;
-      border-radius: $radius-lg;
-      background: $bg-primary;
-      transition: all $transition-base;
-
-      &:hover {
-        border-color: $primary-300;
-        box-shadow: $shadow-sm;
-        transform: translateY(-2px);
-      }
-
-      .section-icon {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: $primary-50;
-        border-radius: $radius-lg;
-        color: $primary-500;
-      }
-
-      .section-info {
-        flex: 1;
-
-        .section-name {
-          font-size: $text-sm;
-          font-weight: $font-medium;
-          color: $text-primary;
-          margin-bottom: $space-2;
-        }
-
-        .section-progress {
-          margin-bottom: $space-2;
-        }
-
-        .section-status {
-          font-size: $text-xs;
-        }
-      }
-    }
-  }
-
-  // Slim Major Match status card, sits between the header and the tabs card.
   .profile-major-match-card {
-    border-radius: $radius-xl;
-    box-shadow: $shadow-sm;
-    border: 1px solid $border-light;
-    margin-bottom: $space-6;
-
-    .ant-card-body {
-      padding: $space-4 $space-6;
-    }
-
+    // Reserve the settled height so the row doesn't jump when the status
+    // resolves and the action button mounts.
     &__body {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: $space-4;
+      gap: 18px;
       flex-wrap: wrap;
+      min-height: 44px;
     }
 
     &__text {
       display: flex;
       flex-direction: column;
-      gap: $space-1;
+      gap: 6px;
       min-width: 0;
+      flex: 1 1 340px;
     }
 
     &__title {
       display: flex;
       align-items: center;
-      gap: $space-2;
-      font-size: $text-base;
-      font-weight: $font-semibold;
-      color: $text-primary;
+      gap: 8px;
+      font-family: $serif;
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: $ink;
     }
 
     &__desc {
-      font-size: $text-sm;
-      color: $text-secondary;
+      font-family: $sans;
+      font-size: 0.89rem;
+      line-height: 1.55;
+      color: $muted;
 
-      &--muted {
-        color: $text-tertiary;
-        font-style: italic;
+      strong {
+        color: $ink-soft;
+        font-weight: 600;
+      }
+
+      &--loading {
+        color: $muted-2;
       }
     }
 
     &__result {
       display: flex;
       flex-direction: column;
-      gap: $space-2;
-    }
-
-    &__riasec-spelled {
-      color: $text-tertiary;
-      font-weight: $font-normal;
+      gap: 10px;
     }
 
     &__majors {
       display: flex;
-      flex-direction: column;
-      gap: $space-1;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     &__majors-label {
-      font-size: $text-xs;
-      font-weight: $font-medium;
-      color: $text-tertiary;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      @include label-smcaps;
     }
 
     &__majors-list {
       list-style: none;
       display: flex;
       flex-wrap: wrap;
-      gap: $space-2;
+      gap: 6px;
       margin: 0;
       padding: 0;
     }
 
     &__major-chip {
-      font-size: $text-sm;
-      font-weight: $font-medium;
-      color: $primary-600;
-      background: $primary-50;
-      border-radius: $radius-md;
-      padding: 2px $space-3;
+      font-family: $sans;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: $brand;
+      background: $brand-soft;
+      border: 1px solid rgba(123, 31, 47, 0.16);
+      border-radius: 999px;
+      padding: 2px 12px;
     }
 
     &__action {
       flex-shrink: 0;
-    }
-  }
 
-  .profile-tabs-card {
-    border-radius: $radius-xl;
-    box-shadow: $shadow-sm;
-    border: 1px solid $border-light;
-
-    .profile-tabs {
-      // Global override for any tab underlines
-      .ant-tabs-ink-bar,
-      .ant-tabs-tab-ink-bar,
-      .ant-tabs-nav-operations .ant-tabs-nav-more,
-      .ant-tabs-nav .ant-tabs-ink-bar {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
+      .ant-btn {
+        border-radius: 999px !important;
+        box-shadow: none !important;
+        font-family: $sans !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        padding-inline: 20px !important;
       }
-      
-      .ant-tabs-nav {
-        margin-bottom: $space-6;
-        
-        // Remove horizontal line below tabs
-        &::before {
-          display: none !important;
-        }
-        
-        // Remove any default tab ink bar/underline
-        .ant-tabs-ink-bar {
-          display: none !important;
-        }
-        
-        // Remove any tab line indicators
-        .ant-tabs-tab-ink-bar {
-          display: none !important;
-        }
 
-        .ant-tabs-nav-wrap {
-          .ant-tabs-nav-list {
-            // Remove any default tab underlines
-            &::after {
-              display: none !important;
-            }
-            
-            .ant-tabs-tab {
-              padding: $space-3 $space-4;
-              border-radius: $radius-lg;
-              margin-right: $space-2;
-              border: 1px solid $border-light;
-              background: $bg-secondary;
-              transition: all $transition-base;
+      .ant-btn-primary {
+        background: $brand !important;
+        border-color: $brand !important;
 
-              &:hover {
-                background: $primary-50;
-                border-color: $primary-300;
-                color: $primary-600;
-              }
-
-              &.ant-tabs-tab-active {
-                background: $primary-100;
-                border: 1px solid $primary-500 !important;
-                border-bottom: 1px solid $primary-500 !important;
-                color: $primary-700;
-                position: relative;
-
-                // Remove any default Ant Design underline
-                &::after {
-                  display: none !important;
-                }
-
-                .ant-tabs-tab-btn {
-                  color: $primary-700;
-                  font-weight: $font-semibold;
-                }
-              }
-
-              .tab-label {
-                display: flex;
-                align-items: center;
-                gap: $space-2;
-
-                .anticon {
-                  font-size: $text-base;
-                }
-
-                span {
-                  font-size: $text-sm;
-                  font-weight: $font-medium;
-                }
-              }
-            }
-          }
+        &:hover,
+        &:focus {
+          background: $brand-hover !important;
+          border-color: $brand-hover !important;
         }
       }
 
-      .ant-tabs-content-holder {
-        .ant-tabs-tabpane {
-          padding: 0;
+      .ant-btn-default {
+        border-color: $hairline !important;
+        color: $ink-soft !important;
+
+        &:hover {
+          border-color: $brand !important;
+          color: $brand !important;
         }
       }
     }
   }
-}
 
-// Responsive Design
-@media (max-width: $breakpoint-lg) {
-  .student-profile-page {
-    .profile-header-card {
-      .ant-row {
-        text-align: center;
-      }
+  // ────────────────────────────────────────────────────────────
+  // Section navigation
+  // ────────────────────────────────────────────────────────────
 
-      .profile-stats {
-        margin-top: $space-4;
-      }
-    }
+  .pf-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 26px;
+    border-bottom: 1px solid $hairline;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    scrollbar-width: none;
 
-    .sections-overview-card {
-      .section-card {
-        flex-direction: column;
-        text-align: center;
-
-        .section-icon {
-          margin-bottom: $space-2;
-        }
-      }
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
-}
 
-@media (max-width: $breakpoint-md) {
-  .student-profile-page {
-    .profile-header-card {
-      .profile-header-content {
-        .profile-title {
-          font-size: $text-2xl;
-        }
+  .pf-tab {
+    position: relative;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 12px 0 13px;
+    font-family: $serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: $muted;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
 
-        .profile-subtitle {
-          font-size: $text-base;
-        }
+    &:hover {
+      color: $ink;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $brand;
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  }
+
+  .pf-tab--active {
+    color: $ink;
+    font-weight: 600;
+    border-bottom-color: $brand;
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Panels
+  // ────────────────────────────────────────────────────────────
+
+  .pf-panel {
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  // Section + control chrome for the three form tabs.
+  @include profile-editorial-surface;
+
+  // ────────────────────────────────────────────────────────────
+  // Responsive
+  // ────────────────────────────────────────────────────────────
+
+  @media (max-width: 768px) {
+    .pf-title {
+      font-size: $display-md;
+    }
+
+    .pf-rail {
+      padding: 16px 18px;
+    }
+
+    .profile-major-match-card__action {
+      width: 100%;
+
+      .ant-btn {
+        width: 100%;
       }
     }
 
-    .sections-overview-card {
-      .ant-col {
-        margin-bottom: $space-3;
-      }
+    .pf-tabs {
+      gap: 20px;
+    }
+
+    .pf-tab {
+      font-size: 0.94rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pf-tab {
+      transition: none;
     }
   }
 }
-
-// Dark mode support - DISABLED to maintain consistent light theme
-// @media (prefers-color-scheme: dark) {
-//   .student-profile-page {
-//     .profile-header-card,
-//     .sections-overview-card,
-//     .profile-tabs-card {
-//       background: $gray-800;
-//       border-color: $gray-700;
-//
-//       .profile-title,
-//       .sections-title {
-//         color: $text-inverse;
-//       }
-//
-//       .profile-subtitle {
-//         color: $gray-300;
-//       }
-//     }
-//
-//     .section-card {
-//       background: $gray-700;
-//       border-color: $gray-600;
-//
-//       &:hover {
-//         border-color: $primary-400;
-//       }
-//     }
-//   }
-// }

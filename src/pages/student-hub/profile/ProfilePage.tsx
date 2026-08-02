@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Tabs, Progress, Button, Statistic, Badge, Alert } from 'antd';
+import { Button, Alert } from 'antd';
 import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
-import { STATUS_ICONS, ACTION_ICONS, PROFILE_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { formatDateTime } from '../../../utils/dateFormatter';
 import { InlineLoader, PageSkeleton } from '../../../components/loading';
 // MAJOR_MATCH_V2_PLAN.md Stage 5 cutover: this card used to pull
 // `useGetLatestAssessmentQuery`/`useGetRecommendationsQuery` from the legacy
-// `psychometricApi` slice — part of the same runaway-refetch-prone bare-tag
+// `psychometricApi` slice, part of the same runaway-refetch-prone bare-tag
 // group `MAJOR_MATCH_LOADING_CAP_MS` below was originally built to defend
 // against. It now reads the new, properly-scoped `majorMatchApi` status
 // endpoint instead, which removes this file from that storm entirely.
@@ -26,13 +25,11 @@ import DocumentsPage from '../documents/DocumentsPage';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
-const { TabPane } = Tabs;
-
 // How long the card is allowed to show a loading skeleton before it just
 // renders its best-effort state off whatever data has landed. Guards
 // against the known app-wide runaway-refetch bug in the psychometric
 // queries, where `loading` can fail to settle to false (see
-// useMajorMatchPrompt.ts callers) — without this cap the card could be
+// useMajorMatchPrompt.ts callers), without this cap the card could be
 // stuck in a skeleton forever.
 const MAJOR_MATCH_LOADING_CAP_MS = 4000;
 
@@ -47,23 +44,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
+  // Keys whose pane has been opened at least once, see the render note on
+  // why panes stay mounted afterwards.
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(['personal']));
   const isReadOnly = readOnly === true;
   
   // Pass studentId to hook when in read-only mode to fetch correct student data
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
-  const { profile, isLoading, error, isProfileComplete, profileStatus } = useStudentProfile(hookOptions);
+  const { profile, isLoading, error } = useStudentProfile(hookOptions);
 
-  // Major Match (psychometric assessment) status card — own account only,
+  // Major Match (psychometric assessment) status card, own account only,
   // never in the counselor's read-only embed (see the `!isReadOnly` guard
   // around the card below). Reuses the same shared hook the dashboard
   // hero / prompt modal use for the taken/canStart/community-gate
   // derivation, so all three surfaces agree on when to show the
-  // "unlock unlimited matches" edge — see useMajorMatchPrompt.ts.
+  // "unlock unlimited matches" edge, see useMajorMatchPrompt.ts.
   const mm = useMajorMatchPromptState();
   const majorMatchStudentProfileId = !isReadOnly ? mm.studentProfileId : undefined;
 
   // Opened by the not-taken CTA below instead of navigating straight to the
-  // assessment — same pre-assessment profile-field collection step as the
+  // assessment, same pre-assessment profile-field collection step as the
   // dashboard hero (MyProgressEditorialView's setMmCollectOpen). The modal
   // handles the used-attempt/community-unlock swap internally.
   const [mmCollectOpen, setMmCollectOpen] = useState(false);
@@ -73,7 +73,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // not just the taken/not-taken boolean. Same query key as the one the
   // hook already subscribes to (useMajorMatchPromptState → same
   // studentProfileId), so RTK Query serves this from the same cache entry
-  // — no extra network call.
+  // with no extra network call.
   const { data: majorMatchStatus } = useGetMajorMatchStatusQuery(majorMatchStudentProfileId ?? '', {
     skip: isReadOnly || !majorMatchStudentProfileId,
   });
@@ -81,7 +81,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // v2 result available → the normal "taken" display. A student who only
   // ever completed the OLD/legacy engine (hasCompletedLegacy but no v2
   // `latest`) gets a distinct, honest state instead of trying to render a
-  // v1-shaped result (riasecCode) through v2's display — see the
+  // v1-shaped result (riasecCode) through v2's display, see the
   // `majorMatchLegacyOnly` branch below. This is a Stage 5 judgment call,
   // not a spec'd requirement: the alternative (also querying the legacy
   // `psychometricApi` here to still show the old riasecCode) would put this
@@ -92,7 +92,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
 
   const topDimensionLabels = useMemo(() => {
     const indices = majorMatchStatus?.latest?.topDimensions;
-    if (!indices || indices.length === 0) return null;
+    if (!indices?.length) return null;
     const labels = indices
       .map((i) => MM2_DIMENSION_KEYS[i])
       .filter((key): key is (typeof MM2_DIMENSION_KEYS)[number] => !!key)
@@ -103,7 +103,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
 
   const majorMatchShowUnlockCta = !mm.canStart && mm.requiresCommunityEnrollment;
 
-  // Only meaningful while genuinely nothing has landed yet — capped by a
+  // Only meaningful while genuinely nothing has landed yet, capped by a
   // timer so the runaway-refetch bug (loading never settling) can never
   // pin the card in a skeleton state forever. Once we've shown real
   // content once we never go back to the skeleton.
@@ -121,17 +121,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
     const allowedTabs = ['personal', 'academic', 'activities', 'college-lists', 'documents'];
-    if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
-    } else {
-      setActiveTab('personal');
-    }
+    const next = tabFromUrl && allowedTabs.includes(tabFromUrl) ? tabFromUrl : 'personal';
+    setActiveTab(next);
+    setVisitedTabs((prev) => (prev.has(next) ? prev : new Set(prev).add(next)));
   }, [searchParams]);
 
-  // Handle tab changes — merge into the existing params so shell params
+  // Handle tab changes, merge into the existing params so shell params
   // like ?section=others&target=profile survive the tab switch
   const handleTabChange = (key: string) => {
     setActiveTab(key);
+    setVisitedTabs((prev) => (prev.has(key) ? prev : new Set(prev).add(key)));
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
@@ -221,103 +220,82 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
     }
   };
 
+  // Tab labels are typographic, no icons. The strip is navigation, so it
+  // stays quiet; what's missing inside a section is already signalled by
+  // the required-field markers on the form itself.
+  //
+  // Roadmap tab removed, it now lives inline on the Major Match v2
+  // results screen (`MM2Results`), where it's generated/regenerated the
+  // moment a Major Match is submitted. See `RoadmapTab`'s doc comment.
   const tabItems = [
     {
       key: 'personal',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="user" size="sm" color="primary" />
-          <span>{t('studentHub.profile.personalProfile')}</span>
-        </div>
-      ),
+      label: t('studentHub.profile.personalProfile'),
       children: <PersonalProfile data={profileData.sections.personal} readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'academic',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name={PROFILE_ICONS.ACADEMIC} size="sm" color="primary" />
-          <span>{t('studentHub.profile.academicProfile')}</span>
-        </div>
-      ),
+      label: t('studentHub.profile.academicProfile'),
       children: <AcademicProfile data={profileData.sections.academic} readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'activities',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="award" size="sm" color="primary" />
-          <span>{t('studentHub.profile.activitiesAchievements')}</span>
-        </div>
-      ),
+      label: t('studentHub.profile.activitiesAchievements'),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'college-lists',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="applications" size="sm" color="primary" />
-          <span>{t('studentHub.hub.collegeLists', 'College Lists')}</span>
-        </div>
-      ),
+      label: t('studentHub.hub.collegeLists', 'College Lists'),
       children: <ApplicationsPage readOnly={isReadOnly} studentId={studentId} />,
     },
     {
       key: 'documents',
-      label: (
-        <div className="tab-label">
-          <UnifiedIcon name="documents" size="sm" color="primary" />
-          <span>{t('studentHub.hub.documentsLabel', 'Documents')}</span>
-        </div>
-      ),
+      label: t('studentHub.hub.documentsLabel', 'Documents'),
       children: <DocumentsPage readOnly={isReadOnly} studentId={studentId} />,
     },
-    // Roadmap tab removed — it now lives inline on the Major Match v2
-    // results screen (`MM2Results`), where it's generated/regenerated the
-    // moment a Major Match is submitted. See `RoadmapTab`'s doc comment.
-    // Settings tab hidden for now
-    // {
-    //   key: 'settings',
-    //   label: (
-    //     <div className="tab-label">
-    //       <UnifiedIcon name="settings" size="sm" color="primary" />
-    //       <span>Settings</span>
-    //     </div>
-    //   ),
-    //   children: <SettingsPage />,
-    // },
   ];
+
+  const activeTabItem = tabItems.find((tab) => tab.key === activeTab) ?? tabItems[0];
 
   return (
     <div className="student-profile-page student-hub-page">
-      {/* Profile Header - same content start as other My Journey pages */}
-      <div style={{ marginBottom: 24 }}>
-        <div className="profile-header-content">
-          <h1 className="profile-title student-hub-page-title">
-            {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
-          </h1>
-          <p className="profile-subtitle student-hub-page-subtitle" style={{ marginTop: 8 }}>
-            {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
-          </p>
-          <div className="profile-status">
-            <Badge
-              status={getStatusColor(profileData.status)}
-              text={getStatusText(profileData.status)}
-            />
-          </div>
+      {/* Editorial masthead, serif title, standfirst, then a status line
+          carrying the two facts worth carrying: how complete the profile
+          is, and when it last changed. No eyebrow: the sibling Settings
+          page doesn't use one, and "My Journey" would only repeat the
+          nav item that's already highlighted. */}
+      <header className="pf-masthead">
+        <h1 className="pf-title">
+          {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
+        </h1>
+        <p className="pf-standfirst">
+          {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
+        </p>
+        <div className="pf-statusline">
+          <span className={`pf-status pf-status--${getStatusColor(profileData.status)}`}>
+            <span className="pf-status__dot" aria-hidden />
+            {getStatusText(profileData.status)}
+          </span>
+          {profileData.lastUpdated && (
+            <span className="pf-status__meta">
+              {t('studentHub.profile.lastUpdatedAt', 'Updated {{date}}', {
+                date: profileData.lastUpdated,
+              })}
+            </span>
+          )}
         </div>
-      </div>
+      </header>
 
-      {/* Major Match status — own account only, hidden in the counselor's
+      {/* Major Match status, own account only, hidden in the counselor's
           read-only embed of this page. Always renders something: a
           skeleton while genuinely loading, a pitch+CTA when not taken, a
           dimension + primary-major summary when a v2 result exists, a
-          distinct notice for a legacy-only completer (Stage 5 cutover —
+          distinct notice for a legacy-only completer (Stage 5 cutover,
           see the `majorMatchLegacyOnly` comment above), and never a blank
           box (see states 1-5 in the task spec this card was originally
           built for). */}
       {!isReadOnly && (
-        <Card className="profile-major-match-card">
+        <aside className="pf-rail">
           <div className="profile-major-match-card__body">
             <div className="profile-major-match-card__text">
               <span className="profile-major-match-card__title">
@@ -326,10 +304,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
               </span>
 
               {majorMatchInitializing ? (
-                <InlineLoader
-                  size="small"
-                  text={t('studentHub.profile.majorMatch.loading', 'Checking your major match status…')}
-                />
+                // A single muted line, deliberately the same shape as the
+                // loaded state. The old InlineLoader was a centred block
+                // with 24px of padding whose spinner tip wrapped one word
+                // per line inside this narrow column, so the rail grew to
+                // roughly three times its settled height and then snapped
+                // back the moment the status arrived.
+                <span className="profile-major-match-card__desc profile-major-match-card__desc--loading">
+                  {t('studentHub.profile.majorMatch.loading', 'Checking your major match status…')}
+                </span>
               ) : majorMatchHasV2Result ? (
                 <div className="profile-major-match-card__result">
                   {topDimensionLabels && (
@@ -383,18 +366,49 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                 ))}
             </div>
           </div>
-        </Card>
+        </aside>
       )}
 
-      {/* Profile Tabs */}
-      <Card className="profile-tabs-card">
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          items={tabItems}
-          className="profile-tabs"
-        />
-      </Card>
+      {/* Section navigation. A plain underline strip rather than AntD's
+          Tabs: no ink bar to fight, no boxed pills, and the labels can
+          carry the page's serif. */}
+      <nav className="pf-tabs" role="tablist" aria-label={t('studentHub.profile.sectionsNav', 'Profile sections')}>
+        {tabItems.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`pf-tab-${tab.key}`}
+            aria-selected={activeTab === tab.key}
+            aria-controls={`pf-panel-${tab.key}`}
+            className={`pf-tab ${activeTab === tab.key ? 'pf-tab--active' : ''}`}
+            onClick={() => handleTabChange(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* Panes mount lazily on first visit and stay mounted after, which
+          is what AntD's Tabs did: a half-filled form survives a trip to
+          another tab, but College Lists / Documents don't fire their
+          queries until someone actually opens them. */}
+      {tabItems.map((tab) => {
+        const isActive = tab.key === activeTabItem.key;
+        if (!visitedTabs.has(tab.key)) return null;
+        return (
+          <div
+            key={tab.key}
+            className="pf-panel"
+            role="tabpanel"
+            id={`pf-panel-${tab.key}`}
+            aria-labelledby={`pf-tab-${tab.key}`}
+            hidden={!isActive}
+          >
+            {tab.children}
+          </div>
+        );
+      })}
 
       {!isReadOnly && (
         <MajorMatchCollectModal open={mmCollectOpen} onClose={() => setMmCollectOpen(false)} />

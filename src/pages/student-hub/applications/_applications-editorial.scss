@@ -1,0 +1,299 @@
+// College Lists, editorial chrome.
+//
+// This page is nested inside the profile's tab set, so anything that reads
+// as a second visual system (grey stat pill, shadowed filter card, boxed
+// AntD tabs, blue status tags) makes it look bolted on. Everything here
+// puts it on the same materials as the rest of My Journey: paper,
+// hairlines, one maroon accent, serif for headings.
+//
+// Imported at the END of ApplicationsPage.scss so these rules land after
+// the legacy ones and win ties on source order as well as specificity.
+
+@import 'src/styles/editorial-tokens';
+
+.applications-page {
+  color: $ink;
+
+  // ── Section head ─────────────────────────────────────────────
+
+  .apps-head {
+    margin-bottom: 22px;
+  }
+
+  .apps-title {
+    font-family: $serif;
+    font-size: $display-md;
+    line-height: 1.18;
+    font-weight: 600;
+    color: $ink;
+    margin: 0 0 6px;
+  }
+
+  .apps-standfirst {
+    font-family: $sans;
+    font-size: 0.92rem;
+    color: $muted;
+    margin: 0;
+  }
+
+  // ── Counts ───────────────────────────────────────────────────
+
+  .apps-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0 0 24px;
+    padding: 0;
+    border-top: 1px solid $hairline;
+    border-bottom: 1px solid $hairline;
+  }
+
+  .apps-stat {
+    padding: 12px 26px 12px 0;
+    margin-right: 26px;
+    border-right: 1px solid $hairline;
+
+    &:last-child {
+      border-right: 0;
+      margin-right: 0;
+      padding-right: 0;
+    }
+
+    &__label {
+      @include label-smcaps;
+      margin: 0 0 2px;
+    }
+
+    &__value {
+      font-family: $serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.1;
+      color: $ink;
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  // ── Filter bar ───────────────────────────────────────────────
+
+  .applications-filters-card {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid $hairline;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0 18px;
+    margin-bottom: 22px;
+  }
+
+  // ── Tab strip ────────────────────────────────────────────────
+
+  .apps-tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid $hairline;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .apps-tab {
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 10px 0 11px;
+    font-family: $serif;
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: $muted;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      color: $ink;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $brand;
+      outline-offset: 3px;
+    }
+  }
+
+  .apps-tab--active {
+    color: $ink;
+    font-weight: 600;
+    border-bottom-color: $brand;
+  }
+
+  // ── Panels ───────────────────────────────────────────────────
+  //
+  // The list and the deadlines sidebar were AntD Cards with grey header
+  // bars. They keep their structure but lose the bar: a small-caps title
+  // over a hairline does the same job without another box.
+
+  .applications-card,
+  .ant-card {
+    background: #fff !important;
+    border: 1px solid $hairline !important;
+    border-radius: $radius-lg !important;
+    box-shadow: none !important;
+
+    > .ant-card-head {
+      background: transparent !important;
+      border-bottom: 1px solid $hairline !important;
+      min-height: 0 !important;
+      padding: 14px 20px !important;
+
+      .ant-card-head-title {
+        @include label-smcaps;
+        color: $ink !important;
+        padding: 0 !important;
+        font-size: 0.72rem !important;
+      }
+    }
+
+    > .ant-card-body {
+      padding: 18px 20px !important;
+    }
+  }
+
+  // A college entry inside the list is a nested card. Flatten it to a
+  // hairline row so the page isn't cards inside cards inside cards.
+  .ant-card .ant-card {
+    border: 1px solid $hairline !important;
+    border-radius: $radius-md !important;
+    background: $cream-elev !important;
+  }
+
+  // ── Chips ────────────────────────────────────────────────────
+  //
+  // Status, category and match badges were AntD's blue/green/red tags,
+  // the only saturated colour on the page. They become quiet outline
+  // chips; the one that carries urgency (a near deadline) keeps a warm
+  // tone because that difference is the point.
+
+  .ant-tag {
+    border-radius: 999px !important;
+    border: 1px solid $hairline !important;
+    background: transparent !important;
+    color: $ink-soft !important;
+    font-family: $sans !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    padding: 2px 10px !important;
+    margin-inline-end: 6px !important;
+  }
+
+  .ant-tag-success {
+    border-color: $success-rule !important;
+    color: $success !important;
+    background: $success-bg !important;
+  }
+
+  .ant-tag-error {
+    border-color: rgba(180, 83, 9, 0.4) !important;
+    color: $warn !important;
+    background: #fef3c7 !important;
+  }
+
+  .ant-tag-processing,
+  .ant-tag-blue {
+    border-color: rgba(123, 31, 47, 0.2) !important;
+    color: $brand !important;
+    background: $brand-soft !important;
+  }
+
+  // ── Controls ─────────────────────────────────────────────────
+
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    background: #fff !important;
+    border: 1px solid $hairline !important;
+    border-radius: $radius-md !important;
+    box-shadow: none !important;
+    min-height: 40px !important;
+    font-family: $sans !important;
+  }
+
+  .ant-select-single .ant-select-selector .ant-select-selection-item {
+    line-height: 38px !important;
+  }
+
+  .ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+    border-color: $brand !important;
+    box-shadow: 0 0 0 3px $brand-tint !important;
+  }
+
+  .ant-btn {
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    font-family: $sans !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+    padding-inline: 20px !important;
+  }
+
+  .ant-btn-primary {
+    background: $brand !important;
+    border-color: $brand !important;
+
+    &:hover,
+    &:focus {
+      background: $brand-hover !important;
+      border-color: $brand-hover !important;
+    }
+  }
+
+  .ant-btn-default {
+    border-color: $hairline !important;
+    color: $ink-soft !important;
+
+    &:hover {
+      border-color: $brand !important;
+      color: $brand !important;
+    }
+  }
+
+  .ant-btn-dangerous {
+    border-color: rgba(123, 31, 47, 0.3) !important;
+    color: $brand !important;
+    background: transparent !important;
+
+    &:hover {
+      background: $brand-soft !important;
+      border-color: $brand !important;
+    }
+  }
+
+  // ── Empty state ──────────────────────────────────────────────
+
+  .applications-empty-state {
+    @include advisory-card;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .apps-stat {
+      padding-right: 18px;
+      margin-right: 18px;
+    }
+
+    .apps-stat__value {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .apps-tab {
+      transition: none;
+    }
+  }
+}

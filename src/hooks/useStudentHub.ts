@@ -63,11 +63,17 @@ export const useStudentProfile = (options?: StudentProfileOptions) => {
     skip: isReadOnly || !isAuthenticated, // Skip if in read-only mode
   });
 
-  // Use the appropriate profile data based on mode
-  const actualProfileData = isReadOnly 
-    ? ((studentProfileResponse as any)?.data || studentProfileResponse)
+  // Use the appropriate profile data based on mode.
+  // The by-userId endpoint is declared as ApiResponse<StudentProfile>, but the
+  // backend has historically returned the profile unwrapped on some paths, so
+  // both shapes are accepted — without an `as any` that would erase the type
+  // for every consumer of this hook.
+  const actualProfileData: StudentProfile | undefined = isReadOnly
+    ? studentProfileResponse?.data ??
+      (studentProfileResponse as StudentProfile | undefined)
     : profileData;
-  
+
+
   const actualProfileLoading = isReadOnly ? studentProfileLoading : profileLoading;
   const actualProfileError = isReadOnly ? studentProfileError : profileError;
   

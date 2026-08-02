@@ -56,7 +56,7 @@ const isSubscriptionState = (value: string | null): value is SubscriptionState =
  * Reads live data from the four `subscriptionApi` endpoints. Preserves
  * a dev-only mock mode: appending `?state=mock` (or any subscription
  * state name like `?state=active|trialing|past_due|canceled|none`) makes
- * the page hydrate from `_mocks/subscription.fixtures.ts` instead — handy
+ * the page hydrate from `_mocks/subscription.fixtures.ts` instead, handy
  * when the backend isn't running. See SUBSCRIPTION_PHASES.md for the
  * rollout plan.
  */
@@ -102,7 +102,7 @@ export default function SubscriptionTab() {
     if (searchParams.get('atmosBind') !== 'success') return;
     const SEEN_KEY = 'atmosBind:returned-seen';
     if (sessionStorage.getItem(SEEN_KEY)) {
-      // Already toasted in this session — just strip the param defensively.
+      // Already toasted in this session, just strip the param defensively.
       const url = new URL(window.location.href);
       url.searchParams.delete('atmosBind');
       window.history.replaceState({}, '', url.toString());
@@ -199,7 +199,7 @@ export default function SubscriptionTab() {
 
   const [startSubscription] = useStartSubscriptionMutation();
   const [changePlan] = useChangeSubscriptionPlanMutation();
-  // Community is delivered via the Telegram bot — a connection is required
+  // Community is delivered via the Telegram bot, a connection is required
   // before a new member can start a plan (the backend enforces this too).
   const { data: telegramStatus } = useGetTelegramStatusQuery();
   const [telegramModalOpen, setTelegramModalOpen] = useState(false);
@@ -207,7 +207,7 @@ export default function SubscriptionTab() {
   // Celebration overlay: appears for ~7s after the trial actually starts
   // (i.e. the /subscriptions/start call returns 2xx). Drives the
   // "card added → trial active → community unlocked" feel that was
-  // missing before — the silent message.success toast was the only
+  // missing before, the silent message.success toast was the only
   // signal of success and the sidebar locks confused users into
   // thinking nothing had happened.
   const [showTrialCelebration, setShowTrialCelebration] = useState(false);
@@ -215,7 +215,7 @@ export default function SubscriptionTab() {
   const startTrialWithCard = async (planId: string, paymentMethodId: string) => {
     try {
       await startSubscription({ planId, paymentMethodId }).unwrap();
-      // Fire the confetti before the toast — the toast disappears in 3s
+      // Fire the confetti before the toast, the toast disappears in 3s
       // but the celebration runs ~7s so the user actually notices.
       setShowTrialCelebration(true);
       message.success(
@@ -240,7 +240,7 @@ export default function SubscriptionTab() {
 
   const handleSelectPlan = async (plan: PlanDto) => {
     if (mockMode) {
-      // Demo mode — no backend; preserve the previous "open form" UX
+      // Demo mode, no backend; preserve the previous "open form" UX
       // so designers can still flip through fixtures.
       setPendingTrialPlan(plan);
       setAddCardOpen(true);
@@ -258,7 +258,7 @@ export default function SubscriptionTab() {
     // `confirmScheduledPlanChange`.
     //
     // Effective-plan rule: while a switch is queued, the *scheduled*
-    // plan is what the user has chosen — that's what the picker labels
+    // plan is what the user has chosen, that's what the picker labels
     // "Current plan" and what the status banner reads. Clicking the
     // other card during a scheduled switch is therefore an UNDO (the
     // target equals the live plan id; the backend accepts same-plan
@@ -273,7 +273,7 @@ export default function SubscriptionTab() {
     }
 
     // New Community join: require a connected Telegram bot before payment.
-    // (Plan changes for existing members above are exempt — already members.)
+    // (Plan changes for existing members above are exempt, already members.)
     if (!telegramConnected) {
       setTelegramModalOpen(true);
       message.info('Connect the TopCoach Telegram bot to join Community.');
@@ -282,7 +282,7 @@ export default function SubscriptionTab() {
 
     const defaultCard = paymentMethods.find((pm) => pm.isDefault);
     if (defaultCard) {
-      // User has a card on file — open the confirm modal instead of
+      // User has a card on file, open the confirm modal instead of
       // firing /subscriptions/start straight away. The actual call
       // happens in `confirmPlanStart` after the user clicks OK.
       setPlanStartConfirm(plan);
@@ -326,12 +326,12 @@ export default function SubscriptionTab() {
       }).unwrap();
       const effective = subscription.currentPeriodEnd
         ? formatLongDate(subscription.currentPeriodEnd)
-        : '—';
+        : ',';
       message.success(
         isUndoFlow
           ? t(
               'settings.subscription.toast.planChangeUndone',
-              "Scheduled switch cancelled — you'll stay on your current plan.",
+              "Scheduled switch cancelled, you'll stay on your current plan.",
             )
           : t(
               'settings.subscription.toast.planChangeScheduled',
@@ -384,7 +384,7 @@ export default function SubscriptionTab() {
 
   const handleCardAdded = async (card: { id: string }) => {
     // If the user came in via a "Start trial" CTA, finish the flow now.
-    // Otherwise (just adding a card from the section), do nothing —
+    // Otherwise (just adding a card from the section), do nothing,
     // the modal already shows the success state.
     if (!pendingTrialPlan || mockMode) return;
     await startTrialWithCard(pendingTrialPlan.id, card.id);
@@ -473,7 +473,7 @@ export default function SubscriptionTab() {
         title={t('settings.subscription.celebration.title', '🎉 You\'re in! 🎉')}
         subtitle={t(
           'settings.subscription.celebration.subtitle',
-          'Welcome to Community — your free trial is active and the full TopCoach journey is unlocked.',
+          'Welcome to Community, your free trial is active and the full TopCoach journey is unlocked.',
         )}
       />
       {errorAny && (
@@ -506,7 +506,7 @@ export default function SubscriptionTab() {
             });
           }}
           // Cancel flow step 3 ("too expensive") hands the target plan
-          // here — reuse the SAME confirm-before-change modal the
+          // here, reuse the SAME confirm-before-change modal the
           // AvailablePlans picker triggers, no parallel switch logic.
           onOfferPlanSwitch={(plan) => setPlanChangeConfirm(plan)}
         />
@@ -518,22 +518,19 @@ export default function SubscriptionTab() {
               title + subtitle stack. The page-level "Settings · Manage
               your profile, subscription, and preferences" already
               establishes the section, and the "Subscription & billing"
-              tab is active above — repeating the same eyebrow/title
-              again read as duplicated chrome. */}
+              tab is active above, repeating the same eyebrow/title
+              again read as duplicated chrome.
+
+              The old "Switch anytime. Cancel anytime. 7-day free trial"
+              hint lived here too; the plan panel now states the trial
+              length and the cancel terms against the actual price, so
+              saying it twice added nothing. */}
           <header className={styles.compactHead}>
             <h3 className={styles.subSectionTitle}>
               {isEmpty
                 ? t('settings.subscription.choosePlanHeader', 'Choose your plan')
                 : t('settings.subscription.availablePlans', 'Available plans')}
             </h3>
-            {isEmpty && (
-              <p className={styles.compactHint}>
-                {t(
-                  'settings.subscription.heroSubtitle',
-                  'Switch anytime. Cancel anytime. 7-day free trial on every plan.',
-                )}
-              </p>
-            )}
           </header>
           <AvailablePlans
             plans={plans}
@@ -611,7 +608,7 @@ export default function SubscriptionTab() {
       </div>
 
       {/* Confirm-before-change modal. Reached from the AvailablePlans
-          picker only when the user already has a live subscription —
+          picker only when the user already has a live subscription,
           the empty-state "Start trial" path uses a different flow.
           Copy adapts: clicking the LIVE plan while a switch is queued
           is an UNDO (revert the scheduled switch); clicking any other
@@ -623,7 +620,7 @@ export default function SubscriptionTab() {
           planChangeConfirm.id === subscription.plan.id;
         const periodEndLabel = subscription?.currentPeriodEnd
           ? formatLongDate(subscription.currentPeriodEnd)
-          : '—';
+          : ',';
         return (
           <Modal
             open={!!planChangeConfirm}
@@ -716,7 +713,7 @@ export default function SubscriptionTab() {
         );
       })()}
 
-      {/* Confirm-before-start modal — mirrors the change-plan modal
+      {/* Confirm-before-start modal, mirrors the change-plan modal
           above so the two flows feel like one editorial system. Only
           opens when the user already has a card on file; the no-card
           path still routes through AddCardModal. */}

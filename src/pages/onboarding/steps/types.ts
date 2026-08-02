@@ -36,30 +36,6 @@ const LEGACY_STEP_REMAP: Record<string, OnboardingStepId> = {
   majorMatch: 'telegram',
   academic: 'telegram',
 };
- * step component. Order matches ONBOARDING_DESIGN.md's step numbering
- * (role=1 .. academic=8). Completion (`onboardingCompletedAt`) now fires at
- * the 'academic' step (StepAcademic.tsx), not at 'contact' anymore.
- */
-export type OnboardingStepId =
-  | 'role'
-  | 'source'
-  | 'telegram'
-  | 'video'
-  | 'community'
-  | 'contact'
-  | 'trial'
-  | 'academic';
-
-export const STEP_ORDER: OnboardingStepId[] = [
-  'role',
-  'source',
-  'telegram',
-  'video',
-  'community',
-  'contact',
-  'trial',
-  'academic',
-];
 
 export function isOnboardingStepId(value: unknown): value is OnboardingStepId {
   return typeof value === 'string' && (STEP_ORDER as string[]).includes(value);

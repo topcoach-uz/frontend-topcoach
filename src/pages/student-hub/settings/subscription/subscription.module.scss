@@ -1,19 +1,26 @@
-/* Subscription & billing tab — production-grade editorial layout. */
+/* Subscription & billing tab, editorial layout.
+ *
+ * Reads the canonical tokens rather than re-declaring near-miss copies of
+ * them (the old inline block used #7a1f2b and #fdf6f4, a shade off the
+ * maroon and cream every other surface uses). Legacy `$st-*` names are
+ * kept as aliases so the rest of this file didn't have to churn. */
 
-$st-cream: #fdf6f4;
-$st-ink: #1c1a17;
-$st-muted: #6b6258;
-$st-hairline: #e5e3da;
-$st-brand: #7a1f2b;
-$st-brand-soft: rgba(122, 31, 43, 0.08);
+@import 'src/styles/editorial-tokens';
+
+$st-cream: $cream-elev;
+$st-ink: $ink;
+$st-muted: $muted;
+$st-hairline: $hairline;
+$st-brand: $brand;
+$st-brand-soft: $brand-tint;
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 32px;
 }
 
-/* Hero plan picker — anchors the empty state with serif headline +
+/* Hero plan picker, anchors the empty state with serif headline +
    eyebrow, then drops the two cards below. */
 .heroPicker {
   display: flex;
@@ -53,14 +60,14 @@ $st-brand-soft: rgba(122, 31, 43, 0.08);
 
 /* Smaller heading used inside compact sections + non-empty plan picker. */
 .subSectionTitle {
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 1.05rem;
+  font-family: $serif;
+  font-size: 1.15rem;
   font-weight: 600;
   color: $st-ink;
   margin: 0;
 }
 
-/* Bottom strip — payment methods + billing history side-by-side on
+/* Bottom strip, payment methods + billing history side-by-side on
    wide screens, stacked on narrow. Each section is light-weight (no
    heavy card chrome) so empty states feel inline, not loud. */
 .bottomGrid {

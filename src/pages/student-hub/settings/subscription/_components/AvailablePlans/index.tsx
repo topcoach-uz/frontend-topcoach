@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from 'antd';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,46 +7,39 @@ import { COMMUNITY_PLAN_FEATURES } from '../plan-features';
 import styles from './AvailablePlans.module.scss';
 
 export interface AvailablePlansProps {
-  /** Plans to render side-by-side (Monthly + Yearly). */
+  /** Plans to render (Monthly + Yearly of the same membership). */
   plans: PlanDto[];
   /** Plan id of the user's live plan (used for the "switching back" path). */
   currentPlanId?: string;
   /**
    * Plan id queued for the next billing cycle, if any. When set, this
-   * becomes the *effective* current plan in the picker — its card shows
-   * "Current plan" and is non-clickable; the other card's CTA reverts to
+   * becomes the *effective* current plan in the picker, its CTA shows
+   * "Current plan" and is non-clickable; the other period's CTA reverts to
    * the live plan (an undo flow handled upstream).
    */
   scheduledPlanId?: string;
   /** Header context: 'choose' for empty state, 'switch' when already subscribed. */
   variant?: 'choose' | 'switch';
   /**
-   * Fired when the user clicks the primary CTA on a plan card. Page
-   * entry uses this to lift state — store the picked plan, open the
-   * add-card form, and surface a "card needed to start trial" banner.
-   * Until the Phase 3 subscribe API exists this is the meaningful
-   * action a click translates to.
+   * Fired when the user clicks the primary CTA. Page entry uses this to
+   * lift state, store the picked plan, open the add-card form, and
+   * surface a "card needed to start trial" banner.
    */
   onSelectPlan?: (plan: PlanDto) => void;
 }
 
 /**
- * Plan card title. We intentionally use period-driven copy ("Monthly
- * Plan" / "Yearly Plan") instead of the backend `displayName` ("Community")
- * — the period is what users actually compare across cards, and the
- * brand name is already obvious from the page context.
- */
-const planTitle = (plan: PlanDto, t: (k: string, d: string) => string): string =>
-  plan.period === 'yearly'
-    ? t('settings.subscription.plan.yearly', 'Yearly Plan')
-    : t('settings.subscription.plan.monthly', 'Monthly Plan');
-
-/**
- * Plan picker — two cards side-by-side, each fully self-contained:
- * eyebrow + price + UZS conversion + features checklist + primary CTA.
+ * Plan picker.
  *
- * Cards click to "select" (visual highlight + radio dot). The CTA inside
- * each card is the action — Phase 3 wires this to the subscribe flow.
+ * Monthly and Yearly are the same membership at two billing periods, so
+ * they're presented as a period switch over ONE panel rather than two
+ * cards. The previous two-card layout printed the identical eight-item
+ * feature list twice, which made the periods look like different products
+ * and left no room for each feature's supporting line, so the panel now
+ * shows the descriptions that `COMMUNITY_PLAN_FEATURES` already carries.
+ *
+ * Everything about subscription state (current plan, a switch queued for
+ * next cycle, the undo path) is unchanged, only the presentation moved.
  */
 export default function AvailablePlans({
   plans,
@@ -57,176 +50,224 @@ export default function AvailablePlans({
 }: AvailablePlansProps) {
   const { t } = useTranslation();
 
-  // The picker should reflect the plan the user has *chosen* — not just
-  // what's live today. While a switch is queued, the scheduled plan is
-  // the user's effective choice; the other card's CTA reverts that
-  // choice (handled by `handleSelectPlan` upstream — it detects the
-  // same-as-live target and forwards as an undo).
+  // The picker reflects the plan the user has *chosen*, not just what's
+  // live today. While a switch is queued, the scheduled plan is the
+  // effective choice; picking the other period reverts it (handled by
+  // `handleSelectPlan` upstream, which detects the same-as-live target).
   const effectiveCurrentId = scheduledPlanId ?? currentPlanId;
   const hasScheduledSwitch =
-    !!scheduledPlanId &&
-    !!currentPlanId &&
-    scheduledPlanId !== currentPlanId;
+    !!scheduledPlanId && !!currentPlanId && scheduledPlanId !== currentPlanId;
 
-  const [selected, setSelected] = useState<string>(
+  const monthlyPlan = plans.find((p) => p.period === 'monthly');
+  const yearlyPlan = plans.find((p) => p.period === 'yearly');
+
+  // Open on the period the user is already on; otherwise lead with yearly,
+  // which is the better deal and the one worth defaulting to.
+  const [period, setPeriod] = useState<'monthly' | 'yearly'>(() => {
+    const current = plans.find((p) => p.id === (scheduledPlanId ?? currentPlanId));
+    if (current) return current.period === 'yearly' ? 'yearly' : 'monthly';
+    return yearlyPlan ? 'yearly' : 'monthly';
+  });
+
+  // Live-derived yearly savings, the anchor price and the percentage come
+  // from the same admin-edited numbers, computed together so they can
+  // never disagree. Floored, never rounded up: 31.7% reads as 31%, so the
+  // discount is never over-promised.
+  const savings = useMemo(() => {
+    const monthlyPrice = monthlyPlan?.priceUsd ?? 0;
+    const yearlyPrice = yearlyPlan?.priceUsd ?? 0;
+    const monthlyTimes12 = monthlyPrice * 12;
+    if (!(monthlyPrice > 0 && yearlyPrice > 0 && monthlyTimes12 - yearlyPrice > 0)) {
+      return null;
+    }
+    return {
+      anchor: Math.round(monthlyTimes12),
+      percent: Math.floor((1 - yearlyPrice / monthlyTimes12) * 100),
+    };
+  }, [monthlyPlan?.priceUsd, yearlyPlan?.priceUsd]);
+
+  // Follow the effective current plan when it actually changes, e.g. right
+  // after a switch is confirmed, so the picker shows the plan the user just
+  // chose. Keyed on the id alone, so a manual toggle isn't yanked back by an
+  // unrelated refetch.
+  const effectivePeriod = plans.find((p) => p.id === effectiveCurrentId)?.period;
+  useEffect(() => {
+    if (effectivePeriod) setPeriod(effectivePeriod);
+  }, [effectivePeriod, effectiveCurrentId]);
+
+  const periodOptions = useMemo(
     () =>
-      effectiveCurrentId ??
-      plans.find((p) => p.period === 'yearly')?.id ??
-      plans[0]?.id ??
-      '',
+      (
+        [
+          { id: 'monthly' as const, plan: monthlyPlan },
+          { id: 'yearly' as const, plan: yearlyPlan },
+        ] satisfies { id: 'monthly' | 'yearly'; plan?: PlanDto }[]
+      ).filter((option) => !!option.plan),
+    [monthlyPlan, yearlyPlan],
   );
 
   if (plans.length === 0) return null;
 
-  // Live-derived yearly savings — both the anchor and the percent pill
-  // come from the admin-edited prices, computed in lockstep so they
-  // never disagree. Backend still returns a hardcoded "SAVE 30%" as a
-  // fallback for older clients; we always prefer the live calc when we
-  // can do it. Floor the % per UX request (31.7% reads as 31%, not 32%
-  // — never over-promise the discount).
-  const monthlyPlan = plans.find((p) => p.period === 'monthly');
-  const yearlyPlan = plans.find((p) => p.period === 'yearly');
-  const monthlyPriceRaw = monthlyPlan?.priceUsd ?? 0;
-  const yearlyPriceRaw = yearlyPlan?.priceUsd ?? 0;
-  const monthlyTimes12 = monthlyPriceRaw * 12;
-  const hasGenuineYearlySaving =
-    monthlyPriceRaw > 0 &&
-    yearlyPriceRaw > 0 &&
-    monthlyTimes12 - yearlyPriceRaw > 0;
-  const anchorYearlyPrice = hasGenuineYearlySaving
-    ? Math.round(monthlyTimes12)
-    : null;
-  const yearlySavePercent = hasGenuineYearlySaving
-    ? Math.floor((1 - yearlyPriceRaw / monthlyTimes12) * 100)
-    : null;
-  const liveSaveBadge =
-    yearlySavePercent && yearlySavePercent > 0
-      ? `SAVE ${yearlySavePercent}%`
-      : null;
+  const activePlan = (period === 'yearly' ? yearlyPlan : monthlyPlan) ?? plans[0];
+  if (!activePlan) return null;
 
-  const ctaLabel = (plan: PlanDto): string => {
-    if (effectiveCurrentId === plan.id) {
-      // The scheduled plan masquerades as "Current plan" (it's the
-      // user's chosen plan from this point forward).
+  const isCurrent = effectiveCurrentId === activePlan.id;
+  const isUndoTarget = hasScheduledSwitch && currentPlanId === activePlan.id;
+
+  const ctaLabel = (): string => {
+    if (isCurrent) {
+      // The scheduled plan masquerades as "Current plan", it's the user's
+      // chosen plan from this point forward.
       return t('settings.subscription.cta.currentPlan', 'Current plan');
     }
-    if (hasScheduledSwitch && currentPlanId === plan.id) {
-      // Other card during a scheduled switch = undo affordance.
-      return t(
-        'settings.subscription.cta.undoSwitchTo',
-        'Switch back to this plan',
-      );
+    if (isUndoTarget) {
+      return t('settings.subscription.cta.undoSwitchTo', 'Switch back to this plan');
     }
     if (variant === 'switch') {
       return t('settings.subscription.cta.switchTo', 'Switch to this plan');
     }
-    return plan.trialDays > 0
+    return activePlan.trialDays > 0
       ? t('settings.subscription.cta.startTrial', 'Start {{days}}-day free trial', {
-          days: plan.trialDays,
+          days: activePlan.trialDays,
         })
       : t('settings.subscription.cta.subscribe', 'Subscribe');
   };
 
+  // One honest sentence about what the price actually means, instead of a
+  // strikethrough floating next to the number. Distinct keys from
+  // `billedYearly`/`billedMonthly`, which are short fragments CurrentPlanCard
+  // splices mid-sentence.
+  const billingNote = (): string => {
+    if (period === 'yearly' && savings) {
+      return t(
+        'settings.subscription.billingNoteYearly',
+        'Billed once a year. That is ${{anchor}} at the monthly rate, you keep ${{saved}}.',
+        { anchor: savings.anchor, saved: savings.anchor - Math.round(activePlan.priceUsd) },
+      );
+    }
+    if (period === 'yearly') {
+      return t('settings.subscription.billingNoteYearlyPlain', 'Billed once a year.');
+    }
+    return t('settings.subscription.billingNoteMonthly', 'Billed every month.');
+  };
+
   return (
-    <div className={styles.cards}>
-      {plans.map((plan) => {
-        const isSelected = plan.id === selected;
-        // "isCurrent" drives the disabled state + the visual highlight.
-        // We mark the *effective* current (scheduled when set, else live)
-        // so the picker is consistent with the status block.
-        const isCurrent = effectiveCurrentId === plan.id;
-
-        return (
-          <article
-            key={plan.id}
-            className={`${styles.card} ${isSelected ? styles.cardSelected : ''} ${
-              isCurrent ? styles.cardCurrent : ''
-            }`}
-            onClick={() => setSelected(plan.id)}
-          >
-            <header className={styles.cardHead}>
-              <div className={styles.headLine}>
-                <span
-                  className={`${styles.radio} ${isSelected ? styles.radioSelected : ''}`}
-                  aria-hidden
-                />
-                <span className={styles.eyebrow}>
-                  {plan.period === 'yearly'
-                    ? t('settings.subscription.period.yearly', 'Yearly')
-                    : t('settings.subscription.period.monthly', 'Monthly')}
+    <div className={styles.picker}>
+      {/* Period switch. Two segments, so a segmented control reads faster
+          than a dropdown and shows the yearly discount without a click. */}
+      {periodOptions.length > 1 && (
+        <div
+          className={styles.periodSwitch}
+          role="radiogroup"
+          aria-label={t('settings.subscription.billingPeriod', 'Billing period')}
+        >
+          {periodOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={period === option.id}
+              className={`${styles.periodOption} ${
+                period === option.id ? styles.periodOptionActive : ''
+              }`}
+              onClick={() => setPeriod(option.id)}
+            >
+              {option.id === 'yearly'
+                ? t('settings.subscription.period.yearly', 'Yearly')
+                : t('settings.subscription.period.monthly', 'Monthly')}
+              {option.id === 'yearly' && (savings || yearlyPlan?.saveBadge) && (
+                <span className={styles.periodSave}>
+                  {savings
+                    ? t('settings.subscription.saveShort', 'Save {{percent}}%', {
+                        percent: savings.percent,
+                      })
+                    : yearlyPlan?.saveBadge}
                 </span>
-                {(() => {
-                  // Yearly card: prefer the live-computed percent.
-                  // Other cards / fallback: whatever the backend sent.
-                  const badge =
-                    plan.period === 'yearly' && liveSaveBadge
-                      ? liveSaveBadge
-                      : plan.saveBadge;
-                  return badge ? (
-                    <span className={styles.saveBadge}>{badge}</span>
-                  ) : null;
-                })()}
-              </div>
-              <h3 className={styles.planName}>{planTitle(plan, t)}</h3>
-            </header>
-
-            <div className={styles.priceBlock}>
-              <div className={styles.price}>
-                <span className={styles.priceCurrency}>$</span>
-                <span className={styles.priceAmount}>
-                  {(plan.priceUsd ?? 0).toFixed(2)}
-                </span>
-                <span className={styles.pricePer}>
-                  {plan.period === 'yearly' ? '/ yr' : '/ mo'}
-                </span>
-                {plan.period === 'yearly' && anchorYearlyPrice != null ? (
-                  <span
-                    className={styles.priceAnchor}
-                    aria-label={`Billed monthly would be $${anchorYearlyPrice} per year`}
-                  >
-                    <span className={styles.priceAnchor__was}>
-                      ${anchorYearlyPrice}
-                    </span>
-                  </span>
-                ) : null}
-              </div>
-              {plan.subline && (
-                <div className={styles.subline}>{plan.subline}</div>
               )}
-            </div>
+            </button>
+          ))}
+        </div>
+      )}
 
-            <ul className={styles.featureList}>
-              {COMMUNITY_PLAN_FEATURES.map((feature) => (
-                <li key={feature.key} className={styles.featureItem}>
-                  <Check
-                    className={styles.featureTick}
-                    size={14}
-                    strokeWidth={2.5}
-                    aria-hidden
-                  />
-                  <span className={styles.featureTitle}>{feature.title}</span>
-                </li>
-              ))}
-            </ul>
+      <article className={styles.panel}>
+        <div className={styles.panelTop}>
+          <div className={styles.priceBlock}>
+            <p className={styles.planLabel}>
+              {t('settings.subscription.membership', 'Community membership')}
+            </p>
+            <p className={styles.price}>
+              <span className={styles.priceCurrency}>$</span>
+              <span className={styles.priceAmount}>
+                {Number.isInteger(activePlan.priceUsd)
+                  ? activePlan.priceUsd
+                  : activePlan.priceUsd.toFixed(2)}
+              </span>
+              <span className={styles.pricePer}>
+                {period === 'yearly'
+                  ? t('settings.subscription.perYear', '/ year')
+                  : t('settings.subscription.perMonth', '/ month')}
+              </span>
+            </p>
+            {/* Admin-authored unit price ("$8.25/month equivalent"), the
+                number people actually compare across periods. */}
+            {activePlan.subline && (
+              <p className={styles.subline}>{activePlan.subline}</p>
+            )}
+            <p className={styles.billingNote}>{billingNote()}</p>
+          </div>
 
+          <div className={styles.actionBlock}>
+            {isCurrent && (
+              <p className={styles.currentBadge}>
+                {t('settings.subscription.cta.currentPlan', 'Current plan')}
+              </p>
+            )}
             <Button
               type="primary"
               size="large"
-              block
               disabled={isCurrent}
-              className={styles.ctaButton}
-              onClick={(e) => {
-                e.stopPropagation();
+              className={styles.cta}
+              onClick={() => {
                 if (isCurrent) return;
-                setSelected(plan.id);
-                onSelectPlan?.(plan);
+                onSelectPlan?.(activePlan);
               }}
             >
-              {ctaLabel(plan)}
+              {ctaLabel()}
             </Button>
-          </article>
-        );
-      })}
+            <p className={styles.reassurance}>
+              {activePlan.trialDays > 0 && variant === 'choose'
+                ? t(
+                    'settings.subscription.reassuranceTrial',
+                    '{{days}} days free, then ${{price}}. Cancel anytime.',
+                    {
+                      days: activePlan.trialDays,
+                      price: Number.isInteger(activePlan.priceUsd)
+                        ? activePlan.priceUsd
+                        : activePlan.priceUsd.toFixed(2),
+                    },
+                  )
+                : t('settings.subscription.reassurance', 'Switch or cancel anytime.')}
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.featureBlock}>
+          <h4 className={styles.featureHeading}>
+            {t('settings.subscription.everythingIncluded', 'Everything included')}
+          </h4>
+          <ul className={styles.featureList}>
+            {COMMUNITY_PLAN_FEATURES.map((feature) => (
+              <li key={feature.key} className={styles.featureItem}>
+                <Check className={styles.featureTick} size={14} strokeWidth={2.75} aria-hidden />
+                <div>
+                  <p className={styles.featureTitle}>{feature.title}</p>
+                  <p className={styles.featureDesc}>{feature.description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
     </div>
   );
 }

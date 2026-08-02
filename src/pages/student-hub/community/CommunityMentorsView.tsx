@@ -45,6 +45,9 @@ const RATING_OPTIONS = [
   { value: '4.5', threshold: 4.5 },
 ] as const;
 
+/** Match reasons shown per card before collapsing into a "+N more" chip. */
+const MAX_VISIBLE_REASONS = 2;
+
 /* ─────────────────────────────────────────────────────────────
    Matching
    ───────────────────────────────────────────────────────────── */
@@ -87,7 +90,11 @@ interface MatchInputs {
   careerGoals: string[];
 }
 
-function scoreMentor(mentor: MentorsResponseDto, inputs: MatchInputs, t: (k: string, opts?: any) => string): ScoredMentor {
+// `t` is passed in rather than hooked here so scoring stays a pure function.
+// Signature mirrors i18next's `t(key, defaultValue, options)` overload.
+type TFn = (k: string, defaultValue: string, opts?: Record<string, unknown>) => string;
+
+function scoreMentor(mentor: MentorsResponseDto, inputs: MatchInputs, t: TFn): ScoredMentor {
   const uni = mentor.mentorProfile?.university?.trim();
   const major = mentor.mentorProfile?.major?.trim();
   const mentorLangs = (mentor.mentorProfile?.languages || []).filter(Boolean);
@@ -195,7 +202,15 @@ export default function CommunityMentorsView() {
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedRating, setSelectedRating] = useState<string>('all');
 
-  const personalProfile = studentProfile.profile?.personalProfile;
+  // `useStudentProfile()` widens to `any` (its read-only branch casts), so the
+  // handful of fields this view reads are narrowed here instead.
+  const personalProfile = studentProfile.profile?.personalProfile as
+    | {
+        intendedMajors?: Array<{ major: string; confidence?: number }>;
+        demographics?: { languages?: Array<{ language?: string }> };
+        careerGoals?: string[];
+      }
+    | undefined;
   const collegeApps = collegeAppsResponse?.data || [];
 
   const matchInputs: MatchInputs = useMemo(() => {
@@ -371,16 +386,6 @@ export default function CommunityMentorsView() {
     const profileImage = getLatestCreatedImg(mentor.profile?.media || []);
     return (
       <div className="communityMentors__cardWrap" key={mentor.id}>
-        {reasons.length > 0 && (
-          <div className="communityMentors__reasonChips">
-            {reasons.map((r) => (
-              <span className="communityMentors__reasonChip" key={r.key}>
-                <Sparkles size={11} aria-hidden />
-                {r.label}
-              </span>
-            ))}
-          </div>
-        )}
         <MentorCard
           id={mentor.id}
           name={mentor.profile.name}
@@ -394,6 +399,28 @@ export default function CommunityMentorsView() {
           email={mentor.email}
           cardIndex={index}
         />
+        {/* Why this mentor was ranked here. Sits UNDER the card, not above
+            it: chips wrap to one, two or three lines depending on how many
+            signals matched, and when they led the cell every card in the
+            row started at a different height. Capped at two so the tallest
+            cell can only ever be one line taller than the shortest. */}
+        {reasons.length > 0 && (
+          <div className="communityMentors__reasonChips">
+            {reasons.slice(0, MAX_VISIBLE_REASONS).map((r) => (
+              <span className="communityMentors__reasonChip" key={r.key}>
+                <Sparkles size={11} aria-hidden />
+                {r.label}
+              </span>
+            ))}
+            {reasons.length > MAX_VISIBLE_REASONS && (
+              <span className="communityMentors__reasonMore">
+                {t('studentHub.communityMentors.moreReasons', '+{{count}} more', {
+                  count: reasons.length - MAX_VISIBLE_REASONS,
+                })}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     );
   };

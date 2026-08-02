@@ -1718,3 +1718,6 @@ $ap-brand: #7B1F2F;
     }
   }
 }
+// Editorial chrome. Imported last so it lands after the legacy rules
+// above and wins ties on source order.
+@import "./applications-editorial";

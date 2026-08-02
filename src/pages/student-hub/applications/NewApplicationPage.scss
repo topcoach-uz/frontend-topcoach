@@ -1,5 +1,6 @@
 // 📝 New Application Page Styles
 @import '../../../styles/student-hub-design-system.scss';
+@import './application-form-editorial';
 
 /* Editorial palette — match the rest of My Journey. */
 $na-cream: #faf8f3;
@@ -301,4 +302,17 @@ $na-brand: #7B1F2F;
       }
     }
   }
+}
+
+// This page's header and panel were migrated to editorial earlier; only the
+// controls still carried AntD defaults. Pull in the same field/button
+// treatment the Edit page and the profile tabs use so Add and Edit don't
+// look like two different forms.
+.new-application-page {
+  .application-form-card .ant-card {
+    @include profile-section-chrome;
+  }
+
+  @include profile-control-chrome;
+  @include profile-button-chrome;
 }

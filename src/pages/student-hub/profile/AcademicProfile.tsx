@@ -37,7 +37,9 @@ const TEST_ORDER: TestKey[] = ['sat', 'act', 'ielts', 'toefl', 'duolingo'];
 
 // True if any field in the given testScores subtree is a non-empty value.
 // Used to derive which cards should be visible on load from saved data.
-const hasAnyValue = (subtree: Record<string, any> | undefined | null): boolean => {
+// Accepts both shapes found in `testScores`: a per-section object (sat, act,
+// ielts, toefl) and a bare scalar (duolingo is just a number).
+const hasAnyValue = (subtree: unknown): boolean => {
   if (subtree === undefined || subtree === null) return false;
   if (typeof subtree !== 'object') {
     return subtree !== '' && subtree !== undefined && subtree !== null;

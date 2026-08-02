@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Select, Tag, Typography, message } from 'antd';
+import { Button, Select, message } from 'antd';
 import { Users as UsersIcon, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,9 +21,7 @@ import {
   type StudyBuddyInterestField,
   type StudyBuddyInterestProfile,
 } from 'src/constants/studyBuddyInterests';
-import styles from './communityHubMock.module.scss';
-
-const { Paragraph } = Typography;
+import styles from './StudyBuddyPreferencesPanel.module.scss';
 
 const FIELD_ORDER: StudyBuddyInterestField[] = [
   'examPrep',
@@ -135,47 +133,49 @@ export default function StudyBuddyPreferencesPanel() {
   const hiddenCount = summaryChips.length - visibleChips.length;
 
   return (
-    <Card
-      className={styles.buddyPrefsCard}
-      title={
-        <>
-          <UsersIcon size={18} style={{ marginRight: 8 }} />
+    <section className={styles.panel}>
+      <div className={styles.head}>
+        <h3 className={styles.title}>
+          <UsersIcon size={17} className={styles.titleIcon} aria-hidden />
           {t('studentHub.buddyPrefs.title', 'Your matching preferences')}
-        </>
-      }
-    >
+        </h3>
+        {!editing && (
+          <button type="button" className={styles.editLink} onClick={() => setEditing(true)}>
+            <Pencil size={13} aria-hidden />
+            {t('studentHub.buddyPrefs.editButton', 'Edit preferences')}
+          </button>
+        )}
+      </div>
+
       {!editing ? (
-        <div className={styles.buddyPrefsSummary}>
-          <div className={styles.buddyPrefsChipRow}>
+        <div className={styles.summary}>
+          <div className={styles.chipRow}>
             {visibleChips.map((chip) => (
-              <Tag color="processing" key={chip.key} className={styles.buddyPrefsChip}>
+              <span className={styles.chip} key={chip.key}>
                 {chip.label}
-              </Tag>
+              </span>
             ))}
             {hiddenCount > 0 && (
-              <Tag className={styles.buddyPrefsChip}>
+              <span className={styles.chipMore}>
                 {t('studentHub.buddyPrefs.moreChips', '+{{count}} more', { count: hiddenCount })}
-              </Tag>
+              </span>
             )}
           </div>
-          <Button icon={<Pencil size={14} />} onClick={() => setEditing(true)}>
-            {t('studentHub.buddyPrefs.editButton', 'Edit preferences')}
-          </Button>
         </div>
       ) : (
         <>
-          <Paragraph type="secondary" className={styles.buddyPrefsHelper}>
+          <p className={styles.helper}>
             {t('studentHub.buddyPrefs.descHelper', 'We use these to find aligned buddies.')}
-          </Paragraph>
-          <div className={styles.buddyPrefsFields}>
+          </p>
+          <div className={styles.fields}>
             <div>
-              <label className={styles.buddyPrefsFieldLabel}>
+              <label className={styles.fieldLabel}>
                 {t('studentHub.settingsMock.currentPrep', 'What are you preparing now?')}
               </label>
               <Select
                 mode="multiple"
                 size="large"
-                className={styles.buddyPrefsSelect}
+                className={styles.select}
                 value={draft.examPrep}
                 onChange={(values) => setDraft((prev) => ({ ...prev, examPrep: values }))}
                 options={EXAM_PREP_OPTIONS}
@@ -183,13 +183,13 @@ export default function StudyBuddyPreferencesPanel() {
               />
             </div>
             <div>
-              <label className={styles.buddyPrefsFieldLabel}>
+              <label className={styles.fieldLabel}>
                 {t('studentHub.settingsMock.applicationGoals', 'Application destination goals')}
               </label>
               <Select
                 mode="multiple"
                 size="large"
-                className={styles.buddyPrefsSelect}
+                className={styles.select}
                 value={draft.applicationGoals}
                 onChange={(values) => setDraft((prev) => ({ ...prev, applicationGoals: values }))}
                 options={APPLICATION_GOAL_OPTIONS}
@@ -197,13 +197,13 @@ export default function StudyBuddyPreferencesPanel() {
               />
             </div>
             <div>
-              <label className={styles.buddyPrefsFieldLabel}>
+              <label className={styles.fieldLabel}>
                 {t('studentHub.settingsMock.intendedMajors', 'Intended major(s)')}
               </label>
               <Select
                 mode="multiple"
                 size="large"
-                className={styles.buddyPrefsSelect}
+                className={styles.select}
                 value={draft.intendedMajors}
                 onChange={(values) => setDraft((prev) => ({ ...prev, intendedMajors: values }))}
                 options={INTENDED_MAJOR_OPTIONS}
@@ -211,13 +211,13 @@ export default function StudyBuddyPreferencesPanel() {
               />
             </div>
             <div>
-              <label className={styles.buddyPrefsFieldLabel}>
+              <label className={styles.fieldLabel}>
                 {t('studentHub.settingsMock.focusAreas', 'Support focus areas (optional)')}
               </label>
               <Select
                 mode="multiple"
                 size="large"
-                className={styles.buddyPrefsSelect}
+                className={styles.select}
                 value={draft.focusAreas}
                 onChange={(values) => setDraft((prev) => ({ ...prev, focusAreas: values }))}
                 options={FOCUS_AREA_OPTIONS}
@@ -225,18 +225,23 @@ export default function StudyBuddyPreferencesPanel() {
               />
             </div>
           </div>
-          <div className={styles.buddyPrefsActions}>
-            <Button type="primary" loading={saving} onClick={() => void handleSave()}>
+          <div className={styles.actions}>
+            <Button
+              type="primary"
+              className={styles.save}
+              loading={saving}
+              onClick={() => void handleSave()}
+            >
               {t('studentHub.buddyPrefs.saveButton', 'Save preferences')}
             </Button>
             {hasSavedGoals && (
-              <Button onClick={handleCancel}>
+              <Button className={styles.cancel} onClick={handleCancel}>
                 {t('studentHub.buddyPrefs.cancelButton', 'Cancel')}
               </Button>
             )}
           </div>
         </>
       )}
-    </Card>
+    </section>
   );
 }

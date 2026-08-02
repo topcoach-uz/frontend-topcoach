@@ -11,7 +11,7 @@ import useParamsHook from 'src/hooks/params';
 import { useAppDispatch } from 'src/app/store';
 import { loginCheck } from 'src/app/slices/authSlice';
 import { message } from 'antd';
-import { isOnboardingComplete } from 'src/lib/onboarding';
+import { isOnboardingComplete, OnboardingStatus } from 'src/lib/onboarding';
 // import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
 
 // Module-level guard: short codes already exchanged during this page load.
@@ -43,7 +43,9 @@ export default function GoogleAuthenticationPage() {
   // signup — both land on /onboarding via the same check (see
   // ONBOARDING_DESIGN.md §6). Fails open (see src/lib/onboarding.ts) until
   // the backend companion PR ships `onboardingCompletedAt` on getMe.
-  const onboardingComplete = profileReady && isOnboardingComplete(data);
+  const onboardingComplete =
+    profileReady &&
+    isOnboardingComplete(data as (typeof data & OnboardingStatus) | undefined);
 
   // Warm the bootstrap data (org membership + community entitlement) in
   // parallel with the profile fetch, and hold the redirect until it's all

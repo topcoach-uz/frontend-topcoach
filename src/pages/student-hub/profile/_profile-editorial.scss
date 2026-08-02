@@ -1,0 +1,251 @@
+// Editorial chrome for the student profile tabs.
+//
+// The three profile tabs (Personal / Academic / Activities) are AntD forms
+// wrapped in `<Card className="section-card">`. Their logic is fine; what
+// read as "legacy admin panel" was the chrome, a grey card header bar per
+// section, cards nested inside a card inside a page, and AntD's default
+// blue focus ring.
+//
+// This partial replaces that chrome with the editorial system used by the
+// rest of My Journey: sections are separated by a small-caps label and a
+// hairline rule rather than boxed, and controls sit flat on paper. Include
+// `@include profile-editorial-surface;` inside a page-scoped selector, the
+// extra ancestor is what lets these rules beat the per-tab overrides that
+// already exist in PersonalProfile.scss / AcademicProfile.scss.
+//
+// Layout specifics (test-score grids, language rows) stay in their own
+// files; only the chrome lives here so all three tabs can't drift apart.
+
+@import 'src/styles/editorial-tokens';
+
+// A section reads as a magazine subhead: small-caps label, hairline rule,
+// then fields directly on paper. No border, no fill, no shadow.
+@mixin profile-section-chrome {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 0 34px !important;
+
+  > .ant-card-head {
+    background: transparent !important;
+    border-bottom: 1px solid $hairline !important;
+    padding: 0 0 10px !important;
+    min-height: 0 !important;
+    margin-bottom: 22px !important;
+
+    .ant-card-head-title {
+      @include label-smcaps;
+      color: $ink !important;
+      padding: 0 !important;
+      white-space: normal !important;
+      font-size: 0.72rem !important;
+      letter-spacing: 0.14em !important;
+    }
+  }
+
+  > .ant-card-body {
+    padding: 0 !important;
+  }
+}
+
+// Inputs, selects, textareas and number fields share one treatment so a
+// form doesn't read as three different widget kits stitched together.
+@mixin profile-control-chrome {
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-picker,
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    background: #fff !important;
+    border: 1px solid $hairline !important;
+    border-radius: $radius-md !important;
+    box-shadow: none !important;
+    color: $ink !important;
+    font-family: $sans !important;
+    font-size: 0.92rem !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  }
+
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-picker,
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+    min-height: 42px !important;
+  }
+
+  .ant-select-single .ant-select-selector .ant-select-selection-item,
+  .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    line-height: 40px !important;
+  }
+
+  // Maroon focus instead of AntD's blue, the accent is already the
+  // page's only non-neutral colour, so focus needs no new hue.
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-focused,
+  .ant-input-number-focused,
+  .ant-picker-focused,
+  .ant-select-focused:not(.ant-select-disabled) .ant-select-selector {
+    border-color: $brand !important;
+    box-shadow: 0 0 0 3px $brand-tint !important;
+    outline: none !important;
+  }
+
+  .ant-input:hover,
+  .ant-input-affix-wrapper:hover,
+  .ant-input-number:hover,
+  .ant-picker:hover,
+  .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+    border-color: #cfcabb !important;
+  }
+
+  .ant-input::placeholder,
+  .ant-select-selection-placeholder,
+  .ant-input-number-input::placeholder {
+    color: $muted-2 !important;
+  }
+
+  // Multi-select tags read as editorial chips, not blue pills.
+  .ant-select-multiple .ant-select-selection-item {
+    background: $brand-soft !important;
+    border: 1px solid rgba(123, 31, 47, 0.16) !important;
+    border-radius: 999px !important;
+    color: $brand !important;
+    font-family: $sans !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    padding-inline: 10px !important;
+  }
+
+  .ant-select-multiple .ant-select-selection-item-remove {
+    color: $brand !important;
+  }
+
+  .ant-select-arrow,
+  .ant-picker-suffix {
+    color: $muted !important;
+  }
+
+  // Field labels: sentence case, quiet, sans. The required asterisk is
+  // the only red on the page besides the accent.
+  .ant-form-item-label > label {
+    font-family: $sans !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: $ink-soft !important;
+
+    &::after {
+      display: none !important;
+    }
+  }
+
+  .ant-form-item-extra,
+  .ant-form-item-explain {
+    font-family: $sans !important;
+    font-size: 0.78rem !important;
+    color: $muted !important;
+  }
+
+  .ant-form-item {
+    margin-bottom: 20px !important;
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner,
+  .ant-radio-checked .ant-radio-inner {
+    background-color: $brand !important;
+    border-color: $brand !important;
+  }
+
+  .ant-switch-checked {
+    background: $brand !important;
+  }
+
+  .ant-rate {
+    color: $brand !important;
+    font-size: 17px !important;
+  }
+}
+
+// Primary/secondary buttons inside a profile form.
+@mixin profile-button-chrome {
+  .ant-btn-primary {
+    background: $brand !important;
+    border-color: $brand !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    font-family: $sans !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+    padding-inline: 22px !important;
+
+    &:hover,
+    &:focus {
+      background: $brand-hover !important;
+      border-color: $brand-hover !important;
+    }
+  }
+
+  .ant-btn-default {
+    border: 1px solid $hairline !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    color: $ink-soft !important;
+    font-family: $sans !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+    padding-inline: 20px !important;
+
+    &:hover {
+      border-color: $brand !important;
+      color: $brand !important;
+    }
+  }
+}
+
+// The save row is a page-level commitment, so it sits on its own above a
+// full-bleed hairline rather than inside yet another card.
+@mixin profile-actions-chrome {
+  .form-actions-card,
+  .save-section {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px solid $hairline !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 4px 0 0 !important;
+
+    > .ant-card-body {
+      display: flex;
+      justify-content: flex-end;
+      padding: 20px 0 0 !important;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+}
+
+// Everything above, applied at once.
+@mixin profile-editorial-surface {
+  .section-card {
+    @include profile-section-chrome;
+  }
+
+  @include profile-control-chrome;
+  @include profile-button-chrome;
+  @include profile-actions-chrome;
+
+  // AntD Alerts inside the tabs (read-only notices, validation summaries).
+  .ant-alert {
+    border-radius: $radius-md !important;
+    border-color: $hairline !important;
+    font-family: $sans !important;
+  }
+}

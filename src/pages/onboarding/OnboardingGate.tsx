@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Loader from 'src/components/loader';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
-import { isOnboardingComplete } from 'src/lib/onboarding';
+import { isOnboardingComplete, OnboardingStatus } from 'src/lib/onboarding';
 
 /**
  * Centralized post-login onboarding gate (see ONBOARDING_DESIGN.md §5).
@@ -40,7 +40,10 @@ export default function OnboardingGate() {
     return <Loader height="100vh" />;
   }
 
-  if (!isOnboardingComplete(currentUser)) {
+  // `onboardingCompletedAt` isn't on the generated UsersSchema yet (backend
+  // companion PR ships after the client was regenerated) — cast through the
+  // OnboardingStatus shape, same as the wizard shell does.
+  if (!isOnboardingComplete(currentUser as (typeof currentUser & OnboardingStatus) | undefined)) {
     return <Navigate to="/onboarding" replace />;
   }
 

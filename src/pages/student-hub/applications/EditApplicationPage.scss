@@ -1,38 +1,9 @@
 // 🎓 Edit Application Page Styles
 @import '../../../styles/student-hub-design-system.scss';
+@import './application-form-editorial';
 
 .edit-application-page {
-  .page-header {
-    margin-bottom: $space-6;
-    
-    .page-title {
-      font-size: $text-2xl;
-      font-weight: 700;
-      color: $text-primary;
-      margin: 0 0 $space-2 0;
-    }
-    
-    .page-subtitle {
-      color: $text-secondary;
-      font-size: $text-lg;
-      margin: 0;
-    }
-  }
-
-  .application-form-card {
-    border-radius: $radius-lg;
-    box-shadow: $shadow-sm;
-    
-    .application-form {
-      .form-actions {
-        display: flex;
-        justify-content: center;
-        margin-top: $space-6;
-        padding-top: $space-4;
-        border-top: 1px solid $border-light;
-      }
-    }
-  }
+  @include application-form-editorial;
 }
 
 .edit-application-loading {

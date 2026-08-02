@@ -1,0 +1,225 @@
+/* Study Buddy matching preferences, editorial treatment.
+ *
+ * Was an AntD Card with a bordered head, blue `Tag` chips and default
+ * selects. Same two states, same fields, rebuilt from the materials the
+ * rest of My Journey uses: paper, hairlines, one maroon accent, serif for
+ * the heading.
+ */
+
+@import 'src/styles/editorial-tokens';
+
+.panel {
+  background: $cream-elev;
+  border: 1px solid $hairline;
+  border-radius: $radius-lg;
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-family: $serif;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: $ink;
+}
+
+.titleIcon {
+  color: $brand;
+  flex-shrink: 0;
+}
+
+.helper {
+  margin: 8px 0 0;
+  font-family: $sans;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: $muted;
+  max-width: 56ch;
+}
+
+/* ── Saved state ───────────────────────────────────────────────── */
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(123, 31, 47, 0.18);
+  border-radius: 999px;
+  background: $brand-soft;
+  color: $brand;
+  font-family: $sans;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 4px 12px;
+}
+
+.chipMore {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  color: $muted;
+  font-family: $sans;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 4px;
+}
+
+/* Editing is a secondary act, so it's a typographic link, not a button. */
+.editLink {
+  @include ed-link;
+  flex-shrink: 0;
+}
+
+/* ── Edit state ────────────────────────────────────────────────── */
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px 24px;
+  margin-top: 18px;
+
+  @media (min-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 7px;
+  font-family: $sans;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink-soft;
+}
+
+.select {
+  width: 100%;
+
+  :global(.ant-select-selector) {
+    background: #fff !important;
+    border: 1px solid $hairline !important;
+    border-radius: $radius-md !important;
+    box-shadow: none !important;
+    min-height: 42px !important;
+    padding-block: 4px !important;
+  }
+
+  &:global(.ant-select-focused) :global(.ant-select-selector) {
+    border-color: $brand !important;
+    box-shadow: 0 0 0 3px $brand-tint !important;
+  }
+
+  &:hover :global(.ant-select-selector) {
+    border-color: #cfcabb !important;
+  }
+
+  :global(.ant-select-selection-item) {
+    background: $brand-soft !important;
+    border: 1px solid rgba(123, 31, 47, 0.16) !important;
+    border-radius: 999px !important;
+    color: $brand !important;
+    font-family: $sans !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding-inline: 10px !important;
+  }
+
+  :global(.ant-select-selection-item-remove) {
+    color: $brand !important;
+  }
+
+  :global(.ant-select-selection-placeholder) {
+    color: $muted-2 !important;
+    font-family: $sans !important;
+    font-size: 0.9rem !important;
+  }
+
+  :global(.ant-select-arrow) {
+    color: $muted !important;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid $hairline;
+}
+
+.save {
+  &:global(.ant-btn) {
+    height: 40px;
+    border-radius: 999px;
+    background: $brand;
+    border-color: $brand;
+    box-shadow: none;
+    font-family: $sans;
+    font-weight: 600;
+    padding-inline: 22px;
+  }
+
+  &:global(.ant-btn):hover,
+  &:global(.ant-btn):focus {
+    background: $brand-hover !important;
+    border-color: $brand-hover !important;
+  }
+}
+
+.cancel {
+  &:global(.ant-btn) {
+    height: 40px;
+    border-radius: 999px;
+    border-color: $hairline;
+    box-shadow: none;
+    color: $ink-soft;
+    font-family: $sans;
+    font-weight: 600;
+    padding-inline: 20px;
+  }
+
+  &:global(.ant-btn):hover {
+    border-color: $brand !important;
+    color: $brand !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .panel {
+    padding: 18px;
+  }
+
+  .summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

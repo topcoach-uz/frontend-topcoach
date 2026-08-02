@@ -4,84 +4,27 @@
 .personal-profile {
   .personal-form {
     .section-card {
-      border-radius: $radius-xl;
-      box-shadow: $shadow-sm;
-      border: 1px solid $border-light;
-      margin-bottom: $space-6;
+      // Layout only. Section + control chrome (borders, focus, tags,
+      // labels) lives in `_profile-editorial.scss` so all three profile
+      // tabs share one treatment. The old block here centred input text
+      // and stripped every focus ring; both are gone on purpose.
 
-      .ant-card-head {
-        border-bottom: 1px solid $border-light;
-        background: $bg-secondary;
-
-        .ant-card-head-title {
-          font-size: $text-lg;
-          font-weight: $font-semibold;
-          color: $text-secondary;
-        }
-      }
-
-      .ant-card-body {
-        padding: $space-6;
-      }
-
-      // NUCLEAR: Consistent styling for all form inputs and selects
-      // Single-line selects only; multi-select must grow with tags (mobile)
       .form-input,
-      .form-select:not(.ant-select-multiple) {
+      .form-select {
         width: 100%;
-        height: 40px;
-        border-radius: $radius-md;
-        border: 1px solid $border-medium !important;
-        text-align: center;
-
-        &:focus,
-        &:focus-visible,
-        &.ant-input-focused {
-          border-color: $border-medium !important;
-          box-shadow: none !important;
-          outline: none !important;
-        }
-
-        &:hover {
-          border-color: $border-medium !important;
-        }
-        
-        // NUCLEAR: Remove ALL inner borders
-        *,
-        *::before,
-        *::after,
-        *::placeholder,
-        div,
-        span,
-        input,
-        i,
-        svg {
-          border: none !important;
-          border-width: 0 !important;
-          border-style: none !important;
-          border-color: transparent !important;
-          background: none !important;
-          background-color: transparent !important;
-          box-shadow: none !important;
-          outline: none !important;
-          outline-width: 0 !important;
-          outline-style: none !important;
-          outline-color: transparent !important;
-        }
       }
 
       // Multi-select: tags wrap inside the control (fixes overlap on narrow screens)
       .ant-select.form-select.ant-select-multiple {
         width: 100% !important;
         height: auto !important;
-        min-height: 40px;
+        min-height: 42px;
 
         .ant-select-selector {
           height: auto !important;
-          min-height: 40px !important;
-          align-items: flex-start !important;
-          justify-content: flex-start !important;
-          padding: 4px 28px 4px 8px !important;
+          min-height: 42px !important;
+          align-items: center !important;
+          padding: 5px 28px 5px 8px !important;
         }
 
         .ant-select-selection-overflow {
@@ -89,21 +32,7 @@
         }
 
         .ant-select-selection-item {
-          line-height: 22px !important;
           margin: 2px 4px 2px 0 !important;
-          text-align: left !important;
-          background: rgba(0, 0, 0, 0.06) !important;
-          background-color: rgba(0, 0, 0, 0.06) !important;
-          border-radius: 4px;
-        }
-
-        .ant-select-selection-placeholder {
-          line-height: 22px !important;
-          padding-top: 6px !important;
-        }
-
-        .ant-select-selection-search-input {
-          line-height: 22px !important;
         }
       }
 
@@ -123,114 +52,6 @@
 
           @media (max-width: 575px) {
             justify-content: flex-start;
-          }
-        }
-      }
-
-      // Clean Select styling - single border only
-      .form-select {
-        .ant-select {
-          width: 100%;
-          
-          .ant-select-selector {
-            height: 40px !important;
-            border: 1px solid $border-medium !important;
-            border-radius: $radius-md !important;
-            background: white !important;
-            box-shadow: none !important;
-            outline: none !important;
-            padding: 0 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            
-            // Remove ALL inner borders and focus states
-            *,
-            *::before,
-            *::after,
-            div,
-            span,
-            input,
-            .ant-select-selection-item,
-            .ant-select-selection-placeholder,
-            .ant-select-selection-search,
-            .ant-select-selection-search-input,
-            .ant-select-selection-overflow,
-            .ant-select-selection-overflow-item {
-              border: none !important;
-              border-width: 0 !important;
-              border-style: none !important;
-              border-color: transparent !important;
-              background: none !important;
-              background-color: transparent !important;
-              box-shadow: none !important;
-              outline: none !important;
-              outline-width: 0 !important;
-              outline-style: none !important;
-              outline-color: transparent !important;
-            }
-            
-            .ant-select-selection-item {
-              text-align: center !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              line-height: 38px !important;
-            }
-            
-            .ant-select-selection-placeholder {
-              text-align: center !important;
-              line-height: 38px !important;
-              color: rgba(0, 0, 0, 0.25) !important;
-            }
-            
-            // Prevent red border on focus/click
-            &:focus,
-            &:focus-within,
-            &.ant-select-focused {
-              border-color: $border-medium !important;
-              box-shadow: none !important;
-              outline: none !important;
-            }
-            
-            .ant-select-selection-search {
-              text-align: center !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              
-              .ant-select-selection-search-input {
-                text-align: center !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                line-height: 38px !important;
-              }
-            }
-          }
-          
-          // Focus and hover states - NO RED BORDERS EVER
-          &:hover .ant-select-selector {
-            border-color: $border-medium !important;
-            box-shadow: none !important;
-          }
-          
-          &.ant-select-focused .ant-select-selector,
-          &:focus .ant-select-selector,
-          &:focus-visible .ant-select-selector {
-            border-color: $border-medium !important;
-            box-shadow: none !important;
-            outline: none !important;
-          }
-          
-          // Remove any red borders that might appear
-          &.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
-            border-color: $border-medium !important;
-            box-shadow: none !important;
-            outline: none !important;
-          }
-          
-          // Arrow styling
-          .ant-select-arrow {
-            color: rgba(0, 0, 0, 0.25) !important;
-            right: 12px !important;
           }
         }
       }
@@ -300,32 +121,6 @@
                 line-height: 1.2;
               }
             }
-          }
-        }
-
-        .ant-input,
-        .ant-select-selector,
-        .ant-input-number {
-          height: 40px;
-          border-radius: $radius-md;
-          border: 1px solid $border-medium !important;
-
-          &:focus,
-          &:focus-visible,
-          &.ant-input-focused {
-            border-color: $border-medium !important;
-            box-shadow: none !important;
-            outline: none !important;
-          }
-
-          &:hover {
-            border-color: $border-medium !important;
-          }
-        }
-
-        .ant-select-selector {
-          .ant-select-selection-item {
-            line-height: 38px;
           }
         }
 

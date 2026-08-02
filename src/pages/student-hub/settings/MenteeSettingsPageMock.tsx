@@ -289,39 +289,10 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             block below stays in place so re-enabling is a one-line flip. */}
       </nav>
 
-      {/* Pointer to the rich profile hub (Personal / Academic /
-          Activities) — that editing surface now lives at
-          `?section=others&target=profile` on the My Journey side, not
-          as a Settings tab, so students who came here looking for it
-          aren't stranded. */}
-      <div className={styles.profileHubHint}>
-        {t(
-          'studentHub.settingsMock.profileHubHintText',
-          'Looking to edit your personal, academic & activities profile?',
-        )}
-        <a
-          className={styles.profileHubHintLink}
-          onClick={() => navigate('/student-hub?section=others&target=profile')}
-        >
-          {t('studentHub.settingsMock.profileHubHintLink', 'Edit your profile →')}
-        </a>
-      </div>
-
-      {/* Pointer to Study Buddy preferences — that editing surface moved
-          into the Find Study Buddy hub itself (right where matching
-          happens), so it's no longer a Settings tab. */}
-      <div className={styles.profileHubHint}>
-        {t(
-          'studentHub.settingsMock.studyBuddyMovedHintText',
-          'Study buddy preferences moved to Find Study Buddy.',
-        )}
-        <a
-          className={styles.profileHubHintLink}
-          onClick={() => navigate('/student-hub?section=buddies')}
-        >
-          {t('studentHub.settingsMock.studyBuddyMovedHintLink', 'Find a study buddy →')}
-        </a>
-      </div>
+      {/* The two "this moved" pointers that used to sit here (profile hub,
+          study buddy preferences) have been removed. Both surfaces are one
+          click away in the sidebar, so the notes were permanent signposts
+          for a move that is long finished. */}
 
       {activeTab === 'profile' && (
       <>

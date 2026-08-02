@@ -1,0 +1,96 @@
+// Add / Edit College form, editorial chrome.
+//
+// Both pages have the same shape: page header, one AntD Card wrapping the
+// whole form, and small inner Cards for "Requirements & checklist" and
+// "Activity". That produced the same card-in-card look the profile tabs
+// had, plus AntD's default blue focus ring.
+//
+// The control, button and section treatments are the ones the profile
+// tabs already use, pulled in from `_profile-editorial.scss` rather than
+// restated, so a change to how a field looks lands on every form at once.
+
+@import 'src/styles/editorial-tokens';
+@import '../profile/profile-editorial';
+
+@mixin application-form-editorial {
+  color: $ink;
+
+  .page-header {
+    padding-bottom: 18px;
+    border-bottom: 1px solid $hairline;
+    margin-bottom: 26px;
+  }
+
+  .page-title {
+    font-family: $serif;
+    font-size: $display-md;
+    line-height: 1.16;
+    font-weight: 600;
+    color: $ink;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    font-family: $sans;
+    font-size: 0.92rem;
+    color: $muted;
+    margin: 0;
+  }
+
+  // The form is the page. It doesn't need a card around it.
+  .application-form-card {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    > .ant-card-body {
+      padding: 0 !important;
+    }
+  }
+
+  // "Requirements & checklist" and "Activity" become labelled sections
+  // over a hairline instead of boxes inside the (now absent) box.
+  .application-form-card .ant-card {
+    @include profile-section-chrome;
+  }
+
+  @include profile-control-chrome;
+  @include profile-button-chrome;
+
+  // Checklist rows sit on paper with a hairline between them.
+  .custom-checklist-add-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .requirements-section {
+    margin-top: 26px !important;
+  }
+
+  .ant-checkbox-wrapper {
+    font-family: $sans;
+    font-size: 0.88rem;
+    color: $ink-soft;
+  }
+
+  // Save / cancel align right over a full-bleed rule, matching the
+  // profile tabs' save row.
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid $hairline;
+  }
+
+  @media (max-width: 600px) {
+    .form-actions .ant-btn {
+      flex: 1 1 100%;
+    }
+  }
+}

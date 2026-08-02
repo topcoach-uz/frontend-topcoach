@@ -1,73 +1,25 @@
+// Activities & Achievements, layout only.
+//
+// Section headers, controls, buttons and the save row are styled once in
+// `_profile-editorial.scss` (applied by ProfilePage.scss). What's left here
+// is the one thing specific to this tab: the "add another" dashed button
+// that opens a new activity / role / award row.
+
+@import 'src/styles/editorial-tokens';
+
 .activities-profile {
-  .activities-form {
-    .section-card {
-      margin-bottom: 24px;
-      
-      .ant-card-head {
-        background: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        
-        .ant-card-head-title {
-          font-weight: 600;
-          color: #6b7280;
-        }
-      }
-    }
-    
-    .save-section {
-      margin-top: 24px;
-      text-align: center;
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      
-      .ant-space {
-        justify-content: center;
-      }
-    }
-  }
-  
-  .ant-form-item {
-    margin-bottom: 16px;
-  }
-  
-  .ant-form-item-label > label {
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .ant-input,
-  .ant-select-selector {
-    border-radius: 6px;
-    border: 1px solid #d9d9d9;
-    
-    &:hover,
-    &:focus {
-      border-color: #8b0000;
-      box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
-    }
-  }
-  
-  .ant-btn {
-    border-radius: 6px;
-    
-    &.ant-btn-primary {
-      background: #8b0000;
-      border-color: #8b0000;
-      
-      &:hover {
-        background: #a00000;
-        border-color: #a00000;
-      }
-    }
-    
-    &.ant-btn-dashed {
-      border-color: #8b0000;
-      color: #8b0000;
-      
-      &:hover {
-        border-color: #a00000;
-        color: #a00000;
-      }
+  .ant-btn-dashed {
+    border-color: rgba(123, 31, 47, 0.35) !important;
+    border-radius: $radius-md !important;
+    color: $brand !important;
+    font-family: $sans !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+
+    &:hover {
+      border-color: $brand !important;
+      color: $brand-hover !important;
+      background: $brand-soft !important;
     }
   }
 }
