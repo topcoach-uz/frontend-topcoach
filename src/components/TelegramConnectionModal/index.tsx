@@ -1,3 +1,8 @@
+import React from 'react';
+import { Modal, Typography } from 'antd';
+import TelegramConnectionContent from './TelegramConnectionContent';
+
+const { Title } = Typography;
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, message } from 'antd';
 import { Phone, CheckCircle2, Clock, AlertCircle, User, Send, Key } from 'lucide-react';
@@ -14,6 +19,11 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   visible,
   onClose,
 }) => {
+  // TelegramConnectionContent refetches the status query itself on mount,
+  // and AntD Modal mounts its children fresh each time it opens (no
+  // forceRender/destroyOnClose here), so "refetch on open" already happens
+  // without a separate query subscription in this wrapper.
+  const CRIMSON = '#8b0000';
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -139,29 +149,6 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   };
 
 
-  // Custom stepper data and rendering
-  const steps = [
-    {
-      title: 'Share Contact with Bot',
-      description: (
-        <>
-          Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot <Send size={16} /></a> and click <b>'Share my contact'</b>
-        </>
-      ),
-      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'process',
-    },
-    {
-      title: 'Enter Connection Code',
-      description: 'Enter the 6-character code you received from the bot',
-      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'wait',
-    },
-    {
-      title: 'Connection Complete',
-      description: 'You will receive session confirmations and updates',
-      status: typedTelegramStatus?.status === 'connected' ? 'finish' : 'wait',
-    },
-  ];
-
   return (
     <Modal
       title={
@@ -177,6 +164,10 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
       centered
       className="tc-telegram-modal"
     >
+      {/* onConnected fires after the connect flow's own status-refetch delay
+          settles (see TelegramConnectionContent) — matches the modal's
+          original auto-close-on-success behavior exactly. */}
+      <TelegramConnectionContent onConnected={onClose} />
       <div>
         <div style={{ width: '100%' }}>
           <div>
@@ -289,4 +280,4 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   );
 };
 
-export default TelegramConnectionModal; 
+export default TelegramConnectionModal;
