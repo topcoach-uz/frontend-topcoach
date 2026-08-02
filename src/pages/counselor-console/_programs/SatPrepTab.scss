@@ -198,10 +198,10 @@
 
 .cc-sat-filter-btn--active {
   background: var(--cc-accent);
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
 
   &:hover {
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 }
 

@@ -9,26 +9,10 @@
   flex-direction: column;
 }
 
-/* ── Header with range selector ── */
-.cc-analytics-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--cc-hairline);
-  margin-bottom: 28px;
-
-  .cc-page-lead {
-    margin-bottom: 0;
-  }
-}
-
-.cc-analytics-header-copy {
-  min-width: 0;
-  flex: 1 1 340px;
-}
+/* The header is `CcPageHead` like every other page. It used to be a private
+   `.cc-analytics-header` with a 28px bottom margin, which put this page's title
+   4px lower than the rest of the console. The range control below is passed to
+   it as `actions` with `actionsAlign="top"`. */
 
 /* Segmented range control — cream track, maroon active pill. */
 .cc-analytics-range {
@@ -68,11 +52,11 @@
 
 .cc-analytics-range-btn--active {
   background: var(--cc-accent);
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
   box-shadow: 0 1px 2px rgba(123, 31, 47, 0.25);
 
   &:hover {
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 }
 
@@ -138,18 +122,18 @@
 
 .cc-analytics-tab--active {
   background: var(--cc-accent);
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
   border-color: var(--cc-accent);
   box-shadow: 0 1px 2px rgba(123, 31, 47, 0.25);
 
   &:hover {
     background: var(--cc-accent);
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 
   .cc-analytics-tab-ico,
   &:hover .cc-analytics-tab-ico {
-    color: #fbfaf6;
+    color: var(--cc-inverse-text);
   }
 }
 
@@ -272,14 +256,9 @@
   margin-bottom: 0;
 }
 
-/* ── Editorial hairline card ── */
+/* Shell comes from the shared `.cc-card` rule in CounselorConsoleLayout.scss.
+   `--meter` further below keeps its own compact padding on purpose. */
 .cc-analytics-card {
-  background: var(--cc-bg-surface);
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  box-shadow: var(--cc-shadow-sm);
-  padding: 18px 20px 20px;
-  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -298,7 +277,8 @@
 
 .cc-analytics-card-title {
   font-family: var(--cc-serif);
-  font-size: 1.12rem;
+  /* 1.15rem is the console's one card-title size. This was 1.12rem. */
+  font-size: 1.15rem;
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--cc-text);
@@ -397,9 +377,20 @@
 /* ── Rate meter ──
    A ratio against a limit reads as a meter, not as two bars to divide. The
    track is a light step of the FILL's own hue, so the whole bar reads as one
-   scale rather than as figure-on-neutral. */
-.cc-analytics-card--meter {
+   scale rather than as figure-on-neutral.
+
+   Sized to sit in the same band as the `.cc-stat` tiles beside it: the tile's
+   own padding, the tile's 2.2rem figure, and margins tight enough that the
+   whole card lands near the tiles' 96px. The card is a grid item in a
+   `stretch` row, so whatever height the meter needs is the height the tiles
+   next to it inherit — every pixel saved here is saved three times. */
+/* Deliberately compact, so a meter tile matches the KPI tiles standing beside
+   it in a `--split` row. Two classes on purpose: the shared `.cc-card` padding
+   it overrides lives in another stylesheet, so a single-class selector here
+   would be a coin-flip on route load order. */
+.cc-analytics-card.cc-analytics-card--meter {
   justify-content: center;
+  padding: 13px 16px 14px;
 }
 
 .cc-analytics-meter {
@@ -413,7 +404,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--cc-text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .cc-analytics-meter-figure {
@@ -423,28 +414,28 @@
   font-family: var(--cc-serif);
   color: var(--cc-text);
   line-height: 1;
-  margin-bottom: 14px;
+  margin-bottom: 9px;
 }
 .cc-analytics-meter-val {
-  font-size: 2.6rem;
+  font-size: 2.2rem;
   font-weight: 500;
   letter-spacing: -0.02em;
   /* Proportional figures: this is a large standalone number, and tabular-nums
      would make a value like 78 sit loose at display size. */
 }
 .cc-analytics-meter-unit {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 500;
   color: var(--cc-text-muted);
 }
 .cc-analytics-meter-none {
-  font-size: 2.6rem;
+  font-size: 2.2rem;
   font-weight: 500;
   color: var(--cc-text-muted);
 }
 
 .cc-analytics-meter-track {
-  height: 8px;
+  height: 6px;
   border-radius: 999px;
   /* The ramp's own light end — same hue as the fill. */
   background: #d69ea9;
@@ -458,92 +449,85 @@
   transition: width 0.3s ease;
 }
 
+/* The caption is the card's real height driver: it wraps, so every extra line
+   is ~17px added to all three tabs that share this component. Kept at the
+   chart-caption's 12px/1.4, and the copy that feeds it is written short enough
+   to land in two lines at the 320px column width. Nothing is clamped — a
+   counselor has to be able to read the whole caveat. */
 .cc-analytics-meter-caption {
-  margin: 10px 0 0;
-  font-size: 12.5px;
-  line-height: 1.5;
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--cc-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Empty state inside a card ── */
-.cc-analytics-empty {
-  flex: 1;
-  min-height: 200px;
+/* ── Segmented part-to-whole band ──
+   One track whose segments sum to the stated total, so the reader can see the
+   addition instead of being asked to trust separate tiles. Segments are
+   separated by a 2px gap in the SURFACE colour, matching the stacked bands the
+   charts draw — never by a stroke around the mark.
+
+   Colours arrive as `var(--cc-*)` inline from the component, because these
+   segments carry STATUS: attended is positive, cancelled or missed is a
+   warning, still-upcoming is a neutral. */
+.cc-analytics-band {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  flex: 1;
   justify-content: center;
-  text-align: center;
-  gap: 8px;
-  padding: 24px 20px;
-  color: var(--cc-text-muted);
-}
-.cc-analytics-empty-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cc-accent-soft);
-  color: var(--cc-accent);
-}
-.cc-analytics-empty-title {
-  font-family: var(--cc-serif);
-  font-size: 1.02rem;
-  font-weight: 500;
-  color: var(--cc-text);
-}
-.cc-analytics-empty-text {
-  font-size: 12.5px;
-  max-width: 300px;
-  line-height: 1.5;
+  gap: 12px;
 }
 
-/* ── Page-level message (no org / error) ── */
-.cc-analytics-message {
+.cc-analytics-band-total {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  align-items: baseline;
   gap: 8px;
-  padding: 56px 28px;
-  border: 1px dashed var(--cc-border-strong);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-  color: var(--cc-text-muted);
+  min-width: 0;
 }
-.cc-analytics-message-ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cc-bg-subtle);
-  color: var(--cc-text-muted);
-}
-.cc-analytics-message-ico--accent {
-  background: var(--cc-accent-soft);
-  color: var(--cc-accent);
-}
-.cc-analytics-message-ico--danger {
-  background: var(--cc-danger-soft);
-  color: var(--cc-danger);
-}
-.cc-analytics-message-title {
+.cc-analytics-band-total-val {
   font-family: var(--cc-serif);
-  font-size: 1.1rem;
+  font-size: 1.9rem;
   font-weight: 500;
+  line-height: 1;
   color: var(--cc-text);
+  font-variant-numeric: tabular-nums;
 }
-.cc-analytics-message-text {
-  font-size: 13px;
-  max-width: 340px;
-  line-height: 1.5;
+.cc-analytics-band-total-label {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--cc-text-muted);
+}
+
+.cc-analytics-band-track {
+  display: flex;
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cc-bg-subtle);
+}
+.cc-analytics-band-seg {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  box-sizing: border-box;
+  transition: width 0.3s ease;
+
+  /* A gap, not a stroke: only the joins between segments need separating, so
+     the band's own outer edges stay clean. */
+  & + & {
+    border-left: 2px solid var(--cc-bg-surface);
+  }
+}
+
+/* Empty states are `CcEmpty`, page-level messages are `NoOrgPlaceholder` — the
+   private `.cc-analytics-empty-*` / `.cc-analytics-message-*` ladders are gone.
+   The only thing left that is this page's own: an empty state standing in for a
+   chart must hold that chart's height, or the card collapses. */
+.cc-analytics-card .cc-empty {
+  flex: 1;
+  min-height: 200px;
 }
 
 /* ── Top earners list ── */
@@ -557,29 +541,26 @@
 .cc-analytics-earner {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 11px 4px;
 }
 .cc-analytics-earner + .cc-analytics-earner {
   border-top: 1px solid var(--cc-hairline);
 }
+/* The ordinal is a plain serif numeral in the margin, not a filled disc: the
+   avatar beside it is the only round element in the row, so the two can't be
+   mistaken for each other. Matches the Dashboard's ranked list. */
 .cc-analytics-earner-rank {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cc-accent-soft);
-  color: var(--cc-accent);
-  font-size: 12px;
-  font-weight: 700;
+  flex: none;
+  width: 18px;
+  font-family: var(--cc-serif);
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
+  color: var(--cc-text-muted);
+  text-align: right;
 }
-.cc-analytics-earner:nth-child(1) .cc-analytics-earner-rank {
-  background: var(--cc-accent);
-  color: #fbfaf6;
+.cc-analytics-earner-avatar {
+  flex-shrink: 0;
 }
 .cc-analytics-earner-main {
   flex: 1;
@@ -634,7 +615,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #d9cfc0;
+  color: var(--cc-inverse-eyebrow);
   margin-bottom: 6px;
 }
 .cc-echart-tip-rows {
@@ -648,17 +629,17 @@
   gap: 7px;
   font-size: 12.5px;
   line-height: 1.3;
-  color: #efe9df;
+  color: var(--cc-inverse-text-secondary);
 }
 .cc-echart-tip-name {
-  color: #cbbfad;
+  color: var(--cc-inverse-text-muted);
   margin-right: 14px;
 }
 .cc-echart-tip-val {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: #fbfaf6;
+  color: var(--cc-inverse-text);
 }
 
 /* ── Loading skeleton tiles ── */

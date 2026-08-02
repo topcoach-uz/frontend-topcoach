@@ -1,361 +1,220 @@
-.referral-code-container {
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 32px;
-  margin: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+/* Referral input, as it appears inside the checkout order summary.
+ *
+ * This used to be a standalone card: white panel, 20px radius, gradient circle
+ * icon, amber callout, plus a `prefers-color-scheme: dark` block. Inside the
+ * checkout that broke twice over. The dark block fired from the OS setting and
+ * turned the card dark on a page that is always cream, leaving the heading
+ * dark-on-dark and unreadable. And a bordered card nested inside the already
+ * bordered summary panel read as a box in a box.
+ *
+ * It now inherits the surface it sits on and only draws what it needs to.
+ * Deliberately no dark-mode block: the checkout has one fixed light treatment.
+ *
+ * Tokens mirror src/styles/_editorial-tokens.scss, declared inline to match the
+ * convention used by the checkout stylesheet next door. */
+$ink: #1c1a17;
+$ink-soft: #4b463f;
+$muted: #6b6258;
+$hairline: #e5e3da;
+$brand: #7b1f2f;
+$success: #047857;
 
-  &:hover {
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  }
+$mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+.referral-code-container {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
 
   .referral-code-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 28px;
-    position: relative;
-    z-index: 1;
+    gap: 8px;
+    margin-bottom: 12px;
 
+    /* GiftBoxIcon carries its own fills, so no colour is set here. It is the
+       one deliberately bright thing on an otherwise very quiet page. */
     .referral-icon {
-      width: 50px;
-      height: 50px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: white;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      flex: 0 0 auto;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      display: block;
     }
 
+    /* Ant's Typography sets its own colour, so this needs to win. */
     .referral-title {
       margin: 0 !important;
-      color: #1e293b;
-      font-weight: 700;
-      font-size: 22px;
+      color: $ink !important;
+      font-weight: 600 !important;
+      font-size: 0.95rem !important;
+      line-height: 1.3 !important;
     }
   }
 
   .referral-input-section {
-    position: relative;
-    z-index: 1;
     display: flex;
-    gap: 12px;
+    gap: 8px;
 
     .referral-input {
       flex: 1;
-      border-radius: 12px;
-      border: 2px solid #e2e8f0;
-      font-size: 16px;
-      font-weight: 500;
-      background: white;
-      color: #1e293b;
-      transition: all 0.3s ease;
-      height: 48px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid $hairline;
+      background: #fff;
+      color: $ink;
+      font-family: $mono;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: none;
 
       &:focus,
       &:hover {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        background: white;
+        border-color: $brand;
+        box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.1);
       }
 
       &::placeholder {
-        color: #94a3b8;
-        font-weight: 400;
-      }
-
-      &::selection {
-        background: rgba(102, 126, 234, 0.2);
+        color: $muted;
+        font-family: inherit;
+        letter-spacing: normal;
+        text-transform: none;
       }
     }
 
     .apply-button {
-      border-radius: 12px;
-      height: 48px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border: none;
-      transition: all 0.3s ease;
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      min-width: 100px;
+      height: 40px;
+      min-width: 84px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-transform: none;
+      letter-spacing: normal;
+      background: $brand;
+      border-color: $brand;
+      box-shadow: none;
 
-      &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #059669, #047857);
-        box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+      &:hover:not(:disabled),
+      &:focus:not(:disabled) {
+        background: #5d1622;
+        border-color: #5d1622;
       }
 
       &:disabled {
-        background: #f1f5f9;
-        color: #94a3b8;
-        border: 1px solid #e2e8f0;
+        background: transparent;
+        color: $muted;
+        border: 1px solid $hairline;
       }
     }
-
-
   }
 
   .applied-code-section {
-    position: relative;
-    z-index: 1;
-
     .applied-code-display {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: #f8fafc;
-      border-radius: 16px;
-      border: 2px solid #e2e8f0;
+      gap: 8px;
+      margin-bottom: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
 
       .applied-code-tag {
-        font-size: 18px;
-        font-weight: 700;
-        padding: 12px 20px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #52c41a, #73d13d);
-        color: white;
-        border: none;
-        box-shadow: 0 2px 8px rgba(82, 196, 26, 0.25);
-        letter-spacing: 1px;
+        font-family: $mono;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-
-        .anticon {
-          margin-right: 8px;
-        }
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(4, 120, 87, 0.1);
+        color: $success;
+        border: 1px solid rgba(4, 120, 87, 0.25);
+        box-shadow: none;
+        margin: 0;
       }
 
       .copy-button,
       .remove-button {
+        height: 32px;
+        width: 32px;
         border-radius: 8px;
-        transition: all 0.2s ease;
-        height: 40px;
-        width: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: transparent;
+        border: none;
+        box-shadow: none;
 
         &:hover {
-          transform: scale(1.05);
+          transform: none;
+          background: rgba(0, 0, 0, 0.04);
+          box-shadow: none;
         }
       }
 
       .copy-button {
-        color: #1890ff;
-        background: rgba(24, 144, 255, 0.15);
-        border: 1px solid rgba(24, 144, 255, 0.3);
-
+        color: $muted;
         &:hover {
-          background: rgba(24, 144, 255, 0.25);
-          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+          color: $ink;
         }
       }
 
       .remove-button {
-        color: #ff4d4f;
-        background: rgba(255, 77, 79, 0.15);
-        border: 1px solid rgba(255, 77, 79, 0.3);
-
+        color: $muted;
         &:hover {
-          background: rgba(255, 77, 79, 0.25);
-          box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+          color: $brand;
         }
       }
     }
 
+    /* The checkout's own receipt already itemises the discount and total, so
+       repeating the whole breakdown here would state the same figures twice. */
     .discount-breakdown {
-      background: #f8fafc;
-      border-radius: 16px;
-      padding: 24px;
-      border: 1px solid #e2e8f0;
-
-      .price-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        font-size: 15px;
-        color: #1e293b;
-
-        &:last-child {
-          margin-bottom: 0;
-          padding-top: 16px;
-          border-top: 1px solid #e2e8f0;
-          font-size: 18px;
-        }
-
-        .original-price {
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .discount-amount {
-          font-weight: 700;
-          color: #1f2937;
-        }
-
-        .final-price {
-          color: #1f2937;
-          font-size: 20px;
-          font-weight: 700;
-        }
-      }
-
-      .discount-row {
-        margin: 12px 0;
-        padding: 8px 0;
-        border-bottom: 1px solid #e9ecef;
-      }
-
-      .final-price-row {
-        margin: 12px 0 0;
-        padding: 12px 0;
-        border-top: 2px solid #e9ecef;
-      }
+      display: none;
     }
   }
 
-      .referral-info {
-      margin-top: 20px;
-      padding: 16px 20px;
-      background: rgba(255, 193, 7, 0.1);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      position: relative;
-      z-index: 1;
+  .referral-info {
+    margin-top: 10px;
+    padding: 0;
+    background: transparent;
+    border: none;
 
-      .info-text {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #d97706;
-        margin: 0;
-        font-weight: 500;
-      }
+    .info-text {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: $muted;
+      margin: 0;
+      font-weight: 400;
     }
+  }
 }
 
-// Responsive Design
-@media (max-width: 768px) {
+/* Applied state sits on one line once there is no breakdown under it. */
+.referral-code-container .applied-code-section .applied-code-display {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
   .referral-code-container {
-    padding: 16px;
-    margin: 16px 0;
+    .referral-input-section {
+      flex-direction: column;
+
+      .apply-button {
+        width: 100%;
+      }
+    }
 
     .referral-code-header {
-      flex-direction: column;
-      text-align: center;
-      gap: 8px;
-
-      .referral-icon {
-        font-size: 20px;
-      }
-    }
-
-    .applied-code-section {
-      .applied-code-display {
-        flex-direction: column;
-        gap: 8px;
-
-        .applied-code-tag {
-          font-size: 14px;
-          padding: 6px 12px;
-        }
-      }
-
-      .discount-breakdown {
-        padding: 16px;
-
-        .price-row {
-          font-size: 13px;
-
-          &:last-child {
-            font-size: 15px;
-          }
-        }
-      }
+      flex-direction: row;
+      text-align: left;
     }
   }
 }
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .referral-code-container {
-    background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
-    border-color: #434343;
-
-    &:hover {
-      border-color: #1890ff;
-    }
-
-    .referral-title {
-      color: #ffffff;
-    }
-
-    .applied-code-section {
-      .applied-code-display {
-        background: linear-gradient(135deg, #1a1a1a, #262626);
-        border-color: #434343;
-      }
-
-      .discount-breakdown {
-        background: #1f1f1f;
-        border-color: #434343;
-
-        .price-row {
-          &:last-child {
-            border-top-color: #434343;
-          }
-        }
-      }
-    }
-
-    .referral-info {
-      background: linear-gradient(135deg, #2a1f0f, #2a1a0f);
-      border-color: #d48806;
-
-      .info-text {
-        color: #ffa940;
-      }
-    }
-  }
-}
-
-// Animation keyframes
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.referral-code-container {
-  animation: slideIn 0.5s ease-out;
-}
-
-.applied-code-tag {
-  animation: pulse 0.6s ease-out;
-} 

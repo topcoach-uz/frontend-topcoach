@@ -7,22 +7,12 @@
   gap: 16px;
 }
 
+/* Shell and the hover lift both come from CounselorConsoleLayout.scss — these
+   cards are the console's `--interactive` card. */
 .cc-reports-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 22px;
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--cc-shadow-md);
-    border-color: var(--cc-accent-ring);
-  }
 }
 
 .cc-reports-ico {
@@ -48,7 +38,8 @@
 
 .cc-reports-card-title {
   font-family: var(--cc-serif);
-  font-size: 1.25rem;
+  /* 1.15rem is the console's one card-title size. This was 1.25rem. */
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--cc-text);
   margin: 0 0 6px;
@@ -69,6 +60,7 @@
   gap: 10px;
 }
 
+.cc-reports-preview,
 .cc-menu-trigger.cc-reports-export {
   height: 38px;
   padding: 0 15px;
@@ -86,6 +78,168 @@
 
   &:hover:not(:disabled),
   &[aria-expanded='true'] {
+    border-color: var(--cc-accent-ring);
+    background: var(--cc-accent-soft);
+    color: var(--cc-accent-hover);
+  }
+}
+
+/* Preview is the quieter of the two actions: same chrome, muted ink. */
+.cc-reports-preview {
+  cursor: pointer;
+  color: var(--cc-text-secondary);
+
+  &:hover {
+    color: var(--cc-accent);
+  }
+}
+
+/* ── Preview modal ──
+   Portalled by AntD to <body>; --cc-* resolve there because the token block is
+   also declared on :root. AntD locks body scroll while open, so the wide table
+   scrolls inside .cc-preview-scroll and never the page. */
+.cc-preview-modal {
+  .ant-modal-content {
+    background: var(--cc-bg-surface);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius);
+    box-shadow: var(--cc-shadow-md);
+  }
+
+  .ant-modal-header {
+    background: transparent;
+    border-bottom: 1px solid var(--cc-hairline);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ant-modal-title {
+    font-family: var(--cc-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--cc-text);
+  }
+}
+
+.cc-preview-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  background: var(--cc-bg-surface);
+  -webkit-overflow-scrolling: touch;
+}
+
+.cc-preview-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th,
+  td {
+    padding: 9px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--cc-hairline);
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--cc-bg-subtle);
+    color: var(--cc-text-secondary);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  td {
+    color: var(--cc-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: var(--cc-bg-subtle);
+  }
+}
+
+.cc-preview-foot {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--cc-text-muted);
+}
+
+/* Loading / empty / error share one centered slab. */
+.cc-preview-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 44px 20px;
+  text-align: center;
+  border: 1px dashed var(--cc-border-strong);
+  border-radius: var(--cc-radius-sm);
+  background: var(--cc-bg-subtle);
+  color: var(--cc-text-muted);
+}
+
+.cc-preview-state-ico {
+  color: var(--cc-text-muted);
+}
+
+.cc-preview-state-ico--bad {
+  color: var(--cc-danger);
+}
+
+.cc-preview-state-title {
+  font-family: var(--cc-serif);
+  font-size: 1rem;
+  color: var(--cc-text);
+}
+
+.cc-preview-state-text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 42ch;
+  color: var(--cc-text-secondary);
+}
+
+.cc-preview-spin {
+  color: var(--cc-accent);
+  animation: cc-preview-spin 0.9s linear infinite;
+}
+
+@keyframes cc-preview-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-preview-spin {
+    animation: none;
+  }
+}
+
+.cc-preview-retry {
+  margin-top: 8px;
+  height: 34px;
+  padding: 0 14px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid var(--cc-border-strong);
+  background: var(--cc-bg-surface);
+  color: var(--cc-accent);
+  font-weight: 600;
+  font-size: 13px;
+
+  &:hover {
     border-color: var(--cc-accent-ring);
     background: var(--cc-accent-soft);
     color: var(--cc-accent-hover);

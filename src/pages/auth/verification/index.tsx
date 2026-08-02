@@ -20,6 +20,28 @@ export default function VerificationPage() {
     searchParams.get('verified') && !!searchParams.get('verified');
   const email = searchParams.get('email') ?? '';
   const token = searchParams.get('token') ?? '';
+  /**
+   * Where to send the user once they're through — e.g. `/join/<token>` for an
+   * organization invite. Same-site paths only.
+   *
+   * It arrives on the URL only when the user stayed in this tab (signup →
+   * verification). The email link itself leaves the SPA entirely (backend
+   * redirect to `/?verified=true`, then HomeRouter bounces here), so on that
+   * path `localStorage.redirectAfterLogin` — written by /join and by the invite
+   * signup — is the surviving carrier. Prefer the param, fall back to storage.
+   */
+  const redirectTo = (() => {
+    const raw = searchParams.get('redirect');
+    if (raw && raw.startsWith('/') && !raw.startsWith('//') && !raw.startsWith('/auth'))
+      return raw;
+    try {
+      const stored = localStorage.getItem('redirectAfterLogin');
+      if (stored && stored.startsWith('/') && !stored.startsWith('//')) return stored;
+    } catch {
+      /* ignore private-mode read failures */
+    }
+    return '';
+  })();
 
   const isVerified = verified ?? false;
 
@@ -70,11 +92,21 @@ export default function VerificationPage() {
   // After the email is verified, show the success state briefly then send the
   // user to sign in. Must live in an effect — doing it in render queued a new
   // timer (and navigation) on every re-render.
+  //
+  // The second sign-in is friction we can't remove from here: the backend does
+  // log the user in during verification, but it only sets cookies — the SPA's
+  // auth state is driven by the access/refresh tokens returned by
+  // /auth/login, which verification never hands back. What we CAN do is carry
+  // the destination across, so an invitee lands back on their invite instead
+  // of the generic home page.
   useEffect(() => {
     if (!verified) return;
-    const timer = setTimeout(() => navigate('/auth/signin'), 5000);
+    const target = redirectTo
+      ? `/auth/signin?redirect=${encodeURIComponent(redirectTo)}`
+      : '/auth/signin';
+    const timer = setTimeout(() => navigate(target), 5000);
     return () => clearTimeout(timer);
-  }, [verified, navigate]);
+  }, [verified, redirectTo, navigate]);
 
   const handleResend = () => {
     setIsResendDisabled(true);
@@ -149,7 +181,15 @@ export default function VerificationPage() {
             >
               Try Again
             </Button>
-            <Button onClick={() => navigate('/auth/signin')}>
+            <Button
+              onClick={() =>
+                navigate(
+                  redirectTo
+                    ? `/auth/signin?redirect=${encodeURIComponent(redirectTo)}`
+                    : '/auth/signin'
+                )
+              }
+            >
               Go to Login
             </Button>
           </div>

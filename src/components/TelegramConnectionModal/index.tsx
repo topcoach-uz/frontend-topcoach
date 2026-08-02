@@ -1,8 +1,7 @@
 import React from 'react';
-import { Modal, Typography } from 'antd';
+import { Modal } from 'antd';
+import { Send } from 'lucide-react';
 import TelegramConnectionContent from './TelegramConnectionContent';
-
-const { Title } = Typography;
 
 interface TelegramConnectionModalProps {
   visible: boolean;
@@ -17,23 +16,21 @@ const TelegramConnectionModal: React.FC<TelegramConnectionModalProps> = ({
   // and AntD Modal mounts its children fresh each time it opens (no
   // forceRender/destroyOnClose here), so "refetch on open" already happens
   // without a separate query subscription in this wrapper.
-  const CRIMSON = '#8b0000';
 
   return (
     <Modal
       title={
-        <div style={{ textAlign: 'center', paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-          <Title level={3} style={{ margin: 0, color: CRIMSON, fontWeight: 700, fontSize: 22, letterSpacing: '0.02em' }}>
-            Connect Telegram
-          </Title>
-        </div>
+        <h2 className="tc-tg-title">
+          <Send size={17} />
+          Connect Telegram
+        </h2>
       }
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={600}
+      width={520}
       centered
-      styles={{ body: { paddingTop: 12 } }}
+      className="tc-telegram-modal"
     >
       {/* onConnected fires after the connect flow's own status-refetch delay
           settles (see TelegramConnectionContent) — matches the modal's

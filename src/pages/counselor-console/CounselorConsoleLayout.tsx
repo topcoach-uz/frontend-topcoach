@@ -10,7 +10,6 @@ import { Dropdown, Input, Spin, type MenuProps } from 'antd';
 import {
   LayoutDashboard,
   Users,
-  MailPlus,
   BarChart3,
   FileBarChart2,
   // Megaphone, // parked with the Announcements nav item
@@ -24,8 +23,10 @@ import {
   Menu,
   Check,
   Search,
+  LogOut,
 } from 'lucide-react';
-import { useTypedSelector } from 'src/app/store';
+import { useAppDispatch, useTypedSelector } from 'src/app/store';
+import { logout } from 'src/app/slices/authSlice';
 import { useGetMeQuery } from 'src/app/services/users';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useCounselorConsole } from './CounselorConsoleContext';
@@ -36,7 +37,6 @@ import './CounselorConsoleLayout.scss';
 type NavKey =
   | 'dashboard'
   | 'students'
-  | 'invitations'
   | 'analytics'
   | 'reports'
   | 'announcements'
@@ -113,6 +113,7 @@ export default function CounselorConsoleLayout() {
 
   const { orgs, orgId, setOrgId, org, role } = useCounselorConsole();
 
+  const dispatch = useAppDispatch();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
   const authProfile = useTypedSelector((state) => state.auth.profile);
   const { data: userData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
@@ -155,12 +156,6 @@ export default function CounselorConsoleLayout() {
         label: 'Students',
         icon: <Users size={18} strokeWidth={1.75} />,
         path: '/counselor-console/students',
-      },
-      {
-        key: 'invitations',
-        label: 'Invitations',
-        icon: <MailPlus size={18} strokeWidth={1.75} />,
-        path: '/counselor-console/invitations',
       },
     ];
 
@@ -232,7 +227,6 @@ export default function CounselorConsoleLayout() {
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
     if (p.startsWith('/counselor-console/students')) return 'students';
-    if (p.startsWith('/counselor-console/invitations')) return 'invitations';
     if (p.startsWith('/counselor-console/analytics')) return 'analytics';
     if (p.startsWith('/counselor-console/reports')) return 'reports';
     if (p.startsWith('/counselor-console/announcements')) return 'announcements';
@@ -320,6 +314,7 @@ export default function CounselorConsoleLayout() {
       className={`counselor-console-app ${
         isMobileConsole ? 'counselor-console-app--mobile-layout' : ''
       }`}
+      // Nested inside MainLayout — leave room for the 80px site header.
       style={{ minHeight: 'calc(100vh - 80px)' }}
     >
       {isMobileConsole && mobileMenuOpen ? (
@@ -353,7 +348,7 @@ export default function CounselorConsoleLayout() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#6b6258',
+                color: 'var(--cc-text-secondary)',
                 font: 'inherit',
                 fontSize: '0.78rem',
                 padding: '4px 6px',
@@ -487,10 +482,21 @@ export default function CounselorConsoleLayout() {
               )}
             </div>
             {showLabels && (
-              <div className="counselor-console-user-meta">
-                <div className="counselor-console-user-name">{displayName}</div>
-                <div className="counselor-console-user-role">{roleLabel}</div>
-              </div>
+              <>
+                <div className="counselor-console-user-meta">
+                  <div className="counselor-console-user-name">{displayName}</div>
+                  <div className="counselor-console-user-role">{roleLabel}</div>
+                </div>
+                <button
+                  type="button"
+                  className="counselor-console-user-logout"
+                  onClick={() => dispatch(logout())}
+                  title="Log out"
+                  aria-label="Log out"
+                >
+                  <LogOut size={16} strokeWidth={1.75} />
+                </button>
+              </>
             )}
           </div>
         </div>

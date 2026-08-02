@@ -10,6 +10,7 @@ import {
   Target,
   Send,
   CheckCircle2,
+  Gift,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,7 @@ import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
+import ReferralsTab from './ReferralsTab';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -71,7 +73,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     | 'profile'
     | 'experience'
     | 'notifications'
-    | 'subscription';
+    | 'subscription'
+    | 'referrals';
 
   // Read initial tab from URL `?tab=` so other pages can deep-link
   // (e.g. the Community lock popup → subscription tab). When no tab is
@@ -85,6 +88,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       'experience',
       'notifications',
       'subscription',
+      'referrals',
     ];
     return allowed.includes(fromUrl as SettingsTabKey)
       ? (fromUrl as SettingsTabKey)
@@ -103,6 +107,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         'experience',
         'notifications',
         'subscription',
+        'referrals',
       ];
       if (allowed.includes(fromUrl as SettingsTabKey)) {
         setActiveTab(fromUrl as SettingsTabKey);
@@ -254,6 +259,14 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           onClick={() => setActiveTab('profile')}
         >
           {t('studentHub.settingsMock.account', 'Account')}
+        </button>
+        <button
+          type="button"
+          className={`${styles.tab} ${activeTab === 'referrals' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('referrals')}
+        >
+          <Gift size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
+          {t('settings.referrals.tab', 'Referrals')}
         </button>
         {/* Experience tab is the SuperAdmin/Owner toggle between the
             standard and community experiences. Regular students never
@@ -479,6 +492,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           mocked from `subscription/_mocks/subscription.fixtures.ts`;
           flip states with `?state=active|trialing|past_due|canceled|none`. */}
       {activeTab === 'subscription' && <SubscriptionTab />}
+
+      {activeTab === 'referrals' && <ReferralsTab />}
 
       {/* Notifications — placeholder card. The toggle matrix
           (Email / Push / SMS × event types) ships alongside the

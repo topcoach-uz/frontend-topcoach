@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 import { useTypedSelector } from "src/app/store";
 import { useGetMeQuery } from "src/app/services/users";
-import { useGetMyOrganizationsQuery } from "src/app/services/organizations";
+import { useGetMyOrgsQuery } from "src/app/services/counselorConsoleApi";
 import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboardApi";
 import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
 import { useListPostsQuery } from "src/app/services/communityFeedApi";
@@ -151,6 +151,7 @@ const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/p
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
+const MentorConsoleReferralsLazy = lazy(() => import("src/pages/mentor/console/pages/ReferralsPage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
 );
@@ -166,6 +167,7 @@ const AdminConsoleAdministrationLazy = lazy(
   () => import("src/pages/admin/console/pages/AdministrationPage"),
 );
 const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/pages/PaymentsPage"));
+const AdminConsoleReferralsLazy = lazy(() => import("src/pages/admin/console/pages/ReferralsPage"));
 const AdminConsoleSubscriptionsLazy = lazy(() => import("src/pages/admin/console/pages/SubscriptionsPage"));
 const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
 const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
@@ -198,7 +200,6 @@ const CounselorConsoleDashboardLazy = lazy(() => import("src/pages/counselor-con
 const CounselorConsoleAnalyticsLazy = lazy(() => import("src/pages/counselor-console/pages/AnalyticsPage"));
 const CounselorConsoleStudentsLazy = lazy(() => import("src/pages/counselor-console/pages/StudentsPage"));
 const CounselorConsoleStudentProfileLazy = lazy(() => import("src/pages/counselor-console/pages/StudentProfilePage"));
-const CounselorConsoleInvitationsLazy = lazy(() => import("src/pages/counselor-console/pages/InvitationsPage"));
 const CounselorConsoleReportsLazy = lazy(() => import("src/pages/counselor-console/pages/ReportsPage"));
 // Announcements is parked for now — the page and its backend are intact; only
 // the route + sidebar entry are commented out. Restore both to bring it back.
@@ -248,7 +249,7 @@ function RouterProvider() {
   // Also resolve the org/counselor membership here so the home redirect
   // (HomeRouter) and the student-hub gate read it from cache instead of each
   // showing their own loader.
-  const { data: orgsData, isLoading: orgsLoading } = useGetMyOrganizationsQuery(
+  const { data: orgsData, isLoading: orgsLoading } = useGetMyOrgsQuery(
     undefined,
     { skip: !isAuthenticated },
   );
@@ -410,6 +411,7 @@ function RouterProvider() {
 
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
+                <Route path="referrals" element={<AdminConsoleReferralsLazy />} />
                 <Route path="subscriptions" element={<AdminConsoleSubscriptionsLazy />} />
                 <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
                 <Route path="events" element={<AdminConsoleEventsLazy />} />
@@ -444,6 +446,34 @@ function RouterProvider() {
 
           {/* Main Layout */}
           <Route element={<MainLayout />}>
+            {/* Counselor Console — org-scoped console, nested INSIDE MainLayout
+                so the website header stays (same as the mentor console below).
+                Org staff land here by default, but they remain ordinary site
+                users: they can still browse Mentors, Programs, Workshops etc.
+                What they must NOT get is the mentee/mentor dashboard, and that
+                is handled by the gates, not by stripping the header. */}
+            <Route element={<AddFallbackLayout />}>
+              <Route element={<OnboardingGate />}>
+                <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+                  <Route element={<CounselorConsoleLayoutLazy />}>
+                    <Route index element={<CounselorConsoleDashboardLazy />} />
+                    <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                    <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                    <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                    {/* /invitations was folded into the Students page as a tab —
+                        keep old links working. */}
+                    <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
+                    <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                    {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                    {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
+                    <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                    <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                    <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+                  </Route>
+                </Route>
+              </Route>
+            </Route>
+
             <Route element={<AddFallbackLayout />}>
               <Route element={<OnboardingGate />}>
                 <Route
@@ -607,26 +637,6 @@ function RouterProvider() {
                 element={<Navigate to="/counselor-console" replace />}
               />
 
-              {/* Counselor Console — new org-scoped console, mounted inside
-                  MainLayout so the website header stays. */}
-              <Route element={<OnboardingGate />}>
-                <Route path="/counselor-console" element={<CounselorConsoleGate />}>
-                  <Route element={<CounselorConsoleLayoutLazy />}>
-                    <Route index element={<CounselorConsoleDashboardLazy />} />
-                    <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
-                    <Route path="students" element={<CounselorConsoleStudentsLazy />} />
-                    <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
-                    <Route path="invitations" element={<CounselorConsoleInvitationsLazy />} />
-                    <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                    {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
-                    {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
-                    <Route path="staff" element={<CounselorConsoleStaffLazy />} />
-                    <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
-                    <Route path="audit" element={<CounselorConsoleAuditLazy />} />
-                  </Route>
-                </Route>
-              </Route>
-
               {/* Public "Join" landing — the org invitation accept step. Public
                   (no gate) so a prospective member can view it signed-out; the
                   page itself preserves the token across signup/login. */}
@@ -714,6 +724,7 @@ function RouterProvider() {
                     <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
                     <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
                     <Route path="profile" element={<MentorConsoleProfileLazy />} />
+                    <Route path="referrals" element={<MentorConsoleReferralsLazy />} />
                   </Route>
                 </Route>
               </Route>

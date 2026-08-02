@@ -19,6 +19,7 @@ import JourneyStatusHeader from './components/JourneyStatusHeader';
 import AISuggestionsCard, { type SuggestionItem } from './components/AISuggestionsCard';
 import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
 import AdmissionsProgramProgressCard from './components/AdmissionsProgramProgressCard';
+import OrgMembershipCard from './components/OrgMembershipCard';
 import { useStudentHub, useStudentProfile } from '../../hooks/useStudentHub';
 import { 
   useGetCollegeApplicationsQuery, 
@@ -651,6 +652,9 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
             </Button>
           </Dropdown>
         </div>
+
+      {/* Org membership notice: only for students who belong to an organization */}
+      <OrgMembershipCard skip={isReadOnly} />
 
       {/* Admissions Program Progress for enrolled students (top of dashboard) */}
       <AdmissionsProgramProgressCard skip={isReadOnly} />

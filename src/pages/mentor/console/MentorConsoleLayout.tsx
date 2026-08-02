@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Shield,
   ClipboardCheck,
+  Gift,
 } from 'lucide-react';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import {
@@ -29,6 +30,7 @@ type NavKey =
   | 'students'
   | 'feed'
   | 'profile'
+  | 'referrals'
   | 'isc-reviewer'
   | 'admin-console';
 
@@ -170,7 +172,16 @@ export default function MentorConsoleLayout() {
 
     // Profile is reached from the top-right avatar menu ("View Profile"),
     // so it is intentionally not duplicated here in the sidebar.
-    const accountItems: NavItem[] = [];
+    // Every mentor has a referral code, so this is not role-gated. Without it
+    // a mentor has a code issued to them that they have no way to see.
+    const accountItems: NavItem[] = [
+      {
+        key: 'referrals',
+        label: 'Referrals',
+        icon: <Gift size={18} strokeWidth={1.75} />,
+        path: '/mentor/referrals',
+      },
+    ];
 
     // Surface the Admin Console shortcut inside the mentor sidebar for
     // SuperAdmin / Owner accounts. They run a Mentor profile day-to-day
@@ -211,6 +222,7 @@ export default function MentorConsoleLayout() {
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
+    if (p.startsWith('/mentor/referrals')) return 'referrals';
     // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (
       p.startsWith('/mentor/dashboard') ||

@@ -78,7 +78,7 @@ export default function ProgramManagementOrganizationsTab({
   const handleCreateOrganization = async (values: any) => {
     try {
       await api.request({
-        path: '/organizations',
+        path: '/admin/orgs',
         method: 'POST',
         secure: true,
         body: stripEmpty(values),
@@ -114,8 +114,9 @@ export default function ProgramManagementOrganizationsTab({
     if (!editingOrgId) return;
     try {
       await api.request({
-        path: `/organizations/${editingOrgId}`,
-        method: 'PUT',
+        // Updates go through the console's org endpoint, not /admin/orgs.
+        path: `/org/${editingOrgId}`,
+        method: 'PATCH',
         secure: true,
         body: stripEmpty(values),
       });
@@ -134,7 +135,7 @@ export default function ProgramManagementOrganizationsTab({
     if (!selectedOrg) return;
     try {
       await api.request({
-        path: `/organizations/${selectedOrg}/members`,
+        path: `/admin/orgs/${selectedOrg}/members`,
         method: 'POST',
         secure: true,
         body: {
@@ -157,7 +158,7 @@ export default function ProgramManagementOrganizationsTab({
   const handleRemoveUser = async (orgId: string, userId: string) => {
     try {
       await api.request({
-        path: `/organizations/${orgId}/members/${userId}`,
+        path: `/admin/orgs/${orgId}/members/${userId}`,
         method: 'DELETE',
         secure: true,
       });
@@ -172,7 +173,7 @@ export default function ProgramManagementOrganizationsTab({
   const handleDeleteOrganization = async (orgId: string, orgName: string) => {
     try {
       await api.request({
-        path: `/organizations/${orgId}`,
+        path: `/admin/orgs/${orgId}`,
         method: 'DELETE',
         secure: true,
       });
@@ -287,18 +288,21 @@ export default function ProgramManagementOrganizationsTab({
                     size="small"
                     onClick={async () => {
                       try {
+                        // Returns the combined owner/counselor/student list
+                        // directly — it is no longer nested under `.members`.
                         const response = await api.request({
-                          path: `/organizations/${record.id}?includeMembers=true`,
+                          path: `/admin/orgs/${record.id}/members`,
                           method: 'GET',
                           secure: true,
                         });
                         setViewMembers({
                           orgId: record.id,
                           orgName: record.name,
-                          members: response.data.members || [],
+                          members: Array.isArray(response.data) ? response.data : [],
                         });
-                      } catch {
-                        message.error('Failed to load members');
+                      } catch (error: any) {
+                        console.error('Error loading members:', error);
+                        message.error(apiErrorMessage(error, 'Failed to load members'));
                       }
                     }}
                   >

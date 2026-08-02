@@ -1,4 +1,4 @@
-import { Button, message, Modal, Radio, Skeleton } from 'antd';
+import { Button, message, Modal, Radio, Skeleton, Input } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -42,6 +42,8 @@ export default function SessionCheckoutSheet({
   });
   const [pay, { isLoading: paying }] = usePaySessionWithSavedCardMutation();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [referralApplied, setReferralApplied] = useState<string | null>(null);
 
   // Default-select the default card once options load.
   useEffect(() => {
@@ -58,7 +60,11 @@ export default function SessionCheckoutSheet({
   const handlePay = async () => {
     if (!sessionId || !selectedCardId) return;
     try {
-      const res = await pay({ sessionId, paymentMethodId: selectedCardId }).unwrap();
+      const res = await pay({
+        sessionId,
+        paymentMethodId: selectedCardId,
+        ...(referralApplied && { referralCode: referralApplied }),
+      }).unwrap();
       if (res.status === 'paid') {
         message.success(t('mentors.bookingSuccess', 'Session booked successfully!'));
         onPaid();
@@ -122,6 +128,47 @@ export default function SessionCheckoutSheet({
               </Radio>
             ))}
           </Radio.Group>
+
+          {/* Referral on the one-tap path. Validation happens server-side at
+              charge time; this only records what the user typed, so a bad code
+              cannot block the purchase. The discount is not previewed here
+              because the sheet's amount comes from the options endpoint, which
+              is quoted before a code is known. */}
+          <div className={styles.referralRow}>
+            {referralApplied ? (
+              <span className={styles.referralApplied}>
+                {t('mentors.referralApplied', 'Referral code')}{' '}
+                <strong>{referralApplied}</strong>
+                <Button
+                  type="link"
+                  size="small"
+                  disabled={paying}
+                  onClick={() => {
+                    setReferralApplied(null);
+                    setReferralCode('');
+                  }}
+                >
+                  {t('mentors.referralRemove', 'Remove')}
+                </Button>
+              </span>
+            ) : (
+              <Input.Search
+                value={referralCode}
+                onChange={(e) =>
+                  setReferralCode(
+                    e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''),
+                  )
+                }
+                maxLength={15}
+                disabled={paying}
+                placeholder={t('mentors.referralPlaceholder', 'Referral code')}
+                enterButton={t('mentors.referralApply', 'Apply')}
+                onSearch={(value) =>
+                  value.trim() && setReferralApplied(value.trim())
+                }
+              />
+            )}
+          </div>
 
           <Button
             type="primary"

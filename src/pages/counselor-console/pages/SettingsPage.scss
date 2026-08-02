@@ -1,13 +1,9 @@
 /* Counselor Console — Settings (Administration).
    Editorial org-profile form. Prefixed .cc-settings. Reuses --cc-* tokens. */
 
+/* Shell comes from the shared `.cc-card` rule in CounselorConsoleLayout.scss. */
 .cc-settings-card {
   max-width: 760px;
-  border: 1px solid var(--cc-border);
-  border-radius: var(--cc-radius);
-  background: var(--cc-bg-surface);
-  box-shadow: var(--cc-shadow-sm);
-  padding: 24px 26px;
 }
 
 .cc-settings-section + .cc-settings-divider {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
 import { useGetMeQuery } from 'src/app/services/users';
-import { useGetMyOrganizationsQuery } from 'src/app/services/organizations';
+import { useGetMyOrgsQuery } from 'src/app/services/counselorConsoleApi';
 import { useGetUserPreferencesQuery } from 'src/app/services/student-hub/dashboardApi';
 import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import Loader from 'src/components/loader';
@@ -50,7 +50,7 @@ export default function GoogleAuthenticationPage() {
   // cached. Without this, navigating away re-triggered the router's
   // bootstrap overlay — a SECOND full-screen loader right after this
   // page's own one. Same cache entries as RouterProvider's hooks.
-  const { isLoading: orgsWarming } = useGetMyOrganizationsQuery(undefined, {
+  const { isLoading: orgsWarming } = useGetMyOrgsQuery(undefined, {
     skip: !exchangeSuccess,
   });
   const { isLoading: prefsWarming } = useGetUserPreferencesQuery(undefined, {

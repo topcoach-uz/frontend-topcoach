@@ -53,8 +53,6 @@ import {
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import MajorMatchCollectModal from './components/MajorMatchCollectModal';
-import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
-import { useIscCardState } from '../events/_components/useIscCardState';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -300,12 +298,11 @@ const MyProgressEditorialView: React.FC = () => {
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
-  // International Summer Camp 2026 — current flagship intake. Takes the
-  // "Top Coach presents" slot while applications are open. The CTA +
-  // status line reflect the user's live application state (apply / resume /
-  // submitted / accepted …) via the shared hook.
-  const showIscPromo = ISC_2026_ENABLED;
-  const iscCard = useIscCardState();
+  // Personal Statement Workshop — current live event. Takes the
+  // "Top Coach presents" slot. Free online session; the CTA opens the
+  // Google Meet room directly.
+  const showWorkshopPromo = true;
+  const WORKSHOP_JOIN_URL = 'https://meet.google.com/whk-ynpy-mbo';
 
   // Top Coach Launch Event — free event on May 24, 2026. While the
   // event hasn't passed, this card takes precedence over the CAAF
@@ -798,36 +795,30 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </article>
 
-        {/* Top Coach Presents — ISC 2026 takes the slot while its
-            applications are open, then the Launch Event, then CAAF,
+        {/* Top Coach Presents — the Personal Statement Workshop takes the
+            slot while it's live, then the Launch Event, then CAAF,
             then the quiet empty card. */}
-        {showIscPromo ? (
+        {showWorkshopPromo ? (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
-            <div className="myprog__promo-eyebrow">
-              {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
-            </div>
-            <h3 className="myprog__promo-title">
-              {t('studentHub.myProgress.iscTitle', 'International Summer Camp')}
-            </h3>
-            <div className="myprog__promo-meta">Aug 3–9, 2026 · 250 students · Apply by Jul 6</div>
+            <div className="myprog__promo-eyebrow">Top Coach presents</div>
+            <h3 className="myprog__promo-title">Personal Statement Workshop</h3>
+            <div className="myprog__promo-meta">Thu, Jul 30 · 20:00 · Online</div>
             <p className="myprog__promo-desc">
-              A one-week academic camp for 250 students from across Central Asia —
-              150 Bachelor&apos;s and 100 Master&apos;s places — for learning,
-              networking, and a head start on studying abroad.
+              A free live workshop with Nazira Davroni (Barnard College,
+              Columbia) on how to write a strong personal statement, avoid
+              common mistakes, and make your essay stand out.
             </p>
             <div className="myprog__promo-foot">
-              <div className="myprog__promo-foot-status">{iscCard.statusLabel}</div>
+              <div className="myprog__promo-foot-status">Free · Live online</div>
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
-                disabled={iscCard.mode === 'closed'}
                 onClick={() =>
-                  iscCard.mode !== 'closed' &&
-                  navigate('/events/international-summer-camp-2026')
+                  window.open(WORKSHOP_JOIN_URL, '_blank', 'noopener,noreferrer')
                 }
               >
-                {iscCard.ctaLabel}
+                Join workshop
               </button>
             </div>
           </article>

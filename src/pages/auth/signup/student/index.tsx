@@ -34,10 +34,36 @@ export default function StudentRegistrationPage() {
     [searchParams],
   );
   const invitedOrg = searchParams.get('org')?.trim() || undefined;
+  /**
+   * The invitation's ORG role (owner/counselor/student) — used for copy only.
+   * Account creation always goes through /auth/student/register/email (the only
+   * email-signup endpoint), so an invited counselor still gets
+   * `profile.role === 'Student'`; their console access comes from the org
+   * membership, not from this. Aligning the profile role needs a backend change.
+   */
+  const invitedRole = searchParams.get('role')?.trim().toLowerCase() || undefined;
+  /** Same-site only — this is echoed into a navigation after verification. */
+  const redirectTo = useMemo(() => {
+    const raw = searchParams.get('redirect');
+    return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : undefined;
+  }, [searchParams]);
 
   useEffect(() => {
     if (invitedEmail) form.setFieldsValue({ email: invitedEmail });
   }, [invitedEmail, form]);
+
+  // Re-arm the post-login redirect here as well as on /join. Someone who opens
+  // the invite link on their phone and the signup on a laptop never ran
+  // JoinPage's write in this browser, so without this the token is lost the
+  // moment they finish verifying.
+  useEffect(() => {
+    if (!redirectTo) return;
+    try {
+      localStorage.setItem('redirectAfterLogin', redirectTo);
+    } catch {
+      /* ignore private-mode write failures */
+    }
+  }, [redirectTo]);
 
   const onFinish = () => {
     form.validateFields().then(async (values) => {
@@ -51,8 +77,10 @@ export default function StudentRegistrationPage() {
           password: values.password?.trim(),
           name: values.name?.trim(),
         } as any)
-        .then((res) => {
-          navigate(`/auth/verification?email=${encodeURIComponent(email)}`);
+        .then(() => {
+          const params = new URLSearchParams({ email });
+          if (redirectTo) params.set('redirect', redirectTo);
+          navigate(`/auth/verification?${params.toString()}`);
         })
         .catch((err) => {
           if (
@@ -100,6 +128,10 @@ export default function StudentRegistrationPage() {
           invitedEmail
             ? `Set a password to accept your invitation${
                 invitedOrg ? ` to ${invitedOrg}` : ''
+              }${
+                invitedRole && invitedRole !== 'student'
+                  ? ` as a ${invitedRole}`
+                  : ''
               }. We'll take you there as soon as you're in.`
             : undefined
         }
