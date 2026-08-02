@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Tabs, Progress, Button, Statistic, Badge, Alert } from 'antd';
-import { Lock, Map as MapIcon } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -23,7 +23,6 @@ import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import DocumentsPage from '../documents/DocumentsPage';
-import { RoadmapTab } from '../settings/roadmap/RoadmapTab';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
@@ -121,7 +120,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    const allowedTabs = ['personal', 'academic', 'activities', 'college-lists', 'documents', 'roadmap'];
+    const allowedTabs = ['personal', 'academic', 'activities', 'college-lists', 'documents'];
     if (tabFromUrl && allowedTabs.includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     } else {
@@ -273,16 +272,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       ),
       children: <DocumentsPage readOnly={isReadOnly} studentId={studentId} />,
     },
-    {
-      key: 'roadmap',
-      label: (
-        <div className="tab-label">
-          <MapIcon size={16} />
-          <span>{t('settings.roadmap.tab', 'Roadmap')}</span>
-        </div>
-      ),
-      children: <RoadmapTab readOnly={isReadOnly} studentId={studentId} />,
-    },
+    // Roadmap tab removed — it now lives inline on the Major Match v2
+    // results screen (`MM2Results`), where it's generated/regenerated the
+    // moment a Major Match is submitted. See `RoadmapTab`'s doc comment.
     // Settings tab hidden for now
     // {
     //   key: 'settings',

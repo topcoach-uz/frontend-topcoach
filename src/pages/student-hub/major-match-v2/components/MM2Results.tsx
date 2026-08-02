@@ -4,6 +4,7 @@ import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
 import type { MajorMatchAccessStatus, MajorMatchResult } from '../../../../app/services/student-hub/majorMatchApi';
 import { MM2_DIMENSION_KEYS } from '../content';
 import { MajorMatchUpsell } from '../../psychometric-assessment/components/MajorMatchUpsell';
+import { RoadmapTab } from '../../settings/roadmap/RoadmapTab';
 
 interface MM2ResultsProps {
   result: MajorMatchResult;
@@ -12,6 +13,16 @@ interface MM2ResultsProps {
   onRetake: () => void;
   onUnlock: () => void;
   onBack?: () => void;
+  /** Server timestamp (result.createdAt) — set only when this result was
+   *  JUST submitted in this session (not when viewing a past result via
+   *  "View results"). The backend kicks off a background roadmap
+   *  regeneration synchronously right after a Major Match submit (see
+   *  `RoadmapService.regenerateForMajorMatch`), so passing this tells the
+   *  embedded roadmap section to wait for a roadmap generated AFTER this
+   *  moment rather than showing whatever (possibly stale, pre-submission)
+   *  roadmap happens to be cached. Omitted in read-only (counselor)
+   *  embeds — see the `!readOnly` guard below. */
+  freshSince?: string;
 }
 
 export const MM2Results: React.FC<MM2ResultsProps> = ({
@@ -21,6 +32,7 @@ export const MM2Results: React.FC<MM2ResultsProps> = ({
   onRetake,
   onUnlock,
   onBack,
+  freshSince,
 }) => {
   const { t } = useTranslation();
 
@@ -42,6 +54,17 @@ export const MM2Results: React.FC<MM2ResultsProps> = ({
         <h1 className="mm2-results__primary-name">{t(`majorMatch.major.${result.primaryMajorSlug}.name`)}</h1>
         <p className="mm2-results__primary-desc">{t(`majorMatch.major.${result.primaryMajorSlug}.description`)}</p>
       </section>
+
+      {!readOnly && (
+        <section className="mm2-results__roadmap">
+          <h2 className="mm2-results__section-title">
+            {t('majorMatch.results.roadmapSectionTitle', 'Your personalized roadmap')}
+          </h2>
+          <div className="mm2-results__roadmap-body">
+            <RoadmapTab freshSince={freshSince} />
+          </div>
+        </section>
+      )}
 
       {result.altMajorSlugs?.length > 0 && (
         <section className="mm2-results__alts">

@@ -137,17 +137,17 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The "Roadmap" tab used to live here too — it's now a tab inside the
-  // profile hub (`ProfilePage`), alongside Personal/Academic/Activities,
-  // rather than account/billing settings. Old `?tab=roadmap` deep-links
-  // redirect there instead of rendering blank.
+  // The "Roadmap" tab used to live here, then briefly inside the profile
+  // hub (`ProfilePage`) — it's now embedded inline on the Major Match v2
+  // results screen instead of having its own address at all (it's
+  // generated/regenerated the moment a Major Match is submitted, so
+  // results is where it belongs). Old `?tab=roadmap` deep-links redirect
+  // to Major Match rather than a tab that no longer exists.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const fromUrl = new URLSearchParams(window.location.search).get('tab');
     if (fromUrl === 'roadmap') {
-      navigate('/student-hub?section=others&target=profile&tab=roadmap', {
-        replace: true,
-      });
+      navigate('/student-hub?section=ai-major-match', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

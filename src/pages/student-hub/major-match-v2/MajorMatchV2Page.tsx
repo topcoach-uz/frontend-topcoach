@@ -102,6 +102,11 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({ readOnly = false, s
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewedResult, setViewedResult] = useState<MajorMatchResult | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
+  // True only when `viewedResult` was JUST produced by a submit in this
+  // session (not when revisiting a past result via "View results"/intro).
+  // Drives the embedded roadmap section's `freshSince` prop — see
+  // MM2Results' doc comment.
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
   // Load any saved draft once the student profile id is known (dev-route
   // scope — doesn't need to re-run on every render).
@@ -144,6 +149,7 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({ readOnly = false, s
   const handleViewResults = () => {
     if (status?.latest) {
       setViewedResult(status.latest);
+      setJustSubmitted(false);
       setStep('results');
     }
   };
@@ -187,6 +193,7 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({ readOnly = false, s
 
       clearDraft(studentProfileId);
       setViewedResult(result);
+      setJustSubmitted(true);
       setStep('results');
       // Reset in-memory answer state now that it's persisted server-side.
       setAnswers({});
@@ -290,10 +297,12 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({ readOnly = false, s
               access={status?.access}
               onRetake={() => {
                 setViewedResult(null);
+                setJustSubmitted(false);
                 setStep('questions');
               }}
               onUnlock={handleUnlock}
               onBack={() => setStep('intro')}
+              freshSince={justSubmitted ? activeResult.createdAt : undefined}
             />
           )}
         </>

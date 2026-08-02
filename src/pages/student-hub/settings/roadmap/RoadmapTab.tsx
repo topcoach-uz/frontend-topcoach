@@ -1,11 +1,12 @@
 import { Card } from 'antd';
 import { ArrowRight, Lock, Map as MapIcon } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
 import { useGetRoadmapQuery } from 'src/app/services/roadmapApi';
+import { profilePath } from 'src/lib/communityAccess';
 
 import { RoadmapBody } from 'src/pages/placement-test/roadmap/_components/RoadmapBody';
 import roadmapStyles from 'src/pages/placement-test/roadmap/Roadmap.module.scss';
@@ -14,6 +15,14 @@ import styles from './RoadmapTab.module.scss';
 
 const SUBSCRIPTION_TAB_PATH =
   '/student-hub?section=account&target=settings&tab=subscription';
+
+// ── `freshSince` polling tuning ─────────────────────────────────────────
+// See the big doc comment below for what this is guarding against. Kept as
+// named constants (not magic numbers) so the tradeoff is easy to re-tune.
+const FRESH_INITIAL_DELAY_MS = 9000; // give the background job a head start
+const FRESH_POLL_INTERVAL_MS = 3000; // cadence while still within the fast window
+const FRESH_SLOW_POLL_INTERVAL_MS = 8000; // cadence once we've waited a while
+const FRESH_FAST_WINDOW_MS = 30000; // switch fast → slow cadence after this long
 
 export interface RoadmapTabProps {
   /** Counselor read-only embed (see ProfilePage's other tabs for the same
@@ -28,28 +37,58 @@ export interface RoadmapTabProps {
    *  handoff report for the follow-up if a real read-only view is wanted. */
   readOnly?: boolean;
   studentId?: string;
+  /**
+   * Server timestamp (backend clock — e.g. a Major Match result's
+   * `createdAt`). When set, this component knows a NEW roadmap generation
+   * was just kicked off server-side as of that moment (see
+   * `RoadmapService.regenerateForMajorMatch`, fired fire-and-forget right
+   * after a Major Match submit) and must not show whatever roadmap happens
+   * to already be cached — that could be a STALE one from before this
+   * event. Instead it polls `GET /roadmap/me` until the returned
+   * `meta.generatedAt` postdates `freshSince`, showing a "personalizing…"
+   * state meanwhile.
+   *
+   * Deliberately does NOT fetch instantly: `GET /roadmap/me` itself
+   * auto-generates (`persistFallback`) if the student has never had a
+   * roadmap before, and it only checks for an existing row ONCE, at the
+   * very start of the request — before its own Gemini call, not after.
+   * So an immediate (or too-short-delay) read here can find no row yet
+   * even though the background job is already mid-flight, and go generate
+   * a SECOND one itself; measured live, this is a real failure mode, not
+   * theoretical (see the handoff report for the exact duplicate-row
+   * evidence that motivated the number below). The background job doesn't
+   * save until its Gemini call fully completes — measured at 7-8s wall
+   * clock, submit to save — so `FRESH_INITIAL_DELAY_MS` waits past that
+   * before our first attempt, with margin, rather than merely "some head
+   * start". This does not *guarantee* zero extra generations (Gemini can
+   * occasionally run past our delay), but bounds the risk to at most one
+   * extra generation in an already-rare edge case, rather than a
+   * hammering loop (see the poll cadence below, which slows down over
+   * time and never stops on its own).
+   *
+   * Omit for the normal case — a plain single fetch + loading/error state,
+   * same as before this prop existed.
+   */
+  freshSince?: string;
 }
 
 /**
- * Roadmap — a tab inside the student profile hub (`ProfilePage`), reached
- * at `?section=others&target=profile&tab=roadmap`. Used to live inside
- * Settings; moved here so it sits alongside the rest of the student's
- * profile instead of account/billing settings. Old `?tab=roadmap`
- * Settings deep-links redirect to the new location — see
- * `MenteeSettingsPageMock.tsx`.
+ * Roadmap. Embedded inline on the Major Match v2 results screen
+ * (`MM2Results`) — the roadmap is generated/regenerated from that result
+ * the moment it's submitted, so results is where it's shown. Used to be
+ * its own Settings tab, then its own tab inside the profile hub; both
+ * addresses are gone now (old `?tab=roadmap` deep-links redirect to Major
+ * Match — see `MenteeSettingsPageMock.tsx`).
  *
- * Visibility rules (the parent only mounts this when its own tab is
- * active, so we only need to handle the "what to show" part here):
+ * Visibility rules:
  *
  *   - readOnly (counselor embed)     → "not available in this view" card
  *   - profile not completed          → "Finish your profile" pointer
+ *   - `freshSince` set, not yet fresh → "personalizing…" (polls, see above)
  *   - roadmap exists, no sub         → blurred preview + paywall (same as funnel)
  *   - roadmap exists, active sub     → full content + Regenerate
- *
- * This is the "if user happens to exit and come back" surface — the
- * blurred preview lives here for as long as the user is in that state.
  */
-export function RoadmapTab({ readOnly = false, studentId }: RoadmapTabProps = {}) {
+export function RoadmapTab({ readOnly = false, studentId, freshSince }: RoadmapTabProps = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   // Silence the unused-var lint until a real read-only roadmap endpoint
@@ -63,10 +102,50 @@ export function RoadmapTab({ readOnly = false, studentId }: RoadmapTabProps = {}
   );
 
   const profileReady = !readOnly && !!status?.profile.completed;
+  const awaitingFresh = !readOnly && !!freshSince;
+
+  // Holds off the FIRST fetch attempt while `awaitingFresh` — see the prop
+  // doc comment. Re-arms whenever `freshSince` changes (a retake produces a
+  // new result → a new fresh-generation event to wait for).
+  const [canFetch, setCanFetch] = useState(!awaitingFresh);
+  const pollStartRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (!awaitingFresh) {
+      setCanFetch(true);
+      return;
+    }
+    pollStartRef.current = Date.now();
+    setCanFetch(false);
+    const timer = setTimeout(() => setCanFetch(true), FRESH_INITIAL_DELAY_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awaitingFresh, freshSince]);
+
+  // pollingInterval is state (not an inline expression) because it needs
+  // to react to `data` *after* each poll resolves — see the effect below.
+  const [pollingInterval, setPollingInterval] = useState(0);
 
   const { data, isLoading, isError } = useGetRoadmapQuery(undefined, {
-    skip: readOnly || !profileReady,
+    skip: readOnly || !profileReady || !canFetch,
+    pollingInterval,
   });
+
+  const isFresh =
+    !awaitingFresh || (!!data && new Date(data.meta.generatedAt).getTime() > new Date(freshSince!).getTime());
+
+  // Re-evaluate the poll cadence every time a fetch resolves (or the
+  // preconditions change). Slows down after FRESH_FAST_WINDOW_MS rather
+  // than ever fully stopping — there's no dead end if generation genuinely
+  // takes longer than usual; it settles to 0 the moment `isFresh` flips.
+  useEffect(() => {
+    if (!awaitingFresh || !canFetch || isFresh) {
+      setPollingInterval(0);
+      return;
+    }
+    const elapsed = Date.now() - pollStartRef.current;
+    setPollingInterval(elapsed < FRESH_FAST_WINDOW_MS ? FRESH_POLL_INTERVAL_MS : FRESH_SLOW_POLL_INTERVAL_MS);
+  }, [awaitingFresh, canFetch, isFresh, data]);
 
   const handleChoosePlan = useCallback(() => {
     navigate(SUBSCRIPTION_TAB_PATH);
@@ -96,13 +175,63 @@ export function RoadmapTab({ readOnly = false, studentId }: RoadmapTabProps = {}
   }
 
   if (!status?.profile.completed) {
+    // `awaitingFresh` means this render is embedded on the Major Match
+    // results page right after a fresh submission (see `freshSince` doc
+    // comment above) — that's the cohort this ties back to: they just
+    // took Major Match without ever going through the placement-test
+    // admissions-profile wizard, so the backend's fire-and-forget
+    // `regenerateForMajorMatch` had nothing to generate against (no
+    // `student_admissions_profiles` row yet) and skipped silently.
+    // Tell them exactly what unlocks the roadmap they were promised,
+    // instead of the generic wizard-continuation copy below.
+    if (awaitingFresh) {
+      return (
+        <LockedCard
+          title={t(
+            'studentHub.profile.roadmap.majorMatchLockedTitle',
+            'Complete your profile to unlock your roadmap',
+          )}
+          body={t(
+            'studentHub.profile.roadmap.majorMatchLockedBody',
+            "Your Major Match result is saved. Finish a few quick profile questions and we'll turn it into your personalized admissions roadmap.",
+          )}
+          cta={t(
+            'studentHub.profile.roadmap.majorMatchLockedCta',
+            'Complete your profile',
+          )}
+          onCta={() => navigate(profilePath('basic'))}
+        />
+      );
+    }
     return (
       <LockedCard
-        title="Finish your admissions profile"
-        body="A few quick questions about your goals so we can personalize your roadmap."
-        cta="Continue profile"
-        onCta={() => navigate('/placement-test/profile')}
+        title={t(
+          'studentHub.profile.roadmap.profileLockedTitle',
+          'Finish your admissions profile',
+        )}
+        body={t(
+          'studentHub.profile.roadmap.profileLockedBody',
+          'A few quick questions about your goals so we can personalize your roadmap.',
+        )}
+        cta={t('studentHub.profile.roadmap.profileLockedCta', 'Continue profile')}
+        onCta={() => navigate(profilePath('basic'))}
       />
+    );
+  }
+
+  if (awaitingFresh && !isFresh) {
+    return (
+      <Card className={styles.card} title={titleEl(t)}>
+        <div className={styles.centered}>
+          <span className={styles.spinner} />
+          <p>
+            {t(
+              'studentHub.profile.roadmap.awaitingMajorMatch',
+              "Personalizing your roadmap with your Major Match result…",
+            )}
+          </p>
+        </div>
+      </Card>
     );
   }
 
@@ -133,11 +262,14 @@ export function RoadmapTab({ readOnly = false, studentId }: RoadmapTabProps = {}
 
 // ── Pieces ───────────────────────────────────────────────────────────────
 
-function titleEl(t: (key: string, fallback: string) => string) {
+function titleEl(t?: (key: string, fallback: string) => string) {
+  // `t` is optional — `LockedCard` renders this without a translation
+  // function in scope (pre-existing; fixed incidentally here since this
+  // path is now reachable from the embedded results-page context too).
   return (
     <>
       <MapIcon size={18} style={{ marginRight: 8 }} />
-      {t('settings.roadmap.tab', 'Roadmap')}
+      {t ? t('settings.roadmap.tab', 'Roadmap') : 'Roadmap'}
     </>
   );
 }

@@ -462,6 +462,17 @@ $mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
     margin: 0 0 14px;
   }
 
+  &__roadmap {
+    margin-bottom: 26px;
+  }
+
+  &__roadmap-body {
+    // RoadmapTab/RoadmapBody carry their own cream/hairline chrome
+    // (same editorial tokens as this page) — no extra framing needed here,
+    // just vertical rhythm with the section title above it.
+    margin-top: 4px;
+  }
+
   &__alts { margin-bottom: 26px; }
 
   &__alt-grid {
