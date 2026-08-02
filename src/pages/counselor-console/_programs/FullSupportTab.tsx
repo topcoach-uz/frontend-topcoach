@@ -99,7 +99,7 @@ function formatDateTime(iso: string): string {
 }
 
 function formatDay(value: string | null): string {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = dayjs(value);
   return d.isValid() ? d.format('MMM D, YYYY') : value;
 }
@@ -233,7 +233,7 @@ function HoursSection({ detail }: { detail: StudentFullSupportDetail }) {
     <ProgramCard
       eyebrow="All time"
       title="Mentoring hours"
-      sub="Lifetime totals — not a monthly figure."
+      sub="Lifetime totals, not a monthly figure."
     >
       <div className="cc-stat-grid cc-fs-stats">
         <CcStat
@@ -509,12 +509,12 @@ function PipelineSection({
               {pipeline.map((p) => (
                 <tr key={p.id}>
                   <td className="cc-ptab-table-strong">{p.program}</td>
-                  <td>{p.stage || '—'}</td>
+                  <td>{p.stage || '-'}</td>
                   <td>
                     {p.status ? (
                       <CcPill variant="neutral">{p.status}</CcPill>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </td>
                   <td>
@@ -523,7 +523,7 @@ function PipelineSection({
                         <Flag size={12} aria-hidden="true" /> Yes
                       </span>
                     ) : (
-                      <span className="cc-ptab-muted">—</span>
+                      <span className="cc-ptab-muted">-</span>
                     )}
                   </td>
                   <td>{formatDay(p.deadline)}</td>

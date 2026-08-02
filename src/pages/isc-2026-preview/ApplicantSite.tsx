@@ -32,6 +32,9 @@ import { hasIscLocalDraft } from '../events/_components/useIscCardState';
 
 const ISC_PATH = '/events/international-summer-camp-2026';
 
+/** Celebration film shown on the acceptance screen (youtu.be/Cu2NE4IUYhQ). */
+const ISC_ACCEPTED_VIDEO_ID = 'Cu2NE4IUYhQ';
+
 /** Backend status → applicant-facing status screen copy. */
 const STATUS_VIEW: Record<
   IscApplicationStatus,
@@ -69,9 +72,18 @@ const STATUS_VIEW: Record<
     body: 'Thanks for interviewing. We’ll share the final decision by email soon.',
     tone: 'pending',
   },
+  /**
+   * The waitlist card has to do something the accept and reject cards don't:
+   * hold someone in genuine uncertainty without letting them read it as a soft
+   * no. So it says plainly that this IS a strong result, explains the only
+   * mechanic that matters (places open when accepted applicants decline), and
+   * is explicit that nothing is required from them — waitlisted applicants
+   * otherwise tend to email asking what they should be doing. No promised
+   * date, because we don't control when declines land.
+   */
   waitlisted: {
-    title: 'Waitlisted',
-    body: 'You’re on the waitlist. We’ll reach out by email if a place opens up.',
+    title: 'You’re on the waitlist',
+    body: 'Your application came through our review strongly — you’re on the waitlist for the International Summer Camp 2026. That means we couldn’t offer you a place in this round, but you are still very much in consideration. Places open up as accepted applicants confirm or decline theirs, and we work down the waitlist as that happens. There’s nothing you need to do right now: keep an eye on your email and we’ll contact you the moment your place is confirmed either way. Thank you for your patience while we finalise the cohort.',
     tone: 'pending',
   },
   accepted: {
@@ -1041,6 +1053,22 @@ function AcceptedScreen({
             to meet you this summer.
           </p>
 
+          {/* Celebration film, hosted on YouTube rather than shipped as an
+              asset — the source file is ~190MB and most applicants here are on
+              mobile data. No autoplay: the confetti already carries the moment,
+              and browsers block sound-on autoplay anyway, so a muted auto-start
+              would just play the film silently past someone who missed it. */}
+          <div className={s.acceptedVideoWrap}>
+            <iframe
+              className={s.acceptedVideo}
+              src={`https://www.youtube-nocookie.com/embed/${ISC_ACCEPTED_VIDEO_ID}?rel=0`}
+              title="International Summer Camp 2026"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+
           <div className={s.acceptedDivider}>
             <span>✦</span>
           </div>
@@ -1093,36 +1121,116 @@ function AcceptedScreen({
  */
 function Confetti() {
   const pieces = React.useMemo(() => {
-    const colors = ['#7B1F2F', '#c99a2e', '#047857', '#b45462', '#e0b64d', '#1f7a8c'];
-    return Array.from({ length: 90 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 2.5,
-      duration: 3.6 + Math.random() * 2.6,
-      size: 6 + Math.random() * 7,
-      color: colors[i % colors.length],
-      rotate: Math.random() * 360,
-      round: Math.random() > 0.72,
-    }));
+    const colors = [
+      '#7B1F2F',
+      '#c99a2e',
+      '#047857',
+      '#b45462',
+      '#e0b64d',
+      '#1f7a8c',
+      '#f2f0eb',
+    ];
+    const out: Array<{
+      id: string;
+      originX: number;
+      dx: number;
+      rise: number;
+      duration: number;
+      delay: number;
+      w: number;
+      h: number;
+      color: string;
+      radius: string;
+      spin: number;
+      spinDur: number;
+    }> = [];
+
+    // Two cannons at the bottom corners, each firing two waves. The second
+    // wave is the reason it reads as a celebration rather than one dump —
+    // a single volley lands all at once and is over.
+    const CANNONS = [
+      { originX: 4, dir: 1 }, // bottom-left, fires up-and-right
+      { originX: 96, dir: -1 }, // bottom-right, fires up-and-left
+    ];
+
+    CANNONS.forEach((cannon, ci) => {
+      [0, 0.42].forEach((waveDelay, wi) => {
+        const count = wi === 0 ? 34 : 22;
+        for (let i = 0; i < count; i++) {
+          // Launch angle 24°–78° above horizontal. Converting a polar launch
+          // to dx/rise keeps the spread looking like a real cone instead of
+          // independently-random x and y (which reads as a rectangle).
+          const angle = (24 + Math.random() * 54) * (Math.PI / 180);
+          const speed = 52 + Math.random() * 46;
+          const round = Math.random() > 0.78;
+          const ribbon = !round && Math.random() > 0.62;
+          const size = 7 + Math.random() * 6;
+
+          out.push({
+            id: `${ci}-${wi}-${i}`,
+            originX: cannon.originX,
+            dx: Math.cos(angle) * speed * cannon.dir,
+            rise: Math.sin(angle) * speed,
+            duration: 2.5 + Math.random() * 1.5,
+            delay: waveDelay + Math.random() * 0.16,
+            w: ribbon ? size * 0.42 : size,
+            h: round ? size : ribbon ? size * 1.9 : size * 0.56,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            radius: round ? '50%' : '1px',
+            spin: (Math.random() > 0.5 ? 1 : -1) * (540 + Math.random() * 900),
+            spinDur: 0.7 + Math.random() * 1.1,
+          });
+        }
+      });
+    });
+    return out;
   }, []);
 
   return (
     <div className={s.confetti} aria-hidden>
       {pieces.map((p) => (
+        // Three nested elements because each axis needs its own timing
+        // function: X decelerates (ease-out drag), Y follows a gravity arc
+        // (linear over hand-sampled keyframes), and spin is constant. One
+        // element can only carry a single timing function for all of it.
         <span
           key={p.id}
-          className={s.confettiPiece}
-          style={{
-            left: `${p.left}%`,
-            width: p.size,
-            height: p.round ? p.size : p.size * 0.5,
-            background: p.color,
-            borderRadius: p.round ? '50%' : '2px',
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.duration}s`,
-            transform: `rotate(${p.rotate}deg)`,
-          }}
-        />
+          className={s.burstX}
+          style={
+            {
+              left: `${p.originX}%`,
+              '--dx': `${p.dx}vw`,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
+            } as React.CSSProperties
+          }
+        >
+          <span
+            className={s.burstY}
+            style={
+              {
+                '--rise': `${p.rise}vh`,
+                animationDuration: `${p.duration}s`,
+                animationDelay: `${p.delay}s`,
+              } as React.CSSProperties
+            }
+          >
+            <span
+              className={s.burstSpin}
+              style={
+                {
+                  '--spin': `${p.spin}deg`,
+                  width: p.w,
+                  height: p.h,
+                  background: p.color,
+                  borderRadius: p.radius,
+                  animationDuration: `${p.spinDur}s`,
+                  animationDelay: `${p.delay}s`,
+                } as React.CSSProperties
+              }
+            />
+          </span>
+        </span>
       ))}
     </div>
   );

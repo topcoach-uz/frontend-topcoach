@@ -11,8 +11,8 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useTypedSelector } from 'src/app/store';
 import { PlayCircle, LayoutDashboard, BookOpen, Settings, Sparkles } from 'lucide-react';
 import { Progress, Space, Spin } from 'antd';
-import { useMemo, useState, useEffect } from 'react';
-import { api } from 'src/app/api';
+import { useMemo } from 'react';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { useGetEnrollmentMeQuery, useGetMenteeSatProgressQuery } from 'src/app/services/fullSupportApi';
 import styles from './learningProgram.module.scss';
 
@@ -65,10 +65,10 @@ export default function LearningProgramSection() {
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
   const isYouthLeadersApplicationsAdmin = currentUser?.managementRole === 'SuperAdmin';
   
-  // Check if user is a counselor
-  const [isCounselor, setIsCounselor] = useState(false);
-  const [counselorLoading, setCounselorLoading] = useState(true);
-  
+  // Org membership resolves from the shared `/org/me` cache (warmed by the
+  // router bootstrap), so this is a cache read rather than a fetch.
+  const { isLoading: counselorLoading } = useOrgStaff();
+
   // Calculate total lessons for each course - MUST be called before any conditional returns
   // Prioritize backend's totalLessons (which is correctly filtered by courseName) over structure calculation
   const admissionsTotalLessons = useMemo(() => {
@@ -109,37 +109,6 @@ export default function LearningProgramSection() {
   
   // Legacy support
   const totalLessons = admissionsTotalLessons;
-
-  useEffect(() => {
-    const checkCounselorStatus = async () => {
-      try {
-        const response = await api.request({
-          path: '/organizations/my-organizations',
-          method: 'GET',
-          secure: true,
-        });
-        
-        console.log('Counselor check response:', response.data);
-        
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          setIsCounselor(true);
-        } else {
-          setIsCounselor(false);
-        }
-      } catch (error: any) {
-        console.error('Error checking counselor status:', error);
-        setIsCounselor(false);
-      } finally {
-        setCounselorLoading(false);
-      }
-    };
-
-    if (isAuthenticated && currentUser?.id) {
-      checkCounselorStatus();
-    } else {
-      setCounselorLoading(false);
-    }
-  }, [isAuthenticated, currentUser?.id]);
 
   // Show loading skeleton while checking counselor status or enrollment status
   if (counselorLoading || (!admissionsEnrollment && !satEnrollment)) {

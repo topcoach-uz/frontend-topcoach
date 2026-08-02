@@ -19,19 +19,22 @@ export default function OrganizationManagementPage() {
     try {
       const cacheBuster = bypassCache ? `?_t=${Date.now()}` : '';
       const response = await api.request({
-        path: `/organizations${cacheBuster}`,
+        path: `/admin/orgs${cacheBuster}`,
         method: 'GET',
         secure: true,
       });
       setOrganizations(response.data || []);
     } catch (error: any) {
-      const status = error.response?.status;
-      // No orgs / endpoint unavailable → render an empty table rather than an error toast.
-      if (status === 403 || status === 404 || status === 500) {
-        setOrganizations([]);
-      } else {
-        message.error('Failed to load organizations');
-      }
+      // `/admin/orgs` always exists now, so any failure here is a real one (auth,
+      // permissions, server). Clear the table so we don't show stale rows, but
+      // always surface the error instead of silently rendering "no schools".
+      console.error('Error loading organizations:', error);
+      setOrganizations([]);
+      message.error(
+        error?.response?.status === 403
+          ? 'You do not have permission to view organizations'
+          : 'Failed to load organizations',
+      );
     } finally {
       setOrganizationsLoading(false);
     }
@@ -39,10 +42,10 @@ export default function OrganizationManagementPage() {
 
   const fetchAvailableUsers = useCallback(async (search?: string) => {
     try {
-      const params = new URLSearchParams();
-      if (search) params.append('search', search);
+      // Blank `q` is valid — the endpoint returns the first 50 users.
+      const params = new URLSearchParams({ q: search ?? '' });
       const response = await api.request({
-        path: `/organizations/users/available?${params.toString()}`,
+        path: `/admin/orgs/user-search?${params.toString()}`,
         method: 'GET',
         secure: true,
       });

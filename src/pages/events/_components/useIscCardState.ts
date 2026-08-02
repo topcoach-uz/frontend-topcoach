@@ -14,7 +14,7 @@ export type IscStatusTone = 'open' | 'pending' | 'success' | 'danger';
 
 export interface IscCardState {
   mode: IscCardMode;
-  /** Button label: "Apply now" | "Resume application" | "View application". */
+  /** Button label: "Apply now" | "Resume application" | "View status". */
   ctaLabel: string;
   /** Short status line shown next to the CTA. */
   statusLabel: string;
@@ -79,7 +79,7 @@ export function useIscCardState(): IscCardState {
   if (isAuthenticated && app && mapped) {
     return {
       mode: 'status',
-      ctaLabel: 'View application',
+      ctaLabel: 'View status',
       statusLabel: mapped.label,
       statusTone: mapped.tone,
       loading: isLoading,

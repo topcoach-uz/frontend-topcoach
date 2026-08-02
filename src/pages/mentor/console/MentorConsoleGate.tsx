@@ -4,6 +4,7 @@ import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMentorRosterQuery } from 'src/app/services/fullSupportApi';
 import { useTypedSelector } from 'src/app/store';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { MentorConsoleProvider, type MentorConsoleUser } from './MentorConsoleContext';
 import { cleanName } from './utils';
 
@@ -42,11 +43,20 @@ export default function MentorConsoleGate() {
   });
   const hasFullSupport = (rosterRes?.data?.length ?? 0) > 0;
 
+  // Org owners/counselors belong in the organization console, even when their
+  // personal profile role is Mentor (the invite flow makes that common). Note
+  // useOrgStaff excludes platform staff, so a SuperAdmin previewing the mentor
+  // console is NOT bounced out.
+  const { isOrgStaff, isLoading: orgLoading } = useOrgStaff();
+
   if (!isAuthenticated) {
     return <Navigate to="/auth/signin" replace />;
   }
-  if (profileLoading && !profileRole && !managementRole) {
+  if ((profileLoading && !profileRole && !managementRole) || orgLoading) {
     return <Loader height="60vh" />;
+  }
+  if (isOrgStaff) {
+    return <Navigate to="/counselor-console" replace />;
   }
   if (!canEnter(profileRole, managementRole)) {
     return <Navigate to="/" replace />;

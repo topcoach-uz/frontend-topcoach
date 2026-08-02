@@ -30,11 +30,14 @@ import {
   ChevronRight,
   Clock,
   Users,
+  UserRound,
 } from 'lucide-react';
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { CcStat, type CcStatTone } from '../components/CcStat';
 import { CcPill, type CcPillVariant } from '../components/CcPill';
 import { CcAvatar } from '../components/CcAvatar';
+import { CcPageHead } from '../components/CcPageHead';
+import { CcEmpty } from '../components/CcEmpty';
 import { CC_PROGRAM_COLOR, CC_OTHER } from '../charts/ccEcharts';
 import { useAppDispatch } from 'src/app/store';
 import { useGetUserByIdQuery } from 'src/app/services/users';
@@ -86,6 +89,13 @@ const MajorMatchTab = lazy(
   () => import('src/pages/counselor-console/_programs/MajorMatchTab'),
 );
 
+// Flat read-only rendering of the student hub profile. Deliberately not the
+// student-facing ProfilePage: that one owns `?tab=` URL state which would
+// collide with this page's own tab state, and it renders its own header chrome.
+const ProfileDetailTab = lazy(
+  () => import('src/pages/counselor-console/_profile/StudentProfileDetailTab'),
+);
+
 // ── status → pill variant maps ──────────────────────────────────────────────
 const PROGRAM_PILL: Record<string, CcPillVariant> = {
   approved: 'success',
@@ -132,8 +142,17 @@ function TabFallback() {
   );
 }
 
-function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="cc-profile-empty">{children}</div>;
+/* Thin wrapper so this page's many `<EmptyState>Nothing here yet.</EmptyState>`
+   call sites keep reading naturally. It used to render a bare left-aligned
+   paragraph; it is now the console's one empty state. */
+function EmptyState({
+  children,
+  icon,
+}: {
+  children: ReactNode;
+  icon?: ReactNode;
+}) {
+  return <CcEmpty icon={icon ?? <Layers size={20} />} title={children} />;
 }
 
 function InlineError({ title, text }: { title: string; text: string }) {
@@ -252,6 +271,20 @@ export default function CounselorConsoleStudentProfilePage() {
           dashboardError={dashboardError}
           onOpenTab={setActiveTab}
         />
+      ),
+    },
+
+    {
+      key: 'profile',
+      label: (
+        <span className="cc-profile-tab-label">
+          <UserRound size={15} /> Profile
+        </span>
+      ),
+      children: (
+        <Suspense fallback={<TabFallback />}>
+          <ProfileDetailTab userId={userId!} />
+        </Suspense>
       ),
     },
 
@@ -375,41 +408,36 @@ export default function CounselorConsoleStudentProfilePage() {
     <div className="cc-profile" key={orgId ?? 'no-org'}>
       <BackLink />
 
-      <div className="cc-page-head--ruled">
-        <div className="cc-page-eyebrow">
-          <span className="cc-page-eyebrow-accent">Student</span>
-          {org ? <span>· {org.name}</span> : null}
-        </div>
-        <div className="cc-profile-headrow">
-          <h1 className="cc-page-title">
-            {userLoading && studentName === 'Student' ? 'Loading…' : studentName}
-          </h1>
-          <MessageButton userId={userId!} studentName={studentName} />
-        </div>
+      {/* Deck-less: the meta row (email, class, status) is this page's deck. */}
+      <CcPageHead
+        eyebrow="Student"
+        orgName={org?.name}
+        title={
+          userLoading && studentName === 'Student' ? 'Loading…' : studentName
+        }
+        actions={<MessageButton userId={userId!} studentName={studentName} />}
+        meta={
+          <>
+            {studentEmail ? (
+              <span className="cc-profile-headmeta-item">
+                <Mail size={13} /> {studentEmail}
+              </span>
+            ) : null}
+            {graduationYear ? (
+              <span className="cc-profile-headmeta-item">
+                <GraduationCap size={13} /> Class of {graduationYear}
+                {curriculum ? ` · ${curriculum}` : ''}
+              </span>
+            ) : null}
+            {profileStatus ? (
+              <CcPill variant={PROFILE_STATUS_PILL[profileStatus] ?? 'neutral'}>
+                {prettify(profileStatus)}
+              </CcPill>
+            ) : null}
+          </>
+        }
+      />
 
-        <div className="cc-profile-headmeta">
-          {studentEmail ? (
-            <span className="cc-profile-headmeta-item">
-              <Mail size={13} /> {studentEmail}
-            </span>
-          ) : null}
-          {graduationYear ? (
-            <span className="cc-profile-headmeta-item">
-              <GraduationCap size={13} /> Class of {graduationYear}
-              {curriculum ? ` · ${curriculum}` : ''}
-            </span>
-          ) : null}
-          {profileStatus ? (
-            <CcPill variant={PROFILE_STATUS_PILL[profileStatus] ?? 'neutral'}>
-              {prettify(profileStatus)}
-            </CcPill>
-          ) : null}
-        </div>
-
-        <p className="cc-page-lead">
-          Read-only academic profile — programs, tasks and sessions.
-        </p>
-      </div>
 
       <div className="cc-stat-grid">
         <CcStat
@@ -417,7 +445,7 @@ export default function CounselorConsoleStudentProfilePage() {
           label={bestProgram ? 'Program progress' : 'Profile completion'}
           value={
             programsLoading && !programsData
-              ? '—'
+              ? '-'
               : `${Math.round(overallProgress)}%`
           }
           meta={
@@ -490,7 +518,7 @@ function UpcomingSessionsStat({ userId }: { userId: string }) {
     <CcStat
       icon={<CalendarClock size={15} />}
       label="Upcoming sessions"
-      value={isLoading && !data ? '—' : upcoming}
+      value={isLoading && !data ? '-' : upcoming}
       tone={upcoming > 0 ? 'good' : 'neutral'}
     />
   );
@@ -679,7 +707,7 @@ function OverviewTab({
         id: `research-${sub.id}`,
         date,
         program: 'Research Prep',
-        title: `Submitted Week ${sub.weekNumber} — ${sub.weekTitle}`,
+        title: `Submitted Week ${sub.weekNumber}: ${sub.weekTitle}`,
         meta: prettify(sub.status),
       });
     }
@@ -813,12 +841,21 @@ function OverviewTab({
       : null;
     const enrolled = programRows.length > 0;
 
-    if (!lastActive && (progress === null || progress === 0)) {
+    // NEVER claim "Never signed in" here. This page has no sign-in signal at
+    // all: it infers activity from `user_daily_activity` and
+    // `studentProfile.lastActiveAt`, both of which are sparse and frequently
+    // null for people who are demonstrably using the product. The backend
+    // makes this claim only when membership status is INVITED (see
+    // org-students.service.ts), which is the one trustworthy signal, and this
+    // page does not have it. Inferring it from missing rows told counselors a
+    // signed-in student had never logged in.
+    if (!enrolled) {
       out.push({
-        reason: 'Never signed in',
-        detail: 'No recorded activity and no coursework progress.',
+        reason: 'Not enrolled in a program',
+        detail:
+          'Nothing to track yet. Enrol them in a program to see progress here.',
       });
-    } else if (enrolled && progress === 0) {
+    } else if (progress === 0) {
       out.push({
         reason: 'Hasn’t started any coursework',
         detail: 'Enrolled, but no program shows any progress yet.',
@@ -950,7 +987,7 @@ function OverviewTab({
             <h2 className="cc-attention-headline">Nothing needs your attention</h2>
             <p className="cc-attention-detail">
               No overdue tasks, and activity is recent
-              {lastActive ? ` — last seen ${relativeDate(lastActive).toLowerCase()}` : ''}
+              {lastActive ? `, last seen ${relativeDate(lastActive).toLowerCase()}` : ''}
               .
             </p>
           </div>

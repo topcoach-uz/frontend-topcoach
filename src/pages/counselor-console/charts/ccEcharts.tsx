@@ -9,7 +9,24 @@
    uses, and render with the SVGRenderer for crisp, editorial output. */
 import { useMemo } from 'react';
 import * as echarts from 'echarts/core';
-import { BarChart, LineChart } from 'echarts/charts';
+/* Only the chart types the console actually draws. ECharts tree-shakes by
+   registration, so an unused type here is dead weight in every bundle that
+   touches the console — add a type only when a chart genuinely needs it, and
+   remove it when the last caller goes.
+     Bar  — magnitude, ordered time, histograms, stacked part-to-whole bands
+     Line — trend over time (the Overview small multiples)
+     Pie  — part-to-whole share at a glance, drawn as a donut (Programs mix).
+            Registered here rather than locally so the 'cc' theme applies; the
+            SAT gauge stays local because it is the only gauge in the app. */
+// Registration is explicit and tree-shaken: a type not listed here simply
+// will not render. Only Bar and Line were registered for a long time, which is
+// the sole reason every panel on Analytics looked the same. Add a type here
+// when a panel genuinely needs it, not for decoration.
+import {
+  BarChart,
+  LineChart,
+  PieChart,
+} from 'echarts/charts';
 import {
   GridComponent,
   TooltipComponent,
@@ -25,6 +42,7 @@ import ReactEChartsCore from 'echarts-for-react/lib/core';
 echarts.use([
   BarChart,
   LineChart,
+  PieChart,
   GridComponent,
   TooltipComponent,
   LegendComponent,
@@ -99,6 +117,25 @@ echarts.registerTheme('cc', {
     symbol: 'none',
     smooth: true,
     lineStyle: { width: 2 },
+  },
+  /* Donut defaults. Segments are separated by a 2px ring in the SURFACE colour,
+     never by a stroke drawn around the mark. Labels wear TEXT tokens: the slice
+     beside them carries identity, so a label is readable whatever the hue does
+     under colour-vision deficiency. */
+  pie: {
+    itemStyle: {
+      borderColor: CC_SURFACE,
+      borderWidth: 2,
+    },
+    label: {
+      color: INK,
+      fontFamily: SANS,
+      fontSize: 11.5,
+    },
+    labelLine: {
+      lineStyle: { color: 'rgba(28, 25, 23, 0.22)' },
+      smooth: true,
+    },
   },
   categoryAxis: {
     axisLine: { show: true, lineStyle: { color: GRID_LINE } },

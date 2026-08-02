@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { message } from 'antd';
+import { useEffect, useState } from 'react';
+import { Modal, message } from 'antd';
 import { CcMenu, type CcMenuItem } from '../components/CcMenu';
+import { NoOrgPlaceholder } from '../components/CcEmpty';
+import { CcPageHead } from '../components/CcPageHead';
 import {
+  AlertTriangle,
   BarChart3,
-  Building2,
   Download,
-  DownloadCloud,
+  Eye,
   FileSpreadsheet,
   FileText,
   GraduationCap,
+  Inbox,
+  Loader2,
   Table as TableIcon,
   Users,
 } from 'lucide-react';
@@ -23,15 +27,10 @@ import {
   counselorConsoleApi,
   type OrgStudent,
 } from 'src/app/services/counselorConsoleApi';
-import { baseUrl } from 'src/app/services/api/const';
-import { ACCESS_TOKEN, LANGUAGE } from 'src/constants/storage';
 import './ReportsPage.scss';
 
 type ReportKey = 'roster' | 'programs' | 'engagement';
 type ExportFormat = 'excel' | 'csv' | 'pdf';
-/** Report types the backend can generate server-side (`GET .../reports/:type`). */
-type ServerReportType = 'roster' | 'progress';
-type ServerFormat = 'csv' | 'xlsx';
 
 interface Dataset {
   /** Ordered column headers. */
@@ -40,38 +39,54 @@ interface Dataset {
   rows: Record<string, string | number>[];
 }
 
+/**
+ * What a preview load produced.
+ *
+ * `complete` distinguishes a cheap sample (the students preview asks for a
+ * single 10-row page) from a dataset that already holds every row (programs and
+ * engagement come from one analytics call). Only a complete dataset may be
+ * reused for an export — a sample would silently truncate the file.
+ */
+interface PreviewResult {
+  ds: Dataset;
+  /** True row count on the server, which may exceed `ds.rows.length`. */
+  total: number;
+  complete: boolean;
+}
+
+type PreviewState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'ready'; result: PreviewResult };
+
 const REPORTS: {
   key: ReportKey;
   title: string;
   description: string;
   icon: JSX.Element;
   tone: 'info' | 'good' | 'accent';
-  /** When set, this card also offers a server-generated download. */
-  serverType?: ServerReportType;
 }[] = [
   {
     key: 'roster',
     title: 'Students',
     description:
-      'One row per student — name, email, grade, the programs they’re in, progress, and last login. A full student list to review offline or share with your team.',
+      'One row per student: name, email, grade, the programs they’re in, progress, and last login. A full student list to review offline or share with your team.',
     icon: <Users size={18} />,
     tone: 'info',
-    serverType: 'roster',
   },
   {
     key: 'programs',
     title: 'Program progress',
     description:
-      'Each student’s completion in every program they’re enrolled in (Admissions, SAT, Full Support, Research) — who’s ahead, who’s behind, and the average per program.',
+      'One row per program (Admissions, SAT, Full Support, Research) with how many students are enrolled, how many have finished, and the average progress across the program.',
     icon: <GraduationCap size={18} />,
     tone: 'good',
-    serverType: 'progress',
   },
   {
     key: 'engagement',
     title: 'Engagement',
     description:
-      'Each student’s last-active date and how recently they logged in — so you can spot who’s gone quiet and follow up.',
+      'Messages sent, weekly active students, and how recently students were last active, so you can spot who’s gone quiet and follow up.',
     icon: <BarChart3 size={18} />,
     tone: 'accent',
   },
@@ -79,17 +94,12 @@ const REPORTS: {
 
 /**
  * Basenames used for downloaded files. Kept separate from the internal
- * `ReportKey` / `ServerReportType` unions because the user sees these.
+ * `ReportKey` union because the user sees these.
  */
 const FILE_SLUGS: Record<ReportKey, string> = {
   roster: 'students',
   programs: 'programs',
   engagement: 'engagement',
-};
-
-const SERVER_FILE_SLUGS: Record<ServerReportType, string> = {
-  roster: 'students',
-  progress: 'progress',
 };
 
 /**
@@ -100,37 +110,35 @@ const SERVER_FILE_SLUGS: Record<ServerReportType, string> = {
 const ROSTER_MAX_LIMIT = 100;
 /** Safety net so a bad `total`/`items` pairing can't spin forever. */
 const ROSTER_MAX_PAGES = 200;
+/** How many rows the preview shows (and, for students, how many it fetches). */
+const PREVIEW_ROWS = 10;
+
+const ROSTER_COLUMNS = [
+  'Name',
+  'Email',
+  'Grade',
+  'Graduation Year',
+  'Program',
+  'Progress (%)',
+  'Last Active',
+  'Status',
+];
 
 function round(n: number | null | undefined): number {
   return Math.round(Number(n ?? 0));
 }
 
-/** Pull the attachment filename out of a Content-Disposition header, if any. */
-function filenameFromDisposition(header: string | null): string | null {
-  if (!header) return null;
-  // RFC 5987 `filename*=UTF-8''...` takes precedence over a plain `filename=`.
-  const star = /filename\*=(?:UTF-8'')?["']?([^"';\n]+)/i.exec(header);
-  if (star?.[1]) {
-    try {
-      return decodeURIComponent(star[1]);
-    } catch {
-      return star[1];
-    }
-  }
-  const plain = /filename="?([^"';\n]+)"?/i.exec(header);
-  return plain?.[1] ?? null;
-}
-
-/** Trigger a browser download for an in-memory blob. */
-function triggerBlobDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+function rosterRow(s: OrgStudent): Record<string, string | number> {
+  return {
+    Name: s.name,
+    Email: s.email,
+    Grade: s.gradeLevel ?? '-',
+    'Graduation Year': s.graduationYear ?? '-',
+    Program: s.programs.length ? s.programs.join(', ') : '-',
+    'Progress (%)': round(s.progress),
+    'Last Active': s.lastActiveAt ? dayjs(s.lastActiveAt).format('YYYY-MM-DD') : '-',
+    Status: s.status,
+  };
 }
 
 export default function CounselorConsoleReportsPage() {
@@ -139,21 +147,33 @@ export default function CounselorConsoleReportsPage() {
 
   // Which report is currently exporting client-side (null when idle).
   const [busy, setBusy] = useState<ReportKey | null>(null);
-  // Which server-download is in flight (null when idle) — keyed by report type.
-  const [serverBusy, setServerBusy] = useState<ServerReportType | null>(null);
+  // Which report's preview modal is open (null when closed).
+  const [previewKey, setPreviewKey] = useState<ReportKey | null>(null);
+  const [previews, setPreviews] = useState<
+    Partial<Record<ReportKey, PreviewState>>
+  >({});
+  /**
+   * Datasets known to hold EVERY row, so a later export can skip the refetch.
+   * Populated by a completed export and by previews whose loader is complete.
+   */
+  const [fullData, setFullData] = useState<Partial<Record<ReportKey, Dataset>>>(
+    {},
+  );
+
+  // Cached rows belong to one organization; drop them when the switcher moves.
+  useEffect(() => {
+    setPreviews({});
+    setFullData({});
+    setPreviewKey(null);
+  }, [orgId]);
 
   const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-page-eyebrow">
-        <span className="cc-page-eyebrow-accent">Insights</span>
-        {org ? <span>· {org.name}</span> : null}
-      </div>
-      <h1 className="cc-page-title">Reports</h1>
-      <p className="cc-page-lead">
-        Export your organization’s data for board decks, spreadsheets and offline
-        review. Every report pulls the latest figures at the moment you download.
-      </p>
-    </div>
+    <CcPageHead
+      eyebrow="Insights"
+      orgName={org?.name}
+      title="Reports"
+      lead="Export your organization’s data for board decks, spreadsheets and offline review. Preview a report first to check what’s in it, then download."
+    />
   );
 
   // ── No organization selected ──
@@ -161,13 +181,10 @@ export default function CounselorConsoleReportsPage() {
     return (
       <div className="cc-reports">
         {header}
-        <div className="cc-placeholder">
-          <Building2 size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Select an organization</div>
-          <div className="cc-placeholder-text">
-            Choose an organization from the switcher to export its reports.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+            title="Select an organization"
+            text="Choose an organization from the switcher to export its reports."
+          />
       </div>
     );
   }
@@ -178,6 +195,9 @@ export default function CounselorConsoleReportsPage() {
    * Walk the roster endpoint page by page at the maximum allowed page size and
    * collect every student. Stops once we've seen `total` rows, once a page
    * comes back short/empty, or at the hard page cap.
+   *
+   * This is an export-only path: it can issue up to 200 requests. Previews use
+   * `previewRoster` instead.
    */
   async function fetchAllStudents(): Promise<OrgStudent[]> {
     const all: OrgStudent[] = [];
@@ -209,29 +229,7 @@ export default function CounselorConsoleReportsPage() {
 
   async function loadRoster(): Promise<Dataset> {
     const students = await fetchAllStudents();
-    const rows = students.map((s: OrgStudent) => ({
-      Name: s.name,
-      Email: s.email,
-      Grade: s.gradeLevel ?? '—',
-      'Graduation Year': s.graduationYear ?? '—',
-      Program: s.programs.length ? s.programs.join(', ') : '—',
-      'Progress (%)': round(s.progress),
-      'Last Active': s.lastActiveAt ? dayjs(s.lastActiveAt).format('YYYY-MM-DD') : '—',
-      Status: s.status,
-    }));
-    return {
-      columns: [
-        'Name',
-        'Email',
-        'Grade',
-        'Graduation Year',
-        'Program',
-        'Progress (%)',
-        'Last Active',
-        'Status',
-      ],
-      rows,
-    };
+    return { columns: ROSTER_COLUMNS, rows: students.map(rosterRow) };
   }
 
   async function loadPrograms(): Promise<Dataset> {
@@ -282,6 +280,64 @@ export default function CounselorConsoleReportsPage() {
     engagement: loadEngagement,
   };
 
+  // ── Preview loaders (deliberately cheap) ──
+
+  /**
+   * One page of `PREVIEW_ROWS` students plus the server's `total`. Never calls
+   * `fetchAllStudents` — previewing must not drag thousands of rows over the
+   * wire just to render ten of them.
+   */
+  async function previewRoster(): Promise<PreviewResult> {
+    const res = await dispatch(
+      counselorConsoleApi.endpoints.getOrgStudents.initiate({
+        orgId: orgId as string,
+        page: 1,
+        limit: PREVIEW_ROWS,
+      }),
+    ).unwrap();
+    const items = res.items ?? [];
+    const total =
+      Number.isFinite(res.total) && res.total >= 0 ? res.total : items.length;
+    return {
+      ds: { columns: ROSTER_COLUMNS, rows: items.map(rosterRow) },
+      total,
+      // A sample, not the whole list — unless the org happens to fit in a page.
+      complete: total <= items.length,
+    };
+  }
+
+  /** Programs and engagement are a single analytics call, so preview = full. */
+  async function previewWhole(key: ReportKey): Promise<PreviewResult> {
+    const ds = fullData[key] ?? (await LOADERS[key]());
+    return { ds, total: ds.rows.length, complete: true };
+  }
+
+  const PREVIEW_LOADERS: Record<ReportKey, () => Promise<PreviewResult>> = {
+    roster: previewRoster,
+    programs: () => previewWhole('programs'),
+    engagement: () => previewWhole('engagement'),
+  };
+
+  async function loadPreview(key: ReportKey) {
+    setPreviews((p) => ({ ...p, [key]: { status: 'loading' } }));
+    try {
+      const result = await PREVIEW_LOADERS[key]();
+      setPreviews((p) => ({ ...p, [key]: { status: 'ready', result } }));
+      if (result.complete) {
+        setFullData((f) => ({ ...f, [key]: result.ds }));
+      }
+    } catch (err) {
+      console.error(`[reports] preview failed (report=${key})`, err);
+      setPreviews((p) => ({ ...p, [key]: { status: 'error' } }));
+    }
+  }
+
+  function openPreview(key: ReportKey) {
+    setPreviewKey(key);
+    // Re-use an already loaded preview; only fetch when there's nothing yet.
+    if (previews[key]?.status !== 'ready') void loadPreview(key);
+  }
+
   function fileBase(key: ReportKey): string {
     const slug = org?.slug ? `${org.slug}_` : '';
     return `${slug}${FILE_SLUGS[key]}_${dayjs().format('YYYY-MM-DD')}`;
@@ -302,12 +358,12 @@ export default function CounselorConsoleReportsPage() {
   function writePdf(ds: Dataset, key: ReportKey, title: string) {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text(`${title} — ${org?.name ?? 'Organization'}`, 14, 22);
+    doc.text(`${title}: ${org?.name ?? 'Organization'}`, 14, 22);
     doc.setFontSize(11);
     doc.text(`Generated ${dayjs().format('MMM D, YYYY')}`, 14, 30);
     autoTable(doc, {
       head: [ds.columns],
-      body: ds.rows.map((r) => ds.columns.map((c) => String(r[c] ?? '—'))),
+      body: ds.rows.map((r) => ds.columns.map((c) => String(r[c] ?? '-'))),
       startY: 35,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [123, 31, 47] }, // brand maroon
@@ -320,7 +376,10 @@ export default function CounselorConsoleReportsPage() {
     if (busy) return;
     setBusy(key);
     try {
-      const ds = await LOADERS[key]();
+      // Only a dataset known to be complete is reused; a 10-row preview sample
+      // never lands in `fullData`, so exports still pull everything.
+      const ds = fullData[key] ?? (await LOADERS[key]());
+      setFullData((f) => ({ ...f, [key]: ds }));
       if (ds.rows.length === 0) {
         message.warning('There’s no data to export for this report yet.');
         return;
@@ -335,64 +394,6 @@ export default function CounselorConsoleReportsPage() {
       setBusy(null);
     }
   }
-
-  // ── Server-generated download ──
-  // Fetches the binary attachment the backend renders at
-  // `GET /org/:orgId/reports/:type?format=`, reusing the exact auth + base URL
-  // the RTK Query client uses (Bearer token + language header), then triggers a
-  // browser download from the blob.
-  async function downloadServerReport(
-    serverType: ServerReportType,
-    format: ServerFormat,
-  ) {
-    if (serverBusy || !orgId) return;
-    setServerBusy(serverType);
-    try {
-      const token = localStorage.getItem(ACCESS_TOKEN);
-      const language = localStorage.getItem(LANGUAGE) || 'en';
-      const url = `${baseUrl}/org/${encodeURIComponent(
-        orgId,
-      )}/reports/${serverType}?format=${format}`;
-      const res = await fetch(url, {
-        headers: {
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
-          language,
-        },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const fallback = `${org?.slug ? `${org.slug}_` : ''}${
-        SERVER_FILE_SLUGS[serverType]
-      }.${format}`;
-      const filename =
-        filenameFromDisposition(res.headers.get('content-disposition')) ||
-        fallback;
-      triggerBlobDownload(blob, filename);
-    } catch (err) {
-      console.error(
-        `[reports] server download failed (type=${serverType}, format=${format})`,
-        err,
-      );
-      message.error('Could not download that report. Please try again.');
-    } finally {
-      setServerBusy(null);
-    }
-  }
-
-  const serverMenu = (serverType: ServerReportType): CcMenuItem[] => [
-    {
-      key: 'xlsx',
-      label: 'Download as Excel',
-      icon: <FileSpreadsheet size={15} />,
-      onClick: () => downloadServerReport(serverType, 'xlsx'),
-    },
-    {
-      key: 'csv',
-      label: 'Download as CSV',
-      icon: <TableIcon size={15} />,
-      onClick: () => downloadServerReport(serverType, 'csv'),
-    },
-  ];
 
   const exportMenu = (key: ReportKey, title: string): CcMenuItem[] => [
     {
@@ -415,6 +416,93 @@ export default function CounselorConsoleReportsPage() {
     },
   ];
 
+  // ── Preview modal body ──
+
+  const previewReport = previewKey
+    ? REPORTS.find((r) => r.key === previewKey)
+    : undefined;
+  const previewState = previewKey ? previews[previewKey] : undefined;
+
+  function renderPreviewBody() {
+    if (!previewKey) return null;
+
+    if (!previewState || previewState.status === 'loading') {
+      return (
+        <div className="cc-preview-state">
+          <Loader2 size={20} className="cc-preview-spin" />
+          <div className="cc-preview-state-text">Loading a sample…</div>
+        </div>
+      );
+    }
+
+    if (previewState.status === 'error') {
+      return (
+        <div className="cc-preview-state">
+          <AlertTriangle size={20} className="cc-preview-state-ico--bad" />
+          <div className="cc-preview-state-title">Could not load the preview</div>
+          <div className="cc-preview-state-text">
+            Something went wrong fetching this report’s data.
+          </div>
+          <button
+            type="button"
+            className="cc-preview-retry"
+            onClick={() => void loadPreview(previewKey)}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    const { ds, total } = previewState.result;
+
+    if (ds.rows.length === 0) {
+      return (
+        <div className="cc-preview-state">
+          <Inbox size={20} className="cc-preview-state-ico" />
+          <div className="cc-preview-state-title">Nothing to show yet</div>
+          <div className="cc-preview-state-text">
+            This report has no rows for your organization right now. Once there’s
+            data it will appear here.
+          </div>
+        </div>
+      );
+    }
+
+    const shown = ds.rows.slice(0, PREVIEW_ROWS);
+
+    return (
+      <>
+        <div className="cc-preview-scroll">
+          <table className="cc-preview-table">
+            <thead>
+              <tr>
+                {ds.columns.map((c) => (
+                  <th key={c} scope="col">
+                    {c}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((row, i) => (
+                <tr key={i}>
+                  {ds.columns.map((c) => (
+                    <td key={c}>{String(row[c] ?? '-')}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="cc-preview-foot">
+          Showing {shown.length} of {total} {total === 1 ? 'row' : 'rows'}. The
+          export includes every row.
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="cc-reports">
       {header}
@@ -426,6 +514,14 @@ export default function CounselorConsoleReportsPage() {
             <h2 className="cc-reports-card-title">{r.title}</h2>
             <p className="cc-reports-card-desc">{r.description}</p>
             <div className="cc-reports-card-actions">
+              <button
+                type="button"
+                className="cc-reports-preview"
+                onClick={() => openPreview(r.key)}
+              >
+                <Eye size={15} />
+                <span>Preview</span>
+              </button>
               <CcMenu
                 items={exportMenu(r.key, r.title)}
                 align="left"
@@ -440,6 +536,20 @@ export default function CounselorConsoleReportsPage() {
           </section>
         ))}
       </div>
+
+      <Modal
+        open={!!previewKey}
+        onCancel={() => setPreviewKey(null)}
+        title={
+          previewReport ? `${previewReport.title} · preview` : 'Report preview'
+        }
+        width={860}
+        footer={null}
+        className="cc-preview-modal"
+        destroyOnClose
+      >
+        {renderPreviewBody()}
+      </Modal>
     </div>
   );
 }

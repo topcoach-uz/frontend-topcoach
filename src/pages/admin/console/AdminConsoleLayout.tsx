@@ -19,6 +19,7 @@ import {
   Shield,
   CreditCard,
   Repeat,
+  Gift,
   LineChart,
   ChevronLeft,
   BookOpen,
@@ -46,6 +47,7 @@ type NavKey =
   | 'users'
   | 'programs'
   | 'payments'
+  | 'referrals'
   | 'subscriptions'
   | 'sessions'
   | 'events'
@@ -148,6 +150,12 @@ export default function AdminConsoleLayout() {
             path: '/new-admin/payments',
           },
           {
+            key: 'referrals',
+            label: 'Referrals',
+            icon: <Gift size={18} strokeWidth={1.75} />,
+            path: '/new-admin/referrals',
+          },
+          {
             key: 'subscriptions',
             label: 'Subscriptions',
             icon: <Repeat size={18} strokeWidth={1.75} />,
@@ -202,6 +210,7 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/organization-management')) return 'organization-management';
     if (p.startsWith('/new-admin/programs')) return 'programs';
     if (p.startsWith('/new-admin/payments')) return 'payments';
+    if (p.startsWith('/new-admin/referrals')) return 'referrals';
     if (p.startsWith('/new-admin/subscriptions')) return 'subscriptions';
     if (p.startsWith('/new-admin/sessions')) return 'sessions';
     if (p.startsWith('/new-admin/events')) return 'events';
@@ -238,6 +247,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/dashboard': 'Dashboard',
       '/new-admin/users': 'Users',
       '/new-admin/payments': 'Payments',
+      '/new-admin/referrals': 'Referrals',
       '/new-admin/subscriptions': 'Subscriptions',
       '/new-admin/sessions': 'Sessions',
       '/new-admin/events': 'Events',

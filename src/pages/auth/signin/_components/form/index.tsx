@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from 'src/app/api';
 import { login } from 'src/app/slices/authSlice';
@@ -20,6 +20,7 @@ export default function SigninForm() {
   const [error, setError] = useState<string>('');
   const [resending, setResending] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const isUnverifiedEmail = !!error?.toLowerCase().includes('verify your email');
@@ -81,7 +82,23 @@ export default function SigninForm() {
           // full loader chain) on every sign-in. With SPA navigation the
           // router's bootstrap overlay covers the transition and the
           // landing page renders as soon as getMe resolves.
-          const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          //
+          // `?redirect=` wins over the stored value: it is the explicit intent
+          // of the link that sent the user here (e.g. `/join/<token>`), and it
+          // is the ONLY carrier that survives a cross-device or private-window
+          // hop, where localStorage was never written. Query-param targets are
+          // restricted to same-site paths so the param can't be used as an
+          // open redirect.
+          const paramUrl = searchParams.get('redirect');
+          const safeParamUrl =
+            paramUrl &&
+            paramUrl.startsWith('/') &&
+            !paramUrl.startsWith('//') &&
+            !paramUrl.startsWith('/auth')
+              ? paramUrl
+              : null;
+          const redirectUrl =
+            safeParamUrl ?? localStorage.getItem('redirectAfterLogin');
           localStorage.removeItem('redirectAfterLogin');
           const target =
             redirectUrl && !redirectUrl.startsWith('/auth') ? redirectUrl : '/';

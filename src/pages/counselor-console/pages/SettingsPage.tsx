@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { Button, Form, Input, Skeleton, message } from 'antd';
-import { Building2, Lock, RotateCcw, Save } from 'lucide-react';
+import { Lock, RotateCcw, Save } from 'lucide-react';
 
 import { useCounselorConsole } from '../CounselorConsoleContext';
+import { CcPageHead } from '../components/CcPageHead';
+import { NoOrgPlaceholder } from '../components/CcEmpty';
 import { useGetOrgContextQuery } from 'src/app/services/counselorConsoleApi';
 import {
   useUpdateOrgMutation,
@@ -68,17 +70,14 @@ export default function CounselorConsoleSettingsPage() {
   }, [orgSettings, form]);
 
   const header = (
-    <div className="cc-page-head--ruled">
-      <div className="cc-page-eyebrow">
-        <span className="cc-page-eyebrow-accent">Administration</span>
-        {org ? <span>· {org.name}</span> : null}
-      </div>
-      <h1 className="cc-page-title">Settings</h1>
-      <p className="cc-page-lead">
-        Manage how {org?.name ?? 'your organization'} appears to students and
-        staff — its name, public details and contact information.
-      </p>
-    </div>
+    <CcPageHead
+      eyebrow="Administration"
+      orgName={org?.name}
+      title="Settings"
+      lead={`Manage how ${
+        org?.name ?? 'your organization'
+      } appears to students and staff. This covers its name, public details and contact information.`}
+    />
   );
 
   // ── No organization selected ──
@@ -86,13 +85,10 @@ export default function CounselorConsoleSettingsPage() {
     return (
       <div className="cc-settings">
         {header}
-        <div className="cc-placeholder">
-          <Building2 size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Select an organization</div>
-          <div className="cc-placeholder-text">
-            Choose an organization from the switcher to edit its settings.
-          </div>
-        </div>
+        <NoOrgPlaceholder
+            title="Select an organization"
+            text="Choose an organization from the switcher to edit its settings."
+          />
       </div>
     );
   }
@@ -102,14 +98,16 @@ export default function CounselorConsoleSettingsPage() {
     return (
       <div className="cc-settings">
         {header}
-        <div className="cc-placeholder">
-          <Lock size={22} color="#7b1f2f" />
-          <div className="cc-placeholder-title">Owners only</div>
-          <div className="cc-placeholder-text">
-            Organization settings can only be edited by an owner. Contact an owner
+        <NoOrgPlaceholder
+            icon={<Lock size={22} />}
+            title="Owners only"
+            text={
+              <>
+                Organization settings can only be edited by an owner. Contact an owner
             of {org?.name ?? 'this organization'} to request a change.
-          </div>
-        </div>
+              </>
+            }
+          />
       </div>
     );
   }

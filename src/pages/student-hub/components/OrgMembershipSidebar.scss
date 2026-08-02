@@ -1,0 +1,86 @@
+/* Sits directly under the sidebar profile card. Reads as a quiet block of
+   context, not a call to action: no button affordance, no accent fill. The
+   hairline above ties it to the profile card it belongs with. */
+.org-side {
+  margin: 10px 0 14px;
+  padding: 12px 12px 13px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  background: #fcfcfb;
+}
+
+.org-side-item + .org-side-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.org-side-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.org-side-logo {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.org-side-logo--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b0000;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.org-side-headtext {
+  min-width: 0;
+}
+
+.org-side-eyebrow {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+}
+
+/* The name can be long and the sidebar is narrow, so it wraps to at most two
+   lines rather than being clipped to an ellipsis: which organization you are
+   in is the one thing this block must not hide. */
+.org-side-name {
+  margin: 1px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1a1a1a;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.org-side-body {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #6b6b6b;
+}
+
+.org-side-fallback {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #6b6b6b;
+}

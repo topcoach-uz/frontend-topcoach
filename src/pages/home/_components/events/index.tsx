@@ -10,6 +10,7 @@ import EmptyCardComp from 'src/components/emptyCard';
 import { useConfettiCelebration } from 'src/hooks/useConfettiCelebration';
 import useMentee from '../../mentee/useMentee';
 import EventCardComp from './_component';
+import IscPayNowButton from 'src/pages/events/_components/IscPayNowButton';
 import styles from './events.module.scss';
 
 interface MenteeEvent {
@@ -264,6 +265,10 @@ export default function EventsSection() {
           >
             {t('home.eventSubtitle')}
           </CustomText>
+          {/* ISC 2026 participation-fee CTA — renders only for invoiced students. */}
+          <div style={{ marginBottom: 16 }}>
+            <IscPayNowButton />
+          </div>
           <CustomTabs
             activeKey={activeTab}
             items={tabItems}

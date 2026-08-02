@@ -31,14 +31,8 @@
     }
   }
 
-  /* ── Header meta row (email · grade · status pill) ── */
-  .cc-profile-headmeta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 18px;
-    margin: 10px 0 4px;
-  }
+  /* The meta row's layout is `.cc-page-head-meta` on the shared `CcPageHead`
+     (this page passes it as the `meta` slot). Only the item styling is local. */
   .cc-profile-headmeta-item {
     display: inline-flex;
     align-items: center;
@@ -52,14 +46,7 @@
     }
   }
 
-  /* ── Cards ── */
-  .cc-profile-card {
-    background: var(--cc-bg-surface);
-    border: 1px solid var(--cc-border);
-    border-radius: var(--cc-radius);
-    box-shadow: var(--cc-shadow-sm);
-    padding: 20px 22px;
-  }
+  /* Cards wear the shared `.cc-card` shell from CounselorConsoleLayout.scss. */
 
   /* Reused AntD content (sessions bookings) sits inside a console card —
      tone the nested AntD tabs down to the editorial palette. */
@@ -523,12 +510,16 @@
     }
   }
 
+  /* NOTE: nothing in this page's TSX renders `.cc-program-card` any more — this
+     block and the `.cc-program-*` rules below it are dead, left in place rather
+     than deleted because removing a whole retired sub-design is a separate call.
+     It keeps its own shell for that reason (it is not in the `.cc-card` group). */
   .cc-program-card {
     background: var(--cc-bg-surface);
     border: 1px solid var(--cc-border);
     border-radius: var(--cc-radius);
     box-shadow: var(--cc-shadow-sm);
-    padding: 18px 20px;
+    padding: 18px 20px 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -552,7 +543,8 @@
   }
   .cc-program-card-title {
     font-family: var(--cc-serif);
-    font-size: 1.08rem;
+    /* 1.15rem is the console's one card-title size. This was 1.08rem. */
+    font-size: 1.15rem;
     font-weight: 500;
     letter-spacing: -0.01em;
     color: var(--cc-text);
@@ -691,12 +683,9 @@
     color: var(--cc-text-secondary);
   }
 
-  /* ── Empty + error states ── */
-  .cc-profile-empty {
-    padding: 20px 4px;
-    font-size: 0.9rem;
-    color: var(--cc-text-muted);
-  }
+  /* ── Empty + error states ──
+     The empty state is `CcEmpty`. It used to be `.cc-profile-empty`: a bare
+     left-aligned paragraph with no icon, no serif title and no centring. */
 
   .cc-profile-error {
     display: flex;
@@ -728,14 +717,6 @@
   }
 
   /* ── Header row (title + Message action) ── */
-  .cc-profile-headrow {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
   /* ── Shared maroon action button (Message / Save / Assign) ── */
   .cc-profile-action-btn.ant-btn {
     height: 36px;

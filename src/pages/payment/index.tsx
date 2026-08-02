@@ -1,252 +1,183 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { Form, message, Card, Row, Col, Input, Select, Button, Space, Typography, Tag, Divider, Radio } from "antd";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Button, Input, Form, Select, Row, Col, message, Skeleton } from 'antd';
+import { useForm } from 'antd/es/form/Form';
+import {
+  ArrowLeft,
+  ChevronDown,
+  CreditCard as CardIcon,
+  Lock,
+  ShieldCheck,
+} from 'lucide-react';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
-import { useForm } from "antd/es/form/Form";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { api } from "src/app/api";
-import { useTypedSelector } from "src/app/store";
-import { CustomButton, CustomText } from "src/components/common";
-import { InputFormItem } from "src/components/form";
-import styles from "./payment.module.scss";
-import useParamsHook from "src/hooks/params";
-import { themeFontSize, themeFontWeight } from "src/constants/theme";
-import { ArrowLeft, CreditCard as CardIcon, Smartphone as Mobile, Lock } from "lucide-react";
-import CustomSelect from "src/components/common/select";
-import { Spin } from "antd";
-import { useGetPlansQuery } from "src/app/services/mentors";
-import { useGetMentorDetailQuery } from "src/app/services/mentors";
-import { ReferralCodeInput } from "src/components/referral/ReferralCodeInput";
-import FontAwesomeIcon from "src/components/common/icons/FontAwesomeIcon";
-import { paymentRedirectWithTimeout } from "src/app/services/paymentRedirect";
-import { PAYMENT_MERCHANT_RETURN_ORIGIN } from "src/constants/paymentMerchantReturn";
-import { REGISTRATION_FEE_USD_FALLBACK } from "src/pages/events/central-asian-admissions-forum/constants";
+import { api } from 'src/app/api';
+import {
+  fetchPaymentQuote,
+  type PaymentQuote,
+  type QuoteProductType,
+} from 'src/app/services/paymentQuote';
+import { paymentRedirectWithTimeout } from 'src/app/services/paymentRedirect';
+import { ReferralCodeInput } from 'src/components/referral/ReferralCodeInput';
+import { REFERRAL_INELIGIBLE_PAYMENT_TYPES } from 'src/constants/referral';
+import { PAYMENT_MERCHANT_RETURN_ORIGIN } from 'src/constants/paymentMerchantReturn';
+import useParamsHook from 'src/hooks/params';
 
-const { Title, Paragraph, Text } = Typography;
+import styles from './payment.module.scss';
+
 const { Option } = Select;
 
+type Provider = 'click' | 'atmos' | 'card';
+
+const PROVIDERS: {
+  id: Exclude<Provider, 'card'>;
+  name: string;
+  logo: string;
+}[] = [
+  { id: 'click', name: 'Click', logo: '/img/click.jpg' },
+  { id: 'atmos', name: 'Atmos', logo: '/img/atmos.png' },
+];
+
+const formatAmount = (amount: number, currency: string) =>
+  currency === 'UZS'
+    ? `${Math.round(amount).toLocaleString('en-US')} UZS`
+    : new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+      }).format(amount);
+
+/**
+ * Work out what is being bought from the URL.
+ *
+ * Kept in one place: the old page re-derived this in four separate spots (the
+ * summary, the return URL, the payload and the amount), and they could disagree.
+ */
+function resolveProductType(params: {
+  paymentType: string;
+  enrollmentId: string;
+  caafApplicationId: string;
+  sessionId: string;
+  planId: string;
+  mentorId: string;
+}): QuoteProductType | null {
+  const { paymentType, enrollmentId, caafApplicationId, sessionId, planId, mentorId } =
+    params;
+
+  if (paymentType === 'caaf' || caafApplicationId) return 'caaf';
+  if (enrollmentId) return 'course';
+  if (planId && mentorId) return sessionId ? 'session' : 'package';
+  return null;
+}
+
 function PaymentPage() {
-  const colors = useTypedSelector((state) => state.layout.colors);
+  const { t } = useTranslation();
   const [form] = useForm();
   const navigate = useNavigate();
   const { searchParams } = useParamsHook();
-  const amount = searchParams.get("amount");
-  const currencyName = searchParams.get("currencyName");
-  const method = "click";
-  const sessionId = searchParams.get("sessionId") ?? "";
-  const planId = searchParams.get("planId") ?? "";
-  const mentorId = searchParams.get("mentorId") ?? "";
-  const enrollmentId = searchParams.get("enrollmentId") ?? "";
-  const caafApplicationId = searchParams.get("caafApplicationId") ?? "";
-  const paymentType = searchParams.get("type") ?? "";
-  const buyType = searchParams.get("buyType") ?? "";
-  const slotStart = searchParams.get("slotStart") ?? "";
-  const slotEnd = searchParams.get("slotEnd") ?? "";
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'click' | 'atmos' | 'payme' | 'card'>('click');
-  const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
-  const [calculatedCurrency, setCalculatedCurrency] = useState<string>("USD");
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [referralDiscount, setReferralDiscount] = useState(0);
-  const [finalAmount, setFinalAmount] = useState<number | null>(null);
 
-  // Fetch data for session payments
-  const { data: plans } = useGetPlansQuery();
-  const { data: mentorDetail } = useGetMentorDetailQuery(
-    { mentorId },
-    { skip: !mentorId }
+  const sessionId = searchParams.get('sessionId') ?? '';
+  const planId = searchParams.get('planId') ?? '';
+  const mentorId = searchParams.get('mentorId') ?? '';
+  const enrollmentId = searchParams.get('enrollmentId') ?? '';
+  const caafApplicationId = searchParams.get('caafApplicationId') ?? '';
+  const paymentType = searchParams.get('type') ?? '';
+  const slotStart = searchParams.get('slotStart') ?? '';
+
+  const [provider, setProvider] = useState<Provider>('click');
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [quote, setQuote] = useState<PaymentQuote | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(true);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  const productType = useMemo(
+    () =>
+      resolveProductType({
+        paymentType,
+        enrollmentId,
+        caafApplicationId,
+        sessionId,
+        planId,
+        mentorId,
+      }),
+    [paymentType, enrollmentId, caafApplicationId, sessionId, planId, mentorId],
   );
 
-  // Check for payment status on page load
+  // Post-payment return. Providers send the user back here with a status, and
+  // the destination differs per product.
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const paymentStatus = urlParams.get('payment_status');
-      const paymentType = urlParams.get('type');
-      const error = urlParams.get('error');
-      
-      if (paymentStatus === 'success') {
-        message.success('Payment completed successfully!');
-        
-        if (paymentType === 'subscription') {
-          window.history.replaceState({}, document.title, '/');
-          navigate('/?payment_status=success&type=subscription');
-        } else if (paymentType === 'session') {
-          window.history.replaceState({}, document.title, '/');
-          navigate('/?payment_status=success&type=session');
-        } else if (paymentType === 'course') {
-          navigate('/programs/success?success=true');
-        } else {
-          window.history.replaceState({}, document.title, '/');
-          navigate('/');
-        }
-      } else if (error) {
-        console.log('Payment error detected:', error);
-      }
-    };
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment_status') !== 'success') return;
 
-    checkPaymentStatus();
-  }, [navigate]);
-
-  // Calculate dynamic pricing for session payments
-  useEffect(() => {
-    if (sessionId && planId && mentorId && mentorDetail && plans) {
-      const plan = plans.find(p => p.id === planId);
-      const mentorLevel = mentorDetail?.mentorProfile?.level;
-      
-      if (plan && mentorLevel && plan.prices && mentorLevel !== 'probono') {
-        if (!amount) {
-          const sessionAmount = (plan.prices as any)[mentorLevel];
-          setCalculatedAmount(sessionAmount);
-          let currency = (plan.currency as any)?.name;
-          if (!currency) {
-            currency = sessionAmount > 1000 ? 'UZS' : 'USD';
-          }
-          setCalculatedCurrency(currency);
-        } else {
-          let currency = (plan.currency as any)?.name;
-          if (!currency) {
-            const urlAmount = parseFloat(amount);
-            currency = urlAmount > 1000 ? 'UZS' : 'USD';
-          }
-          setCalculatedCurrency(currency);
-        }
-      }
-    }
-  }, [sessionId, planId, mentorId, mentorDetail, plans, amount]);
-
-  const isCaafPayment = paymentType === 'caaf' && caafApplicationId;
-
-  // Check if we have required parameters
-  if (!planId && !sessionId && !enrollmentId && !isCaafPayment) {
-    message.error('Missing payment information.');
-    return null;
-  }
-
-  // Determine the amount to display
-  const displayAmount =
-    paymentType === 'course' || paymentType === 'caaf'
-      ? (paymentType === 'caaf' ? (amount || String(REGISTRATION_FEE_USD_FALLBACK)) : amount)
-      : calculatedAmount !== null
-        ? calculatedAmount.toString()
-        : amount;
-
-  // Determine the currency to display
-  let displayCurrency =
-    paymentType === 'course' || paymentType === 'caaf'
-      ? 'USD'
-      : calculatedCurrency || currencyName || 'USD';
-  
-  // Calculate final amount with referral discount
-  const originalAmount = parseFloat(displayAmount || '0');
-  const finalDisplayAmount = finalAmount !== null ? finalAmount : originalAmount;
-  
-  // Enhanced currency detection for URL parameters
-  if (!calculatedAmount && amount) {
-    const amountValue = parseFloat(amount);
-    if (amountValue > 10000) {
-      displayCurrency = 'UZS';
-    } else if (amountValue > 1000 && !currencyName && !calculatedCurrency) {
-      displayCurrency = 'UZS';
-    } else if (amountValue < 100 && !currencyName && !calculatedCurrency) {
-      displayCurrency = 'USD';
-    }
-  }
-
-  // Determine return URL based on payment type (merchant return host — see PAYMENT_MERCHANT_RETURN_ORIGIN)
-  const getReturnUrl = () => {
-    if (paymentType === "caaf" && caafApplicationId) {
-      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/events/central-asian-admissions-forum?caaf_payment=success`;
-    }
-    if (paymentType === "course" && enrollmentId) {
-      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/programs/success?success=true`;
-    } else if (paymentType === "subscription" || (planId && !sessionId && !mentorId)) {
-      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success&type=subscription`;
-    } else if (sessionId && mentorId) {
-      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success&type=session`;
+    message.success(t('checkout.paid', 'Payment completed.'));
+    const type = params.get('type');
+    if (type === 'course') {
+      navigate('/programs/success?success=true');
     } else {
-      return `${PAYMENT_MERCHANT_RETURN_ORIGIN}/?payment_status=success`;
+      window.history.replaceState({}, document.title, '/');
+      navigate(type ? `/?payment_status=success&type=${type}` : '/');
     }
-  };
+  }, [navigate, t]);
 
-  const returnUrl = getReturnUrl();
-
-  // Referral code handlers
-  const handleReferralCodeApplied = (code: string, discount: number, final: number) => {
-    setReferralCode(code);
-    setReferralDiscount(discount);
-    setFinalAmount(final);
-  };
-
-  const handleReferralCodeRemoved = () => {
-    setReferralCode(null);
-    setReferralDiscount(0);
-    setFinalAmount(null);
-  };
-
-  // Handle card payment submission
-  const handleCardSubmit = async (values: any) => {
-    try {
-      console.log('Form values:', values);
-      
-      // Backend only uses cardNumber, expireDate, cardType
-      // userId comes from current user (JWT), save defaults to false
-      const payload = {
-        cardNumber: values.cardNumber.replace(/\s/g, ""),
-        expireDate: values.expireDate.replace("/", ""),
-        cardType: values.cardType,
-        userId: "", // Backend gets this from current user (@CurrentUser)
-        save: false,
-        ipAddress: "", // Optional, backend can get this from request
-      } as any;
-
-      console.log('Payment payload:', payload);
-      setIsLoading(true);
-
-      const res = await api.payments.initPayment(method, payload);
-      console.log('Payment init successful:', res);
-      
-      navigate(`/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`);
-    } catch (error: any) {
-      if (error.errorFields) {
-        // Form validation errors
-        return;
+  const loadQuote = useCallback(
+    async (code?: string | null) => {
+      if (!productType) return;
+      setIsQuoteLoading(true);
+      setQuoteError(null);
+      try {
+        setQuote(
+          await fetchPaymentQuote({
+            productType,
+            ...(enrollmentId && { enrollmentId }),
+            ...(planId && { planId }),
+            ...(mentorId && { mentorId }),
+            ...(sessionId && { sessionId }),
+            ...(code && { referralCode: code }),
+          }),
+        );
+      } catch (error: any) {
+        setQuoteError(
+          error?.response?.data?.message ||
+            t('checkout.quoteFailed', "We couldn't load this purchase."),
+        );
+      } finally {
+        setIsQuoteLoading(false);
       }
-      console.error('Payment init failed:', error);
-      message.error(error.response?.data?.message || 'Payment initialization failed');
-    } finally {
-      setIsLoading(false);
+    },
+    [productType, enrollmentId, planId, mentorId, sessionId, t],
+  );
+
+  useEffect(() => {
+    void loadQuote(referralCode);
+  }, [loadQuote, referralCode]);
+
+  const returnUrl = useMemo(() => {
+    const origin = PAYMENT_MERCHANT_RETURN_ORIGIN;
+    if (productType === 'caaf') {
+      return `${origin}/events/central-asian-admissions-forum?caaf_payment=success`;
     }
-  };
-
-
-  // Handle provider redirect (Click, Atmos)
-  const handleProviderRedirect = async (provider: 'click' | 'atmos') => {
-    if (!planId && !sessionId && !enrollmentId && !isCaafPayment) {
-      message.error('No payment information found');
-      return;
+    if (productType === 'course') {
+      return `${origin}/programs/success?success=true`;
     }
+    if (productType === 'session' || productType === 'package') {
+      return `${origin}/?payment_status=success&type=session`;
+    }
+    return `${origin}/?payment_status=success`;
+  }, [productType]);
 
-    setIsLoading(true);
+  const handleProviderRedirect = async () => {
+    if (provider === 'card' || !productType) return;
+
+    setIsRedirecting(true);
     try {
-      let payload;
-
-      if (paymentType === 'course' && enrollmentId) {
-        payload = {
-          enrollmentId,
-          returnUrl,
-          ...(referralCode && { referralCode }),
-        };
-      } else if (paymentType === 'caaf' && caafApplicationId) {
-        payload = {
-          caafApplicationId,
-          returnUrl,
-        };
+      let payload: Record<string, unknown>;
+      if (productType === 'course') {
+        payload = { enrollmentId, returnUrl, ...(referralCode && { referralCode }) };
+      } else if (productType === 'caaf') {
+        // Referral never applies to an event registration.
+        payload = { caafApplicationId, returnUrl };
       } else {
         payload = {
           planId,
@@ -258,244 +189,311 @@ function PaymentPage() {
       }
 
       const res = await paymentRedirectWithTimeout(provider, payload);
-
       const redirectUrl = res?.url || res?.redirectUrl;
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      } else {
-        message.error('No redirect URL received.');
+      if (!redirectUrl) {
+        message.error(t('checkout.noRedirect', 'No payment link came back. Try again.'));
+        return;
       }
+      window.location.href = redirectUrl;
     } catch (err: any) {
-      console.error('Payment redirect error:', err);
-      
       if (err.code === 'ECONNABORTED') {
-        message.error('Payment request timed out. Please try again.');
-      } else if (err.response?.status === 400) {
-        message.error('Invalid payment request. Please check your payment details.');
-      } else if (err.response?.status === 500) {
-        message.error('Payment service temporarily unavailable. Please try again.');
+        message.error(t('checkout.timeout', 'That took too long. Try again.'));
       } else {
-        message.error(err.response?.data?.message || 'Payment redirect failed. Please try again.');
+        message.error(
+          err.response?.data?.message ||
+            t('checkout.redirectFailed', "We couldn't start the payment. Try again."),
+        );
       }
     } finally {
-      setIsLoading(false);
+      setIsRedirecting(false);
     }
   };
 
-  // Handle payment method change
-  const handlePaymentMethodChange = (e: any) => {
-    setPaymentMethod(e.target.value);
+  const handleCardSubmit = async (values: any) => {
+    try {
+      setIsRedirecting(true);
+      const res = await api.payments.initPayment('click', {
+        cardNumber: values.cardNumber.replace(/\s/g, ''),
+        expireDate: values.expireDate.replace('/', ''),
+        cardType: values.cardType,
+        userId: '',
+        save: false,
+        ipAddress: '',
+      } as any);
+      navigate(`/payment/sms?cardToken=${res.data?.cardToken}&${searchParams.toString()}`);
+    } catch (error: any) {
+      if (error.errorFields) return;
+      message.error(
+        error.response?.data?.message ||
+          t('checkout.cardFailed', "We couldn't start the card payment."),
+      );
+    } finally {
+      setIsRedirecting(false);
+    }
   };
 
-  const cardTypeOptions = [
-    { label: "Humo", value: "humo" },
-    { label: "Uzcard", value: "uzcard" },
-  ];
-
-  const handleBackClick = () => {
-    if (paymentType === 'caaf') {
-      // Use a hard redirect fallback so back always works.
+  const handleBack = () => {
+    if (productType === 'caaf') {
       window.location.assign('/events/central-asian-admissions-forum');
       return;
     }
-
     if (window.history.length > 1) {
       navigate(-1);
       return;
     }
-
     window.location.assign('/');
   };
 
-  return (
-    <div className={styles.pageContainer}>
-      {/* Header Section */}
-      <div className={styles.header}>
-        <Button
-          icon={<ArrowLeft size={20} />}
-          onClick={handleBackClick}
-          className={styles.backButton}
-          type="text"
-        >
-          Back
-        </Button>
+  const showReferral =
+    !REFERRAL_INELIGIBLE_PAYMENT_TYPES.includes(paymentType) &&
+    productType !== 'caaf';
+
+  // A bad link is a real page with a way out, not a blank screen and a toast.
+  if (!productType) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.errorState}>
+          <h1>{t('checkout.missingTitle', 'We lost track of this purchase')}</h1>
+          <p>
+            {t(
+              'checkout.missingBody',
+              "This checkout link is missing what you're buying. Head back and start again.",
+            )}
+          </p>
+          <Button type="primary" onClick={handleBack}>
+            {t('checkout.goBack', 'Go back')}
+          </Button>
+        </div>
       </div>
+    );
+  }
 
-      {/* Main Payment Container */}
-      <div className={styles.paymentContainer}>
-        <Row gutter={[32, 32]}>
-          {/* Payment Summary - Left Side */}
-          <Col xs={24} lg={10}>
-            <Card className={styles.summaryCard} title="Payment Summary">
-              <div className={styles.summaryContent}>
-                {paymentType === 'caaf' && (
-                  <div className={styles.orderSummary}>
-                    <Text className={styles.orderSummaryTitle}>Order Summary</Text>
-                    <div className={styles.orderSummaryRow}>
-                      <Text type="secondary">Item:</Text>
-                      <Text strong>Central Asian Admissions Forum</Text>
-                    </div>
-                    <div className={styles.orderSummaryRow}>
-                      <Text type="secondary">Registration fee (USD):</Text>
-                      <Text>${parseFloat(displayAmount || '0').toFixed(2)}</Text>
-                    </div>
-                  </div>
-                )}
+  const summary = (
+    <div className={styles.summaryInner}>
+      {isQuoteLoading && !quote ? (
+        <Skeleton active paragraph={{ rows: 4 }} />
+      ) : quote ? (
+        <>
+          <div className={styles.product}>
+            <h2 className={styles.productTitle}>{quote.title}</h2>
+            {quote.subtitle && (
+              <p className={styles.productSubtitle}>{quote.subtitle}</p>
+            )}
+            {slotStart && productType === 'session' && (
+              <p className={styles.productSubtitle}>
+                {new Date(slotStart).toLocaleString()}
+              </p>
+            )}
+          </div>
 
-                {paymentType === 'session' && mentorDetail && (
-                  <div className={styles.orderSummary}>
-                    <Text className={styles.orderSummaryTitle}>Order Summary</Text>
-                    <div className={styles.orderSummaryRow}>
-                      <Text type="secondary">Mentor:</Text>
-                      <Text strong>{mentorDetail.profile?.name || 'Mentor'}</Text>
-                    </div>
-                    <div className={styles.orderSummaryRow}>
-                      <Text type="secondary">Session:</Text>
-                      <Text>
-                        {plans?.find((p) => p.id === planId)?.type === 'individual60m' ? '60 min' : '30 min'} mentor session
-                      </Text>
-                    </div>
-                    {slotStart && (
-                      <div className={styles.orderSummaryRow}>
-                        <Text type="secondary">Date & Time:</Text>
-                        <Text>
-                          {dayjs.utc(slotStart).local().format('ddd, MMM D, YYYY')}
-                          {slotEnd
-                            ? ` • ${dayjs.utc(slotStart).local().format('h:mm')} – ${dayjs.utc(slotEnd).local().format('h:mm A')}`
-                            : ` • ${dayjs.utc(slotStart).local().format('h:mm A')}`}
-                        </Text>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className={styles.amountSection}>
-                  <div className={styles.totalRow}>
-                    <Text strong>Total:</Text>
-                    <Text className={styles.amount}>
-                      {displayCurrency === 'UZS' ? 'UZS ' : '$'}
-                      {finalDisplayAmount.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Referral Code Section - Only for Course Payments */}
-                {paymentType === 'course' && (
-                  <div className={styles.referralSection}>
-                    <ReferralCodeInput
-                      onCodeApplied={handleReferralCodeApplied}
-                      onCodeRemoved={handleReferralCodeRemoved}
-                      originalAmount={originalAmount}
-                      currency={displayCurrency}
-                      disabled={isLoading}
-                    />
-                  </div>
-                )}
+          <div className={styles.receipt}>
+            {quote.lineItems.map((item, index) => (
+              <div className={styles.row} key={`${item.label}-${index}`}>
+                <span className={styles.rowLabel}>
+                  {item.label}
+                  {item.detail && (
+                    <span className={styles.rowDetail}>{item.detail}</span>
+                  )}
+                </span>
+                <span className={styles.rowAmount}>
+                  {formatAmount(item.amount, quote.currency)}
+                </span>
               </div>
-            </Card>
+            ))}
+
+            {quote.discounts.length > 0 && (
+              <>
+                <div className={`${styles.row} ${styles.subtotalRow}`}>
+                  <span className={styles.rowLabel}>
+                    {t('checkout.subtotal', 'Subtotal')}
+                  </span>
+                  <span className={styles.rowAmount}>
+                    {formatAmount(quote.subtotal, quote.currency)}
+                  </span>
+                </div>
+                {quote.discounts.map((discount, index) => (
+                  <div
+                    className={`${styles.row} ${styles.discountRow}`}
+                    key={`${discount.label}-${index}`}
+                  >
+                    <span className={styles.rowLabel}>
+                      {discount.label}
+                      {discount.detail && (
+                        <span className={styles.rowDetail}>{discount.detail}</span>
+                      )}
+                    </span>
+                    <span className={styles.rowAmount}>
+                      -{formatAmount(discount.amount, quote.currency)}
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
+
+            <div className={`${styles.row} ${styles.totalRow}`}>
+              <span className={styles.rowLabel}>{t('checkout.total', 'Total')}</span>
+              <span className={styles.totalAmount}>
+                {formatAmount(quote.total, quote.currency)}
+              </span>
+            </div>
+          </div>
+
+          {/* Providers bill in UZS. Saying so up front beats a surprise on the
+              provider's own page. */}
+          {quote.currency !== 'UZS' && (
+            <p className={styles.chargeNote}>
+              {t('checkout.chargedAs', 'Charged as')}{' '}
+              {formatAmount(quote.charge.amount, 'UZS')}
+              {quote.charge.usdToUzsRate
+                ? ` · ${t('checkout.rate', "today's rate")} ${Math.round(
+                    quote.charge.usdToUzsRate,
+                  ).toLocaleString('en-US')}`
+                : ''}
+            </p>
+          )}
+
+          {showReferral && (
+            <div className={styles.referralSection}>
+              <ReferralCodeInput
+                onCodeApplied={(code) => setReferralCode(code)}
+                onCodeRemoved={() => setReferralCode(null)}
+                originalAmount={quote.subtotal}
+                currency={quote.currency}
+                disabled={isRedirecting}
+              />
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={styles.inlineError}>
+          <p>{quoteError}</p>
+          <Button onClick={() => loadQuote(referralCode)}>
+            {t('checkout.retry', 'Try again')}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const activeProviderName =
+    PROVIDERS.find((p) => p.id === provider)?.name ?? 'Click';
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <button type="button" className={styles.backButton} onClick={handleBack}>
+          <ArrowLeft size={18} />
+          {t('checkout.back', 'Back')}
+        </button>
+        <span className={styles.secure}>
+          <ShieldCheck size={15} />
+          {t('checkout.secure', 'Secure checkout')}
+        </span>
+      </header>
+
+      {/* Mobile: the summary collapses but the total stays visible, so the
+          number is never more than a glance away. */}
+      <button
+        type="button"
+        className={styles.summaryToggle}
+        aria-expanded={summaryOpen}
+        onClick={() => setSummaryOpen((open) => !open)}
+      >
+        <span>
+          {summaryOpen
+            ? t('checkout.hideDetails', 'Hide details')
+            : t('checkout.showDetails', 'Show details')}
+          <ChevronDown
+            size={16}
+            className={summaryOpen ? styles.chevronOpen : styles.chevron}
+          />
+        </span>
+        <strong>
+          {quote ? formatAmount(quote.total, quote.currency) : '—'}
+        </strong>
+      </button>
+
+      <div className={styles.container}>
+        <Row gutter={[32, 24]}>
+          <Col xs={24} lg={10}>
+            <aside
+              className={`${styles.summary} ${summaryOpen ? styles.summaryOpen : ''}`}
+            >
+              {summary}
+            </aside>
           </Col>
 
-          {/* Payment Methods - Right Side */}
           <Col xs={24} lg={14}>
-            <Card className={styles.paymentMethodsCard} title="Choose Payment Method">
-              <Radio.Group 
-                value={paymentMethod} 
-                onChange={handlePaymentMethodChange}
-                className={styles.paymentMethodRadio}
-                size="large"
-              >
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  {/* Click Payment Option */}
-                  <Radio.Button value="click" className={styles.methodOption}>
-                    <div className={styles.methodOptionContent}>
-                      <img src="/img/click.jpg" alt="Click" className={styles.paymentLogo} />
-                      <div className={styles.methodText}>
-                        <Text strong>Click</Text>
-                        <Text type="secondary" className={styles.methodSubtext}>
-                          Pay with Click
-                        </Text>
-                      </div>
-                      <ArrowLeft size={20} className={styles.arrowIcon} style={{ transform: 'rotate(180deg)' }} />
-                    </div>
-                  </Radio.Button>
+            <section className={styles.methods}>
+              <h3 className={styles.sectionLabel}>
+                {t('checkout.methodLabel', 'Payment method')}
+              </h3>
 
-                  {/* Atmos Payment Option */}
-                  <Radio.Button value="atmos" className={styles.methodOption}>
-                    <div className={styles.methodOptionContent}>
-                      <img src="/img/atmos.png" alt="Atmos" className={styles.paymentLogo} />
-                      <div className={styles.methodText}>
-                        <Text strong>Atmos</Text>
-                        <Text type="secondary" className={styles.methodSubtext}>
-                          Pay with Atmos
-                        </Text>
-                      </div>
-                      <ArrowLeft size={20} className={styles.arrowIcon} style={{ transform: 'rotate(180deg)' }} />
-                    </div>
-                  </Radio.Button>
-
-                  {/* Credit or Debit Card - commented out for now */}
-                  {/* <Radio.Button value="card" className={styles.methodOption}>
-                    <div className={styles.methodOptionContent}>
-                      <div className={styles.methodIcon}>
-                        <FontAwesomeIcon icon="credit-card" style={{ fontSize: '24px' }} />
-                      </div>
-                      <div className={styles.methodText}>
-                        <Text strong>Credit or Debit Card</Text>
-                        <Text type="secondary" className={styles.methodSubtext}>
-                          Pay directly with your card
-                        </Text>
-                      </div>
-                      <div className={styles.cardIcons}>
-                        <img src="/img/visa.svg" alt="Visa" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        <img src="/img/mastercard.svg" alt="Mastercard" className={styles.cardIcon} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      </div>
-                    </div>
-                  </Radio.Button> */}
-                </Space>
-              </Radio.Group>
-
-              {/* Payme - Coming Soon (Not a Radio Button) */}
-              <div className={`${styles.methodOption} ${styles.methodOptionDisabled}`}>
-                <div className={styles.methodOptionContent}>
-                  <div className={styles.paymentLogoPlaceholder}>
-                    <FontAwesomeIcon icon="wallet" className={styles.placeholderIcon} />
-                  </div>
-                  <div className={styles.methodText}>
-                    <Text strong>Payme</Text>
-                    <Text type="secondary" className={styles.methodSubtext}>
-                      Coming Soon
-                    </Text>
-                  </div>
-                  <Tag color="default">Soon</Tag>
-                </div>
+              <div role="radiogroup" aria-label="Payment method">
+                {PROVIDERS.map((p) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    role="radio"
+                    aria-checked={provider === p.id}
+                    className={`${styles.method} ${
+                      provider === p.id ? styles.methodActive : ''
+                    }`}
+                    onClick={() => setProvider(p.id)}
+                  >
+                    <span className={styles.radio} aria-hidden="true" />
+                    {/* The logo sits on a white tile: click.jpg is a JPEG with
+                        no alpha, so on the cream panel it would otherwise show
+                        as a white block. The tile makes that deliberate. */}
+                    <span className={styles.logoTile}>
+                      <img src={p.logo} alt="" className={styles.logo} />
+                    </span>
+                    <span className={styles.methodText}>
+                      <strong>{p.name}</strong>
+                      <small>
+                        {t('checkout.payWith', 'Pay with')} {p.name}
+                      </small>
+                    </span>
+                  </button>
+                ))}
               </div>
 
-              <Divider style={{ margin: '24px 0' }} />
+              {/* Payme is not live. Commented out rather than deleted so
+                  re-enabling is a one-line change once it works.
+              <div className={`${styles.method} ${styles.methodDisabled}`}>
+                <span className={styles.logoTile}>
+                  <img src="/img/payme.png" alt="" className={styles.logo} />
+                </span>
+                <span className={styles.methodText}>
+                  <strong>Payme</strong>
+                  <small>{t('checkout.comingSoon', 'Coming soon')}</small>
+                </span>
+              </div>
+              */}
 
-              {/* Card Details Form - Shown when card is selected */}
-              {paymentMethod === 'card' && (
+              {/* Card form. Unreachable while the card option stays commented
+                  out in the provider list above; left in place deliberately. */}
+              {provider === 'card' && (
                 <div className={styles.cardForm}>
                   <Form form={form} layout="vertical" onFinish={handleCardSubmit}>
                     <Form.Item
                       name="cardNumber"
-                      label="Card Number"
+                      label={t('checkout.cardNumber', 'Card number')}
                       rules={[
                         { required: true, message: 'Card number is required' },
-                        { pattern: /^[\d\s]{13,19}$/, message: 'Invalid card number' }
+                        { pattern: /^[\d\s]{13,19}$/, message: 'Invalid card number' },
                       ]}
                     >
                       <Input
                         placeholder="1234 1234 1234 1234"
                         maxLength={19}
-                        prefix={<CardIcon size={20} />}
-                        className={styles.cardInput}
+                        prefix={<CardIcon size={18} />}
                         onChange={(e) => {
-                          let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                          const value = e.target.value.replace(/\D/g, '');
                           const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-                          form.setFieldsValue({ cardNumber: formatted.substring(0, 19) });
+                          form.setFieldsValue({
+                            cardNumber: formatted.substring(0, 19),
+                          });
                         }}
                       />
                     </Form.Item>
@@ -504,23 +502,23 @@ function PaymentPage() {
                       <Col xs={24} sm={12}>
                         <Form.Item
                           name="expireDate"
-                          label="Expiry Date"
+                          label={t('checkout.expiry', 'Expiry')}
                           rules={[
                             { required: true, message: 'Expiry date is required' },
-                            { pattern: /^\d{2}\/\d{2}$/, message: 'Format: MM/YY' }
+                            { pattern: /^\d{2}\/\d{2}$/, message: 'Format: MM/YY' },
                           ]}
                         >
                           <Input
                             placeholder="MM/YY"
                             maxLength={5}
-                            className={styles.cardInput}
                             onChange={(e) => {
-                              let value = e.target.value.replace(/\D/g, '');
-                              let formatted = value;
-                              if (value.length >= 2) {
-                                formatted = value.substring(0, 2) + '/' + value.substring(2, 4);
-                              }
-                              form.setFieldsValue({ expireDate: formatted });
+                              const value = e.target.value.replace(/\D/g, '');
+                              form.setFieldsValue({
+                                expireDate:
+                                  value.length >= 2
+                                    ? `${value.substring(0, 2)}/${value.substring(2, 4)}`
+                                    : value,
+                              });
                             }}
                           />
                         </Form.Item>
@@ -531,18 +529,13 @@ function PaymentPage() {
                           label="CVC"
                           rules={[
                             { required: true, message: 'CVC is required' },
-                            { pattern: /^\d{3,4}$/, message: 'Invalid CVC' }
+                            { pattern: /^\d{3,4}$/, message: 'Invalid CVC' },
                           ]}
                         >
                           <Input
                             placeholder="123"
                             maxLength={4}
-                            prefix={<Lock size={16} />}
-                            className={styles.cardInput}
-                            onChange={(e) => {
-                              let value = e.target.value.replace(/\D/g, '').substring(0, 4);
-                              form.setFieldsValue({ cvc: value });
-                            }}
+                            prefix={<Lock size={15} />}
                           />
                         </Form.Item>
                       </Col>
@@ -550,58 +543,54 @@ function PaymentPage() {
 
                     <Form.Item
                       name="cardType"
-                      label="Card Type"
+                      label={t('checkout.cardType', 'Card type')}
                       rules={[{ required: true, message: 'Card type is required' }]}
                     >
-                      <Select 
-                        placeholder="Select card type" 
-                        className={styles.cardInput}
-                        suffixIcon={null}
-                      >
-                        {cardTypeOptions.map((option) => (
-                          <Option key={option.value} value={option.value}>
-                            {option.label}
-                          </Option>
-                        ))}
+                      <Select placeholder="Select card type">
+                        <Option value="humo">Humo</Option>
+                        <Option value="uzcard">Uzcard</Option>
                       </Select>
                     </Form.Item>
 
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={isLoading}
-                        block
-                        size="large"
-                        className={styles.submitButton}
-                      >
-                        Pay {displayCurrency === 'UZS' ? 'UZS' : '$'} {finalDisplayAmount.toLocaleString('en-US', { 
-                          minimumFractionDigits: 2, 
-                          maximumFractionDigits: 2 
-                        })}
-                      </Button>
-                    </Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={isRedirecting}
+                      block
+                      size="large"
+                    >
+                      {t('checkout.pay', 'Pay')}{' '}
+                      {quote ? formatAmount(quote.total, quote.currency) : ''}
+                    </Button>
                   </Form>
                 </div>
               )}
 
-              {/* Payment Buttons for Click/Atmos */}
-              {paymentMethod !== 'card' && paymentMethod !== 'payme' && (
-                <div className={styles.paymentAction}>
+              {provider !== 'card' && (
+                <div className={styles.action}>
                   <Button
                     type="primary"
                     size="large"
                     block
-                    loading={isLoading}
-                    onClick={() => handleProviderRedirect(paymentMethod)}
-                    className={styles.submitButton}
+                    loading={isRedirecting}
+                    disabled={!quote || isQuoteLoading}
+                    onClick={handleProviderRedirect}
+                    className={styles.payButton}
                   >
-                    Continue with {paymentMethod === 'click' ? 'Click' : 'Atmos'}
+                    {t('checkout.continueTo', 'Continue to')} {activeProviderName}
                   </Button>
+                  {/* Naming the destination up front: being bounced to an
+                      unfamiliar domain mid-payment is a real abandonment cause. */}
+                  <p className={styles.actionNote}>
+                    {t(
+                      'checkout.redirectNote',
+                      "You'll finish payment on {{provider}}'s secure page and come back here.",
+                      { provider: activeProviderName },
+                    )}
+                  </p>
                 </div>
               )}
-
-            </Card>
+            </section>
           </Col>
         </Row>
       </div>

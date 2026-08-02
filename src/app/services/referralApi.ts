@@ -24,6 +24,29 @@ export interface ReferralStatsResponse {
   paidCommission: number;
 }
 
+export interface ReferralHistoryItem {
+  id: string;
+  date: string;
+  /** First name plus last initial. The backend never returns a full identity. */
+  refereeName: string;
+  productType: string | null;
+  theirSpendUsd: number;
+  youEarnedUsd: number;
+  status: 'pending' | 'confirmed' | 'reversed' | 'paid';
+}
+
+export interface ReferralBonusBalance {
+  balanceUsd: number;
+  lifetimeEarnedUsd: number;
+}
+
+export interface ReferralBonusMovement {
+  id: string;
+  date: string;
+  amountUsd: number;
+  eventType: string;
+}
+
 export interface CalculateDiscountRequest {
   code: string;
   amount: number;
@@ -43,7 +66,7 @@ export interface CalculateDiscountResponse {
 export const referralApi = createApi({
   reducerPath: 'referralApi',
   baseQuery,
-  tagTypes: ['ReferralCode', 'ReferralStats'],
+  tagTypes: ['ReferralCode', 'ReferralStats', 'ReferralBonus'],
   endpoints: (builder) => ({
     // Validate referral code
     validateReferralCode: builder.mutation<ValidateReferralCodeResponse, ValidateReferralCodeRequest>({
@@ -66,6 +89,24 @@ export const referralApi = createApi({
       providesTags: ['ReferralStats'],
     }),
 
+    // Who used my code, and what each one earned me
+    getReferralHistory: builder.query<ReferralHistoryItem[], number | void>({
+      query: (limit) => `/referral/history${limit ? `?limit=${limit}` : ''}`,
+      providesTags: ['ReferralStats'],
+    }),
+
+    // Accumulated bonus balance
+    getReferralBonusBalance: builder.query<ReferralBonusBalance, void>({
+      query: () => '/referral/bonus/balance',
+      providesTags: ['ReferralBonus'],
+    }),
+
+    // Every movement on the balance, newest first
+    getReferralBonusHistory: builder.query<ReferralBonusMovement[], number | void>({
+      query: (limit) => `/referral/bonus/history${limit ? `?limit=${limit}` : ''}`,
+      providesTags: ['ReferralBonus'],
+    }),
+
     // Calculate discount
     calculateDiscount: builder.mutation<CalculateDiscountResponse, CalculateDiscountRequest>({
       query: (body) => ({
@@ -81,5 +122,8 @@ export const {
   useValidateReferralCodeMutation,
   useGetMyReferralCodeQuery,
   useGetReferralStatsQuery,
+  useGetReferralHistoryQuery,
+  useGetReferralBonusBalanceQuery,
+  useGetReferralBonusHistoryQuery,
   useCalculateDiscountMutation,
 } = referralApi; 
