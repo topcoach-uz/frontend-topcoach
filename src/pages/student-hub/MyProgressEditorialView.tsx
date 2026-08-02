@@ -53,6 +53,7 @@ import {
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import MajorMatchCollectModal from './components/MajorMatchCollectModal';
+import { WORKSHOP_WATCH_URL, workshopHasVideo } from '../events/_components/workshopReplay';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -298,11 +299,10 @@ const MyProgressEditorialView: React.FC = () => {
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
-  // Personal Statement Workshop — current live event. Takes the
-  // "Top Coach presents" slot. Free online session; the CTA opens the
-  // Google Meet room directly.
+  // Personal Statement Workshop — now a recording. Takes the "Top Coach
+  // presents" slot; the CTA opens the YouTube replay (video ID lives in
+  // events/_components/workshopReplay.ts).
   const showWorkshopPromo = true;
-  const WORKSHOP_JOIN_URL = 'https://meet.google.com/whk-ynpy-mbo';
 
   // Top Coach Launch Event — free event on May 24, 2026. While the
   // event hasn't passed, this card takes precedence over the CAAF
@@ -803,22 +803,24 @@ const MyProgressEditorialView: React.FC = () => {
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
             <h3 className="myprog__promo-title">Personal Statement Workshop</h3>
-            <div className="myprog__promo-meta">Thu, Jul 30 · 20:00 · Online</div>
+            <div className="myprog__promo-meta">Recording · Nazira Davroni · Barnard College</div>
             <p className="myprog__promo-desc">
-              A free live workshop with Nazira Davroni (Barnard College,
-              Columbia) on how to write a strong personal statement, avoid
-              common mistakes, and make your essay stand out.
+              Missed the live session? Watch the full replay on how to write a
+              strong personal statement, avoid common mistakes, and make your
+              essay stand out.
             </p>
             <div className="myprog__promo-foot">
-              <div className="myprog__promo-foot-status">Free · Live online</div>
+              <div className="myprog__promo-foot-status">Free replay</div>
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
+                disabled={!workshopHasVideo}
                 onClick={() =>
-                  window.open(WORKSHOP_JOIN_URL, '_blank', 'noopener,noreferrer')
+                  workshopHasVideo &&
+                  window.open(WORKSHOP_WATCH_URL, '_blank', 'noopener,noreferrer')
                 }
               >
-                Join workshop
+                Watch replay
               </button>
             </div>
           </article>
