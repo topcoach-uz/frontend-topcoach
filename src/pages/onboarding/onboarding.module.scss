@@ -1,0 +1,61 @@
+// Onboarding wizard shell — platform look (cream page, white card, burgundy
+// accents), NOT the dark "portal" mockup style used elsewhere in this repo.
+$cream-page: #f4f2ea;
+$ink: #1c1a17;
+$ink-soft: #6b6258;
+$hairline: #e5e3da;
+$brand: #7b1f2f;
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: $cream-page;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: #ffffff;
+  border: 1px solid $hairline;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(28, 26, 23, 0.08);
+  padding: 40px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.title {
+  margin: 20px 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: $ink-soft;
+  font-size: 0.95rem;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.step {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $brand;
+}
