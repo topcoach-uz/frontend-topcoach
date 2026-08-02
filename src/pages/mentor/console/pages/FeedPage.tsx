@@ -36,6 +36,10 @@ export default function MentorConsoleFeedPage() {
           canPost: false,
           canPin: false,
         }}
+        // Mentors don't have their own `joinedSessions` as a student, so
+        // the student-only "Upcoming sessions" rail widget stays hidden
+        // here (this component is shared with the student-hub feed).
+        showUpcomingSessions={false}
       />
     </div>
   );

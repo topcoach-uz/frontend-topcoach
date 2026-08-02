@@ -1,0 +1,116 @@
+/**
+ * Small dark "flyer" chip — a floating tab pinned flush to the RIGHT
+ * viewport edge, in the cream gutter just below the burgundy app header
+ * (measured live in the built app: header `.header` is 94.5px tall on
+ * desktop @1512px; the dashboard's own "Discover"/"Quick add" button row
+ * runs to ~y179 and, unlike the gutter, extends the full width of the
+ * content column — top:184 clears both instead of stopping at the
+ * header alone, confirmed by re-measuring bounding rects live). Near-
+ * black body, square on the edge-side (right) corners so it reads as attached
+ * to the edge, softly rounded on the outward (left) side with the
+ * angled/notched corner (clip-path) mirrored onto the top-left.
+ * `position: fixed` so it stays put while the page scrolls; z-index sits
+ * above normal page content but below AntD's popup layer (Modal/Drawer
+ * default to 1000 in this app — see MajorMatchPromptModal/
+ * MajorMatchCollectModal + the student-hub mobile nav Drawer, none of
+ * which override `zIndexPopupBase`) so those always render on top of
+ * this tab. Rendered via a React portal to `document.body` (see
+ * TelegramFlyerChip.tsx) — MyProgressEditorialView sits inside
+ * CommunityHubMockPage's section-swap transition wrapper, which sets a
+ * CSS `transform` on an ancestor; any non-`none` transform makes that
+ * ancestor the containing block for `position: fixed` descendants, so
+ * without the portal this tab would anchor to that wrapper instead of
+ * the viewport.
+ */
+
+.tg-flyer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px 9px 16px;
+  background: #1c1a17;
+  color: #f4f2ea;
+  border: none;
+  // Flush/square on the right (edge-attached) side, rounded on the left.
+  border-radius: 10px 0 0 10px;
+  // Cut corner on the top-left (~14px, mirrored from the left-anchored
+  // version); right edge stays a flat vertical line so it sits flush
+  // against the viewport edge.
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(15, 13, 10, 0.22);
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+
+  // Floating side-tab anchoring — right edge, fixed offset below the
+  // burgundy header (not vertically centered).
+  position: fixed;
+  right: 0;
+  // Live-measured @1512px desktop: burgundy `.header` is 94.5px tall, and
+  // the dashboard's own "Discover"/"Quick add" button row (part of the
+  // content column, not the gutter) runs to ~y179 — top:150 clipped into
+  // that row's right edge, so this clears both instead of stopping at the
+  // header alone.
+  top: 184px;
+  // Above normal page content, below AntD Modal/Drawer (default 1000).
+  z-index: 900;
+
+  &:hover,
+  &:focus-visible {
+    background: #0088cc;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(15, 13, 10, 0.28);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+  &:focus-visible {
+    outline: 2px solid #7b1f2f;
+    outline-offset: 2px;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: #64d2ff;
+    transition: color 0.15s ease;
+  }
+  &:hover &__icon,
+  &:focus-visible &__icon {
+    color: #fff;
+  }
+  &__label {
+    white-space: nowrap;
+  }
+  &__chevron {
+    opacity: 0.65;
+    font-size: 0.95em;
+    margin-left: 1px;
+  }
+
+  // Shrink on tablet/mobile so it never covers meaningful content.
+  // top stays fixed (not centered) — still clears the burgundy header.
+  @media (max-width: 768px) {
+    padding: 7px 10px 7px 12px;
+    font-size: 0.72rem;
+    gap: 5px;
+    top: 154px;
+  }
+
+  // Collapse to icon-only on narrow phones — label + chevron hide,
+  // accessible name still provided via the button's aria-label.
+  @media (max-width: 480px) {
+    padding: 10px 9px;
+    border-radius: 8px 0 0 8px;
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+    top: 134px;
+
+    .tg-flyer__label,
+    .tg-flyer__chevron {
+      display: none;
+    }
+  }
+}

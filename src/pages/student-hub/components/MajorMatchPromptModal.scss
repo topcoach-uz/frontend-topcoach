@@ -1,0 +1,131 @@
+.major-match-prompt-modal {
+  .ant-modal-content {
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    // The field set grew (6 questions across MajorMatchProfileFields.tsx)
+    // — cap the whole modal to the viewport and let IT scroll, rather than
+    // only the fields block, so the title/CTA never get pushed off-screen
+    // on short mobile viewports.
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(123, 31, 47, 0.08);
+    color: #7b1f2f;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1a1a1a;
+  }
+
+  &__lede {
+    margin: 0 0 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #4a4a4a;
+  }
+
+  &__fields {
+    background: #faf8f3;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    margin-bottom: 20px;
+  }
+
+  &__fields-hint {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #6b6b6b;
+  }
+
+  &__field-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    flex: 1 1 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__field--full {
+    flex: 1 1 100%;
+  }
+
+  &__field-hint {
+    font-weight: 400;
+    font-size: 11px;
+    color: #8a8a8a;
+  }
+
+  &__field-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .ant-select {
+      flex-shrink: 0;
+    }
+  }
+
+  &__activities {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .ant-modal-content {
+      padding: 24px 16px 20px;
+      max-height: 92vh;
+    }
+  }
+
+  &__unlock-note {
+    margin: 0 0 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #7b1f2f;
+    background: rgba(123, 31, 47, 0.06);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  &__later {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: none;
+    border: none;
+    margin-top: 12px;
+    padding: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b6b6b;
+    cursor: pointer;
+
+    &:hover {
+      color: #1a1a1a;
+      text-decoration: underline;
+    }
+  }
+}

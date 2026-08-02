@@ -6,16 +6,20 @@ import { useTypedSelector } from 'src/app/store';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 
 /**
- * Routes used by the funnel. The placement-test pages are mounted as
- * internal sections of `CommunityHubMockPage` so they inherit the
- * COMMUNITY/LEARNING/ACCOUNT sidebar. URLs are query-param-driven via
- * `?section=...`, matching how the rest of the hub works.
+ * Routes used by the funnel. The profile wizard and roadmap pages are
+ * mounted as internal sections of `CommunityHubMockPage` so they
+ * inherit the COMMUNITY/LEARNING/ACCOUNT sidebar. URLs are
+ * query-param-driven via `?section=...`, matching how the rest of the
+ * hub works.
  *
- * The old top-level `/placement-test*` URLs still exist as redirects
- * for backwards compatibility, so external links keep working.
+ * The English placement test that used to gate this funnel has been
+ * removed — the profile wizard is now the first step.
+ *
+ * The old top-level `/placement-test/profile*` and `/placement-test/roadmap`
+ * URLs still exist as redirects for backwards compatibility, so
+ * external links keep working.
  */
 export const COMMUNITY_FUNNEL_PATHS = {
-  placementTest: '/student-hub?section=placement-test',
   profileBase: '/student-hub?section=placement-profile',
   roadmap: '/student-hub?section=placement-roadmap',
   subscriptionTab: '/student-hub?section=account&target=settings&tab=subscription',
@@ -36,9 +40,8 @@ export type CommunityGateState =
   | 'loading'
   | 'eligible'                // Admin-granted OR active/trialing subscription
   | 'needs_sign_in'           // Anonymous user — bounce to /auth/signin first
-  | 'needs_placement_test'
   | 'needs_profile'
-  | 'needs_subscription';     // Test + profile done; only payment is left
+  | 'needs_subscription';     // Profile done; only payment is left
 
 export interface CommunityGateScoreBadge {
   percentage: number;
@@ -66,9 +69,8 @@ export interface CommunityGateResult {
  *   1. Not signed in → bounce to /auth/signin?next=<funnel-start>
  *   2. Admin-granted community access (`isCommunityEnrolled`) → already in
  *   3. Active or trialing subscription → already in
- *   4. Hasn't passed the placement test → /placement-test
- *   5. Passed test, no profile yet → /placement-test/profile/:lastEditedStep
- *   6. Profile done, no active subscription → Subscription tab in Settings
+ *   4. No profile yet → /placement-test/profile/:lastEditedStep
+ *   5. Profile done, no active subscription → Subscription tab in Settings
  *      (the only remaining step is payment; never bounce back to a stale
  *      previously-generated roadmap)
  *
@@ -86,7 +88,7 @@ export function useCommunityAccessGate(): CommunityGateResult {
 
   return useMemo(() => {
     if (!isAuthenticated) {
-      const next = encodeURIComponent(COMMUNITY_FUNNEL_PATHS.placementTest);
+      const next = encodeURIComponent(COMMUNITY_FUNNEL_PATHS.profileBase);
       return {
         state: 'needs_sign_in' as const,
         destination: `${COMMUNITY_FUNNEL_PATHS.signIn}?next=${next}`,
@@ -116,12 +118,12 @@ export function useCommunityAccessGate(): CommunityGateResult {
     }
 
     // While the status / subscription queries are still loading we don't
-    // want to flicker the CTA from "Subscribe" → "Take test" → final.
-    // Park on `loading` and let callers show a skeleton.
+    // want to flicker the CTA from "Subscribe" → "Continue profile" →
+    // final. Park on `loading` and let callers show a skeleton.
     if (statusLoading || subLoading || !status) {
       return {
         state: 'loading' as const,
-        destination: COMMUNITY_FUNNEL_PATHS.placementTest,
+        destination: COMMUNITY_FUNNEL_PATHS.profileBase,
         scoreBadge: null,
       };
     }
@@ -132,14 +134,6 @@ export function useCommunityAccessGate(): CommunityGateResult {
           level: status.lastAttempt.level,
         }
       : null;
-
-    if (!status.passed) {
-      return {
-        state: 'needs_placement_test' as const,
-        destination: COMMUNITY_FUNNEL_PATHS.placementTest,
-        scoreBadge,
-      };
-    }
 
     if (!status.profile.completed) {
       return {

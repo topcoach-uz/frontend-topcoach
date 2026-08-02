@@ -10,6 +10,7 @@ import {
   useStudyBuddySendRequestMutation,
 } from 'src/app/services/student-hub/studyBuddyApi';
 import { getLatestCreatedImg } from 'src/utils';
+import StudyBuddyPreferencesPanel from './StudyBuddyPreferencesPanel';
 import styles from './communityHubMock.module.scss';
 
 const PAGE_SIZE = 6;
@@ -306,6 +307,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
 
   return (
     <div className={styles.studyBuddyHub}>
+      <StudyBuddyPreferencesPanel />
       <div className={styles.studyBuddySearchRow}>
         <Input
           allowClear={{

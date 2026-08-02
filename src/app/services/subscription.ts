@@ -50,8 +50,24 @@ export type BindSubscriptionCardRequest = {
   paymentMethodId: string;
 };
 
+/**
+ * Retention-funnel reason categories from step 2 of `CancelFlowModal`.
+ * Kept in sync with the backend's `CANCEL_REASON_CATEGORIES`
+ * (`backend-topcoach/src/modules/subscriptions/dto/cancel-subscription.dto.ts`).
+ */
+export type CancelReasonCategory =
+  | 'too_expensive'
+  | 'not_using_enough'
+  | 'found_another_service'
+  | 'finished_applications'
+  | 'technical_problems'
+  | 'other';
+
 export type CancelSubscriptionRequest = {
   subscriptionId: string;
+  /** Radio pick from the retention-funnel step 2. */
+  reasonCategory?: CancelReasonCategory;
+  /** Free-text "tell us more" field from the same step. */
   reason?: string;
 };
 
@@ -177,10 +193,13 @@ export const subscriptionApi = RtkApi.injectEndpoints({
      * keeps access until currentPeriodEnd. Refunds are out of policy.
      */
     cancelSubscription: builder.mutation<SubscriptionDto, CancelSubscriptionRequest>({
-      query: ({ subscriptionId, reason }) => ({
+      query: ({ subscriptionId, reason, reasonCategory }) => ({
         url: `subscriptions/${subscriptionId}/cancel`,
         method: 'POST',
-        body: reason ? { reason } : {},
+        body: {
+          ...(reasonCategory ? { reasonCategory } : {}),
+          ...(reason ? { reason } : {}),
+        },
       }),
       invalidatesTags: ['CurrentSubscription'],
     }),

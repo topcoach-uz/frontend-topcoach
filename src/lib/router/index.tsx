@@ -453,21 +453,23 @@ function RouterProvider() {
                 What they must NOT get is the mentee/mentor dashboard, and that
                 is handled by the gates, not by stripping the header. */}
             <Route element={<AddFallbackLayout />}>
-              <Route path="/counselor-console" element={<CounselorConsoleGate />}>
-                <Route element={<CounselorConsoleLayoutLazy />}>
-                  <Route index element={<CounselorConsoleDashboardLazy />} />
-                  <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
-                  <Route path="students" element={<CounselorConsoleStudentsLazy />} />
-                  <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
-                  {/* /invitations was folded into the Students page as a tab —
-                      keep old links working. */}
-                  <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
-                  <Route path="reports" element={<CounselorConsoleReportsLazy />} />
-                  {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
-                  {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
-                  <Route path="staff" element={<CounselorConsoleStaffLazy />} />
-                  <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
-                  <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+              <Route element={<OnboardingGate />}>
+                <Route path="/counselor-console" element={<CounselorConsoleGate />}>
+                  <Route element={<CounselorConsoleLayoutLazy />}>
+                    <Route index element={<CounselorConsoleDashboardLazy />} />
+                    <Route path="analytics" element={<CounselorConsoleAnalyticsLazy />} />
+                    <Route path="students" element={<CounselorConsoleStudentsLazy />} />
+                    <Route path="students/:userId" element={<CounselorConsoleStudentProfileLazy />} />
+                    {/* /invitations was folded into the Students page as a tab —
+                        keep old links working. */}
+                    <Route path="invitations" element={<Navigate to="/counselor-console/students?tab=invitations" replace />} />
+                    <Route path="reports" element={<CounselorConsoleReportsLazy />} />
+                    {/* Parked — see CounselorConsoleAnnouncementsLazy above. */}
+                    {/* <Route path="announcements" element={<CounselorConsoleAnnouncementsLazy />} /> */}
+                    <Route path="staff" element={<CounselorConsoleStaffLazy />} />
+                    <Route path="settings" element={<CounselorConsoleSettingsLazy />} />
+                    <Route path="audit" element={<CounselorConsoleAuditLazy />} />
+                  </Route>
                 </Route>
               </Route>
             </Route>
@@ -534,12 +536,15 @@ function RouterProvider() {
               {/* Legacy placement-test URLs — redirect to the hub
                   sections where the pages now live (so the sidebar
                   shows). Direct deep-links + external bookmarks stay
-                  functional. */}
+                  functional. The English placement test that used to
+                  gate this funnel has been removed, so the bare
+                  `/placement-test` bookmark now skips straight to the
+                  profile wizard, the funnel's new entry point. */}
               <Route
                 path="/placement-test"
                 element={
                   <Navigate
-                    to="/student-hub?section=placement-test"
+                    to="/student-hub?section=placement-profile"
                     replace
                   />
                 }
@@ -739,6 +744,8 @@ function RouterProvider() {
                     <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
                     <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
                     <Route path="profile" element={<MentorConsoleProfileLazy />} />
+                    <Route path="referrals" element={<MentorConsoleReferralsLazy />} />
+                  </Route>
                   </Route>
               <Route path="/mentor" element={<MentorConsoleGate />}>
                 <Route element={<MentorConsoleLayoutLazy />}>

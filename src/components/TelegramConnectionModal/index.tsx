@@ -1,4 +1,7 @@
 import React from 'react';
+import { Modal } from 'antd';
+import { Send } from 'lucide-react';
+import TelegramConnectionContent from './TelegramConnectionContent';
 import { Modal, Typography } from 'antd';
 import TelegramConnectionContent from './TelegramConnectionContent';
 

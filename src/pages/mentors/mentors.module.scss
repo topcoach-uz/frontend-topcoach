@@ -74,6 +74,65 @@ $mp-brand: #7B1F2F;
   margin-top: 16px;
 }
 
+/* Filter bar — name search + data-driven selects (university/major/
+   language/rating) + the existing level select. Wraps on narrow
+   viewports instead of overflowing/squashing. */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+
+  :global(.ant-input-affix-wrapper),
+  :global(.ant-select) {
+    border-radius: 12px;
+  }
+}
+
+.filterField {
+  flex: 1 1 180px;
+  min-width: 160px;
+  max-width: 240px;
+
+  @media (max-width: 700px) {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+.clearFilters {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 8px 4px;
+  color: $mp-brand;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.resultCount {
+  margin-top: 14px;
+  color: $mp-muted;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.cardsEmpty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 0;
+  color: $mp-muted;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

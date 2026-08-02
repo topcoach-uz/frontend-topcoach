@@ -14,27 +14,21 @@
 
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { App, Dropdown, Form, Input, Modal, Skeleton } from 'antd';
 import {
   ArrowRight,
   Plus,
-  Search,
   Wand2,
   BookOpen,
   FlaskConical,
   GraduationCap,
-  User as UserIcon,
-  Building2,
-  PenLine,
-  LineChart,
-  FileUp,
   MoreVertical,
   Sparkles,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
 import { useInvalidateGetMeMutation } from 'src/app/services/users';
-import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import dayjs from 'dayjs';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useGetMeQuery } from 'src/app/services/users';
@@ -56,8 +50,9 @@ import {
   formatCaafRegistrationFeeUsd,
   isPastCaafRegistrationDeadline,
 } from 'src/pages/events/central-asian-admissions-forum/constants';
-import { SessionTypeEnum } from 'src/app/api/Api';
-import TelegramConnectionChecklist from './components/TelegramConnectionChecklist';
+import { useMentorSessions } from 'src/hooks/useMentorSessions';
+import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import MajorMatchCollectModal from './components/MajorMatchCollectModal';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -78,24 +73,17 @@ interface AiRecItem {
   minutes: number;
 }
 
-interface SessionItem {
-  id: string;
-  date: string;       // ISO
-  mentor: string;
-  mentorId?: string;
-  durationMin: number;
-  meetingLink?: string;
-}
-
 const MyProgressEditorialView: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: me } = useGetMeQuery(undefined);
   const profile = useTypedSelector((s) => s.auth.profile);
   const { isCommunityEnrolled } = useJourneyExperience();
-  // Funnel-aware Community CTA — sends the user to the right next-step
-  // (placement test → profile → roadmap → subscription) based on how
-  // far they've made it through the funnel.
-  const communityGate = useCommunityAccessGate();
+  // Major-Match hero (non-Community dashboard) — knows whether the
+  // student has already completed the assessment and where the CTA
+  // should route (assessment start, or the community gate destination
+  // if their one free attempt is already used).
+  const mm = useMajorMatchPromptState();
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -211,9 +199,12 @@ const MyProgressEditorialView: React.FC = () => {
     : null;
 
   // ── Real mentor sessions from auth profile.joinedSessions ────────
-  const joinedSessions = (profile as any)?.joinedSessions as any[] | undefined;
+  // Shared with the community feed's "Upcoming sessions" rail widget via
+  // `useMentorSessions` so the two surfaces can never disagree.
+  const { upcomingSessions, pastSessions, cancelledSessions } = useMentorSessions();
   // Tab state for the Mentor sessions card. Declared up here so the
   // `visibleSessions` memo below can read it without TDZ errors.
+  const [mmCollectOpen, setMmCollectOpen] = useState(false);
   const [sessionTab, setSessionTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   /* — Withdraw flow state ────────────────────────────────────────
@@ -228,6 +219,8 @@ const MyProgressEditorialView: React.FC = () => {
   const [withdrawReason, setWithdrawReason] = useState<string>('');
   const [cancelAsStudent, { isLoading: cancelingAsStudent }] = useCancelSessionAsStudentMutation();
   const [invalidateGetMe] = useInvalidateGetMeMutation();
+  // NOTE: kept in English — `withdrawReason` is compared by literal value
+  // below (e.g. `=== 'Other'`), so these act as state keys, not just labels.
   const WITHDRAW_REASONS = [
     'I have another meeting',
     'I have an emergency',
@@ -248,61 +241,24 @@ const MyProgressEditorialView: React.FC = () => {
     const finalReason =
       withdrawReason === 'Other' ? formValues.customReason?.trim() : withdrawReason;
     if (!finalReason) {
-      message.warning('Please pick a reason.');
+      message.warning(t('studentHub.myProgress.pickReasonWarning', 'Please pick a reason.'));
       return;
     }
     try {
       await cancelAsStudent({ id: withdrawModalSessionId, comment: finalReason }).unwrap();
-      message.success('You have withdrawn from the session.');
+      message.success(
+        t('studentHub.myProgress.withdrawSuccess', 'You have withdrawn from the session.'),
+      );
       // Refresh /users/me so joinedSessions drops the cancelled meeting.
       await invalidateGetMe();
       closeWithdrawModal();
     } catch (e: any) {
-      message.error(e?.data?.message || 'Could not withdraw. Try again.');
+      message.error(
+        e?.data?.message ||
+          t('studentHub.myProgress.withdrawError', 'Could not withdraw. Try again.'),
+      );
     }
   };
-  /** Map a raw joinedSession row to a normalized SessionItem. */
-  const mapSession = (s: any, i: number): SessionItem => ({
-    id: String(s.id ?? i),
-    date: s.date,
-    mentor: s.mentor?.profile?.name || s.mentorName || 'Mentor',
-    mentorId: s.mentor?.id,
-    durationMin: s.type === SessionTypeEnum.Individual30M ? 30 : 60,
-    meetingLink: s.calendarInfo?.meetingLink,
-  });
-
-  const upcomingSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    const now = Date.now();
-    return joinedSessions
-      .filter((s) => s?.date && new Date(s.date).getTime() > now && !s.cancelStatus)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
-  /** Past sessions = ended (start + duration < now) AND not cancelled. */
-  const pastSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    return joinedSessions
-      .filter((s) => {
-        if (!s?.date || s.cancelStatus) return false;
-        const dur = s.type === SessionTypeEnum.Individual30M ? 30 : 60;
-        return Date.now() > new Date(s.date).getTime() + dur * 60 * 1000;
-      })
-      // Newest past session first.
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
-  /** Cancelled sessions — status object is non-null. */
-  const cancelledSessions: SessionItem[] = useMemo(() => {
-    if (!joinedSessions?.length) return [];
-    return joinedSessions
-      .filter((s) => s.cancelStatus !== null && s.cancelStatus?.id)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map(mapSession);
-  }, [joinedSessions]);
-
   /**
    * Sessions shown in the body. We render the full list so the user can
    * scroll to access older meetings (the list itself is height-capped via
@@ -390,7 +346,7 @@ const MyProgressEditorialView: React.FC = () => {
         desc: `${daysToDeadline} day${daysToDeadline === 1 ? '' : 's'} until the deadline. Open the checklist and tackle the next open item.`,
         minutes: 20,
         priority: urgency === 'urgent' ? 0 : urgency === 'soon' ? 1 : 2,
-        ctaPath: '/student-hub?section=others&target=college-lists',
+        ctaPath: '/student-hub?section=others&target=profile&tab=college-lists',
       });
     }
 
@@ -444,7 +400,7 @@ const MyProgressEditorialView: React.FC = () => {
           desc: 'Track deadlines and progress per school. The next 60 seconds will save you weeks.',
           minutes: 1,
           priority: 2,
-          ctaPath: '/student-hub?section=others&target=college-lists',
+          ctaPath: '/student-hub?section=others&target=profile&tab=college-lists',
         });
       }
       if (recs.length < 3) {
@@ -466,146 +422,102 @@ const MyProgressEditorialView: React.FC = () => {
       .map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
   }, [nearestDeadline, daysToDeadline, tracks, upcomingSessions, applications.length]);
 
-  const greeting = (
-    <>
-      Hi, {fullName}.{' '}
-      <span className="myprog__title-muted">Let&rsquo;s keep moving.</span>
-    </>
-  );
-
-  // Quick Add dropdown — mirrors the legacy Dashboard menu so the
-  // common "I want to do X" entry points stay one click away from the
-  // editorial header.
-  const quickAddItems = [
-    {
-      key: 'profile',
-      label: 'Complete profile',
-      icon: <UserIcon size={14} />,
-      onClick: () => navigate('/student-hub/profile'),
-    },
-    {
-      key: 'application',
-      label: 'Add to college list',
-      icon: <Building2 size={14} />,
-      onClick: () => navigate('/student-hub?section=others&target=college-lists&applicationFlow=new'),
-    },
-    {
-      key: 'essay',
-      label: 'Start an essay',
-      icon: <PenLine size={14} />,
-      onClick: () => navigate('/student-hub/essays'),
-    },
-    {
-      key: 'psychometric',
-      label: 'Psychometric test',
-      icon: <LineChart size={14} />,
-      onClick: () => navigate('/student-hub/psychometric-assessment'),
-    },
-    {
-      key: 'document',
-      label: 'Upload a document',
-      icon: <FileUp size={14} />,
-      onClick: () => navigate('/student-hub/documents'),
-    },
-  ];
-
-  // Discover entry → AI Major Match. Same target the legacy "Discover"
-  // pill in the dashboard top bar opens.
-  const handleDiscover = () => navigate('/student-hub?section=ai-major-match');
+  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName });
 
   return (
     <div className="myprog">
       <header className="myprog__header">
         <div className="myprog__head-left">
-          <h1 className="myprog__title">{greeting}</h1>
-          <p className="myprog__desc">
-            Below: where you left off, what&rsquo;s next, and who&rsquo;s expecting you.
-          </p>
-        </div>
-        <div className="myprog__head-actions">
-          <button
-            type="button"
-            className="myprog__btn myprog__btn--ghost"
-            onClick={handleDiscover}
-          >
-            <Search size={14} /> Discover
-          </button>
-          <Dropdown
-            menu={{ items: quickAddItems }}
-            trigger={['click']}
-            placement="bottomRight"
-            overlayClassName="myprog__quickadd-menu"
-          >
-            <button type="button" className="myprog__btn myprog__btn--primary">
-              <Plus size={14} /> Quick add
-            </button>
-          </Dropdown>
+          <h1 className="myprog__title">
+            {t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
+          </h1>
+          <p className="myprog__greeting">{greeting}</p>
         </div>
       </header>
 
-      {/* Telegram connect prompt — auto-hides once the student links
-          their Telegram account. Only the *checklist UI* is shown here;
-          the tracking telegram bot still pings notifications elsewhere. */}
-      <TelegramConnectionChecklist />
+      {/* Non-Community users see the AI Major Match hero in place of the
+          learning-progress card — the progress card is useless when
+          they're enrolled in nothing, and Major Match is the highest-signal
+          free tool we can put in front of a not-yet-enrolled student.
+          Community users see the real progress card below.
 
-      {/* Non-Community users see a two-column "Join Community" hero in
-          place of the learning-progress card — the progress card is
-          useless when they're enrolled in nothing AND we have a better
-          story to tell about Community. Community users see the real
-          progress card below. The standalone community upsell strip is
-          retired since this hero replaces it. */}
+          Layout: one card, two columns — hero copy on the left, trailer
+          on the right, vertically centered against each other. DOM order
+          stays text-then-video (it collapses to a single stacked column
+          on narrow viewports, text above video). Below the hero: Telegram
+          faint program links. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
-          <article className="myprog__card myprog__joinhero">
-            <div className="myprog__joinhero__left">
-              <span className="myprog__joinhero__eyebrow">The Community</span>
-              <h2 className="myprog__joinhero__title">
-                Your admissions journey
-                <br />
-                <em>starts here.</em>
-              </h2>
-              <p className="myprog__joinhero__lede">
-                One membership unlocks every tool you need to get into your
-                dream university.
-              </p>
-              <ul className="myprog__joinhero__chips" aria-label="Community unlocks">
-                <li>Full SAT Prep</li>
-                <li>AI Major Match</li>
-                <li>Research Prep · 8 weeks</li>
-                <li>1:1 Mentors</li>
-                <li>Study Buddies</li>
-                <li>Live Workshops</li>
-              </ul>
-              <div className="myprog__joinhero__actions">
-                <button
-                  type="button"
-                  className="myprog__btn myprog__btn--primary myprog__joinhero__cta"
-                  onClick={() => navigate(communityGate.destination)}
-                  disabled={communityGate.state === 'loading'}
-                >
-                  Join the Community
-                  <ArrowRight size={14} />
-                </button>
-                <p className="myprog__joinhero__micro">
-                  7-day free trial · cancel anytime
-                </p>
-              </div>
+          <article className="myprog__card myprog__mmhero">
+            <div className="myprog__mmhero__left">
+              <span className="myprog__mmhero__eyebrow">
+                {t('studentHub.myProgress.majorMatchEyebrow', 'AI Major Match')}
+              </span>
+              {mm.hasCompletedAssessment ? (
+                <>
+                  <h2 className="myprog__mmhero__title">
+                    {t('studentHub.myProgress.majorMatchTakenTitle', 'Your major match is ready')}
+                  </h2>
+                  <p className="myprog__mmhero__lede">
+                    {t(
+                      'studentHub.myProgress.majorMatchTakenLede',
+                      'Revisit your best-fit majors and recommendations.',
+                    )}
+                  </p>
+                  <div className="myprog__mmhero__actions">
+                    <button
+                      type="button"
+                      className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
+                      onClick={() => navigate('/student-hub?section=ai-major-match')}
+                    >
+                      {t('studentHub.myProgress.majorMatchViewResults', 'View your results')}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="myprog__mmhero__title">
+                    {t(
+                      'studentHub.myProgress.majorMatchNotTakenTitle',
+                      'Struggling with finding the right major?',
+                    )}
+                  </h2>
+                  <p className="myprog__mmhero__lede">
+                    {t(
+                      'studentHub.myProgress.majorMatchNotTakenLede',
+                      'Try our free AI major tool — answer a few questions and get your best-fit majors in ~15 minutes.',
+                    )}
+                  </p>
+                  <div className="myprog__mmhero__actions">
+                    <button
+                      type="button"
+                      className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
+                      onClick={() => setMmCollectOpen(true)}
+                    >
+                      {t('studentHub.myProgress.majorMatchCta', 'Try this free AI major tool')}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Trailer — the right column is itself shaped 16:9 so
-                the iframe fills the cell edge-to-edge with no
-                letterbox. Card height is driven by the video's
-                natural aspect ratio; the editorial copy on the left
-                centers vertically to match. */}
-            <div className="myprog__joinhero__video">
-              <iframe
-                className="myprog__joinhero__video-iframe"
-                src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
-                title="Top Coach Community"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
+            {/* Trailer — right column at desktop widths, stacks below the
+                text on collapse. Keeps its own 16:9 box (no stretching to
+                match the text column's height); the row centers the two
+                columns against each other instead. */}
+            <div className="myprog__mmhero__media">
+              <div className="myprog__mmvideo">
+                <iframe
+                  className="myprog__mmvideo-iframe"
+                  src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0&modestbranding=1&playsinline=1"
+                  title="Top Coach Community"
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
             </div>
           </article>
         </section>
@@ -619,13 +531,19 @@ const MyProgressEditorialView: React.FC = () => {
           <article className="myprog__card myprog__tracks">
             <div className="myprog__tracks-head">
               <div>
-                <div className="myprog__card-eyebrow">Your learning progress</div>
+                <div className="myprog__card-eyebrow">
+                  {t('studentHub.myProgress.learningProgress', 'Your learning progress')}
+                </div>
                 <h2 className="myprog__card-title">
                   {tracksLoading && tracks.length === 0 ? (
                     <Skeleton.Input active size="small" style={{ width: 200 }} />
                   ) : (
                     <>
-                      {tracks.length} program{tracks.length === 1 ? '' : 's'} enrolled
+                      {tracks.length}{' '}
+                      {tracks.length === 1
+                        ? t('studentHub.myProgress.programSingular', 'program')
+                        : t('studentHub.myProgress.programPlural', 'programs')}{' '}
+                      {t('studentHub.myProgress.enrolled', 'enrolled')}
                     </>
                   )}
                 </h2>
@@ -642,61 +560,73 @@ const MyProgressEditorialView: React.FC = () => {
             ) : tracks.length === 0 ? (
               <div className="myprog__tracks-empty">
                 <p>
-                  Enroll in the Admissions Program, SAT Prep, or Research Prep to start
-                  tracking your progress here.
+                  {t(
+                    'studentHub.myProgress.tracksEmptyDesc',
+                    'Enroll in the Admissions Program, SAT Prep, or Research Prep to start tracking your progress here.',
+                  )}
                 </p>
                 <button
                   type="button"
                   className="myprog__btn myprog__btn--primary"
                   onClick={() => navigate('/programs')}
                 >
-                  Browse programs <ArrowRight size={13} />
+                  {t('studentHub.myProgress.browsePrograms', 'Browse programs')}{' '}
+                  <ArrowRight size={13} />
                 </button>
               </div>
             ) : (
             <div className="myprog__tracks-grid">
-              {tracks.map((t) => {
+              {tracks.map((track) => {
                 const stateLabel =
-                  t.progressPct >= 100 ? 'Completed' : t.progressPct > 0 ? 'In progress' : 'Not started';
+                  track.progressPct >= 100
+                    ? t('studentHub.myProgress.stateCompleted', 'Completed')
+                    : track.progressPct > 0
+                      ? t('studentHub.myProgress.stateInProgress', 'In progress')
+                      : t('studentHub.myProgress.stateNotStarted', 'Not started');
                 const stateClass =
-                  t.progressPct >= 100 ? 'done' : t.progressPct > 0 ? 'progress' : 'idle';
+                  track.progressPct >= 100 ? 'done' : track.progressPct > 0 ? 'progress' : 'idle';
                 return (
-                  <div key={t.key} className="myprog__track">
+                  <div key={track.key} className="myprog__track">
                     <div className="myprog__track-head">
-                      <span className="myprog__track-icon">{t.icon}</span>
-                      <span className="myprog__track-name">{t.title}</span>
+                      <span className="myprog__track-icon">{track.icon}</span>
+                      <span className="myprog__track-name">{track.title}</span>
                       <span className={`myprog__track-pill myprog__track-pill--${stateClass}`}>
                         {stateLabel}
                       </span>
                     </div>
                     <div className="myprog__track-stats">
                       <div className="myprog__track-stat">
-                        <div className="myprog__track-stat-num">{t.completed}</div>
+                        <div className="myprog__track-stat-num">{track.completed}</div>
                         <div className="myprog__track-stat-label">
-                          {t.unitLabel} completed
+                          {track.unitLabel} {t('studentHub.myProgress.completedSuffix', 'completed')}
                         </div>
                       </div>
                       <div className="myprog__track-stat">
-                        <div className="myprog__track-stat-num">{t.total || '—'}</div>
-                        <div className="myprog__track-stat-label">total {t.unitLabel}</div>
+                        <div className="myprog__track-stat-num">{track.total || '—'}</div>
+                        <div className="myprog__track-stat-label">
+                          {t('studentHub.myProgress.totalPrefix', 'total')} {track.unitLabel}
+                        </div>
                       </div>
                       <div className="myprog__track-stat">
-                        <div className="myprog__track-stat-num">{t.progressPct}%</div>
-                        <div className="myprog__track-stat-label">overall</div>
+                        <div className="myprog__track-stat-num">{track.progressPct}%</div>
+                        <div className="myprog__track-stat-label">
+                          {t('studentHub.myProgress.overall', 'overall')}
+                        </div>
                       </div>
                     </div>
                     <div className="myprog__track-bar">
                       <div
                         className="myprog__track-bar-fill"
-                        style={{ width: `${t.progressPct}%` }}
+                        style={{ width: `${track.progressPct}%` }}
                       />
                     </div>
                     <button
                       type="button"
                       className="myprog__btn myprog__btn--primary myprog__track-cta"
-                      onClick={() => navigate(t.ctaPath)}
+                      onClick={() => navigate(track.ctaPath)}
                     >
-                      Continue learning <ArrowRight size={13} />
+                      {t('studentHub.myProgress.continueLearning', 'Continue learning')}{' '}
+                      <ArrowRight size={13} />
                     </button>
                   </div>
                 );
@@ -711,7 +641,9 @@ const MyProgressEditorialView: React.FC = () => {
       <section className="myprog__btmgrid">
         <article className="myprog__card myprog__sessions">
           <div className="myprog__sessions-head">
-            <h3 className="myprog__sessions-title">Mentor sessions</h3>
+            <h3 className="myprog__sessions-title">
+              {t('studentHub.myProgress.mentorSessionsTitle', 'Mentor sessions')}
+            </h3>
           </div>
           <div className="myprog__sessions-tabs">
             {(['upcoming', 'past', 'cancelled'] as const).map((tab) => {
@@ -719,7 +651,12 @@ const MyProgressEditorialView: React.FC = () => {
                 tab === 'upcoming' ? upcomingSessions.length
                 : tab === 'past' ? pastSessions.length
                 : cancelledSessions.length;
-              const label = tab.charAt(0).toUpperCase() + tab.slice(1);
+              const tabLabels = {
+                upcoming: t('studentHub.myProgress.tabUpcoming', 'Upcoming'),
+                past: t('studentHub.myProgress.tabPast', 'Past'),
+                cancelled: t('studentHub.myProgress.tabCancelled', 'Cancelled'),
+              };
+              const label = tabLabels[tab];
               return (
                 <button
                   key={tab}
@@ -736,10 +673,13 @@ const MyProgressEditorialView: React.FC = () => {
             {visibleSessions.length === 0 && (
               <li className="myprog__sessions-empty">
                 {sessionTab === 'upcoming'
-                  ? 'No upcoming sessions. Book a mentor below to get started.'
+                  ? t(
+                      'studentHub.myProgress.emptyUpcoming',
+                      'No upcoming sessions. Book a mentor below to get started.',
+                    )
                   : sessionTab === 'past'
-                    ? 'No past sessions to show.'
-                    : 'No cancelled sessions.'}
+                    ? t('studentHub.myProgress.emptyPast', 'No past sessions to show.')
+                    : t('studentHub.myProgress.emptyCancelled', 'No cancelled sessions.')}
               </li>
             )}
             {visibleSessions.map((s) => {
@@ -761,12 +701,12 @@ const MyProgressEditorialView: React.FC = () => {
                           className="myprog__session-join"
                           onClick={() => window.open(s.meetingLink, '_blank')}
                         >
-                          Join the session
+                          {t('studentHub.myProgress.joinSession', 'Join the session')}
                           <ArrowRight size={11} />
                         </button>
                       ) : (
                         <span className="myprog__session-join myprog__session-join--idle">
-                          Pending link
+                          {t('studentHub.myProgress.pendingLink', 'Pending link')}
                         </span>
                       )}
                       {/* Single pulsing live dot — was duplicated by an
@@ -785,7 +725,10 @@ const MyProgressEditorialView: React.FC = () => {
                               key: 'withdraw',
                               label: (
                                 <span className="myprog__session-withdraw-item">
-                                  Withdraw from the meeting
+                                  {t(
+                                    'studentHub.myProgress.withdrawFromMeeting',
+                                    'Withdraw from the meeting',
+                                  )}
                                 </span>
                               ),
                               onClick: () => {
@@ -800,7 +743,7 @@ const MyProgressEditorialView: React.FC = () => {
                         <button
                           type="button"
                           className="myprog__session-more"
-                          aria-label="Session options"
+                          aria-label={t('studentHub.myProgress.sessionOptions', 'Session options')}
                         >
                           <MoreVertical size={16} />
                         </button>
@@ -812,11 +755,13 @@ const MyProgressEditorialView: React.FC = () => {
                   </div>
                   <div className="myprog__session-time">
                     {date.format('h:mm A')}
-                    {sessionTab === 'past' && ' · Completed'}
-                    {sessionTab === 'cancelled' && ' · Cancelled'}
+                    {sessionTab === 'past' &&
+                      ` · ${t('studentHub.myProgress.sessionCompleted', 'Completed')}`}
+                    {sessionTab === 'cancelled' &&
+                      ` · ${t('studentHub.myProgress.sessionCancelled', 'Cancelled')}`}
                   </div>
                   <div className="myprog__session-with">
-                    {s.durationMin} min meeting with{' '}
+                    {s.durationMin} {t('studentHub.myProgress.minMeetingWith', 'min meeting with')}{' '}
                     <button
                       type="button"
                       className="myprog__session-mentor-link"
@@ -834,7 +779,7 @@ const MyProgressEditorialView: React.FC = () => {
                       className="myprog__btn myprog__btn--primary myprog__session-chat"
                       onClick={() => navigate('/student-hub?section=messages')}
                     >
-                      Chat with mentor
+                      {t('studentHub.myProgress.chatWithMentor', 'Chat with mentor')}
                     </button>
                   )}
                 </li>
@@ -846,12 +791,12 @@ const MyProgressEditorialView: React.FC = () => {
             className="myprog__btn myprog__btn--ghost myprog__sessions-book"
             onClick={() => navigate('/mentors')}
           >
-            <Plus size={13} /> Book a mentor
+            <Plus size={13} /> {t('studentHub.myProgress.bookAMentor', 'Book a mentor')}
           </button>
         </article>
 
-        {/* Top Coach Presents — ISC 2026 takes the slot while its
-            applications are open, then the Launch Event, then CAAF,
+        {/* Top Coach Presents — the Personal Statement Workshop takes the
+            slot while it's live, then the Launch Event, then CAAF,
             then the quiet empty card. */}
         {showWorkshopPromo ? (
           <article className="myprog__card myprog__promo">
@@ -880,8 +825,12 @@ const MyProgressEditorialView: React.FC = () => {
         ) : showLaunchPromo ? (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
-            <div className="myprog__promo-eyebrow">Top Coach presents</div>
-            <h3 className="myprog__promo-title">New Feature Launch</h3>
+            <div className="myprog__promo-eyebrow">
+              {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
+            </div>
+            <h3 className="myprog__promo-title">
+              {t('studentHub.myProgress.launchEventTitle', 'New Feature Launch')}
+            </h3>
             <div className="myprog__promo-meta">Sun, May 24 · 11:00 AM · Tashkent</div>
             <p className="myprog__promo-desc">
               Free offline launch at the Youth Affairs Agency of
@@ -893,7 +842,7 @@ const MyProgressEditorialView: React.FC = () => {
                 <>
                   <div className="myprog__promo-foot-status">
                     <span className="myprog__promo-tag myprog__promo-tag--paid">
-                      Registered
+                      {t('studentHub.myProgress.statusRegistered', 'Registered')}
                     </span>
                   </div>
                   <button
@@ -901,14 +850,14 @@ const MyProgressEditorialView: React.FC = () => {
                     className="myprog__btn myprog__promo-cta"
                     onClick={() => navigate('/events/topcoach-launch-event')}
                   >
-                    View details
+                    {t('studentHub.myProgress.viewDetails', 'View details')}
                   </button>
                 </>
               ) : launchRegistration?.status === 'cancelled' ? (
                 <>
                   <div className="myprog__promo-foot-status">
                     <span className="myprog__promo-tag myprog__promo-tag--cancelled">
-                      Cancelled
+                      {t('studentHub.myProgress.statusCancelled', 'Cancelled')}
                     </span>
                   </div>
                   <button
@@ -916,20 +865,22 @@ const MyProgressEditorialView: React.FC = () => {
                     className="myprog__btn myprog__promo-cta"
                     onClick={() => navigate('/events/topcoach-launch-event')}
                   >
-                    Re-register
+                    {t('studentHub.myProgress.reregister', 'Re-register')}
                   </button>
                 </>
               ) : (
                 <>
                   <div className="myprog__promo-foot-status">
-                    {launchMeLoading ? 'Loading…' : 'Free · limited seats'}
+                    {launchMeLoading
+                      ? t('studentHub.myProgress.statusLoading', 'Loading…')
+                      : t('studentHub.myProgress.freeLimitedSeats', 'Free · limited seats')}
                   </div>
                   <button
                     type="button"
                     className="myprog__btn myprog__btn--primary myprog__promo-cta"
                     onClick={() => navigate('/events/topcoach-launch-event')}
                   >
-                    Register now
+                    {t('studentHub.myProgress.registerNow', 'Register now')}
                   </button>
                 </>
               )}
@@ -937,19 +888,29 @@ const MyProgressEditorialView: React.FC = () => {
           </article>
         ) : !showCaafPromo ? (
           <article className="myprog__card myprog__promo myprog__promo--empty">
-            <div className="myprog__promo-empty-eyebrow">Top Coach presents</div>
+            <div className="myprog__promo-empty-eyebrow">
+              {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
+            </div>
             <div className="myprog__promo-empty-icon">📅</div>
-            <div className="myprog__promo-empty-title">No active event</div>
+            <div className="myprog__promo-empty-title">
+              {t('studentHub.myProgress.noActiveEventTitle', 'No active event')}
+            </div>
             <p className="myprog__promo-empty-desc">
-              We're between events right now. The next forum will appear here as
-              soon as registration opens.
+              {t(
+                'studentHub.myProgress.noActiveEventDesc',
+                "We're between events right now. The next forum will appear here as soon as registration opens.",
+              )}
             </p>
           </article>
         ) : (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
-            <div className="myprog__promo-eyebrow">Top Coach presents</div>
-            <h3 className="myprog__promo-title">Central Asian Admissions Forum</h3>
+            <div className="myprog__promo-eyebrow">
+              {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
+            </div>
+            <h3 className="myprog__promo-title">
+              {t('studentHub.myProgress.caafTitle', 'Central Asian Admissions Forum')}
+            </h3>
             <div className="myprog__promo-meta">Tashkent · Spring 2026</div>
             <p className="myprog__promo-desc">
               One-day forum with admissions officers from 14 universities. Live
@@ -959,21 +920,23 @@ const MyProgressEditorialView: React.FC = () => {
               {caafApplication?.status === 'paid' ? (
                 <>
                   <div className="myprog__promo-foot-status">
-                    <span className="myprog__promo-tag myprog__promo-tag--paid">Registered</span>
+                    <span className="myprog__promo-tag myprog__promo-tag--paid">
+                      {t('studentHub.myProgress.statusRegistered', 'Registered')}
+                    </span>
                   </div>
                   <button
                     type="button"
                     className="myprog__btn myprog__promo-cta"
                     onClick={() => navigate('/events/central-asian-admissions-forum')}
                   >
-                    View ticket
+                    {t('studentHub.myProgress.viewTicket', 'View ticket')}
                   </button>
                 </>
               ) : caafApplication?.status === 'pending_payment' ? (
                 <>
                   <div className="myprog__promo-foot-status">
                     <span className="myprog__promo-tag myprog__promo-tag--pending">
-                      Pending payment
+                      {t('studentHub.myProgress.statusPendingPayment', 'Pending payment')}
                     </span>
                   </div>
                   <button
@@ -981,14 +944,14 @@ const MyProgressEditorialView: React.FC = () => {
                     className="myprog__btn myprog__btn--primary myprog__promo-cta"
                     onClick={() => navigate('/events/central-asian-admissions-forum')}
                   >
-                    Pay {caafFeeLabel}
+                    {t('studentHub.myProgress.payAmount', 'Pay {{fee}}', { fee: caafFeeLabel })}
                   </button>
                 </>
               ) : caafApplication?.status === 'cancelled' ? (
                 <>
                   <div className="myprog__promo-foot-status">
                     <span className="myprog__promo-tag myprog__promo-tag--cancelled">
-                      Cancelled
+                      {t('studentHub.myProgress.statusCancelled', 'Cancelled')}
                     </span>
                   </div>
                   <button
@@ -996,20 +959,24 @@ const MyProgressEditorialView: React.FC = () => {
                     className="myprog__btn myprog__promo-cta"
                     onClick={() => navigate('/events/central-asian-admissions-forum')}
                   >
-                    Re-apply
+                    {t('studentHub.myProgress.reapply', 'Re-apply')}
                   </button>
                 </>
               ) : (
                 <>
                   <div className="myprog__promo-foot-status">
-                    {caafMeLoading ? 'Loading…' : `Reserve your spot · ${caafFeeLabel}`}
+                    {caafMeLoading
+                      ? t('studentHub.myProgress.statusLoading', 'Loading…')
+                      : t('studentHub.myProgress.reserveSpot', 'Reserve your spot · {{fee}}', {
+                          fee: caafFeeLabel,
+                        })}
                   </div>
                   <button
                     type="button"
                     className="myprog__btn myprog__btn--primary myprog__promo-cta"
                     onClick={() => navigate('/events/central-asian-admissions-forum')}
                   >
-                    Register
+                    {t('studentHub.myProgress.register', 'Register')}
                   </button>
                 </>
               )}
@@ -1023,10 +990,15 @@ const MyProgressEditorialView: React.FC = () => {
             <span className="myprog__airecs-glyph">
               <Wand2 size={13} />
             </span>
-            <span className="myprog__airecs-eyebrow">AI recommendations</span>
+            <span className="myprog__airecs-eyebrow">
+              {t('studentHub.myProgress.aiRecommendations', 'AI recommendations')}
+            </span>
           </div>
           <h3 className="myprog__airecs-title">
-            Three things you can do today to move the needle.
+            {t(
+              'studentHub.myProgress.aiRecsHeadline',
+              'Three things you can do today to move the needle.',
+            )}
           </h3>
           {aiRecsLoading ? (
             // Source queries in flight — skeleton rows instead of fallback
@@ -1040,8 +1012,10 @@ const MyProgressEditorialView: React.FC = () => {
             </ol>
           ) : aiRecs.length === 0 ? (
             <p className="myprog__airecs-empty">
-              All caught up — nothing pressing today. Your dashboard will surface
-              new tasks as deadlines approach and progress shifts.
+              {t(
+                'studentHub.myProgress.aiRecsEmpty',
+                'All caught up — nothing pressing today. Your dashboard will surface new tasks as deadlines approach and progress shifts.',
+              )}
             </p>
           ) : (
             <ol className="myprog__airecs-list">
@@ -1061,7 +1035,7 @@ const MyProgressEditorialView: React.FC = () => {
                     <div className="myprog__airecs-rt">
                       <div className="myprog__airecs-name">{rec.title}</div>
                       <span className="myprog__airecs-time">
-                        {rec.minutes} min
+                        {rec.minutes} {t('studentHub.myProgress.minSuffix', 'min')}
                       </span>
                     </div>
                     <div className="myprog__airecs-desc">{rec.desc}</div>
@@ -1077,22 +1051,28 @@ const MyProgressEditorialView: React.FC = () => {
           each upcoming session card. Mirrors the reason picker /
           "Other" free-text used by the legacy UpcomingCard. */}
       <Modal
-        title="Withdraw from the meeting"
+        title={t('studentHub.myProgress.withdrawFromMeeting', 'Withdraw from the meeting')}
         open={!!withdrawModalSessionId}
         onCancel={closeWithdrawModal}
         onOk={handleWithdrawSubmit}
-        okText="Withdraw"
+        okText={t('studentHub.myProgress.withdrawOk', 'Withdraw')}
         okButtonProps={{
           danger: true,
           loading: cancelingAsStudent,
           style: { backgroundColor: '#7B1F2F', borderColor: '#7B1F2F' },
         }}
-        cancelText="Keep meeting"
+        cancelText={t('studentHub.myProgress.keepMeeting', 'Keep meeting')}
       >
         <p style={{ color: '#6b6258', marginBottom: 12 }}>
-          Pick a reason so your mentor knows why you can't attend.
+          {t(
+            'studentHub.myProgress.withdrawBody',
+            "Pick a reason so your mentor knows why you can't attend.",
+          )}
         </p>
         <div className="myprog__withdraw-reasons">
+          {/* NOTE: reason button labels stay in English — `reason` is the
+              literal value compared against 'Other' below, not just display
+              text (see WITHDRAW_REASONS comment above). */}
           {WITHDRAW_REASONS.map((reason) => (
             <button
               key={reason}
@@ -1109,7 +1089,11 @@ const MyProgressEditorialView: React.FC = () => {
         <Form form={withdrawForm} layout="vertical" style={{ marginTop: 14 }}>
           <Form.Item
             name="customReason"
-            label={withdrawReason === 'Other' ? 'Tell us more' : 'Add a note (optional)'}
+            label={
+              withdrawReason === 'Other'
+                ? t('studentHub.myProgress.tellUsMore', 'Tell us more')
+                : t('studentHub.myProgress.addNoteOptional', 'Add a note (optional)')
+            }
             rules={
               withdrawReason === 'Other'
                 ? [
@@ -1117,7 +1101,14 @@ const MyProgressEditorialView: React.FC = () => {
                       validator: (_, value) =>
                         value?.trim()
                           ? Promise.resolve()
-                          : Promise.reject(new Error('Please describe the reason.')),
+                          : Promise.reject(
+                              new Error(
+                                t(
+                                  'studentHub.myProgress.describeReason',
+                                  'Please describe the reason.',
+                                ),
+                              ),
+                            ),
                     },
                   ]
                 : []
@@ -1127,6 +1118,8 @@ const MyProgressEditorialView: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <MajorMatchCollectModal open={mmCollectOpen} onClose={() => setMmCollectOpen(false)} />
     </div>
   );
 };

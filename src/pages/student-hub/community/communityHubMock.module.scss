@@ -108,11 +108,6 @@
   top: 96px;
 }
 
-.leftColNoProfile {
-  margin-top: 0;
-  transform: translateY(-10px);
-}
-
 /* Profile card — hero-photo layout.
  *
  * Modeled on the Sophie-Bennett-style cards in the user's reference: a
@@ -223,6 +218,64 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+/* Profile-completion progress bar — sits between the identity row and the
+ * coin/View-profile row. A plain <button> so it's independently clickable
+ * (stopPropagation) without nesting a <button> inside the card's own
+ * role="button" wrapper's click target. */
+.profileCompletion {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+}
+
+.profileCompletionLabel {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8a8577;
+  margin-bottom: 5px;
+  letter-spacing: 0.005em;
+}
+
+.profileCompletionTrack {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #ece9df;
+  overflow: hidden;
+}
+
+.profileCompletionFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #7B1F2F;
+  transition: width 0.25s ease;
+}
+
+/* Fully complete — replaces the bar entirely with a single muted line. */
+.profileCompletionDone {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8a8577;
 }
 
 /* Row 2 — coin chip (left) + View-profile CTA (right), separated from
@@ -676,6 +729,39 @@
   justify-content: center;
   flex-shrink: 0;
   line-height: 0;
+}
+
+/* "My dashboard" expandable group — chevron on the parent row + an
+ * indented, rail-guided list of children (Progress / Profile). Reuses
+ * .navItem/.navItemActive for the children so active/hover states stay
+ * identical to every other sidebar row. */
+.navGroupChevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: color 0.18s ease;
+}
+
+.navItem:hover .navGroupChevron {
+  color: #1f2937;
+}
+
+.navItemActive .navGroupChevron {
+  color: #7B1F2F;
+}
+
+.navSubGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px 22px;
+  padding-left: 12px;
+  border-left: 1px solid #ece9df;
+}
+
+.navSubItem {
+  padding: 7px 10px;
+  font-size: 0.88rem;
 }
 
 .leftNavCollapse {
@@ -2710,6 +2796,66 @@
   .messagesWrap {
     grid-template-columns: 1fr;
   }
+}
+
+// —— Study Buddy matching preferences (relocated from Settings) ——
+.buddyPrefsCard {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 20px;
+}
+
+.buddyPrefsHelper {
+  margin-bottom: 16px !important;
+}
+
+.buddyPrefsSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.buddyPrefsChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.buddyPrefsChip {
+  margin: 0;
+}
+
+.buddyPrefsFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+  margin-bottom: 16px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.buddyPrefsFieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 6px;
+}
+
+.buddyPrefsSelect {
+  width: 100%;
+}
+
+.buddyPrefsActions {
+  display: flex;
+  gap: 10px;
 }
 
 .studyBuddyHub {

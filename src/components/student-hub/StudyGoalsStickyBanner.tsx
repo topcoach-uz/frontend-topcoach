@@ -36,7 +36,7 @@ export default function StudyGoalsStickyBanner() {
       <div className="study-goals-sticky-banner-inner">
         <div className="study-goals-sticky-banner-copy">
           <p className="study-goals-sticky-banner-title">
-            {t('studentHub.hub.studyBuddyGoalsBannerTitle', 'Set your study goals in Settings')}
+            {t('studentHub.hub.studyBuddyGoalsBannerTitle', 'Set your study goals to find a buddy')}
           </p>
           <p className="study-goals-sticky-banner-desc">
             {t(
@@ -48,11 +48,9 @@ export default function StudyGoalsStickyBanner() {
         <Button
           type="default"
           className="study-goals-sticky-banner-cta"
-          onClick={() =>
-            navigate('/student-hub?section=account&target=settings', { replace: true })
-          }
+          onClick={() => navigate('/student-hub?section=buddies', { replace: true })}
         >
-          {t('studentHub.hub.studyBuddyGoalsBannerCta', 'Open Settings')}
+          {t('studentHub.hub.studyBuddyGoalsBannerCta', 'Find a study buddy')}
         </Button>
       </div>
     </div>

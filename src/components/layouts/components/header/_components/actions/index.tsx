@@ -4,8 +4,6 @@ import { useScreenSize } from 'src/hooks/useScreenSize.ts';
 import AuthButtonGroup from './_components/AuthButtonGroup/index.tsx';
 import EditProfileModal from './_components/EditProfileModal/index.tsx';
 import ProfileDropdown from './_components/ProfileDropdown/index.tsx';
-import { AI_MAJOR_MATCH_ICONS } from 'src/constants/icons';
-import { AiSearchStarsSvg } from 'src/assets/svg';
 import styles from './actions.module.scss';
 import ActionsMobileVersion from './mobile/index.tsx';
 import useActions from './useActions.tsx';
@@ -81,18 +79,6 @@ export default function Actions() {
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
       />
-      
-      {/* AI Major Match Button - Commented out
-      <Link to="/ai-major-match" className={styles.aiMajorMatchButton}>
-        <div className={styles.aiIconWrapper}>
-          <AiSearchStarsSvg 
-            className={styles.aiIcon}
-            style={{ width: '20px', height: '20px', fill: 'white' }}
-          />
-        </div>
-        Major Match
-      </Link>
-      */}
 
       {/* Dark mode toggle disabled
       <button className={styles.mode_switch} onClick={handleDarkMode}>

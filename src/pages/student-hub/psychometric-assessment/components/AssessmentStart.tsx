@@ -143,7 +143,7 @@ export const AssessmentStart: React.FC<AssessmentStartProps> = ({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   // Funnel-aware destination for the "Unlock Community" CTA — the gate decides
-  // whether to send the user to the placement test, profile, roadmap, or the
+  // whether to send the user to the profile wizard, roadmap, or the
   // subscription tab based on how far they are through Community enrollment.
   const gate = useCommunityAccessGate();
   const [selectedLanguage] = useState<'en' | 'uz' | 'ru'>(

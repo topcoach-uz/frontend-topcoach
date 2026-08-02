@@ -51,4 +51,9 @@ export const apiTagTypes = [
   'FullSupportCurriculumProgress',
   'CaafForum',
   'CaafForumAdmin',
+  // Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 4) — deliberately scoped
+  // per-student tags, NOT a single bare tag, to avoid inheriting the
+  // documented app-wide runaway-refetch storm from 'PsychometricAssessment'.
+  'MajorMatchV2Status',
+  'MajorMatchV2Result',
 ];

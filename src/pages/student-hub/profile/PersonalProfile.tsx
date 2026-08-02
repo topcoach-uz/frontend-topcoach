@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { PROFILE_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
+import { COUNTRY_NATIONALITY_OPTIONS } from '../../events/youth-leaders-application/countryNationalityOptions';
 import './PersonalProfile.scss';
 
 const { Option } = Select;
@@ -26,6 +27,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
   const isReadOnly = readOnly === true;
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile, isProfileComplete } = useStudentProfile(hookOptions);
+
+  // Target Countries is NOT a Form.Item-bound field — it needs the same
+  // "not sure" mutual-exclusivity behavior as onboarding StepInfo.tsx's
+  // DESTINATION_OPTIONS/handleDestinationChange, which requires an explicit
+  // onChange handler that can override the raw selected values (a plain
+  // Form.Item binding just stores whatever Select passes through). Plain
+  // React state + manual onChange (same pattern StepInfo.tsx and
+  // MajorMatchProfileFields.tsx use) rather than fighting Form.Item for it.
+  const [targetCountries, setTargetCountriesRaw] = useState<string[]>([]);
 
   // Initialize form with data from API
   useEffect(() => {
@@ -60,7 +70,6 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         
         // Study Abroad Goals
         studyAbroadInterest: personalData.studyAbroadInterest || personalData.studyAbroadGoals?.interest || false,
-        targetCountries: personalData.studyAbroadGoals?.targetCountries || [],
         durationPreference: personalData.studyAbroadGoals?.durationPreference || 'flexible',
         
         // Values & Goals
@@ -74,16 +83,27 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         
         // Problem Solving
         problemSolvingApproach: personalData.problemSolvingApproach || [],
-        
-        // Additional Information
-        ethnicity: personalData.demographics?.ethnicity?.[0] || '',
-        citizenship: personalData.demographics?.citizenship || '',
-        visaStatus: personalData.demographics?.visaStatus || '',
+        // NOTE: ethnicity/citizenship/visaStatus are intentionally NOT loaded
+        // here — this form has no input for them (see handleSave's comment),
+        // so there's nothing to populate and nothing to round-trip.
       };
       
       form.setFieldsValue(formData);
+      setTargetCountriesRaw(personalData.studyAbroadGoals?.targetCountries || []);
     }
   }, [profile?.personalProfile, form]);
+
+  // Mirrors onboarding StepInfo.tsx's handleDestinationChange: picking "not
+  // sure yet" clears every other selection (mutually exclusive with real
+  // destinations).
+  const handleTargetCountriesChange = (values: string[]) => {
+    const justAddedNotSure = values.includes('not-sure') && !targetCountries.includes('not-sure');
+    if (justAddedNotSure) {
+      setTargetCountriesRaw(['not-sure']);
+      return;
+    }
+    setTargetCountriesRaw(values.filter((v) => v !== 'not-sure'));
+  };
 
   const handleSave = async (values: any) => {
     setLoading(true);
@@ -100,31 +120,21 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         return lang;
       }) || [];
       
-      // Transform form data to match backend DTO structure
+      // Transform form data to match backend DTO structure.
+      // IMPORTANT: only send fields this form actually renders/owns. This
+      // form has no UI for ethnicity/citizenship/visaStatus/familyBackground
+      // (or gender/disability/militaryService), so none of those are
+      // included below — sending hardcoded placeholder values for them here
+      // would clobber whatever onboarding or the major-match modal already
+      // wrote (and gender/disability/militaryService were never even backed
+      // by a real UI, just literals). Omitting them entirely lets the
+      // backend's partial-merge leave the existing stored values untouched.
       const personalProfileData = {
         country: values.country || null,
         state: values.state,
         city: values.city,
-        demographics: {
-          ethnicity: values.ethnicity ? [values.ethnicity] : [],
-          gender: 'prefer-not-to-say',
-          disability: false,
-          militaryService: false,
-          citizenship: values.citizenship,
-          visaStatus: values.visaStatus,
-        },
         languages: languagesFormatted,
-        familyBackground: {
-          parentEducation: {
-            mother: 'unknown',
-            father: 'unknown',
-          },
-          familyIncome: 'prefer-not-to-say',
-          siblings: 0,
-          firstGeneration: false,
-          singleParent: false,
-        },
-        personalInterests: Array.isArray(values.interests) 
+        personalInterests: Array.isArray(values.interests)
           ? values.interests 
           : (values.interests && typeof values.interests === 'string' 
               ? values.interests.split(',').map((s: string) => s.trim()).filter(Boolean)
@@ -135,7 +145,10 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         studyAbroadInterest: values.studyAbroadInterest || false,
         studyAbroadGoals: {
           interest: values.studyAbroadInterest || false,
-          targetCountries: values.targetCountries || [],
+          // "not-sure" is a sentinel (matches onboarding StepInfo.tsx /
+          // MajorMatchProfileFields.tsx), not a real destination — never
+          // stored as a literal target country.
+          targetCountries: targetCountries.includes('not-sure') ? [] : targetCountries,
           durationPreference: values.durationPreference || 'flexible',
         },
         intendedMajors: values.intendedMajor ? [{
@@ -170,24 +183,24 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
     }
   };
 
-  const countryOptions = [
-    { value: 'Uzbekistan', label: 'Uzbekistan' },
-    { value: 'Kazakhstan', label: 'Kazakhstan' },
-    { value: 'Kyrgyzstan', label: 'Kyrgyzstan' },
-    { value: 'Tajikistan', label: 'Tajikistan' },
-    { value: 'Turkmenistan', label: 'Turkmenistan' },
-    { value: 'Afghanistan', label: 'Afghanistan' },
-    { value: 'United States', label: 'United States' },
-    { value: 'Canada', label: 'Canada' },
-    { value: 'United Kingdom', label: 'United Kingdom' },
-    { value: 'Australia', label: 'Australia' },
-    { value: 'Germany', label: 'Germany' },
-    { value: 'France', label: 'France' },
-    { value: 'Russia', label: 'Russia' },
-    { value: 'China', label: 'China' },
-    { value: 'India', label: 'India' },
-    { value: 'Turkey', label: 'Turkey' },
-    { value: 'Other', label: 'Other' },
+  // Target-countries (study-abroad) multi-select now uses the SAME region
+  // taxonomy + "not sure" exclusivity as onboarding StepInfo.tsx's
+  // DESTINATION_OPTIONS (and MajorMatchProfileFields.tsx, which wrote to
+  // this same studyAbroadGoals.targetCountries field before target
+  // countries was dropped from that form) — the two surfaces previously
+  // disagreed (StepInfo wrote region codes here, this tab showed a
+  // different curated country-name list), so a value written by one could
+  // render as an unrecognized chip in the other. Duplicated inline (each
+  // call site builds its own list with local t() calls) rather than
+  // extracted/shared, to keep this change scoped.
+  const destinationOptions = [
+    { value: 'usa', label: t('onboarding.info.destinationUsa', 'USA') },
+    { value: 'uk', label: t('onboarding.info.destinationUk', 'UK') },
+    { value: 'canada', label: t('onboarding.info.destinationCanada', 'Canada') },
+    { value: 'europe', label: t('onboarding.info.destinationEurope', 'Europe') },
+    { value: 'asia', label: t('onboarding.info.destinationAsia', 'Asia') },
+    { value: 'australia', label: t('onboarding.info.destinationAustralia', 'Australia') },
+    { value: 'not-sure', label: t('onboarding.info.destinationNotSure', 'Not sure yet') },
   ];
 
   const majorOptions = [
@@ -286,13 +299,15 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
                 label={t('studentHub.profile.country')}
                 rules={[{ required: true, message: t('studentHub.profile.selectCountryMessage') }]}
               >
-                <Select placeholder={t('studentHub.profile.selectCountry')} className="form-select">
-                  {countryOptions.map(option => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+                <Select
+                  showSearch
+                  placeholder={t('studentHub.profile.selectCountry')}
+                  className="form-select"
+                  filterOption={(input, option) =>
+                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  options={COUNTRY_NATIONALITY_OPTIONS}
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
@@ -469,15 +484,17 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item
-                name="targetCountries"
                 label={t('studentHub.profile.targetCountries', 'Target Countries')}
                 tooltip={t('studentHub.profile.targetCountriesTooltip', "Countries you're most interested in")}
               >
-                <Select mode="multiple" placeholder={t('studentHub.profile.selectCountries', 'Select countries')} className="form-select">
-                  {countryOptions.map(option => (
-                    <Option key={option.value} value={option.value}>{option.label}</Option>
-                  ))}
-                </Select>
+                <Select
+                  mode="multiple"
+                  placeholder={t('studentHub.profile.selectCountries', 'Select countries')}
+                  className="form-select"
+                  value={targetCountries}
+                  onChange={handleTargetCountriesChange}
+                  options={destinationOptions}
+                />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>

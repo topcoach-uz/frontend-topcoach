@@ -7,7 +7,7 @@ import { COMMUNITY_PLAN_FEATURES } from '../../settings/subscription/_components
 interface MajorMatchUpsellProps {
   /** Backend prompt message (e.g. "You used your free AI Major Match attempt…"). */
   message?: string;
-  /** Routes the user into the Community funnel (placement test → … → subscription). */
+  /** Routes the user into the Community funnel (profile → roadmap → subscription). */
   onUnlock: () => void;
 }
 

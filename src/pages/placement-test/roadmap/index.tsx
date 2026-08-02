@@ -45,10 +45,6 @@ export default function RoadmapPage() {
     );
   }
 
-  if (!statusLoading && status && !status.passed) {
-    return <Navigate to={COMMUNITY_FUNNEL_PATHS.placementTest} replace />;
-  }
-
   if (!statusLoading && status && !status.profile.completed) {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.profileBase} replace />;
   }

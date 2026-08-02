@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import Loader from 'src/components/loader';
 import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
@@ -10,7 +10,14 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
 const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
-const PsychometricAssessmentPage = lazy(() => import('./psychometric-assessment/PsychometricAssessmentPage'));
+// Legacy engine (MAJOR_MATCH_V2_PLAN.md §0/§7) — the module stays compiled
+// (src/pages/student-hub/psychometric-assessment/, backend module, DB
+// tables) but as of the Stage 5 cutover it is no longer imported from this
+// file. Retirement (unmount + delete) is a separate, explicitly deferred
+// stage — this comment is the pointer for whoever does that later.
+// Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover) — now the live
+// engine at all four production mounts (this route included).
+const MajorMatchV2Page = lazy(() => import('./major-match-v2/MajorMatchV2Page'));
 const SatPrepLayout = lazy(() => import('src/components/sat-prep/SatPrepLayout'));
 const SatDashboardPage = lazy(() => import('./sat-prep/SatDashboardPage'));
 const SatPracticeFlowPage = lazy(() => import('./sat-prep/SatPracticeFlowPage'));
@@ -27,6 +34,15 @@ const RouteFallback = () => <Loader height="60vh" />;
 const withSuspense = (node: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 
 /** Full-width shell for standalone psychometric route — matches hub vertical rhythm (hubDashEmbed ≈ 20px) */
+/** Redirect /student-hub/profile → hub shell, preserving extra params like ?tab= */
+const ProfileRedirect = () => {
+  const [params] = useSearchParams();
+  const next = new URLSearchParams(params);
+  next.set('section', 'others');
+  next.set('target', 'profile');
+  return <Navigate to={`/student-hub?${next.toString()}`} replace />;
+};
+
 const PsychometricRouteShell = ({ children }: { children: React.ReactNode }) => (
   <div style={{ paddingTop: 20, width: '100%', minWidth: 0, boxSizing: 'border-box' }}>{children}</div>
 );
@@ -108,18 +124,19 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/" element={<CommunityHubMockPage />} />
           <Route path="/dashboard" element={<Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/rewards" element={<Navigate to="/student-hub?section=account&target=rewards" replace />} />
-          <Route path="/profile" element={<Navigate to="/student-hub?section=others&target=profile" replace />} />
-          <Route path="/profile/*" element={<Navigate to="/student-hub?section=others&target=profile" replace />} />
+          <Route path="/profile" element={<ProfileRedirect />} />
+          <Route path="/profile/*" element={<ProfileRedirect />} />
 
-          {/* College list flows must be real routes — ApplicationsPage switches on pathname for new/edit */}
+          {/* College list flows must be real routes — ApplicationsPage switches on pathname for new/edit.
+              College List now lives as a tab inside the Profile hub (target=profile&tab=college-lists). */}
           <Route
             path="/applications/new"
-            element={<Navigate to="/student-hub?section=others&target=college-lists&applicationFlow=new" replace />}
+            element={<Navigate to="/student-hub?section=others&target=profile&tab=college-lists&applicationFlow=new" replace />}
           />
           <Route path="/applications/scholarships/new" element={withSuspense(<NewScholarshipPage />)} />
           <Route path="/applications/:applicationId/edit" element={withSuspense(<EditApplicationPage />)} />
-          <Route path="/applications" element={<Navigate to="/student-hub?section=others&target=college-lists" replace />} />
-          <Route path="/applications/*" element={<Navigate to="/student-hub?section=others&target=college-lists" replace />} />
+          <Route path="/applications" element={<Navigate to="/student-hub?section=others&target=profile&tab=college-lists" replace />} />
+          <Route path="/applications/*" element={<Navigate to="/student-hub?section=others&target=profile&tab=college-lists" replace />} />
 
           <Route path="/essays" element={<Navigate to="/student-hub?section=others&target=essays" replace />} />
           <Route path="/essays/*" element={<Navigate to="/student-hub?section=others&target=essays" replace />} />
@@ -127,20 +144,24 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/gpa-calculator/*" element={<Navigate to="/student-hub?section=others&target=gpa-calculator" replace />} />
           <Route path="/admissions-program" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
           <Route path="/admissions-program/*" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
-          <Route path="/documents" element={<Navigate to="/student-hub?section=others&target=documents" replace />} />
-          <Route path="/documents/*" element={<Navigate to="/student-hub?section=others&target=documents" replace />} />
+          {/* Documents now lives as a tab inside the Profile hub (target=profile&tab=documents). */}
+          <Route path="/documents" element={<Navigate to="/student-hub?section=others&target=profile&tab=documents" replace />} />
+          <Route path="/documents/*" element={<Navigate to="/student-hub?section=others&target=profile&tab=documents" replace />} />
 
-          {/* Preserve ?step= & ?sessionId= for start / resume / results — do not redirect to hub (strips query) */}
+          {/* Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover).
+              Old URL kept per plan §6 Q10 — deep links in the wild — but now
+              renders the v2 experience. Preserve ?step= & ?sessionId= (legacy
+              query params some links may still carry) by not redirecting. */}
           <Route
             path="/psychometric-assessment"
             element={
-              <PsychometricRouteShell>{withSuspense(<PsychometricAssessmentPage />)}</PsychometricRouteShell>
+              <PsychometricRouteShell>{withSuspense(<MajorMatchV2Page />)}</PsychometricRouteShell>
             }
           />
           <Route
             path="/psychometric-assessment/*"
             element={
-              <PsychometricRouteShell>{withSuspense(<PsychometricAssessmentPage />)}</PsychometricRouteShell>
+              <PsychometricRouteShell>{withSuspense(<MajorMatchV2Page />)}</PsychometricRouteShell>
             }
           />
 

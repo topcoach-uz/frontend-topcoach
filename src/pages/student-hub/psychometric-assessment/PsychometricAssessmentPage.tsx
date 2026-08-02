@@ -22,6 +22,18 @@ import './PsychometricAssessmentPage.scss';
 export interface PsychometricAssessmentPageProps {
   readOnly?: boolean;
   studentId?: string;
+  /**
+   * Optional embed hook (see the onboarding wizard's StepMajorMatch.tsx).
+   * When provided, every place this page would otherwise navigate away to
+   * the student hub (save & exit, abandon, reaching results, session
+   * recovery failures, the no-profile/no-session fallbacks) calls this
+   * instead of `navigate(...)`, so a host that has mounted this page inline
+   * (outside of its normal routed URL) can drive its own flow forward
+   * rather than have the router rip the host out from under it. Purely
+   * additive — when omitted, behavior is unchanged from before this prop
+   * existed (standalone route + counselor read-only embed).
+   */
+  onExit?: () => void;
 }
 
 type AssessmentStep = 'start' | 'questions' | 'results';
@@ -29,6 +41,7 @@ type AssessmentStep = 'start' | 'questions' | 'results';
 const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   readOnly = false,
   studentId,
+  onExit,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -82,6 +95,29 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
   const communityGate = useCommunityAccessGate();
   const requiresEnrollment = !readOnly && !!majorMatchAccessStatus?.requiresCommunityEnrollment;
 
+  // Where to land after leaving the focused (chrome-less) assessment view.
+  // The full-screen, no-sidebar surface is only meant for actively taking the
+  // test; once the student exits they're browsing again, so return them to the
+  // AI Major Match section *inside* the My Journey hub (with sidebar). The
+  // counselor/read-only view isn't mounted in the hub, so keep its own route.
+  // Hoisted above recoverSession (below) so that effect can use it too.
+  const exitDestination = readOnly
+    ? '/student-hub/psychometric-assessment?step=start'
+    : '/student-hub?section=ai-major-match';
+
+  // When embedded (onExit provided — e.g. inside the onboarding wizard), the
+  // host owns navigation: every point that would otherwise route the user
+  // away from this page calls onExit() instead so the host can advance its
+  // own flow (see StepMajorMatch.tsx). Falls back to real navigation,
+  // unchanged from before, for the standalone route + counselor embed.
+  const goExit = () => {
+    if (onExit) {
+      onExit();
+      return;
+    }
+    navigate(exitDestination);
+  };
+
   // Check URL params for navigation
   useEffect(() => {
     const step = searchParams.get('step') as AssessmentStep;
@@ -129,8 +165,9 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
           setSessionId(null);
           setQuestions([]);
           // Nothing to resume — return to the AI Major Match section inside the
-          // hub (with sidebar) rather than the chrome-less standalone landing.
-          navigate('/student-hub?section=ai-major-match');
+          // hub (with sidebar) rather than the chrome-less standalone landing
+          // (or, when embedded, hand control back to the host).
+          goExit();
           return;
         }
 
@@ -143,14 +180,18 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         setSessionId(response.sessionId);
         setQuestions(response.questions || []);
         setCurrentStep('questions');
-        navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+        // Embedded: stay put and render the questions step inline instead of
+        // routing to the standalone URL (which would unmount the host).
+        if (!onExit) {
+          navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+        }
       } catch (error: any) {
         console.error('Assessment session recovery error:', error);
         message.error(error?.data?.message || 'Unable to restore your assessment session.');
         setCurrentStep('start');
         setSessionId(null);
         setQuestions([]);
-        navigate('/student-hub?section=ai-major-match');
+        goExit();
       } finally {
         setIsRecoveringSession(false);
       }
@@ -170,6 +211,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     startAssessment,
     language,
     navigate,
+    onExit,
   ]);
 
   const handleStartAssessment = async (lang: 'en' | 'uz' | 'ru', aptitude: boolean) => {
@@ -223,8 +265,13 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
       }
       
       setCurrentStep('questions');
-      navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
-      
+      // Embedded (onExit provided): stay on the host's own URL and just
+      // render the questions step inline — navigating here would unmount
+      // whatever mounted this page (e.g. the onboarding wizard).
+      if (!onExit) {
+        navigate(`/student-hub/psychometric-assessment?step=questions&sessionId=${response.sessionId}`);
+      }
+
       // Scroll to top when assessment starts
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error: any) {
@@ -250,19 +297,17 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setSessionId(null);
     setIsGeneratingResults(true); // Mark that we're generating results for the first time
     setCurrentStep('results');
-    navigate('/student-hub/psychometric-assessment?step=results');
-    
     message.success('Assessment completed successfully!');
-  };
 
-  // Where to land after leaving the focused (chrome-less) assessment view.
-  // The full-screen, no-sidebar surface is only meant for actively taking the
-  // test; once the student exits they're browsing again, so return them to the
-  // AI Major Match section *inside* the My Journey hub (with sidebar). The
-  // counselor/read-only view isn't mounted in the hub, so keep its own route.
-  const exitDestination = readOnly
-    ? '/student-hub/psychometric-assessment?step=start'
-    : '/student-hub?section=ai-major-match';
+    // Embedded (onExit provided, e.g. onboarding): reaching results is the
+    // finish line for the host's flow too — hand control back instead of
+    // navigating this component off-screen via the router.
+    if (onExit) {
+      onExit();
+      return;
+    }
+    navigate('/student-hub/psychometric-assessment?step=results');
+  };
 
   // Save and exit - keeps session alive for resuming later
   const handleSaveAndExit = () => {
@@ -270,7 +315,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setCurrentStep('start');
     setSessionId(null);
     setQuestions([]);
-    navigate(exitDestination);
+    goExit();
     // Refetch active session so the Start/Resume button updates
     setTimeout(() => refetchActiveSession(), 100);
   };
@@ -296,7 +341,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     setQuestions([]);
     setSavedAnswers({});
     setIsResuming(false);
-    navigate(exitDestination);
+    goExit();
     // Refetch active session so the Start/Resume button updates
     setTimeout(() => refetchActiveSession(), 100);
   };
@@ -312,9 +357,11 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
     // Read-only (counselor console) mounts this page *inside* /counselor-console.
     // Navigating to the student-hub URL would unmount the console tab and hit
     // StudentHubGate, which bounces any org member straight back to
-    // /counselor-console — so the click read as "nothing happens". The step is
-    // local state, so simply not navigating renders the results inline.
-    if (!readOnly) {
+    // /counselor-console — so the click read as "nothing happens". The same
+    // is true of any other embed (onExit provided, e.g. onboarding) — the
+    // step is local state either way, so simply not navigating renders the
+    // results inline instead of routing the host out from under the page.
+    if (!readOnly && !onExit) {
       navigate('/student-hub/psychometric-assessment?step=results');
     }
   };
@@ -341,7 +388,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
         description="Please complete your profile before taking the assessment."
         type="warning"
         action={
-          <Button onClick={() => navigate('/student-hub/profile')}>
+          <Button onClick={() => (onExit ? onExit() : navigate('/student-hub/profile'))}>
             Go to Profile
           </Button>
         }
@@ -406,7 +453,7 @@ const PsychometricAssessmentPage: React.FC<PsychometricAssessmentPageProps> = ({
                 message="Assessment session missing"
                 description="We couldn't find active question data. Please return to Start and launch or resume your assessment."
                 action={
-                  <Button size="small" onClick={() => navigate(exitDestination)}>
+                  <Button size="small" onClick={goExit}>
                     Go to Start
                   </Button>
                 }

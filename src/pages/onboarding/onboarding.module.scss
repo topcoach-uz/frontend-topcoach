@@ -97,6 +97,80 @@ $brand: #7b1f2f;
   transition: width 0.25s ease;
 }
 
+// StepInfo — two-up rows of labeled fields (name / grade+school /
+// country+destination / language+phone).
+.fieldRow {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+
+  > .fieldGroup {
+    flex: 1;
+  }
+}
+
+.fieldGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.fieldLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink;
+}
+
+// StepSource — sub-heading for the "Why are you using TopCoach?" question
+// + its multi-select chip row.
+.sectionLabel {
+  width: 100%;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $ink;
+  text-align: left;
+}
+
+.chipGroup {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid $hairline;
+  border-radius: 999px;
+  background: #ffffff;
+  color: $ink;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: $brand;
+  }
+
+  svg {
+    color: $brand;
+    flex-shrink: 0;
+  }
+}
+
+.chipActive {
+  border-color: $brand;
+  background: rgba(123, 31, 47, 0.06);
+  color: $brand;
+}
+
 .optionList {
   width: 100%;
   display: flex;
@@ -257,9 +331,37 @@ $brand: #7b1f2f;
   font-size: 0.9rem;
 }
 
+// Generic muted helper-copy line — used by steps that need a short
+// explanatory note next to a disabled/hidden action (e.g. majorMatch's
+// no-profile / no-attempts states) without inventing a one-off class per
+// step the way trialTelegramNote did.
+.infoNote {
+  width: 100%;
+  margin: 0 0 4px;
+  color: $ink-soft;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+// Step (majorMatch) — the embedded PsychometricAssessmentPage is a full
+// dashboard-style surface (cards, tables, a multi-column results view)
+// built for wide viewports, not the wizard's centered 560px copy column.
+// Widen just this step's card instead of the shared default so every
+// other step keeps its compact look.
+.stepWide {
+  max-width: 960px;
+  text-align: left;
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 28px 20px 24px;
     border-radius: 12px;
+  }
+
+  // StepInfo two-up rows stack on narrow viewports instead of squeezing.
+  .fieldRow {
+    flex-direction: column;
   }
 }

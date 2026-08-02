@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Card, Checkbox, Spin, Typography, message } from 'antd';
 import { ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   useStudyBuddyConsentStatusQuery,
   useStudyBuddyAcceptConsentMutation,
@@ -9,7 +10,12 @@ import styles from './communityHubMock.module.scss';
 
 const { Title, Paragraph } = Typography;
 
-const GUIDELINES: Array<{ title: string; body: string }> = [
+/**
+ * Note: the third guideline's body is translated inline in the component
+ * (it needed a copy fix — see render below) while the rest stay as plain
+ * strings, matching this file's existing (untranslated) convention.
+ */
+const GUIDELINES: Array<{ title: string; body?: string }> = [
   {
     title: 'Be kind and respectful',
     body: 'Treat every peer with respect. No harassment, hate, or spam — ever.',
@@ -20,7 +26,6 @@ const GUIDELINES: Array<{ title: string; body: string }> = [
   },
   {
     title: 'Your profile becomes visible',
-    body: 'Once you join, peers can discover you and send buddy requests. You can hide it anytime in Settings → Privacy.',
   },
 ];
 
@@ -30,6 +35,7 @@ const GUIDELINES: Array<{ title: string; body: string }> = [
  * requests until they accept here (backend records `studyBuddyConsent`).
  */
 export default function StudyBuddyConsentGate({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useStudyBuddyConsentStatusQuery();
   const [acceptConsent, { isLoading: accepting }] = useStudyBuddyAcceptConsentMutation();
   const [agreed, setAgreed] = useState(false);
@@ -78,7 +84,13 @@ export default function StudyBuddyConsentGate({ children }: { children: React.Re
             <div key={g.title} className={styles.buddyConsentItem}>
               <div>
                 <div className={styles.buddyConsentItemTitle}>{g.title}</div>
-                <div className={styles.buddyConsentItemBody}>{g.body}</div>
+                <div className={styles.buddyConsentItemBody}>
+                  {g.body ??
+                    t(
+                      'studentHub.buddyConsent.guidelineVisibilityBody',
+                      'Once you join, peers can discover you and send buddy requests based on your shared goals.',
+                    )}
+                </div>
               </div>
             </div>
           ))}

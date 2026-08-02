@@ -34,6 +34,23 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   color: $ed-muted;
   padding: 40px 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid $ed-hairline;
+  border-top-color: $ed-brand;
+  animation: roadmapTabSpin 0.8s linear infinite;
+}
+
+@keyframes roadmapTabSpin {
+  to { transform: rotate(360deg); }
 }
 
 .gate {

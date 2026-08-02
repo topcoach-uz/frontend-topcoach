@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Modal, Tabs } from 'antd';
+import { Button, Card, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   Compass,
@@ -34,16 +34,19 @@ import ResearchPrepPage from '../research/ResearchPrepPage';
 // The in-hub branch no longer renders the blurred preview.
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
 import { useGetCoinBalanceQuery } from '../../../app/services/coinsApi';
-import ApplicationsPage from '../applications/ApplicationsPage';
-import PsychometricAssessmentPage from '../psychometric-assessment/PsychometricAssessmentPage';
+import { useStudentProfile } from '../../../hooks/useStudentHub';
+// Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover) — replaces the
+// legacy PsychometricAssessmentPage at both mounts in this file. Same prop
+// contract (readOnly/studentId/onExit), so it's a drop-in swap.
+import MajorMatchV2Page from '../major-match-v2/MajorMatchV2Page';
 import OpportunitiesPage from '../opportunities/OpportunitiesPage';
 import EssaysPage from '../essays/EssaysPage';
-import DocumentsPage from '../documents/DocumentsPage';
 import ProfilePage from '../profile/ProfilePage';
 import MenteeSettingsPageMock from '../settings/MenteeSettingsPageMock';
 // Community-membership funnel pages — mounted as internal hub sections
-// so they inherit the COMMUNITY/LEARNING/ACCOUNT sidebar.
-import PlacementTestPage from '../../placement-test';
+// so they inherit the COMMUNITY/LEARNING/ACCOUNT sidebar. The English
+// placement test that used to gate this funnel has been removed; the
+// profile wizard is now the first step.
 import PlacementProfileWizardPage from '../../placement-test/profile';
 import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
@@ -57,7 +60,6 @@ import {
   admissionsPreviewEmbedUrl,
   type AdmissionsYoutubePreviewSpec,
 } from 'src/constants/admissionsPreviewVideos';
-import { type StudyBuddyInterestProfile } from 'src/constants/studyBuddyInterests';
 import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
@@ -65,6 +67,7 @@ import { canUseMyRewards } from 'src/lib/myRewardsAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { getLatestCreatedImg } from 'src/utils';
+import CommunityMentorsView from './CommunityMentorsView';
 
 type CommunitySectionKey =
   | 'feed'
@@ -79,9 +82,14 @@ type CommunitySectionKey =
   | 'admissionsProgram'
   | 'satCourse'
   | 'researchProgram'
-  // Community-membership funnel — pre-subscription gate.
-  // URLs: ?section=placement-test, ?section=placement-profile, ?section=placement-roadmap
-  | 'placementTest'
+  // Ranked mentor directory (relevant to the student's own college list +
+  // goals) — the COMMUNITY sidebar's "Mentors" item. Distinct from the
+  // public, unranked `/mentors` page the header link still points at.
+  | 'mentors'
+  // Community-membership funnel — pre-subscription gate. The English
+  // placement test that used to be step 1 has been removed; the
+  // profile wizard is now the funnel's entry point.
+  // URLs: ?section=placement-profile, ?section=placement-roadmap
   | 'placementProfile'
   | 'placementRoadmap';
 type CommunityNavItem = {
@@ -96,54 +104,6 @@ const MOCK_COUNTS = {
   mentors: 0,
   admissions: 6,
 };
-
-type BuddyCandidate = {
-  id: string;
-  name: string;
-  goal: string;
-  distance: string;
-  interests: StudyBuddyInterestProfile;
-};
-
-const MOCK_BUDDY_CANDIDATES: BuddyCandidate[] = [
-  {
-    id: 'bd1',
-    name: 'Priya Nair',
-    goal: 'Looking for SAT math accountability (3x/week).',
-    distance: 'Same schedule',
-    interests: {
-      examPrep: ['sat'],
-      applicationGoals: ['apply-usa'],
-      intendedMajors: ['major-medicine'],
-      focusAreas: ['focus-deadlines', 'focus-essays'],
-    },
-  },
-  {
-    id: 'bd2',
-    name: 'Omar Hassan',
-    goal: 'Need a buddy for essay reviews and IELTS prep.',
-    distance: 'Same timeline',
-    interests: {
-      examPrep: ['ielts'],
-      applicationGoals: ['apply-uk'],
-      intendedMajors: ['major-law'],
-      focusAreas: ['focus-essays', 'focus-interview'],
-    },
-  },
-  {
-    id: 'bd3',
-    name: 'Sofia Ivanova',
-    goal: 'Research portfolio partner for STEM applications.',
-    distance: '2h timezone difference',
-    interests: {
-      examPrep: ['sat', 'toefl'],
-      applicationGoals: ['apply-usa', 'scholarships'],
-      intendedMajors: ['major-engineering', 'major-cs'],
-      focusAreas: ['focus-research', 'focus-activities'],
-    },
-  },
-];
-
 
 /**
  * Wraps ResearchPrepPage and resolves the current user's Full Support
@@ -163,12 +123,17 @@ export default function CommunityHubMockPage() {
   const location = useLocation();
   const { isCommunityEnrolled, unlockPremiumJourney, isEntitlementLoading } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
-  // Coin balance for the sidebar card. Skip the call until we know the
-  // user is community-enrolled — non-members don't see the rewards page
-  // and shouldn't trigger an extra request on every account/* page load.
-  const { data: coinBalance } = useGetCoinBalanceQuery(undefined, {
-    skip: !isCommunityEnrolled,
-  });
+  // Coin balance for the sidebar card. The profile card (and its coin
+  // chip) now renders for every student, not just community-enrolled
+  // ones, so this query always runs for any authenticated user.
+  const { data: coinBalance } = useGetCoinBalanceQuery();
+  // Profile-completion percentage for the sidebar card's progress bar.
+  // Reuses the same student-profile query the profile/dashboard pages
+  // already subscribe to (see Dashboard.tsx / MyProgressEditorialView.tsx),
+  // so this is a cache hit, not an extra request, once either page has loaded.
+  const { profile: studentProfileForCard, isLoading: studentProfileCardLoading } =
+    useStudentProfile();
+  const profileCompletionPercentage = studentProfileForCard?.completionPercentage;
   const researchPrepLive = useMemo(
     () =>
       canUseResearchPrepLive(
@@ -264,13 +229,12 @@ export default function CommunityHubMockPage() {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [location.search]);
 
-  /** Community mode: no Dashboard route — send to feed/my-progress default. */
-  useEffect(() => {
-    if (!isCommunityEnrolled) return;
-    const params = new URLSearchParams(location.search);
-    if (params.get('section') !== 'dashboard') return;
-    navigate(defaultHubSectionPath, { replace: true });
-  }, [location.search, isCommunityEnrolled, defaultHubSectionPath, navigate]);
+  // `?section=dashboard` used to bounce community-enrolled users back to
+  // the feed/my-progress default — that redirect is gone. Enrolled users
+  // can now reach Dashboard via the nav item below; the DEFAULT landing
+  // for them is still the feed (see `defaultHubSectionPath` above and the
+  // effect at the top of this file), this only affects reachability once
+  // they're already in the hub.
 
   /** Rollout guard: feed UI disabled → route feed to My Progress. */
   useEffect(() => {
@@ -309,13 +273,6 @@ export default function CommunityHubMockPage() {
     navigate('/events', { replace: true });
   }, [location.search, navigate]);
 
-  /** Mentors → full mentors directory (not embedded in hub) */
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get('section') !== 'mentors') return;
-    navigate('/mentors', { replace: true });
-  }, [location.search, navigate]);
-
   /** Study groups page removed — send to default hub section */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -339,6 +296,19 @@ export default function CommunityHubMockPage() {
     const section = params.get('section');
     const target = params.get('target');
 
+    // "College Lists" and "Documents" used to be standalone others-targets;
+    // they now live as tabs inside the Profile hub. Redirect old deep-links
+    // (bookmarks, StudentHubRoutes legacy-route redirects, in-app CTAs that
+    // haven't been repointed) instead of rendering an empty pane. Preserves
+    // any other params (e.g. applicationFlow=new) via the copied URLSearchParams.
+    if (section === 'others' && (target === 'college-lists' || target === 'documents')) {
+      const next = new URLSearchParams(params);
+      next.set('target', 'profile');
+      next.set('tab', target);
+      navigate(`/student-hub?${next.toString()}`, { replace: true });
+      return;
+    }
+
     if (
       section === 'feed' ||
       section === 'messages' ||
@@ -352,9 +322,9 @@ export default function CommunityHubMockPage() {
       section === 'admissions-program' ||
       section === 'sat-course' ||
       section === 'research-program' ||
-      section === 'placement-test' ||
       section === 'placement-profile' ||
-      section === 'placement-roadmap'
+      section === 'placement-roadmap' ||
+      section === 'mentors'
     ) {
       if (section === 'my-learning') setActiveSection('myLearning');
       else if (section === 'ai-major-match') setActiveSection('aiMajorMatch');
@@ -362,7 +332,6 @@ export default function CommunityHubMockPage() {
       else if (section === 'sat-course') setActiveSection('satCourse');
       else if (section === 'research-program') setActiveSection('researchProgram');
       else if (section === 'messages') setActiveSection('messages');
-      else if (section === 'placement-test') setActiveSection('placementTest');
       else if (section === 'placement-profile') setActiveSection('placementProfile');
       else if (section === 'placement-roadmap') setActiveSection('placementRoadmap');
       else setActiveSection(section as CommunitySectionKey);
@@ -381,7 +350,7 @@ export default function CommunityHubMockPage() {
     } else {
       setAccountTarget(null);
     }
-     
+
   }, [location.search]);
 
   // Feed is open to community-enrolled users and staff — see
@@ -444,6 +413,11 @@ export default function CommunityHubMockPage() {
       case 'researchProgram':
         // Research Prep brings its own top bar (breadcrumb + Overview/Module
         // switch + Back to main menu). Suppress the generic hub header here.
+        return null;
+      case 'mentors':
+        // CommunityMentorsView renders its own editorial header (eyebrow +
+        // serif title) matching My Rewards / My Progress. Suppress the
+        // generic hub header here.
         return null;
       case 'account':
         if (accountTarget === 'rewards')
@@ -516,73 +490,114 @@ export default function CommunityHubMockPage() {
         } ${isAdmissionsFullBleed ? styles.admissionsShellHub : ''}`}
       >
       <div
-        className={`${styles.leftCol} ${!isCommunityEnrolled ? styles.leftColNoProfile : ''} ${isFullBleed ? styles.leftColHidden : ''}`}
+        className={`${styles.leftCol} ${isFullBleed ? styles.leftColHidden : ''}`}
       >
         <div className={styles.leftColInner}>
-        {isCommunityEnrolled && (
-          <Card
-            className={styles.profileCard}
-            bordered={false}
-            role="button"
-            tabIndex={0}
-            aria-label="Open account and settings"
-            onClick={() => navigate('/student-hub?section=account&target=settings')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate('/student-hub?section=account&target=settings');
-              }
-            }}
-          >
-            {/* Compact row + coin chip layout (Option B from the design
-                explorations). Avatar + identity on one row, coin chip +
-                "View profile" CTA on the next. Drops the hero photo band
-                and shadow that the old single-column layout used. */}
-            <div className={styles.profileTopRow}>
-              <div className={styles.profilePhoto}>
-                {currentProfile.avatar ? (
-                  <img
-                    src={currentProfile.avatar}
-                    alt={currentProfile.name}
-                    className={styles.profilePhotoImg}
-                  />
-                ) : (
-                  <div className={styles.profilePhotoFallback} aria-hidden>
-                    <User size={28} />
-                  </div>
-                )}
+        <Card
+          className={styles.profileCard}
+          bordered={false}
+          role="button"
+          tabIndex={0}
+          aria-label="View my profile"
+          onClick={() => navigate('/student-hub?section=others&target=profile')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/student-hub?section=others&target=profile');
+            }
+          }}
+        >
+          {/* Compact row + coin chip layout (Option B from the design
+              explorations). Avatar + identity on one row, coin chip +
+              "View profile" CTA on the next. Drops the hero photo band
+              and shadow that the old single-column layout used. Renders
+              for every student, not just community-enrolled ones — the
+              coin balance and completion bar are both real, per-user
+              data that any student has. */}
+          <div className={styles.profileTopRow}>
+            <div className={styles.profilePhoto}>
+              {currentProfile.avatar ? (
+                <img
+                  src={currentProfile.avatar}
+                  alt={currentProfile.name}
+                  className={styles.profilePhotoImg}
+                />
+              ) : (
+                <div className={styles.profilePhotoFallback} aria-hidden>
+                  <User size={28} />
+                </div>
+              )}
+            </div>
+            <div className={styles.profileMeta}>
+              <div className={styles.profileName} title={currentProfile.name}>
+                {currentProfile.name}
               </div>
-              <div className={styles.profileMeta}>
-                <div className={styles.profileName} title={currentProfile.name}>
-                  {currentProfile.name}
-                </div>
-                <div className={styles.profileHandle} title={currentProfile.username}>
-                  {currentProfile.username}
-                </div>
+              <div className={styles.profileHandle} title={currentProfile.username}>
+                {currentProfile.username}
               </div>
             </div>
-            <div className={styles.profileBottomRow}>
+          </div>
+          {!studentProfileCardLoading && typeof profileCompletionPercentage === 'number' && (
+            profileCompletionPercentage >= 100 ? (
               <button
                 type="button"
-                className={styles.profileCoinsInline}
+                className={styles.profileCompletionDone}
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate('/student-hub?section=account&target=rewards');
+                  navigate('/student-hub/profile');
                 }}
-                aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
               >
-                <Coins size={13} aria-hidden />
-                <span className={styles.profileCoinsValue}>
-                  {(coinBalance?.balance ?? 0).toLocaleString()}
+                {t('studentHub.profileCard.complete', 'Profile complete ✓')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.profileCompletion}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/student-hub/profile');
+                }}
+                aria-label={t(
+                  'studentHub.profileCard.completionAria',
+                  'Profile {{percent}}% complete — go to profile',
+                  { percent: profileCompletionPercentage },
+                )}
+              >
+                <span className={styles.profileCompletionLabel}>
+                  {t('studentHub.profileCard.completion', 'Profile {{percent}}% complete', {
+                    percent: profileCompletionPercentage,
+                  })}
+                </span>
+                <span className={styles.profileCompletionTrack}>
+                  <span
+                    className={styles.profileCompletionFill}
+                    style={{ width: `${Math.min(100, Math.max(0, profileCompletionPercentage))}%` }}
+                  />
                 </span>
               </button>
-              <div className={styles.profileFooter}>
-                <span>View profile</span>
-                <span className={styles.profileFooterArrow} aria-hidden>→</span>
-              </div>
+            )
+          )}
+          <div className={styles.profileBottomRow}>
+            <button
+              type="button"
+              className={styles.profileCoinsInline}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/student-hub?section=account&target=rewards');
+              }}
+              aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
+            >
+              <Coins size={13} aria-hidden />
+              <span className={styles.profileCoinsValue}>
+                {(coinBalance?.balance ?? 0).toLocaleString()}
+              </span>
+            </button>
+            <div className={styles.profileFooter}>
+              <span>{t('studentHub.hub.viewProfile', 'View profile')}</span>
+              <span className={styles.profileFooterArrow} aria-hidden>→</span>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
 
         {/* Organization membership. Lives here rather than on a single page so
             it is visible throughout the hub: its previous mount point was the
@@ -591,25 +606,37 @@ export default function CommunityHubMockPage() {
         <OrgMembershipSidebar />
 
         <div className={styles.leftNav}>
-          {!isCommunityEnrolled && (
-            <button
-              type="button"
-              className={`${styles.navItem} ${activeSection === 'dashboard' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSection('dashboard');
-                navigate('/student-hub?section=dashboard', { replace: true });
-              }}
-            >
-              <span className={styles.navIconCircle}><Home size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
-            </button>
-          )}
+          {/* Dashboard is reachable for every student, enrolled or not —
+              it renders the same MyProgressEditorialView as "My progress"
+              below (see the isCommunityEnrolled branch inside that
+              component for what each cohort actually sees). */}
+          <button
+            type="button"
+            className={`${styles.navItem} ${activeSection === 'dashboard' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setActiveSection('dashboard');
+              navigate('/student-hub?section=dashboard', { replace: true });
+            }}
+          >
+            <span className={styles.navIconCircle}><Home size={20} color="#8b0000" /></span>
+            <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
+          </button>
 
           {/* ISC Reviewer link removed from the sidebar. The console itself is
               untouched and still reachable at /isc-2026/review; only the nav
               entry is gone, so restoring it is a small revert. */}
 
-          {ENABLE_COMMUNITY_FEED && isFeedAllowed && (
+          {/* Feed is now ALWAYS shown when the feature flag is on — even to
+              students who aren't community-enrolled. Non-enrolled users get
+              the lock icon + tooltip and land on CommunityLockedPage (see
+              `communityLockVariant`) when they click it, same pattern as
+              SAT/Admissions/Research/My Rewards below. This mirrors the
+              mobile drawer (CommunityHubMobileDrawerNav) so the Feed
+              nav item is no longer invisible to the exact audience the
+              pitch page is written for. `isFeedAllowed` (enrolled OR
+              staff) still gates the real feed CONTENT render further
+              down — that backend-matching gate is untouched. */}
+          {ENABLE_COMMUNITY_FEED && (
             <button
               type="button"
               className={`${styles.navItem} ${activeSection === 'feed' ? styles.navItemActive : ''}`}
@@ -633,20 +660,6 @@ export default function CommunityHubMockPage() {
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navCommunity', 'COMMUNITY')}</div>
           <button
             type="button"
-            className={`${styles.navItem} ${activeSection === 'messages' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('messages');
-              navigate('/student-hub?section=messages', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <MessageCircle size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.messages', 'Messages')}</span>
-          </button>
-
-          <button
-            type="button"
             className={`${styles.navItem} ${activeSection === 'buddies' ? styles.navItemActive : ''}`}
             onClick={() => {
               setActiveSection('buddies');
@@ -661,27 +674,29 @@ export default function CommunityHubMockPage() {
 
           <button
             type="button"
-            className={styles.navItem}
-            onClick={() => navigate('/mentors')}
+            className={`${styles.navItem} ${activeSection === 'mentors' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setActiveSection('mentors');
+              navigate('/student-hub?section=mentors', { replace: true });
+            }}
           >
             <span className={styles.navIconCircle}><UnifiedIcon name="mentors" size="md" color="primary" /></span>
             <span className={styles.navLabel}>{t('studentHub.hub.mentors', 'Mentors')}</span>
           </button>
 
           <div className={styles.leftNavHeader}>{t('studentHub.hub.navLearning', 'LEARNING')}</div>
-          {isCommunityEnrolled && (
-            <button
-              type="button"
-              className={`${styles.navItem} ${activeSection === 'myLearning' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSection('myLearning');
-                navigate('/student-hub?section=my-learning', { replace: true });
-              }}
-            >
-              <span className={styles.navIconCircle}><PlayCircle size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
-            </button>
-          )}
+
+          <button
+            type="button"
+            className={`${styles.navItem} ${activeSection === 'myLearning' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setActiveSection('myLearning');
+              navigate('/student-hub?section=my-learning', { replace: true });
+            }}
+          >
+            <span className={styles.navIconCircle}><PlayCircle size={18} color="#8b0000" /></span>
+            <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
+          </button>
 
           <button
             type="button"
@@ -851,30 +866,38 @@ export default function CommunityHubMockPage() {
             {activeSection === 'messages' && (
               <header className={styles.editorialHeader}>
                 <div className={styles.editorialEyebrow}>
-                  Inbox
+                  {t('studentHub.hub.inbox', 'Inbox')}
                   <span className={styles.editorialEyebrowSep}>·</span>
                   <span className={styles.editorialEyebrowAccent}>
-                    mentors, peers, support
+                    {t('studentHub.hub.inboxAccent', 'mentors, peers, support')}
                   </span>
                 </div>
-                <h1 className={styles.editorialTitle}>Messages</h1>
+                <h1 className={styles.editorialTitle}>{t('studentHub.hub.messagesTitle', 'Messages')}</h1>
                 <p className={styles.editorialDesc}>
-                  All your conversations in one place — chat with your mentors, study
-                  buddies you've connected with, and the Top Coach team.
+                  {t(
+                    'studentHub.hub.messagesDesc',
+                    "All your conversations in one place — chat with your mentors, study buddies you've connected with, and the Top Coach team.",
+                  )}
                 </p>
               </header>
             )}
             {activeSection === 'buddies' && buddyConsented && (
               <header className={styles.editorialHeader}>
                 <div className={styles.editorialEyebrow}>
-                  Study buddies
+                  {t('studentHub.hub.studyBuddiesEyebrow', 'Study buddies')}
                   <span className={styles.editorialEyebrowSep}>·</span>
-                  <span className={styles.editorialEyebrowAccent}>match by goal</span>
+                  <span className={styles.editorialEyebrowAccent}>
+                    {t('studentHub.hub.matchByGoal', 'match by goal')}
+                  </span>
                 </div>
-                <h1 className={styles.editorialTitle}>Find someone on the same path.</h1>
+                <h1 className={styles.editorialTitle}>
+                  {t('studentHub.hub.findSomeoneTitle', 'Find someone on the same path.')}
+                </h1>
                 <p className={styles.editorialDesc}>
-                  Connect with peers who share your goals, prep schedules, and target schools.
-                  Match scores are based on overlap in tests, timelines, and study windows.
+                  {t(
+                    'studentHub.hub.findSomeoneDesc',
+                    'Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in exam prep, destination goals, intended majors, and focus areas.',
+                  )}
                 </p>
               </header>
             )}
@@ -916,10 +939,12 @@ export default function CommunityHubMockPage() {
                 <div className={styles.admissionsShellInner}>
                   <div className={styles.admissionsCrumb}>
                     <span className={styles.admissionsCrumbBadge}>
-                      <BookOpen size={13} /> Admissions Program
+                      <BookOpen size={13} /> {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
                     </span>
                     <span className={styles.admissionsCrumbSep}>›</span>
-                    <span className={styles.admissionsCrumbCurrent}>Lessons catalog</span>
+                    <span className={styles.admissionsCrumbCurrent}>
+                      {t('studentHub.hub.lessonsCatalog', 'Lessons catalog')}
+                    </span>
                   </div>
                   <button
                     type="button"
@@ -927,17 +952,24 @@ export default function CommunityHubMockPage() {
                     onClick={() => navigate(defaultHubSectionPath)}
                   >
                     <ArrowLeft size={13} />
-                    Back to main menu
+                    {t('studentHub.hub.backToMainMenu', 'Back to main menu')}
                   </button>
                 </div>
                 <div className={styles.admissionsHero}>
-                  <div className={styles.admissionsEyebrow}>Top Coach · Admissions track</div>
+                  <div className={styles.admissionsEyebrow}>
+                    {t('studentHub.hub.admissionsTrackEyebrow', 'Top Coach · Admissions track')}
+                  </div>
                   <h1 className={styles.admissionsTitle}>
-                    Get into your dream school — one lesson at a time.
+                    {t(
+                      'studentHub.hub.admissionsHeroTitle',
+                      'Get into your dream school — one lesson at a time.',
+                    )}
                   </h1>
                   <p className={styles.admissionsSub}>
-                    Continue your admissions lessons from the learning catalog. Bite-sized videos
-                    from mentors at Harvard, Oxford, Yale, Babson, and beyond.
+                    {t(
+                      'studentHub.hub.admissionsHeroDesc',
+                      'Continue your admissions lessons from the learning catalog. Bite-sized videos from mentors at Harvard, Oxford, Yale, Babson, and beyond.',
+                    )}
                   </p>
                 </div>
               </header>
@@ -973,29 +1005,30 @@ export default function CommunityHubMockPage() {
                     (profile?.managementRole as string) === 'Owner',
                   canPin: profile?.managementRole === 'SuperAdmin',
                 }}
+                showUpcomingSessions
               />
             )}
 
 
           {activeSection === 'more' && (
             <Card className={styles.sectionCard} bordered={false}>
-              <div className={styles.sectionSubHeader}>Browse</div>
+              <div className={styles.sectionSubHeader}>{t('studentHub.hub.browse', 'Browse')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                 {[
                   {
                     key: 'buddies' as const,
-                    label: 'Find Study Buddy',
+                    label: t('studentHub.hub.findStudyBuddy', 'Find Study Buddy'),
                     icon: <UserPlus size={18} color="#8b0000" />,
                     count: MOCK_COUNTS.buddies,
-                    preview: 'Accountability: SAT Math 3x/week',
+                    preview: t('studentHub.hub.buddiesPreview', 'Accountability: SAT Math 3x/week'),
                     accent: '#b91c1c',
                   },
                   {
                     key: 'mentors' as const,
-                    label: 'Mentors',
+                    label: t('studentHub.hub.mentors', 'Mentors'),
                     icon: <GraduationCap size={18} color="#8b0000" />,
                     count: MOCK_COUNTS.mentors,
-                    preview: 'Admissions + Research',
+                    preview: t('studentHub.hub.mentorsPreview', 'Admissions + Research'),
                     accent: '#b91c1c',
                   },
                 ].map((c) => (
@@ -1026,7 +1059,7 @@ export default function CommunityHubMockPage() {
                           navigate(`/student-hub?section=${c.key}`, { replace: true });
                         }}
                       >
-                        Open
+                        {t('studentHub.hub.open', 'Open')}
                       </Button>
                     </div>
                   </div>
@@ -1044,33 +1077,27 @@ export default function CommunityHubMockPage() {
                       <FullSupportStudentPage />
                     </div>
                   )}
-                  {othersTarget === 'college-lists' && (
-                    <div className={styles.hubDashEmbed}>
-                      <ApplicationsPage />
-                    </div>
-                  )}
                   {othersTarget === 'major-match' && (
                     <div className={styles.hubDashEmbed}>
-                      <PsychometricAssessmentPage />
+                      <MajorMatchV2Page />
                     </div>
                   )}
                   {othersTarget === 'opportunities' && <OpportunitiesPage />}
                   {othersTarget === 'essays' && <EssaysPage />}
-                  {othersTarget === 'documents' && <DocumentsPage />}
                   {othersTarget === 'profile' && <ProfilePage />}
                 </div>
               ) : (
                 <Card className={styles.sectionCard} bordered={false}>
-                  <div className={styles.sectionSubHeader}>Your Journey shortcuts</div>
+                  <div className={styles.sectionSubHeader}>
+                    {t('studentHub.hub.yourJourneyShortcuts', 'Your Journey shortcuts')}
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                     {[
-                      { label: 'Full Support', route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
-                      { label: 'College Lists', route: '/student-hub?section=others&target=college-lists', icon: 'applications' },
-                      { label: 'Major Match', route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
-                      { label: 'Opportunities', route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
-                      { label: 'Essays', route: '/student-hub?section=others&target=essays', icon: 'essays' },
-                      { label: 'Documents', route: '/student-hub?section=others&target=documents', icon: 'documents' },
-                      { label: 'My Profile', route: '/student-hub?section=others&target=profile', icon: 'profile' },
+                      { label: t('fullSupport.navLabel', 'Full Support'), description: t('studentHub.hub.fullSupportDesc', 'Work with your dedicated mentor'), route: '/student-hub?section=others&target=full-support', icon: 'full-support' },
+                      { label: t('studentHub.hub.majorMatchLabel', 'Major Match'), description: t('studentHub.hub.majorMatchDesc', 'Discover your best-fit major'), route: '/student-hub?section=others&target=major-match', icon: 'major-match' },
+                      { label: t('studentHub.hub.opportunitiesLabel', 'Opportunities'), description: t('studentHub.hub.opportunitiesDesc', 'Find programs and competitions'), route: '/student-hub?section=others&target=opportunities', icon: 'opportunities' },
+                      { label: t('studentHub.hub.essaysLabel', 'Essays'), description: t('studentHub.hub.essaysDesc', 'Draft and refine your essays'), route: '/student-hub?section=others&target=essays', icon: 'essays' },
+                      { label: t('studentHub.hub.myProfileLabel', 'My Profile'), description: t('studentHub.hub.myProfileDesc', 'Your personal, academic and activities profile'), route: '/student-hub?section=others&target=profile', icon: 'profile' },
                     ].map((item) => (
                       <div key={item.route} className={styles.groupCard} style={{ padding: 14 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -1079,11 +1106,11 @@ export default function CommunityHubMockPage() {
                             <div style={{ fontWeight: 900, color: '#0f172a' }}>{item.label}</div>
                           </div>
                           <Button type="primary" onClick={() => navigate(item.route)}>
-                            Open
+                            {t('studentHub.hub.open', 'Open')}
                           </Button>
                         </div>
                         <div style={{ color: '#64748b', fontWeight: 700, fontSize: 12, marginTop: 8 }}>
-                          Integrated open (real page).
+                          {item.description}
                         </div>
                       </div>
                     ))}
@@ -1113,9 +1140,14 @@ export default function CommunityHubMockPage() {
               )}
               {accountTarget !== 'rewards' && accountTarget !== 'settings' && (
                 <Card className={styles.sectionCard} bordered={false}>
-                  <div className={styles.sectionSubHeader}>My Rewards</div>
+                  <div className={styles.sectionSubHeader}>
+                    {t('studentHub.hub.myRewards', 'My Rewards')}
+                  </div>
                   <div style={{ color: '#64748b', fontWeight: 700 }}>
-                    Select “My Rewards” or “Settings” in the sidebar.
+                    {t(
+                      'studentHub.hub.selectRewardsOrSettings',
+                      'Select "My Rewards" or "Settings" in the sidebar.',
+                    )}
                   </div>
                 </Card>
               )}
@@ -1144,6 +1176,15 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
+          {/* Community Mentors — ranked directory, open to every student
+              regardless of community enrollment (mirrors the ungated
+              sidebar button, same as Find Study Buddy). */}
+          {activeSection === 'mentors' && (
+            <div className={styles.hubDashEmbed}>
+              <CommunityMentorsView />
+            </div>
+          )}
+
           {/* Non-community users never land in this in-hub branch for
               `researchProgram` anymore — the sidebar button routes them
               to the standalone `/student-hub/research-prep` surface
@@ -1162,17 +1203,9 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
-          {/* Community-membership funnel — Step 1: English placement test.
-              Mounted inside the hub so users keep the sidebar context
-              while filling the gate. The page handles its own redirects
-              (passed → profile → roadmap). */}
-          {activeSection === 'placementTest' && (
-            <div className={styles.hubDashEmbed}>
-              <PlacementTestPage />
-            </div>
-          )}
-
-          {/* Funnel — Step 2: admissions profile wizard. */}
+          {/* Funnel — Step 1: admissions profile wizard. The English
+              placement test that used to gate this funnel has been
+              removed; the profile wizard is now the entry point. */}
           {activeSection === 'placementProfile' && (
             <div className={styles.hubDashEmbed}>
               <PlacementProfileWizardPage />
@@ -1200,35 +1233,17 @@ export default function CommunityHubMockPage() {
               </StudyBuddyConsentGate>
             )}
 
+            {/* Major Match only. The "College lists" tab that used to sit
+                beside it was removed — college lists now live in the profile
+                hub (?section=others&target=profile&tab=college-lists), and
+                keeping a second copy here meant the same feature rendered in
+                three places with three different chromes. With one panel left
+                there is nothing for a Tabs shell to switch between. */}
             {activeSection === 'aiMajorMatch' && (
               <div className={styles.hubDashEmbed}>
-                <Tabs
-                  key={new URLSearchParams(location.search).get('applicationFlow') === 'new' ? 'ai-open-colleges' : 'ai-tabs'}
-                  defaultActiveKey={
-                    new URLSearchParams(location.search).get('applicationFlow') === 'new' ? 'colleges' : 'major'
-                  }
-                  className={styles.aiMajorMatchTabs}
-                  items={[
-                    {
-                      key: 'major',
-                      label: t('studentHub.hub.tabMajorMatch', 'Major match'),
-                      children: (
-                        <div className={styles.embedTabPanel}>
-                          <PsychometricAssessmentPage />
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'colleges',
-                      label: t('studentHub.hub.tabCollegeLists', 'College lists'),
-                      children: (
-                        <div className={styles.embedTabPanel}>
-                          <ApplicationsPage />
-                        </div>
-                      ),
-                    },
-                  ]}
-                />
+                <div className={styles.embedTabPanel}>
+                  <MajorMatchV2Page />
+                </div>
               </div>
             )}
 
@@ -1236,14 +1251,17 @@ export default function CommunityHubMockPage() {
               <div className={styles.admissionsBody}>
                 <div className={styles.admissionsListHeader}>
                   <div>
-                    <h2 className={styles.admissionsListTitle}>Featured lessons</h2>
+                    <h2 className={styles.admissionsListTitle}>
+                      {t('studentHub.hub.featuredLessons', 'Featured lessons')}
+                    </h2>
                     <div className={styles.admissionsListMeta}>
-                      {ADMISSIONS_YOUTUBE_PREVIEW_SPECS.length} videos · ~{
-                        ADMISSIONS_YOUTUBE_PREVIEW_SPECS.reduce((n, s) => {
+                      {t('studentHub.hub.videosMinTotal', '{{count}} videos · ~{{minutes}} min total', {
+                        count: ADMISSIONS_YOUTUBE_PREVIEW_SPECS.length,
+                        minutes: ADMISSIONS_YOUTUBE_PREVIEW_SPECS.reduce((n, s) => {
                           const [m, sec] = s.duration.split(':').map(Number);
                           return n + (m || 0) + (sec || 0) / 60;
-                        }, 0).toFixed(0)
-                      } min total
+                        }, 0).toFixed(0),
+                      })}
                     </div>
                   </div>
                   <Button

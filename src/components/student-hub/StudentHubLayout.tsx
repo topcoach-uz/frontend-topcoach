@@ -7,8 +7,11 @@ import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
 import UnifiedIcon from '../common/icons/UnifiedIcon';
 import LoginPrompt from 'src/components/student-hub/LoginPrompt';
 import { useStudentHub } from 'src/hooks/useStudentHub';
+import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import CommunityHubMobileDrawerNav from 'src/pages/student-hub/community/CommunityHubMobileDrawerNav';
 import StudyGoalsStickyBanner from 'src/components/student-hub/StudyGoalsStickyBanner';
+import MajorMatchStickyBanner from 'src/components/student-hub/MajorMatchStickyBanner';
+import MajorMatchPromptModal from 'src/pages/student-hub/components/MajorMatchPromptModal';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -27,6 +30,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   // Get loading state from useStudentHub hook
   const { isLoading } = useStudentHub();
+  // Landing-page Major Match nudge (sticky banner + auto-opening modal) —
+  // computed here (not just inside the two nudge components) so this layout
+  // can decide banner priority when both this and StudyGoalsStickyBanner
+  // would otherwise apply at once. See the two components' doc comments.
+  const majorMatchPrompt = useMajorMatchPromptState();
 
   // Track window width changes
   useEffect(() => {
@@ -49,11 +57,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
     () => [
       { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('studentHub.nav.dashboard', 'Dashboard') },
       { key: '/student-hub/full-support', icon: <UnifiedIcon name="full-support" size="md" color="primary" />, label: t('fullSupport.navLabel', 'Full Support') },
-      { key: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists', 'College Lists') },
+      { key: '/student-hub?section=others&target=profile&tab=college-lists', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists', 'College Lists') },
       { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: t('studentHub.psychometric.majorMatch', 'Major Match') },
       { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: t('studentHub.nav.opportunities', 'Opportunities') },
       { key: '/student-hub/essays', icon: <UnifiedIcon name="essays" size="md" color="primary" />, label: t('Essays') },
-      { key: '/student-hub/documents', icon: <UnifiedIcon name="documents" size="md" color="primary" />, label: t('Documents') },
+      { key: '/student-hub?section=others&target=profile&tab=documents', icon: <UnifiedIcon name="documents" size="md" color="primary" />, label: t('Documents') },
       { key: '/student-hub/profile', icon: <UnifiedIcon name="profile" size="md" color="primary" />, label: t('My Profile') },
       { key: '/student-hub/settings', icon: <UnifiedIcon name="settings" size="md" color="primary" />, label: t('studentHub.nav.settings', 'Settings') },
     ],
@@ -222,6 +230,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // full dashboard silhouette behind the unlock modal.
   const isResearchPrep = location.pathname.startsWith('/student-hub/research-prep');
   const hideSidebar = isCommunityLanding || isSatPrep || isResearchPrep;
+  // Never nag the student with the Major Match nudge while they're on the
+  // assessment itself (or the SAT Prep chromeless surface).
+  const isPsychometricAssessment = location.pathname.startsWith('/student-hub/psychometric-assessment');
+  const showMajorMatchBanner =
+    !isSatPrep && !isPsychometricAssessment && majorMatchPrompt.shouldPrompt;
 
   return (
     <Layout className="student-hub-layout">
@@ -345,7 +358,8 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       <Layout className={`main-layout ${isSatPrep ? 'main-layout--sat-prep' : ''}`}>
         <Content className={`main-content ${isSatPrep ? 'main-content--sat-prep' : ''}`}>
-          {!isSatPrep && <StudyGoalsStickyBanner />}
+          {!isSatPrep && (showMajorMatchBanner ? <MajorMatchStickyBanner /> : <StudyGoalsStickyBanner />)}
+          {!isSatPrep && <MajorMatchPromptModal />}
           <div className={isSatPrep ? 'main-content-flush' : 'main-content-padded'}>
             {/* Only the dashboard section actually consumes useStudentHub's
                 data — every hub section shares the '/student-hub' pathname

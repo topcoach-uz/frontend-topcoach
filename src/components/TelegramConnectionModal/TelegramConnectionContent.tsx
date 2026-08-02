@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Modal, Input, Button, message } from 'antd';
+import { CheckCircle2, Clock, AlertCircle, Key } from 'lucide-react';
+import { useVerifyTelegramCodeMutation, useUnlinkTelegramMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
+import { RtkApi } from 'src/app/services/api';
+import './TelegramConnectionModal.scss';
 import { Modal, Input, Button, Typography, Space, Alert, Card, Divider, message } from 'antd';
 import { CheckCircle2, Clock, AlertCircle, Send, Key } from 'lucide-react';
 import { useVerifyTelegramCodeMutation, useUnlinkTelegramMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
@@ -23,6 +28,11 @@ interface TelegramConnectionContentProps {
  * onboarding wizard's Step 3, not just inside a Modal. Behavior is
  * unchanged from the original inline implementation; only the
  * close-on-success side effect moved to the optional `onConnected` callback.
+ *
+ * Styled per TelegramConnectionModal.scss — the editorial language the rest
+ * of My Journey uses (cream/serif/burgundy) rather than AntD defaults, so it
+ * reads as one product whether it's mounted inside the settings modal or
+ * inline in the onboarding wizard.
  */
 const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ onConnected }) => {
   const [code, setCode] = useState('');
@@ -88,6 +98,12 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
     Modal.confirm({
       title: 'Disconnect Telegram?',
       content:
+        "You'll stop receiving session confirmations, updates and cancellations on Telegram until you link an account again.",
+      okText: 'Disconnect',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancel',
+      // Portalled separately from the modal/inline content, so it needs its own class.
+      className: 'tc-telegram-confirm',
         "You'll stop receiving session confirmations, updates, and cancellations on Telegram until you re-link your account.",
       okText: 'Disconnect',
       okButtonProps: { danger: true },
@@ -118,6 +134,11 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
   const getStatusIcon = () => {
     switch (typedTelegramStatus?.status) {
       case 'connected':
+        return <CheckCircle2 size={18} />;
+      case 'pending':
+        return <Clock size={18} />;
+      case 'failed':
+        return <AlertCircle size={18} />;
         return <CheckCircle2 size={48} color="#52c41a" />;
       case 'pending':
         return <Clock size={48} color="#faad14" />;
@@ -141,6 +162,31 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
     }
   };
 
+  return (
+    <div>
+      <div style={{ width: '100%' }}>
+        <div>
+          {/* Status reads as one calm line rather than a large centred
+              icon block, matching the settings cards behind it. */}
+          <div
+            className={`tc-tg-status${
+              typedTelegramStatus?.status === 'connected' && !isUpdatingStatus
+                ? ' tc-tg-status--connected'
+                : ''
+            }`}
+          >
+            {isUpdatingStatus ? <Clock size={18} /> : getStatusIcon()}
+            <div>
+              <div className="tc-tg-statusText">
+                {isUpdatingStatus ? 'Updating…' : getStatusText()}
+              </div>
+              {typedTelegramStatus?.status === 'connected' &&
+                !isUpdatingStatus && (
+                  <div className="tc-tg-statusSub">
+                    You'll get session updates on Telegram.
+                  </div>
+                )}
+            </div>
   const CRIMSON = '#8b0000';
 
   return (
@@ -172,6 +218,9 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
 
           {/* Connected State */}
           {(typedTelegramStatus?.status === 'connected' || isUpdatingStatus) && (
+            <div className="tc-tg-panel">
+              <p className="tc-tg-panelLead">You'll receive:</p>
+              <ul className="tc-tg-list">
             <Card type="inner" style={{ width: '100%', background: '#e6f7ff', borderColor: '#91d5ff' }}>
               <Text>Your Telegram account is now connected to TopCoach.</Text>
               <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
@@ -179,6 +228,19 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
                 <li>Session updates and changes</li>
                 <li>Session cancellations</li>
               </ul>
+              <hr className="tc-tg-divider" />
+              <p className="tc-tg-note">
+                Linked to the wrong Telegram? Disconnect to link a different
+                account.
+              </p>
+              <Button
+                className="tc-tg-ghostBtn"
+                loading={isUnlinking}
+                onClick={handleUnlink}
+              >
+                Disconnect
+              </Button>
+            </div>
               <Divider style={{ margin: '12px 0' }} />
               <Text type="secondary" style={{ fontSize: 12 }}>
                 Connected to a different Telegram? Disconnect to link another account.
@@ -194,6 +256,29 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
           {/* Connection Form */}
           {typedTelegramStatus?.status !== 'connected' && !isUpdatingStatus && (
             <div style={{ width: '100%' }}>
+              <h3 className="tc-tg-stepTitle">1. Share your contact</h3>
+              <p className="tc-tg-stepHint">
+                Open{' '}
+                <a
+                  href="https://t.me/topcoach_official_bot"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  @topcoach_official_bot
+                </a>{' '}
+                and tap "Share my contact".
+              </p>
+
+              <hr className="tc-tg-divider" />
+
+              <h3 className="tc-tg-stepTitle">2. Enter the code</h3>
+              <p className="tc-tg-stepHint">
+                The bot replies with a 6-character code.
+              </p>
+
+              <Input
+                className="tc-tg-codeInput"
+                placeholder="A1B2C3"
               <Title level={5} style={{ marginBottom: 4 }}>Step 1: Share Contact</Title>
               <Text type="secondary">
                 Open <a href="https://t.me/topcoach_official_bot" target="_blank" rel="noopener noreferrer">@topcoach_official_bot</a> and click "Share my contact"
@@ -212,6 +297,22 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
                 onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 6))}
                 maxLength={6}
                 prefix={<Key size={16} />}
+              />
+
+              <div className="tc-tg-tips">
+                Use the code from the bot, not your phone number. Codes expire
+                after 10 minutes.
+              </div>
+
+              {errorMsg && (
+                <div className="tc-tg-error" role="alert">
+                  <strong>We couldn't connect that code</strong>
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              <Button
+                className="tc-tg-submit"
                 size="large"
                 style={{ margin: '12px 0' }}
               />
@@ -241,6 +342,13 @@ const TelegramConnectionContent: React.FC<TelegramConnectionContentProps> = ({ o
                 onClick={handleSubmit}
                 loading={isLoading || isUpdatingStatus}
                 disabled={!code.trim() || code.length !== 6}
+              >
+                Verify and connect
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
                 size="large"
                 style={{ width: '100%' }}
               >

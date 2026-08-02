@@ -67,7 +67,7 @@ export default function ProfileWizardPage() {
 
   const { isAuthenticated } = useTypedSelector((s) => s.auth);
 
-  const { data: status, isLoading: statusLoading } =
+  const { data: status } =
     useGetPlacementTestStatusQuery(undefined, { skip: !isAuthenticated });
   const { data: profile } = useGetAdmissionsProfileQuery(undefined, {
     skip: !isAuthenticated,
@@ -89,10 +89,6 @@ export default function ProfileWizardPage() {
         replace
       />
     );
-  }
-
-  if (!statusLoading && status && !status.passed) {
-    return <Navigate to={COMMUNITY_FUNNEL_PATHS.placementTest} replace />;
   }
 
   // After the user completes the profile, the default behavior is to
@@ -159,7 +155,7 @@ export default function ProfileWizardPage() {
         }
       }}
       onStepChange={(next) => navigate(profilePath(next))}
-      onExit={() => navigate(COMMUNITY_FUNNEL_PATHS.placementTest)}
+      onExit={() => navigate(COMMUNITY_FUNNEL_PATHS.community)}
       lastAttemptScore={status?.lastAttempt?.scorePercentage ?? null}
       lastAttemptLevel={status?.lastAttempt?.level ?? null}
     />

@@ -1184,6 +1184,101 @@ body.cf-feed-active {
     padding: 8px 0;
   }
 
+  /* ── upcoming sessions (right-rail, student only) ───────────── */
+  &__sessions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__session-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px;
+    margin: -8px;
+    border-radius: 8px;
+  }
+
+  &__session-main {
+    min-width: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
+  &__session-mentor {
+    font-weight: 600;
+    color: $cf-ink;
+    font-size: 0.86rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__session-meta {
+    color: $cf-muted;
+    font-size: 0.74rem;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__session-join {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    color: $cf-brand;
+    font-weight: 600;
+    font-size: 0.76rem;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid $cf-brand-soft;
+    background: $cf-brand-soft;
+    &:hover { background: rgba(123, 31, 47, 0.14); }
+  }
+
+  &__sessions-empty {
+    text-align: center;
+    padding: 10px 0 4px;
+
+    p {
+      color: $cf-muted;
+      font-size: 0.82rem;
+      margin: 0 0 10px;
+    }
+  }
+
+  &__sessions-book,
+  &__sessions-viewall {
+    appearance: none;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid $cf-hairline;
+    border-radius: 8px;
+    color: $cf-brand;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    &:hover { background: $cf-hairline-soft; }
+  }
+
   &__composer-image-count {
     background: $cf-brand;
     color: #fff;

@@ -1,24 +1,23 @@
 import { useState } from 'react';
-import { Button, Input, Modal, message } from 'antd';
+import { Button, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-import {
-  useCancelSubscriptionMutation,
-  useReactivateSubscriptionMutation,
-} from 'src/app/services/subscription';
+import { useReactivateSubscriptionMutation } from 'src/app/services/subscription';
 import type {
   PaymentMethodDto,
   PlanDto,
   SubscriptionDto,
 } from '../../types';
 import { formatPriceLine, formatLongDate, formatLongDateTime } from '../format';
+import CancelFlowModal from '../CancelFlowModal';
 import styles from './CurrentPlanCard.module.scss';
-
-const { TextArea } = Input;
 
 export interface CurrentPlanCardProps {
   subscription: SubscriptionDto;
   paymentMethod?: PaymentMethodDto;
+  /** Full active plan catalog — passed through to the cancel flow's
+   *  "switch to a cheaper plan" retention offer (step 3). */
+  plans: PlanDto[];
   /**
    * Fired when the user clicks "Change plan". The page is responsible
    * for scrolling to the plan picker (the existing AvailablePlans
@@ -26,6 +25,13 @@ export interface CurrentPlanCardProps {
    * triggers /change-plan via the page-level handler).
    */
   onChangePlan?: () => void;
+  /**
+   * Fired by the cancel flow's step-3 "too expensive" retention offer
+   * when a genuinely cheaper plan exists. Delegates to the page's
+   * EXISTING change-plan confirm modal (`setPlanChangeConfirm`) — the
+   * same code path AvailablePlans uses — rather than duplicating it.
+   */
+  onOfferPlanSwitch?: (plan: PlanDto) => void;
 }
 
 const PROVIDER_LABEL: Record<PaymentMethodDto['provider'], string> = {
@@ -52,7 +58,9 @@ const planDisplayName = (plan: PlanDto, lang: string): string => {
 export default function CurrentPlanCard({
   subscription,
   paymentMethod,
+  plans,
   onChangePlan,
+  onOfferPlanSwitch,
 }: CurrentPlanCardProps) {
   const { t, i18n } = useTranslation();
 
@@ -69,10 +77,11 @@ export default function CurrentPlanCard({
   } = subscription;
 
   const [cancelOpen, setCancelOpen] = useState(false);
-  const [reason, setReason] = useState('');
-  const [doCancel, { isLoading: cancelling }] = useCancelSubscriptionMutation();
   const [doReactivate, { isLoading: reactivating }] =
     useReactivateSubscriptionMutation();
+  // Effective current plan — scheduled switch (if any) wins, mirroring
+  // the same rule the page-level picker uses.
+  const effectiveCurrentPlan = scheduledPlan ?? plan;
 
   const periodLabel =
     plan.period === 'yearly'
@@ -142,26 +151,6 @@ export default function CurrentPlanCard({
       date: periodEndDate,
     });
   }
-
-  const handleCancelConfirm = async () => {
-    try {
-      await doCancel({
-        subscriptionId: id,
-        reason: reason.trim() || undefined,
-      }).unwrap();
-      message.success(
-        t(
-          'settings.subscription.toast.cancelScheduled',
-          'Cancellation scheduled. You keep access until {{date}}.',
-          { date: periodEndDate },
-        ),
-      );
-      setCancelOpen(false);
-      setReason('');
-    } catch (err) {
-      message.error(extractError(err, t('settings.subscription.toast.cancelFailed', "Couldn't cancel.")));
-    }
-  };
 
   const handleReactivate = async () => {
     try {
@@ -279,52 +268,15 @@ export default function CurrentPlanCard({
         )}
       </div>
 
-      <Modal
+      <CancelFlowModal
         open={cancelOpen}
-        title={t('settings.subscription.cancelTitle', 'Cancel subscription?')}
-        onCancel={() => {
-          setCancelOpen(false);
-          setReason('');
-        }}
-        okText={t('settings.subscription.confirmCancel', 'Yes, cancel')}
-        okButtonProps={{ danger: true, loading: cancelling }}
-        cancelText={t('settings.subscription.keepPlan', 'Keep my plan')}
-        onOk={handleCancelConfirm}
-        destroyOnClose
-      >
-        <p style={{ marginBottom: 12 }}>
-          {t(
-            'settings.subscription.cancelBody',
-            "You'll keep access until {{date}}, then your subscription ends. No refunds for the current period.",
-            { date: periodEndDate },
-          )}
-        </p>
-        <label
-          htmlFor="cancel-reason"
-          style={{
-            display: 'block',
-            fontSize: 13,
-            fontWeight: 600,
-            marginBottom: 6,
-          }}
-        >
-          {t(
-            'settings.subscription.cancelReasonLabel',
-            'Reason (optional, helps us improve)',
-          )}
-        </label>
-        <TextArea
-          id="cancel-reason"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={3}
-          maxLength={500}
-          placeholder={t(
-            'settings.subscription.cancelReasonPlaceholder',
-            "What's making you cancel?",
-          )}
-        />
-      </Modal>
+        onClose={() => setCancelOpen(false)}
+        subscriptionId={id}
+        currentPlan={effectiveCurrentPlan}
+        plans={plans}
+        periodEndLabel={periodEndDate}
+        onOfferPlanSwitch={(target) => onOfferPlanSwitch?.(target)}
+      />
     </div>
   );
 }

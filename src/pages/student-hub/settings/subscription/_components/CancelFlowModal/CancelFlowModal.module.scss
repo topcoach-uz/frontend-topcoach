@@ -1,0 +1,167 @@
+/* CancelFlowModal — 4-step retention funnel. Matches the editorial
+   cream/burgundy tokens already used elsewhere on the Subscription tab
+   (CurrentPlanCard, AvailablePlans). */
+
+$brand: #7a1f2b;
+$ink: #1c1a17;
+$muted: #6b6258;
+$hairline: #ecdfdc;
+$offer-bg: #fdf6f4;
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+}
+
+.stepIndicator {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $muted;
+  white-space: nowrap;
+}
+
+.body {
+  line-height: 1.55;
+  color: $ink;
+}
+
+.lead {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.subhead {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $ink;
+}
+
+.featureList {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: $ink;
+}
+
+.featureTick {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: $brand;
+}
+
+.reasonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  :global(.ant-radio-wrapper) {
+    font-size: 0.92rem;
+    color: $ink;
+  }
+}
+
+.reasonOption {
+  padding: 8px 10px;
+  border: 1px solid $hairline;
+  border-radius: 10px;
+
+  &:global(.ant-radio-wrapper-checked) {
+    border-color: $brand;
+    background: rgba(122, 31, 43, 0.05);
+  }
+}
+
+.detailsLabel {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink;
+  margin-bottom: 6px;
+}
+
+.offerCard {
+  background: $offer-bg;
+  border: 1px solid $hairline;
+  border-left: 4px solid $brand;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.offerTitle {
+  margin: 0;
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $brand;
+}
+
+.offerBody {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  color: $muted;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid $hairline;
+}
+
+.btnGhost {
+  border-color: $brand !important;
+  color: $brand !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+
+  &:hover,
+  &:focus {
+    background: rgba(122, 31, 43, 0.06) !important;
+    color: $brand !important;
+    border-color: $brand !important;
+  }
+}
+
+.btnFilled {
+  background: $brand !important;
+  border-color: $brand !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+
+  &:hover,
+  &:focus {
+    background: darken($brand, 6%) !important;
+    border-color: darken($brand, 6%) !important;
+    color: #fff !important;
+  }
+}
+
+.btnDanger.ant-btn {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}

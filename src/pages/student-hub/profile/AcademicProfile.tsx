@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Divider, Space, message } from 'antd';
+import { Form, Input, Select, InputNumber, Button, Card, Row, Col, Divider, Space, message, Modal, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
 import { ACADEMIC_ICONS, ACTION_ICONS } from '../../../constants/icons';
@@ -19,6 +20,31 @@ interface AcademicProfileProps {
   studentId?: string;
 }
 
+// Which test-score card a given field belongs to, and which fields make up
+// each card — used both to render the card and to know what to clear when
+// a card is removed.
+type TestKey = 'sat' | 'act' | 'ielts' | 'toefl' | 'duolingo';
+
+const TEST_FIELD_NAMES: Record<TestKey, string[]> = {
+  sat: ['satMath', 'satReading', 'satTotal'],
+  act: ['actComposite', 'actMath', 'actReading', 'actScience', 'actWriting'],
+  ielts: ['ieltsOverall', 'ieltsListening', 'ieltsReading', 'ieltsWriting', 'ieltsSpeaking'],
+  toefl: ['toeflTotal', 'toeflReading', 'toeflListening', 'toeflSpeaking', 'toeflWriting'],
+  duolingo: ['duolingoScore'],
+};
+
+const TEST_ORDER: TestKey[] = ['sat', 'act', 'ielts', 'toefl', 'duolingo'];
+
+// True if any field in the given testScores subtree is a non-empty value.
+// Used to derive which cards should be visible on load from saved data.
+const hasAnyValue = (subtree: Record<string, any> | undefined | null): boolean => {
+  if (subtree === undefined || subtree === null) return false;
+  if (typeof subtree !== 'object') {
+    return subtree !== '' && subtree !== undefined && subtree !== null;
+  }
+  return Object.values(subtree).some((v) => v !== undefined && v !== null && v !== '');
+};
+
 const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = false, studentId }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -27,13 +53,27 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
 
+  // Which test-score cards are currently rendered. Bootstrapped from saved
+  // data on load (see effect below), then grown/shrunk by the "+ Add test
+  // score" control and each card's Remove control. Once a card has been
+  // shown it stays shown across refetches (e.g. after Save) — only an
+  // explicit Remove takes it away — so a card the student is mid-filling-in
+  // doesn't vanish out from under them.
+  const [visibleTests, setVisibleTests] = useState<TestKey[]>([]);
+
+  const testMeta: Record<TestKey, { icon: string; label: string }> = {
+    sat: { icon: ACADEMIC_ICONS.SAT, label: t('studentHub.profile.satScores', 'SAT Scores') },
+    act: { icon: ACADEMIC_ICONS.ACT, label: t('studentHub.profile.actScores', 'ACT Scores') },
+    ielts: { icon: ACADEMIC_ICONS.IELTS, label: t('studentHub.profile.ielts', 'IELTS') },
+    toefl: { icon: ACADEMIC_ICONS.TOEFL, label: t('studentHub.profile.toefl', 'TOEFL') },
+    duolingo: { icon: 'language', label: t('studentHub.profile.duolingo', 'Duolingo') },
+  };
+
   // Initialize form with data from API
   useEffect(() => {
     if (profile?.academicProfile) {
       const academicData = profile.academicProfile;
-      console.log('=== ACADEMIC PROFILE LOAD DEBUG ===');
-      console.log('Full academic profile:', academicData);
-      
+
       form.setFieldsValue({
         // Test Scores
         satMath: academicData.testScores?.sat?.math,
@@ -44,7 +84,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         actReading: academicData.testScores?.act?.reading,
         actScience: academicData.testScores?.act?.science,
         actWriting: academicData.testScores?.act?.writing,
-        
+
         // English Proficiency
         ieltsOverall: academicData.testScores?.ielts?.overall,
         ieltsListening: academicData.testScores?.ielts?.listening,
@@ -57,35 +97,109 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         toeflSpeaking: academicData.testScores?.toefl?.speaking,
         toeflWriting: academicData.testScores?.toefl?.writing,
         duolingoScore: academicData.testScores?.duolingo,
-        
+
         // GPA Information
         gpaUnweighted: academicData.gpa?.unweighted,
         gpaWeighted: academicData.gpa?.weighted,
         gpaScale: academicData.gpa?.scale,
         gpaCumulative: academicData.gpa?.cumulative,
-        
+
         // Academic Details
         curriculum: academicData.curriculum,
         graduationYear: academicData.graduationYear,
         gapYear: academicData.gapYear,
         firstGeneration: academicData.firstGeneration,
         financialAid: academicData.financialAid,
-        
-        
+
+
       });
-      console.log('=== ACADEMIC PROFILE LOAD COMPLETED ===');
-    } else {
-      console.log('No academic profile data found');
+
+      // SAT total is derived (math + reading & writing), never trusted from
+      // storage — recompute it right after hydrating the other two fields.
+      const satMath = academicData.testScores?.sat?.math;
+      const satReading = academicData.testScores?.sat?.readingWriting;
+      form.setFieldValue(
+        'satTotal',
+        typeof satMath === 'number' && typeof satReading === 'number' ? satMath + satReading : undefined,
+      );
+
+      // Bootstrap which cards are visible from whatever has saved data.
+      // Merge with (never replace) whatever's already showing so a
+      // just-added-but-still-empty card doesn't get hidden by a refetch.
+      const testScores = academicData.testScores || {};
+      const hydrated: TestKey[] = TEST_ORDER.filter((key) =>
+        key === 'duolingo' ? hasAnyValue(testScores.duolingo) : hasAnyValue((testScores as any)[key]),
+      );
+      if (hydrated.length > 0) {
+        setVisibleTests((prev) => TEST_ORDER.filter((key) => prev.includes(key) || hydrated.includes(key)));
+      }
     }
   }, [profile?.academicProfile, form]);
+
+  // Keep the SAT total field derived from math + reading&writing at all
+  // times — it's disabled/read-only for the student, so this is the only
+  // way it ever gets a value.
+  const handleValuesChange = (changedValues: Record<string, any>) => {
+    if ('satMath' in changedValues || 'satReading' in changedValues) {
+      const satMath = form.getFieldValue('satMath');
+      const satReading = form.getFieldValue('satReading');
+      form.setFieldValue(
+        'satTotal',
+        typeof satMath === 'number' && typeof satReading === 'number' ? satMath + satReading : undefined,
+      );
+    }
+  };
+
+  const handleAddTest = (key: TestKey) => {
+    setVisibleTests((prev) => (prev.includes(key) ? prev : TEST_ORDER.filter((k) => prev.includes(k) || k === key)));
+  };
+
+  const handleRemoveTest = (key: TestKey) => {
+    const fieldNames = TEST_FIELD_NAMES[key];
+    const currentValues = form.getFieldsValue(fieldNames);
+    const hasValues = Object.values(currentValues).some((v) => v !== undefined && v !== null && v !== '');
+
+    const clearAndRemove = () => {
+      const cleared: Record<string, undefined> = {};
+      fieldNames.forEach((name) => {
+        cleared[name] = undefined;
+      });
+      form.setFieldsValue(cleared);
+      setVisibleTests((prev) => prev.filter((k) => k !== key));
+    };
+
+    if (!hasValues) {
+      clearAndRemove();
+      return;
+    }
+
+    Modal.confirm({
+      title: t('studentHub.profile.removeTestScoreTitle', {
+        test: testMeta[key].label,
+        defaultValue: `Remove your ${testMeta[key].label} scores?`,
+      }),
+      content: t(
+        'studentHub.profile.removeTestScoreContent',
+        "This will delete the scores you've saved.",
+      ),
+      okText: t('common.remove', 'Remove'),
+      okType: 'danger',
+      cancelText: t('common.cancel', 'Cancel'),
+      onOk: clearAndRemove,
+    });
+  };
+
+  const addTestMenuItems: MenuProps['items'] = TEST_ORDER.filter((key) => !visibleTests.includes(key)).map(
+    (key) => ({
+      key,
+      label: testMeta[key].label,
+      onClick: () => handleAddTest(key),
+    }),
+  );
 
   const handleSave = async (values: any) => {
     setUpdateLoading(true);
     try {
-      console.log('=== ACADEMIC PROFILE SAVE DEBUG ===');
-      console.log('Form values:', values);
-      console.log('Current profile ID:', profile?.id);
-      
       // Transform form values to API format
       const academicProfileData = {
         testScores: {
@@ -135,24 +249,15 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         financialAid: values.financialAid,
       };
 
-      console.log('Academic profile data to save:', academicProfileData);
-      console.log('API call payload:', { academicProfile: academicProfileData });
-
-      const result = await updateStudentProfile({
+      await updateStudentProfile({
         academicProfile: academicProfileData as any,
       });
 
-      console.log('Academic profile save result:', result);
       message.success('Academic profile saved successfully!');
-      
+
       // Refetch the profile data to update the UI
       await refetchProfile();
-      console.log('=== ACADEMIC PROFILE SAVE COMPLETED ===');
     } catch (error: any) {
-      console.error('=== ACADEMIC PROFILE SAVE ERROR ===');
-      console.error('Error details:', error);
-      console.error('Error message:', error?.message);
-      console.error('Error data:', error?.data);
       message.error(`Failed to save academic profile: ${error?.message || 'Unknown error'}`);
     } finally {
       setUpdateLoading(false);
@@ -181,284 +286,385 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         form={form}
         layout="vertical"
         onFinish={handleSave}
+        onValuesChange={handleValuesChange}
         className="academic-form"
       >
-        {/* Test Scores Section */}
-        <Card title={t('studentHub.profile.standardizedTestScores', 'Standardized Test Scores')} className="section-card">
-          <Row gutter={[24, 24]}>
-            {/* SAT Scores */}
-            <Col xs={24} lg={12}>
-              <div className="test-section">
-                <h4 className="test-title">
-                  <FontAwesomeIcon icon={ACADEMIC_ICONS.SAT} />
-                  {t('studentHub.profile.satScores', 'SAT Scores')}
-                </h4>
-                <Row gutter={[16, 16]}>
-                  <Col xs={12}>
+        {/* Test Scores Section — cards are added on demand; only tests the
+            student has data for (or has explicitly added) render below. */}
+        <Card title={t('studentHub.profile.testScores', 'Test Scores')} className="section-card">
+          {visibleTests.length === 0 ? (
+            <p className="no-test-scores">
+              {t('studentHub.profile.noTestScoresYet', "You haven't added any test scores yet.")}
+            </p>
+          ) : (
+            <Row gutter={[24, 24]}>
+              {visibleTests.includes('sat') && (
+                <Col xs={24} lg={12}>
+                  <div className="test-section">
+                    <div className="test-title-row">
+                      <h4 className="test-title">
+                        <FontAwesomeIcon icon={testMeta.sat.icon} />
+                        {testMeta.sat.label}
+                      </h4>
+                      {!isReadOnly && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="remove-test-btn"
+                          aria-label={`${t('common.remove', 'Remove')} ${testMeta.sat.label}`}
+                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />}
+                          onClick={() => handleRemoveTest('sat')}
+                        />
+                      )}
+                    </div>
+                    <Row gutter={[16, 16]}>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="satMath"
+                          label={t('studentHub.profile.mathSection', 'Math Section')}
+                        >
+                          <InputNumber
+                            min={200}
+                            max={800}
+                            placeholder={t('studentHub.profile.mathSection', 'Math Section')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="satReading"
+                          label={t('studentHub.profile.readingWriting', 'Reading & Writing')}
+                        >
+                          <InputNumber
+                            min={200}
+                            max={800}
+                            placeholder={t('studentHub.profile.reading', 'Reading')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24}>
+                        <Form.Item
+                          name="satTotal"
+                          label={t('studentHub.profile.totalScore', 'Total Score')}
+                        >
+                          <InputNumber
+                            min={400}
+                            max={1600}
+                            placeholder="Total Score"
+                            className="score-input"
+                            disabled
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              )}
+
+              {visibleTests.includes('act') && (
+                <Col xs={24} lg={12}>
+                  <div className="test-section">
+                    <div className="test-title-row">
+                      <h4 className="test-title">
+                        <FontAwesomeIcon icon={testMeta.act.icon} />
+                        {testMeta.act.label}
+                      </h4>
+                      {!isReadOnly && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="remove-test-btn"
+                          aria-label={`${t('common.remove', 'Remove')} ${testMeta.act.label}`}
+                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />}
+                          onClick={() => handleRemoveTest('act')}
+                        />
+                      )}
+                    </div>
+                    <Row gutter={[16, 16]}>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="actComposite"
+                          label={t('studentHub.profile.compositeScore', 'Composite Score')}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={36}
+                            placeholder={t('studentHub.profile.compositeScore', 'Composite Score')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="actMath"
+                          label={t('studentHub.profile.math', 'Math')}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={36}
+                            placeholder={t('studentHub.profile.math', 'Math')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="actReading"
+                          label={t('studentHub.profile.reading', 'Reading')}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={36}
+                            placeholder={t('studentHub.profile.reading', 'Reading')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="actScience"
+                          label={t('studentHub.profile.science', 'Science')}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={36}
+                            placeholder={t('studentHub.profile.science', 'Science')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item
+                          name="actWriting"
+                          label={t('studentHub.profile.writing', 'Writing')}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={36}
+                            placeholder={t('studentHub.profile.writing', 'Writing')}
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              )}
+
+              {visibleTests.includes('ielts') && (
+                <Col xs={24} lg={12}>
+                  <div className="test-section">
+                    <div className="test-title-row">
+                      <h4 className="test-title">
+                        <FontAwesomeIcon icon={testMeta.ielts.icon} />
+                        {testMeta.ielts.label}
+                      </h4>
+                      {!isReadOnly && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="remove-test-btn"
+                          aria-label={`${t('common.remove', 'Remove')} ${testMeta.ielts.label}`}
+                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />}
+                          onClick={() => handleRemoveTest('ielts')}
+                        />
+                      )}
+                    </div>
                     <Form.Item
-                      name="satMath"
-                      label={t('studentHub.profile.mathSection', 'Math Section')}
+                      name="ieltsOverall"
+                      label={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
                     >
                       <InputNumber
-                        min={200}
-                        max={800}
-                        placeholder={t('studentHub.profile.mathSection', 'Math Section')}
+                        min={0}
+                        max={9}
+                        step={0.5}
+                        placeholder={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
                         className="score-input"
                       />
                     </Form.Item>
-                  </Col>
-                  <Col xs={12}>
+                    <Row gutter={[8, 8]}>
+                      <Col xs={12}>
+                        <Form.Item name="ieltsListening" label={t('studentHub.profile.listening', 'Listening')}>
+                          <InputNumber
+                            min={0}
+                            max={9}
+                            step={0.5}
+                            placeholder="L"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="ieltsReading" label={t('studentHub.profile.reading', 'Reading')}>
+                          <InputNumber
+                            min={0}
+                            max={9}
+                            step={0.5}
+                            placeholder="R"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="ieltsWriting" label={t('studentHub.profile.writing', 'Writing')}>
+                          <InputNumber
+                            min={0}
+                            max={9}
+                            step={0.5}
+                            placeholder="W"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="ieltsSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
+                          <InputNumber
+                            min={0}
+                            max={9}
+                            step={0.5}
+                            placeholder="S"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              )}
+
+              {visibleTests.includes('toefl') && (
+                <Col xs={24} lg={12}>
+                  <div className="test-section">
+                    <div className="test-title-row">
+                      <h4 className="test-title">
+                        <FontAwesomeIcon icon={testMeta.toefl.icon} />
+                        {testMeta.toefl.label}
+                      </h4>
+                      {!isReadOnly && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="remove-test-btn"
+                          aria-label={`${t('common.remove', 'Remove')} ${testMeta.toefl.label}`}
+                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />}
+                          onClick={() => handleRemoveTest('toefl')}
+                        />
+                      )}
+                    </div>
                     <Form.Item
-                      name="satReading"
-                      label={t('studentHub.profile.readingWriting', 'Reading & Writing')}
-                    >
-                      <InputNumber
-                        min={200}
-                        max={800}
-                        placeholder={t('studentHub.profile.reading', 'Reading')}
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24}>
-                    <Form.Item
-                      name="satTotal"
+                      name="toeflTotal"
                       label={t('studentHub.profile.totalScore', 'Total Score')}
                     >
                       <InputNumber
-                        min={400}
-                        max={1600}
-                        placeholder="Total Score"
+                        min={0}
+                        max={120}
+                        placeholder={t('studentHub.profile.totalScore', 'Total Score')}
                         className="score-input"
-                        disabled
                       />
                     </Form.Item>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
+                    <Row gutter={[8, 8]}>
+                      <Col xs={12}>
+                        <Form.Item name="toeflReading" label={t('studentHub.profile.reading', 'Reading')}>
+                          <InputNumber
+                            min={0}
+                            max={30}
+                            placeholder="R"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="toeflListening" label={t('studentHub.profile.listening', 'Listening')}>
+                          <InputNumber
+                            min={0}
+                            max={30}
+                            placeholder="L"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="toeflSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
+                          <InputNumber
+                            min={0}
+                            max={30}
+                            placeholder="S"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Item name="toeflWriting" label={t('studentHub.profile.writing', 'Writing')}>
+                          <InputNumber
+                            min={0}
+                            max={30}
+                            placeholder="W"
+                            className="score-input"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              )}
 
-            {/* ACT Scores */}
-            <Col xs={24} lg={12}>
-              <div className="test-section">
-                <h4 className="test-title">
-                  <FontAwesomeIcon icon={ACADEMIC_ICONS.ACT} />
-                  {t('studentHub.profile.actScores', 'ACT Scores')}
-                </h4>
-                <Row gutter={[16, 16]}>
-                  <Col xs={12}>
+              {visibleTests.includes('duolingo') && (
+                <Col xs={24} lg={12}>
+                  <div className="test-section">
+                    <div className="test-title-row">
+                      <h4 className="test-title">
+                        <FontAwesomeIcon icon={testMeta.duolingo.icon} />
+                        {testMeta.duolingo.label}
+                      </h4>
+                      {!isReadOnly && (
+                        <Button
+                          type="text"
+                          size="small"
+                          className="remove-test-btn"
+                          aria-label={`${t('common.remove', 'Remove')} ${testMeta.duolingo.label}`}
+                          icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />}
+                          onClick={() => handleRemoveTest('duolingo')}
+                        />
+                      )}
+                    </div>
                     <Form.Item
-                      name="actComposite"
-                      label={t('studentHub.profile.compositeScore', 'Composite Score')}
+                      name="duolingoScore"
+                      label={t('studentHub.profile.overallScore', 'Overall Score')}
                     >
                       <InputNumber
-                        min={1}
-                        max={36}
-                        placeholder={t('studentHub.profile.compositeScore', 'Composite Score')}
+                        min={10}
+                        max={160}
+                        placeholder={t('studentHub.profile.overallScore', 'Overall Score')}
                         className="score-input"
                       />
                     </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item
-                      name="actMath"
-                      label={t('studentHub.profile.math', 'Math')}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={36}
-                        placeholder={t('studentHub.profile.math', 'Math')}
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item
-                      name="actReading"
-                      label={t('studentHub.profile.reading', 'Reading')}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={36}
-                        placeholder={t('studentHub.profile.reading', 'Reading')}
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item
-                      name="actScience"
-                      label={t('studentHub.profile.science', 'Science')}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={36}
-                        placeholder={t('studentHub.profile.science', 'Science')}
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-          </Row>
-        </Card>
+                  </div>
+                </Col>
+              )}
+            </Row>
+          )}
 
-        {/* English Proficiency Section */}
-        <Card title={t('studentHub.profile.englishProficiencyTests', 'English Proficiency Tests')} className="section-card">
-          <Row gutter={[24, 24]}>
-            {/* IELTS */}
-            <Col xs={24} lg={8}>
-              <div className="test-section">
-                <h4 className="test-title">
-                  <FontAwesomeIcon icon={ACADEMIC_ICONS.IELTS} />
-                  {t('studentHub.profile.ielts', 'IELTS')}
-                </h4>
-                <Form.Item
-                  name="ieltsOverall"
-                  label={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
-                >
-                  <InputNumber
-                    min={0}
-                    max={9}
-                    step={0.5}
-                    placeholder={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
-                    className="score-input"
-                  />
-                </Form.Item>
-                <Row gutter={[8, 8]}>
-                  <Col xs={12}>
-                    <Form.Item name="ieltsListening" label={t('studentHub.profile.listening', 'Listening')}>
-                      <InputNumber
-                        min={0}
-                        max={9}
-                        step={0.5}
-                        placeholder="L"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="ieltsReading" label={t('studentHub.profile.reading', 'Reading')}>
-                      <InputNumber
-                        min={0}
-                        max={9}
-                        step={0.5}
-                        placeholder="R"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="ieltsWriting" label={t('studentHub.profile.writing', 'Writing')}>
-                      <InputNumber
-                        min={0}
-                        max={9}
-                        step={0.5}
-                        placeholder="W"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="ieltsSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
-                      <InputNumber
-                        min={0}
-                        max={9}
-                        step={0.5}
-                        placeholder="S"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-
-            {/* TOEFL */}
-            <Col xs={24} lg={8}>
-              <div className="test-section">
-                <h4 className="test-title">
-                  <FontAwesomeIcon icon={ACADEMIC_ICONS.TOEFL} />
-                  {t('studentHub.profile.toefl', 'TOEFL')}
-                </h4>
-                <Form.Item
-                  name="toeflTotal"
-                  label={t('studentHub.profile.totalScore', 'Total Score')}
-                >
-                  <InputNumber
-                    min={0}
-                    max={120}
-                    placeholder={t('studentHub.profile.totalScore', 'Total Score')}
-                    className="score-input"
-                  />
-                </Form.Item>
-                <Row gutter={[8, 8]}>
-                  <Col xs={12}>
-                    <Form.Item name="toeflReading" label={t('studentHub.profile.reading', 'Reading')}>
-                      <InputNumber
-                        min={0}
-                        max={30}
-                        placeholder="R"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="toeflListening" label={t('studentHub.profile.listening', 'Listening')}>
-                      <InputNumber
-                        min={0}
-                        max={30}
-                        placeholder="L"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="toeflSpeaking" label={t('studentHub.profile.speaking', 'Speaking')}>
-                      <InputNumber
-                        min={0}
-                        max={30}
-                        placeholder="S"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Item name="toeflWriting" label={t('studentHub.profile.writing', 'Writing')}>
-                      <InputNumber
-                        min={0}
-                        max={30}
-                        placeholder="W"
-                        className="score-input"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-
-            {/* Duolingo */}
-            <Col xs={24} lg={8}>
-              <div className="test-section">
-                <h4 className="test-title">
-                  <FontAwesomeIcon icon="language" />
-                  {t('studentHub.profile.duolingo', 'Duolingo')}
-                </h4>
-                <Form.Item
-                  name="duolingoScore"
-                  label={t('studentHub.profile.overallScore', 'Overall Score')}
-                >
-                  <InputNumber
-                    min={10}
-                    max={160}
-                    placeholder={t('studentHub.profile.overallScore', 'Overall Score')}
-                    className="score-input"
-                  />
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
+          {!isReadOnly && (
+            <div className="add-test-score-row">
+              {addTestMenuItems.length > 0 ? (
+                <Dropdown menu={{ items: addTestMenuItems }} trigger={['click']}>
+                  <Button
+                    type="dashed"
+                    className="add-test-score-btn"
+                    icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}
+                  >
+                    {t('studentHub.profile.addTestScore', 'Add test score')}
+                  </Button>
+                </Dropdown>
+              ) : (
+                <span className="add-test-score-hint">
+                  {t('studentHub.profile.allTestScoresAdded', "You've added every test score.")}
+                </span>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* GPA Information Section */}
@@ -560,7 +766,6 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="gapYear"
                 label={t('studentHub.profile.gapYear', 'Gap Year')}
-                valuePropName="checked"
               >
                 <Select placeholder={t('studentHub.profile.planningGapYear', 'Planning a gap year?')} className="gap-year-select">
                   <Option value={false}>{t('common.no', 'No')}</Option>
@@ -572,7 +777,6 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="firstGeneration"
                 label={t('studentHub.profile.firstGenerationStudent', 'First-Generation Student')}
-                valuePropName="checked"
               >
                 <Select placeholder={t('studentHub.profile.firstGenerationStudentQuestion', 'First-generation student?')} className="first-gen-select">
                   <Option value={false}>{t('common.no', 'No')}</Option>
@@ -584,7 +788,6 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="financialAid"
                 label={t('studentHub.profile.financialAidNeeded', 'Financial Aid Needed')}
-                valuePropName="checked"
               >
                 <Select placeholder={t('studentHub.profile.needFinancialAid', 'Need financial aid?')} className="financial-aid-select">
                   <Option value={false}>{t('common.no', 'No')}</Option>
@@ -614,8 +817,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   type="default"
                   icon={<FontAwesomeIcon icon={ACTION_ICONS.CANCEL} />}
                   size="large"
+                  onClick={() => form.resetFields()}
                 >
-                  {t('common.cancel', 'Cancel')}
+                  {t('common.reset', 'Reset')}
                 </Button>
               </Space>
             </div>
