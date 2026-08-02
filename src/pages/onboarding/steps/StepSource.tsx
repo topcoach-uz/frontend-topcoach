@@ -38,6 +38,13 @@ interface Props {
 }
 
 export default function StepSource({ initialValue, initialReasons, submitting, onNext }: Props) {
+interface Props {
+  initialValue?: string | null;
+  submitting?: boolean;
+  onNext: (value?: string) => void;
+}
+
+export default function StepSource({ initialValue, submitting, onNext }: Props) {
   const { t } = useTranslation();
 
   const initialIsKnownOption = OPTION_IDS.includes(initialValue as ReferralSource);
@@ -76,6 +83,10 @@ export default function StepSource({ initialValue, initialReasons, submitting, o
     if (!selected) return;
     const value = selected === 'other' ? otherText.trim() : selected;
     onNext(value || undefined, reasons.length ? reasons : undefined);
+  const handleContinue = () => {
+    if (!selected) return;
+    const value = selected === 'other' ? otherText.trim() : selected;
+    onNext(value || undefined);
   };
 
   return (
@@ -142,6 +153,7 @@ export default function StepSource({ initialValue, initialReasons, submitting, o
         className={styles.skipLink}
         onClick={() => onNext(undefined, reasons.length ? reasons : undefined)}
       >
+      <button type="button" className={styles.skipLink} onClick={() => onNext(undefined)}>
         {t('onboarding.source.preferNotToSay', 'Prefer not to say')}
       </button>
     </div>
