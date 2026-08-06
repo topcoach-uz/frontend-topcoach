@@ -50,7 +50,7 @@ export const MM2Intro: React.FC<MM2IntroProps> = ({
 
   return (
     <div className="mm2__intro">
-      <div className="mm2__eyebrow">{t('majorMatch.intro.eyebrow', 'TOP300 Majors')}</div>
+      <div className="mm2__eyebrow">{t('majorMatch.intro.eyebrow', 'AI Major Match')}</div>
       <h1 className="mm2__title">{t('majorMatch.intro.title', 'Find the major that actually fits you')}</h1>
       <p className="mm2__subtitle">
         {t('majorMatch.intro.subtitle', 'Answer {{total}} short questions about how you think, learn, and want to work. Takes about 5 minutes.', {
