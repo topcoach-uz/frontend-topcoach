@@ -16,7 +16,6 @@ import { InlineLoader, PageSkeleton } from '../../../components/loading';
 import { useGetMajorMatchStatusQuery } from '../../../app/services/student-hub/majorMatchApi';
 import { MM2_DIMENSION_KEYS } from '../major-match-v2/content';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
-import MajorMatchCollectModal from '../components/MajorMatchCollectModal';
 import AcademicProfile from './AcademicProfile';
 import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
@@ -62,11 +61,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const mm = useMajorMatchPromptState();
   const majorMatchStudentProfileId = !isReadOnly ? mm.studentProfileId : undefined;
 
-  // Opened by the not-taken CTA below instead of navigating straight to the
-  // assessment, same pre-assessment profile-field collection step as the
-  // dashboard hero (MyProgressEditorialView's setMmCollectOpen). The modal
-  // handles the used-attempt/community-unlock swap internally.
-  const [mmCollectOpen, setMmCollectOpen] = useState(false);
+  // The CTA below navigates STRAIGHT to the assessment. The old
+  // pre-assessment collect modal was removed — MM3 asks these fields itself
+  // and prefills them from the profile, so the extra step was redundant.
 
   // Pulled independently (not just from the shared hook) because we also
   // need the actual result payload (dimension scores, primary major slug),
@@ -355,7 +352,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
                     {t('studentHub.profile.majorMatch.viewResults', 'View full results')}
                   </Button>
                 ) : (
-                  <Button type="primary" onClick={() => setMmCollectOpen(true)}>
+                  <Button type="primary" onClick={() => navigate(mm.destination)}>
                     {majorMatchShowUnlockCta && <Lock size={14} style={{ marginRight: 6 }} />}
                     {majorMatchShowUnlockCta
                       ? t('studentHub.majorMatchPrompt.unlockCta', 'Unlock unlimited matches')
@@ -409,10 +406,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
           </div>
         );
       })}
-
-      {!isReadOnly && (
-        <MajorMatchCollectModal open={mmCollectOpen} onClose={() => setMmCollectOpen(false)} />
-      )}
     </div>
   );
 };

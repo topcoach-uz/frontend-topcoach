@@ -441,6 +441,28 @@ export type AdminReferralPaged<T> = {
   pageSize: number;
 };
 
+// ─────────────── Contact-form leads ───────────────
+
+export type AdminContactLeadRow = {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  country: string | null;
+  howDidYouHear: string | null;
+  currentEducationLevel: string | null;
+  additionalMessage: string | null;
+  userId: string | null;
+  createdAt: string;
+};
+
+export type AdminContactLeadsQuery = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  source?: string;
+};
+
 export const adminConsoleApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     getAdminDashboardStats: builder.query<AdminDashboardStats, void>({
@@ -809,6 +831,31 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
       query: (id) => ({ url: `/admin/subscription-plans/${id}`, method: 'DELETE' }),
       invalidatesTags: ['AdminConsoleSubscriptionPlans'],
     }),
+
+    // ─────────────── Contact-form leads ───────────────
+
+    getAdminContactLeads: builder.query<
+      { items: AdminContactLeadRow[]; total: number; page: number; limit: number },
+      AdminContactLeadsQuery | void
+    >({
+      query: (params) => ({
+        url: '/admin/contact-leads',
+        method: 'GET',
+        params: params ?? undefined,
+      }),
+      transformResponse: (res: unknown) => {
+        const raw = unwrap<
+          Partial<{ items: AdminContactLeadRow[]; total: number; page: number; limit: number }>
+        >(res);
+        return {
+          items: raw.items ?? [],
+          total: raw.total ?? 0,
+          page: raw.page ?? 1,
+          limit: raw.limit ?? 20,
+        };
+      },
+      providesTags: ['AdminConsoleContactLeads'],
+    }),
   }),
 });
 
@@ -845,4 +892,5 @@ export const {
   useCreateAdminSubscriptionPlanMutation,
   useUpdateAdminSubscriptionPlanMutation,
   useDeleteAdminSubscriptionPlanMutation,
+  useGetAdminContactLeadsQuery,
 } = adminConsoleApi;
