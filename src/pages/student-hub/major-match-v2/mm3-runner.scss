@@ -1,0 +1,92 @@
+/**
+ * Styling for the MM3 intro/runner pieces that aren't covered by the
+ * existing `mm2__*` / `mm2-runner__*` classes (MajorMatchV2Page.scss) or
+ * the answer-type renderers (mm3-inputs.scss): the intro's three part
+ * cards, the per-question sub-line, and the "answer first" hint.
+ *
+ * Redeclares the same platform editorial token VALUES used everywhere else
+ * in Major Match — cream / maroon / Iowan serif — so this reads as one
+ * continuous system. NOTHING here comes from the prototype: no crimson
+ * #A51C30, no Fraunces/Public Sans, no shield progress SVG, no prototype
+ * class names. Content only was borrowed, never style.
+ */
+
+$mm2-cream: #faf8f3;
+$mm2-cream-elevated: #fbfaf6;
+$mm2-ink: #1c1a17;
+$mm2-ink-soft: #4b463f;
+$mm2-muted: #6b6258;
+$mm2-hairline: #e5e3da;
+$mm2-brand: #7b1f2f;
+$mm2-brand-soft: rgba(123, 31, 47, 0.08);
+$mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+
+// ── question sub-line (rendered under the title when hasSub is true) ─────
+.mm3-runner__sub {
+  color: $mm2-muted;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: -14px 0 20px;
+}
+
+// ── "answer first" hint shown under the primary action while disabled ────
+.mm3-runner__hint {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $mm2-brand;
+}
+
+// ── intro — three part cards below the stat row ──────────────────────────
+.mm3-intro__parts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mm3-intro__part-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid $mm2-hairline;
+  border-radius: 12px;
+  padding: 16px 16px 14px;
+}
+
+.mm3-intro__part-roman {
+  font-family: $mm2-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $mm2-brand;
+}
+
+.mm3-intro__part-title {
+  font-family: $mm2-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: $mm2-ink;
+  margin: 2px 0 0;
+}
+
+.mm3-intro__part-desc {
+  flex: 1;
+  color: $mm2-ink-soft;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.mm3-intro__part-count {
+  margin-top: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: $mm2-muted;
+}
