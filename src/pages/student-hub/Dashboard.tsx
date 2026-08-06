@@ -43,6 +43,7 @@ import { useGetMeQuery } from '../../app/services/users';
 import { useGetUniversityDetailQuery } from '../../app/services/universities';
 import { getTranslation } from '../../lib/i18n/translationUtils';
 import { PageSkeleton, InlineLoader } from '../../components/loading';
+import { displayName } from '../../utils/displayName';
 import { Clock, AlertCircle } from 'lucide-react';
 import './Dashboard.scss';
 
@@ -91,10 +92,16 @@ const Dashboard: React.FC<DashboardProps> = ({ readOnly = false, studentId, stud
     }
   };
   
-  // Get user name - from props if in read-only mode, otherwise from current user
-  const userName = isReadOnly 
-    ? (studentName || t('studentHub.dashboard.student'))
-    : (currentUserData?.profile?.name || t('studentHub.dashboard.student'));
+  // Get user name - from props if in read-only mode, otherwise from current user.
+  // Routed through displayName so a legacy "Asila undefined" profile name never
+  // reaches the greeting.
+  const userName = isReadOnly
+    ? displayName(studentName, null, t('studentHub.dashboard.student'))
+    : displayName(
+        currentUserData?.profile?.name,
+        currentUserData?.email,
+        t('studentHub.dashboard.student'),
+      );
   
   // State for current time
   const [currentTime, setCurrentTime] = useState(new Date());

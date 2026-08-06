@@ -30,6 +30,7 @@ import { logout } from 'src/app/slices/authSlice';
 import { useGetMeQuery } from 'src/app/services/users';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useCounselorConsole } from './CounselorConsoleContext';
+import { displayName as cleanDisplayName } from 'src/utils/displayName';
 import './counselor-console-tokens.scss';
 import './console-antd.scss';
 import './CounselorConsoleLayout.scss';
@@ -124,10 +125,11 @@ export default function CounselorConsoleLayout() {
     ?.filter((m) => m?.tags?.includes(MEDIA_TAGS.ProfilePicture) || m?.tags === null)
     ?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     ?.[0]?.url;
-  const displayName =
-    currentUser?.profile?.name?.trim() ||
-    currentUser?.email?.split('@')[0] ||
-    'Counselor';
+  const displayName = cleanDisplayName(
+    currentUser?.profile?.name,
+    currentUser?.email,
+    'Counselor',
+  );
 
   // SuperAdmin is a platform-level (management) role, detected the same way the
   // gate does — from the user's `managementRole`, NOT from an org membership.

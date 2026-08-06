@@ -1,7 +1,8 @@
+import { displayName, sanitizeName } from 'src/utils/displayName';
+
 export function initialsFromName(name: string | null | undefined): string {
   if (!name) return '?';
-  const parts = name
-    .replace(/\s+(undefined|null)\b/gi, '')
+  const parts = sanitizeName(name)
     .trim()
     .split(/\s+/)
     .filter(Boolean);
@@ -31,19 +32,15 @@ export function avatarStyleForId(id: string | null | undefined): {
   return { background: AVATAR_PALETTE[idx]! };
 }
 
+/**
+ * Thin wrapper over the app-wide `displayName` — kept because console tables
+ * want an em-dash placeholder rather than an empty cell.
+ */
 export function cleanName(
   name: string | null | undefined,
   fallbackEmail?: string | null,
 ): string {
-  const cleaned = (name ?? '')
-    .replace(/\s+(undefined|null)\b/gi, '')
-    .replace(/\bundefined\b|\bnull\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  if (cleaned) return cleaned;
-  const email = (fallbackEmail ?? '').trim();
-  if (email && email.includes('@')) return email.split('@')[0] ?? email;
-  return email || '—';
+  return displayName(name, fallbackEmail, '—');
 }
 
 export function formatDate(iso: string | null | undefined): string {

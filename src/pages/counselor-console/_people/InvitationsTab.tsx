@@ -492,6 +492,13 @@ export function InvitationsTab({
           {noun} — no email is sent. Use <b>Invite {noun}</b> instead to email
           someone who is new to TopCoach.
         </p>
+        {/* Says out loud what the masking does, so a counselor who sees
+            "Sherali O. · sh•••3@gmail.com" reads it as a privacy rule and not
+            as broken data. */}
+        <p className="cc-invite-add-help">
+          Results show a shortened name and a partly hidden email — search by
+          full email to find one specific person.
+        </p>
         <UserSearchSelect
           orgId={orgId}
           value={selectedUserId}

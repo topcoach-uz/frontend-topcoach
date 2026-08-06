@@ -6,7 +6,12 @@
 
    It lives here once. The debounce and the query gate are INTERNAL — a caller
    supplies the org, says whether the picker is currently on screen, and reads
-   the selected id. */
+   the selected id.
+
+   PRIVACY. The endpoint searches every TopCoach user, so what comes back is
+   masked server-side: "Sherali O." and "sh•••3@gmail.com". Partial-email search
+   is not supported either — an email query has to be the whole address. Render
+   the values as they arrive; do not try to reconstruct or re-label them. */
 import { useEffect, useMemo, useState } from 'react';
 import { Select } from 'antd';
 import { Search } from 'lucide-react';
@@ -26,7 +31,7 @@ export function UserSearchSelect({
    * entirely then, so a closed modal never holds a live subscription.
    */
   active = true,
-  placeholder = 'Search by name or email…',
+  placeholder = 'Search by name, or paste a full email…',
   className = 'cc-invite-user-select',
 }: {
   orgId: string | null | undefined;
@@ -71,7 +76,11 @@ export function UserSearchSelect({
           ? 'Searching…'
           : debounced.length < MIN_QUERY_LENGTH
             ? `Type at least ${MIN_QUERY_LENGTH} characters`
-            : 'No matching users'
+            : /* An '@' in the query means the server ran an exact-email lookup,
+                 so "no match" usually means a typo or a partial address. */
+              debounced.includes('@')
+              ? 'No user with that exact email'
+              : 'No matching users'
       }
       loading={isFetching}
       options={options}

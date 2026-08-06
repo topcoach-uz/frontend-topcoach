@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react';
 
+import { displayName } from 'src/utils/displayName';
+
 /** Format an amount as UZS (Uzbekistan Som). Integer UZS, thousand-separated. */
 export function formatUZS(amount: number | string | null | undefined): string {
   const n = Number(amount ?? 0);
@@ -23,18 +25,12 @@ export function formatUZSShort(amount: number | string | null | undefined): stri
  * Clean up legacy userName strings where the backend concatenated
  * firstName + ' ' + lastName and lastName was null/undefined, producing
  * values like "Sabina undefined" or "John null". Falls back to a given email.
+ *
+ * Thin wrapper over the app-wide `displayName` — kept because admin tables
+ * want an em-dash placeholder rather than an empty cell.
  */
 export function cleanUserName(name: string | null | undefined, fallbackEmail?: string | null): string {
-  const raw = (name ?? '').toString();
-  const cleaned = raw
-    .replace(/\s+(undefined|null)\s*$/gi, '')
-    .replace(/\bundefined\b|\bnull\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  if (cleaned) return cleaned;
-  const email = (fallbackEmail ?? '').trim();
-  if (email && email.includes('@')) return email.split('@')[0]!;
-  return email || '—';
+  return displayName(name, fallbackEmail, '—');
 }
 
 export function initialsFromName(name: string): string {

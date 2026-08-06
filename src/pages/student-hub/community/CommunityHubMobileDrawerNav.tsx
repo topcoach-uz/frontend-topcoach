@@ -21,6 +21,7 @@ import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import { getLatestCreatedImg } from 'src/utils';
+import { displayName, sanitizeName } from 'src/utils/displayName';
 
 export interface CommunityHubMobileDrawerNavProps {
   onNavigate: () => void;
@@ -37,16 +38,21 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
   const { isCommunityEnrolled } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
   const currentProfile = useMemo(() => {
-    const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
+    // Same guard as the desktop card in CommunityHubMockPage.
+    const fullName = displayName(
+      profile?.profile?.name,
+      profile?.email,
+      t('common.user', 'User'),
+    );
     const username =
-      (profile?.profile as any)?.username?.trim() ||
+      sanitizeName((profile?.profile as any)?.username) ||
       `${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
     return {
       name: fullName,
       username: username.startsWith('@') ? username : `@${username}`,
       avatar: getLatestCreatedImg(profile?.profile?.media || []),
     };
-  }, [profile?.profile, t]);
+  }, [profile?.profile, profile?.email, t]);
 
   const { section, target } = useMemo(() => {
     const p = new URLSearchParams(location.search);

@@ -7,6 +7,7 @@ import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import EditProfileModal from 'src/components/layouts/components/header/_components/actions/_components/EditProfileModal';
 import { McPill } from '../components/McPill';
+import { cleanName } from '../utils';
 
 const { Text, Paragraph } = Typography;
 
@@ -33,7 +34,7 @@ export default function MentorConsoleProfilePage() {
   const mentorProfile = (user as { mentorProfile?: MentorProfileShape } | undefined)
     ?.mentorProfile;
 
-  const displayName = profile?.name || user?.email || '—';
+  const displayName = cleanName(profile?.name, user?.email);
 
   const avatarUrl = (() => {
     const media = profile?.media as Array<{ tags?: string[] | null; url?: string }> | undefined;

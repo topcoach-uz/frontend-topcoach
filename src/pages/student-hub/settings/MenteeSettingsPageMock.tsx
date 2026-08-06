@@ -24,6 +24,7 @@ import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
 import ReferralsTab from './ReferralsTab';
+import { sanitizeName } from 'src/utils/displayName';
 import styles from './MenteeSettingsPageMock.module.scss';
 
 const { Title, Text, Paragraph } = Typography;
@@ -54,8 +55,10 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   const [invalidateGetMe] = useInvalidateGetMeMutation();
   const { data: tg } = useGetTelegramStatusQuery();
   const [tgModalOpen, setTgModalOpen] = useState(false);
+  // sanitizeName, not the raw value: prefilling the input with a legacy
+  // "Asila undefined" name would let a plain Save write it straight back.
   const [displayName, setDisplayName] = useState(
-    () => profile?.profile?.name || '',
+    () => sanitizeName(profile?.profile?.name),
   );
   const [username, setUsername] = useState<string>(
     () => normalizeUsernameInput((profile?.profile as any)?.username || ''),
@@ -176,7 +179,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     !profileImageBroken ? (avatarUrl || profileImage || undefined) : undefined;
 
   useEffect(() => {
-    const fullName = profile?.profile?.name || '';
+    const fullName = sanitizeName(profile?.profile?.name);
     const existingUsername = (profile?.profile as any)?.username;
     setDisplayName(fullName);
     const fallback = fullName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) || '';

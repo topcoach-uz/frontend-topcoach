@@ -52,6 +52,7 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import { joinNameParts, sanitizeName } from 'src/utils/displayName';
 import { WORKSHOP_WATCH_URL, workshopHasVideo } from '../events/_components/workshopReplay';
 import './MyProgressEditorialView.scss';
 
@@ -88,12 +89,15 @@ const MyProgressEditorialView: React.FC = () => {
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
   // email-derived "sheraliozodov6".
+  // Every candidate goes through displayName/joinNameParts: legacy Google
+  // profiles are stored as "Asila undefined", and the greeting is the most
+  // visible place that ever showed it.
   const fullName: string =
-    ((profile as any)?.profile?.name as string | undefined)?.trim() ||
-    [(profile as any)?.firstName, (profile as any)?.lastName].filter(Boolean).join(' ') ||
-    ((me as any)?.profile?.name as string | undefined)?.trim() ||
-    (me as any)?.name ||
-    [(me as any)?.firstName, (me as any)?.lastName].filter(Boolean).join(' ') ||
+    sanitizeName((profile as any)?.profile?.name) ||
+    joinNameParts((profile as any)?.firstName, (profile as any)?.lastName) ||
+    sanitizeName((me as any)?.profile?.name) ||
+    sanitizeName((me as any)?.name) ||
+    joinNameParts((me as any)?.firstName, (me as any)?.lastName) ||
     'there';
 
   // ── Real learning-progress queries (same ones the legacy

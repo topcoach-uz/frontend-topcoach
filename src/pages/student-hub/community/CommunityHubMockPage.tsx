@@ -67,6 +67,7 @@ import { canUseMyRewards } from 'src/lib/myRewardsAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { getLatestCreatedImg } from 'src/utils';
+import { displayName, sanitizeName } from 'src/utils/displayName';
 import CommunityMentorsView from './CommunityMentorsView';
 
 type CommunitySectionKey =
@@ -159,16 +160,22 @@ export default function CommunityHubMockPage() {
     [profile?.managementRole],
   );
   const currentProfile = useMemo(() => {
-    const fullName = profile?.profile?.name?.trim() || t('common.user', 'User');
+    // displayName/sanitizeName keep legacy "Asila undefined" profile names —
+    // and the "@asilaundefined" handle derived from them — off the card.
+    const fullName = displayName(
+      profile?.profile?.name,
+      profile?.email,
+      t('common.user', 'User'),
+    );
     const username =
-      (profile?.profile as any)?.username?.trim() ||
+      sanitizeName((profile?.profile as any)?.username) ||
       `${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
     return {
       name: fullName,
       username: username.startsWith('@') ? username : `@${username}`,
       avatar: getLatestCreatedImg(profile?.profile?.media || []),
     };
-  }, [profile?.profile, t]);
+  }, [profile?.profile, profile?.email, t]);
 
   // Feed-allowed users (community-enrolled + staff) land on `feed` by
   // default. Everyone else lands on the existing "My progress" panel,
