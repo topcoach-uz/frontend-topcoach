@@ -41,7 +41,7 @@ export const MM2Results: React.FC<MM2ResultsProps> = ({
 
   return (
     <div className="mm2-results">
-      <div className="mm2-results__eyebrow">{t('majorMatch.results.eyebrow', 'Your TOP300 Majors')}</div>
+      <div className="mm2-results__eyebrow">{t('majorMatch.results.eyebrow', 'Your Major Match')}</div>
 
       <section className="mm2-results__primary">
         <span className="mm2-results__primary-label">

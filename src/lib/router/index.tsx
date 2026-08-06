@@ -142,9 +142,6 @@ const ProgramsAdmissionsMentorshipPageLazy = lazy(() => import("src/pages/progra
 const ProgramsSatPageLazy = lazy(() => import("src/pages/programs/sat"));
 const ProgramsResearchPageLazy = lazy(() => import("src/pages/programs/research"));
 const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"));
-// Public, unauthenticated Major Match lead magnet — deliberately public,
-// see the route below for why it must sit outside every auth/onboarding gate.
-const MajorMatchPublicPageLazy = lazy(() => import("src/pages/major-match-public/MajorMatchPublicPage"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
 const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleLayout"));
@@ -178,9 +175,6 @@ const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/page
 const AdminConsoleMajorMatchLazy = lazy(() => import("src/pages/admin/console/pages/MajorMatchPage"));
 const AdminConsoleCommunityModerationLazy = lazy(
   () => import("src/pages/admin/console/pages/CommunityModerationPage"),
-);
-const AdminConsoleContactLeadsLazy = lazy(
-  () => import("src/pages/admin/console/pages/ContactLeadsPage"),
 );
 const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
 const TopcoachLaunchEventAdminRouteLazy = lazy(
@@ -415,9 +409,6 @@ function RouterProvider() {
                 {/* School / organization management (standalone) */}
                 <Route path="organization-management" element={<AdminOrganizationManagementLazy />} />
 
-                {/* Contact-form leads (read-only viewer) */}
-                <Route path="contact-leads" element={<AdminConsoleContactLeadsLazy />} />
-
                 {/* Operations */}
                 <Route path="payments" element={<AdminConsolePaymentsLazy />} />
                 <Route path="referrals" element={<AdminConsoleReferralsLazy />} />
@@ -525,13 +516,6 @@ function RouterProvider() {
                 path="/mentors/:id"
                 element={<MentorDetailsPageLazy />}
               />
-              {/* Public, unauthenticated Major Match lead magnet. Sits here
-                  as a plain sibling of /mentors, /universities, /programs —
-                  deliberately OUTSIDE every <Route element={<OnboardingGate
-                  />}> wrapper in this file (see e.g. the index route and
-                  /student-hub above/below) so a signed-out visitor reaches
-                  it with no redirect at all. */}
-              <Route path="/major-match" element={<MajorMatchPublicPageLazy />} />
               <Route path="/events" element={<EventsPageLazy />} />
               <Route
                 path="/events/central-asian-admissions-forum"
