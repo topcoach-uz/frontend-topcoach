@@ -7,8 +7,11 @@ import FontAwesomeIcon from '../common/icons/FontAwesomeIcon';
 import UnifiedIcon from '../common/icons/UnifiedIcon';
 import LoginPrompt from 'src/components/student-hub/LoginPrompt';
 import { useStudentHub } from 'src/hooks/useStudentHub';
+import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import CommunityHubMobileDrawerNav from 'src/pages/student-hub/community/CommunityHubMobileDrawerNav';
 import StudyGoalsStickyBanner from 'src/components/student-hub/StudyGoalsStickyBanner';
+import MajorMatchStickyBanner from 'src/components/student-hub/MajorMatchStickyBanner';
+import MajorMatchPromptModal from 'src/pages/student-hub/components/MajorMatchPromptModal';
 import './StudentHubLayout.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -27,11 +30,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const { isAuthenticated } = useTypedSelector((state) => state.auth);
   // Get loading state from useStudentHub hook
   const { isLoading } = useStudentHub();
-  // Both Major Match nudges are gone from this layout — the auto-opening modal
-  // and the sticky banner. Major Match is reachable from the sidebar, the
-  // dashboard hero and the profile card, none of which interrupt the page.
-  // Removing the nudges also drops useMajorMatchPromptState() from a component
-  // that never unmounts, which is what drove the documented refetch storm.
+  // Landing-page Major Match nudge (sticky banner + auto-opening modal) —
+  // computed here (not just inside the two nudge components) so this layout
+  // can decide banner priority when both this and StudyGoalsStickyBanner
+  // would otherwise apply at once. See the two components' doc comments.
+  const majorMatchPrompt = useMajorMatchPromptState();
 
   // Track window width changes
   useEffect(() => {
@@ -227,6 +230,11 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   // full dashboard silhouette behind the unlock modal.
   const isResearchPrep = location.pathname.startsWith('/student-hub/research-prep');
   const hideSidebar = isCommunityLanding || isSatPrep || isResearchPrep;
+  // Never nag the student with the Major Match nudge while they're on the
+  // assessment itself (or the SAT Prep chromeless surface).
+  const isPsychometricAssessment = location.pathname.startsWith('/student-hub/psychometric-assessment');
+  const showMajorMatchBanner =
+    !isSatPrep && !isPsychometricAssessment && majorMatchPrompt.shouldPrompt;
 
   return (
     <Layout className="student-hub-layout">
@@ -350,11 +358,8 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
 
       <Layout className={`main-layout ${isSatPrep ? 'main-layout--sat-prep' : ''}`}>
         <Content className={`main-content ${isSatPrep ? 'main-content--sat-prep' : ''}`}>
-          {/* StudyGoals self-gates internally (community-enrolled, no goals set),
-              so it renders unconditionally now. It used to be suppressed
-              whenever the Major Match banner won priority; with that banner
-              gone it simply applies whenever its own condition holds. */}
-          {!isSatPrep && <StudyGoalsStickyBanner />}
+          {!isSatPrep && (showMajorMatchBanner ? <MajorMatchStickyBanner /> : <StudyGoalsStickyBanner />)}
+          {!isSatPrep && <MajorMatchPromptModal />}
           <div className={isSatPrep ? 'main-content-flush' : 'main-content-padded'}>
             {/* Only the dashboard section actually consumes useStudentHub's
                 data — every hub section shares the '/student-hub' pathname
