@@ -27,6 +27,7 @@ import {
   Search as SearchIcon,
   Brain,
   Flag,
+  Mail,
 } from 'lucide-react';
 import { useAdminConsole } from './AdminConsoleContext';
 import './admin-console-tokens.scss';
@@ -56,7 +57,8 @@ type NavKey =
   | 'administration'
   | 'community-moderation'
   | 'course-content'
-  | 'organization-management';
+  | 'organization-management'
+  | 'contact-leads';
 
 type NavItem = {
   key: NavKey;
@@ -179,6 +181,12 @@ export default function AdminConsoleLayout() {
             icon: <Building2 size={18} strokeWidth={1.75} />,
             path: '/new-admin/organization-management',
           },
+          {
+            key: 'contact-leads',
+            label: 'Contact Leads',
+            icon: <Mail size={18} strokeWidth={1.75} />,
+            path: '/new-admin/contact-leads',
+          },
         ],
       },
       {
@@ -208,6 +216,7 @@ export default function AdminConsoleLayout() {
     if (p.startsWith('/new-admin/dashboard')) return 'dashboard';
     if (p.startsWith('/new-admin/users')) return 'users';
     if (p.startsWith('/new-admin/organization-management')) return 'organization-management';
+    if (p.startsWith('/new-admin/contact-leads')) return 'contact-leads';
     if (p.startsWith('/new-admin/programs')) return 'programs';
     if (p.startsWith('/new-admin/payments')) return 'payments';
     if (p.startsWith('/new-admin/referrals')) return 'referrals';
@@ -256,6 +265,7 @@ export default function AdminConsoleLayout() {
       '/new-admin/administration': 'Administration',
       '/new-admin/community-moderation': 'Community Moderation',
       '/new-admin/organization-management': 'Organization Management',
+      '/new-admin/contact-leads': 'Contact Leads',
     };
     const title = map[p] ?? 'Admin';
     return [{ title: 'Admin' }, { title }];
