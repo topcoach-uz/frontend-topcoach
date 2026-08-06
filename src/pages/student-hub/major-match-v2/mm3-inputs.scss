@@ -1,0 +1,153 @@
+/**
+ * Styling for the three new answer types (capped multi, 1–5 scale, fields).
+ *
+ * Deliberately the platform's own editorial tokens — identical values to
+ * MajorMatchV2Page.scss so the new questions are indistinguishable from the
+ * existing ones. NOTHING here comes from the prototype: no crimson #A51C30,
+ * no Fraunces/Public Sans, no shield progress. Content only was borrowed.
+ */
+
+$mm2-cream: #faf8f3;
+$mm2-cream-elevated: #fbfaf6;
+$mm2-ink: #1c1a17;
+$mm2-ink-soft: #4b463f;
+$mm2-muted: #6b6258;
+$mm2-hairline: #e5e3da;
+$mm2-brand: #7b1f2f;
+$mm2-brand-soft: rgba(123, 31, 47, 0.08);
+
+// Secondary line under an option label (RIASEC tags, examples, clarifiers).
+.mm3-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: $mm2-muted;
+}
+
+// ── capped multi-select ──────────────────────────────────────────────────
+// Square dot distinguishes "pick several" from the round radio at a glance.
+.mm3-dot--square {
+  border-radius: 5px !important;
+
+  &::after {
+    border-radius: 2px !important;
+  }
+}
+
+.mm3-option--multi.is-blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+
+  &:hover {
+    border-color: $mm2-hairline;
+  }
+}
+
+.mm3-count {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: $mm2-muted;
+}
+
+// ── scale 1–5 ────────────────────────────────────────────────────────────
+.mm3-scale {
+  max-width: 480px;
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  // Inherits .mm2-runner__option (border, radius, hover, is-selected), then
+  // overrides only what a numeric step needs.
+  &__step {
+    justify-content: center;
+    padding: 15px 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: none;
+  }
+
+  &__ends {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: $mm2-muted;
+  }
+}
+
+// ── grouped fields ───────────────────────────────────────────────────────
+.mm3-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 520px;
+}
+
+.mm3-field {
+  &__label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: $mm2-ink-soft;
+    letter-spacing: 0.01em;
+  }
+
+  &__control {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 0.96rem;
+    color: $mm2-ink;
+    background: $mm2-cream-elevated;
+    border: 1px solid $mm2-hairline;
+    border-radius: 12px;
+    transition: border-color 0.15s ease;
+
+    &::placeholder {
+      color: $mm2-muted;
+    }
+
+    &:hover {
+      border-color: darken($mm2-hairline, 8%);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $mm2-brand;
+      box-shadow: 0 0 0 3px $mm2-brand-soft;
+    }
+  }
+}
+
+// Prefill notice — shown when we hydrated answers from the student's profile.
+.mm3-prefill-notice {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: $mm2-ink-soft;
+  background: $mm2-brand-soft;
+  border-left: 3px solid $mm2-brand;
+  border-radius: 8px;
+}
+
+@media (max-width: 560px) {
+  .mm3-scale__row {
+    gap: 6px;
+  }
+
+  .mm3-scale__step {
+    padding: 12px 4px;
+    font-size: 0.92rem;
+  }
+
+  .mm3-fields {
+    max-width: none;
+  }
+}
