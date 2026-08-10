@@ -204,6 +204,10 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
 
   const renderProgramRow = (program: Program) => {
     const { hasAccess, enrollmentId, plan } = programState(program);
+    // Community membership includes the Admissions course content on the
+    // backend (CourseEnrollmentService.getEnrollmentStatus) — reflect that
+    // here so admins don't think the student is locked out.
+    const viaCommunity = program === 'admissions' && !hasAccess && communityEnabled;
     const grantDisabled = !isTelegramConnected && program !== 'full_support';
     const grantTip = grantDisabled ? 'User must have Telegram connected to grant access.' : '';
     return (
@@ -213,17 +217,22 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
           <span className="ac-manage-access__row-sub">
             {hasAccess ? (
               <>Active{plan && program === 'admissions' ? ` · ${plan.toUpperCase()}` : ''}</>
+            ) : viaCommunity ? (
+              'Course content included with Community access'
             ) : (
               'No access'
             )}
             {program === 'full_support' && (
               <> · Includes Community access automatically</>
             )}
+            {!hasAccess && grantDisabled && (
+              <span style={{ color: '#f59e0b' }}> · Telegram not connected — direct grant unavailable</span>
+            )}
           </span>
         </div>
         <div className="ac-manage-access__row-actions">
-          <AcPill variant={hasAccess ? 'mint' : 'neutral'}>
-            {hasAccess ? 'Active' : 'Inactive'}
+          <AcPill variant={hasAccess || viaCommunity ? 'mint' : 'neutral'}>
+            {hasAccess ? 'Active' : viaCommunity ? 'Via Community' : 'Inactive'}
           </AcPill>
           {hasAccess ? (
             <button
@@ -288,8 +297,8 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
     const body =
       confirm.kind === 'community'
         ? confirm.enable
-          ? `${subjectName} will get full Community features unlocked.`
-          : `${subjectName} will be moved back to the standard experience.`
+          ? `${subjectName} will get full Community features unlocked, including the Admissions course content — no Telegram connection required.`
+          : `${subjectName} will be moved back to the standard experience. Admissions course access included with Community is removed too (direct enrollments are kept).`
         : confirm.kind === 'grant'
           ? `${subjectName} will get access to ${programLabel}${
               confirm.kind === 'grant' && confirm.plan ? ` on the ${confirm.plan.toUpperCase()} plan` : ''
@@ -340,8 +349,8 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
       </div>
       <div className="ac-manage-access__community-body">
         {communityEnabled
-          ? `${subjectName} has Community features unlocked. Revoking moves them back to the standard experience.`
-          : `${subjectName} is on the standard experience. Granting unlocks Community features.`}
+          ? `${subjectName} has Community features unlocked, including the Admissions course content. Revoking moves them back to the standard experience.`
+          : `${subjectName} is on the standard experience. Granting unlocks Community features and the Admissions course content.`}
       </div>
       <div className="ac-manage-access__community-actions">
         <button
