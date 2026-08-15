@@ -16,7 +16,8 @@ import UpcomingEventsSection from './_components/UpcomingEventsSection';
 // Youth Leaders application entry — temporarily hidden on Events page
 // import YouthLeadersProgramCard from './_components/YouthLeadersProgramCard';
 import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
-import PersonalStatementWorkshopCard from './_components/PersonalStatementWorkshopCard';
+import EssayMasterclassCard from './_components/EssayMasterclassCard';
+import PersonalStatementWorkshopGridCard from './_components/PersonalStatementWorkshopGridCard';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
 import { CAMPS_LIST_QUERY } from './campsQuery';
@@ -234,7 +235,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
-        <PersonalStatementWorkshopCard />
+        <EssayMasterclassCard />
         <TopcoachLaunchEventCard />
         <CentralAsianAdmissionsForumCard />
 
@@ -262,6 +263,11 @@ export default function EventsPage() {
             
             {/* Unified grid: playlist cards + past events and workshops */}
             <div className={styles.cards_wrapper}>
+              {/* Personal Statement Workshop replay — demoted from the
+                  featured slot; opens its own page like the other cards. */}
+              {(selectedType === 'all' || selectedType === 'workshop') && (
+                <PersonalStatementWorkshopGridCard />
+              )}
               {playlistsToShow.map((playlist) => {
                 const firstEvent = playlist.events[0];
                 const img = firstEvent?.media
@@ -292,7 +298,7 @@ export default function EventsPage() {
                   />
                 );
               })}
-              {playlistsToShow.length === 0 && pastItems.length === 0 && (
+              {playlistsToShow.length === 0 && pastItems.length === 0 && selectedType === 'event' && (
                 <div className={styles.no_events + ' ' + styles.no_events_full}>
                   <p>{t('events.noWorkshops')}</p>
                 </div>

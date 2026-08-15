@@ -53,7 +53,10 @@ import {
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import { joinNameParts, sanitizeName } from 'src/utils/displayName';
-import { WORKSHOP_WATCH_URL, workshopHasVideo } from '../events/_components/workshopReplay';
+import {
+  MASTERCLASS_RESERVE_URL,
+  isEssayMasterclassLive,
+} from '../events/_components/essayMasterclass';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -301,9 +304,14 @@ const MyProgressEditorialView: React.FC = () => {
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
-  // Personal Statement Workshop — now a recording. Takes the "Top Coach
-  // presents" slot; the CTA opens the YouTube replay (video ID lives in
-  // events/_components/workshopReplay.ts).
+  // Essay masterclass (Shakhnoza Salimjonova, Aug 16 live teardown) —
+  // takes the "Top Coach presents" slot while the event is upcoming,
+  // then auto-hides (cutoff lives in events/_components/essayMasterclass.ts)
+  // and the Personal Statement Workshop replay takes the slot back.
+  const showMasterclassPromo = isEssayMasterclassLive();
+
+  // Personal Statement Workshop — now a recording with its own page at
+  // /events/personal-statement-workshop; the CTA navigates there.
   const showWorkshopPromo = true;
 
   // Top Coach Launch Event — free event on May 24, 2026. While the
@@ -797,10 +805,38 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </article>
 
-        {/* Top Coach Presents — the Personal Statement Workshop takes the
-            slot while it's live, then the Launch Event, then CAAF,
-            then the quiet empty card. */}
-        {showWorkshopPromo ? (
+        {/* Top Coach Presents — the live essay masterclass takes the
+            slot while it's upcoming, then the Personal Statement
+            Workshop replay, then the Launch Event, then CAAF, then the
+            quiet empty card. */}
+        {showMasterclassPromo ? (
+          <article className="myprog__card myprog__promo">
+            <div className="myprog__promo-yr">2026</div>
+            <div className="myprog__promo-eyebrow">Top Coach presents</div>
+            <h3 className="myprog__promo-title">How to Write the Essay That Gets In</h3>
+            <div className="myprog__promo-meta">
+              Live masterclass · Shakhnoza Salimjonova · Princeton
+            </div>
+            <p className="myprog__promo-desc">
+              A live teardown of real essays: see why one opening pulls the
+              reader in, where an essay stops being memorable, and how a weak
+              paragraph gets rebuilt in real time. August 16 at 20:00. Live
+              only, not recorded.
+            </p>
+            <div className="myprog__promo-foot">
+              <div className="myprog__promo-foot-status">Seats limited · Paid entry</div>
+              <button
+                type="button"
+                className="myprog__btn myprog__btn--primary myprog__promo-cta"
+                onClick={() =>
+                  window.open(MASTERCLASS_RESERVE_URL, '_blank', 'noopener,noreferrer')
+                }
+              >
+                Reserve a seat
+              </button>
+            </div>
+          </article>
+        ) : showWorkshopPromo ? (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
@@ -816,11 +852,7 @@ const MyProgressEditorialView: React.FC = () => {
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
-                disabled={!workshopHasVideo}
-                onClick={() =>
-                  workshopHasVideo &&
-                  window.open(WORKSHOP_WATCH_URL, '_blank', 'noopener,noreferrer')
-                }
+                onClick={() => navigate('/events/personal-statement-workshop')}
               >
                 Watch replay
               </button>

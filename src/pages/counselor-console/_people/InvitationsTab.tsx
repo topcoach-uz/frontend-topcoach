@@ -11,7 +11,7 @@
    now states delivery in words (never colour alone) and the tab banners the
    failure count above the table, because a counselor is far more likely to scan
    the top of a page than the fifth column of row nine. */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, Modal, Select, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -84,6 +84,11 @@ export function InvitationsTab({
   const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
   const [selectedUserName, setSelectedUserName] = useState<string | undefined>();
 
+  /* Invitation emails are delivered in the background after the invite is
+     created (the send can retry a throttled relay for over a minute). While
+     any row on this page is still awaiting its delivery outcome, poll so
+     "Sending" resolves to Sent / Not delivered without a manual refresh. */
+  const [pollingInterval, setPollingInterval] = useState(0);
   const { data, isLoading, isFetching, isError, refetch } =
     useGetInvitationsQuery(
       {
@@ -93,7 +98,7 @@ export function InvitationsTab({
         page,
         limit: PAGE_SIZE,
       },
-      { skip: !orgId },
+      { skip: !orgId, pollingInterval },
     );
 
   const [resendInvitation] = useResendInvitationMutation();
@@ -103,6 +108,17 @@ export function InvitationsTab({
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
+
+  const hasInFlightSend = useMemo(
+    () =>
+      items.some(
+        (i) => i.status === 'pending' && !i.emailSentAt && !i.lastEmailError,
+      ),
+    [items],
+  );
+  useEffect(() => {
+    setPollingInterval(hasInFlightSend ? 5000 : 0);
+  }, [hasInFlightSend]);
 
   /** How many rows on this page never reached their invitee. */
   const undeliverable = useMemo(
@@ -263,7 +279,9 @@ export function InvitationsTab({
                 <AlertTriangle size={11} /> Not delivered
               </span>
             ) : !inv.emailSentAt && inv.status === 'pending' ? (
-              <span className="cc-invite-muted">Not sent yet</span>
+              /* No outcome recorded yet: the background send (which can
+                 retry a throttled relay for over a minute) is in flight. */
+              <span className="cc-invite-muted">Sending…</span>
             ) : null}
           </div>
         );

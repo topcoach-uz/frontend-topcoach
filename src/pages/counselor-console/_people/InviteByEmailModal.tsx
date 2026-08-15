@@ -75,7 +75,10 @@ export function InviteByEmailModal({
         graduationYear: values.graduationYear ?? undefined,
         phone: values.phone?.trim() || undefined,
       }).unwrap();
-      message.success(`Invitation sent to ${email}`);
+      // The email itself goes out in the background (it may retry a
+      // throttled relay for a while) — the invitations list shows
+      // Sending / Sent / Not delivered per row.
+      message.success(`Invitation created. Emailing ${email} now.`);
       form.resetFields();
       onClose();
       onInvited?.();
