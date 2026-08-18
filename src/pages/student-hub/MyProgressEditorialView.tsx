@@ -54,9 +54,9 @@ import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import { joinNameParts, sanitizeName } from 'src/utils/displayName';
 import {
-  MASTERCLASS_RESERVE_URL,
-  isEssayMasterclassLive,
-} from '../events/_components/essayMasterclass';
+  IVY_WORKSHOP_MEET_URL,
+  isIvyWorkshopLive,
+} from '../events/_components/ivyWorkshop';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -304,11 +304,13 @@ const MyProgressEditorialView: React.FC = () => {
   // Otherwise we fall back to the "no active event" empty card.
   const showCaafPromo = caafApplicationIsActionable || !caafRegistrationClosed;
 
-  // Essay masterclass (Shakhnoza Salimjonova, Aug 16 live teardown) —
-  // takes the "Top Coach presents" slot while the event is upcoming,
-  // then auto-hides (cutoff lives in events/_components/essayMasterclass.ts)
-  // and the Personal Statement Workshop replay takes the slot back.
-  const showMasterclassPromo = isEssayMasterclassLive();
+  // Ivy League workshop (Komron Ergashev, Stanford — Aug 20 live on the
+  // TopCoach platform) — takes the "Top Coach presents" slot while the
+  // event is upcoming, then auto-hides (cutoff lives in
+  // events/_components/ivyWorkshop.ts) and the Personal Statement
+  // Workshop replay takes the slot back. The dashboard is auth-walled,
+  // so the members-only Meet link can render here directly.
+  const showIvyWorkshopPromo = isIvyWorkshopLive();
 
   // Personal Statement Workshop — now a recording with its own page at
   // /events/personal-statement-workshop; the CTA navigates there.
@@ -805,34 +807,37 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </article>
 
-        {/* Top Coach Presents — the live essay masterclass takes the
+        {/* Top Coach Presents — the live Ivy League workshop takes the
             slot while it's upcoming, then the Personal Statement
             Workshop replay, then the Launch Event, then CAAF, then the
             quiet empty card. */}
-        {showMasterclassPromo ? (
+        {showIvyWorkshopPromo ? (
           <article className="myprog__card myprog__promo">
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
-            <h3 className="myprog__promo-title">How to Write the Essay That Gets In</h3>
+            <h3 className="myprog__promo-title">
+              What Ivy League &amp; Top Universities Actually Look For
+            </h3>
             <div className="myprog__promo-meta">
-              Live masterclass · Shakhnoza Salimjonova · Princeton
+              Live workshop · Komron Ergashev · Stanford
             </div>
             <p className="myprog__promo-desc">
-              A live teardown of real essays: see why one opening pulls the
-              reader in, where an essay stops being memorable, and how a weak
-              paragraph gets rebuilt in real time. August 16 at 20:00. Live
-              only, not recorded.
+              Admissions goes far beyond test scores. Komron, a rising junior
+              at Stanford, shares what top universities actually look for,
+              the common application mistakes, and what makes an application
+              stand out. Thursday, August 20 at 20:00, live on the TopCoach
+              platform.
             </p>
             <div className="myprog__promo-foot">
-              <div className="myprog__promo-foot-status">Seats limited · Paid entry</div>
+              <div className="myprog__promo-foot-status">Free · Live Q&amp;A</div>
               <button
                 type="button"
                 className="myprog__btn myprog__btn--primary myprog__promo-cta"
                 onClick={() =>
-                  window.open(MASTERCLASS_RESERVE_URL, '_blank', 'noopener,noreferrer')
+                  window.open(IVY_WORKSHOP_MEET_URL, '_blank', 'noopener,noreferrer')
                 }
               >
-                Reserve a seat
+                Join
               </button>
             </div>
           </article>

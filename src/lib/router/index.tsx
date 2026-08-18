@@ -69,6 +69,9 @@ const TopcoachLaunchEventPageLazy = lazy(
 const PersonalStatementWorkshopPageLazy = lazy(
   () => import("src/pages/events/personal-statement-workshop")
 );
+const EssayMasterclassPageLazy = lazy(
+  () => import("src/pages/events/essay-masterclass")
+);
 /**
  * The placement-test funnel pages are mounted as internal sections of
  * `CommunityHubMockPage` at `/student-hub?section=placement-*` so they
@@ -557,6 +560,14 @@ function RouterProvider() {
                 element={
                   <Suspense fallback={<Loader height="70vh" />}>
                     <PersonalStatementWorkshopPageLazy />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/events/essay-masterclass"
+                element={
+                  <Suspense fallback={<Loader height="70vh" />}>
+                    <EssayMasterclassPageLazy />
                   </Suspense>
                 }
               />

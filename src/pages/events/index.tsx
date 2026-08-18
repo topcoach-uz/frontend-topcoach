@@ -16,7 +16,8 @@ import UpcomingEventsSection from './_components/UpcomingEventsSection';
 // Youth Leaders application entry — temporarily hidden on Events page
 // import YouthLeadersProgramCard from './_components/YouthLeadersProgramCard';
 import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
-import EssayMasterclassCard from './_components/EssayMasterclassCard';
+import EssayMasterclassGridCard from './_components/EssayMasterclassGridCard';
+import IvyLeagueWorkshopCard from './_components/IvyLeagueWorkshopCard';
 import PersonalStatementWorkshopGridCard from './_components/PersonalStatementWorkshopGridCard';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
@@ -235,7 +236,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
-        <EssayMasterclassCard />
+        <IvyLeagueWorkshopCard />
         <TopcoachLaunchEventCard />
         <CentralAsianAdmissionsForumCard />
 
@@ -263,10 +264,13 @@ export default function EventsPage() {
             
             {/* Unified grid: playlist cards + past events and workshops */}
             <div className={styles.cards_wrapper}>
-              {/* Personal Statement Workshop replay — demoted from the
-                  featured slot; opens its own page like the other cards. */}
+              {/* Past featured events, demoted from the top slot into the
+                  grid; each opens its own page like the other cards. */}
               {(selectedType === 'all' || selectedType === 'workshop') && (
-                <PersonalStatementWorkshopGridCard />
+                <>
+                  <EssayMasterclassGridCard />
+                  <PersonalStatementWorkshopGridCard />
+                </>
               )}
               {playlistsToShow.map((playlist) => {
                 const firstEvent = playlist.events[0];

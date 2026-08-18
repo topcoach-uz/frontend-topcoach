@@ -11,15 +11,21 @@ import {
 } from './essayMasterclass';
 
 /**
- * Events → featured announcement for the August 16 live essay
- * masterclass with Shakhnoza Salimjonova (Princeton SPIA).
+ * Featured announcement for the August 16 live essay masterclass with
+ * Shakhnoza Salimjonova (Princeton SPIA).
  *
  * The banner artwork is the hero: it fills the left half of the card
  * edge to edge, with the pitch and the Telegram reserve CTA beside it.
- * Auto-hides once the session has run (see essayMasterclass.ts).
+ *
+ * Two lives:
+ *  - default (events page featured slot): auto-hides once the session
+ *    has run (see essayMasterclass.ts);
+ *  - `archive` (its own page at /events/essay-masterclass, opened from
+ *    the past-events grid): always renders, drops the reserve CTA, and
+ *    reads as a record of the session instead of an invitation.
  */
-export default function EssayMasterclassCard() {
-  if (!isEssayMasterclassLive()) return null;
+export default function EssayMasterclassCard({ archive = false }: { archive?: boolean }) {
+  if (!archive && !isEssayMasterclassLive()) return null;
 
   return (
     <section className={styles.wrapper}>
@@ -32,7 +38,11 @@ export default function EssayMasterclassCard() {
         </div>
 
         <div className={styles.body}>
-          <span className={styles.eyebrow}>Live masterclass · August 16 · 20:00</span>
+          <span className={styles.eyebrow}>
+            {archive
+              ? 'Live masterclass · Held August 16, 2026'
+              : 'Live masterclass · August 16 · 20:00'}
+          </span>
 
           <h2 className={styles.title}>
             How to write the <span>essay that gets in</span>
@@ -78,18 +88,26 @@ export default function EssayMasterclassCard() {
           </div>
 
           <div className={styles.foot}>
-            <Button
-              type="primary"
-              size="large"
-              className={styles.reserveButton}
-              icon={<Send size={15} />}
-              href={MASTERCLASS_RESERVE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Reserve your seat
-            </Button>
-            <span className={styles.footNote}>Reservations close when seats run out</span>
+            {archive ? (
+              <span className={styles.footNote}>
+                This session ran live on August 16 and was not recorded
+              </span>
+            ) : (
+              <>
+                <Button
+                  type="primary"
+                  size="large"
+                  className={styles.reserveButton}
+                  icon={<Send size={15} />}
+                  href={MASTERCLASS_RESERVE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Reserve your seat
+                </Button>
+                <span className={styles.footNote}>Reservations close when seats run out</span>
+              </>
+            )}
           </div>
         </div>
       </div>
