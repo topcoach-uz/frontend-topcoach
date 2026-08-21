@@ -11,7 +11,7 @@ import {
   useGetLatestMm3ReportQuery,
   Mm3Report,
 } from '../../../app/services/student-hub/majorMatchApi';
-import { MM3_QUESTION_ORDER, MM3_QUESTIONS_BY_ID } from './mm3-content';
+import { MM3_PARTS, MM3_QUESTION_ORDER, MM3_QUESTIONS_BY_ID } from './mm3-content';
 import {
   buildMm3CountryHints,
   buildMm3Payload,
@@ -189,6 +189,21 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
     navigate(exitDestination);
   };
 
+  /* Which of the three parts are fully answered. Derived from the same
+     `answers` map the localStorage draft restores, so a student who leaves
+     mid-way returns to "1/3 done" without anything being persisted
+     server-side. Same-device only — see the draft note above. */
+  const partsCompleted = useMemo(
+    () =>
+      MM3_PARTS.map((part) =>
+        part.questionIds.every((id) => {
+          const question = MM3_QUESTIONS_BY_ID.get(id);
+          return question ? isMM3Answered(question, answers[question.slug]) : false;
+        }),
+      ),
+    [answers],
+  );
+
   const handleUnlock = () => navigate(gate.destination);
 
   const handleAnswer = (slug: string, value: MM3Answer) => {
@@ -307,6 +322,7 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
               hasReport={!!report || !!legacyResult}
               access={status?.access}
               hasDraft={hasDraft}
+              partsCompleted={partsCompleted}
               onStart={() => setStep('questions')}
               onViewResults={() => setStep('results')}
               onUnlock={handleUnlock}

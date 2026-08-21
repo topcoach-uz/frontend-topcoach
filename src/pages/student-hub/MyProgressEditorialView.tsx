@@ -25,6 +25,7 @@ import {
   GraduationCap,
   MoreVertical,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
@@ -39,6 +40,7 @@ import {
   useGetUserProgressQuery,
 } from 'src/app/services/courses';
 import { useGetResearchProgressSummaryQuery } from 'src/app/services/research-prep';
+import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import {
   useGetCaafForumApplicationsMeQuery,
   useGetCaafForumRegistrationConfigQuery,
@@ -77,6 +79,51 @@ interface AiRecItem {
   minutes: number;
 }
 
+/**
+ * Locked card shell for the two row-1 dashboard cards.
+ *
+ * While the student has not completed AI Major Match, the real card
+ * content stays mounted (so the card keeps its natural height and the
+ * grid row does not collapse) but is blurred, made non-interactive and
+ * hidden from assistive tech — a keyboard user must not be able to tab
+ * into buttons they cannot see. A lock veil sits on top of it.
+ */
+function LockedShell({
+  locked,
+  tone,
+  className,
+  onUnlock,
+  children,
+}: {
+  locked: boolean;
+  tone: 'light' | 'dark';
+  className: string;
+  onUnlock: () => void;
+  children: React.ReactNode;
+}) {
+  const { t } = useTranslation();
+
+  if (!locked) return <article className={className}>{children}</article>;
+
+  return (
+    <article className={`${className} myprog__locked`}>
+      <div className="myprog__locked-content" aria-hidden="true">
+        {children}
+      </div>
+      <div className={`myprog__locked-veil myprog__locked-veil--${tone}`}>
+        <Lock size={18} className="myprog__locked-icon" />
+        <p className="myprog__locked-title">
+          {t('studentHub.myProgress.lockedTitle', 'Complete AI Major Match to unlock')}
+        </p>
+        <button type="button" className="myprog__locked-cta" onClick={onUnlock}>
+          {t('studentHub.myProgress.lockedCta', 'Find My Best-Fit Majors')}
+          <ArrowRight size={13} />
+        </button>
+      </div>
+    </article>
+  );
+}
+
 const MyProgressEditorialView: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -88,6 +135,9 @@ const MyProgressEditorialView: React.FC = () => {
   // should route (assessment start, or the community gate destination
   // if their one free attempt is already used).
   const mm = useMajorMatchPromptState();
+  /* Row-1 dashboard cards stay locked until the student has completed
+     AI Major Match (either engine — hasCompletedAssessment ORs v2+legacy). */
+  const mmLocked = !mm.hasCompletedAssessment;
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -117,8 +167,23 @@ const MyProgressEditorialView: React.FC = () => {
   const { data: satProgress, isLoading: satProgressLoading } = useGetUserProgressQuery('sat', {
     skip: !satEnrollment?.canAccessLearning,
   });
+  // Research Prep is gated behind the same allowlist that renders its nav
+  // item. Without this skip the endpoint 403s ("Research Prep is coming
+  // soon") on every dashboard load for every student — a guaranteed-failing
+  // round-trip. Mirrors AdmissionsProgramProgressCard, which already gates it.
+  const researchPrepLive = useMemo(
+    () =>
+      canUseResearchPrepLive(
+        profile?.email,
+        profile?.managementRole as string | undefined,
+        isCommunityEnrolled,
+      ),
+    [profile?.email, profile?.managementRole, isCommunityEnrolled],
+  );
   const { data: researchSummary, isLoading: researchLoading } =
-    useGetResearchProgressSummaryQuery();
+    useGetResearchProgressSummaryQuery(undefined, {
+      skip: !researchPrepLive || !isCommunityEnrolled,
+    });
 
   // Enrollment/progress queries still in flight. While true (and no track
   // data has landed yet) we hold skeletons in place of the tracks grid and
@@ -463,7 +528,7 @@ const MyProgressEditorialView: React.FC = () => {
           <article className="myprog__card myprog__mmhero">
             <div className="myprog__mmhero__left">
               <span className="myprog__mmhero__eyebrow">
-                {t('studentHub.myProgress.majorMatchEyebrow', 'AI Major Match')}
+                {t('studentHub.myProgress.majorMatchEyebrow', 'Major Match')}
               </span>
               {mm.hasCompletedAssessment ? (
                 <>
@@ -492,13 +557,13 @@ const MyProgressEditorialView: React.FC = () => {
                   <h2 className="myprog__mmhero__title">
                     {t(
                       'studentHub.myProgress.majorMatchNotTakenTitle',
-                      'Struggling with finding the right major?',
+                      'Top 300 universities. One test.\nPersonalized roadmap',
                     )}
                   </h2>
                   <p className="myprog__mmhero__lede">
                     {t(
                       'studentHub.myProgress.majorMatchNotTakenLede',
-                      'Try our free AI major tool — answer a few questions and get your best-fit majors in ~15 minutes.',
+                      'Our AI-powered tool matches you with the majors and universities that best fit your interests, personality, strengths, and career goals!',
                     )}
                   </p>
                   <div className="myprog__mmhero__actions">
@@ -507,7 +572,7 @@ const MyProgressEditorialView: React.FC = () => {
                       className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
                       onClick={() => navigate(mm.destination)}
                     >
-                      {t('studentHub.myProgress.majorMatchCta', 'Try this free AI major tool')}
+                      {t('studentHub.myProgress.majorMatchCta', 'Find My Best-Fit Majors')}
                       <ArrowRight size={14} />
                     </button>
                   </div>
@@ -651,7 +716,12 @@ const MyProgressEditorialView: React.FC = () => {
 
       {/* Bottom row: Mentor sessions + Top Coach promo + AI recs */}
       <section className="myprog__btmgrid">
-        <article className="myprog__card myprog__sessions">
+        <LockedShell
+          locked={mmLocked}
+          tone="light"
+          className="myprog__card myprog__sessions"
+          onUnlock={() => navigate(mm.destination)}
+        >
           <div className="myprog__sessions-head">
             <h3 className="myprog__sessions-title">
               {t('studentHub.myProgress.mentorSessionsTitle', 'Mentor sessions')}
@@ -805,14 +875,19 @@ const MyProgressEditorialView: React.FC = () => {
           >
             <Plus size={13} /> {t('studentHub.myProgress.bookAMentor', 'Book a mentor')}
           </button>
-        </article>
+        </LockedShell>
 
         {/* Top Coach Presents — the live Ivy League workshop takes the
             slot while it's upcoming, then the Personal Statement
             Workshop replay, then the Launch Event, then CAAF, then the
-            quiet empty card. */}
+            quiet empty card. Every branch is gated behind AI Major Match. */}
         {showIvyWorkshopPromo ? (
-          <article className="myprog__card myprog__promo">
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo"
+            onUnlock={() => navigate(mm.destination)}
+          >
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
             <h3 className="myprog__promo-title">
@@ -840,9 +915,14 @@ const MyProgressEditorialView: React.FC = () => {
                 Join
               </button>
             </div>
-          </article>
+          </LockedShell>
         ) : showWorkshopPromo ? (
-          <article className="myprog__card myprog__promo">
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo"
+            onUnlock={() => navigate(mm.destination)}
+          >
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">Top Coach presents</div>
             <h3 className="myprog__promo-title">Personal Statement Workshop</h3>
@@ -862,9 +942,14 @@ const MyProgressEditorialView: React.FC = () => {
                 Watch replay
               </button>
             </div>
-          </article>
+          </LockedShell>
         ) : showLaunchPromo ? (
-          <article className="myprog__card myprog__promo">
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo"
+            onUnlock={() => navigate(mm.destination)}
+          >
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">
               {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
@@ -926,9 +1011,14 @@ const MyProgressEditorialView: React.FC = () => {
                 </>
               )}
             </div>
-          </article>
+          </LockedShell>
         ) : !showCaafPromo ? (
-          <article className="myprog__card myprog__promo myprog__promo--empty">
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo myprog__promo--empty"
+            onUnlock={() => navigate(mm.destination)}
+          >
             <div className="myprog__promo-empty-eyebrow">
               {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
             </div>
@@ -942,9 +1032,14 @@ const MyProgressEditorialView: React.FC = () => {
                 "We're between events right now. The next forum will appear here as soon as registration opens.",
               )}
             </p>
-          </article>
+          </LockedShell>
         ) : (
-          <article className="myprog__card myprog__promo">
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo"
+            onUnlock={() => navigate(mm.destination)}
+          >
             <div className="myprog__promo-yr">2026</div>
             <div className="myprog__promo-eyebrow">
               {t('studentHub.myProgress.topCoachPresents', 'Top Coach presents')}
@@ -1022,7 +1117,7 @@ const MyProgressEditorialView: React.FC = () => {
                 </>
               )}
             </div>
-          </article>
+          </LockedShell>
         )}
 
         {/* AI Recommendations */}

@@ -90,3 +90,44 @@ $mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
   font-weight: 600;
   color: $mm2-muted;
 }
+
+/* ===================================================================
+   Figma AI Major Match pass (2026-08-21) — frames 27:2 / 126:*.
+   Part cards now carry a section label above the title, and flip to a
+   completed treatment as the student finishes each part.
+   =================================================================== */
+
+/* The roman numeral now sits in a "I · ACADEMIC PROFILE" label row, so it
+   reads as a small caption rather than a serif ordinal on its own. */
+.mm3-intro__part-roman {
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $mm2-muted;
+}
+
+/* Completed part — green wash + hairline, matching the green used for the
+   status treatment in the design. */
+.mm3-intro__part-card--done {
+  background: #f3faf5;
+  border-color: #cfe8d9;
+}
+
+.mm3-intro__part-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #1b6b44;
+}
+
+/* Shown only while the student is part-way through, under the CTA row. */
+.mm3-intro__reminder {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: $mm2-muted;
+}
