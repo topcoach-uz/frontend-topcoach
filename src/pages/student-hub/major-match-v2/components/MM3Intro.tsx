@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RotateCcw, Play, Eye, Lock } from 'lucide-react';
+import { Eye, Lock, ArrowRight, Check } from 'lucide-react';
 
 import { MajorMatchUpsell } from '../../psychometric-assessment/components/MajorMatchUpsell';
 import type { MajorMatchAccessStatus } from '../../../../app/services/student-hub/majorMatchApi';
@@ -29,6 +29,12 @@ interface MM3IntroProps {
   hasReport: boolean;
   access?: MajorMatchAccessStatus;
   hasDraft: boolean;
+  /**
+   * Per-part completion, index-aligned with `MM3_PARTS`. Derived from the
+   * answers the localStorage draft restores — MM3 persists nothing partial
+   * server-side, so this is same-device only.
+   */
+  partsCompleted?: boolean[];
   onStart: () => void;
   onViewResults: () => void;
   onUnlock: () => void;
@@ -40,6 +46,7 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
   hasReport,
   access,
   hasDraft,
+  partsCompleted,
   onStart,
   onViewResults,
   onUnlock,
@@ -47,6 +54,19 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
   const { t } = useTranslation();
 
   const requiresEnrollment = !readOnly && !!access && !access.canStart && access.requiresCommunityEnrollment;
+
+  /* Progress across the three parts. `doneCount === MM3_TOTAL_PARTS` means
+     every question is answered but nothing has been submitted yet — the
+     student still has to run the analysis, hence "See My Match". */
+  const partDone = partsCompleted ?? [];
+  const doneCount = partDone.filter(Boolean).length;
+  const inProgress = doneCount > 0 && doneCount < MM3_TOTAL_PARTS;
+  /* Minutes left = the parts still outstanding, so the number shrinks as
+     they go rather than quoting one fixed figure at every stage. */
+  const minutesLeft = MM3_PARTS.reduce(
+    (sum, part, i) => (partDone[i] ? sum : sum + part.estMinutes),
+    0,
+  );
 
   if (readOnly) {
     if (!hasReport) {
@@ -73,11 +93,11 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
 
   return (
     <div className="mm2__intro">
-      <div className="mm2__eyebrow">{t('majorMatch3.intro.eyebrow', 'TOP300 Majors')}</div>
+      <div className="mm2__eyebrow">{t('majorMatch3.intro.eyebrow', 'YOUR MATCH STARTS HERE')}</div>
       <h1 className="mm2__title">
         {variant === 'public'
           ? t('majorMatch3.intro.publicTitle', 'Which major actually fits you?')
-          : t('majorMatch3.intro.title', 'A deeper match: majors, and the universities to reach them')}
+          : t('majorMatch3.intro.title', 'This is where the guessing stops')}
       </h1>
       <p className="mm2__subtitle">
         {variant === 'public'
@@ -88,12 +108,15 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
             )
           : t(
               'majorMatch3.intro.subtitle',
-              'Answer {{total}} questions about your academics, interests, and preferences. We match you against real universities in our catalogue, with no invented odds or figures.',
-              { total: MM3_TOTAL_QUESTIONS },
+              "Every answer you give below feeds directly into your match — nothing generic, nothing recycled from someone else's profile.",
             )}
       </p>
 
       <div className="mm2__stats">
+        {/* Order mirrors the design: time first, then scope. */}
+        <div className="mm2__stat">
+          <div className="mm2__stat-value">{t('majorMatch3.intro.estimatedTime', '10 minutes')}</div>
+        </div>
         <div className="mm2__stat">
           <div className="mm2__stat-value">
             {t('majorMatch3.intro.questionCount', '{{total}} questions', { total: MM3_TOTAL_QUESTIONS })}
@@ -104,24 +127,37 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
             {t('majorMatch3.intro.partCount', '{{total}} parts', { total: MM3_TOTAL_PARTS })}
           </div>
         </div>
-        <div className="mm2__stat">
-          <div className="mm2__stat-value">{t('majorMatch3.intro.estimatedTime', 'About 10 minutes')}</div>
-        </div>
       </div>
 
       <div className="mm3-intro__parts">
-        {MM3_PARTS.map((part) => (
-          <div key={part.slug} className="mm3-intro__part-card">
-            <span className="mm3-intro__part-roman">{part.roman}</span>
-            <h3 className="mm3-intro__part-title">{t(`majorMatch3.part.${part.slug}.title`)}</h3>
-            <p className="mm3-intro__part-desc">{t(`majorMatch3.part.${part.slug}.desc`)}</p>
-            <span className="mm3-intro__part-count">
-              {t('majorMatch3.intro.partQuestionCount', '{{count}} questions', {
-                count: part.questionIds.length,
-              })}
-            </span>
-          </div>
-        ))}
+        {MM3_PARTS.map((part, i) => {
+          const done = !!partDone[i];
+          return (
+            <div
+              key={part.slug}
+              className={`mm3-intro__part-card${done ? ' mm3-intro__part-card--done' : ''}`}
+            >
+              <span className="mm3-intro__part-roman">
+                {part.roman} · {t(`majorMatch3.part.${part.slug}.label`)}
+              </span>
+              <h3 className="mm3-intro__part-title">{t(`majorMatch3.part.${part.slug}.title`)}</h3>
+              <p className="mm3-intro__part-desc">{t(`majorMatch3.part.${part.slug}.desc`)}</p>
+              {done ? (
+                <span className="mm3-intro__part-done">
+                  <Check size={13} />
+                  {t('majorMatch3.intro.partCompleted', 'Completed')}
+                </span>
+              ) : (
+                <span className="mm3-intro__part-count">
+                  {t('majorMatch3.intro.partMeta', '{{count}} questions · ~{{minutes}} min', {
+                    count: part.questionIds.length,
+                    minutes: part.estMinutes,
+                  })}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {hasReport && (
@@ -155,16 +191,31 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
               className={hasReport ? 'mm2__btn mm2__btn--secondary' : 'mm2__btn mm2__btn--primary'}
               onClick={onStart}
             >
-              {hasDraft ? <RotateCcw size={15} /> : <Play size={15} />}
               {hasReport
                 ? t('majorMatch3.intro.retakeCta', 'Retake the assessment')
-                : hasDraft
-                  ? t('majorMatch.intro.resumeCta', 'Continue where you left off')
-                  : t('majorMatch3.intro.startCta', 'Begin the assessment')}
+                : doneCount === MM3_TOTAL_PARTS
+                  ? t('majorMatch3.intro.seeMatchCta', 'See My Match')
+                  : inProgress
+                    ? t('majorMatch3.intro.continueCta', 'Continue — {{done}}/{{total}} done', {
+                        done: doneCount,
+                        total: MM3_TOTAL_PARTS,
+                      })
+                    : t('majorMatch3.intro.startCta', 'Start My Match')}
+              <ArrowRight size={15} />
             </button>
           )
         )}
       </div>
+
+      {inProgress && !hasReport && !requiresEnrollment && (
+        <p className="mm3-intro__reminder">
+          {t(
+            'majorMatch3.intro.reminder',
+            'No rush — pick up right where you stopped, in about {{minutes}} minutes.',
+            { minutes: minutesLeft },
+          )}
+        </p>
+      )}
 
       {requiresEnrollment && <MajorMatchUpsell message={access?.promptMessage} onUnlock={onUnlock} />}
     </div>

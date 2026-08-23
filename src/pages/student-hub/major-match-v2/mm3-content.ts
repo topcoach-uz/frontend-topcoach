@@ -89,12 +89,19 @@ export interface MM3Part {
   roman: 'I' | 'II' | 'III';
   slug: string;
   questionIds: readonly number[];
+  /**
+   * Rough minutes for this part, shown on the intro card and summed to
+   * tell a returning student how much is left. Deliberately an estimate,
+   * not a measurement — it is per-part so the "how much is left" figure
+   * shrinks as parts are completed instead of being a fixed number.
+   */
+  estMinutes: number;
 }
 
 export const MM3_PARTS: readonly MM3Part[] = [
-  { index: 1, roman: 'I', slug: 'academic', questionIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
-  { index: 2, roman: 'II', slug: 'interests', questionIds: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20] },
-  { index: 3, roman: 'III', slug: 'preferences', questionIds: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { index: 1, roman: 'I', slug: 'academic', questionIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], estMinutes: 3 },
+  { index: 2, roman: 'II', slug: 'interests', questionIds: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20], estMinutes: 3 },
+  { index: 3, roman: 'III', slug: 'preferences', questionIds: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30], estMinutes: 4 },
 ] as const;
 
 // ─────────────────────────────────────────────────────────────────────────
