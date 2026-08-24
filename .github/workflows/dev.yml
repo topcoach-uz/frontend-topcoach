@@ -1,0 +1,117 @@
+name: Dev preview
+
+# Static preview deployments to the DEV server.
+#
+#   push to `dev`   → https://dev.topcoachuni.com
+#   any PR          → https://<branch-slug>.dev.topcoachuni.com  (comment on PR)
+#   PR closed       → preview folder removed
+#
+# Builds are plain Vite bundles rsync'd to /srv/previews/frontend/<slug>/ on
+# the dev server; caddy there serves them and proxies /api to the shared dev
+# backend. Required secrets: DEV_SSH_PRIVATE_KEY, DEV_SSH_USER, DEV_SERVER_IP.
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: dev-preview-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  slug:
+    runs-on: ubuntu-latest
+    outputs:
+      slug: ${{ steps.slug.outputs.slug }}
+      url: ${{ steps.slug.outputs.url }}
+    steps:
+      - name: Compute branch slug
+        id: slug
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            SLUG=dev
+          else
+            SLUG=$(echo "${{ github.head_ref }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-40)
+          fi
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          if [ "$SLUG" = "dev" ]; then
+            echo "url=https://dev.topcoachuni.com" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://$SLUG.dev.topcoachuni.com" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: slug
+    if: github.event_name == 'push' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        env:
+          # Same-origin API: caddy on the dev server proxies /api → dev backend
+          VITE_API_HOST: ''
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: yarn build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+
+      - name: Upload to dev server
+        run: |
+          DEST=${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          SLUG=${{ needs.slug.outputs.slug }}
+          ssh -o StrictHostKeyChecking=no $DEST "mkdir -p /srv/previews/frontend/$SLUG"
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ $DEST:/srv/previews/frontend/$SLUG/
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview
+          message: |
+            🚀 Preview deployed: ${{ needs.slug.outputs.url }}
+
+            (talks to the shared dev API at dev.topcoachuni.com; updates on every push)
+
+  cleanup:
+    needs: slug
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+
+      - name: Remove preview folder
+        run: |
+          SLUG=${{ needs.slug.outputs.slug }}
+          if [ -z "$SLUG" ] || [ "$SLUG" = "dev" ]; then exit 0; fi
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }} "rm -rf /srv/previews/frontend/$SLUG"
+
+      - name: Comment cleanup on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview
+          message: |
+            🧹 Preview environment removed.

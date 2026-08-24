@@ -1,6 +1,10 @@
-// export const hostName = 'http://localhost:3000';
-export const hostName = 'https://topcoachuni.com';
-// export const hostName = 'https://274hr31c-3000.euw.devtunnels.ms';
+// API origin. Build-time override via VITE_API_HOST:
+//   ''                       → same-origin (dev-server preview builds; caddy proxies /api)
+//   'https://…devtunnels.ms' → tunnel testing
+// Unset: localhost for `yarn dev`, production origin for `yarn build`.
+export const hostName =
+  import.meta.env.VITE_API_HOST ??
+  (import.meta.env.DEV ? 'http://localhost:3000' : 'https://topcoachuni.com');
 export const baseUrl = `${hostName}/api`;
 export const apiTagTypes = [
   'Auth',
