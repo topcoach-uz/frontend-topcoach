@@ -20,3 +20,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Claude Code local (per-machine) settings
+.claude
+ClAUDE.md
