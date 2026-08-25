@@ -18,6 +18,8 @@ import UpcomingEventsSection from './_components/UpcomingEventsSection';
 import CentralAsianAdmissionsForumCard from './_components/CentralAsianAdmissionsForumCard';
 import EssayMasterclassGridCard from './_components/EssayMasterclassGridCard';
 import IvyLeagueWorkshopCard from './_components/IvyLeagueWorkshopCard';
+import IvyEssayWorkshopCard from './_components/IvyEssayWorkshopCard';
+import IvyEssayWorkshopGridCard from './_components/IvyEssayWorkshopGridCard';
 import PersonalStatementWorkshopGridCard from './_components/PersonalStatementWorkshopGridCard';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
@@ -236,6 +238,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
+        <IvyEssayWorkshopCard />
         <IvyLeagueWorkshopCard />
         <TopcoachLaunchEventCard />
         <CentralAsianAdmissionsForumCard />
@@ -268,6 +271,7 @@ export default function EventsPage() {
                   grid; each opens its own page like the other cards. */}
               {(selectedType === 'all' || selectedType === 'workshop') && (
                 <>
+                  <IvyEssayWorkshopGridCard />
                   <EssayMasterclassGridCard />
                   <PersonalStatementWorkshopGridCard />
                 </>
