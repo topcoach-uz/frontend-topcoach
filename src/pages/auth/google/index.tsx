@@ -12,6 +12,7 @@ import { useAppDispatch } from 'src/app/store';
 import { loginCheck } from 'src/app/slices/authSlice';
 import { message } from 'antd';
 import { isOnboardingComplete, OnboardingStatus } from 'src/lib/onboarding';
+import { trackLogin } from 'src/lib/meta-pixel';
 // import { PhoneNumberModal } from 'src/components/form/item/PhoneFormItem';
 
 // Module-level guard: short codes already exchanged during this page load.
@@ -149,6 +150,10 @@ export default function GoogleAuthenticationPage() {
         localStorage.setItem(ACCESS_TOKEN, data.access);
         localStorage.setItem(REFRESH_TOKEN, data.refresh);
         api.instance.defaults.headers['Authorization'] = `Bearer ${data.access}`;
+        // Meta Pixel: the exchange response carries only tokens — there is no
+        // flag telling us whether this Google account is new. A first-time
+        // Google user is therefore counted as a Login, not a registration.
+        trackLogin('google');
         setExchangeSuccess(true);
       })
       .catch((err: any) => {

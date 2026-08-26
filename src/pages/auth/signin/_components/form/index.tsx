@@ -13,6 +13,7 @@ import styles from './signin_form.module.scss';
 import useSignInForm from './useSignInForm';
 import FormError from 'src/components/form/common/FormError';
 import { LoginDto } from 'src/app/api/Api';
+import { trackLogin } from 'src/lib/meta-pixel';
 
 export default function SigninForm() {
   const { form } = useSignInForm();
@@ -67,6 +68,9 @@ export default function SigninForm() {
         const access_token = res.data?.user?.access;
         const refresh_token = res.data?.user?.refresh;
         if (!!access_token && !!refresh_token) {
+          // Meta Pixel: only here, where tokens actually came back — a 200 with
+          // no tokens is not a signed-in user.
+          trackLogin('email');
           dispatch(
             login({
               access: access_token,

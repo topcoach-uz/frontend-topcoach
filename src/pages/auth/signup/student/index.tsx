@@ -8,6 +8,7 @@ import { Logo } from 'src/components/logos';
 import AlreadyHaveAccount from 'src/components/AlreadyHaveAccount';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import { trackCompleteRegistration } from 'src/lib/meta-pixel';
 
 export default function StudentRegistrationPage() {
   const [form] = useForm();
@@ -78,6 +79,9 @@ export default function StudentRegistrationPage() {
           name: values.name?.trim(),
         } as any)
         .then(() => {
+          // Meta Pixel: the account exists now. Email is still unverified at
+          // this point, which is what `CompleteRegistration` means here.
+          trackCompleteRegistration('student');
           const params = new URLSearchParams({ email });
           if (redirectTo) params.set('redirect', redirectTo);
           navigate(`/auth/verification?${params.toString()}`);
