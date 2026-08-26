@@ -9,6 +9,17 @@
  * Analytics must never break a user action, hence the swallowed catch.
  */
 
+type EventKind = 'track' | 'trackCustom';
+
+function fire(kind: EventKind, event: string, params?: Record<string, unknown>): void {
+  if (typeof window.fbq !== 'function') return;
+  try {
+    window.fbq(kind, event, params);
+  } catch {
+    // Never let a tracking failure surface to the user mid-action.
+  }
+}
+
 /**
  * `Lead` — someone submitted a contact/lead form.
  *
@@ -21,12 +32,31 @@
  *   popup — the backend payload alone cannot tell those apart.
  */
 export function trackLead(source?: string): void {
-  if (typeof window.fbq !== 'function') return;
-  try {
-    window.fbq('track', 'Lead', {
-      content_name: source ?? window.location.pathname,
-    });
-  } catch {
-    // Never let a tracking failure surface to the user mid-submit.
-  }
+  fire('track', 'Lead', { content_name: source ?? window.location.pathname });
+}
+
+/**
+ * `CompleteRegistration` — a new account was created. Meta standard event, so
+ * campaigns can optimise delivery toward sign-ups.
+ *
+ * Fires when the register call returns 200. The user has NOT verified their
+ * email at that point; the account exists, which is what "registered" means
+ * here and matches what the backend has stored.
+ *
+ * @param method Which sign-up path produced the account: `student`, `mentor`.
+ */
+export function trackCompleteRegistration(method: string): void {
+  fire('track', 'CompleteRegistration', { content_name: method, status: true });
+}
+
+/**
+ * `Login` — a returning user signed in. Meta has NO standard login event, so
+ * this is a custom one: it will show up in Events Manager as a custom event and
+ * can be used for audiences, but it is not a conversion you should optimise
+ * campaigns against (these people already converted).
+ *
+ * @param method How they signed in: `email`, `google`.
+ */
+export function trackLogin(method: string): void {
+  fire('trackCustom', 'Login', { method });
 }

@@ -17,6 +17,7 @@ import {
 } from 'src/app/slices/authSlice';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import useParamsHook from 'src/hooks/params';
+import { trackCompleteRegistration } from 'src/lib/meta-pixel';
 
 export default function useMentorSignup() {
   const { handleMakeParams, searchParams } = useParamsHook();
@@ -181,6 +182,7 @@ export default function useMentorSignup() {
       api.auth
         .registerMentorByEmail(formData as any)
         .then((res) => {
+          trackCompleteRegistration('mentor');
           navigate(`/auth/verification?email=${val.email.trim()}`);
         })
         .catch((err) => {
