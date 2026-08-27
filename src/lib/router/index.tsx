@@ -33,8 +33,10 @@ import customHistory from "../history";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
 import { GlobalModals } from "src/components/GlobalModals";
-import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
-import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
+// AdminConsoleGate and MentorConsoleGate are lazy, like every console page
+// below them. Keeping the gates static pulled console code into the entry's
+// import graph, which an anonymous visitor never runs. Route elements below
+// wrap each one in its own Suspense boundary.
 import CounselorConsoleGate from "src/pages/counselor-console/CounselorConsoleGate";
 import OnboardingGate from "src/pages/onboarding/OnboardingGate";
 import NavigationProgressBar from "src/components/NavigationProgressBar";
@@ -153,6 +155,7 @@ const ProgramsSuccessPageLazy = lazy(() => import("src/pages/programs/success"))
 const MajorMatchPublicPageLazy = lazy(() => import("src/pages/major-match-public/MajorMatchPublicPage"));
 const LearningPageLazy = lazy(() => import("src/pages/learning"));
 const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/modules"));
+const MentorConsoleGateLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleGate"));
 const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleLayout"));
 const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pages/SchedulePage"));
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
@@ -165,6 +168,7 @@ const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
 );
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
+const AdminConsoleGateLazy = lazy(() => import("src/pages/admin/console/AdminConsoleGate"));
 const AdminConsoleLayoutLazy = lazy(() => import("src/pages/admin/console/AdminConsoleLayout"));
 const AdminConsoleDashboardLazy = lazy(
   () => import("src/pages/admin/console/pages/DashboardPage"),
@@ -366,7 +370,14 @@ function RouterProvider() {
           />
 
           <Route element={<AddFallbackLayout />}>
-            <Route path="/new-admin" element={<AdminConsoleGate />}>
+            <Route
+              path="/new-admin"
+              element={
+                <Suspense fallback={<Loader height="100vh" />}>
+                  <AdminConsoleGateLazy />
+                </Suspense>
+              }
+            >
               {/* ISC 2026 admissions console — full-screen takeover (its own
                   sidebar), gated by AdminConsoleGate, outside AdminConsoleLayout. */}
               <Route
@@ -745,7 +756,14 @@ function RouterProvider() {
 
               {/* Unified Mentor Console — nested inside MainLayout so the website header stays. */}
               <Route element={<OnboardingGate />}>
-                <Route path="/mentor" element={<MentorConsoleGate />}>
+                <Route
+                  path="/mentor"
+                  element={
+                    <Suspense fallback={<Loader height="100vh" />}>
+                      <MentorConsoleGateLazy />
+                    </Suspense>
+                  }
+                >
                   <Route element={<MentorConsoleLayoutLazy />}>
                     <Route index element={<Navigate to="dashboard" replace />} />
                     {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
