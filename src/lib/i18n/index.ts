@@ -1,3 +1,5 @@
+declare const __LOCALE_VERSION__: string;
+
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import HttpBackend from 'i18next-http-backend';
@@ -12,11 +14,13 @@ i18n
     debug: false, // Set to false in production
     lng: localStorage.getItem('i18nextLng') || 'en', // Load from localStorage
     backend: {
-      loadPath: '/locales/{{lng}}.json', // Path to translation files
+      // The locale files live in public/ so their names are NOT content-hashed.
+      // `cache: 'no-cache'` used to force a revalidation on every single visit,
+      // which meant re-downloading 237 KB (en) or 320 KB (ru) before any text
+      // could render. Instead we let the browser cache them normally and bust
+      // that cache with a build stamp, so a deploy still ships new strings.
+      loadPath: `/locales/{{lng}}.json?v=${__LOCALE_VERSION__}`,
       allowMultiLoading: false,
-      requestOptions: {
-        cache: 'no-cache',
-      },
     },
     interpolation: {
       escapeValue: false, // React already escapes by default
