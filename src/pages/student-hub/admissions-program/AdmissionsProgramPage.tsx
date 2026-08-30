@@ -11,9 +11,6 @@ import {
   CourseEnrollmentDto,
   ProgramPricingDto
 } from 'src/app/services/courses';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
-import { useAppDispatch } from 'src/app/store';
-import { show } from 'src/app/slices/profilePopupSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
 import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
@@ -71,7 +68,6 @@ const AdmissionsProgramPage: React.FC = () => {
   const [showDetailedSections, setShowDetailedSections] = useState(false);
   const [showCommunityLock, setShowCommunityLock] = useState(false);
   const { isCommunityEnrolled } = useJourneyExperience();
-  const dispatch = useAppDispatch();
 
   // Helper function to get translated plan type
   const getTranslatedPlanType = (planType: string): string => {
@@ -169,9 +165,6 @@ const AdmissionsProgramPage: React.FC = () => {
   });
   const { data: userProgress } = useGetUserProgressQuery('admissions', {
     skip: !isAuthenticated || !enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning
-  });
-  const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
-    skip: !isAuthenticated
   });
 
   const [createEnrollment, { isLoading: creatingEnrollment }] = useCreateEnrollmentMutation();
