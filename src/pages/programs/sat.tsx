@@ -3,21 +3,17 @@ import { Button, Card, Modal, Alert, message, Spin, Progress, Avatar } from 'ant
 import { BookOpen, CheckCircle2, Star, Trophy, Rocket, PlayCircle, BarChart2, FileText, Users, Zap, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
-import { useAppDispatch } from 'src/app/store';
-import { show } from 'src/app/slices/profilePopupSlice';
 import { 
   useGetActivePricingQuery,
   useGetEnrollmentStatusQuery,
   useCreateEnrollmentMutation,
   useGetUserProgressQuery,
 } from 'src/app/services/courses';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
 import './sat.scss';
 
 const SatPage: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { profile, isAuthenticated } = useTypedSelector(state => state.auth);
   const [isVideoModalVisible, setIsVideoModalVisible] = useState(false);
   const [videoSrc, setVideoSrc] = useState('');
@@ -36,9 +32,6 @@ const SatPage: React.FC = () => {
   const satEnrollmentStatus = enrollmentStatus;
   const { data: userProgress } = useGetUserProgressQuery('sat', {
     skip: !isAuthenticated || !enrollmentStatus?.canAccessLearning,
-  });
-  const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
-    skip: !isAuthenticated,
   });
   const [createEnrollment] = useCreateEnrollmentMutation();
 
@@ -60,13 +53,6 @@ const SatPage: React.FC = () => {
     if (!isAuthenticated) {
       message.info('Please log in to enroll in the course');
       navigate('/auth/signin');
-      return;
-    }
-
-    // Check if user is connected to Telegram bot (only for students)
-    if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
-      dispatch(show());
-      message.warning('Please connect your Telegram account to enroll in the course');
       return;
     }
 

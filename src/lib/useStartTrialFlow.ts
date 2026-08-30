@@ -6,7 +6,6 @@ import {
   useGetSubscriptionPlansQuery,
   useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import type {
   PaymentMethodDto,
   PlanDto,
@@ -42,8 +41,6 @@ import type {
 export interface UseStartTrialFlowResult {
   plans: PlanDto[];
   plansLoading: boolean;
-  telegramConnected: boolean;
-  telegramLoading: boolean;
   /** True while the /subscriptions/start request is in flight. */
   starting: boolean;
   /** Whether the AddCardModal should be open. */
@@ -61,14 +58,11 @@ export function useStartTrialFlow(onStarted?: () => void): UseStartTrialFlowResu
 
   const { data: plans = [], isLoading: plansLoading } = useGetSubscriptionPlansQuery();
   const { data: paymentMethods = [] } = useGetPaymentMethodsQuery();
-  const { data: telegramStatus, isLoading: telegramLoading } = useGetTelegramStatusQuery();
   const [startSubscription] = useStartSubscriptionMutation();
 
   const [pendingPlan, setPendingPlan] = useState<PlanDto | null>(null);
   const [addCardOpen, setAddCardOpen] = useState(false);
   const [starting, setStarting] = useState(false);
-
-  const telegramConnected = telegramStatus?.status === 'connected';
 
   const startWithCard = async (planId: string, paymentMethodId: string) => {
     setStarting(true);
@@ -95,10 +89,6 @@ export function useStartTrialFlow(onStarted?: () => void): UseStartTrialFlowResu
   };
 
   const selectPlan = (plan: PlanDto) => {
-    // The onboarding step gates the whole plan picker behind a connected
-    // Telegram — this is a defensive no-op, not the primary guard.
-    if (!telegramConnected) return;
-
     const defaultCard = paymentMethods.find((pm) => pm.isDefault);
     if (defaultCard) {
       startWithCard(plan.id, defaultCard.id);
@@ -123,8 +113,6 @@ export function useStartTrialFlow(onStarted?: () => void): UseStartTrialFlowResu
   return {
     plans,
     plansLoading,
-    telegramConnected,
-    telegramLoading,
     starting,
     addCardOpen,
     selectPlan,

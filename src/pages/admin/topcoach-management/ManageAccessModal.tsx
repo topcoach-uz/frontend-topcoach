@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Tabs, Spin, Tooltip, message } from 'antd';
+import { Modal, Tabs, Spin, message } from 'antd';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { api } from 'src/app/api';
 import { useAdminEnrollMutation, useAdminUnenrollMutation } from 'src/app/services/fullSupportApi';
@@ -70,7 +70,6 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
   const [adminEnroll] = useAdminEnrollMutation();
   const [adminUnenroll] = useAdminUnenrollMutation();
 
-  const isTelegramConnected = row?.telegramStatus === 'connected';
   const subjectName = useMemo(
     () => (row ? cleanUserName(row.userName, row.userEmail) : ''),
     [row],
@@ -208,8 +207,6 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
     // backend (CourseEnrollmentService.getEnrollmentStatus) — reflect that
     // here so admins don't think the student is locked out.
     const viaCommunity = program === 'admissions' && !hasAccess && communityEnabled;
-    const grantDisabled = !isTelegramConnected && program !== 'full_support';
-    const grantTip = grantDisabled ? 'User must have Telegram connected to grant access.' : '';
     return (
       <div className="ac-manage-access__row" key={program}>
         <div className="ac-manage-access__row-meta">
@@ -224,9 +221,6 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
             )}
             {program === 'full_support' && (
               <> · Includes Community access automatically</>
-            )}
-            {!hasAccess && grantDisabled && (
-              <span style={{ color: '#f59e0b' }}> · Telegram not connected — direct grant unavailable</span>
             )}
           </span>
         </div>
@@ -258,23 +252,20 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
                   ))}
                 </div>
               )}
-              <Tooltip title={grantTip}>
-                <button
-                  type="button"
-                  className="ac-manage-access__btn ac-manage-access__btn--grant"
-                  disabled={grantDisabled}
-                  onClick={() =>
-                    setConfirm({
-                      kind: 'grant',
-                      program,
-                      plan: program === 'admissions' ? adminPlan : undefined,
-                      enrollmentId,
-                    })
-                  }
-                >
-                  Grant
-                </button>
-              </Tooltip>
+              <button
+                type="button"
+                className="ac-manage-access__btn ac-manage-access__btn--grant"
+                onClick={() =>
+                  setConfirm({
+                    kind: 'grant',
+                    program,
+                    plan: program === 'admissions' ? adminPlan : undefined,
+                    enrollmentId,
+                  })
+                }
+              >
+                Grant
+              </button>
             </>
           )}
         </div>
@@ -297,7 +288,7 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
     const body =
       confirm.kind === 'community'
         ? confirm.enable
-          ? `${subjectName} will get full Community features unlocked, including the Admissions course content — no Telegram connection required.`
+          ? `${subjectName} will get full Community features unlocked, including the Admissions course content.`
           : `${subjectName} will be moved back to the standard experience. Admissions course access included with Community is removed too (direct enrollments are kept).`
         : confirm.kind === 'grant'
           ? `${subjectName} will get access to ${programLabel}${
@@ -305,7 +296,7 @@ export const ManageAccessModal: React.FC<Props> = ({ open, row, onClose, onMutat
             }.${
               confirm.program === 'full_support'
                 ? ' Community access is unlocked automatically — no placement test or subscription required.'
-                : ' They must have Telegram connected for course content.'
+                : ''
             }`
           : `${subjectName} will lose access to ${programLabel}. The enrollment row is removed; you can re-grant later.`;
 
