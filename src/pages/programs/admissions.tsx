@@ -11,9 +11,6 @@ import {
   CourseEnrollmentDto,
   ProgramPricingDto
 } from 'src/app/services/courses';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
-import { useAppDispatch } from 'src/app/store';
-import { show } from 'src/app/slices/profilePopupSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay';
 import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
@@ -67,7 +64,6 @@ const AdmissionsPage: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<CourseTypeEnum | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [showDetailedSections, setShowDetailedSections] = useState(false);
-  const dispatch = useAppDispatch();
 
   // Helper function to get translated plan type
   const getTranslatedPlanType = (planType: string): string => {
@@ -166,9 +162,6 @@ const AdmissionsPage: React.FC = () => {
   const { data: userProgress } = useGetUserProgressQuery('admissions', {
     skip: !isAuthenticated || !enrollmentStatus?.isEnrolled || !enrollmentStatus?.canAccessLearning
   });
-  const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
-    skip: !isAuthenticated
-  });
 
   const [createEnrollment, { isLoading: creatingEnrollment }] = useCreateEnrollmentMutation();
 
@@ -239,13 +232,6 @@ const AdmissionsPage: React.FC = () => {
     if (!isAuthenticated) {
       message.info('Please log in to enroll in the course');
       navigate('/auth/signin');
-      return;
-    }
-
-    // Check if user is connected to Telegram bot (only for students)
-    if (profile?.profile?.role === 'Student' && telegramStatus?.status !== 'connected') {
-      dispatch(show());
-      message.warning('Please connect your Telegram account to enroll in the course');
       return;
     }
 

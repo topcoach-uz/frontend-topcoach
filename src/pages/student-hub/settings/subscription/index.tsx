@@ -11,8 +11,6 @@ import {
   useGetSubscriptionPlansQuery,
   useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
-import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import {
   FIXTURE_BILLING_HISTORY,
@@ -201,9 +199,6 @@ export default function SubscriptionTab() {
   const [changePlan] = useChangeSubscriptionPlanMutation();
   // Community is delivered via the Telegram bot, a connection is required
   // before a new member can start a plan (the backend enforces this too).
-  const { data: telegramStatus } = useGetTelegramStatusQuery();
-  const [telegramModalOpen, setTelegramModalOpen] = useState(false);
-  const telegramConnected = telegramStatus?.status === 'connected';
   // Celebration overlay: appears for ~7s after the trial actually starts
   // (i.e. the /subscriptions/start call returns 2xx). Drives the
   // "card added → trial active → community unlocked" feel that was
@@ -269,14 +264,6 @@ export default function SubscriptionTab() {
         subscription.scheduledPlan?.id ?? subscription.plan.id;
       if (effectiveCurrentId === plan.id) return;
       setPlanChangeConfirm(plan);
-      return;
-    }
-
-    // New Community join: require a connected Telegram bot before payment.
-    // (Plan changes for existing members above are exempt, already members.)
-    if (!telegramConnected) {
-      setTelegramModalOpen(true);
-      message.info('Connect the TopCoach Telegram bot to join Community.');
       return;
     }
 
@@ -774,11 +761,6 @@ export default function SubscriptionTab() {
           </div>
         )}
       </Modal>
-
-      <TelegramConnectionModal
-        visible={telegramModalOpen}
-        onClose={() => setTelegramModalOpen(false)}
-      />
     </div>
   );
 }
