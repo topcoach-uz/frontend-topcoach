@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { CustomText } from 'src/components/common';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import CheckListItem from '../../home/mentor/_components/CheckListItem';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { Card, Flex, Button } from 'antd';
-import TelegramConnectionModal from 'src/components/TelegramConnectionModal';
 
 import HomeAiSearchSection from '../_components/aiSearch';
 import BannerSection from '../_components/banner';
@@ -24,15 +21,10 @@ function MenteeHomePage() {
   const navigate = useNavigate();
   const profile = useTypedSelector((state) => state.auth.profile);
   const nameMissing = !profile?.profile?.name;
-  const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const { data: telegramStatus, refetch: refetchTelegramStatus, isLoading: telegramLoading } = useGetTelegramStatusQuery();
   const { data: enrollmentStatus } = useGetEnrollmentStatusQuery();
   // Org membership from the shared `/org/me` cache. Platform staff are
   // excluded (see useOrgStaff) so a SuperAdmin's mentee home is unchanged.
   const { isOrgStaff: isCounselor, isLoading: counselorLoading } = useOrgStaff();
-
-  // Only show as missing if we have data and it's not connected
-  const telegramMissing = !telegramLoading && telegramStatus?.status !== 'connected';
 
   const checklist = [
     {
@@ -43,20 +35,12 @@ function MenteeHomePage() {
         navigate('/student-hub/settings');
       },
     },
-    {
-      stepName: 'Telegram Connection',
-      isComplete: !telegramMissing,
-      buttonText: telegramStatus?.status === 'pending' ? 'Continue' : 'Connect',
-      onClick: () => {
-        setShowTelegramModal(true);
-      },
-    },
   ];
 
   return (
     <div>
       {/* Only show checklist if we have loaded data and there are missing items */}
-      {!telegramLoading && (nameMissing || telegramMissing) ? (
+      {nameMissing ? (
         <div className={'container ' + styles.container} style={{ marginBottom: 8 }}>
           <div>
             <CustomText
@@ -90,16 +74,6 @@ function MenteeHomePage() {
       <BookingsSection />
       <EventsSection />
       <FavoriteUniversitiesSection showOnlyFavorites={true} />
-      <TelegramConnectionModal
-        visible={showTelegramModal}
-        onClose={() => {
-          setShowTelegramModal(false);
-          // Force refetch after modal closes
-          setTimeout(() => {
-            refetchTelegramStatus();
-          }, 500);
-        }}
-      />
     </div>
   );
 }

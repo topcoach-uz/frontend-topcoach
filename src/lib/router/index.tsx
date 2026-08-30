@@ -32,7 +32,6 @@ import { CustomRouter } from "./CustomRouter";
 import customHistory from "../history";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
-import { GlobalModals } from "src/components/GlobalModals";
 // AdminConsoleGate and MentorConsoleGate are lazy, like every console page
 // below them. Keeping the gates static pulled console code into the entry's
 // import graph, which an anonymous visitor never runs. Route elements below
@@ -353,7 +352,6 @@ function RouterProvider() {
       )}
       <NavigationProgressBar />
       <PostHogPageView />
-      <GlobalModals />
       <Routes>
         <Route element={<RootLayout />}>
           {/* Help */}

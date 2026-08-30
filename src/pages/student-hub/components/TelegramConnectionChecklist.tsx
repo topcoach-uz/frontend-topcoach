@@ -1,6 +1,10 @@
 /**
- * Telegram connection checklist for mentees, shown at top of My Journey until connected.
- * Hidden when connected or in read-only mode.
+ * Optional Telegram connect card for mentees, shown at the top of My Journey
+ * until connected. Hidden when connected or in read-only mode.
+ *
+ * Connecting the bot is OPTIONAL — nothing on the platform is gated on it.
+ * This card is an invitation to turn on reminders, not a profile requirement,
+ * so it must not be worded as an incomplete step.
  */
 
 import React, { useState } from 'react';
@@ -32,13 +36,13 @@ const TelegramConnectionChecklist: React.FC<TelegramConnectionChecklistProps> = 
         <Card size="small" style={{ borderColor: TELEGRAM_BLUE, borderWidth: 2, borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <UnifiedIcon name="user" size="md" style={{ color: TELEGRAM_BLUE }} />
-            <span style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a' }}>Complete your profile</span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a' }}>Get reminders on Telegram</span>
           </div>
           <div style={{ paddingTop: 8, marginBottom: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
                 <UnifiedIcon name="message" size="sm" style={{ color: TELEGRAM_BLUE }} />
-                <span>Telegram Connection</span>
+                <span>Optional — session reminders and updates from the TopCoach bot</span>
               </span>
               <Button
                 type="primary"

@@ -25,9 +25,6 @@ import { useTranslation } from 'react-i18next';
 import Reviews from './_components/reviews';
 import SimilarMentors from './_components/similarMentors';
 import { useGetMeQuery } from 'src/app/services/users';
-import { useAppDispatch } from 'src/app/store';
-import { show as showProfilePopup } from 'src/app/slices/profilePopupSlice';
-import { useGetTelegramStatusQuery } from 'src/app/services/users';
 import { useGetGiveawaySessionsQuery, useGetGiveawayStatusQuery, useBookGiveawaySessionMutation } from 'src/app/services/sessions';
 import { useGetPlansQuery } from 'src/app/services/mentors';
 import { PaymentPlanTypeEnum } from 'src/app/api/Api';
@@ -52,10 +49,6 @@ export default function MentorDetailsPage() {
     skip: !isAuthenticated,
   });
   const { data: plans } = useGetPlansQuery();
-  const { data: telegramStatus } = useGetTelegramStatusQuery(undefined, {
-    skip: !isAuthenticated,
-  });
-  const dispatch = useAppDispatch();
 
   // Fetch giveaway sessions and user status only if authenticated
   const { data: giveawaySessions } = useGetGiveawaySessionsQuery(undefined, {
@@ -136,15 +129,6 @@ export default function MentorDetailsPage() {
     if (giveawayStatus?.hasBookedGiveaway) {
       message.error('You have already booked a giveaway session. Only one giveaway session per user is allowed.');
       return;
-    }
-
-    // Check for required profile fields before booking (only for students)
-    if (currentUser?.profile?.role === 'Student') {
-      const missingTelegram = telegramStatus?.status !== 'connected';
-      if (missingTelegram) {
-        dispatch(showProfilePopup());
-        return;
-      }
     }
 
     // Show confirmation modal
