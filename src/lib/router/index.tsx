@@ -32,7 +32,6 @@ import { CustomRouter } from "./CustomRouter";
 import customHistory from "../history";
 import { ErrorBoundary } from "react-error-boundary";
 import ErrorFallback from "src/components/ErrorFallback";
-import { GlobalModals } from "src/components/GlobalModals";
 import AdminConsoleGate from "src/pages/admin/console/AdminConsoleGate";
 import MentorConsoleGate from "src/pages/mentor/console/MentorConsoleGate";
 import CounselorConsoleGate from "src/pages/counselor-console/CounselorConsoleGate";
@@ -352,7 +351,6 @@ function RouterProvider() {
       )}
       <NavigationProgressBar />
       <PostHogPageView />
-      <GlobalModals />
       <Routes>
         <Route element={<RootLayout />}>
           {/* Help */}
