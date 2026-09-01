@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from './api';
+import { trackLead } from 'src/lib/meta-pixel';
 
 // Types
 export interface ContactFormRequest {
@@ -43,6 +44,21 @@ export const contactApi = createApi({
         body: formData,
       }),
       invalidatesTags: ['ContactForm'],
+      // Meta Pixel `Lead` fires here rather than in each component because all
+      // four lead forms (landing popup, /contact-form, /contact MailForm and the
+      // MM3 report modal) share this one mutation — a fifth form gets tracked
+      // for free, and none of them can drift out of sync.
+      //
+      // Only a fulfilled request counts: a 400/429/500 is not a lead, and Meta
+      // optimises ad delivery against this event, so a false one costs money.
+      async onQueryStarted(_formData, { queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } catch {
+          return;
+        }
+        trackLead();
+      },
     }),
     submitMentorRequest: builder.mutation<MentorRequestResponse, MentorRequestForm>({
       query: (formData) => ({

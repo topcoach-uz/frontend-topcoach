@@ -59,6 +59,11 @@ import {
   IVY_WORKSHOP_MEET_URL,
   isIvyWorkshopLive,
 } from '../events/_components/ivyWorkshop';
+import {
+  IVY_ESSAY_WORKSHOP_JOIN_URL,
+  isIvyEssayWorkshopLive,
+  ivyEssayWorkshopHasJoinLink,
+} from '../events/_components/ivyEssayWorkshop';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -376,6 +381,13 @@ const MyProgressEditorialView: React.FC = () => {
   // Workshop replay takes the slot back. The dashboard is auth-walled,
   // so the members-only Meet link can render here directly.
   const showIvyWorkshopPromo = isIvyWorkshopLive();
+
+  // Ivy League-worthy personal essay workshop (Kenza, Princeton — Aug 26
+  // live on the TopCoach platform) — the nearest upcoming session, so it
+  // takes the "Top Coach presents" slot ahead of the older workshops and
+  // auto-hides after the cutoff in events/_components/ivyEssayWorkshop.ts,
+  // handing the slot back to the Personal Statement Workshop replay.
+  const showIvyEssayWorkshopPromo = isIvyEssayWorkshopLive();
 
   // Personal Statement Workshop — now a recording with its own page at
   // /events/personal-statement-workshop; the CTA navigates there.
@@ -877,11 +889,53 @@ const MyProgressEditorialView: React.FC = () => {
           </button>
         </LockedShell>
 
-        {/* Top Coach Presents — the live Ivy League workshop takes the
-            slot while it's upcoming, then the Personal Statement
-            Workshop replay, then the Launch Event, then CAAF, then the
-            quiet empty card. Every branch is gated behind AI Major Match. */}
-        {showIvyWorkshopPromo ? (
+        {/* Top Coach Presents — the nearest upcoming live workshop takes
+            the slot (the Aug 26 personal essay workshop, then the Ivy
+            League workshop), then the Personal Statement Workshop replay,
+            then the Launch Event, then CAAF, then the quiet empty card.
+            Every branch is gated behind AI Major Match. */}
+        {showIvyEssayWorkshopPromo ? (
+          <LockedShell
+            locked={mmLocked}
+            tone="dark"
+            className="myprog__card myprog__promo"
+            onUnlock={() => navigate(mm.destination)}
+          >
+            <div className="myprog__promo-yr">2026</div>
+            <div className="myprog__promo-eyebrow">Top Coach presents</div>
+            <h3 className="myprog__promo-title">
+              How to Craft an Ivy League-Worthy Personal Essay
+            </h3>
+            <div className="myprog__promo-meta">
+              Live workshop · Kenza · Princeton University
+            </div>
+            <p className="myprog__promo-desc">
+              What makes a personal essay stand out? Kenza, a Princeton
+              graduate in Public and International Affairs, covers crafting
+              the personal essay, standing out with your application, and the
+              writing prompts Ivy League universities set. Wednesday, August
+              26 at 20:00, live on the TopCoach platform.
+            </p>
+            <div className="myprog__promo-foot">
+              <div className="myprog__promo-foot-status">Free · Live Q&amp;A</div>
+              <button
+                type="button"
+                className="myprog__btn myprog__btn--primary myprog__promo-cta"
+                onClick={() =>
+                  ivyEssayWorkshopHasJoinLink
+                    ? window.open(
+                        IVY_ESSAY_WORKSHOP_JOIN_URL,
+                        '_blank',
+                        'noopener,noreferrer'
+                      )
+                    : navigate('/events/ivy-essay-workshop')
+                }
+              >
+                {ivyEssayWorkshopHasJoinLink ? 'Join' : 'See details'}
+              </button>
+            </div>
+          </LockedShell>
+        ) : showIvyWorkshopPromo ? (
           <LockedShell
             locked={mmLocked}
             tone="dark"
