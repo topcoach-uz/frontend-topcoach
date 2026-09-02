@@ -93,8 +93,12 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   // the video restarts from zero.
   const onProgressUpdateRef = useRef(onProgressUpdate);
   const onCompleteRef = useRef(onComplete);
+  const canCompleteRef = useRef(canComplete);
+  const isCompletedRef = useRef(isCompleted);
   onProgressUpdateRef.current = onProgressUpdate;
   onCompleteRef.current = onComplete;
+  canCompleteRef.current = canComplete;
+  isCompletedRef.current = isCompleted;
 
   useEffect(() => {
     const container = playerRef.current;
@@ -110,6 +114,10 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
 
     let cancelled = false;
     let detachListeners: (() => void) | null = null;
+
+    // The overlay sits on top of the iframe, so never let it outlive a stalled
+    // script load and swallow clicks on the play button.
+    const spinnerFallback = setTimeout(() => setIsLoading(false), 5000);
 
     setError(null);
     setIsLoading(true);
@@ -149,7 +157,14 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
         let lastReportedAt = 0;
 
         const handleReady = () => setIsLoading(false);
-        const handleEnded = () => onCompleteRef.current();
+        // Reaching the end auto-completes, but only where the button would
+        // have allowed it: the parent's onComplete warns about the unfinished
+        // quiz, and that warning must not fire on its own at every playthrough.
+        const handleEnded = () => {
+          if (canCompleteRef.current && !isCompletedRef.current) {
+            onCompleteRef.current();
+          }
+        };
         const handleTimeUpdate = () => {
           const { currentTime, duration } = video;
           if (!duration || !Number.isFinite(duration)) {
@@ -200,6 +215,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
 
     return () => {
       cancelled = true;
+      clearTimeout(spinnerFallback);
       detachListeners?.();
       container.innerHTML = '';
     };
