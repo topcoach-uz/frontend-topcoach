@@ -13,6 +13,7 @@
  */
 
 export interface OnboardingStatus {
+  onboardingVersion?: number | null;
   onboardingCompletedAt?: string | null;
   onboardingStep?: string | null;
   hearAboutSource?: string | null;

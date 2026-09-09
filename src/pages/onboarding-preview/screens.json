@@ -1,0 +1,1601 @@
+[
+  {
+    "key": "signup",
+    "group": "01 · Account entry",
+    "title": "Create your account.",
+    "hero": "A new chapter\nstarts here.",
+    "intro": "Join TopCoach to plan your next step.",
+    "parts": [
+      {
+        "kind": "button",
+        "label": "Continue with Google",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "OR USE YOUR EMAIL"
+      },
+      {
+        "kind": "field",
+        "label": "Full name",
+        "value": "Dilnoza Karimova"
+      },
+      {
+        "kind": "field",
+        "label": "Email",
+        "value": "dilnoza@example.com"
+      },
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "Password",
+            "value": "••••••••••"
+          },
+          {
+            "kind": "field",
+            "label": "Confirm password",
+            "value": "••••••••••"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "8+ characters, with uppercase, lowercase, a number and a symbol."
+      },
+      {
+        "kind": "text",
+        "text": "By creating an account, you agree to the Terms and Privacy Policy."
+      }
+    ],
+    "cta": "Create account",
+    "step": "ACCOUNT",
+    "next": "verify",
+    "secondary": "Already registered? Sign in",
+    "secondaryTo": "signin"
+  },
+  {
+    "key": "verify",
+    "group": "01 · Account entry",
+    "title": "Check your inbox.",
+    "hero": "One small step.\nThen you’re in.",
+    "intro": "We sent a verification link to dilnoza@example.com.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Open the email from TopCoach",
+        "text": "Select “Verify email” in the message. You do not need to enter a code here.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "No email yet? Check spam or try sending it again."
+      },
+      {
+        "kind": "button",
+        "label": "Resend verification email",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Use a different email",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Need help? Contact support →",
+        "tone": "brand"
+      }
+    ],
+    "cta": "I’ve verified my email",
+    "step": "EMAIL VERIFICATION",
+    "next": "signin",
+    "back": "signup"
+  },
+  {
+    "key": "signin",
+    "group": "01 · Account entry",
+    "title": "Welcome back.",
+    "hero": "Your next\nchapter awaits.",
+    "intro": "Sign in to continue where you left off.",
+    "parts": [
+      {
+        "kind": "button",
+        "label": "Continue with Google",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "OR USE YOUR EMAIL"
+      },
+      {
+        "kind": "field",
+        "label": "Email",
+        "value": "dilnoza@example.com"
+      },
+      {
+        "kind": "field",
+        "label": "Password",
+        "value": "••••••••••"
+      },
+      {
+        "kind": "text",
+        "text": "Forgot password?",
+        "tone": "brand"
+      }
+    ],
+    "cta": "Sign in",
+    "step": "ACCOUNT",
+    "next": "goal",
+    "back": "signup"
+  },
+  {
+    "key": "goal",
+    "group": "02 · Choose your path",
+    "title": "What’s your next step?",
+    "hero": "Your next\nchapter starts\nhere.",
+    "intro": "Choose the degree you’re applying for, or join as a mentor.",
+    "parts": [
+      {
+        "kind": "card",
+        "title": "Bachelor’s degree",
+        "desc": "Your first degree after school.",
+        "selected": true
+      },
+      {
+        "kind": "card",
+        "title": "Master’s degree",
+        "desc": "Go further after a bachelor’s degree.",
+        "selected": false
+      },
+      {
+        "kind": "button",
+        "label": "I want to become a mentor",
+        "style": "outline"
+      }
+    ],
+    "cta": "Continue",
+    "step": "STEP 01 / 09",
+    "next": "b-basics",
+    "optionLinks": {
+      "Bachelor’s degree": "b-basics",
+      "Master’s degree": "m-basics",
+      "I want to become a mentor": "mentor-profile"
+    }
+  },
+  {
+    "key": "b-basics",
+    "group": "03 · Bachelor’s applicants",
+    "title": "First, a little about you.",
+    "hero": "Let’s make\nthis yours.",
+    "intro": "A few basics to personalize your experience.",
+    "parts": [
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "First name",
+            "value": "Dilnoza"
+          },
+          {
+            "kind": "field",
+            "label": "Last name",
+            "value": "Karimova"
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "Country of residence",
+        "value": "Uzbekistan  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Preferred language",
+        "value": "English  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Phone number · optional",
+        "value": "+998 90 000 00 00"
+      },
+      {
+        "kind": "text",
+        "text": "Your contact details are private. We use them for account and session updates."
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 02 / 09",
+    "next": "b-education",
+    "back": "goal"
+  },
+  {
+    "key": "b-education",
+    "group": "03 · Bachelor’s applicants",
+    "title": "Where are you studying?",
+    "hero": "Every path\nhas a starting\npoint.",
+    "intro": "Still at school or already graduated? Both are welcome.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Current education stage",
+        "value": "Grade 11  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "School · optional",
+        "value": "Academic Lyceum in Tashkent"
+      },
+      {
+        "kind": "notice",
+        "title": "Not in school right now?",
+        "text": "Choose Gap year or Already graduated. You can apply for a bachelor’s degree from either stage.",
+        "error": false
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 03 / 09",
+    "next": "b-direction",
+    "back": "b-basics",
+    "optionLinks": {}
+  },
+  {
+    "key": "b-direction",
+    "group": "03 · Bachelor’s applicants",
+    "title": "What would you like to explore?",
+    "hero": "Make room for\nwhat’s next.",
+    "intro": "A direction, not a final decision. You can update this later.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Field for your bachelor’s",
+        "value": "Computer Science  ⌄"
+      },
+      {
+        "kind": "text",
+        "text": "Browse: Engineering · Business · Arts · More →",
+        "tone": "brand"
+      },
+      {
+        "kind": "field",
+        "label": "Preferred destinations · optional",
+        "value": "United Kingdom, Germany  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Intended start · optional",
+        "value": "Autumn 2027  ⌄"
+      },
+      {
+        "kind": "button",
+        "label": "I’m not sure yet",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Explore your interests first. You do not need a final major yet."
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 04 / 09",
+    "next": "b-support",
+    "back": "b-education"
+  },
+  {
+    "key": "b-support",
+    "group": "03 · Bachelor’s applicants",
+    "title": "How can we help?",
+    "hero": "Support that\nstarts with you.",
+    "intro": "Choose as many as you like. This step is optional.",
+    "parts": [
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Choose a university",
+            "selected": true
+          },
+          {
+            "label": "SAT / ACT preparation",
+            "selected": false
+          },
+          {
+            "label": "Find a mentor",
+            "selected": false
+          },
+          {
+            "label": "Application essays",
+            "selected": false
+          },
+          {
+            "label": "Join the community",
+            "selected": false
+          },
+          {
+            "label": "Something else",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "You can explore all areas later, even if you don’t select them here."
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 05 / 09",
+    "next": "b-referral",
+    "back": "b-direction",
+    "secondary": "Skip for now",
+    "secondaryTo": "b-referral"
+  },
+  {
+    "key": "b-referral",
+    "group": "03 · Bachelor’s applicants",
+    "title": "How did you find us?",
+    "hero": "Good things\ntravel by word\nof mouth.",
+    "intro": "This helps us understand how applicants discover TopCoach.",
+    "parts": [
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Instagram",
+            "selected": false
+          },
+          {
+            "label": "Telegram",
+            "selected": false
+          },
+          {
+            "label": "A friend",
+            "selected": false
+          },
+          {
+            "label": "School",
+            "selected": false
+          },
+          {
+            "label": "Other",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "If other · optional",
+        "value": "Tell us where you heard about TopCoach"
+      },
+      {
+        "kind": "text",
+        "text": "Prefer not to answer? You can skip this step."
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 06 / 09",
+    "next": "b-intro",
+    "back": "b-support",
+    "secondary": "Prefer not to say",
+    "secondaryTo": "b-intro"
+  },
+  {
+    "key": "b-intro",
+    "group": "03 · Bachelor’s applicants",
+    "title": "Your plans. Real support.",
+    "hero": "You don’t have\nto figure it\nout alone.",
+    "intro": "Here’s what you can explore after setup.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Find a mentor",
+        "text": "Talk to someone who has been through the application process.",
+        "error": false
+      },
+      {
+        "kind": "notice",
+        "title": "Find your community",
+        "text": "Share questions and experiences with other applicants.",
+        "error": false
+      },
+      {
+        "kind": "notice",
+        "title": "Explore and prepare",
+        "text": "Explore majors and get support with essays and SAT preparation.",
+        "error": false
+      },
+      {
+        "kind": "button",
+        "label": "Watch the TopCoach introduction",
+        "style": "outline"
+      }
+    ],
+    "cta": "Continue",
+    "step": "BACHELOR’S · STEP 07 / 09",
+    "next": "b-telegram",
+    "back": "b-referral"
+  },
+  {
+    "key": "b-telegram",
+    "group": "03 · Bachelor’s applicants",
+    "title": "Stay in the loop.",
+    "hero": "A little nudge\nat the right\ntime.",
+    "intro": "Connect Telegram for session confirmations and reminders.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Telegram · not connected",
+        "text": "Optional. You can connect later from your account.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "1. Open the TopCoach bot.\n2. Share your contact in Telegram.\n3. Bring the six-character code back here."
+      },
+      {
+        "kind": "button",
+        "label": "Open @topcoach_official_bot",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Connecting notifications does not make your phone number public."
+      }
+    ],
+    "cta": "I have my code",
+    "step": "BACHELOR’S · STEP 08 / 09",
+    "next": "b-telegram-code",
+    "back": "b-intro",
+    "secondary": "Skip for now",
+    "secondaryTo": "b-review"
+  },
+  {
+    "key": "b-telegram-code",
+    "group": "03 · Bachelor’s applicants",
+    "title": "Enter your Telegram code.",
+    "hero": "Stay connected.\nStay on track.",
+    "intro": "Copy the six-character code from @topcoach_official_bot.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Connection code",
+        "value": "A7K9P2"
+      },
+      {
+        "kind": "text",
+        "text": "Codes expire after 10 minutes. Use your most recent code."
+      },
+      {
+        "kind": "button",
+        "label": "Get a new code in Telegram",
+        "style": "outline"
+      },
+      {
+        "kind": "notice",
+        "title": "Keep this page open",
+        "text": "Once the code is verified, we’ll confirm your connection here.",
+        "error": false
+      }
+    ],
+    "cta": "Verify code",
+    "step": "BACHELOR’S · STEP 08 / 09",
+    "next": "b-telegram-connected",
+    "back": "b-telegram",
+    "secondary": "Skip for now",
+    "secondaryTo": "b-review"
+  },
+  {
+    "key": "b-telegram-connected",
+    "group": "03 · Bachelor’s applicants",
+    "title": "You’re connected.",
+    "hero": "A timely\nreminder, one\nless worry.",
+    "intro": "Telegram reminders are ready for your account.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "✓ Telegram connected",
+        "text": "Session confirmations, reminders, and important updates will arrive in Telegram.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "You can change this connection in your account settings."
+      },
+      {
+        "kind": "button",
+        "label": "Disconnect Telegram",
+        "style": "outline"
+      }
+    ],
+    "cta": "Review my details",
+    "step": "BACHELOR’S · STEP 08 / 09",
+    "next": "b-review",
+    "back": "b-telegram-code"
+  },
+  {
+    "key": "b-review",
+    "group": "03 · Bachelor’s applicants",
+    "title": "Your starting point.",
+    "hero": "A little clearer.\nA step closer.",
+    "intro": "Check your details before finishing setup.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "YOUR GOAL · EDIT",
+        "value": "Bachelor’s degree"
+      },
+      {
+        "kind": "field",
+        "label": "ABOUT YOU · EDIT",
+        "value": "Dilnoza Karimova · Uzbekistan"
+      },
+      {
+        "kind": "field",
+        "label": "YOUR EDUCATION · EDIT",
+        "value": "Grade 11 · Academic Lyceum"
+      },
+      {
+        "kind": "field",
+        "label": "YOUR DIRECTION · EDIT",
+        "value": "Computer Science · UK & Germany"
+      },
+      {
+        "kind": "text",
+        "text": "Telegram connected · Language: English"
+      },
+      {
+        "kind": "text",
+        "text": "Nothing is locked in. Update your preferences at any time."
+      }
+    ],
+    "cta": "Finish setup",
+    "step": "BACHELOR’S · STEP 09 / 09",
+    "next": "b-done",
+    "back": "b-telegram-connected",
+    "optionLinks": {
+      "YOUR GOAL · EDIT": "goal",
+      "ABOUT YOU · EDIT": "b-basics",
+      "YOUR EDUCATION · EDIT": "b-education",
+      "YOUR DIRECTION · EDIT": "b-direction"
+    }
+  },
+  {
+    "key": "b-done",
+    "group": "03 · Bachelor’s applicants",
+    "title": "You’re ready to explore.",
+    "hero": "Your next\nchapter starts\nnow.",
+    "intro": "Your profile is set up. Choose what you’d like to do first.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Bachelor’s applicant profile ready",
+        "text": "Your education stage and interests are saved.",
+        "error": false
+      },
+      {
+        "kind": "button",
+        "label": "Find a mentor",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Explore programs",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Explore my interests",
+        "style": "outline"
+      }
+    ],
+    "cta": "Go to my dashboard",
+    "step": "SETUP COMPLETE",
+    "back": "b-review"
+  },
+  {
+    "key": "m-basics",
+    "group": "04 · Master’s applicants",
+    "title": "First, a little about you.",
+    "hero": "Let’s make\nthis yours.",
+    "intro": "A few basics to personalize your experience.",
+    "parts": [
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "First name",
+            "value": "Dilnoza"
+          },
+          {
+            "kind": "field",
+            "label": "Last name",
+            "value": "Karimova"
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "Country of residence",
+        "value": "Uzbekistan  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Preferred language",
+        "value": "English  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Phone number · optional",
+        "value": "+998 90 000 00 00"
+      },
+      {
+        "kind": "text",
+        "text": "Your contact details are private. We use them for account and session updates."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 02 / 09",
+    "next": "m-education",
+    "back": "goal"
+  },
+  {
+    "key": "m-education",
+    "group": "04 · Master’s applicants",
+    "title": "Tell us about your degree.",
+    "hero": "Build on\nwhere you’ve\nbeen.",
+    "intro": "Your bachelor’s background helps us ask the right questions.",
+    "parts": [
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "Bachelor’s status",
+            "value": "Currently studying  ⌄"
+          },
+          {
+            "kind": "field",
+            "label": "Graduation year",
+            "value": "2027  ⌄"
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "University",
+        "value": "Inha University in Tashkent  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Bachelor’s qualification",
+        "value": "BSc in Computer Science"
+      },
+      {
+        "kind": "field",
+        "label": "Field of study",
+        "value": "Computer Science  ⌄"
+      },
+      {
+        "kind": "text",
+        "text": "Can’t find your university or field? Add your own →",
+        "tone": "brand"
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 03 / 09",
+    "next": "m-direction",
+    "back": "m-basics",
+    "optionLinks": {
+      "University": "state-university",
+      "Field of study": "state-field",
+      "Supporting note": "state-manual"
+    }
+  },
+  {
+    "key": "m-direction",
+    "group": "04 · Master’s applicants",
+    "title": "What would you like to explore?",
+    "hero": "Make room for\nwhat’s next.",
+    "intro": "A direction, not a final decision. You can update this later.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Field for your master’s",
+        "value": "Data Science  ⌄"
+      },
+      {
+        "kind": "text",
+        "text": "Browse: Engineering · Business · Arts · More →",
+        "tone": "brand"
+      },
+      {
+        "kind": "field",
+        "label": "Preferred destinations · optional",
+        "value": "United Kingdom, Germany  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Intended start · optional",
+        "value": "Autumn 2027  ⌄"
+      },
+      {
+        "kind": "button",
+        "label": "I’m not sure yet",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Your next field can differ from your bachelor’s subject."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 04 / 09",
+    "next": "m-support",
+    "back": "m-education"
+  },
+  {
+    "key": "m-support",
+    "group": "04 · Master’s applicants",
+    "title": "How can we help?",
+    "hero": "Support that\nstarts with you.",
+    "intro": "Choose as many as you like. This step is optional.",
+    "parts": [
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Choose a university",
+            "selected": true
+          },
+          {
+            "label": "Find a mentor",
+            "selected": false
+          },
+          {
+            "label": "Personal statement",
+            "selected": false
+          },
+          {
+            "label": "Application planning",
+            "selected": false
+          },
+          {
+            "label": "Join the community",
+            "selected": false
+          },
+          {
+            "label": "Something else",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "You can explore all areas later, even if you don’t select them here."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 05 / 09",
+    "next": "m-referral",
+    "back": "m-direction",
+    "secondary": "Skip for now",
+    "secondaryTo": "m-referral"
+  },
+  {
+    "key": "m-referral",
+    "group": "04 · Master’s applicants",
+    "title": "How did you find us?",
+    "hero": "Good things\ntravel by word\nof mouth.",
+    "intro": "This helps us understand how applicants discover TopCoach.",
+    "parts": [
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Instagram",
+            "selected": false
+          },
+          {
+            "label": "Telegram",
+            "selected": false
+          },
+          {
+            "label": "A friend",
+            "selected": false
+          },
+          {
+            "label": "School",
+            "selected": false
+          },
+          {
+            "label": "Other",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "If other · optional",
+        "value": "Tell us where you heard about TopCoach"
+      },
+      {
+        "kind": "text",
+        "text": "Prefer not to answer? You can skip this step."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 06 / 09",
+    "next": "m-intro",
+    "back": "m-support",
+    "secondary": "Prefer not to say",
+    "secondaryTo": "m-intro"
+  },
+  {
+    "key": "m-intro",
+    "group": "04 · Master’s applicants",
+    "title": "Your plans. Real support.",
+    "hero": "You don’t have\nto figure it\nout alone.",
+    "intro": "Here’s what you can explore after setup.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Find a mentor",
+        "text": "Talk to someone who has been through the application process.",
+        "error": false
+      },
+      {
+        "kind": "notice",
+        "title": "Find your community",
+        "text": "Share questions and experiences with other applicants.",
+        "error": false
+      },
+      {
+        "kind": "notice",
+        "title": "Plan your next degree",
+        "text": "Explore programs, work on your statement and build a clear application plan.",
+        "error": false
+      },
+      {
+        "kind": "button",
+        "label": "Watch the TopCoach introduction",
+        "style": "outline"
+      }
+    ],
+    "cta": "Continue",
+    "step": "MASTER’S · STEP 07 / 09",
+    "next": "m-telegram",
+    "back": "m-referral"
+  },
+  {
+    "key": "m-telegram",
+    "group": "04 · Master’s applicants",
+    "title": "Stay in the loop.",
+    "hero": "A little nudge\nat the right\ntime.",
+    "intro": "Connect Telegram for session confirmations and reminders.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Telegram · not connected",
+        "text": "Optional. You can connect later from your account.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "1. Open the TopCoach bot.\n2. Share your contact in Telegram.\n3. Bring the six-character code back here."
+      },
+      {
+        "kind": "button",
+        "label": "Open @topcoach_official_bot",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Connecting notifications does not make your phone number public."
+      }
+    ],
+    "cta": "I have my code",
+    "step": "MASTER’S · STEP 08 / 09",
+    "next": "m-telegram-code",
+    "back": "m-intro",
+    "secondary": "Skip for now",
+    "secondaryTo": "m-review"
+  },
+  {
+    "key": "m-telegram-code",
+    "group": "04 · Master’s applicants",
+    "title": "Enter your Telegram code.",
+    "hero": "Stay connected.\nStay on track.",
+    "intro": "Copy the six-character code from @topcoach_official_bot.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Connection code",
+        "value": "A7K9P2"
+      },
+      {
+        "kind": "text",
+        "text": "Codes expire after 10 minutes. Use your most recent code."
+      },
+      {
+        "kind": "button",
+        "label": "Get a new code in Telegram",
+        "style": "outline"
+      },
+      {
+        "kind": "notice",
+        "title": "Keep this page open",
+        "text": "Once the code is verified, we’ll confirm your connection here.",
+        "error": false
+      }
+    ],
+    "cta": "Verify code",
+    "step": "MASTER’S · STEP 08 / 09",
+    "next": "m-telegram-connected",
+    "back": "m-telegram",
+    "secondary": "Skip for now",
+    "secondaryTo": "m-review"
+  },
+  {
+    "key": "m-telegram-connected",
+    "group": "04 · Master’s applicants",
+    "title": "You’re connected.",
+    "hero": "A timely\nreminder, one\nless worry.",
+    "intro": "Telegram reminders are ready for your account.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "✓ Telegram connected",
+        "text": "Session confirmations, reminders, and important updates will arrive in Telegram.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "You can change this connection in your account settings."
+      },
+      {
+        "kind": "button",
+        "label": "Disconnect Telegram",
+        "style": "outline"
+      }
+    ],
+    "cta": "Review my details",
+    "step": "MASTER’S · STEP 08 / 09",
+    "next": "m-review",
+    "back": "m-telegram-code"
+  },
+  {
+    "key": "m-review",
+    "group": "04 · Master’s applicants",
+    "title": "Your starting point.",
+    "hero": "A little clearer.\nA step closer.",
+    "intro": "Check your details before finishing setup.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "YOUR GOAL · EDIT",
+        "value": "Master’s degree"
+      },
+      {
+        "kind": "field",
+        "label": "ABOUT YOU · EDIT",
+        "value": "Dilnoza Karimova · Uzbekistan"
+      },
+      {
+        "kind": "field",
+        "label": "YOUR EDUCATION · EDIT",
+        "value": "BSc · Computer Science · 2027"
+      },
+      {
+        "kind": "field",
+        "label": "YOUR DIRECTION · EDIT",
+        "value": "Data Science · UK & Germany"
+      },
+      {
+        "kind": "text",
+        "text": "Telegram connected · Language: English"
+      },
+      {
+        "kind": "text",
+        "text": "Nothing is locked in. Update your preferences at any time."
+      }
+    ],
+    "cta": "Finish setup",
+    "step": "MASTER’S · STEP 09 / 09",
+    "next": "m-done",
+    "back": "m-telegram-connected",
+    "optionLinks": {
+      "YOUR GOAL · EDIT": "goal",
+      "ABOUT YOU · EDIT": "m-basics",
+      "YOUR EDUCATION · EDIT": "m-education",
+      "YOUR DIRECTION · EDIT": "m-direction"
+    }
+  },
+  {
+    "key": "m-done",
+    "group": "04 · Master’s applicants",
+    "title": "You’re ready to explore.",
+    "hero": "Your next\nchapter starts\nnow.",
+    "intro": "Your profile is set up. Choose what you’d like to do first.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Master’s applicant profile ready",
+        "text": "Your background and study preferences are saved.",
+        "error": false
+      },
+      {
+        "kind": "button",
+        "label": "Find a mentor",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Explore programs",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Plan my applications",
+        "style": "outline"
+      }
+    ],
+    "cta": "Go to my dashboard",
+    "step": "SETUP COMPLETE",
+    "back": "m-review"
+  },
+  {
+    "key": "mentor-profile",
+    "group": "05 · Mentor application",
+    "title": "Introduce yourself.",
+    "hero": "Experience\nworth sharing.",
+    "intro": "Let applicants get to know the person behind the profile.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Full name",
+        "value": "Alex Kim"
+      },
+      {
+        "kind": "button",
+        "label": "Upload profile photo",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "A profile photo is required. Choose a clear image of yourself."
+      },
+      {
+        "kind": "field",
+        "label": "LinkedIn profile",
+        "value": "linkedin.com/in/alex-kim"
+      }
+    ],
+    "cta": "Continue",
+    "step": "MENTOR · STEP 01 / 06",
+    "next": "mentor-academic",
+    "back": "goal"
+  },
+  {
+    "key": "mentor-academic",
+    "group": "05 · Mentor application",
+    "title": "Your academic background.",
+    "hero": "Show where\nyour experience\ncomes from.",
+    "intro": "Your university and subject help applicants understand your background.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Languages you can mentor in",
+        "value": "English, O‘zbek  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "University",
+        "value": "University of Manchester  ⌄"
+      },
+      {
+        "kind": "text",
+        "text": "My university isn’t listed →",
+        "tone": "brand"
+      },
+      {
+        "kind": "field",
+        "label": "Major / field of study",
+        "value": "Computer Science  ⌄"
+      },
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "Start date · optional",
+            "value": "September 2021"
+          },
+          {
+            "kind": "field",
+            "label": "End date · optional",
+            "value": "June 2025"
+          }
+        ]
+      }
+    ],
+    "cta": "Continue",
+    "step": "MENTOR · STEP 02 / 06",
+    "next": "mentor-story",
+    "back": "mentor-profile"
+  },
+  {
+    "key": "mentor-story",
+    "group": "05 · Mentor application",
+    "title": "Tell your story.",
+    "hero": "A person,\nnot just a\nprofile.",
+    "intro": "Help applicants understand your perspective and motivation.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "About you",
+        "value": "I studied Computer Science and learned how to\nnavigate applications across different education\nsystems. I now support applicants with that process."
+      },
+      {
+        "kind": "field",
+        "label": "Why do you want to mentor?",
+        "value": "I want to make the process less intimidating\nand help applicants make informed choices."
+      },
+      {
+        "kind": "text",
+        "text": "Be specific and write in your own voice. Both sections are required."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MENTOR · STEP 03 / 06",
+    "next": "mentor-offer",
+    "back": "mentor-academic"
+  },
+  {
+    "key": "mentor-offer",
+    "group": "05 · Mentor application",
+    "title": "What can you help with?",
+    "hero": "Turn experience\ninto someone’s\nnext step.",
+    "intro": "Describe the support you offer and your mentoring experience.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Value you bring",
+        "value": "I help applicants build a shortlist, organize their\napplications, and communicate their story clearly."
+      },
+      {
+        "kind": "field",
+        "label": "Mentoring experience",
+        "value": "I have supported students informally through\nuniversity applications and personal statements."
+      },
+      {
+        "kind": "text",
+        "text": "New to formal mentoring? Tell us about relevant informal experience."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MENTOR · STEP 04 / 06",
+    "next": "mentor-background",
+    "back": "mentor-story"
+  },
+  {
+    "key": "mentor-background",
+    "group": "05 · Mentor application",
+    "title": "Your areas of expertise.",
+    "hero": "Make your\nstrengths easy\nto find.",
+    "intro": "Choose your specializations and tell us about your wider background.",
+    "parts": [
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Bachelor’s admissions",
+            "selected": true
+          },
+          {
+            "label": "Master’s admissions",
+            "selected": false
+          },
+          {
+            "label": "Personal statements",
+            "selected": false
+          },
+          {
+            "label": "University shortlists",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "Specializations",
+        "value": "Computer Science, UK admissions"
+      },
+      {
+        "kind": "field",
+        "label": "Professional background",
+        "value": "Computer Science graduate with experience\nsupporting international university applicants."
+      },
+      {
+        "kind": "text",
+        "text": "Only select areas you feel confident supporting."
+      }
+    ],
+    "cta": "Continue",
+    "step": "MENTOR · STEP 05 / 06",
+    "next": "mentor-review",
+    "back": "mentor-offer"
+  },
+  {
+    "key": "mentor-review",
+    "group": "05 · Mentor application",
+    "title": "Review your application.",
+    "hero": "Ready to make\na difference?",
+    "intro": "Check your information before sending it for review.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "PROFILE · EDIT",
+        "value": "Alex Kim · Profile photo uploaded"
+      },
+      {
+        "kind": "field",
+        "label": "EDUCATION · EDIT",
+        "value": "Computer Science · University of Manchester"
+      },
+      {
+        "kind": "field",
+        "label": "MENTORING · EDIT",
+        "value": "Applications, shortlists and personal statements"
+      },
+      {
+        "kind": "notice",
+        "title": "Your profile is reviewed before it goes live",
+        "text": "Submitting does not immediately enable sessions or availability. We’ll email you when your application is reviewed.",
+        "error": false
+      }
+    ],
+    "cta": "Submit application",
+    "step": "MENTOR · STEP 06 / 06",
+    "next": "mentor-done",
+    "back": "mentor-background",
+    "optionLinks": {
+      "PROFILE · EDIT": "mentor-profile",
+      "EDUCATION · EDIT": "mentor-academic",
+      "MENTORING · EDIT": "mentor-offer"
+    }
+  },
+  {
+    "key": "mentor-done",
+    "group": "05 · Mentor application",
+    "title": "Application submitted.",
+    "hero": "Your experience\ncould change\nsomeone’s path.",
+    "intro": "Thank you. Your mentor profile is now under review.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Status · pending review",
+        "text": "We’ll email you once a decision is available. Your profile is not public yet.",
+        "error": false
+      },
+      {
+        "kind": "text",
+        "text": "After approval, you can connect your calendar and set your availability."
+      },
+      {
+        "kind": "button",
+        "label": "Review my application",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Contact support",
+        "style": "outline"
+      }
+    ],
+    "cta": "Go to my account",
+    "step": "APPLICATION RECEIVED",
+    "back": "mentor-review"
+  },
+  {
+    "key": "resume",
+    "group": "06 · States & recovery",
+    "title": "Welcome back, Dilnoza.",
+    "hero": "Pick up where\nyou left off.",
+    "intro": "Your saved answers are ready. Continue when you are.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Last saved · your education",
+        "text": "You started setting up your master’s applicant profile.",
+        "error": false
+      },
+      {
+        "kind": "button",
+        "label": "Review my saved answers",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "You can change your degree choice if your plans have changed."
+      }
+    ],
+    "cta": "Resume setup",
+    "step": "SAVED PROGRESS",
+    "next": "m-education",
+    "back": "goal"
+  },
+  {
+    "key": "state-university",
+    "group": "06 · States & recovery",
+    "title": "Find your university.",
+    "hero": "A familiar\nplace, a fresh\nstarting point.",
+    "intro": "Search by name, then choose the right location.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "University",
+        "value": "University"
+      },
+      {
+        "kind": "button",
+        "label": "Inha University in Tashkent\nTashkent · Uzbekistan",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "National University of Uzbekistan\nTashkent · Uzbekistan",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "New Uzbekistan University\nTashkent · Uzbekistan",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "Can’t find yours? Add your university manually →",
+        "tone": "brand"
+      }
+    ],
+    "cta": "Use selected university",
+    "step": "UNIVERSITY · SEARCH",
+    "next": "m-education",
+    "back": "m-education",
+    "optionLinks": {
+      "Supporting note": "state-manual"
+    }
+  },
+  {
+    "key": "state-field",
+    "group": "06 · States & recovery",
+    "title": "Find your field of study.",
+    "hero": "More than\none way to\nmove forward.",
+    "intro": "Search a specific subject or browse a broad area.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Field of study",
+        "value": "Data"
+      },
+      {
+        "kind": "button",
+        "label": "Data Science",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Data Analytics",
+        "style": "outline"
+      },
+      {
+        "kind": "button",
+        "label": "Data Engineering",
+        "style": "outline"
+      },
+      {
+        "kind": "choices",
+        "items": [
+          {
+            "label": "Business",
+            "selected": true
+          },
+          {
+            "label": "Engineering",
+            "selected": false
+          },
+          {
+            "label": "Arts & Humanities",
+            "selected": false
+          },
+          {
+            "label": "Social Sciences",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "Don’t see your field? Add it manually →",
+        "tone": "brand"
+      }
+    ],
+    "cta": "Use selected field",
+    "step": "FIELD OF STUDY · SEARCH",
+    "next": "m-education",
+    "back": "m-education"
+  },
+  {
+    "key": "state-manual",
+    "group": "06 · States & recovery",
+    "title": "Add your education details.",
+    "hero": "Your background\nbelongs here.",
+    "intro": "If a suggestion is missing, enter the details yourself.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "No exact match found",
+        "text": "The directory is a starting point, not a restriction.",
+        "error": false
+      },
+      {
+        "kind": "field",
+        "label": "University name",
+        "value": "Enter the official name"
+      },
+      {
+        "kind": "field",
+        "label": "Country of university",
+        "value": "Choose a country  ⌄"
+      },
+      {
+        "kind": "field",
+        "label": "Field of study",
+        "value": "Enter your subject"
+      },
+      {
+        "kind": "text",
+        "text": "We’ll save the wording you provide. You can edit it later."
+      }
+    ],
+    "cta": "Use these details",
+    "step": "EDUCATION · MANUAL ENTRY",
+    "next": "m-education",
+    "back": "state-university"
+  },
+  {
+    "key": "state-validation",
+    "group": "06 · States & recovery",
+    "title": "A couple of details are missing.",
+    "hero": "Let’s get the\nbasics right.",
+    "intro": "Check the highlighted fields. Your other answers are safe.",
+    "parts": [
+      {
+        "kind": "row",
+        "items": [
+          {
+            "kind": "field",
+            "label": "First name",
+            "value": "",
+            "error": "Enter your first name."
+          },
+          {
+            "kind": "field",
+            "label": "Last name",
+            "value": "Karimova"
+          }
+        ]
+      },
+      {
+        "kind": "field",
+        "label": "Country of residence",
+        "value": "Choose a country  ⌄",
+        "error": "Choose your country."
+      },
+      {
+        "kind": "field",
+        "label": "Graduation year",
+        "value": "20",
+        "error": "Enter a year from 1900 to 2100."
+      },
+      {
+        "kind": "text",
+        "text": "Focus moves to the first field that needs attention.",
+        "tone": "error"
+      }
+    ],
+    "cta": "Save and continue",
+    "step": "FORM · VALIDATION",
+    "next": "m-education",
+    "back": "m-basics"
+  },
+  {
+    "key": "state-telegram-error",
+    "group": "06 · States & recovery",
+    "title": "Let’s try that code again.",
+    "hero": "A small hiccup.\nAn easy retry.",
+    "intro": "Your education details and preferences are still saved.",
+    "parts": [
+      {
+        "kind": "field",
+        "label": "Connection code",
+        "value": "A7K9P2",
+        "error": "This code is invalid or has expired."
+      },
+      {
+        "kind": "notice",
+        "title": "Get a fresh code",
+        "text": "Open @topcoach_official_bot, share your contact, and use the latest code.",
+        "error": true
+      },
+      {
+        "kind": "button",
+        "label": "Open Telegram",
+        "style": "outline"
+      },
+      {
+        "kind": "text",
+        "text": "You can skip this and connect later."
+      }
+    ],
+    "cta": "Try again",
+    "step": "TELEGRAM · ERROR",
+    "next": "m-telegram-connected",
+    "back": "m-telegram-code",
+    "secondary": "Skip for now",
+    "secondaryTo": "m-review"
+  },
+  {
+    "key": "state-save-error",
+    "group": "06 · States & recovery",
+    "title": "We couldn’t save just yet.",
+    "hero": "Your work\nis still here.",
+    "intro": "Check your connection and try again.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Your answers are preserved",
+        "text": "We haven’t marked onboarding as complete. Retrying will save your current answers.",
+        "error": true
+      },
+      {
+        "kind": "text",
+        "text": "If this keeps happening, contact support. You don’t need to re-enter the form."
+      }
+    ],
+    "cta": "Try saving again",
+    "step": "SAVE · CONNECTION ERROR",
+    "next": "m-done",
+    "back": "m-review"
+  },
+  {
+    "key": "state-email-error",
+    "group": "06 · States & recovery",
+    "title": "That link didn’t work.",
+    "hero": "Let’s get you\nback on track.",
+    "intro": "Your verification link may have expired or already been used.",
+    "parts": [
+      {
+        "kind": "notice",
+        "title": "Request a new verification email",
+        "text": "Open the latest email from TopCoach and select its verification link.",
+        "error": true
+      },
+      {
+        "kind": "field",
+        "label": "Email",
+        "value": "dilnoza@example.com"
+      },
+      {
+        "kind": "text",
+        "text": "Already verified your email? Go to sign in.",
+        "tone": "brand"
+      }
+    ],
+    "cta": "Send a new link",
+    "step": "EMAIL · RECOVERY",
+    "next": "verify",
+    "back": "signin"
+  }
+]
