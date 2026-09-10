@@ -76,6 +76,9 @@ const EssayMasterclassPageLazy = lazy(
 const IvyEssayWorkshopPageLazy = lazy(
   () => import("src/pages/events/ivy-essay-workshop")
 );
+const CheveningWorkshopPageLazy = lazy(
+  () => import("src/pages/events/chevening-workshop")
+);
 /**
  * The placement-test funnel pages are mounted as internal sections of
  * `CommunityHubMockPage` at `/student-hub?section=placement-*` so they
@@ -588,6 +591,14 @@ function RouterProvider() {
                 element={
                   <Suspense fallback={<Loader height="70vh" />}>
                     <IvyEssayWorkshopPageLazy />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/events/chevening-workshop"
+                element={
+                  <Suspense fallback={<Loader height="70vh" />}>
+                    <CheveningWorkshopPageLazy />
                   </Suspense>
                 }
               />
