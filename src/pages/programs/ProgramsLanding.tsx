@@ -28,20 +28,6 @@ interface Program {
  */
 const PROGRAMS: Program[] = [
   {
-    id: 'chevening-workshop',
-    accent: 'flagship',
-    flag: 'Live workshop',
-    duration: 'September 10 · 20:00',
-    eyebrow: 'Chevening Scholarship · UK',
-    title: 'How to Build a Strong Chevening Application',
-    description:
-      'A free live session with the Chevening Programme Officer at the British Embassy in Tashkent: build a standout scholarship application and avoid common mistakes.',
-    href: '/events/chevening-workshop',
-    image: '/img/chevening-workshop.png',
-    statValue: 'Free',
-    statLabel: 'live workshop',
-  },
-  {
     id: 'full-support',
     accent: 'flagship',
     flag: 'Flagship',
