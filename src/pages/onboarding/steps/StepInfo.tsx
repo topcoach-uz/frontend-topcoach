@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usesJuniorCommunity } from 'src/lib/onboarding';
 import { Input, Select, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { CustomButton } from 'src/components/common';
@@ -58,8 +60,8 @@ const LANGUAGE_OPTIONS: { value: LanguageCode; label: string }[] = [
  *
  *   3. ONE combined PATCH /student-profile/my-profile with
  *      personalProfile{country, studyAbroadGoals} + academicProfile
- *      {gradeLevel, currentSchool} — BEST EFFORT ONLY, never gates
- *      advancement. The backend's UpdatePersonalProfileDto /
+ *      {gradeLevel, currentSchool} — best-effort for admissions; required for grades 7–8
+ *      before completing the junior community path. The backend's UpdatePersonalProfileDto /
  *      UpdateAcademicProfileDto are true partial DTOs (every field
  *      optional, service merges onto the existing row) — no need to
  *      fetch+merge the existing profile client-side first.
@@ -71,6 +73,7 @@ const LANGUAGE_OPTIONS: { value: LanguageCode; label: string }[] = [
 export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [patchOnboarding] = usePatchOnboardingMutation();
   const [ensureMyProfile] = useEnsureMyProfileMutation();
   const [updateMyStudentProfile] = useUpdateMyStudentProfileMutation();
@@ -114,13 +117,14 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
 
   const validate = () => {
     const next: typeof errors = {};
+    const junior = usesJuniorCommunity({ gradeLevel });
     if (!firstName.trim()) {
       next.firstName = t('onboarding.info.firstNameRequired', 'First name is required.');
     }
     if (!lastName.trim()) {
       next.lastName = t('onboarding.info.lastNameRequired', 'Last name is required.');
     }
-    if (!country) {
+    if (!country && !junior) {
       next.country = t('onboarding.info.countryRequired', 'Please select your country.');
     }
     setErrors(next);
@@ -144,7 +148,7 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
     i18n.changeLanguage(lng);
   };
 
-  // Best-effort — see class-level comment above (#3). Never throws to the caller.
+  // Admissions saves remain best-effort; junior grades must be persisted before completion.
   const persistProfileFields = async () => {
     const personalProfile: Record<string, unknown> = {};
     if (country) personalProfile.country = country;
@@ -155,7 +159,11 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
     }
 
     const academicProfile: Record<string, unknown> = {};
-    if (gradeLevel) academicProfile.gradeLevel = gradeLevel;
+    if (gradeLevel && /^\d+$/.test(gradeLevel)) academicProfile.gradeLevel = Number(gradeLevel);
+    if (gradeLevel) {
+      academicProfile.gapYear = gradeLevel === 'gap-year';
+      academicProfile.educationStatus = gradeLevel === 'graduated' ? 'graduated' : 'studying';
+    }
     if (school.trim()) academicProfile.currentSchool = school.trim();
 
     const patch: Record<string, unknown> = {};
@@ -165,8 +173,10 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
 
     try {
       if (ensureProfileRef.current) await ensureProfileRef.current;
+      if (usesJuniorCommunity({ gradeLevel })) await ensureMyProfile().unwrap();
       await updateMyStudentProfile(patch as any).unwrap();
     } catch (err) {
+      if (usesJuniorCommunity({ gradeLevel })) throw err;
       // eslint-disable-next-line no-console
       console.warn('[onboarding] could not save profile fields (best-effort, non-blocking)', err);
     }
@@ -180,6 +190,12 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
       await dispatch(updateProfile({ profile: { name: fullName } } as any)).unwrap();
 
       await persistProfileFields();
+
+      if (usesJuniorCommunity({ gradeLevel })) {
+        await patchOnboarding({ phoneNumber: phone.trim() || undefined, completed: true }).unwrap();
+        navigate('/student-hub?section=feed', { replace: true });
+        return;
+      }
 
       const next = nextStepId('info') ?? 'source';
       await patchOnboarding({ phoneNumber: phone.trim() || undefined, step: next }).unwrap();
@@ -195,6 +211,8 @@ export default function StepInfo({ initialName, initialPhone, onNext }: Props) {
   };
 
   const GRADE_LEVEL_OPTIONS = [
+    { value: '7', label: t('onboarding.info.gradeLevel7', '7th grade') },
+    { value: '8', label: t('onboarding.info.gradeLevel8', '8th grade') },
     { value: '9', label: t('onboarding.info.gradeLevel9', '9th grade') },
     { value: '10', label: t('onboarding.info.gradeLevel10', '10th grade') },
     { value: '11', label: t('onboarding.info.gradeLevel11', '11th grade') },

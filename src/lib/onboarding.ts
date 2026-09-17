@@ -19,6 +19,13 @@ export interface OnboardingStatus {
   usageReasons?: string[] | null;
 }
 
+/** Younger pupils use the community rather than the admissions questionnaire. */
+export function usesJuniorCommunity(academic?: { gradeLevel?: unknown; targetDegree?: string | null } | null): boolean {
+  if (academic?.targetDegree === 'master') return false;
+  return academic?.gradeLevel === 7 || academic?.gradeLevel === 8 ||
+    academic?.gradeLevel === '7' || academic?.gradeLevel === '8';
+}
+
 export function isOnboardingComplete(
   user: OnboardingStatus | null | undefined,
 ): boolean {
