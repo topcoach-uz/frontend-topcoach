@@ -12,7 +12,8 @@ import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import { updateProfile } from 'src/app/slices/authSlice';
 import { useGetMeQuery, usePatchOnboardingMutation } from 'src/app/services/users';
 import RoleCard from 'src/pages/auth/signup/_components/role_card';
-import { OnboardingStatus } from 'src/lib/onboarding';
+import { OnboardingStatus, usesJuniorCommunity } from 'src/lib/onboarding';
+import { useGetMyStudentProfileQuery } from 'src/app/services/student-hub/studentProfileApi';
 import {
   OnboardingStepId,
   STEP_ORDER,
@@ -69,6 +70,9 @@ export default function OnboardingWizardPage() {
   });
   const currentUser = me || storeProfile;
   const role = currentUser?.profile?.role;
+  const { data: studentProfile, isLoading: studentLoading } = useGetMyStudentProfileQuery(undefined, {
+    skip: !isAuthenticated || role === UserRole.Mentor,
+  });
   // onboardingStep/hearAboutSource don't exist on the generated UsersSchema
   // type yet (backend PR shipped after the client was generated) — cast
   // through the same OnboardingStatus shape OnboardingGate already uses.
@@ -103,8 +107,12 @@ export default function OnboardingWizardPage() {
     return <Navigate to="/auth/signin" replace />;
   }
 
-  if ((meLoading && !currentUser?.id) || role === UserRole.Mentor || !resolvedInitialStep) {
+  if ((meLoading && !currentUser?.id) || studentLoading || role === UserRole.Mentor || !resolvedInitialStep) {
     return <Loader height="100vh" />;
+  }
+
+  if (usesJuniorCommunity(studentProfile?.academicProfile)) {
+    return <Navigate to="/student-hub?section=feed" replace />;
   }
 
   const showError = (err: any) => {
