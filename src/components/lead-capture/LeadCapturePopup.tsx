@@ -58,7 +58,14 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
   };
 
   const handleNext = () => {
-    form.validateFields().then(() => {
+    const fields = selectedService === 'mentors'
+      ? ['supportType', 'mentorLevel']
+      : selectedService === 'admissions'
+        ? ['admissionGoal']
+        : selectedService === 'myJourney'
+          ? ['journeyNeed']
+          : ['workshopInterest'];
+    form.validateFields(fields).then(() => {
       setCurrentStep(2);
     }).catch(() => {
       // Validation failed
@@ -67,6 +74,8 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
 
   const handleSubmit = async (values: any) => {
     try {
+      // Previous steps are unmounted; onFinish only includes mounted fields.
+      const answers = { ...form.getFieldsValue(true), ...values };
       // Prepare form data based on selected service
       const formData: any = {
         fullName: values.fullName,
@@ -75,7 +84,7 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
         country: values.country || 'Not specified',
         currentEducationLevel: values.educationLevel || 'Not specified',
         howDidYouHear: 'Landing Page Popup',
-        additionalMessage: buildAdditionalMessage(selectedService, values),
+        additionalMessage: buildAdditionalMessage(selectedService, answers),
       };
 
       await submitForm(formData).unwrap();
@@ -389,9 +398,9 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
       onCancel={handleClose}
       footer={null}
       width={520}
+      zIndex={10000}
       className={styles.lead_capture_modal}
       centered
-      closeIcon={null}
     >
       <div className={styles.modal_content}>
         {/* Header */}
@@ -461,4 +470,3 @@ export default function LeadCapturePopup({ visible, onClose }: LeadCapturePopupP
     </Modal>
   );
 }
-
