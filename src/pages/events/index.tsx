@@ -21,6 +21,7 @@ import IvyLeagueWorkshopCard from './_components/IvyLeagueWorkshopCard';
 import IvyEssayWorkshopCard from './_components/IvyEssayWorkshopCard';
 import IvyEssayWorkshopGridCard from './_components/IvyEssayWorkshopGridCard';
 import CheveningWorkshopCard from './_components/CheveningWorkshopCard';
+import HaverfordWorkshopCard from './_components/HaverfordWorkshopCard';
 import PersonalStatementWorkshopGridCard from './_components/PersonalStatementWorkshopGridCard';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
@@ -239,6 +240,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
+        <HaverfordWorkshopCard />
         <CheveningWorkshopCard />
         <IvyEssayWorkshopCard />
         <IvyLeagueWorkshopCard />
