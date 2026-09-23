@@ -184,6 +184,20 @@
   margin-top: 24px;
 }
 
+@media (max-width: 1199px) {
+  .mm3-workspace__breadcrumb {
+    justify-content: flex-end;
+    min-height: 0;
+    margin-bottom: 14px;
+  }
+  .mm3-workspace__breadcrumb > span {
+    display: none;
+  }
+  .mm3-workspace__breadcrumb:not(:has(button)) {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .mm3-workspace {
     padding-inline: 14px;
@@ -191,7 +205,6 @@
   }
 
   .mm3-workspace__breadcrumb {
-    margin-bottom: 14px;
     font-size: 0.73rem;
   }
 
@@ -212,12 +225,9 @@
   .mm3-workspace__breadcrumb span > span { padding-inline: 2px; }
 
   .mm3-workspace__breadcrumb {
-    flex-direction: column;
-    justify-content: center;
-    gap: 1px;
-    min-height: 58px;
-    margin-bottom: 12px;
-    text-align: center;
+    flex-direction: row;
+    min-height: 0;
+    text-align: right;
   }
 
   .mm3-workspace--questions .mm2-runner__progress {

@@ -5,6 +5,7 @@ import { Building2 } from "lucide-react";
 import { useGetUniversityDetailQuery } from "src/app/services/universities";
 import { getTranslation } from "src/lib/i18n/translationUtils";
 import { displayApplicantDate } from "./applicantDate";
+import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import "./applicantPages.scss";
 
 export function ApplicantPage({
@@ -91,11 +92,14 @@ export function UniversityIdentity({
 }
 export function Breadcrumb({ children }: { children: ReactNode }) {
   return (
-    <nav className="applicant-breadcrumb" aria-label="Breadcrumb">
-      <Link to="/student-hub/overview">My journey</Link>
-      <span>/</span>
-      {children}
-    </nav>
+    <>
+      <nav className="applicant-breadcrumb" aria-label="Breadcrumb">
+        <Link to="/student-hub/overview">My journey</Link>
+        <span>/</span>
+        {children}
+      </nav>
+      <ApplicantMobileTrail>{children}</ApplicantMobileTrail>
+    </>
   );
 }
 export const displayDate = displayApplicantDate;

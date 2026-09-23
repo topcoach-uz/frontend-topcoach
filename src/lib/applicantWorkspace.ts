@@ -13,6 +13,9 @@ export function isApplicantWorkspacePath(pathname: string) {
 export const applicantLinks = {
   overview: '/student-hub/overview',
   applications: '/student-hub/applications',
+  universities: '/student-hub/universities',
+  tasks: '/student-hub/tasks',
+  satPrep: '/student-hub/sat-prep',
   newApplication: '/student-hub/applications/new',
   profile: '/student-hub?section=others&target=profile&tab=academic',
   personal: '/student-hub?section=others&target=profile&tab=personal',

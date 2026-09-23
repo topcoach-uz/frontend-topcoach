@@ -26,6 +26,7 @@ import { clearMm3Draft, loadMm3Draft, saveMm3Draft } from './mm3-draft';
 import { MM3Analyzing } from './components/MM3Analyzing';
 import { MM3Results } from './components/MM3Results';
 import { MM2Results } from './components/MM2Results';
+import { ApplicantMobileTrail } from '../applicant/ApplicantTopBarContext';
 import '../applicant/applicantPages.scss';
 import './MajorMatchV2Page.scss';
 import './mm3-workspace.scss';
@@ -309,10 +310,13 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   return (
     <div className={`applicant-page applicant-specialist-page mm2-page mm3-workspace student-hub-page mm3-workspace--${step}`}>
       {!readOnly && (
-        <nav className="mm3-workspace__breadcrumb" aria-label={t('common.breadcrumb', 'Breadcrumb')}>
-          <span><Link to="/student-hub">{t('applicantWorkspace.myJourney', 'My Journey')}</Link><span aria-hidden="true"> / </span>{t('studentHub.nav.aiMajorMatch', 'AI Major Match')}</span>
-          {(step === 'questions' || step === 'review') && <button type="button" onClick={goExit}>{t('majorMatch.nav.exit', 'Save & exit')}</button>}
-        </nav>
+        <>
+          <nav className="mm3-workspace__breadcrumb" aria-label={t('common.breadcrumb', 'Breadcrumb')}>
+            <span><Link to="/student-hub">{t('applicantWorkspace.myJourney', 'My Journey')}</Link><span aria-hidden="true"> / </span>{t('studentHub.nav.aiMajorMatch', 'AI Major Match')}</span>
+            {(step === 'questions' || step === 'review') && <button type="button" onClick={goExit}>{t('majorMatch.nav.exit', 'Save & exit')}</button>}
+          </nav>
+          <ApplicantMobileTrail>{t('studentHub.nav.aiMajorMatch', 'AI Major Match')}</ApplicantMobileTrail>
+        </>
       )}
       {(statusLoading || statusFetching) && step === 'intro' && !status ? (
         <div className="mm2__state">

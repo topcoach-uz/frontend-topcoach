@@ -24,6 +24,7 @@ import {
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { useGetEnrollmentMeQuery } from 'src/app/services/fullSupportApi';
+import { ApplicantTopBarContext } from './ApplicantTopBarContext';
 import './applicantWorkspace.scss';
 
 export default function ApplicantShell({ children }: { children: ReactNode }) {
@@ -36,6 +37,7 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
   const { pathname, search } = useLocation();
   const { t } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [trailTarget, setTrailTarget] = useState<HTMLElement | null>(null);
   useEffect(() => {
     setDrawerOpen(false);
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -43,6 +45,7 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
 
   return (
     <ApplicantOverviewContext.Provider value={query}>
+      <ApplicantTopBarContext.Provider value={trailTarget}>
       <div className="applicant-shell">
         <a href="#applicant-content" className="applicant-skip">
           {t('applicant.skip')}
@@ -58,6 +61,7 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
             <Menu size={20} aria-hidden />
             <span>{t('applicant.myJourney')}</span>
           </button>
+          <div className="applicant-mobile-bar__trail" ref={setTrailTarget} />
         </div>
         <div className="applicant-shell__grid">
           <aside className="applicant-sidebar">
@@ -86,6 +90,7 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
           />
         </Drawer>
       </div>
+      </ApplicantTopBarContext.Provider>
     </ApplicantOverviewContext.Provider>
   );
 }
@@ -123,41 +128,56 @@ function ApplicantNavigation({
     {
       key: 'applications',
       Icon: ClipboardList,
-      links: [
-        { key: 'allApplications', to: applicantLinks.applications },
-        { key: 'documents', to: applicantLinks.documents },
-        { key: 'statements', to: applicantLinks.essays },
-        { key: 'studyProfile', to: applicantLinks.profile },
-        ...(degree === 'bachelor'
-          ? [{ key: 'majorMatch', to: applicantLinks.majorMatch }]
-          : []),
-      ],
+      links: degree === 'bachelor'
+        ? [
+            { key: 'majorMatch', to: applicantLinks.majorMatch },
+            { key: 'findUniversities', to: applicantLinks.universities },
+            { key: 'collegeList', to: applicantLinks.applications },
+            { key: 'essays', to: applicantLinks.essays },
+            { key: 'documents', to: applicantLinks.documents },
+            { key: 'tasks', to: applicantLinks.tasks },
+          ]
+        : [
+            { key: 'allApplications', to: applicantLinks.applications },
+            { key: 'documents', to: applicantLinks.documents },
+            { key: 'statements', to: applicantLinks.essays },
+            { key: 'studyProfile', to: applicantLinks.profile },
+          ],
     },
     {
       key: 'myLearning',
       Icon: CirclePlay,
-      links: [
-        { key: 'myProgress', to: applicantLinks.learning, locked: false },
-        {
-          key: 'admissions',
-          to: applicantLinks.admissions,
-          locked: communityLocked,
-        },
-        ...(degree === 'bachelor'
-          ? [
-              {
-                key: 'satPrep',
-                to: '/student-hub/sat-prep',
-                locked: communityLocked,
-              },
-            ]
-          : []),
-        {
-          key: 'researchPrep',
-          to: '/student-hub/research-prep',
-          locked: communityLocked,
-        },
-      ],
+      links: degree === 'bachelor'
+        ? [
+            {
+              key: 'admissions',
+              to: applicantLinks.admissions,
+              locked: communityLocked,
+            },
+            {
+              key: 'satTestPrep',
+              to: applicantLinks.satPrep,
+              locked: communityLocked,
+            },
+            {
+              key: 'researchPrep',
+              to: '/student-hub/research-prep',
+              locked: communityLocked,
+            },
+          ]
+        : [
+            { key: 'myProgress', to: applicantLinks.learning, locked: false },
+            {
+              key: 'admissions',
+              to: applicantLinks.admissions,
+              locked: communityLocked,
+            },
+            {
+              key: 'researchPrep',
+              to: '/student-hub/research-prep',
+              locked: communityLocked,
+            },
+          ],
     },
     {
       key: 'community',
@@ -179,7 +199,15 @@ function ApplicantNavigation({
   ];
   const selected = (to: string) => {
     const [path, query] = to.split('?');
-    if (pathname !== path) return false;
+    if (pathname !== path) {
+      const nestedPaths: string[] = [
+        applicantLinks.applications,
+        applicantLinks.universities,
+        applicantLinks.essays,
+        applicantLinks.documents,
+      ];
+      return nestedPaths.includes(path) && pathname.startsWith(`${path}/`);
+    }
     if (
       to === applicantLinks.profile &&
       current.get('section') === 'others' &&
@@ -216,10 +244,7 @@ function ApplicantNavigation({
     </Link>
   );
   const group = (entry: (typeof groups)[number]) => {
-    const active =
-      entry.links.some((link) => selected(link.to)) ||
-      (entry.key === 'applications' &&
-        pathname.startsWith('/student-hub/applications'));
+    const active = entry.links.some((link) => selected(link.to));
     const open = expanded[entry.key] ?? active;
     return (
       <div key={entry.key} className="applicant-nav-group">
@@ -249,7 +274,9 @@ function ApplicantNavigation({
             <div key={link.key}>
               {navLink(
                 link.to,
-                t(`applicant.${link.key}`),
+                t(
+                  `applicant.${entry.key === 'myLearning' && link.key === 'researchPrep' ? 'researchPrepShort' : link.key}`,
+                ),
                 selected(link.to),
                 undefined,
                 'locked' in link && link.locked,
