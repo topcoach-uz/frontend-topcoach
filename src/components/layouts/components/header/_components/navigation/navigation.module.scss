@@ -16,6 +16,22 @@
   position: relative;
 }
 
+:global(header[data-applicant-workspace]) .link_active {
+  color: white;
+  background: transparent;
+  position: relative;
+  &::after {
+    content: '';
+    width: 32px;
+    height: 3px;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 0;
+    left: 12px;
+    background: white;
+  }
+}
+
 .link {
   color: rgba(255, 255, 255, 0.75);
   font-size: 16px;

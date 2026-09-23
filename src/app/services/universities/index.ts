@@ -1,5 +1,7 @@
 import { UniversitiesSchema } from 'src/app/api/Api';
 import { RtkApi } from '../api';
+import { normalizeUniversityList, universityListParams } from './universityQuery';
+export { normalizeUniversityList, universityListParams } from './universityQuery';
 
 export const universityApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
@@ -29,24 +31,25 @@ export const universityApi = RtkApi.injectEndpoints({
     }),
 
     // Get all universities (for listing page)
-    getUniversities: build.query<UniversitiesSchema[], { page?: number; limit?: number; search?: string }>({
+    getUniversities: build.query<{ data: UniversitiesSchema[]; total: number }, { page?: number; limit?: number; search?: string }>({
       query: ({ page = 1, limit = 20, search }) => ({
         url: '/university',
         method: 'GET',
-        params: { page, limit, search },
+        params: universityListParams({ page, limit, search }),
         headers: {
           'Cache-Control': 'max-age=300', // 5 minutes
         },
       }),
       providesTags: ['Universities'],
       keepUnusedDataFor: 600,
-      transformResponse: (response: UniversitiesSchema[]) => {
-        // Pre-process universities data
-        return response.map(university => ({
+      transformResponse: (response: UniversitiesSchema[] | { data: UniversitiesSchema[]; total: number }) => {
+        const normalized = normalizeUniversityList(response);
+        const rows = normalized.data;
+        return { data: rows.map(university => ({
           ...university,
           mainImage: university.media?.[0]?.url || null,
           displayRanking: university.rankings?.[0]?.rank || null,
-        }));
+        })), total: normalized.total };
       },
     }),
 

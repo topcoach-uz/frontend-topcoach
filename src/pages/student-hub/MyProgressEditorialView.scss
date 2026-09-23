@@ -1494,3 +1494,118 @@
 .myprog__locked-cta:hover {
   text-decoration: underline;
 }
+
+/* Applicant workspace adaptation. The shared ApplicantPage owns the page
+   heading and outer rhythm; this view keeps its data-rich dashboard layouts
+   while using the same panels, controls and mobile density as the workspace. */
+.applicant-progress-page.myprog {
+  gap: 24px;
+  padding: 0;
+  color: #302f2d;
+}
+
+.applicant-progress-page {
+  .myprog__card {
+    background: #fff;
+    border-color: #e7e2dc;
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: none;
+  }
+
+  .myprog__card-title,
+  .myprog__track-name,
+  .myprog__track-stat-num,
+  .myprog__sessions-title,
+  .myprog__session-date,
+  .myprog__airecs-name {
+    font-family: inherit;
+    color: #302f2d;
+  }
+
+  .myprog__card-eyebrow,
+  .myprog__active-meta,
+  .myprog__track-stat-label,
+  .myprog__session-with,
+  .myprog__airecs-desc {
+    color: #606976;
+  }
+
+  .myprog__btn {
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .myprog__btn--primary {
+    background: #8b0000;
+    border-color: #8b0000;
+    box-shadow: none;
+
+    &:hover {
+      background: #6d0000;
+      border-color: #6d0000;
+    }
+  }
+
+  .myprog__btn--ghost {
+    border-color: #e7e2dc;
+    color: #302f2d;
+  }
+
+  .myprog__track {
+    background: #f7f5f2;
+    border-color: #e7e2dc;
+    border-radius: 12px;
+  }
+
+  .myprog__track-icon {
+    color: #8b0000;
+    background: #f8ecec;
+  }
+
+  .myprog__track-bar-fill,
+  .myprog__active-bar-fill {
+    background: #8b0000;
+  }
+
+  .myprog__sessions-tabs button {
+    min-height: 44px;
+  }
+
+  .myprog__promo {
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 767px) {
+  .applicant-progress-page.myprog {
+    gap: 20px;
+  }
+
+  .applicant-progress-page {
+    .myprog__card {
+      padding: 20px;
+      border-radius: 14px;
+    }
+
+    .myprog__track-stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .myprog__track-stat {
+      min-width: 0;
+      padding-inline: 6px;
+    }
+
+    .myprog__track-stat-label {
+      overflow-wrap: anywhere;
+    }
+
+    .myprog__mmhero__actions,
+    .myprog__track-cta {
+      width: 100%;
+    }
+  }
+}

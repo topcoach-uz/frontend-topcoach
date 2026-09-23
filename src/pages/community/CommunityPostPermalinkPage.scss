@@ -1,4 +1,4 @@
-/* Community post permalink — minimal, editorial. */
+@use "src/styles/editorial-tokens" as ed;
 
 $cp-cream: #faf8f3;
 $cp-paper: #ffffff;
@@ -9,16 +9,99 @@ $cp-hairline: #e5e3da;
 $cp-brand: #7b1f2f;
 
 .cp {
+  font-family: ed.$sans;
   min-height: calc(100vh - 64px);
   background: $cp-cream;
   padding: 32px 20px 64px;
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 760px) minmax(240px, 320px);
+    gap: 28px;
+    align-items: start;
+  }
+  &__main {
+    min-width: 0;
+  }
+  &__context {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    color: ed.$muted;
+  }
+  &__discussion {
+    margin-top: 26px;
+    scroll-margin-top: 100px;
+  }
+  &__discussion-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    color: ed.$muted;
+    font-size: 12px;
+  }
+  h2 {
+    font: 600 22px/1.3 ed.$serif;
+    margin: 0;
+    color: ed.$ink;
+  }
+  &__rail {
+    display: grid;
+    gap: 16px;
+  }
+  &__rail section {
+    padding: 20px;
+    background: white;
+    border: 1px solid ed.$hairline;
+    border-radius: 12px;
+  }
+  &__rail h2 {
+    font-size: 18px;
+  }
+  &__rail p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: ed.$muted;
+  }
+  &__rail a {
+    color: ed.$brand;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  &__share-link {
+    display: grid;
+    gap: 8px;
+    font-size: 12px;
+    color: ed.$muted;
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid ed.$hairline;
+      border-radius: 8px;
+    }
+  }
+  .cf__comments {
+    background: white;
+    border: 1px solid ed.$hairline;
+    border-radius: 12px;
+    padding: 18px;
+  }
+  :is(button, a, input):focus-visible {
+    outline: 2px solid ed.$brand;
+    outline-offset: 3px;
+  }
 
   &__wrap {
-    max-width: 720px;
+    max-width: 1140px;
     margin: 0 auto;
   }
 
   &__back {
+    text-decoration: none;
     background: transparent;
     border: 0;
     color: $cp-ink-soft;
@@ -29,10 +112,13 @@ $cp-brand: #7b1f2f;
     cursor: pointer;
     padding: 6px 0;
     margin-bottom: 16px;
-    &:hover { color: $cp-brand; }
+    &:hover {
+      color: $cp-brand;
+    }
   }
 
-  &__loading, &__error {
+  &__loading,
+  &__error {
     background: $cp-paper;
     border: 1px solid $cp-hairline;
     border-radius: 14px;
@@ -40,7 +126,10 @@ $cp-brand: #7b1f2f;
     color: $cp-ink-soft;
     font-size: 14px;
   }
-  &__error { border-color: rgba(124, 31, 47, 0.2); color: $cp-brand; }
+  &__error {
+    border-color: rgba(124, 31, 47, 0.2);
+    color: $cp-brand;
+  }
 
   &__post {
     background: $cp-paper;
@@ -52,12 +141,13 @@ $cp-brand: #7b1f2f;
 
   &__head {
     display: grid;
-    grid-template-columns: 44px 1fr auto;
+    grid-template-columns: 44px minmax(0, 1fr);
     gap: 12px;
     align-items: center;
     margin-bottom: 14px;
   }
   &__avatar {
+    object-fit: cover;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -67,10 +157,18 @@ $cp-brand: #7b1f2f;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    &--official { border-radius: 8px; }
+    &--official {
+      border-radius: 8px;
+    }
   }
-  &__author { font-weight: 600; color: $cp-ink; }
-  &__meta { color: $cp-muted; font-size: 12.5px; }
+  &__author {
+    font-weight: 600;
+    color: $cp-ink;
+  }
+  &__meta {
+    color: $cp-muted;
+    font-size: 12.5px;
+  }
 
   &__cat {
     text-transform: uppercase;
@@ -84,11 +182,16 @@ $cp-brand: #7b1f2f;
   }
 
   &__body {
+    overflow-wrap: anywhere;
     color: $cp-ink;
     font-size: 16px;
     line-height: 1.6;
-    p { margin: 0 0 10px; }
-    p:last-child { margin-bottom: 0; }
+    p {
+      margin: 0 0 10px;
+    }
+    p:last-child {
+      margin-bottom: 0;
+    }
   }
 
   &__media {
@@ -96,7 +199,11 @@ $cp-brand: #7b1f2f;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     margin: 16px 0;
-    img { width: 100%; border-radius: 8px; display: block; }
+    img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+    }
   }
 
   &__meta-row {
@@ -108,14 +215,23 @@ $cp-brand: #7b1f2f;
     border-bottom: 1px solid $cp-hairline;
     margin-bottom: 8px;
   }
-  &__meta-views { margin-left: auto; }
+  &__meta-views {
+    margin-left: auto;
+  }
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     padding: 6px 0;
   }
   &__action {
+    text-decoration: none;
+    min-height: 44px;
+    &:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
     appearance: none;
     background: transparent;
     border: 0;
@@ -128,14 +244,46 @@ $cp-brand: #7b1f2f;
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    &:hover { background: rgba(28, 26, 23, 0.04); color: $cp-ink; }
-    &--on { color: $cp-brand; }
+    &:hover {
+      background: rgba(28, 26, 23, 0.04);
+      color: $cp-ink;
+    }
+    &--on {
+      color: $cp-brand;
+    }
   }
 
   &__open-feed {
     text-align: center;
     margin-top: 14px;
     font-size: 13px;
-    a { color: $cp-brand; text-decoration: none; }
+    a {
+      color: $cp-brand;
+      text-decoration: none;
+    }
+  }
+  @media (max-width: 900px) {
+    &__layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 600px) {
+    padding: 20px 16px 40px;
+    &__post {
+      padding: 16px;
+    }
+    &__action {
+      padding: 8px;
+      font-size: 12px;
+    }
+    &__media {
+      grid-template-columns: 1fr;
+    }
+    &__meta-row {
+      flex-wrap: wrap;
+    }
+    .cf__comments {
+      padding: 12px;
+    }
   }
 }

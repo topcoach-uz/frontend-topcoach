@@ -221,6 +221,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
         url: `/essay-management/essays/${essayId}/versions`,
         method: 'GET',
       }),
+      transformResponse: (response: any) =>
+        response?.data !== undefined && response?.success !== undefined
+          ? response
+          : { data: response, success: true },
       providesTags: (result, error, essayId) => [
         { type: 'StudentEssays', id: essayId },
       ],
@@ -236,6 +240,10 @@ export const essayManagementApi = RtkApi.injectEndpoints({
         method: 'POST',
         body: { content, changeSummary },
       }),
+      transformResponse: (response: any) =>
+        response?.data !== undefined && response?.success !== undefined
+          ? response
+          : { data: response, success: true },
       invalidatesTags: (result, error, { essayId }) => [
         { type: 'StudentEssays', id: essayId },
       ],

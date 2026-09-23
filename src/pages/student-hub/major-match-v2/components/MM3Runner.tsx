@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import {
   MM3_PARTS,
   MM3_QUESTION_ORDER,
-  MM3_QUESTIONS_BY_ID,
+  getMm3QuestionMap,
   MM3_TOTAL_PARTS,
   MM3_TOTAL_QUESTIONS,
   mm3QuestionKey,
@@ -26,6 +26,7 @@ import '../mm3-runner.scss';
  */
 
 interface MM3RunnerProps {
+  targetDegree?: string | null;
   currentIndex: number;
   answers: Record<string, MM3Answer>;
   prefilledSlugs: readonly string[];
@@ -34,9 +35,12 @@ interface MM3RunnerProps {
   onNext: () => void;
   onBack: () => void;
   onExit: () => void;
+  showSaveExit?: boolean;
+  onReturnToReview?: () => void;
 }
 
 export const MM3Runner: React.FC<MM3RunnerProps> = ({
+  targetDegree,
   currentIndex,
   answers,
   prefilledSlugs,
@@ -45,11 +49,13 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
   onNext,
   onBack,
   onExit,
+  showSaveExit = true,
+  onReturnToReview,
 }) => {
   const { t } = useTranslation();
 
   const questionId = MM3_QUESTION_ORDER[currentIndex];
-  const question = MM3_QUESTIONS_BY_ID.get(questionId);
+  const question = getMm3QuestionMap(targetDegree).get(questionId);
 
   // Out-of-range index (shouldn't happen, but never crash the runner over it).
   if (!question) return null;
@@ -68,6 +74,16 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
   return (
     <div className="mm2-runner">
       <div className="mm2-runner__progress">
+        <div className="mm3-runner__parts" aria-label={t('majorMatch3.nav.parts', 'Assessment parts')}>
+          {MM3_PARTS.map((item) => (
+            <span key={item.slug} className={item.index === part.index ? 'is-current' : item.index < part.index ? 'is-complete' : ''}>
+              <b>{String(item.index).padStart(2, '0')}</b>{' '}
+              {targetDegree === 'master' && item.slug === 'academic'
+                ? t('majorMatch3.part.academic.masterLabel', 'Graduate profile')
+                : t(`majorMatch3.part.${item.slug}.label`)}
+            </span>
+          ))}
+        </div>
         <div className="mm2-runner__progress-top">
           <span className="mm2-runner__section-label">
             {t(`majorMatch3.part.${part.slug}.title`)} ·{' '}
@@ -76,9 +92,11 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
               total: MM3_TOTAL_PARTS,
             })}
           </span>
-          <button type="button" className="mm2-runner__exit" onClick={onExit}>
-            {t('majorMatch.nav.exit', 'Save & exit')}
-          </button>
+          {showSaveExit && (
+            <button type="button" className="mm2-runner__exit" onClick={onExit}>
+              {t('majorMatch.nav.exit', 'Save & exit')}
+            </button>
+          )}
         </div>
         <div className="mm2-runner__bar">
           <div className="mm2-runner__bar-fill" style={{ width: `${overallProgressPct}%` }} />
@@ -119,10 +137,16 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
             onClick={onNext}
             disabled={!answered || submitting}
           >
-            {isLast ? <Check size={15} /> : <ArrowRight size={15} />}
             {isLast ? t('majorMatch3.nav.analyze') : t('majorMatch3.nav.continue')}
+            {isLast ? <Check size={15} /> : <ArrowRight size={15} />}
           </button>
         </div>
+
+        {onReturnToReview && (
+          <button type="button" className="mm3-runner__review-return" onClick={onReturnToReview}>
+            {t('majorMatch3.review.return', 'Return to review')}
+          </button>
+        )}
 
         {!answered && (
           <p className="mm3-runner__hint" aria-live="polite">

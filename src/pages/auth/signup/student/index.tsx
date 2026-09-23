@@ -78,10 +78,14 @@ export default function StudentRegistrationPage() {
           password: values.password?.trim(),
           name: values.name?.trim(),
         } as any)
-        .then(() => {
+        .then((response) => {
           // Meta Pixel: the account exists now. Email is still unverified at
           // this point, which is what `CompleteRegistration` means here.
           trackCompleteRegistration('student');
+          if (response.data?.emailVerificationRequired === false) {
+            navigate(redirectTo ? `/auth/signin?redirect=${encodeURIComponent(redirectTo)}` : '/auth/signin');
+            return;
+          }
           const params = new URLSearchParams({ email });
           if (redirectTo) params.set('redirect', redirectTo);
           navigate(`/auth/verification?${params.toString()}`);

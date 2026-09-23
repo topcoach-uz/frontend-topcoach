@@ -13,6 +13,11 @@ import {
   ApiResponse,
 } from './types';
 
+const asApiResponse = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
+  response && typeof response === 'object' && 'data' in response
+    ? response as ApiResponse<T>
+    : { data: response as T, success: true };
+
 export const applicationTrackingApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // ========================================
@@ -61,6 +66,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: asApiResponse<CollegeApplication>,
       invalidatesTags: ['CollegeApplications'],
     }),
 
@@ -74,6 +80,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: data,
       }),
+      transformResponse: asApiResponse<CollegeApplication>,
       invalidatesTags: (result, error, { id }) => [
         { type: 'CollegeApplications', id },
         'CollegeApplications',
@@ -113,6 +120,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         url: `/application-tracking/tasks/${id}`,
         method: 'GET',
       }),
+      transformResponse: asApiResponse<ApplicationTask>,
       providesTags: (result, error, id) => [{ type: 'ApplicationTasks', id }],
     }),
 
@@ -126,6 +134,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: asApiResponse<ApplicationTask>,
       invalidatesTags: ['ApplicationTasks'],
     }),
 
@@ -139,6 +148,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: data,
       }),
+      transformResponse: asApiResponse<ApplicationTask>,
       invalidatesTags: (result, error, { id }) => [
         { type: 'ApplicationTasks', id },
         'ApplicationTasks',
@@ -164,6 +174,7 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: { completedDate },
       }),
+      transformResponse: asApiResponse<ApplicationTask>,
       invalidatesTags: (result, error, { id }) => [
         { type: 'ApplicationTasks', id },
         'ApplicationTasks',

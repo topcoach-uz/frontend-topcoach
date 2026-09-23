@@ -243,6 +243,7 @@ export default function MentorDetailsPage() {
                 mentorId={mentorId}
                 mentorName={mentorData?.profile?.name || 'Mentor'}
                 mentorLevel={mentorData?.mentorProfile?.level}
+                paymentPlans={plans}
                 onPaymentRequired={(params) => {
                   const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                   const plan = plans?.find((p) => p.type === planType);
@@ -291,6 +292,7 @@ export default function MentorDetailsPage() {
               mentorId={mentorId}
               mentorName={mentorData?.profile?.name || 'Mentor'}
               mentorLevel={mentorData?.mentorProfile?.level}
+              paymentPlans={plans}
               onPaymentRequired={(params) => {
                 const planType = params.type === 'individual60m' ? PaymentPlanTypeEnum.Individual60M : PaymentPlanTypeEnum.Individual30M;
                 const plan = plans?.find((p) => p.type === planType);

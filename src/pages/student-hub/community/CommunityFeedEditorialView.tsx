@@ -43,6 +43,8 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { message } from 'antd';
+import CommunityReportDialog from '../../community/CommunityReportDialog';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
@@ -78,6 +80,7 @@ import {
 import { MessageType } from 'src/app/services/chat/types';
 import { useCommunitySocket } from 'src/lib/socket/communitySocket';
 import { hostName } from 'src/app/services/api/const';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 import './CommunityFeedEditorialView.scss';
 
 /**
@@ -164,14 +167,6 @@ const HOUSE_RULES = [
   "Report, don't pile on. Our team reviews every flag.",
 ];
 
-const REPORT_REASONS: Array<{ value: string; label: string }> = [
-  { value: 'SPAM', label: 'Spam or advertising' },
-  { value: 'HARASSMENT', label: 'Harassment or bullying' },
-  { value: 'OFF_TOPIC', label: 'Off-topic for this community' },
-  { value: 'MISINFORMATION', label: 'Misleading or false information' },
-  { value: 'SAFETY', label: 'Safety concern' },
-  { value: 'OTHER', label: 'Something else' },
-];
 
 /* ─── API → UI adapters ──────────────────────────────────────── */
 
@@ -366,7 +361,7 @@ const renderMentionableLine = (
   return out;
 };
 
-const renderBody = (body: string, onTagClick?: (tag: string) => void) =>
+export const renderBody = (body: string, onTagClick?: (tag: string) => void) =>
   body.split('\n').map((line, i) => {
     if (!line.trim()) return <br key={i} />;
     // Light **bold** + *italic* + @mentions + #hashtags. No full markdown lib.
@@ -494,9 +489,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState('');
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
-  const [reportReason, setReportReason] = useState<string>('');
-  const [reportNote, setReportNote] = useState('');
-  const [reportPing, setReportPing] = useState<string | null>(null);
+  const [reportKind, setReportKind] = useState<'post' | 'comment'>('post');
   /**
    * 'feed' = chronological + pinned firehose (default).
    * 'saved' = just the posts the current user has bookmarked.
@@ -862,14 +855,6 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
       });
   };
 
-  const submitReport = () => {
-    if (!reportReason) return;
-    setReportPing('Thanks. Our team will review this within a day.');
-    setTimeout(() => setReportPing(null), 2400);
-    setReportTargetId(null);
-    setReportReason('');
-    setReportNote('');
-  };
 
   const showNewBanner = newPostCount > 0;
   const scrollToTop = () => {
@@ -879,6 +864,10 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
   };
 
   return (
+    <ApplicantPage
+      title="Community Feed"
+      subtitle="Ask clearly, learn together, and celebrate meaningful progress."
+    >
     <div className="cf" ref={feedTopRef}>
       <div className="cf__layout">
         {/* ═══ MAIN COLUMN ═════════════════════════════════════════ */}
@@ -948,6 +937,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                 title="Saved posts"
               >
                 <Bookmark size={14} />
+                <span>Saved posts</span>
               </button>
             </div>
           )}
@@ -1438,8 +1428,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                                 className="cf__post-menu-item"
                                 onClick={() => {
                                   setReportTargetId(post.id);
-                                  setReportReason('');
-                                  setReportNote('');
+                                  setReportKind('post');
                                   setMenuOpenId(null);
                                 }}
                               >
@@ -1688,8 +1677,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                         className="cf__action cf__action--icon"
                         onClick={() => {
                           setReportTargetId(post.id);
-                          setReportReason('');
-                          setReportNote('');
+                          setReportKind('post');
                         }}
                         aria-label="Report"
                       >
@@ -1704,8 +1692,8 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                       postId={post.id}
                       currentUser={currentUser}
                       onReport={(commentId) => {
+                        setReportKind('comment');
                         setReportTargetId(commentId);
-                        setReportReason('');
                       }}
                       isQuestion={post.kind === 'QUESTION'}
                       answeredCommentId={post.answeredCommentId}
@@ -1810,7 +1798,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
           {trending.length > 0 && (
             <section className="cf__widget">
               <div className="cf__widget-head">
-                <TrendingUp size={13} /> TRENDING THIS WEEK
+                <TrendingUp size={13} /> Trending this week
               </div>
               <ul className="cf__trending">
                 {trending.map((post, i) => (
@@ -1869,7 +1857,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
           {topMentors.length > 0 && (
             <section className="cf__widget">
               <div className="cf__widget-head">
-                <GraduationCap size={13} /> TOP MENTORS · THIS WEEK
+                <GraduationCap size={13} /> Top mentors · This week
               </div>
               <ul className="cf__mentors">
                 {topMentors.map((m) => (
@@ -1920,7 +1908,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
 
           {/* ─── Top contributors (helpful replies) ─── */}
           <section className="cf__widget">
-            <div className="cf__widget-head">TOP CONTRIBUTORS · THIS MONTH</div>
+            <div className="cf__widget-head">Top contributors · This month</div>
             <ul className="cf__leaderboard">
               {leaderboard.length === 0 && (
                 <li className="cf__leader-empty">No helpful replies yet this month.</li>
@@ -1953,7 +1941,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
           {!houseRulesDismissed && (
             <section className="cf__widget cf__rules-widget">
               <div className="cf__widget-head cf__widget-head--row">
-                <span>HOUSE RULES</span>
+                <span>House rules</span>
                 <button
                   type="button"
                   className="cf__widget-dismiss"
@@ -1978,77 +1966,21 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
         </aside>
       </div>
 
-      {/* ═══ REPORT DIALOG ═══════════════════════════════════════ */}
-      {reportTargetId && (
-        <div className="cf__dialog-backdrop" onClick={() => setReportTargetId(null)}>
-          <div className="cf__dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="cf__dialog-eyebrow">REPORT POST</div>
-            <h3 className="cf__dialog-title">What&rsquo;s wrong here?</h3>
-            <button
-              type="button"
-              className="cf__dialog-close"
-              onClick={() => setReportTargetId(null)}
-              aria-label="Close"
-            >
-              <X size={16} />
-            </button>
-            <div className="cf__report-reasons">
-              {REPORT_REASONS.map((r) => (
-                <label
-                  key={r.value}
-                  className={`cf__report-reason ${reportReason === r.value ? 'cf__report-reason--on' : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name="report-reason"
-                    checked={reportReason === r.value}
-                    onChange={() => setReportReason(r.value)}
-                  />
-                  <span className="cf__report-reason-bullet" />
-                  {r.label}
-                </label>
-              ))}
-            </div>
-            <textarea
-              className="cf__report-note"
-              placeholder="Add context for our moderators (optional)…"
-              value={reportNote}
-              onChange={(e) => setReportNote(e.target.value)}
-              rows={3}
-            />
-            <div className="cf__dialog-footer">
-              <span className="cf__dialog-foot-note">Reports are anonymous to the author.</span>
-              <div className="cf__dialog-foot-actions">
-                <button
-                  type="button"
-                  className="cf__btn cf__btn--ghost"
-                  onClick={() => setReportTargetId(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="cf__btn cf__btn--primary"
-                  disabled={!reportReason}
-                  onClick={submitReport}
-                >
-                  <Flag size={14} /> Submit report
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {reportPing && <div className="cf__toast">{reportPing}</div>}
+      {reportTargetId && <CommunityReportDialog
+        key={`${reportKind}:${reportTargetId}`}
+        target={{ id: reportTargetId, kind: reportKind }}
+        onClose={() => { setReportTargetId(null); setReportKind('post'); }}
+        onSuccess={() => message.success('Your report has been sent to our moderation team.')}
+      />}
       {composerCopiedToast && <div className="cf__toast">{composerCopiedToast}</div>}
     </div>
+    </ApplicantPage>
   );
 };
 
 /* ─── sub-components ────────────────────────────────────────── */
 
-const PostCommentsSection: React.FC<{
+export const PostCommentsSection: React.FC<{
   postId: string;
   currentUser: Props['currentUser'];
   onReport: (commentId: string) => void;
@@ -2067,7 +1999,7 @@ const PostCommentsSection: React.FC<{
   onToggleAnswer,
   onTagClick,
 }) => {
-  const { data, isLoading } = useListCommentsQuery(postId);
+  const { data, isLoading, isError, refetch } = useListCommentsQuery(postId);
   const [createComment, { isLoading: isPosting }] = useCreateCommentMutation();
   const [toggleCommentLike] = useToggleCommentLikeMutation();
   const [draft, setDraft] = useState('');
@@ -2105,7 +2037,7 @@ const PostCommentsSection: React.FC<{
     setDraft('');
     createComment({ postId, body: { body: text } })
       .unwrap()
-      .catch(() => setDraft(text));
+      .catch(() => { setDraft(text); message.error('Your comment was not sent. Please try again.'); });
   };
 
   const submitReply = (parentCommentId: string) => {
@@ -2118,11 +2050,12 @@ const PostCommentsSection: React.FC<{
       .catch(() => {
         setReplyDraft(text);
         setReplyOpenId(parentCommentId);
+        message.error('Your reply was not sent. Please try again.');
       });
   };
 
   const onToggleLike = (commentId: string) => {
-    void toggleCommentLike({ commentId, postId });
+    void toggleCommentLike({ commentId, postId }).unwrap().catch(() => message.error('Could not update this like. Please try again.'));
   };
 
   const onOpenReply = (commentId: string) => {
@@ -2150,6 +2083,7 @@ const PostCommentsSection: React.FC<{
         )}
         <input
           className="cf__comment-input"
+          aria-label="Add a comment"
           placeholder="Add a thoughtful comment…  (+2 coins)"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -2169,12 +2103,14 @@ const PostCommentsSection: React.FC<{
       {isLoading && (
         <div className="cf__comment-loading">Loading comments…</div>
       )}
+      {isError && <div role="alert">Comments could not be loaded. <button type="button" onClick={() => refetch()}>Try again</button></div>}
+      {!isLoading && !isError && comments.length === 0 && <p className="cf__comment-loading">No comments yet. Start the conversation.</p>}
       {comments.map((c) => (
         <CommentNode
           key={c.id}
           comment={c}
           currentUser={currentUser}
-          onReport={() => onReport(c.id)}
+          onReport={onReport}
           onToggleLike={onToggleLike}
           replyOpenId={replyOpenId}
           replyDraft={replyDraft}
@@ -2196,7 +2132,7 @@ const PostCommentsSection: React.FC<{
 const CommentNode: React.FC<{
   comment: Comment;
   currentUser: Props['currentUser'];
-  onReport: () => void;
+  onReport: (commentId: string) => void;
   onToggleLike: (commentId: string) => void;
   /** Reply state lives in the parent so only one box is open at a time. */
   replyOpenId: string | null;
@@ -2290,7 +2226,7 @@ const CommentNode: React.FC<{
               <MessageCircle size={11} /> Reply
             </button>
           )}
-          <button type="button" className="cf__comment-action" onClick={onReport}>
+          <button type="button" className="cf__comment-action" onClick={() => onReport(comment.id)}>
             <Flag size={11} /> Report
           </button>
           {isQuestion && canMarkAnswer && depth === 0 && (
@@ -2386,7 +2322,7 @@ const CommentNode: React.FC<{
  *   - Post-vote / closed: each option becomes a labeled bar with a
  *     percentage and a vote count. The viewer's pick is highlighted.
  */
-const PollCard: React.FC<{
+export const PollCard: React.FC<{
   poll: CommunityPoll;
   isAuthor: boolean;
   onVote: (optionId: string) => void;

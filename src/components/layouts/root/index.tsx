@@ -5,6 +5,7 @@ import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import { scrollToTop } from 'src/utils';
 import CustomChatAgent from 'src/components/CustomChatAgent';
 import ElevenLabsLoginPrompt from 'src/components/ElevenLabsLoginPrompt';
+import { isApplicantWorkspacePath } from 'src/lib/applicantWorkspace';
 
 export default function RootLayout() {
   const dispatch = useAppDispatch();
@@ -20,14 +21,16 @@ export default function RootLayout() {
   // Hide the AI chat FAB on admin pages and inside the SAT runner so it
   // doesn't overlap the test surface.
   const hideChatFab =
+    pathname.startsWith('/onboarding') ||
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/student-hub/sat-prep/runner');
+    pathname.startsWith('/student-hub/sat-prep/runner') ||
+    isApplicantWorkspacePath(pathname);
 
   return (
     <>
       <Outlet />
       {isAuthenticated && !hideChatFab ? <CustomChatAgent /> : null}
-      {!isAuthenticated ? <ElevenLabsLoginPrompt /> : null}
+      {!isAuthenticated && !hideChatFab ? <ElevenLabsLoginPrompt /> : null}
     </>
   );
 }

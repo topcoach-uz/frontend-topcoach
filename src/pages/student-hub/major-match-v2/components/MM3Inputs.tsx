@@ -47,10 +47,11 @@ export const isMM3Answered = (q: MM3Question, a: MM3Answer): boolean => {
     case 'multi':
       return Array.isArray(a) && a.length > 0;
     case 'fields': {
+      if (q.requiredFields.length === 0) return true;
       if (!a || typeof a !== 'object' || Array.isArray(a)) return false;
       const v = a as MM3FieldsAnswer;
       // Selects gate Continue; free text never does (mirrors the prototype).
-      return q.requiredFields.every((k) => Boolean(v[k]));
+      return q.requiredFields.every((k) => typeof v[k] === 'string' && v[k].trim().length > 0);
     }
     default:
       return false;

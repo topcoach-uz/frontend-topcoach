@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useStudentProfile } from './useStudentHub';
-import { useGetMajorMatchStatusQuery } from 'src/app/services/student-hub/majorMatchApi';
+import {
+  useGetLatestMm3ReportQuery,
+  useGetMajorMatchStatusQuery,
+} from 'src/app/services/student-hub/majorMatchApi';
 import { useCommunityAccessGate } from 'src/lib/communityAccess';
 
 export const MAJOR_MATCH_PROMPT_CLOSED_KEY = 'topcoach_mm_prompt_closed';
@@ -46,6 +49,14 @@ export function useMajorMatchPromptState() {
   } = useGetMajorMatchStatusQuery(studentProfileId ?? '', {
     skip: !studentProfileId,
   });
+  const {
+    data: latestMm3Report,
+    isLoading: latestMm3Loading,
+  } = useGetLatestMm3ReportQuery(studentProfileId ?? '', {
+    // Once the status endpoint explicitly confirms MM3 completion there is
+    // no reason to make the compatibility request.
+    skip: !studentProfileId || status?.hasCompletedMm3 === true,
+  });
 
   // Cheapest to mount unconditionally here rather than gating it behind the
   // used-attempt edge case — see StepAcademic.tsx's comment on the same
@@ -53,8 +64,15 @@ export function useMajorMatchPromptState() {
   // visible, not only in the rare used-attempt branch.
   const gate = useCommunityAccessGate();
 
-  const hasCompletedAssessment = !!status && (status.hasCompletedV2 || status.hasCompletedLegacy);
-  const loading = profileLoading || (!!studentProfileId && statusLoading);
+  const hasCompletedAssessment = Boolean(
+    status?.hasCompletedV2 ||
+      status?.hasCompletedLegacy ||
+      status?.hasCompletedMm3 ||
+      latestMm3Report,
+  );
+  const loading =
+    profileLoading ||
+    (!!studentProfileId && (statusLoading || (status?.hasCompletedMm3 !== true && latestMm3Loading)));
 
   const canStart = status?.access?.canStart ?? true;
   const requiresCommunityEnrollment = !!status?.access?.requiresCommunityEnrollment;

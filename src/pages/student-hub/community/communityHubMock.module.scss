@@ -6,6 +6,18 @@
   box-sizing: border-box;
 }
 
+// Existing feature panes can live in the applicant shell without a second sidebar.
+.hubPageOuter.hubEmbedded {
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  .hub { display: block; }
+  .leftCol { display: none; }
+  .centerCol { width: 100%; min-width: 0; }
+  .sectionSwapHubPad { padding: 0; }
+}
+
 /* Feed editorial mode: paint cream behind the entire hub row so the feed,
    sidebars, and any gap between them read as one continuous spread. The
    negative side margins extend the cream past the centered max-width so

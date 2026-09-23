@@ -288,6 +288,7 @@ const PersonalProfile: React.FC<PersonalProfileProps> = ({ data, readOnly = fals
         form={form}
         layout="vertical"
         onFinish={handleSave}
+        disabled={isReadOnly}
         className="personal-form"
       >
         {/* Location Information Section */}

@@ -244,6 +244,7 @@ export const communityFeedApi = createApi({
     /* ─── engagement ─────────────────────────────────────── */
     togglePostLike: builder.mutation<ToggleLikeResponse, string>({
       query: (postId) => ({ url: `community/posts/${postId}/like`, method: 'POST' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'Post', id }, { type: 'Post', id: 'SAVED' }],
       // Optimistic update: bump the local cache before the server confirms.
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
         const state = getState() as { communityFeedApi: { queries: Record<string, unknown> } };
@@ -279,7 +280,7 @@ export const communityFeedApi = createApi({
 
     togglePostSave: builder.mutation<ToggleSaveResponse, string>({
       query: (postId) => ({ url: `community/posts/${postId}/save`, method: 'POST' }),
-      invalidatesTags: [{ type: 'Post', id: 'SAVED' }],
+      invalidatesTags: (_r, _e, id) => [{ type: 'Post', id }, { type: 'Post', id: 'SAVED' }],
       async onQueryStarted(postId, { dispatch, queryFulfilled, getState }) {
         const state = getState() as { communityFeedApi: { queries: Record<string, unknown> } };
         const listKeys = Object.keys(state.communityFeedApi.queries).filter((k) =>

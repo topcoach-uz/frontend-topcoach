@@ -16,6 +16,7 @@ import { ReferralCodeDisplay } from 'src/components/referral/ReferralCodeDisplay
 import VideoPreviewSection from 'src/components/video-preview/VideoPreviewSection';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import CommunityLockedPage from '../community/CommunityLockedPage';
+import '../applicant/applicantPages.scss';
 import './AdmissionsProgramPage.scss';
 
 // Local enums for course types and payment status
@@ -210,7 +211,7 @@ const AdmissionsProgramPage: React.FC = () => {
   // Only show loading for pricing data, not enrollment status
   if (pricingLoading) {
     return (
-      <div className="admissions-program-page">
+      <div className="applicant-page applicant-specialist-page admissions-program-page">
         <div className="admissions-loading-content">
           <div className="loading-spinner-container">
             <Spin size="large" />
@@ -257,7 +258,7 @@ const AdmissionsProgramPage: React.FC = () => {
   };
 
   return (
-    <div className="admissions-program-page">
+    <div className="applicant-page applicant-specialist-page admissions-program-page">
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">

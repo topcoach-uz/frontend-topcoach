@@ -54,6 +54,7 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import { ApplicantPage } from './applicant/ApplicantPage';
 import { joinNameParts, sanitizeName } from 'src/utils/displayName';
 import {
   IVY_WORKSHOP_MEET_URL,
@@ -95,12 +96,14 @@ interface AiRecItem {
  */
 function LockedShell({
   locked,
+  isMastersGoal,
   tone,
   className,
   onUnlock,
   children,
 }: {
   locked: boolean;
+  isMastersGoal: boolean;
   tone: 'light' | 'dark';
   className: string;
   onUnlock: () => void;
@@ -121,7 +124,9 @@ function LockedShell({
           {t('studentHub.myProgress.lockedTitle', 'Complete AI Major Match to unlock')}
         </p>
         <button type="button" className="myprog__locked-cta" onClick={onUnlock}>
-          {t('studentHub.myProgress.lockedCta', 'Find My Best-Fit Majors')}
+          {isMastersGoal
+            ? t('studentHub.myProgress.lockedMastersCta', 'Explore graduate fields')
+            : t('studentHub.myProgress.lockedCta', 'Find My Best-Fit Majors')}
           <ArrowRight size={13} />
         </button>
       </div>
@@ -140,9 +145,10 @@ const MyProgressEditorialView: React.FC = () => {
   // should route (assessment start, or the community gate destination
   // if their one free attempt is already used).
   const mm = useMajorMatchPromptState();
-  /* Row-1 dashboard cards stay locked until the student has completed
-     AI Major Match (either engine — hasCompletedAssessment ORs v2+legacy). */
-  const mmLocked = !mm.hasCompletedAssessment;
+  const isMastersGoal = mm.profile?.academicProfile?.targetDegree === 'master';
+  /* AI Major Match is an undergraduate gate; graduate applicants can use
+     their mentor and event cards without taking an unavailable assessment. */
+  const mmLocked = !isMastersGoal && !mm.hasCompletedAssessment;
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -164,13 +170,13 @@ const MyProgressEditorialView: React.FC = () => {
   const { data: admissionsEnrollment, isLoading: admissionsEnrollmentLoading } =
     useGetEnrollmentStatusQuery('admissions');
   const { data: satEnrollment, isLoading: satEnrollmentLoading } =
-    useGetEnrollmentStatusQuery('sat');
+    useGetEnrollmentStatusQuery('sat', { skip: isMastersGoal });
   const { data: admissionsProgress, isLoading: admissionsProgressLoading } =
     useGetUserProgressQuery('admissions', {
       skip: !admissionsEnrollment?.canAccessLearning,
     });
   const { data: satProgress, isLoading: satProgressLoading } = useGetUserProgressQuery('sat', {
-    skip: !satEnrollment?.canAccessLearning,
+    skip: isMastersGoal || !satEnrollment?.canAccessLearning,
   });
   // Research Prep is gated behind the same allowlist that renders its nav
   // item. Without this skip the endpoint 403s ("Research Prep is coming
@@ -219,7 +225,7 @@ const MyProgressEditorialView: React.FC = () => {
         ctaPath: '/student-hub?section=admissions-program',
       });
     }
-    if (satEnrollment?.canAccessLearning && satProgress) {
+    if (!isMastersGoal && satEnrollment?.canAccessLearning && satProgress) {
       const completed = satProgress.completedLessons ?? 0;
       const total = satProgress.totalLessons ?? 0;
       const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -251,7 +257,7 @@ const MyProgressEditorialView: React.FC = () => {
       });
     }
     return list;
-  }, [admissionsEnrollment, satEnrollment, admissionsProgress, satProgress, researchSummary]);
+  }, [admissionsEnrollment, satEnrollment, admissionsProgress, satProgress, researchSummary, isMastersGoal]);
 
   /** Most-progressed enrolled program is treated as the "active track". */
   const activeTrack: TrackInfo | null = useMemo(() => {
@@ -476,7 +482,9 @@ const MyProgressEditorialView: React.FC = () => {
         recs.push({
           number: String(recs.length + 1).padStart(2, '0') as any,
           title: 'Enroll in your first program',
-          desc: 'Start with the Admissions Program, SAT Prep, or Research Prep to unlock your dashboard.',
+          desc: isMastersGoal
+            ? 'Start with the Admissions Program or Research Prep to track your graduate application journey.'
+            : 'Start with the Admissions Program, SAT Prep, or Research Prep to unlock your dashboard.',
           minutes: 5,
           priority: 1,
           ctaPath: '/programs',
@@ -509,20 +517,16 @@ const MyProgressEditorialView: React.FC = () => {
       .sort((a, b) => a.priority - b.priority)
       .slice(0, 3)
       .map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
-  }, [nearestDeadline, daysToDeadline, tracks, upcomingSessions, applications.length]);
+  }, [nearestDeadline, daysToDeadline, tracks, upcomingSessions, applications.length, isMastersGoal]);
 
   const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName });
 
   return (
-    <div className="myprog">
-      <header className="myprog__header">
-        <div className="myprog__head-left">
-          <h1 className="myprog__title">
-            {t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
-          </h1>
-          <p className="myprog__greeting">{greeting}</p>
-        </div>
-      </header>
+    <ApplicantPage
+      title={t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
+      subtitle={greeting}
+    >
+      <div className="myprog applicant-progress-page">
 
       {/* Non-Community users see the AI Major Match hero in place of the
           learning-progress card — the progress card is useless when
@@ -537,21 +541,39 @@ const MyProgressEditorialView: React.FC = () => {
           faint program links. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
-          <article className="myprog__card myprog__mmhero">
+          <article className="myprog__card myprog__mmhero applicant-panel">
             <div className="myprog__mmhero__left">
               <span className="myprog__mmhero__eyebrow">
-                {t('studentHub.myProgress.majorMatchEyebrow', 'Major Match')}
+                {isMastersGoal
+                  ? t('studentHub.myProgress.graduatePlanningEyebrow', 'Graduate planning')
+                  : t('studentHub.myProgress.majorMatchEyebrow', 'Major Match')}
               </span>
-              {mm.hasCompletedAssessment ? (
+              {isMastersGoal ? (
+                <>
+                  <h2 className="myprog__mmhero__title">
+                    {t('studentHub.myProgress.mastersProfileTitle', 'Plan your graduate applications')}
+                  </h2>
+                  <p className="myprog__mmhero__lede">
+                    {t('studentHub.myProgress.mastersProfileLede', 'Add your education and graduate goals to your profile, then track the programs you are considering.')}
+                  </p>
+                  <div className="myprog__mmhero__actions">
+                    <button
+                      type="button"
+                      className="myprog__btn myprog__btn--primary myprog__mmhero__cta"
+                      onClick={() => navigate('/student-hub/profile?tab=academic')}
+                    >
+                      {t('studentHub.myProgress.mastersProfileCta', 'Review academic profile')}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </>
+              ) : mm.hasCompletedAssessment ? (
                 <>
                   <h2 className="myprog__mmhero__title">
                     {t('studentHub.myProgress.majorMatchTakenTitle', 'Your major match is ready')}
                   </h2>
                   <p className="myprog__mmhero__lede">
-                    {t(
-                      'studentHub.myProgress.majorMatchTakenLede',
-                      'Revisit your best-fit majors and recommendations.',
-                    )}
+                    {t('studentHub.myProgress.majorMatchTakenLede', 'Revisit your best-fit majors and recommendations.')}
                   </p>
                   <div className="myprog__mmhero__actions">
                     <button
@@ -617,7 +639,7 @@ const MyProgressEditorialView: React.FC = () => {
           empty "0 programs enrolled" card was pure visual noise). */}
       {isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
-          <article className="myprog__card myprog__tracks">
+          <article className="myprog__card myprog__tracks applicant-panel">
             <div className="myprog__tracks-head">
               <div>
                 <div className="myprog__card-eyebrow">
@@ -651,7 +673,9 @@ const MyProgressEditorialView: React.FC = () => {
                 <p>
                   {t(
                     'studentHub.myProgress.tracksEmptyDesc',
-                    'Enroll in the Admissions Program, SAT Prep, or Research Prep to start tracking your progress here.',
+                    isMastersGoal
+                      ? 'Enroll in the Admissions Program or Research Prep to start tracking your progress here.'
+                      : 'Enroll in the Admissions Program, SAT Prep, or Research Prep to start tracking your progress here.',
                   )}
                 </p>
                 <button
@@ -730,8 +754,9 @@ const MyProgressEditorialView: React.FC = () => {
       <section className="myprog__btmgrid">
         <LockedShell
           locked={mmLocked}
+          isMastersGoal={isMastersGoal}
           tone="light"
-          className="myprog__card myprog__sessions"
+          className="myprog__card myprog__sessions applicant-panel"
           onUnlock={() => navigate(mm.destination)}
         >
           <div className="myprog__sessions-head">
@@ -897,6 +922,7 @@ const MyProgressEditorialView: React.FC = () => {
         {showIvyEssayWorkshopPromo ? (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
@@ -938,6 +964,7 @@ const MyProgressEditorialView: React.FC = () => {
         ) : showIvyWorkshopPromo ? (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
@@ -973,6 +1000,7 @@ const MyProgressEditorialView: React.FC = () => {
         ) : showWorkshopPromo ? (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
@@ -1000,6 +1028,7 @@ const MyProgressEditorialView: React.FC = () => {
         ) : showLaunchPromo ? (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
@@ -1069,6 +1098,7 @@ const MyProgressEditorialView: React.FC = () => {
         ) : !showCaafPromo ? (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo myprog__promo--empty"
             onUnlock={() => navigate(mm.destination)}
@@ -1090,6 +1120,7 @@ const MyProgressEditorialView: React.FC = () => {
         ) : (
           <LockedShell
             locked={mmLocked}
+            isMastersGoal={isMastersGoal}
             tone="dark"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
@@ -1175,7 +1206,7 @@ const MyProgressEditorialView: React.FC = () => {
         )}
 
         {/* AI Recommendations */}
-        <article className="myprog__card myprog__airecs">
+        <article className="myprog__card myprog__airecs applicant-panel">
           <div className="myprog__airecs-head">
             <span className="myprog__airecs-glyph">
               <Wand2 size={13} />
@@ -1308,7 +1339,8 @@ const MyProgressEditorialView: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+      </div>
+    </ApplicantPage>
   );
 };
 

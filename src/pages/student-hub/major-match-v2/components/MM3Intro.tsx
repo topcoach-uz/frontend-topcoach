@@ -19,6 +19,7 @@ import '../mm3-runner.scss';
 
 interface MM3IntroProps {
   readOnly?: boolean;
+  targetDegree?: 'bachelor' | 'master' | null;
   /**
    * 'public' is the signed-out lead-magnet page, which shows majors ONLY —
    * universities sit behind signup. The in-app copy promises "the universities
@@ -37,11 +38,13 @@ interface MM3IntroProps {
   partsCompleted?: boolean[];
   onStart: () => void;
   onViewResults: () => void;
+  onChooseDirect?: () => void;
   onUnlock: () => void;
 }
 
 export const MM3Intro: React.FC<MM3IntroProps> = ({
   readOnly = false,
+  targetDegree,
   variant = 'inApp',
   hasReport,
   access,
@@ -49,9 +52,11 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
   partsCompleted,
   onStart,
   onViewResults,
+  onChooseDirect,
   onUnlock,
 }) => {
   const { t } = useTranslation();
+  const isMasters = targetDegree === 'master';
 
   const requiresEnrollment = !readOnly && !!access && !access.canStart && access.requiresCommunityEnrollment;
 
@@ -93,14 +98,14 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
 
   return (
     <div className="mm2__intro">
-      <div className="mm2__eyebrow">{t('majorMatch3.intro.eyebrow', 'YOUR MATCH STARTS HERE')}</div>
+      <div className="mm2__eyebrow">{hasReport ? t('majorMatch3.intro.completedEyebrow', 'ASSESSMENT COMPLETED') : t('majorMatch3.intro.eyebrow', 'YOUR MATCH STARTS HERE')}</div>
       <h1 className="mm2__title">
-        {variant === 'public'
+        {hasReport ? t('majorMatch3.intro.completedTitle', 'Your results are ready') : variant === 'public'
           ? t('majorMatch3.intro.publicTitle', 'Which major actually fits you?')
           : t('majorMatch3.intro.title', 'This is where the guessing stops')}
       </h1>
       <p className="mm2__subtitle">
-        {variant === 'public'
+        {hasReport ? t('majorMatch3.intro.completedSubtitle', 'Review your matches and roadmap. You can revisit your results without retaking the assessment.') : variant === 'public'
           ? t(
               'majorMatch3.intro.publicSubtitle',
               'Answer {{total}} questions about your academics, interests and preferences. You get your best-fit majors free. No account needed to start.',
@@ -111,6 +116,15 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
               "Every answer you give below feeds directly into your match — nothing generic, nothing recycled from someone else's profile.",
             )}
       </p>
+
+      {hasReport && (
+        <div className="mm3-intro__results-first">
+          <button type="button" className="mm2__btn mm2__btn--primary" onClick={onViewResults}>
+            <Eye size={15} />
+            {t('majorMatch.intro.viewResultsCta', 'View your results')}
+          </button>
+        </div>
+      )}
 
       <div className="mm2__stats">
         {/* Order mirrors the design: time first, then scope. */}
@@ -138,10 +152,23 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
               className={`mm3-intro__part-card${done ? ' mm3-intro__part-card--done' : ''}`}
             >
               <span className="mm3-intro__part-roman">
-                {part.roman} · {t(`majorMatch3.part.${part.slug}.label`)}
+                {part.roman} · {isMasters && part.slug === 'academic'
+                  ? t('majorMatch3.part.academic.masterLabel', 'Graduate profile')
+                  : t(`majorMatch3.part.${part.slug}.label`)}
               </span>
-              <h3 className="mm3-intro__part-title">{t(`majorMatch3.part.${part.slug}.title`)}</h3>
-              <p className="mm3-intro__part-desc">{t(`majorMatch3.part.${part.slug}.desc`)}</p>
+              <h3 className="mm3-intro__part-title">
+                {isMasters && part.slug === 'academic'
+                  ? t('majorMatch3.part.academic.masterTitle', 'Your academic foundation')
+                  : t(`majorMatch3.part.${part.slug}.title`)}
+              </h3>
+              <p className="mm3-intro__part-desc">
+                {isMasters && part.slug === 'academic'
+                  ? t(
+                      'majorMatch3.part.academic.masterDesc',
+                      'Your degree background, coursework, tests, achievements, and experience.',
+                    )
+                  : t(`majorMatch3.part.${part.slug}.desc`)}
+              </p>
               {done ? (
                 <span className="mm3-intro__part-done">
                   <Check size={13} />
@@ -172,13 +199,6 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
       )}
 
       <div className="mm2__cta-row">
-        {hasReport && (
-          <button type="button" className="mm2__btn mm2__btn--primary" onClick={onViewResults}>
-            <Eye size={15} />
-            {t('majorMatch.intro.viewResultsCta', 'View your results')}
-          </button>
-        )}
-
         {requiresEnrollment ? (
           <button type="button" className="mm2__btn mm2__btn--secondary" onClick={onUnlock}>
             <Lock size={14} />
@@ -192,7 +212,9 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
               onClick={onStart}
             >
               {hasReport
-                ? t('majorMatch3.intro.retakeCta', 'Retake the assessment')
+                ? hasDraft
+                  ? t('majorMatch3.intro.continueRetakeCta', 'Continue your retake')
+                  : t('majorMatch3.intro.retakeCta', 'Retake the assessment')
                 : doneCount === MM3_TOTAL_PARTS
                   ? t('majorMatch3.intro.seeMatchCta', 'See My Match')
                   : inProgress
@@ -206,6 +228,13 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
           )
         )}
       </div>
+
+      {!hasReport && onChooseDirect && (
+        <button type="button" className="mm3-intro__direct" onClick={onChooseDirect}>
+          {t('majorMatch3.intro.chooseDirect', 'I already know what I want to study')}
+          <ArrowRight size={14} aria-hidden="true" />
+        </button>
+      )}
 
       {inProgress && !hasReport && !requiresEnrollment && (
         <p className="mm3-intro__reminder">

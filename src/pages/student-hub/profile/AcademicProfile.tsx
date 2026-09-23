@@ -54,6 +54,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   const isReadOnly = readOnly === true;
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
+  const targetDegree = Form.useWatch('targetDegree', form) ?? profile?.academicProfile?.targetDegree ?? 'bachelor';
 
   // Which test-score cards are currently rendered. Bootstrapped from saved
   // data on load (see effect below), then grown/shrunk by the "+ Add test
@@ -112,6 +113,17 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         gapYear: academicData.gapYear,
         firstGeneration: academicData.firstGeneration,
         financialAid: academicData.financialAid,
+        targetDegree: academicData.targetDegree || 'bachelor',
+        educationStatus: academicData.educationStatus,
+        previousInstitution: academicData.previousInstitution,
+        previousDegree: academicData.previousDegree,
+        previousField: academicData.previousField,
+        bachelorGraduationYear: academicData.bachelorGraduationYear,
+        universityGpa: academicData.universityGpa,
+        universityGpaScale: academicData.universityGpaScale,
+        relevantExperience: academicData.relevantExperience,
+        greScore: academicData.greScore,
+        gmatScore: academicData.gmatScore,
 
 
       });
@@ -191,7 +203,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
     });
   };
 
-  const addTestMenuItems: MenuProps['items'] = TEST_ORDER.filter((key) => !visibleTests.includes(key)).map(
+  const addTestMenuItems: MenuProps['items'] = TEST_ORDER.filter(
+    (key) => !visibleTests.includes(key) && (targetDegree !== 'master' || !['sat', 'act'].includes(key)),
+  ).map(
     (key) => ({
       key,
       label: testMeta[key].label,
@@ -249,6 +263,17 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         gapYear: values.gapYear,
         firstGeneration: values.firstGeneration,
         financialAid: values.financialAid,
+        targetDegree: values.targetDegree,
+        educationStatus: values.educationStatus,
+        previousInstitution: values.previousInstitution,
+        previousDegree: values.previousDegree,
+        previousField: values.previousField,
+        bachelorGraduationYear: values.bachelorGraduationYear,
+        universityGpa: values.universityGpa,
+        universityGpaScale: values.universityGpaScale,
+        relevantExperience: values.relevantExperience,
+        greScore: values.greScore,
+        gmatScore: values.gmatScore,
       };
 
       await updateStudentProfile({
@@ -289,8 +314,30 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         layout="vertical"
         onFinish={handleSave}
         onValuesChange={handleValuesChange}
+        disabled={isReadOnly}
         className="academic-form"
       >
+        <Card title={t('studentHub.profile.applicationGoal', 'Application goal')} className="section-card">
+          <Form.Item name="targetDegree" label={t('studentHub.profile.targetDegree', 'Degree you plan to pursue')} rules={[{ required: true }]}>
+            <Select disabled={isReadOnly}><Option value="bachelor">{t('studentHub.applications.degreeBachelor', 'Bachelor’s')}</Option><Option value="master">{t('studentHub.applications.degreeMaster', 'Master’s')}</Option></Select>
+          </Form.Item>
+        </Card>
+
+        {targetDegree === 'master' && <Card title={t('studentHub.profile.previousEducation', 'Previous education')} className="section-card">
+          <Row gutter={[24,24]}>
+            <Col xs={24} lg={12}><Form.Item name="educationStatus" label={t('studentHub.profile.educationStatus','Bachelor’s status')} rules={[{required:true}]}><Select disabled={isReadOnly}><Option value="studying">{t('studentHub.profile.educationStatusStudying','Currently studying')}</Option><Option value="graduated">{t('studentHub.profile.educationStatusGraduated','Graduated')}</Option></Select></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="previousInstitution" label={t('studentHub.profile.previousInstitution','University')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="previousDegree" label={t('studentHub.profile.previousDegree','Bachelor’s degree')} rules={[{required:true}]}><Input disabled={isReadOnly} placeholder="e.g. BSc" /></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="previousField" label={t('studentHub.profile.previousField','Field of study')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="bachelorGraduationYear" label={t('studentHub.profile.bachelorGraduationYear','Graduation year')} rules={[{required:true}]}><InputNumber disabled={isReadOnly} min={1900} max={2100} style={{width:'100%'}} /></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="universityGpa" label={t('studentHub.profile.universityGpa','University GPA')}><Input disabled={isReadOnly}/></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="universityGpaScale" label={t('studentHub.profile.universityGpaScale','GPA scale')}><Input disabled={isReadOnly} placeholder="e.g. 4.0 or 100" /></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="greScore" label={t('studentHub.profile.greScore','GRE score (optional)')}><Input disabled={isReadOnly}/></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="gmatScore" label={t('studentHub.profile.gmatScore','GMAT score (optional)')}><Input disabled={isReadOnly}/></Form.Item></Col>
+            <Col xs={24}><Form.Item name="relevantExperience" label={t('studentHub.profile.relevantExperience','Relevant experience')}><Input.TextArea disabled={isReadOnly} rows={4} /></Form.Item></Col>
+            <Col xs={24} lg={12}><Form.Item name="financialAid" label={t('studentHub.profile.financialAidNeeded','Financial Aid Needed')}><Select disabled={isReadOnly}><Option value={false}>{t('common.no','No')}</Option><Option value={true}>{t('common.yes','Yes')}</Option></Select></Form.Item></Col>
+          </Row>
+        </Card>}
         {/* Test Scores Section — cards are added on demand; only tests the
             student has data for (or has explicitly added) render below. */}
         <Card title={t('studentHub.profile.testScores', 'Test Scores')} className="section-card">
@@ -300,7 +347,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             </p>
           ) : (
             <Row gutter={[24, 24]}>
-              {visibleTests.includes('sat') && (
+              {targetDegree !== 'master' && visibleTests.includes('sat') && (
                 <Col xs={24} lg={12}>
                   <div className="test-section">
                     <div className="test-title-row">
@@ -365,7 +412,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                 </Col>
               )}
 
-              {visibleTests.includes('act') && (
+              {targetDegree !== 'master' && visibleTests.includes('act') && (
                 <Col xs={24} lg={12}>
                   <div className="test-section">
                     <div className="test-title-row">
@@ -669,6 +716,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
           )}
         </Card>
 
+        {targetDegree !== 'master' && <>
         {/* GPA Information Section */}
         <Card title={t('studentHub.profile.gpaInformation', 'GPA Information')} className="section-card">
           <Row gutter={[24, 24]}>
@@ -676,7 +724,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="gpaUnweighted"
                 label={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
-                rules={[{ required: true, message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
+                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
               >
                 <InputNumber
                   min={0}
@@ -684,6 +732,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   step={0.01}
                   placeholder={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
                   className="gpa-input"
+                  style={{ width: '100%' }}
                 />
               </Form.Item>
             </Col>
@@ -698,6 +747,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   step={0.01}
                   placeholder={t('studentHub.profile.weightedGpa', 'Weighted GPA')}
                   className="gpa-input"
+                  style={{ width: '100%' }}
                 />
               </Form.Item>
             </Col>
@@ -725,6 +775,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   step={0.01}
                   placeholder={t('studentHub.profile.cumulativeGpa', 'Cumulative GPA')}
                   className="gpa-input"
+                  style={{ width: '100%' }}
                 />
               </Form.Item>
             </Col>
@@ -738,7 +789,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="curriculum"
                 label={t('studentHub.profile.schoolCurriculum', 'School Curriculum *')}
-                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectCurriculum', 'Please select your school curriculum') }]}
+                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseSelectCurriculum', 'Please select your school curriculum') }]}
               >
                 <Select placeholder={t('studentHub.profile.selectCurriculum', 'Select curriculum')} className="curriculum-select">
                   {curriculumOptions.map(option => (
@@ -753,7 +804,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="graduationYear"
                 label={t('studentHub.profile.graduationYear', 'Graduation Year *')}
-                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectGraduationYear', 'Please select your graduation year') }]}
+                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseSelectGraduationYear', 'Please select your graduation year') }]}
               >
                 <Select placeholder="Select graduation year" className="graduation-select">
                   {graduationYearOptions.map(option => (
@@ -799,6 +850,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             </Col>
           </Row>
         </Card>
+        </>}
 
 
         {/* Form Actions – hidden in read-only (counselor) view */}

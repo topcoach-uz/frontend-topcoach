@@ -137,6 +137,17 @@ export interface AcademicProfile {
   financialAid: boolean;
   gradeLevel?: string;
   currentSchool?: string;
+  targetDegree?: 'bachelor' | 'master' | null;
+  educationStatus?: 'studying' | 'graduated' | null;
+  previousInstitution?: string | null;
+  previousDegree?: string | null;
+  previousField?: string | null;
+  bachelorGraduationYear?: number | null;
+  universityGpa?: string | null;
+  universityGpaScale?: string | null;
+  relevantExperience?: string | null;
+  greScore?: string | null;
+  gmatScore?: string | null;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
   academicStrengthsAndInterests?: {
@@ -166,6 +177,17 @@ export interface CreateAcademicProfileRequest {
   financialAid?: boolean;
   gradeLevel?: string;
   currentSchool?: string;
+  targetDegree?: 'bachelor' | 'master' | null;
+  educationStatus?: 'studying' | 'graduated' | null;
+  previousInstitution?: string | null;
+  previousDegree?: string | null;
+  previousField?: string | null;
+  bachelorGraduationYear?: number | null;
+  universityGpa?: string | null;
+  universityGpaScale?: string | null;
+  relevantExperience?: string | null;
+  greScore?: string | null;
+  gmatScore?: string | null;
   academicAchievements?: Record<string, any>;
   transcripts?: Record<string, any>;
   academicStrengthsAndInterests?: {
@@ -333,6 +355,11 @@ export interface StudentDocument {
   isVerified: boolean;
   uploadedBy: string;
   metadata: Record<string, any>;
+  reviewerAccess?: boolean;
+  reviewer?: { id: string; name?: string } | null;
+  reviewStatus?: 'private' | 'pending' | 'in_progress' | 'approved' | 'needs_revision';
+  privateStorage?: boolean;
+  legacyPublic?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -361,14 +388,19 @@ export interface ApplicationActivityEvent {
 export interface CollegeApplication {
   id: string;
   studentProfileId: string;
+  /** Stable graduate-program identity; universityId alone is not a program identity. */
+  programId?: string;
   universityId?: string;
   universityName?: string;
   major?: string;
-  applicationType: 'common_app' | 'coalition' | 'direct' | 'ucas' | 'other';
-  status: 'researching' | 'applying' | 'submitted' | 'accepted' | 'rejected' | 'waitlisted' | 'deferred';
+  degreeLevel: 'bachelor' | 'master';
+  intake?: string;
+  applicationType: 'common-app' | 'coalition' | 'direct' | 'ucas' | 'other';
+  status: 'researching' | 'applying' | 'submitted' | 'under_review' | 'accepted' | 'rejected' | 'waitlisted' | 'deferred';
   category: 'reach' | 'target' | 'safety';
   priority: number;
   deadline?: string;
+  submittedAt?: string | null;
   financialInfo: Record<string, any>;
   requirements?: Record<string, any>;
   mentorId?: string;
@@ -380,9 +412,12 @@ export interface CollegeApplication {
 }
 
 export interface CreateCollegeApplicationRequest {
+  programId?: string;
   universityId?: string;
   universityName?: string;
   major?: string;
+  degreeLevel?: 'bachelor' | 'master';
+  intake?: string;
   applicationType: CollegeApplication['applicationType'];
   status?: CollegeApplication['status'];
   category: CollegeApplication['category'];
@@ -397,6 +432,7 @@ export interface CreateCollegeApplicationRequest {
 
 export interface UpdateCollegeApplicationRequest extends Partial<CreateCollegeApplicationRequest> {
   activityEvent?: { type: string; payload?: Record<string, unknown> };
+  submittedAt?: string | null;
 }
 
 // ========================================
@@ -409,11 +445,12 @@ export interface ApplicationTask {
   collegeApplicationId?: string;
   title: string;
   description?: string;
-  taskType: 'essay' | 'recommendation' | 'transcript' | 'test_score' | 'interview' | 'other';
+  taskType: 'essay' | 'recommendation' | 'transcript' | 'test_score' | 'interview' | 'financial_aid' | 'supplement' | 'other';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in_progress' | 'completed' | 'overdue';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'overdue';
   dueDate?: string;
   completedDate?: string;
+  completedAt?: string | null;
   isRecurring: boolean;
   recurringPattern?: string;
   isAiGenerated: boolean;
@@ -438,7 +475,9 @@ export interface CreateApplicationTaskRequest {
   assignedUserId?: string;
 }
 
-export interface UpdateApplicationTaskRequest extends Partial<CreateApplicationTaskRequest> {}
+export interface UpdateApplicationTaskRequest extends Partial<CreateApplicationTaskRequest> {
+  completedAt?: string | null;
+}
 
 // ========================================
 // 🏆 SCHOLARSHIP APPLICATIONS TYPES

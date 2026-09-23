@@ -131,3 +131,15 @@ $mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
   font-size: 0.8rem;
   color: $mm2-muted;
 }
+.mm3-intro__results-first {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .mm3-intro__results-first .mm2__btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

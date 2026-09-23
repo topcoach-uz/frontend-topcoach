@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Alert, Tag, Modal, Input, Upload, Spin, message } from 'antd';
+import { Button, Alert, Modal, Input, Upload, Spin, message } from 'antd';
 import {
   CheckCircle2,
   CalendarClock,
@@ -12,10 +12,12 @@ import {
   ArrowUpRight,
   MessageCircle,
   Clock,
+  LockKeyhole,
 } from 'lucide-react';
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
+import { useStudentProfile } from 'src/hooks/useStudentHub';
 import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
 import { hostName } from 'src/app/services/api/const';
@@ -33,6 +35,7 @@ import {
 } from 'src/app/services/fullSupportApi';
 import dayjs from 'src/lib/dayjs';
 import { generateWeeklyReportPdf } from 'src/utils/fullSupportWeeklyReportPdf';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 import '../../full-support/full-support.scss';
 
 function getTaskStatus(r: TaskDto): string {
@@ -69,6 +72,9 @@ export default function FullSupportStudentPage() {
 
   const { data: enrollmentData, isLoading: enrollmentLoading } = useGetEnrollmentMeQuery();
   const isEnrolled = enrollmentData?.data?.enrolled ?? false;
+  const { profile: studentProfile, isLoading: studentProfileLoading } = useStudentProfile();
+  const isMastersGoal = studentProfile?.academicProfile?.targetDegree === 'master';
+  const showSatPrep = !studentProfileLoading && !isMastersGoal;
 
   const { data: tasksData } = useGetMenteeTasksQuery(undefined, { skip: !isEnrolled });
   const tasks: TaskDto[] = tasksData?.data ?? [];
@@ -94,7 +100,7 @@ export default function FullSupportStudentPage() {
   const allocatedHours = sessionsData?.data?.allocatedHours ?? 0;
   const [fetchWeeklyReport, { isLoading: weeklyReportLoading }] = useLazyGetWeeklyReportQuery();
   const { data: satProgressData } = useGetMenteeSatProgressQuery(undefined, {
-    skip: !isEnrolled,
+    skip: !isEnrolled || !showSatPrep,
     pollingInterval: 60000,
     refetchOnFocus: true,
     refetchOnReconnect: true,
@@ -159,12 +165,14 @@ export default function FullSupportStudentPage() {
 
   if (enrollmentLoading) {
     return (
-      <div className="fseditorial fseditorial--loading">
-        <Spin size="large" />
-        <span className="fseditorial__loading-label">
-          {t('fullSupport.checkingEnrollment', 'Loading your Full Support…')}
-        </span>
-      </div>
+      <ApplicantPage title={t('fullSupport.studentTitle', 'Full Support Mentorship Program')}>
+        <div className="fseditorial fseditorial--loading applicant-full-support-page applicant-panel">
+          <Spin size="large" />
+          <span className="fseditorial__loading-label">
+            {t('fullSupport.checkingEnrollment', 'Loading your Full Support…')}
+          </span>
+        </div>
+      </ApplicantPage>
     );
   }
 
@@ -177,47 +185,45 @@ export default function FullSupportStudentPage() {
 
   if (isEnrolled && !hasAssignedMentor) {
     return (
-      <div className="fseditorial fseditorial--gated">
-        <div className="fseditorial__gated-card">
-          <div className="fseditorial__eyebrow">Full Support</div>
-          <h1 className="fseditorial__title">
-            {t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
-          </h1>
-          <Alert
-            type="info"
-            showIcon
-            message={t('fullSupport.waitingForMentorTitle', 'You’re enrolled')}
-            description={
-              <p style={{ marginBottom: 0 }}>
-                {t(
-                  'fullSupport.waitingForMentorDesc',
-                  'An admin will assign you a mentor soon. Your dashboard (sessions, tasks, milestones) will be available once a mentor is assigned.',
-                )}
-              </p>
-            }
-          />
+      <ApplicantPage
+        title={t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
+        subtitle={t(
+          'fullSupport.studentDashboardDesc',
+          'Track your mentorship sessions, applications, and deadlines.',
+        )}
+      >
+        <div className="fseditorial fseditorial--gated applicant-full-support-page">
+          <div className="fseditorial__gated-card applicant-panel">
+            <Alert
+              type="info"
+              showIcon
+              message={t('fullSupport.waitingForMentorTitle', 'You’re enrolled')}
+              description={
+                <p style={{ marginBottom: 0 }}>
+                  {t(
+                    'fullSupport.waitingForMentorDesc',
+                    'An admin will assign you a mentor soon. Your dashboard (sessions, tasks, milestones) will be available once a mentor is assigned.',
+                  )}
+                </p>
+              }
+            />
+          </div>
         </div>
-      </div>
+      </ApplicantPage>
     );
   }
 
   const sessionPct = allocatedHours > 0 ? Math.round((usedHours / allocatedHours) * 100) : 0;
 
   return (
-    <div className="fseditorial">
-      {/* Header ─────────────────────────────────────────────────── */}
-      <header className="fseditorial__header">
-        <div className="fseditorial__eyebrow">Full Support · Mentorship</div>
-        <h1 className="fseditorial__title">
-          {t('fullSupport.studentDashboardTitle', 'Full Support Mentorship Program')}
-        </h1>
-        <p className="fseditorial__subtitle">
-          {t(
-            'fullSupport.studentDashboardDesc',
-            'Track your mentorship sessions, applications, and deadlines.',
-          )}
-        </p>
-        <div className="fseditorial__header-actions">
+    <ApplicantPage
+      title={t('fullSupport.studentDashboardTitle', 'Full Support Mentorship Program')}
+      subtitle={t(
+        'fullSupport.studentDashboardDesc',
+        'Track your mentorship sessions, applications, and deadlines.',
+      )}
+      actions={
+        <>
           <button
             type="button"
             className="fseditorial__btn fseditorial__btn--primary"
@@ -244,13 +250,15 @@ export default function FullSupportStudentPage() {
             <FileText size={14} />
             {weeklyReportLoading ? 'Preparing…' : 'My weekly report'}
           </button>
-        </div>
-      </header>
+        </>
+      }
+    >
+      <div className="fseditorial applicant-full-support-page">
 
-      {/* Top row: Session timeline + SAT Prep ────────────────────── */}
-      <div className="fseditorial__row fseditorial__row--two">
+      {/* Session timeline and, for undergraduate applicants, SAT Prep. */}
+      <div className={`fseditorial__row${showSatPrep ? ' fseditorial__row--two' : ''}`}>
         {/* Session timeline */}
-        <section className="fseditorial__card">
+        <section className="fseditorial__card applicant-panel">
           <div className="fseditorial__card-head">
             <div className="fseditorial__card-head-left">
               <CalendarClock size={16} />
@@ -300,8 +308,8 @@ export default function FullSupportStudentPage() {
           </div>
         </section>
 
-        {/* SAT Prep */}
-        <section className="fseditorial__card">
+        {showSatPrep && (
+        <section className="fseditorial__card applicant-panel">
           <div className="fseditorial__card-head">
             <div className="fseditorial__card-head-left">
               <Rocket size={16} />
@@ -360,10 +368,11 @@ export default function FullSupportStudentPage() {
             </button>
           </div>
         </section>
+        )}
       </div>
 
       {/* Tasks from your mentor ─────────────────────────────────── */}
-      <section className="fseditorial__card">
+      <section className="fseditorial__card applicant-panel">
         <div className="fseditorial__card-head">
           <div className="fseditorial__card-head-left">
             <FileText size={16} />
@@ -439,7 +448,7 @@ export default function FullSupportStudentPage() {
       {/* Bottom row: Milestones + Applications ──────────────────── */}
       <div className="fseditorial__row fseditorial__row--two">
         {/* Milestones */}
-        <section className="fseditorial__card">
+        <section className="fseditorial__card applicant-panel">
           <div className="fseditorial__card-head">
             <div className="fseditorial__card-head-left">
               <CheckCircle2 size={16} />
@@ -477,7 +486,7 @@ export default function FullSupportStudentPage() {
         </section>
 
         {/* Applications */}
-        <section className="fseditorial__card">
+        <section className="fseditorial__card applicant-panel">
           <div className="fseditorial__card-head">
             <div className="fseditorial__card-head-left">
               <Globe size={16} />
@@ -631,7 +640,8 @@ export default function FullSupportStudentPage() {
           </>
         )}
       </Modal>
-    </div>
+      </div>
+    </ApplicantPage>
   );
 }
 
@@ -660,120 +670,53 @@ function FullSupportNotEnrolled() {
   const { t } = useTranslation();
 
   return (
-    <div className="fseditorial fseditorial--gated" style={{ paddingBottom: 48 }}>
-      <div
-        style={{
-          maxWidth: 560,
-          margin: '8px auto 0',
-          background: '#fff',
-          border: '1px solid #e8e3d4',
-          borderRadius: 16,
-          padding: '32px 32px 28px',
-          boxShadow: '0 1px 0 rgba(15, 23, 42, 0.02)',
-        }}
-      >
-        {/* Eyebrow */}
-        <div
-          style={{
-            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
-            fontSize: 11,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: '#8a7f70',
-            fontWeight: 600,
-            marginBottom: 10,
-          }}
-        >
-          Full Support · Mentorship
+    <ApplicantPage
+      title={t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
+      subtitle={t(
+        'fullSupport.notEnrolledSubtitle',
+        'A year-long admissions mentorship with individual guidance and weekly check-ins.',
+      )}
+    >
+      <div className="fseditorial fseditorial--gated applicant-full-support-page">
+      <section className="fseditorial__access-lock applicant-panel" aria-labelledby="full-support-lock-title">
+        <div className="fseditorial__access-preview" aria-hidden>
+          <span />
+          <span />
+          <span />
         </div>
-
-        {/* Title */}
-        <h1
-          style={{
-            margin: 0,
-            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
-            fontSize: '1.75rem',
-            fontWeight: 600,
-            lineHeight: 1.18,
-            letterSpacing: '-0.015em',
-            color: '#1a1a1a',
-          }}
-        >
+        <div className="fseditorial__access-content">
+          <span className="fseditorial__access-icon">
+            <LockKeyhole size={20} aria-hidden />
+          </span>
+          <p className="fseditorial__eyebrow">Full Support · Mentorship</p>
+          <h2 id="full-support-lock-title" className="fseditorial__access-title">
           You're not enrolled in Full Support yet.
-        </h1>
-
-        {/* Short hairline */}
-        <div
-          aria-hidden
-          style={{
-            width: 36,
-            height: 2,
-            background: '#7b1f2f',
-            borderRadius: 1,
-            margin: '16px 0 14px',
-          }}
-        />
-
-        {/* Body */}
-        <p
-          style={{
-            margin: 0,
-            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
-            fontSize: '0.98rem',
-            lineHeight: 1.6,
-            color: '#4a4438',
-          }}
-        >
+          </h2>
+          <p className="fseditorial__access-copy">
           Full Support is a separate, year-long admissions mentorship —{' '}
           <em>not</em> included with Community. Pairing, essay reviews, and
           weekly check-ins are admitted by application; the team reviews
           every request individually.
-        </p>
-
-        {/* CTAs */}
-        <div
-          style={{
-            marginTop: 22,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 10,
-          }}
-        >
-          <a
-            href={`mailto:${SUPPORT_EMAIL}?subject=Full%20Support%20Mentorship%20Program`}
-            className="fseditorial__btn fseditorial__btn--primary"
-          >
-            <MessageCircle size={14} />
-            Write to {SUPPORT_EMAIL}
-          </a>
-          <a
-            href={PROGRAMS_PAGE_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="fseditorial__btn fseditorial__btn--ghost"
-          >
-            Read the full program
-            <ArrowUpRight size={14} />
-          </a>
+          </p>
+          <div className="fseditorial__access-actions">
+            <a
+              href={`mailto:${SUPPORT_EMAIL}?subject=Full%20Support%20Mentorship%20Program`}
+              className="fseditorial__btn fseditorial__btn--primary"
+            >
+              <MessageCircle size={14} />
+              Write to {SUPPORT_EMAIL}
+            </a>
+            <a href={PROGRAMS_PAGE_URL} target="_blank" rel="noreferrer noopener" className="fseditorial__btn fseditorial__btn--ghost">
+              Read the full program
+              <ArrowUpRight size={14} />
+            </a>
+          </div>
+          <p className="fseditorial__access-note">
+            {t('fullSupport.notEnrolledFooter', 'A short note works — tell us your grade and target year. We reply within a working day.')}
+          </p>
         </div>
-
-        {/* Footnote */}
-        <p
-          style={{
-            marginTop: 16,
-            marginBottom: 0,
-            fontFamily: "'Iowan Old Style', 'Charter', 'Georgia', serif",
-            fontStyle: 'italic',
-            fontSize: 13,
-            color: '#8a7f70',
-          }}
-        >
-          {t(
-            'fullSupport.notEnrolledFooter',
-            'A short note works — tell us your grade and target year. We reply within a working day.',
-          )}
-        </p>
+      </section>
       </div>
-    </div>
+    </ApplicantPage>
   );
 }

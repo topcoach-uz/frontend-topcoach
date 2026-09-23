@@ -51,6 +51,13 @@ function coerceArray<T>(value: unknown): T[] {
   return [];
 }
 
+function assignmentError(error: unknown): string {
+  const message = (error as { data?: { message?: unknown } })?.data?.message;
+  if (typeof message === 'string') return message;
+  if (Array.isArray(message)) return message.filter((item) => typeof item === 'string').join(' ');
+  return 'The mentor assignment could not be confirmed. Refresh the student list before retrying.';
+}
+
 function getTaskStatus(r: TaskDto): string {
   if (r.hasFeedback) return 'Reviewed';
   if (r.submissionText) return 'Needs review';
@@ -115,7 +122,7 @@ export default function FullSupportAdminDashboard({
   const { data: mentorsFromPage } = useGetMentorsQuery(); // same API as Mentors page (accepted only)
   const { data: assignmentsData } = useGetAdminMentorAssignmentsQuery();
   const stats = statsData?.data;
-  const [assignMentor] = useAssignMentorMutation();
+  const [assignMentor, { isLoading: assignLoading }] = useAssignMentorMutation();
   const [unassignMentor, { isLoading: unassignLoading }] = useUnassignMentorMutation();
 
   const students: AdminStudentRow[] = studentsData?.data ?? [];
@@ -178,14 +185,25 @@ export default function FullSupportAdminDashboard({
   );
   const satCoursePayload = satCourseData?.data;
 
-  const handleUnassign = (studentUserId: string) => {
-    unassignMentor(studentUserId);
+  const handleUnassign = async (studentUserId: string) => {
+    if (unassignLoading || assignLoading) return;
+    try {
+      await unassignMentor(studentUserId).unwrap();
+      message.success('Mentor unassigned. Student records are preserved.');
+    } catch (error) {
+      message.error(assignmentError(error));
+    }
   };
   const handleAssignClick = (record: AdminStudentRow) => setAssignModalStudent(record);
-  const handleAssignConfirm = (mentorUserId: string) => {
-    if (!assignModalStudent) return;
-    assignMentor({ studentUserId: assignModalStudent.id, mentorUserId: mentorUserId });
-    setAssignModalStudent(null);
+  const handleAssignConfirm = async (mentorUserId: string) => {
+    if (!assignModalStudent || assignLoading || unassignLoading) return;
+    try {
+      await assignMentor({ studentUserId: assignModalStudent.id, mentorUserId }).unwrap();
+      setAssignModalStudent(null);
+      message.success('Mentor assigned.');
+    } catch (error) {
+      message.error(assignmentError(error));
+    }
   };
 
   const columns = [
@@ -234,7 +252,7 @@ export default function FullSupportAdminDashboard({
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Button type="link" size="small" onClick={() => setSelectedStudent({ id: record.id, name: record.name, mentorName: record.mentorName ?? '' })}>View</Button>
           {record.mentorId ? (
-            <Button type="link" size="small" danger loading={unassignLoading} onClick={() => handleUnassign(record.id)}>Unassign</Button>
+            <Button type="link" size="small" danger loading={unassignLoading} disabled={assignLoading} onClick={() => handleUnassign(record.id)}>Unassign</Button>
           ) : (
             <Button
               type="primary"
@@ -246,6 +264,7 @@ export default function FullSupportAdminDashboard({
                 ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
               }}
               onClick={() => handleAssignClick(record)}
+              disabled={assignLoading || unassignLoading}
             >
               Assign Mentor
             </Button>
@@ -389,7 +408,9 @@ export default function FullSupportAdminDashboard({
       <Modal
         title={`Assign mentor: ${assignModalStudent?.name ?? ''}`}
         open={!!assignModalStudent}
-        onCancel={() => setAssignModalStudent(null)}
+        onCancel={() => { if (!assignLoading) setAssignModalStudent(null); }}
+        closable={!assignLoading}
+        maskClosable={!assignLoading}
         footer={null}
         width={400}
         className={modalDarkClassName}
@@ -410,6 +431,8 @@ export default function FullSupportAdminDashboard({
                     ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
                   }}
                   onClick={() => handleAssignConfirm(m.id)}
+                  loading={assignLoading}
+                  disabled={unassignLoading}
                 >
                   {m.name}
                 </Button>

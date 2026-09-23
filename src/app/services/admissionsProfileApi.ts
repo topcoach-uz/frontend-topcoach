@@ -23,6 +23,17 @@ export type AdmissionsProfileDto = {
   country: string | null;
   currentSchool: string | null;
   parentInvolvement: ParentInvolvement | null;
+  targetDegree: 'bachelor' | 'master' | null;
+  educationStatus: 'studying' | 'graduated' | null;
+  previousInstitution: string | null;
+  previousDegree: string | null;
+  previousField: string | null;
+  bachelorGraduationYear: number | null;
+  universityGpa: string | null;
+  universityGpaScale: string | null;
+  relevantExperience: string | null;
+  greScore: string | null;
+  gmatScore: string | null;
 
   // Step 2 (NO GPA)
   satScore: number | null;
@@ -54,6 +65,17 @@ export type PatchAdmissionsProfileBody = Partial<{
   country: string;
   currentSchool: string;
   parentInvolvement: ParentInvolvement;
+  targetDegree: 'bachelor' | 'master';
+  educationStatus: 'studying' | 'graduated';
+  previousInstitution: string;
+  previousDegree: string;
+  previousField: string;
+  bachelorGraduationYear: number;
+  universityGpa: string;
+  universityGpaScale: string;
+  relevantExperience: string;
+  greScore: string;
+  gmatScore: string;
   satScore: number;
   satPlan: SatPlan;
   extracurriculars: string;

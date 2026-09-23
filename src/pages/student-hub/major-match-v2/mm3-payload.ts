@@ -15,8 +15,9 @@
 import type { TFunction } from 'i18next';
 
 import {
-  MM3_QUESTIONS,
   MM3_QUESTIONS_BY_SLUG,
+  MM3_MASTERS_REPLACEMENTS,
+  getMm3Questions,
   mm3QuestionKey,
 } from './mm3-content';
 import type { MM3Answer, MM3FieldsAnswer } from './components/MM3Inputs';
@@ -68,10 +69,11 @@ const optionLabel = (t: TFunction, slug: string, index: number): string =>
 export const buildMm3Payload = (
   answers: Record<string, MM3Answer>,
   t: TFunction,
+  targetDegree?: string | null,
 ): Record<string, unknown> => {
-  const payload: Record<string, unknown> = {};
+  const payload: Record<string, unknown> = { targetDegree: targetDegree ?? 'bachelor' };
 
-  for (const question of MM3_QUESTIONS) {
+  for (const question of getMm3Questions(targetDegree)) {
     const answer = answers[question.slug];
     if (answer === undefined || answer === null) continue;
 
@@ -173,20 +175,21 @@ export const buildMm3Prefill = (
   const slugs = new Set<string>();
 
   const academic = profile?.academicProfile ?? {};
+  const isMaster = academic.targetDegree === 'master';
   const scores = academic?.testScores ?? {};
 
   // ── Q3 GPA: value + scale ──────────────────────────────────────────────
   const gpa: Record<string, string> = {};
-  const gpaValue = asText(academic?.gpa?.unweighted ?? academic?.gpa?.cumulative);
+  const gpaValue = asText(isMaster ? academic.universityGpa : academic?.gpa?.unweighted ?? academic?.gpa?.cumulative);
   if (gpaValue) gpa.gpaValue = gpaValue;
 
   // Stored numerically (4 / 5 / 100); anything else has no matching option.
   const scaleOption: Record<string, number> = { '4': 0, '4.0': 0, '5': 1, '5.0': 1, '100': 2 };
-  const rawScale = asText(academic?.gpa?.scale);
+  const rawScale = asText(isMaster ? academic.universityGpaScale : academic?.gpa?.scale);
   if (rawScale && scaleOption[rawScale] !== undefined) {
     gpa.gpaScale = t(`${mm3QuestionKey('gpa')}.f.gpaScale.opt.${scaleOption[rawScale]}`);
   }
-  if (Object.keys(gpa).length > 0) {
+  if (!isMaster && Object.keys(gpa).length > 0) {
     answers.gpa = gpa;
     slugs.add('gpa');
   }
@@ -204,7 +207,7 @@ export const buildMm3Prefill = (
   if (satStatusIndex !== null) {
     sat.satStatus = t(`${mm3QuestionKey('sat')}.f.satStatus.opt.${satStatusIndex}`);
   }
-  if (Object.keys(sat).length > 0) {
+  if (!isMaster && Object.keys(sat).length > 0) {
     answers.sat = sat;
     slugs.add('sat');
   }
@@ -229,9 +232,32 @@ export const buildMm3Prefill = (
     slugs.add('english');
   }
 
+  if (isMaster) {
+    const add = (slug: string, values: Record<string, unknown>) => {
+      const present = Object.fromEntries(Object.entries(values).flatMap(([key, value]) => {
+        const text = asText(value);
+        return text ? [[key, text]] : [];
+      }));
+      if (Object.keys(present).length) {
+        answers[slug] = present;
+        slugs.add(slug);
+      }
+    };
+    add('education', {
+      status: academic.educationStatus === 'studying'
+        ? t('majorMatch3.q.education.f.status.opt.0')
+        : academic.educationStatus === 'graduated' ? t('majorMatch3.q.education.f.status.opt.1') : undefined,
+      year: academic.bachelorGraduationYear,
+    });
+    add('degreeBackground', { institution: academic.previousInstitution, degree: academic.previousDegree, field: academic.previousField });
+    add('graduateGpa', { value: academic.universityGpa, scale: academic.universityGpaScale });
+    add('graduateTests', { gre: academic.greScore, gmat: academic.gmatScore });
+    add('experience', { summary: academic.relevantExperience });
+  }
+
   return { answers, slugs: Array.from(slugs) };
 };
 
 /** Guard so a stale draft can't reference a question that no longer exists. */
 export const isKnownMm3Slug = (slug: string): boolean =>
-  MM3_QUESTIONS_BY_SLUG.has(slug);
+  MM3_QUESTIONS_BY_SLUG.has(slug) || MM3_MASTERS_REPLACEMENTS.some((question) => question.slug === slug);

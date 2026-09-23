@@ -68,6 +68,8 @@ jobs:
         env:
           # Same-origin API: caddy on the dev server proxies /api → dev backend
           VITE_API_HOST: ''
+          VITE_ONBOARDING_V2_ENABLED: 'true'
+          VITE_APPLICANT_WORKSPACE_ENABLED: 'true'
           NODE_OPTIONS: --max-old-space-size=4096
         run: yarn build
 

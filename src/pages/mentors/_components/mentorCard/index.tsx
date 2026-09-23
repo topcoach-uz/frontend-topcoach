@@ -6,6 +6,7 @@ import { CustomText } from 'src/components/common';
 import styles from './mentorCard.module.scss';
 import { useTranslation } from 'react-i18next';
 import { getUniversityFlag } from 'src/utils/countryFlags';
+import { isMasterProgramMentorEmail } from './masterProgramMentors';
 
 function initialsFromName(name: string | null | undefined): string {
   if (!name) return '?';
@@ -20,12 +21,6 @@ function hashHue(key: string): number {
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
   return Math.abs(hash) % 360;
 }
-
-/** Temporary: Master Program mentors (today-only override for tag and rate). Revert later. */
-const MASTER_PROGRAM_MENTOR_EMAILS = [
-  'ahmadullayevarabboy@gmail.com',
-  'mamadjanovjamshidbek@gmail.com',
-];
 
 interface MentorCardProps {
   id: string;
@@ -63,7 +58,7 @@ function MentorCard({
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
-  const isMasterProgramMentor = Boolean(email && MASTER_PROGRAM_MENTOR_EMAILS.includes(email.toLowerCase()));
+  const isMasterProgramMentor = isMasterProgramMentorEmail(email);
 
   const handleCardClick = () => {
     navigate(`/mentors/${id}`);

@@ -5,12 +5,12 @@
    AI Major Match so all of My Journey reads as one publication.
    ───────────────────────────────────────────────────────────── */
 
-$rw-cream: #faf8f3;
-$rw-cream-elevated: #fbfaf6;
-$rw-ink: #1c1a17;
-$rw-ink-soft: #4b463f;
-$rw-muted: #6b6258;
-$rw-hairline: #e5e3da;
+$rw-cream: #f7f5f2;
+$rw-cream-elevated: #ffffff;
+$rw-ink: #302f2d;
+$rw-ink-soft: #48515e;
+$rw-muted: #606976;
+$rw-hairline: #e7e2dc;
 $rw-brand: #7B1F2F;
 $rw-brand-soft: rgba(123, 31, 47, 0.08);
 $rw-gold: #b6824b;
@@ -22,7 +22,7 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
      inside it — same convention used by My Progress and Full Support.
      Adding our own `max-width` + `margin: 0 auto` here made the content
      drift down + right relative to those pages. */
-  padding: 4px 0 32px;
+  padding: 0 0 24px;
   color: $rw-ink;
 
   /* — primitives ──────────────────────────────────────────────── */
@@ -67,7 +67,7 @@ $rw-gold-soft: rgba(182, 130, 75, 0.12);
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    border-radius: 999px;
+    border-radius: 10px;
     font-size: 0.85rem;
     font-weight: 600;
     line-height: 1;

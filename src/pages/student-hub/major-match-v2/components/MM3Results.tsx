@@ -270,8 +270,9 @@ const SectionHeading: React.FC<{ number: string; title: string; subtitle?: strin
  * card used to render inline, unchanged, now shown in a modal opened from
  * the compact list row. Portaled to document.body so it isn't clipped by
  * any ancestor's overflow/stacking context. */
-const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => void; readOnly: boolean }> = ({
+const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'bachelor' | 'master'; onClose: () => void; readOnly: boolean }> = ({
   university,
+  degreeLevel,
   onClose,
   readOnly,
 }) => {
@@ -288,7 +289,9 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
     { page: 1, limit: 100 },
     { skip: readOnly },
   );
-  const alreadySaved = !readOnly && !!collegeApplications?.data?.some((a) => a.universityId === university.id);
+  const alreadySaved = !readOnly && !!collegeApplications?.data?.some((a) =>
+    a.universityId === university.id && (a.degreeLevel ?? 'bachelor') === degreeLevel && a.major === university.matchedMajor,
+  );
 
   const [createCollegeApplication, { isLoading: isSaving }] = useCreateCollegeApplicationMutation();
   const [justSaved, setJustSaved] = useState(false);
@@ -303,6 +306,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
         !university.tuitionUnreliable && university.tuition ? parseTuitionForSave(university.tuition) : null;
 
       const payload: CreateCollegeApplicationRequest = {
+        degreeLevel,
         // Only universityId is sent, never universityName alongside it — the
         // college_applications table has a CHECK constraint requiring
         // exactly one of the two, and we always have the real catalogue id.
@@ -314,7 +318,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
         // value; the frontend's own CollegeApplication['applicationType']
         // union type is stale here (says 'common_app'), same workaround
         // already used in NewApplicationPage.tsx/EditApplicationPage.tsx.
-        applicationType: 'common-app' as CreateCollegeApplicationRequest['applicationType'],
+        applicationType: (degreeLevel === 'master' ? 'direct' : 'common-app') as CreateCollegeApplicationRequest['applicationType'],
         status: 'researching',
         ...(parsedTuition ? { financialInfo: parsedTuition } : {}),
       };
@@ -1364,7 +1368,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
       </p>
 
       {selectedUniversity && (
-        <Mm3UniversityModal university={selectedUniversity} onClose={closeUniversityModal} readOnly={readOnly} />
+        <Mm3UniversityModal university={selectedUniversity} degreeLevel={report.meta.targetDegree ?? 'bachelor'} onClose={closeUniversityModal} readOnly={readOnly} />
       )}
     </div>
   );

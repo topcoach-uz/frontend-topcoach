@@ -410,6 +410,7 @@ export default function SubscriptionTab() {
     return (
       <div className={styles.page}>
         <Alert
+          className={styles.gateAlert}
           type="success"
           showIcon
           icon={<Sparkles size={18} />}
@@ -425,22 +426,7 @@ export default function SubscriptionTab() {
             <button
               type="button"
               onClick={() => navigate(communityGate.destination)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                background: '#7b1f2f',
-                color: '#fff',
-                border: '1px solid #7b1f2f',
-                padding: '8px 16px',
-                borderRadius: 10,
-                fontFamily:
-                  "'Iowan Old Style', 'Charter', 'Georgia', serif",
-                fontSize: '0.92rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
+              className={styles.gateAlertAction}
             >
               <BookOpen size={14} />
               {t('settings.subscription.gate.ctaProfile', 'Continue profile')}

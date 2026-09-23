@@ -19,6 +19,29 @@ export enum DocumentType {
   OTHER = 'other',
 }
 
+export interface DocumentVersion {
+  id: string;
+  version: number;
+  fileName: string;
+  mimeType?: string;
+  fileSize?: number;
+  changeSummary?: string | null;
+  createdAt: string;
+  isCurrent: boolean;
+}
+
+export interface DocumentReview {
+  status: 'private' | 'pending' | 'in_progress' | 'approved' | 'needs_revision';
+  reviewer: { id: string; name?: string } | null;
+  reviewerAccess?: boolean;
+  feedback: Array<{ id: string; content: string; annotationType?: string; createdAt: string; isResolved?: boolean }>;
+}
+
+const asData = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
+  response && typeof response === 'object' && 'data' in response
+    ? response as ApiResponse<T>
+    : { data: response as T, success: true };
+
 // Document categories for UI organization
 export const DOCUMENT_CATEGORIES = {
   [DocumentType.TRANSCRIPT]: {
@@ -98,6 +121,31 @@ export const documentManagementApi = RtkApi.injectEndpoints({
         url: `/document-management/${id}`,
         method: 'GET',
       }),
+      transformResponse: asData<StudentDocument>,
+      providesTags: (result, error, id) => [{ type: 'StudentDocuments', id }],
+    }),
+
+    getDocumentVersions: builder.query<ApiResponse<DocumentVersion[]>, string>({
+      query: (id) => ({ url: `/document-management/${id}/versions`, method: 'GET' }),
+      transformResponse: asData<DocumentVersion[]>,
+      providesTags: (result, error, id) => [{ type: 'StudentDocuments', id }],
+    }),
+
+    uploadDocumentVersion: builder.mutation<ApiResponse<{ document: StudentDocument; version: DocumentVersion }>, { id: string; body: FormData }>({
+      query: ({ id, body }) => ({ url: `/document-management/${id}/versions`, method: 'POST', body }),
+      transformResponse: asData<{ document: StudentDocument; version: DocumentVersion }>,
+      invalidatesTags: (result, error, { id }) => ['StudentDocuments', { type: 'StudentDocuments', id }],
+    }),
+
+    updateDocumentAccess: builder.mutation<ApiResponse<{ reviewerAccess: boolean; reviewer: DocumentReview['reviewer'] }>, { id: string; reviewerAccess: boolean }>({
+      query: ({ id, reviewerAccess }) => ({ url: `/document-management/${id}/access`, method: 'PATCH', body: { reviewerAccess } }),
+      transformResponse: asData<{ reviewerAccess: boolean; reviewer: DocumentReview['reviewer'] }>,
+      invalidatesTags: (result, error, { id }) => ['StudentDocuments', { type: 'StudentDocuments', id }],
+    }),
+
+    getDocumentReview: builder.query<ApiResponse<DocumentReview>, string>({
+      query: (id) => ({ url: `/document-management/${id}/review`, method: 'GET' }),
+      transformResponse: asData<DocumentReview>,
       providesTags: (result, error, id) => [{ type: 'StudentDocuments', id }],
     }),
 
@@ -184,7 +232,16 @@ export const documentManagementApi = RtkApi.injectEndpoints({
       query: (id) => ({
         url: `/document-management/${id}/download`,
         method: 'GET',
-        responseType: 'blob',
+        responseHandler: (response) => response.blob(),
+      }),
+      transformResponse: (response: Blob) => response,
+    }),
+
+    downloadDocumentVersion: builder.mutation<Blob, { id: string; versionId: string }>({
+      query: ({ id, versionId }) => ({
+        url: `/document-management/${id}/versions/${versionId}/download`,
+        method: 'GET',
+        responseHandler: (response) => response.blob(),
       }),
       transformResponse: (response: Blob) => response,
     }),
@@ -207,6 +264,10 @@ export const documentManagementApi = RtkApi.injectEndpoints({
 export const {
   useGetDocumentsQuery,
   useGetDocumentQuery,
+  useGetDocumentVersionsQuery,
+  useUploadDocumentVersionMutation,
+  useUpdateDocumentAccessMutation,
+  useGetDocumentReviewQuery,
   useUploadDocumentMutation,
   useUpdateDocumentMutation,
   useDeleteDocumentMutation,
@@ -214,5 +275,6 @@ export const {
   useGetDocumentStatsQuery,
   useGetDocumentAnalyticsQuery,
   useDownloadDocumentMutation,
+  useDownloadDocumentVersionMutation,
   useSearchDocumentsQuery,
 } = documentManagementApi;

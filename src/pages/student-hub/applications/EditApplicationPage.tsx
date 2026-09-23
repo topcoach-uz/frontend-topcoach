@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, Form, Input, Select, DatePicker, Button, Row, Col, App, Space, AutoComplete, InputNumber, Typography, Checkbox } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
@@ -105,6 +105,8 @@ const EditApplicationPage: React.FC = () => {
     raw && typeof raw === 'object' && raw !== null && 'id' in raw && typeof (raw as CollegeApplication).id === 'string'
       ? (raw as CollegeApplication)
       : undefined;
+  const degreeLevel = Form.useWatch('degreeLevel', form) ?? application?.degreeLevel ?? 'bachelor';
+  const universityMajorType = degreeLevel === 'master' ? 'graduate' : 'undergraduate';
 
   // University search state
   const [universitySearchValue, setUniversitySearchValue] = useState('');
@@ -115,6 +117,7 @@ const EditApplicationPage: React.FC = () => {
   const [isOtherUniversity, setIsOtherUniversity] = useState(!application?.universityId && !!application?.universityName);
   const [localRequirements, setLocalRequirements] = useState<Record<string, any>>({});
   const [customInput, setCustomInput] = useState('');
+  const universityLoadGeneration = useRef(0);
 
   const addCustomItem = () => {
     const title = customInput.trim();
@@ -147,13 +150,14 @@ const EditApplicationPage: React.FC = () => {
   // Load all universities on component mount
   useEffect(() => {
     const loadAllUniversities = async () => {
+      const generation = ++universityLoadGeneration.current;
       setSearchLoading(true);
       try {
         const allResponse = await api.university.findAll(
           {
             _start: 0,
             _end: 1000,
-            majorType: 'undergraduate' as any,
+            majorType: universityMajorType as any,
           }
         );
         
@@ -174,7 +178,7 @@ const EditApplicationPage: React.FC = () => {
               {
                 _start: allUniversities.length,
                 _end: allUniversities.length + batchSize,
-                majorType: 'undergraduate' as any,
+                majorType: universityMajorType as any,
               }
             );
             
@@ -203,7 +207,7 @@ const EditApplicationPage: React.FC = () => {
           id: '',
         });
         
-        setUniversityOptions(options);
+        if (generation === universityLoadGeneration.current) setUniversityOptions(options);
       } catch (error) {
         console.error('Error loading universities:', error);
       } finally {
@@ -212,7 +216,7 @@ const EditApplicationPage: React.FC = () => {
     };
 
     loadAllUniversities();
-  }, []);
+  }, [universityMajorType]);
 
   // Load majors when university is selected
   useEffect(() => {
@@ -259,6 +263,8 @@ const EditApplicationPage: React.FC = () => {
         university: application.universityId ? undefined : (application.universityName || ''),
         universityId: application.universityId || null,
         major: application.major || '',
+        degreeLevel: application.degreeLevel || 'bachelor',
+        intake: application.intake || '',
         applicationType: application.applicationType,
         status: application.status,
         category: application.category,
@@ -308,6 +314,7 @@ const EditApplicationPage: React.FC = () => {
     try {
       // Transform form values to API format
       const applicationData: any = {
+        degreeLevel: values.degreeLevel || application?.degreeLevel || 'bachelor',
         applicationType: (values.applicationType || application?.applicationType || 'common-app') as any,
         status: (values.status || application?.status || 'researching') as any,
         category: (values.category || application?.category || 'target') as any,
@@ -334,6 +341,7 @@ const EditApplicationPage: React.FC = () => {
       if (values.whyThisSchool !== undefined) {
         applicationData.whyThisSchool = values.whyThisSchool?.trim() || '';
       }
+      applicationData.intake = values.intake?.trim() || '';
 
       applicationData.financialInfo = application?.financialInfo || {};
       applicationData.requirements = localRequirements;
@@ -419,6 +427,27 @@ const EditApplicationPage: React.FC = () => {
         >
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
+              <Form.Item name="degreeLevel" label={t('studentHub.applications.degreeLevel', 'Program level')} rules={[{ required: true }]}>
+                <Select size="large" onChange={() => {
+                  setSelectedUniversityId(null);
+                  setUniversityOptions([]);
+                  setMajorOptions([]);
+                  setIsOtherUniversity(false);
+                  form.setFieldsValue({ university: undefined, universityId: undefined, major: undefined });
+                }}>
+                  <Option value="bachelor">{t('studentHub.applications.degreeBachelor', "Bachelor's")}</Option>
+                  <Option value="master">{t('studentHub.applications.degreeMaster', "Master's")}</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={12}>
+              <Form.Item name="intake" label={t('studentHub.applications.intake', 'Intake (optional)')}>
+                <Input size="large" maxLength={64} placeholder={t('studentHub.applications.intakePlaceholder', 'e.g. Fall 2027')} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={[24, 24]}>
+            <Col xs={24} md={12}>
               {!isOtherUniversity ? (
                 <Form.Item
                   name="university"
@@ -501,7 +530,7 @@ const EditApplicationPage: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="applicationType"
-                label={t('studentHub.applications.applicationType', 'Application Type')}
+                label={t('studentHub.applications.applicationPlatform', 'Application platform or channel')}
                 rules={[{ required: true, message: t('studentHub.applications.selectApplicationType', 'Please select application type') }]}
               >
                 <Select placeholder={t('studentHub.applications.selectType', 'Select type')} size="large">
@@ -657,7 +686,13 @@ const EditApplicationPage: React.FC = () => {
                       checked={!!(localRequirements?.testScores as any)?.status}
                       onChange={(e) => {
                         const next = { ...localRequirements };
-                        if (e.target.checked) (next as any).testScores = { status: 'pending', required: [t('studentHub.applications.satAct', 'SAT/ACT')], submitted: [] };
+                        if (e.target.checked) (next as any).testScores = {
+                          status: 'pending',
+                          required: degreeLevel === 'master'
+                            ? [t('studentHub.applications.graduateTests', 'GRE/GMAT (if required)')]
+                            : [t('studentHub.applications.satAct', 'SAT/ACT')],
+                          submitted: [],
+                        };
                         else delete (next as any).testScores;
                         setLocalRequirements(next);
                       }}

@@ -26,6 +26,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
   const isReadOnly = readOnly === true;
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
+  const isMasters = profile?.academicProfile?.targetDegree === 'master';
 
   // Initialize form with data from API
   useEffect(() => {
@@ -80,10 +81,11 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
         form={form}
         layout="vertical"
         onFinish={handleSave}
+        disabled={isReadOnly}
         className="activities-form"
       >
         {/* Extracurricular Activities */}
-        <Card title={t('studentHub.profile.extracurricularActivities', 'Extracurricular Activities')} className="section-card">
+        <Card title={isMasters ? 'Research, projects & professional activities' : t('studentHub.profile.extracurricularActivities', 'Extracurricular Activities')} className="section-card">
           <Form.List name="extracurricularActivities">
             {(fields, { add, remove }) => (
               <>
@@ -96,7 +98,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         label="Activity Name"
                         rules={[{ required: true, message: 'Please enter activity name' }]}
                       >
-                        <Input placeholder="e.g., Debate Team" />
+                        <Input placeholder={isMasters ? 'e.g., Undergraduate research project' : 'e.g., Debate Team'} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -105,7 +107,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         name={[name, 'position']}
                         label={t('studentHub.profile.positionRole', 'Position/Role')}
                       >
-                        <Input placeholder="e.g., Captain" />
+                        <Input placeholder={isMasters ? 'e.g., Research assistant' : 'e.g., Captain'} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -154,7 +156,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         label={t('studentHub.profile.leadershipRole', 'Leadership Role')}
                         rules={[{ required: true, message: t('studentHub.profile.pleaseEnterLeadershipRole', 'Please enter leadership role') }]}
                       >
-                        <Input placeholder="e.g., Student Council President" />
+                        <Input placeholder={isMasters ? 'e.g., Project lead' : 'e.g., Student Council President'} />
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -163,7 +165,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         name={[name, 'organization']}
                         label={t('studentHub.profile.organization', 'Organization')}
                       >
-                        <Input placeholder="e.g., High School Student Council" />
+                        <Input placeholder={isMasters ? 'e.g., University research lab' : 'e.g., High School Student Council'} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -212,7 +214,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         label={t('studentHub.profile.awardName', 'Award Name')}
                         rules={[{ required: true, message: t('studentHub.profile.pleaseEnterAwardName', 'Please enter award name') }]}
                       >
-                        <Input placeholder="e.g., National Merit Scholar" />
+                        <Input placeholder={isMasters ? 'e.g., Undergraduate research award' : 'e.g., National Merit Scholar'} />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -230,7 +232,7 @@ const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = 
                         name={[name, 'organization']}
                         label={t('studentHub.profile.awardingOrganization', 'Awarding Organization')}
                       >
-                        <Input placeholder="e.g., National Merit Corporation" />
+                        <Input placeholder={isMasters ? 'e.g., University department' : 'e.g., National Merit Corporation'} />
                       </Form.Item>
                     </Col>
                     {!isReadOnly && (

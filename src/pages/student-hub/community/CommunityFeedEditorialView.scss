@@ -5,14 +5,16 @@
    reads as one publication.
    ───────────────────────────────────────────────────────────── */
 
-$cf-cream:          #faf8f3;
-$cf-cream-elevated: #fbfaf6;
+@use 'src/styles/editorial-tokens' as ed;
+
+$cf-cream:          #f7f5f2;
+$cf-cream-elevated: #ffffff;
 $cf-paper:          #ffffff;
-$cf-ink:            #1c1a17;
-$cf-ink-soft:       #4b463f;
-$cf-muted:          #6b6258;
+$cf-ink:            #302f2d;
+$cf-ink-soft:       #48515e;
+$cf-muted:          #606976;
 $cf-muted-2:        #8a8275;
-$cf-hairline:       #e5e3da;
+$cf-hairline:       #e7e2dc;
 $cf-hairline-soft:  #efece4;
 $cf-brand:          #7b1f2f;
 $cf-brand-deep:     #5e1624;
@@ -85,6 +87,19 @@ body.cf-feed-active {
 
   &__main { min-width: 0; }
 
+  &__heading {
+    margin-bottom: 24px;
+    h1 { margin: 0 0 8px; font: 600 clamp(28px, 3vw, 38px)/1.15 ed.$serif; color: ed.$ink; }
+    p { margin: 0; color: ed.$muted; font-size: 14px; }
+  }
+  :is(button, a, input, textarea):focus-visible { outline: 2px solid ed.$brand; outline-offset: 3px; }
+  @media (max-width: 600px) {
+    .cf &__category-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+    &__category-pill { flex-shrink: 0; min-height: 40px; }
+    &__saved-toggle span { display: none; }
+    .cf &__filter-row { flex-wrap: wrap; }
+  }
+
   /* ── category filter row ──────────────────────────────────── */
   &__category-row {
     display: flex;
@@ -112,9 +127,9 @@ body.cf-feed-active {
     &:hover { background: $cf-hairline-soft; }
 
     &--active {
-      background: $cf-ink;
+      background: $cf-brand;
       color: #fff;
-      border-color: $cf-ink;
+      border-color: $cf-brand;
       .cf__category-dot { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
     }
   }
@@ -945,11 +960,12 @@ body.cf-feed-active {
   }
 
   &__widget-head {
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: ed.$serif;
+    font-size: 1rem;
     font-weight: 600;
-    color: $cf-muted;
+    color: $cf-ink;
     margin-bottom: 12px;
     display: inline-flex;
     align-items: center;
@@ -1495,14 +1511,20 @@ body.cf-feed-active {
      button — toned brand maroon to read as a category cousin to the
      search lens, with a subtle hover lift. */
   &__saved-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 12px;
+    font-weight: 600;
     appearance: none;
     border: 1px solid $cf-hairline;
     background: $cf-paper;
     color: $cf-brand;
-    border-radius: 999px;
-    padding: 7px 9px;
+    border-radius: 10px;
+    padding: 10px 14px;
     cursor: pointer;
-    line-height: 0;
+    line-height: 1.4;
     transition: background 0.12s ease, border-color 0.12s ease;
     flex-shrink: 0;
     &:hover {
@@ -1615,6 +1637,7 @@ body.cf-feed-active {
     margin: 0 0 14px;
   }
   &__search-wrap {
+    min-width: 0;
     position: relative;
     flex: 1;
     display: flex;
@@ -1627,11 +1650,13 @@ body.cf-feed-active {
     pointer-events: none;
   }
   &__search-input {
+    min-width: 0;
+    min-height: 44px;
     flex: 1;
     border: 1px solid $cf-hairline;
     background: $cf-paper;
     color: $cf-ink;
-    border-radius: 999px;
+    border-radius: 10px;
     padding: 8px 30px 8px 32px;
     font-size: 0.86rem;
     outline: none;

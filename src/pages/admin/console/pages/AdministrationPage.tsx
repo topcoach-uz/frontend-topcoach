@@ -1,4 +1,5 @@
 import { Alert, Button, Card, Empty, Space, Spin, Table, Tabs, Typography } from 'antd';
+import { useState } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   useGetAdminUsersDirectoryQuery,
@@ -7,6 +8,7 @@ import {
 import { useAdminConsole } from '../AdminConsoleContext';
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 import { avatarStyleForId, initialsFromName } from '../utils';
+import UserDetailDrawer from '../components/UserDetailDrawer';
 
 const { Paragraph } = Typography;
 
@@ -32,6 +34,7 @@ function formatDate(iso: string | null) {
 
 export default function AdminConsoleAdministrationPage() {
   const { role: myRole } = useAdminConsole();
+  const [selectedAccount, setSelectedAccount] = useState<AdminDirectoryRow | null>(null);
   const { data, isLoading, isError, error } = useGetAdminUsersDirectoryQuery({
     role: 'admins',
     pageSize: 100,
@@ -74,6 +77,15 @@ export default function AdminConsoleAdministrationPage() {
       key: 'lastActiveAt',
       width: 130,
       render: (iso: string | null) => formatDate(iso),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, row) => (
+        <Button type="link" onClick={() => setSelectedAccount(row)}>
+          {myRole === 'SuperAdmin' ? 'Manage access' : 'View account'}
+        </Button>
+      ),
     },
   ];
 
@@ -120,10 +132,9 @@ export default function AdminConsoleAdministrationPage() {
                   <Space wrap>
                     <Button type="primary" disabled>Invite admin (coming soon)</Button>
                     <Button disabled>Promote to SuperAdmin (owner only)</Button>
-                    <Button disabled>Deactivate</Button>
                   </Space>
                   <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                    Signed in as <strong>{myRole}</strong>
+                    Signed in as <strong>{myRole}</strong>. SuperAdmins can manage access from each account.
                   </Paragraph>
                   {rosterBody}
                 </Space>
@@ -156,6 +167,7 @@ export default function AdminConsoleAdministrationPage() {
           },
         ]}
       />
+      <UserDetailDrawer user={selectedAccount} open={!!selectedAccount} onClose={() => setSelectedAccount(null)} />
     </div>
   );
 }

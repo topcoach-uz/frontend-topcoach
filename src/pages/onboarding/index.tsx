@@ -26,6 +26,8 @@ import StepSource from './steps/StepSource';
 import StepOpportunity from './steps/StepOpportunity';
 import StepTelegram from './steps/StepTelegram';
 import styles from './onboarding.module.scss';
+import OnboardingPreview from 'src/pages/onboarding-preview/OnboardingPreview';
+import { shouldUseOnboardingV2 } from './productionContract';
 
 /**
  * Post-login onboarding wizard (see ONBOARDING_DESIGN.md). Ships 5 steps
@@ -58,7 +60,7 @@ import styles from './onboarding.module.scss';
  * in ./steps/types.ts). Every "Next" PATCHes the step forward so a refresh
  * always resumes correctly.
  */
-export default function OnboardingWizardPage() {
+function LegacyOnboardingWizardPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -180,7 +182,7 @@ export default function OnboardingWizardPage() {
 
   const meta: Record<OnboardingStepId, { title: string; subtitle: string }> = {
     role: {
-      title: t('onboarding.role.title', 'Are you a student or a mentor?'),
+      title: t('onboarding.role.title', 'Are you an applicant or a mentor?'),
       subtitle: t(
         'onboarding.role.subtitle',
         'Tell us how you plan to use TopCoach so we can take you to the right place.',
@@ -288,4 +290,25 @@ export default function OnboardingWizardPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * Version 2 reuses the responsive 41-screen design with a server-backed
+ * controller. A user already enrolled in v2 stays there even when new v2
+ * enrollment is disabled, so a rollback cannot feed v2 step IDs to v1.
+ */
+export default function OnboardingWizardPage() {
+  const profile = useTypedSelector((state) => state.auth.profile);
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data: studentProfile, isLoading } = useGetMyStudentProfileQuery(undefined, {
+    skip: !isAuthenticated || profile?.profile?.role === UserRole.Mentor,
+  });
+  const version = (profile as (typeof profile & OnboardingStatus) | undefined)?.onboardingVersion;
+  const enrollV2 = import.meta.env.VITE_ONBOARDING_V2_ENABLED === 'true';
+
+  if (isLoading) return <Loader height="100vh" />;
+  if (usesJuniorCommunity(studentProfile?.academicProfile)) return <Navigate to="/student-hub?section=feed" replace />;
+
+  if (shouldUseOnboardingV2(version, enrollV2)) return <OnboardingPreview mode="production" />;
+  return <LegacyOnboardingWizardPage />;
 }

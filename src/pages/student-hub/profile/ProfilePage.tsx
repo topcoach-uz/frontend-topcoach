@@ -21,6 +21,7 @@ import PersonalProfile from './PersonalProfile';
 import ActivitiesProfile from './ActivitiesProfile';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import DocumentsPage from '../documents/DocumentsPage';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
@@ -51,6 +52,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Pass studentId to hook when in read-only mode to fetch correct student data
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, isLoading, error } = useStudentProfile(hookOptions);
+  const isMasters = profile?.academicProfile?.targetDegree === 'master';
+
+  // Graduate applicants use the current program and document workspaces.
+  // Keep legacy tab links useful, including links opened directly in a new tab.
+  useEffect(() => {
+    if (isReadOnly || !isMasters) return;
+    const tab = searchParams.get('tab');
+    if (tab === 'college-lists' || tab === 'documents') {
+      navigate(tab === 'college-lists' ? '/student-hub/applications' : '/student-hub/documents', { replace: true });
+    }
+  }, [isReadOnly, isMasters, searchParams, navigate]);
 
   // Major Match (psychometric assessment) status card, own account only,
   // never in the counselor's read-only embed (see the `!isReadOnly` guard
@@ -126,6 +138,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle tab changes, merge into the existing params so shell params
   // like ?section=others&target=profile survive the tab switch
   const handleTabChange = (key: string) => {
+    if (!isReadOnly && isMasters && (key === 'college-lists' || key === 'documents')) {
+      navigate(key === 'college-lists' ? '/student-hub/applications' : '/student-hub/documents');
+      return;
+    }
     setActiveTab(key);
     setVisitedTabs((prev) => (prev.has(key) ? prev : new Set(prev).add(key)));
     setSearchParams(
@@ -141,7 +157,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Show loading state with unified skeleton
   if (isLoading) {
     return (
-      <div className="profile-loading-content">
+      <div className="applicant-page applicant-profile-page profile-loading-content">
         <PageSkeleton 
           rows={6} 
           showTitle={true}
@@ -179,8 +195,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
         lastUpdated: formatDateTime(profile?.personalProfile?.updatedAt || ''),
       },
       academic: {
-        completed: !!profile?.academicProfile,
-        percentage: profile?.academicProfile ? 100 : 0,
+        completed: profile?.academicProfile?.targetDegree === 'master'
+          ? !!(profile.academicProfile.educationStatus && profile.academicProfile.previousInstitution && profile.academicProfile.previousDegree && profile.academicProfile.previousField && profile.academicProfile.bachelorGraduationYear)
+          : !!(profile?.academicProfile?.targetDegree && profile.academicProfile.curriculum && profile.academicProfile.graduationYear),
+        percentage: profile?.academicProfile?.targetDegree === 'master'
+          ? [profile.academicProfile.educationStatus, profile.academicProfile.previousInstitution, profile.academicProfile.previousDegree, profile.academicProfile.previousField, profile.academicProfile.bachelorGraduationYear].filter(Boolean).length * 20
+          : Math.round([profile?.academicProfile?.targetDegree, profile?.academicProfile?.curriculum, profile?.academicProfile?.graduationYear].filter(Boolean).length / 3 * 100),
         lastUpdated: formatDateTime(profile?.academicProfile?.updatedAt || ''),
       },
       activities: {
@@ -242,7 +262,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
     },
     {
       key: 'college-lists',
-      label: t('studentHub.hub.collegeLists', 'College Lists'),
+      label: isMasters ? 'Programs' : t('studentHub.hub.collegeLists', 'College Lists'),
       children: <ApplicationsPage readOnly={isReadOnly} studentId={studentId} />,
     },
     {
@@ -253,21 +273,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   ];
 
   const activeTabItem = tabItems.find((tab) => tab.key === activeTab) ?? tabItems[0];
+  const isApplicationFlow = activeTab === 'college-lists' && ['new', 'edit'].includes(searchParams.get('applicationFlow') ?? '');
+  const pageTitle = isReadOnly
+    ? t('studentHub.profile.counselorTitle')
+    : t('studentHub.profile.myStudentProfile');
+  const pageSubtitle = isReadOnly
+    ? t('studentHub.profile.counselorSubtitle')
+    : t(isMasters
+      ? 'studentHub.profile.completeMastersProfileMessage'
+      : 'studentHub.profile.completeProfileMessage');
 
   return (
-    <div className="student-profile-page student-hub-page">
+    <ApplicantPage title={pageTitle} subtitle={pageSubtitle}>
+    <div className="student-profile-page applicant-profile-page student-hub-page">
       {/* Editorial masthead, serif title, standfirst, then a status line
           carrying the two facts worth carrying: how complete the profile
           is, and when it last changed. No eyebrow: the sibling Settings
           page doesn't use one, and "My Journey" would only repeat the
           nav item that's already highlighted. */}
-      <header className="pf-masthead">
-        <h1 className="pf-title">
-          {isReadOnly ? t('studentHub.profile.counselorTitle') : t('studentHub.profile.myStudentProfile')}
-        </h1>
-        <p className="pf-standfirst">
-          {isReadOnly ? t('studentHub.profile.counselorSubtitle') : t('studentHub.profile.completeProfileMessage')}
-        </p>
+      {!isApplicationFlow && <header className="pf-masthead applicant-profile-page__meta">
         <div className="pf-statusline">
           <span className={`pf-status pf-status--${getStatusColor(profileData.status)}`}>
             <span className="pf-status__dot" aria-hidden />
@@ -281,7 +305,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
             </span>
           )}
         </div>
-      </header>
+      </header>}
 
       {/* Major Match status, own account only, hidden in the counselor's
           read-only embed of this page. Always renders something: a
@@ -291,7 +315,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
           see the `majorMatchLegacyOnly` comment above), and never a blank
           box (see states 1-5 in the task spec this card was originally
           built for). */}
-      {!isReadOnly && (
+      {!isReadOnly && !isApplicationFlow && (
         <aside className="pf-rail">
           <div className="profile-major-match-card__body">
             <div className="profile-major-match-card__text">
@@ -369,7 +393,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       {/* Section navigation. A plain underline strip rather than AntD's
           Tabs: no ink bar to fight, no boxed pills, and the labels can
           carry the page's serif. */}
-      <nav className="pf-tabs" role="tablist" aria-label={t('studentHub.profile.sectionsNav', 'Profile sections')}>
+      {!isApplicationFlow && <nav className="pf-tabs" role="tablist" aria-label={t('studentHub.profile.sectionsNav', 'Profile sections')}>
         {tabItems.map((tab) => (
           <button
             key={tab.key}
@@ -384,7 +408,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
             {tab.label}
           </button>
         ))}
-      </nav>
+      </nav>}
 
       {/* Panes mount lazily on first visit and stay mounted after, which
           is what AntD's Tabs did: a half-filled form survives a trip to
@@ -407,6 +431,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
         );
       })}
     </div>
+    </ApplicantPage>
   );
 };
 

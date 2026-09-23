@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -11,97 +11,32 @@ import {
   useGetLatestMm3ReportQuery,
   Mm3Report,
 } from '../../../app/services/student-hub/majorMatchApi';
-import { MM3_PARTS, MM3_QUESTION_ORDER, MM3_QUESTIONS_BY_ID } from './mm3-content';
+import { MM3_PARTS, MM3_QUESTION_ORDER, getMm3QuestionMap } from './mm3-content';
 import {
   buildMm3CountryHints,
   buildMm3Payload,
   buildMm3Prefill,
-  isKnownMm3Slug,
 } from './mm3-payload';
 import { isMM3Answered, MM3Answer } from './components/MM3Inputs';
 import { MM3Intro } from './components/MM3Intro';
 import { MM3Runner } from './components/MM3Runner';
+import { MM3Review } from './components/MM3Review';
+import { readMm3Location, writeMm3Location, type MM3Step } from './mm3-navigation';
+import { clearMm3Draft, loadMm3Draft, saveMm3Draft } from './mm3-draft';
 import { MM3Analyzing } from './components/MM3Analyzing';
 import { MM3Results } from './components/MM3Results';
 import { MM2Results } from './components/MM2Results';
+import '../applicant/applicantPages.scss';
 import './MajorMatchV2Page.scss';
+import './mm3-workspace.scss';
 
-/**
- * Major Match — the 30-question, 3-part experience.
- *
- * Honors the SAME prop contract as the legacy `PsychometricAssessmentPage`
- * (`readOnly?`, `studentId?`, `onExit?`) so the four existing mounts keep
- * working untouched.
- *
- * Two engines are visible here on purpose:
- *  • Students run MM3 — answers go to Gemini, which returns majors plus
- *    universities drawn from our own catalogue.
- *  • Counselors (`readOnly`) still read a stored v2 result when one exists.
- *    MM3 does not persist yet, so without this a counselor would suddenly see
- *    "hasn't completed" for every student who has in fact completed one. The
- *    old results stay readable — that is also the documented rollback path.
- *
- * MM3 is single-submit: the only resume story is a localStorage draft of
- * in-progress answers on this device, cleared once a report comes back.
- */
+/** Shared student/counselor entry. Reports persist on the server; in-progress
+ * answers stay in a profile-specific local draft until a report is generated. */
 export interface MajorMatchV2PageProps {
   readOnly?: boolean;
   studentId?: string;
   onExit?: () => void;
 }
-
-type MM3Step = 'intro' | 'questions' | 'analyzing' | 'results';
-
-const draftKey = (studentProfileId: string) => `topcoach_mm3_draft_${studentProfileId}`;
-
-interface MM3Draft {
-  answers: Record<string, MM3Answer>;
-  currentIndex: number;
-}
-
-const loadDraft = (studentProfileId: string): MM3Draft | null => {
-  try {
-    const raw = localStorage.getItem(draftKey(studentProfileId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as MM3Draft;
-    if (!parsed || typeof parsed !== 'object' || typeof parsed.answers !== 'object') {
-      return null;
-    }
-    // Drop anything whose question no longer exists so a stale draft from an
-    // older question set can't wedge the runner.
-    const answers: Record<string, MM3Answer> = {};
-    for (const [slug, value] of Object.entries(parsed.answers || {})) {
-      if (isKnownMm3Slug(slug)) answers[slug] = value as MM3Answer;
-    }
-    return {
-      answers,
-      currentIndex:
-        typeof parsed.currentIndex === 'number'
-          ? Math.min(Math.max(parsed.currentIndex, 0), MM3_QUESTION_ORDER.length - 1)
-          : 0,
-    };
-  } catch {
-    return null;
-  }
-};
-
-const saveDraft = (studentProfileId: string, draft: MM3Draft) => {
-  try {
-    localStorage.setItem(draftKey(studentProfileId), JSON.stringify(draft));
-  } catch {
-    // Best-effort only — localStorage fails in private mode / at quota.
-    // Losing the draft costs the student re-answering, not data integrity:
-    // nothing is persisted server-side until the report comes back anyway.
-  }
-};
-
-const clearDraft = (studentProfileId: string) => {
-  try {
-    localStorage.removeItem(draftKey(studentProfileId));
-  } catch {
-    // no-op
-  }
-};
 
 const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   readOnly = false,
@@ -110,11 +45,17 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const gate = useCommunityAccessGate();
 
   const hookOptions = readOnly && studentId ? { studentId } : undefined;
   const { profile: studentProfile, isLoading: profileLoading } = useStudentProfile(hookOptions);
   const studentProfileId = studentProfile?.id;
+  const targetDegree = studentProfile?.academicProfile?.targetDegree ?? 'bachelor';
+  const questionsById = useMemo(() => getMm3QuestionMap(targetDegree), [targetDegree]);
+  // Keep undergraduate drafts compatible, but never restore school answers
+  // into a graduate questionnaire after the applicant changes their goal.
+  const draftProfileKey = studentProfileId ? `${studentProfileId}${targetDegree === 'master' ? ':master' : ''}` : undefined;
 
   const {
     data: status,
@@ -126,20 +67,34 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   // "View full results" after a refresh/re-navigation (MM3 is single-submit
   // and in-session `report` state doesn't survive a reload on its own), and
   // is what powers the counselor read-only view below.
-  const { data: storedReport } = useGetLatestMm3ReportQuery(studentProfileId || '', {
+  const { data: storedReport, isLoading: reportLoading } = useGetLatestMm3ReportQuery(studentProfileId || '', {
     skip: !studentProfileId,
   });
 
   const [analyseMm3, { isLoading: analysing }] = useAnalyseMm3Mutation();
 
-  const [step, setStep] = useState<MM3Step>('intro');
+  const [readOnlyStep, setReadOnlyStep] = useState<MM3Step>('intro');
   const [answers, setAnswers] = useState<Record<string, MM3Answer>>({});
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resumeIndex, setResumeIndex] = useState(0);
+  const [draftStep, setDraftStep] = useState<'questions' | 'review'>('questions');
+  const location = readMm3Location(searchParams, resumeIndex);
+  const currentIndex = location.currentIndex;
+  // A reload cannot resume an in-flight mutation: return to the saved review.
+  const step = readOnly ? readOnlyStep : location.step === 'analyzing' && !analysing ? 'review' : location.step;
+  const goToStep = (nextStep: MM3Step, index = currentIndex, editPart?: number, replace = false) => {
+    if (readOnly) {
+      setReadOnlyStep(nextStep === 'results' ? 'results' : 'intro');
+      return;
+    }
+    setSearchParams(writeMm3Location(searchParams, nextStep, index, editPart), { replace });
+  };
   const [report, setReport] = useState<Mm3Report | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
   const [prefilledSlugs, setPrefilledSlugs] = useState<readonly string[]>([]);
-  const hydratedRef = useRef(false);
+  const hydratedRef = useRef<string>();
   const reportHydratedRef = useRef(false);
+  const submittingRef = useRef(false);
+  const [hydratedKey, setHydratedKey] = useState<string>();
 
   // Seed `report` from the stored one the first time it arrives, as long as
   // nothing already took its place in-session (a just-finished/just-retaken
@@ -154,28 +109,34 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   // Seed once per profile: a saved draft wins over prefill (the student's own
   // in-progress edits must never be clobbered by profile values).
   useEffect(() => {
-    if (!studentProfileId || hydratedRef.current || readOnly) return;
-    hydratedRef.current = true;
+    if (!draftProfileKey || hydratedRef.current === draftProfileKey || readOnly) return;
+    hydratedRef.current = draftProfileKey;
 
     const prefill = buildMm3Prefill(studentProfile, t);
-    const draft = loadDraft(studentProfileId);
+    const draft = loadMm3Draft(draftProfileKey);
 
     if (draft && Object.keys(draft.answers).length > 0) {
       setAnswers({ ...prefill.answers, ...draft.answers });
-      setCurrentIndex(draft.currentIndex);
+      setResumeIndex(draft.currentIndex);
+      setDraftStep(draft.step ?? 'questions');
       setHasDraft(true);
-    } else if (Object.keys(prefill.answers).length > 0) {
+    } else {
       setAnswers(prefill.answers);
+      setResumeIndex(0);
+      setHasDraft(false);
     }
     setPrefilledSlugs(prefill.slugs);
+    setHydratedKey(draftProfileKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentProfileId, readOnly]);
+  }, [draftProfileKey, readOnly]);
 
   // Persist while actively answering.
   useEffect(() => {
-    if (!studentProfileId || step !== 'questions') return;
-    saveDraft(studentProfileId, { answers, currentIndex });
-  }, [studentProfileId, step, answers, currentIndex]);
+    if (!draftProfileKey || hydratedKey !== draftProfileKey || readOnly || (step !== 'questions' && step !== 'review')) return;
+    saveMm3Draft(draftProfileKey, { answers, currentIndex, step });
+    setHasDraft(true);
+    setDraftStep(step);
+  }, [draftProfileKey, hydratedKey, readOnly, step, answers, currentIndex]);
 
   const exitDestination = readOnly
     ? '/student-hub/major-match-v2'
@@ -197,11 +158,11 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
     () =>
       MM3_PARTS.map((part) =>
         part.questionIds.every((id) => {
-          const question = MM3_QUESTIONS_BY_ID.get(id);
+          const question = questionsById.get(id);
           return question ? isMM3Answered(question, answers[question.slug]) : false;
         }),
       ),
-    [answers],
+    [answers, questionsById],
   );
 
   const handleUnlock = () => navigate(gate.destination);
@@ -211,48 +172,61 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   };
 
   const handleAnalyse = async () => {
+    if (readOnly || submittingRef.current) return;
+    if (status?.access && !status.access.canStart) {
+      handleUnlock();
+      return;
+    }
     // Re-check every question rather than trusting the button state — a
     // restored draft can land the student mid-set with earlier gaps.
     const missingIndex = MM3_QUESTION_ORDER.findIndex((id) => {
-      const question = MM3_QUESTIONS_BY_ID.get(id);
+      const question = questionsById.get(id);
       return question ? !isMM3Answered(question, answers[question.slug]) : false;
     });
     if (missingIndex >= 0) {
-      setCurrentIndex(missingIndex);
+      goToStep('questions', missingIndex);
       message.warning(
         t('majorMatch3.validation.answerAll', 'Please answer this question to continue.'),
       );
       return;
     }
 
-    setStep('analyzing');
+    submittingRef.current = true;
+    goToStep('analyzing');
     try {
       const result = await analyseMm3({
-        answers: buildMm3Payload(answers, t),
+        answers: buildMm3Payload(answers, t, targetDegree),
+        targetDegree,
         countryHints: buildMm3CountryHints(answers),
       }).unwrap();
 
       setReport(result);
-      setStep('results');
-      if (studentProfileId) clearDraft(studentProfileId);
+      goToStep('results', 0, undefined, true);
+      if (draftProfileKey) clearMm3Draft(draftProfileKey);
       setHasDraft(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Major Match analysis error:', error);
+      const serverMessage = error && typeof error === 'object' && 'data' in error
+        && error.data && typeof error.data === 'object' && 'message' in error.data
+        && typeof error.data.message === 'string'
+        ? error.data.message
+        : null;
       message.error(
-        error?.data?.message ||
+        serverMessage ||
           t(
             'majorMatch3.error.analyseFailed',
             "We couldn't build your report just now. Your answers are saved — please try again.",
           ),
       );
-      // Back to the last question with answers intact, never a dead end.
-      setStep('questions');
-      setCurrentIndex(MM3_QUESTION_ORDER.length - 1);
+      // Keep the reviewed answers available for a retry after a server error.
+      goToStep('review', currentIndex, undefined, true);
+    } finally {
+      submittingRef.current = false;
     }
   };
 
   const goNext = () => {
-    const question = MM3_QUESTIONS_BY_ID.get(MM3_QUESTION_ORDER[currentIndex]);
+    const question = questionsById.get(MM3_QUESTION_ORDER[currentIndex]);
     if (question && !isMM3Answered(question, answers[question.slug])) {
       message.warning(
         t('majorMatch3.validation.answerAll', 'Please answer this question to continue.'),
@@ -260,13 +234,37 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
       return;
     }
     if (currentIndex === MM3_QUESTION_ORDER.length - 1) {
-      void handleAnalyse();
+      goToStep('review');
       return;
     }
-    setCurrentIndex((i) => i + 1);
+    if (location.editPart && currentIndex + 1 === location.editPart * 10) {
+      goToStep('review');
+      return;
+    }
+    goToStep('questions', currentIndex + 1, location.editPart);
   };
 
-  const goBack = () => setCurrentIndex((i) => Math.max(0, i - 1));
+  const goBack = () => currentIndex === 0 ? goToStep('intro') : goToStep('questions', currentIndex - 1, location.editPart);
+
+  const startAssessment = () => {
+    if (status?.access && !status.access.canStart) {
+      handleUnlock();
+      return;
+    }
+    // A partially completed retake wins over the older persisted report.
+    // Keep that report in memory so "View results" still works if the
+    // student exits the retake before submitting the replacement.
+    if (hasDraft) {
+      goToStep(partsCompleted.every(Boolean) || draftStep === 'review' ? 'review' : 'questions', resumeIndex);
+      return;
+    }
+    if (report || status?.latest) {
+      setAnswers(buildMm3Prefill(studentProfile, t).answers);
+      goToStep('questions', 0);
+      return;
+    }
+    goToStep(partsCompleted.every(Boolean) || draftStep === 'review' ? 'review' : 'questions', resumeIndex);
+  };
 
   // A stored result from the retired v2 engine, shown to BOTH students and
   // counselors when there is no MM3 report to show instead.
@@ -279,9 +277,9 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   // result is theirs to read; MM3 simply takes precedence when one exists.
   const legacyResult = useMemo(() => status?.latest ?? null, [status]);
 
-  if (profileLoading) {
+  if (profileLoading || (!readOnly && draftProfileKey && hydratedKey !== draftProfileKey)) {
     return (
-      <div className="mm2__state">
+      <div className="applicant-page applicant-specialist-page mm2__state">
         <span className="mm2__spinner" />
       </div>
     );
@@ -289,7 +287,7 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
 
   if (!studentProfile) {
     return (
-      <div className="mm2__state">
+      <div className="applicant-page applicant-specialist-page mm2__state">
         <p className="mm2__state-title">{t('majorMatch.error.genericTitle', 'Something went wrong')}</p>
         <p className="mm2__state-text">
           {t(
@@ -309,7 +307,13 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
   }
 
   return (
-    <div className="mm2-page student-hub-page">
+    <div className={`applicant-page applicant-specialist-page mm2-page mm3-workspace student-hub-page mm3-workspace--${step}`}>
+      {!readOnly && (
+        <nav className="mm3-workspace__breadcrumb" aria-label={t('common.breadcrumb', 'Breadcrumb')}>
+          <span><Link to="/student-hub">{t('applicantWorkspace.myJourney', 'My Journey')}</Link><span aria-hidden="true"> / </span>{t('studentHub.nav.aiMajorMatch', 'AI Major Match')}</span>
+          {(step === 'questions' || step === 'review') && <button type="button" onClick={goExit}>{t('majorMatch.nav.exit', 'Save & exit')}</button>}
+        </nav>
+      )}
       {(statusLoading || statusFetching) && step === 'intro' && !status ? (
         <div className="mm2__state">
           <span className="mm2__spinner" />
@@ -318,19 +322,22 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
         <>
           {step === 'intro' && (
             <MM3Intro
+              targetDegree={targetDegree}
               readOnly={readOnly}
               hasReport={!!report || !!legacyResult}
               access={status?.access}
               hasDraft={hasDraft}
               partsCompleted={partsCompleted}
-              onStart={() => setStep('questions')}
-              onViewResults={() => setStep('results')}
+              onStart={startAssessment}
+              onViewResults={() => goToStep('results')}
+              onChooseDirect={() => navigate('/student-hub/universities')}
               onUnlock={handleUnlock}
             />
           )}
 
           {step === 'questions' && (
             <MM3Runner
+              targetDegree={targetDegree}
               currentIndex={currentIndex}
               answers={answers}
               prefilledSlugs={prefilledSlugs}
@@ -338,27 +345,38 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
               onAnswer={handleAnswer}
               onNext={goNext}
               onBack={goBack}
-              onExit={() => {
-                setStep('intro');
-                goExit();
-              }}
+              onExit={goExit}
+              showSaveExit={false}
+              onReturnToReview={location.editPart ? () => goToStep('review') : undefined}
             />
           )}
 
+          {step === 'review' && !readOnly && (
+            <MM3Review targetDegree={targetDegree} answers={answers} submitting={analysing}
+              onEdit={(index, part) => goToStep('questions', index, part)}
+              onBack={() => goToStep('questions', MM3_QUESTION_ORDER.length - 1)}
+              onSubmit={() => void handleAnalyse()} />
+          )}
+
           {step === 'analyzing' && <MM3Analyzing />}
+
+          {step === 'results' && !report && !legacyResult && (
+            <div className="mm2__state">
+              {reportLoading || statusLoading ? <span className="mm2__spinner" /> : <>
+                <p className="mm2__state-title">{t('majorMatch3.results.notReady', 'Your report is not ready yet')}</p>
+                <button className="mm2__btn mm2__btn--primary" onClick={() => goToStep('intro')}>{t('common.back', 'Back')}</button>
+              </>}
+            </div>
+          )}
 
           {step === 'results' && report && (
             <MM3Results
               report={report}
               readOnly={readOnly}
               access={status?.access}
-              onRetake={() => {
-                setReport(null);
-                setCurrentIndex(0);
-                setStep('questions');
-              }}
+              onRetake={startAssessment}
               onUnlock={handleUnlock}
-              onBack={() => setStep('intro')}
+              onBack={() => goToStep('intro')}
             />
           )}
 
@@ -370,12 +388,9 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
               result={legacyResult}
               readOnly={readOnly}
               access={status?.access}
-              onRetake={() => {
-                setCurrentIndex(0);
-                setStep('questions');
-              }}
+              onRetake={startAssessment}
               onUnlock={handleUnlock}
-              onBack={() => setStep('intro')}
+              onBack={() => goToStep('intro')}
             />
           )}
         </>

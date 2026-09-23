@@ -22,11 +22,11 @@ export default function RoleCard({ handleChange, selected, variant = 'signup' }:
       ? [
           {
             key: UserRole.Student,
-            title: t('onboarding.role.studentTitle', "I'm a student"),
+            title: t('onboarding.role.applicantTitle', "I'm an applicant"),
             description: [
               t('onboarding.role.studentBullet1', 'Book 1:1 sessions with mentors'),
               t('onboarding.role.studentBullet2', 'Join the student community'),
-              t('onboarding.role.studentBullet3', 'Discover top universities'),
+              t('onboarding.role.studentBullet3', "Plan a bachelor’s or master’s application"),
             ],
           },
           {

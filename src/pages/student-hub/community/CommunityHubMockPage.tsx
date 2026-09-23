@@ -118,7 +118,7 @@ function ResearchPrepSection() {
   return <ResearchPrepPage isFullSupport={isFullSupport} />;
 }
 
-export default function CommunityHubMockPage() {
+export default function CommunityHubMockPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -183,11 +183,24 @@ export default function CommunityHubMockPage() {
   // layout before this component mounts, so the check is synchronous
   // in practice.
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
+    // Start embedded panes on the requested section, without mounting an
+    // unrelated dashboard (and its data/video requests) for the first render.
+    if (embedded) {
+      const section = new URLSearchParams(location.search).get('section');
+      const aliases: Record<string, CommunitySectionKey> = {
+        'my-learning': 'myLearning', 'ai-major-match': 'aiMajorMatch',
+        'admissions-program': 'admissionsProgram', 'sat-course': 'satCourse',
+        'research-program': 'researchProgram', 'placement-profile': 'placementProfile',
+        'placement-roadmap': 'placementRoadmap',
+      };
+      if (section && aliases[section]) return aliases[section];
+      if (section && ['feed', 'messages', 'buddies', 'more', 'others', 'account', 'dashboard', 'mentors'].includes(section)) return section as CommunitySectionKey;
+    }
     if (ENABLE_COMMUNITY_FEED && checkFeedAllowed(profile, isCommunityEnrolled)) return 'feed';
     return 'myLearning';
   });
-  const [othersTarget, setOthersTarget] = useState<string | null>(null);
-  const [accountTarget, setAccountTarget] = useState<string | null>(null);
+  const [othersTarget, setOthersTarget] = useState<string | null>(() => embedded ? new URLSearchParams(location.search).get('target') : null);
+  const [accountTarget, setAccountTarget] = useState<string | null>(() => embedded ? new URLSearchParams(location.search).get('target') : null);
   // Study Buddy is free; the editorial header shows once the user has accepted
   // the community guidelines (the consent gate renders the standalone intro
   // until then). Only fetched while on the buddies section.
@@ -451,6 +464,15 @@ export default function CommunityHubMockPage() {
       switch (activeSection) {
         case 'feed':
           return 'feed';
+        case 'messages':
+        case 'mentors':
+          return 'community';
+        case 'buddies':
+          return 'study-buddies';
+        case 'admissionsProgram':
+          return 'admissions-program';
+        case 'satCourse':
+          return 'sat-course';
         case 'researchProgram':
           return 'research-program';
         default:
@@ -483,7 +505,7 @@ export default function CommunityHubMockPage() {
 
   return (
     <div
-      className={`${styles.hubPageOuter} ${
+      className={`${styles.hubPageOuter} ${embedded ? styles.hubEmbedded : ''} ${
         activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
           ? styles.hubPageOuterFeedCream
           : ''
@@ -496,7 +518,7 @@ export default function CommunityHubMockPage() {
           isFullBleed ? styles.hubFullBleed : styles.hubNoRight
         } ${isAdmissionsFullBleed ? styles.admissionsShellHub : ''}`}
       >
-      <div
+      {!embedded && <div
         className={`${styles.leftCol} ${isFullBleed ? styles.leftColHidden : ''}`}
       >
         <div className={styles.leftColInner}>
@@ -734,6 +756,19 @@ export default function CommunityHubMockPage() {
 
           <button
             type="button"
+            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'profile' && new URLSearchParams(location.search).get('tab') === 'college-lists' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setOthersTarget('profile');
+              setActiveSection('others');
+              navigate('/student-hub?section=others&target=profile&tab=college-lists', { replace: true });
+            }}
+          >
+            <span className={styles.navIconCircle}><UnifiedIcon name="applications" size="md" color="primary" /></span>
+            <span className={styles.navLabel}>{t('studentHub.nav.applications', 'Applications')}</span>
+          </button>
+
+          <button
+            type="button"
             className={styles.navItem}
             onClick={() => navigate('/student-hub/sat-prep')}
           >
@@ -764,7 +799,7 @@ export default function CommunityHubMockPage() {
             <span className={styles.navIconCircle}>
               <UnifiedIcon name="admissions" size="md" color="primary" />
             </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.admissions', 'Admissions')}</span>
+            <span className={styles.navLabel}>{t('studentHub.hub.admissionsCourse', 'Admissions course')}</span>
             {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
@@ -844,7 +879,7 @@ export default function CommunityHubMockPage() {
           )}
         </div>
         </div>
-      </div>
+      </div>}
 
       <div
         className={`${styles.centerCol} ${
@@ -1186,7 +1221,7 @@ export default function CommunityHubMockPage() {
           {/* Community Mentors — ranked directory, open to every student
               regardless of community enrollment (mirrors the ungated
               sidebar button, same as Find Study Buddy). */}
-          {activeSection === 'mentors' && (
+          {activeSection === 'mentors' && isCommunityEnrolled && (
             <div className={styles.hubDashEmbed}>
               <CommunityMentorsView />
             </div>
@@ -1198,7 +1233,7 @@ export default function CommunityHubMockPage() {
               (edge-to-edge, no hub sidebar, full-width blurred preview
               behind the unlock modal — same shape as SAT Prep). */}
 
-          {activeSection === 'messages' && (
+          {activeSection === 'messages' && isCommunityEnrolled && (
             <div className={styles.messengerHubWrap}>
               <MessengerExperience
                 embedded
@@ -1228,7 +1263,7 @@ export default function CommunityHubMockPage() {
             </div>
           )}
 
-            {activeSection === 'buddies' && (
+            {activeSection === 'buddies' && isCommunityEnrolled && (
               <StudyBuddyConsentGate>
                 <StudyBuddyHubSection
                   onOpenChat={(conversationId) => {
@@ -1254,7 +1289,7 @@ export default function CommunityHubMockPage() {
               </div>
             )}
 
-            {activeSection === 'admissionsProgram' && (
+            {activeSection === 'admissionsProgram' && isCommunityEnrolled && (
               <div className={styles.admissionsBody}>
                 <div className={styles.admissionsListHeader}>
                   <div>
@@ -1357,4 +1392,3 @@ export default function CommunityHubMockPage() {
     </div>
   );
 }
-

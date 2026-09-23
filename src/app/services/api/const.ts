@@ -9,6 +9,7 @@ export const baseUrl = `${hostName}/api`;
 export const apiTagTypes = [
   'Auth',
   'GetMe',
+  'Onboarding',
   'MySessions',
   'GetMentorBalance',
   'GetMentorDetail',
@@ -60,4 +61,5 @@ export const apiTagTypes = [
   // documented app-wide runaway-refetch storm from 'PsychometricAssessment'.
   'MajorMatchV2Status',
   'MajorMatchV2Result',
+  'MajorMatchMm3Latest',
 ];
