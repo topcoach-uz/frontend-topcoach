@@ -212,15 +212,19 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
 
   const isResearchComingSoon = variant === 'research-prep-coming-soon';
 
-  // Funnel-aware destination. The gate decides whether to send the user
-  // to the profile wizard, the roadmap preview, or the subscription tab —
-  // based on how far they've made it through the Community-membership
-  // funnel. Admin-granted users land back in /student-hub (the gate's
-  // "eligible" branch).
+  // Community access is based on enrollment or subscription. The placement
+  // profile is optional and does not block the plan page.
   const gate = useCommunityAccessGate();
+  const unlockLabel = gate.state === 'needs_subscription'
+      ? t('studentHub.communityLock.viewPlansCta', 'View Community plans')
+      : gate.state === 'eligible'
+        ? t('studentHub.communityLock.openCommunityCta', 'Open Community')
+        : gate.state === 'loading'
+          ? t('studentHub.communityLock.checkingAccessCta', 'Checking access…')
+          : t('studentHub.communityLock.unlockCta', 'Unlock Community');
 
   const handleUpgrade = () => {
-    if (isResearchComingSoon) return;
+    if (isResearchComingSoon || gate.state === 'loading') return;
     navigate(gate.destination);
   };
 
@@ -270,15 +274,17 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
         ))}
       </ul>
       <div className={styles.actions}>
-        <Button type="primary" size="large" className={styles.primaryBtn} onClick={isResearchComingSoon ? dismiss : handleUpgrade}>
+        <Button type="primary" size="large" className={styles.primaryBtn} onClick={isResearchComingSoon ? dismiss : handleUpgrade} loading={!isResearchComingSoon && gate.state === 'loading'}>
           {isResearchComingSoon
             ? t('studentHub.communityLock.backCta', 'Back to hub')
-            : t('studentHub.communityLock.unlockCta', 'Unlock Community')}
+            : unlockLabel}
         </Button>
       </div>
       {!isResearchComingSoon && (
         <p className={styles.finePrint}>
-          {t('studentHub.communityLock.modalDisclaimer', 'Unlock switches your account view to the Community experience.')}
+          {gate.state === 'needs_subscription'
+              ? t('studentHub.communityLock.planStepDisclaimer', 'Choose a Community plan to unlock access.')
+              : t('studentHub.communityLock.modalDisclaimer', 'Unlock switches your account view to the Community experience.')}
         </p>
       )}
     </div>

@@ -22,6 +22,7 @@ const ApplicantEssaysPage = lazy(() => import('./applicant/ApplicantEssaysPage')
 const ApplicantEssayEditorPage = lazy(() => import('./applicant/ApplicantEssaysPage').then(module => ({ default: module.ApplicantEssayEditorPage })));
 const ApplicantUniversitiesPage = lazy(() => import('./applicant/ApplicantUniversitiesPage'));
 const ApplicantUniversityDetailPage = lazy(() => import('./applicant/ApplicantUniversitiesPage').then(module => ({ default: module.ApplicantUniversityDetailPage })));
+const ApplicantDegreeDetailPage = lazy(() => import('./applicant/ApplicantDegreeDetailPage'));
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
 const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
@@ -187,6 +188,7 @@ const StudentHubRoutes: React.FC = () => {
           {/* Documents now lives as a tab inside the Profile hub (target=profile&tab=documents). */}
           <Route path="/documents" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDocumentsPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=documents" replace />} />
           <Route path="/documents/:documentId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDocumentReviewPage />) : <Navigate to="/student-hub/documents" replace />} />
+          <Route path="/universities/:universityId/degrees/:degreeSlug" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDegreeDetailPage />) : <Navigate to="/universities" replace />} />
           <Route path="/universities/:universityId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversityDetailPage />) : <Navigate to="/universities" replace />} />
           <Route path="/universities" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversitiesPage />) : <Navigate to="/universities" replace />} />
 

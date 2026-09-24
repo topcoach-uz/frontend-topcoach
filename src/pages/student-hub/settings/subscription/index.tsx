@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Skeleton, message } from 'antd';
-import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useChangeSubscriptionPlanMutation,
@@ -11,7 +10,6 @@ import {
   useGetSubscriptionPlansQuery,
   useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
-import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import {
   FIXTURE_BILLING_HISTORY,
   FIXTURE_PAYMENT_METHODS,
@@ -60,14 +58,8 @@ const isSubscriptionState = (value: string | null): value is SubscriptionState =
  */
 export default function SubscriptionTab() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stateParam = searchParams.get('state');
-
-  // Funnel gate. Users who haven't completed the admissions profile
-  // can't enter the Community subscription flow. Admin-granted users +
-  // already-subscribed users are `eligible` and see the normal tab below.
-  const communityGate = useCommunityAccessGate();
 
   // Mock mode: `?state=mock` always pulls fixtures (defaults to 'active').
   // Any explicit known state name (`active`, `none`, …) is also treated
@@ -393,47 +385,6 @@ export default function SubscriptionTab() {
         <div className={styles.section}>
           <Skeleton active paragraph={{ rows: 4 }} />
         </div>
-      </div>
-    );
-  }
-
-  // Funnel gate. Before the user is allowed to subscribe (or even see
-  // the plan picker / card-add CTA), they must complete the admissions
-  // profile. Show a focused "complete this first" card instead of the
-  // full tab.
-  //
-  // Mock mode (`?state=...`) bypasses the gate so designers can still
-  // flip through every fixture variant offline.
-  const showGate = !mockMode && communityGate.state === 'needs_profile';
-
-  if (showGate) {
-    return (
-      <div className={styles.page}>
-        <Alert
-          className={styles.gateAlert}
-          type="success"
-          showIcon
-          icon={<Sparkles size={18} />}
-          message={t(
-            'settings.subscription.gate.title',
-            'One quick step before you can subscribe',
-          )}
-          description={t(
-            'settings.subscription.gate.descProfile',
-            'Finish your admissions profile (a few quick questions) so we can personalize your roadmap before you start your trial.',
-          )}
-          action={
-            <button
-              type="button"
-              onClick={() => navigate(communityGate.destination)}
-              className={styles.gateAlertAction}
-            >
-              <BookOpen size={14} />
-              {t('settings.subscription.gate.ctaProfile', 'Continue profile')}
-              <ArrowRight size={14} />
-            </button>
-          }
-        />
       </div>
     );
   }

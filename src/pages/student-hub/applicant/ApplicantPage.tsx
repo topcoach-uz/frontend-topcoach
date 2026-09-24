@@ -3,6 +3,7 @@ import { Alert, Button, Skeleton } from "antd";
 import { Link } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useGetUniversityDetailQuery } from "src/app/services/universities";
+import type { CollegeApplication } from "src/app/services/student-hub/types";
 import { getTranslation } from "src/lib/i18n/translationUtils";
 import { displayApplicantDate } from "./applicantDate";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
@@ -14,20 +15,22 @@ export function ApplicantPage({
   actions,
   children,
 }: {
-  title: string;
+  title?: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="applicant-page">
-      <header className="applicant-page__heading">
-        <div>
-          <h1>{title}</h1>
-          {subtitle && <p>{subtitle}</p>}
-        </div>
-        {actions && <div className="applicant-page__actions">{actions}</div>}
-      </header>
+      {(title || subtitle || actions) && (
+        <header className="applicant-page__heading">
+          <div>
+            {title && <h1>{title}</h1>}
+            {subtitle && <p>{subtitle}</p>}
+          </div>
+          {actions && <div className="applicant-page__actions">{actions}</div>}
+        </header>
+      )}
       {children}
     </section>
   );
@@ -89,6 +92,17 @@ export function UniversityIdentity({
       </div>
     </div>
   );
+}
+export function RelatedApplicationLabel({ application }: { application: CollegeApplication }) {
+  const university = useGetUniversityDetailQuery(application.universityId ?? "", {
+    skip: !application.universityId,
+  });
+  const universityName = application.universityName ||
+    (university.data ? getTranslation(university.data.name) : undefined);
+  const isGraduate = application.degreeLevel === "master";
+  const name = isGraduate ? application.major || universityName : universityName;
+  const detail = isGraduate && application.major ? universityName : application.major;
+  return <span>{name || "University"}{detail && detail !== name ? ` · ${detail}` : ""}</span>;
 }
 export function Breadcrumb({ children }: { children: ReactNode }) {
   return (

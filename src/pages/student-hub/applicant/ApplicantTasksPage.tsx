@@ -30,6 +30,7 @@ import {
   ApplicantPage,
   Breadcrumb,
   QueryState,
+  RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
 
@@ -54,14 +55,10 @@ export default function ApplicantTasksPage() {
   const [form] = Form.useForm<TaskForm>();
   const status = params.get("status") ?? "open";
   const application = params.get("application") ?? "all";
+  const sort = params.get("sort") ?? "due";
   const tasks = tasksQuery.data?.data ?? [];
   const applications = applicationsQuery.data?.data ?? [];
-  const applicationNames = new Map(
-    applications.map((item) => [
-      item.id,
-      item.universityName || item.major || "Application",
-    ]),
-  );
+  const applicationLookup = new Map(applications.map((item) => [item.id, item]));
   const visible = useMemo(
     () =>
       tasks
@@ -76,10 +73,15 @@ export default function ApplicantTasksPage() {
           (item) =>
             application === "all" || item.collegeApplicationId === application,
         )
-        .sort((a, b) =>
-          (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
-        ),
-    [tasks, status, application],
+        .sort((a, b) => {
+          if (sort === "recent") return b.createdAt.localeCompare(a.createdAt);
+          if (sort === "priority") {
+            const rank = { urgent: 0, high: 1, medium: 2, low: 3 };
+            return rank[a.priority] - rank[b.priority] || (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
+          }
+          return (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
+        }),
+    [tasks, status, application, sort],
   );
   const action = params.get("action");
   const taskId = params.get("task");
@@ -106,7 +108,7 @@ export default function ApplicantTasksPage() {
   }, [action, taskId, editingQuery.data?.data?.id]);
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    value === "all" || (key === "status" && value === "open")
+    value === "all" || (key === "status" && value === "open") || (key === "sort" && value === "due")
       ? next.delete(key)
       : next.set(key, value);
     setParams(next);
@@ -186,7 +188,7 @@ export default function ApplicantTasksPage() {
       subtitle="Plan the work behind every application."
       actions={
         <Button type="primary" icon={<Plus size={16} />} onClick={() => open()}>
-          Add personal task
+          Add task
         </Button>
       }
     >
@@ -222,14 +224,22 @@ export default function ApplicantTasksPage() {
               },
               ...applications.map((item) => ({
                 value: item.id,
-                label: item.universityName || item.major || "Application",
+                label: <RelatedApplicationLabel application={item} />,
               })),
             ]}
           />
         </label>
         <label>
           Sort
-          <Select value="due" options={[{ value: "due", label: "Due date" }]} />
+          <Select
+            value={sort}
+            onChange={(value) => setFilter("sort", value)}
+            options={[
+              { value: "due", label: "Due date" },
+              { value: "priority", label: "Priority" },
+              { value: "recent", label: "Recently added" },
+            ]}
+          />
         </label>
       </div>
       <QueryState
@@ -240,13 +250,19 @@ export default function ApplicantTasksPage() {
         <div className="applicant-panel">
           {!visible.length ? (
             <div className="applicant-empty">
-              <h2>No tasks here yet.</h2>
+              <h2>{tasks.length ? "No tasks match these filters." : "No tasks here yet."}</h2>
               <p>
-                Add a task when you want a reminder tied to your preparation.
+                {tasks.length
+                  ? "Try another status or application to find your tasks."
+                  : "Add a task when you want a reminder tied to your preparation."}
               </p>
-              <Button type="primary" onClick={() => open()}>
-                Add a task
-              </Button>
+              {tasks.length > 0 && <Button onClick={() => {
+                const next = new URLSearchParams(params);
+                next.set("status", "all");
+                next.delete("application");
+                next.delete("page");
+                setParams(next);
+              }}>Show all tasks</Button>}
             </div>
           ) : (
             visible.map((task) => (
@@ -265,10 +281,11 @@ export default function ApplicantTasksPage() {
                   <small>
                     {task.description ||
                       (task.collegeApplicationId
-                        ? applicationNames.get(task.collegeApplicationId) ||
-                          (applicationsQuery.isError
+                        ? applicationLookup.get(task.collegeApplicationId)
+                          ? <RelatedApplicationLabel application={applicationLookup.get(task.collegeApplicationId)!} />
+                          : applicationsQuery.isError
                             ? "Related application unavailable"
-                            : "Related application")
+                            : "Related application"
                         : "Personal task")}
                   </small>
                 </div>
@@ -307,7 +324,7 @@ export default function ApplicantTasksPage() {
       </QueryState>
       <Modal
         rootClassName="applicant-modal"
-        title={action === "edit" ? "Edit personal task" : "Add personal task"}
+        title={action === "edit" ? "Edit task" : "Add task"}
         open={action === "new" || action === "edit"}
         onCancel={close}
         footer={null}
@@ -368,7 +385,7 @@ export default function ApplicantTasksPage() {
                     "other",
                   ].map((value) => ({
                     value,
-                    label: value.replaceAll("_", " "),
+                    label: value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase()),
                   }))}
                 />
               </Form.Item>
@@ -378,9 +395,10 @@ export default function ApplicantTasksPage() {
               >
                 <Select
                   allowClear
+                  placeholder="Keep as a personal task"
                   options={applications.map((item) => ({
                     value: item.id,
-                    label: item.universityName || item.major || "Application",
+                    label: <RelatedApplicationLabel application={item} />,
                   }))}
                 />
               </Form.Item>

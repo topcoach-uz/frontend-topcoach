@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Download, FileText, Info, Plus, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, Info, Plus, Search, Trash2, UploadCloud } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   DocumentType,
@@ -16,6 +16,7 @@ import {
   ApplicantPage,
   Breadcrumb,
   QueryState,
+  RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
@@ -141,11 +142,13 @@ export default function ApplicantDocumentsPage() {
     >
       <Breadcrumb>Documents</Breadcrumb>
       <div className="applicant-document-toolbar">
-        <Input.Search
+        <Input
+          className="applicant-document-search"
           aria-label="Search documents"
           placeholder="Search file name or document type"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
+          prefix={<Search size={18} aria-hidden="true" />}
           allowClear
         />
       </div>
@@ -183,7 +186,6 @@ export default function ApplicantDocumentsPage() {
                 ? "Add your CV, university transcript or diploma, statement, and references as you prepare them."
                 : "Add a transcript, test score or other reusable application file."}
             </p>
-            {!search && tab === "all" && <Button type="primary" onClick={open}>Add document</Button>}
           </div>
         ) : (
           <div className="applicant-panel applicant-document-list">
@@ -294,14 +296,14 @@ export default function ApplicantDocumentsPage() {
               loading={applications.isLoading}
               options={(applications.data?.data ?? []).map((app) => ({
                 value: app.id,
-                label: app.universityName || app.major || "Application",
+                label: <RelatedApplicationLabel application={app} />,
               }))}
             />
           </Form.Item>
           <Form.Item name="category" label="File state">
             <Select options={[{ value: "uploaded", label: "Uploaded file" }, { value: "draft", label: "Private draft" }]} />
           </Form.Item>
-          <p>
+          <p className="applicant-document-upload-note">
             This library helps you prepare applications. Uploading a document
             does not send it to a university.
           </p>
@@ -311,6 +313,7 @@ export default function ApplicantDocumentsPage() {
               type="primary"
               htmlType="submit"
               loading={uploadState.isLoading}
+              disabled={!file}
             >
               Upload document
             </Button>

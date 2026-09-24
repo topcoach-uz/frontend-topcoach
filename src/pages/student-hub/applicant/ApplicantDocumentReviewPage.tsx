@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Button, Form, Input, Modal, Popconfirm, Upload, message } from "antd";
 import type { UploadFile } from "antd";
 import { Download, FileText, UploadCloud } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { Document, Page } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+import "src/pages/learning/components/pdfWorker";
 import {
   useDownloadDocumentMutation,
   useDownloadDocumentVersionMutation,
@@ -35,6 +39,10 @@ export default function ApplicantDocumentReviewPage() {
   const [tab, setTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [previewError, setPreviewError] = useState(false);
+  const [pdfPages, setPdfPages] = useState(0);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfWidth, setPdfWidth] = useState(720);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [file, setFile] = useState<File>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -44,12 +52,27 @@ export default function ApplicantDocumentReviewPage() {
   const reviewerAccess = review?.reviewerAccess ?? record?.reviewerAccess ?? false;
 
   useEffect(() => {
+    const container = pdfContainerRef.current;
+    if (!container || !previewUrl || record?.mimeType !== "application/pdf") return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setPdfWidth(Math.max(1, Math.floor(entry.contentRect.width)));
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [previewUrl, record?.mimeType, tab]);
+
+  useEffect(() => {
     if (!record || tab !== "preview" || !/^(application\/pdf|image\/)/.test(record.mimeType ?? "")) return;
     let live = true;
     let url: string | undefined;
     setPreviewError(false);
-    download(record.id).unwrap().then((blob) => {
+    setPdfPage(1);
+    setPdfPages(0);
+    download(record.id).unwrap().then(async (blob) => {
       if (!live) return;
+      if (!blob.size || (record.mimeType === "application/pdf" && !(await blob.slice(0, 5).text()).startsWith("%PDF-"))) {
+        throw new Error("The stored file is not a valid PDF preview.");
+      }
       url = URL.createObjectURL(blob);
       setPreviewUrl(url);
     }).catch(() => { if (live) setPreviewError(true); });
@@ -104,8 +127,17 @@ export default function ApplicantDocumentReviewPage() {
         {tab === "preview" && <div className="applicant-panel applicant-document-review">
           <div className="applicant-section-heading"><h2>{record.fileName}</h2><Button onClick={getCurrent} icon={<Download size={16} />}>Download</Button></div>
           {previewError ? <Alert type="error" message="Preview unavailable" description="Try downloading the file." />
-            : previewUrl && record.mimeType?.startsWith("image/") ? <img className="applicant-document-review__image" src={previewUrl} alt={`Preview of ${record.fileName}`} />
-            : previewUrl && record.mimeType === "application/pdf" ? <iframe className="applicant-document-review__frame" src={previewUrl} title={`Preview of ${record.fileName}`} />
+            : previewUrl && record.mimeType?.startsWith("image/") ? <img className="applicant-document-review__image" src={previewUrl} alt={`Preview of ${record.fileName}`} onError={() => setPreviewError(true)} />
+            : previewUrl && record.mimeType === "application/pdf" ? <div className="applicant-document-review__pdf" ref={pdfContainerRef}>
+                <Document file={previewUrl} loading={<p>Loading PDF preview…</p>} error={<Alert type="error" message="Preview unavailable" description="Try downloading the file." />} onLoadSuccess={({ numPages }) => setPdfPages(numPages)}>
+                  <Page pageNumber={pdfPage} width={pdfWidth} renderTextLayer={false} renderAnnotationLayer={false} loading={<p>Loading page…</p>} />
+                </Document>
+                {pdfPages > 1 && <div className="applicant-document-review__pager">
+                  <Button disabled={pdfPage === 1} onClick={() => setPdfPage((page) => page - 1)}>Previous</Button>
+                  <span>Page {pdfPage} of {pdfPages}</span>
+                  <Button disabled={pdfPage === pdfPages} onClick={() => setPdfPage((page) => page + 1)}>Next</Button>
+                </div>}
+              </div>
             : <div className="applicant-empty"><FileText size={36} /><p>Preview is available for PDF and image files. Download this file to review it.</p></div>}
         </div>}
         {tab === "feedback" && <div className="applicant-panel applicant-document-review">

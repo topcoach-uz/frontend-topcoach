@@ -61,7 +61,7 @@ export default function ApplicantApplicationsPage() {
     ...applications.filter((app) => app.deadline).map((app) => ({
       id: `application-${app.id}`,
       date: app.deadline!,
-      title: `${app.major || app.universityName || "Application"} deadline`,
+      title: `${app.major || app.universityName || "Application"} planning date`,
       detail: app.universityName || "University application",
       path: `/student-hub/applications/${encodeURIComponent(app.id)}`,
     })),
@@ -105,7 +105,7 @@ export default function ApplicantApplicationsPage() {
         />
         <div>
           <span>{applicationStatusLabels[app.status] ?? app.status}</span>
-          <small>Application deadline</small>
+          <small>My planning deadline</small>
           <small>{displayDate(app.deadline)}</small>
         </div>
         <div>
@@ -215,14 +215,14 @@ export default function ApplicantApplicationsPage() {
     <ApplicantPage
       title={isMasters ? "Your graduate programs" : "Your applications"}
       subtitle={isMasters ? "Track each program’s requirements, deadlines and materials in one place." : "Keep your next steps, materials and progress in one place."}
-      actions={
+      actions={applications.length > 0 ? (
         <Button
           onClick={() => navigate("/student-hub/applications/new")}
           icon={<Plus size={16} />}
         >
           Add application
         </Button>
-      }
+      ) : undefined}
     >
       <Breadcrumb>{isMasters ? "Programs" : "College List"}</Breadcrumb>
       <QueryState
@@ -535,9 +535,9 @@ export function ApplicantApplicationPage() {
               <aside className="applicant-stack">
                 <div className="applicant-panel">
                   <div className="applicant-page__heading">
-                    <h3>Application details</h3>
+                    <h3>Your application plan</h3>
                     <Link to={`/student-hub/applications/${app.id}/edit`}>
-                      Edit →
+                      {app.deadline || app.applicationType ? "Edit plan →" : "Add planning details →"}
                     </Link>
                   </div>
                   <div className="applicant-page__heading">
@@ -558,7 +558,7 @@ export function ApplicantApplicationPage() {
                     </Button>
                   </div>
                   <dl className="applicant-facts">
-                    <dt>Application deadline</dt>
+                    <dt>My planning deadline</dt>
                     <dd>{displayDate(app.deadline)}</dd>
                     <dt>Intake</dt>
                     <dd>{app.intake || "Not set"}</dd>

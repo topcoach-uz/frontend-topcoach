@@ -21,6 +21,7 @@ import {
   useGetUniversityDetailQuery,
 } from "src/app/services/universities";
 import { useGetGraduateProgramQuery } from "src/app/services/graduateProgramsApi";
+import { useGetUndergraduateDegreesQuery } from "src/app/services/undergraduateDegreesApi";
 import { getTranslation } from "src/lib/i18n/translationUtils";
 import { useStudentProfile } from "src/hooks/useStudentHub";
 import {
@@ -55,6 +56,7 @@ export default function ApplicantApplicationFormPage() {
   const navigate = useNavigate();
   const selectedUniversity = Form.useWatch("universityId", form);
   const selectedProgramId = Form.useWatch("programId", form);
+  const selectedUndergraduateDegreeId = Form.useWatch("undergraduateDegreeId", form);
   const degreeLevel = Form.useWatch("degreeLevel", form);
   const isMastersApplication = degreeLevel === "master" || (!degreeLevel && targetDegree === "master");
   const selectedUniversityQuery = useGetUniversityDetailQuery(
@@ -65,6 +67,9 @@ export default function ApplicantApplicationFormPage() {
     selectedProgramId ?? "",
     { skip: !selectedProgramId },
   );
+  const degreesQuery = useGetUndergraduateDegreesQuery(selectedUniversity ?? "", {
+    skip: !selectedUniversity || isMastersApplication,
+  });
   useEffect(() => {
     if (editing && query.data?.data) {
       const app = query.data.data;
@@ -76,11 +81,8 @@ export default function ApplicantApplicationFormPage() {
       form.setFieldsValue({
         universityId: params.get("university") ?? undefined,
         programId: params.get("programId") ?? undefined,
-        major: params.get("program") ?? undefined,
-        degreeLevel: targetDegree === "master" || targetDegree === "bachelor" ? targetDegree : undefined,
-        applicationType: "direct",
-        category: "target",
-        priority: 2,
+        undergraduateDegreeId: params.get("undergraduateDegreeId") ?? undefined,
+        degreeLevel: params.get("degreeLevel") === "bachelor" ? "bachelor" : targetDegree === "master" || targetDegree === "bachelor" ? targetDegree : undefined,
         status: "researching",
       });
     }
@@ -93,7 +95,6 @@ export default function ApplicantApplicationFormPage() {
         major: program.programName,
         degreeLevel: "master",
         intake: program.intake ?? undefined,
-        deadline: program.deadline ? dayjs(program.deadline) : undefined,
       });
     }
   }, [editing, form, selectedProgramQuery.data?.id]);
@@ -124,14 +125,21 @@ export default function ApplicantApplicationFormPage() {
     }
     return options;
   }, [universities.data, university, selectedProgramQuery.data]);
+  useEffect(() => {
+    if (!editing && selectedUndergraduateDegreeId && degreesQuery.data) {
+      const degree = degreesQuery.data.find((item) => item.id === selectedUndergraduateDegreeId);
+      if (degree) form.setFieldValue("major", degree.name);
+    }
+  }, [editing, selectedUndergraduateDegreeId, degreesQuery.data, form]);
   const save = async (values: ApplicationForm) => {
-    const {
-      universityName: _universityName,
-      deadline,
-      ...applicationValues
-    } = values;
+    const { deadline, ...applicationValues } = values;
     const payload: CreateCollegeApplicationRequest = {
       ...applicationValues,
+      // A catalogue university is identified by ID. The database reserves
+      // universityName for custom universities without an ID.
+      universityName: applicationValues.universityId
+        ? undefined
+        : applicationValues.universityName,
       deadline: deadline?.format("YYYY-MM-DD"),
     };
     try {
@@ -156,8 +164,8 @@ export default function ApplicantApplicationFormPage() {
   };
   return (
     <ApplicantPage
-      title={editing ? "Edit application details" : "Add an application"}
-      subtitle="Track your preparation here. You will still submit through the university’s official platform."
+      title={editing ? "Plan your application" : "Save a university"}
+      subtitle={editing ? "Add your own planning details. Confirm deadlines and submission routes on the official university site." : "Add a university to your College List. You can plan the application after saving it."}
     >
       <Breadcrumb>
         <Link to="/student-hub/applications">College List</Link>
@@ -183,12 +191,35 @@ export default function ApplicantApplicationFormPage() {
             layout="vertical"
             onFinish={save}
             onValuesChange={(changed) => {
-              if (changed.degreeLevel === "master" &&
-                !["direct", "other"].includes(form.getFieldValue("applicationType"))) {
-                form.setFieldValue("applicationType", "direct");
+              if (changed.universityId || changed.degreeLevel) {
+                form.setFieldsValue({ undergraduateDegreeId: undefined, major: undefined });
               }
             }}
           >
+            {!editing && <>
+              <p className="applicant-save-intro">Choose a university first. A degree and intake can be added now or later.</p>
+              <Form.Item name="universityId" label="University" rules={[{ required: true, message: "Choose a university." }]}>
+                <Select showSearch filterOption={false} onSearch={setUniversitySearch} loading={universities.isLoading} placeholder="Search universities" options={universityOptions} disabled={Boolean(selectedProgramId)} />
+              </Form.Item>
+              {university && <UniversityIdentity id={university.id} name={getTranslation(university.name)} subtitle={getTranslation(university.location?.country)} />}
+              <Form.Item name="programId" hidden><Input /></Form.Item>
+              <Form.Item name="degreeLevel" label="Degree level" rules={[{ required: true, message: "Choose a degree level." }]}>
+                <Select options={[{ value: "bachelor", label: "Bachelor’s" }, { value: "master", label: "Master’s" }]} disabled={Boolean(selectedProgramId || selectedUndergraduateDegreeId)} placeholder="Choose degree level" />
+              </Form.Item>
+              {!isMastersApplication && selectedUniversity && <Form.Item name="undergraduateDegreeId" label="Degree (optional)" extra={degreesQuery.data?.length ? "Only degrees verified in the TopCoach catalogue appear here. You can decide later." : "No verified degrees are listed yet. Save the university and add a degree later."}>
+                <Select allowClear loading={degreesQuery.isLoading} placeholder="Choose a verified degree or decide later" options={(degreesQuery.data ?? []).map((degree) => ({ value: degree.id, label: degree.name }))} onChange={(id) => form.setFieldValue("major", degreesQuery.data?.find((degree) => degree.id === id)?.name)} />
+              </Form.Item>}
+              {isMastersApplication && selectedProgramQuery.data && <Alert type="info" showIcon message={`Selected graduate programme: ${selectedProgramQuery.data.programName}`} />}
+              {selectedProgramQuery.isError && <Alert type="warning" message="This graduate programme could not be verified. Return to programme search and choose a current record." />}
+              <Form.Item name="major" hidden><Input /></Form.Item>
+              <Form.Item name="intake" label="Planned intake (optional)"><Input placeholder="e.g. Autumn 2027" /></Form.Item>
+              <p className="applicant-save-note">Saving this choice does not submit an application.</p>
+              <div className="applicant-actions applicant-actions--end">
+                <Button onClick={() => navigate("/student-hub/applications")}>Cancel</Button>
+                <Button type="primary" htmlType="submit" loading={createState.isLoading} disabled={selectedProgramQuery.isError || (universities.isError && !selectedProgramQuery.data)}>Add to College List</Button>
+              </div>
+            </>}
+            {editing && <>
             {!editing && (
               <Form.Item
                 name="universityId"
@@ -228,8 +259,8 @@ export default function ApplicantApplicationFormPage() {
                 subtitle={getTranslation(university.location?.country)}
               />
             )}
-            <Form.Item name="major" label={isMastersApplication ? "Graduate programme" : "Intended major / programme"}>
-              <Input disabled={Boolean(selectedProgramId)} placeholder={isMastersApplication ? "e.g. MSc Computer Science" : "e.g. Computer Science"} />
+            <Form.Item name="major" label={isMastersApplication ? "Graduate programme" : query.data?.data?.undergraduateDegreeId ? "Verified undergraduate degree" : "Intended major / programme"}>
+              <Input disabled={Boolean(selectedProgramId || query.data?.data?.undergraduateDegreeId)} placeholder={isMastersApplication ? "e.g. MSc Computer Science" : "e.g. Computer Science"} />
             </Form.Item>
             {selectedProgramQuery.data && (
               <Alert
@@ -246,6 +277,7 @@ export default function ApplicantApplicationFormPage() {
                 rules={[{ required: true }]}
               >
                 <Select
+                  disabled={Boolean(query.data?.data?.undergraduateDegreeId || selectedProgramId)}
                   options={[
                     { value: "bachelor", label: "Bachelor’s" },
                     { value: "master", label: "Master’s" },
@@ -260,7 +292,6 @@ export default function ApplicantApplicationFormPage() {
               <Form.Item
                 name="applicationType"
                 label="Application platform"
-                rules={[{ required: true }]}
               >
                 <Select
                   options={[
@@ -274,7 +305,7 @@ export default function ApplicantApplicationFormPage() {
                   ]}
                 />
               </Form.Item>
-              <Form.Item name="deadline" label="Application deadline">
+              <Form.Item name="deadline" label="My planning deadline" extra="A date you enter for your own plan. Check the official university page for the actual deadline.">
                 <DatePicker />
               </Form.Item>
             </div>
@@ -282,7 +313,6 @@ export default function ApplicantApplicationFormPage() {
               <Form.Item
                 name="category"
                 label="List category"
-                rules={[{ required: true }]}
               >
                 <Select
                   options={[
@@ -334,9 +364,10 @@ export default function ApplicantApplicationFormPage() {
                 loading={createState.isLoading || updateState.isLoading}
                 disabled={!editing && (selectedProgramQuery.isError || (universities.isError && !selectedProgramQuery.data))}
               >
-                Save application
+                Save plan
               </Button>
             </div>
+            </>}
           </Form>
         </div>
       </QueryState>

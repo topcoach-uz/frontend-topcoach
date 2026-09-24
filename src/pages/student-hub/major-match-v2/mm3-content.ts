@@ -110,7 +110,7 @@ export const MM3_PARTS: readonly MM3Part[] = [
 
 export const MM3_QUESTIONS: readonly MM3Question[] = [
   // ── Part I — Academic Profile ──────────────────────────────────────────
-  { id: 1, part: 1, slug: 'grade', type: 'single', hasSub: true, optionCount: 6, optionHints: [] },
+  { id: 1, part: 1, slug: 'grade', type: 'single', hasSub: true, optionCount: 7, optionHints: [] },
   { id: 2, part: 1, slug: 'curriculum', type: 'single', hasSub: true, optionCount: 6, optionHints: [0] },
   {
     id: 3, part: 1, slug: 'gpa', type: 'fields', hasSub: true,

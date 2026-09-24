@@ -93,11 +93,11 @@ const ViewApplicationPage: React.FC = () => {
           <div className="header-title">
             <h1 className="page-title">{application.universityName || 'Unknown University'}</h1>
             <div className="header-badges">
-              <Tag color={getCategoryColor(application.category)}>
-                {application.category?.toUpperCase() || 'UNKNOWN'}
+              <Tag color={getCategoryColor(application.category ?? '')}>
+                {application.category?.toUpperCase() || 'NOT SET'}
               </Tag>
               <Tag color="blue">
-                {application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
+                {application.applicationType?.replace('-', ' ').toUpperCase() || 'NOT SET'}
               </Tag>
               <Tag color={getPriorityColor(application.priority)}>
                 {getPriorityText(application.priority)}
@@ -131,7 +131,7 @@ const ViewApplicationPage: React.FC = () => {
                 {application.universityName || 'Unknown University'}
               </Descriptions.Item>
               <Descriptions.Item label="Application Type">
-                {application.applicationType?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
+                {application.applicationType?.replace('-', ' ').toUpperCase() || 'NOT SET'}
               </Descriptions.Item>
               <Descriptions.Item label="Status">
                 <Badge
@@ -140,8 +140,8 @@ const ViewApplicationPage: React.FC = () => {
                 />
               </Descriptions.Item>
               <Descriptions.Item label="Category">
-                <Tag color={getCategoryColor(application.category)}>
-                  {application.category?.toUpperCase() || 'UNKNOWN'}
+                <Tag color={getCategoryColor(application.category ?? '')}>
+                  {application.category?.toUpperCase() || 'NOT SET'}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Priority">

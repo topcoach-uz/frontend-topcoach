@@ -12,22 +12,13 @@ import {
   mm3QuestionKey,
 } from '../mm3-content';
 
-/**
- * The three answer types the MM2 runner never had: capped multi-select,
- * 1–5 scale, and grouped fields. Plus `single`, which reuses the existing
- * radio pattern verbatim so old and new questions are visually identical.
- *
- * ⚠️ STYLING: content came from the prototype, nothing visual did. These use
- * the platform's own tokens ($mm2-cream / $mm2-brand / Iowan) and mirror
- * `MM2Runner`'s option markup — same dot, same is-selected, same keyboard
- * handling. Do not port the prototype's crimson/Fraunces look.
- */
+/** Shared answer controls for all Major Match question types. */
 
 // ─────────────────────────────────────────────────────────────────────────
 // Answer shapes
 // ─────────────────────────────────────────────────────────────────────────
 
-export type MM3SingleAnswer = number;
+export type MM3SingleAnswer = number | { option: number; other: string };
 export type MM3MultiAnswer = number[];
 export type MM3ScaleAnswer = number;
 export type MM3FieldsAnswer = Record<string, string>;
@@ -42,8 +33,12 @@ export type MM3Answer =
 export const isMM3Answered = (q: MM3Question, a: MM3Answer): boolean => {
   switch (q.type) {
     case 'single':
+      if (typeof a === 'number') return a >= 0 && a < q.optionCount && !(q.slug === 'grade' && a === q.optionCount - 1);
+      return q.slug === 'grade' && !!a && typeof a === 'object' && !Array.isArray(a) &&
+        'option' in a && a.option === q.optionCount - 1 && 'other' in a &&
+        typeof a.other === 'string' && a.other.trim().length > 0;
     case 'scale':
-      return typeof a === 'number';
+      return typeof a === 'number' && a >= q.min && a <= q.max;
     case 'multi':
       return Array.isArray(a) && a.length > 0;
     case 'fields': {
@@ -66,7 +61,7 @@ const keyActivate = (fn: () => void) => (e: React.KeyboardEvent) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
-// single — same markup as MM2Runner so the two sets look identical
+// single — the first bachelor question also accepts a specified Other answer
 // ─────────────────────────────────────────────────────────────────────────
 
 export const MM3Single: FC<{
@@ -77,30 +72,53 @@ export const MM3Single: FC<{
   const { t } = useTranslation();
   const root = mm3QuestionKey(question.slug);
 
+  const isGrade = question.slug === 'grade';
+  const otherIndex = question.optionCount - 1;
+  const selectedIndex = typeof value === 'number' ? value : value?.option;
+  const otherSelected = isGrade && selectedIndex === otherIndex;
+  const select = (i: number) => onChange(isGrade && i === otherIndex
+    ? { option: i, other: typeof value === 'object' ? value.other : '' }
+    : i);
+
   return (
-    <div className="mm2-runner__options" role="radiogroup">
-      {Array.from({ length: question.optionCount }, (_, i) => {
-        const selected = value === i;
-        const hint = question.optionHints.includes(i) ? t(`${root}.hint.${i}`) : null;
-        return (
-          <div
-            key={i}
-            role="radio"
-            aria-checked={selected}
-            tabIndex={0}
-            className={`mm2-runner__option ${selected ? 'is-selected' : ''}`}
-            onClick={() => onChange(i)}
-            onKeyDown={keyActivate(() => onChange(i))}
-          >
-            <span className="mm2-runner__option-dot" aria-hidden="true" />
-            <span className="mm2-runner__option-label">
-              {t(`${root}.opt.${i}`)}
-              {hint && <small className="mm3-hint">{hint}</small>}
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <div className="mm2-runner__options" role="radiogroup" aria-label={t(`${root}.title`)}>
+        {Array.from({ length: question.optionCount }, (_, i) => {
+          const selected = selectedIndex === i;
+          const hint = question.optionHints.includes(i) ? t(`${root}.hint.${i}`) : null;
+          return (
+            <div
+              key={i}
+              role="radio"
+              aria-checked={selected}
+              tabIndex={0}
+              className={`mm2-runner__option ${selected ? 'is-selected' : ''} ${isGrade && i === otherIndex ? 'mm3-option--other' : ''}`}
+              onClick={() => select(i)}
+              onKeyDown={keyActivate(() => select(i))}
+            >
+              <span className="mm2-runner__option-dot" aria-hidden="true" />
+              <span className="mm2-runner__option-label">
+                {t(`${root}.opt.${i}`)}
+                {hint && <small className="mm3-hint">{hint}</small>}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      {otherSelected && (
+        <div className="mm3-other-detail">
+          <label htmlFor="mm3-grade-other">{t('majorMatch3.q.grade.other.label', 'Please specify')}</label>
+          <input
+            id="mm3-grade-other"
+            type="text"
+            value={typeof value === 'object' ? value.other : ''}
+            placeholder={t('majorMatch3.q.grade.other.ph', 'Tell us where you are in your studies')}
+            onChange={(e) => onChange({ option: otherIndex, other: e.target.value })}
+            autoFocus
+          />
+        </div>
+      )}
+    </>
   );
 };
 
@@ -181,6 +199,10 @@ export const MM3Scale: FC<{
 
   return (
     <div className="mm3-scale">
+      <div className="mm3-scale__ends">
+        <span>{t(`${root}.low`)}</span>
+        <span>{t(`${root}.high`)}</span>
+      </div>
       <div className="mm3-scale__row" role="radiogroup">
         {steps.map((n) => {
           const selected = value === n;
@@ -199,10 +221,6 @@ export const MM3Scale: FC<{
             </div>
           );
         })}
-      </div>
-      <div className="mm3-scale__ends">
-        <span>{t(`${root}.low`)}</span>
-        <span>{t(`${root}.high`)}</span>
       </div>
     </div>
   );

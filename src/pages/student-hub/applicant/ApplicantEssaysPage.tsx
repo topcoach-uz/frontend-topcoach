@@ -6,10 +6,9 @@ import {
   Input,
   Modal,
   Select,
-  Skeleton,
   message,
 } from "antd";
-import { ArrowLeft, History, MessageSquareText, Plus, Save } from "lucide-react";
+import { History, Lightbulb, MessageSquareText, Plus, Save } from "lucide-react";
 import {
   Link,
   useLocation,
@@ -35,6 +34,7 @@ import {
   ApplicantPage,
   Breadcrumb,
   QueryState,
+  RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
@@ -67,15 +67,17 @@ export default function ApplicantEssaysPage() {
   const navigate = useNavigate();
   const [createEssay, createState] = useCreateStudentEssayMutation();
   const [form] = Form.useForm<CreateStudentEssayRequest>();
+  const selectedEssayType = Form.useWatch("essayType", form);
+  const promptRequired = Boolean(selectedEssayType && selectedEssayType !== "personal_statement");
   useEffect(() => {
-    if (!location.pathname.endsWith("/new")) return;
+    if (!location.pathname.endsWith("/new") && params.get("action") !== "new") return;
     form.setFieldsValue({
       essayType: "personal_statement",
       title: defaultTitle,
       prompt: "",
       collegeApplicationId: params.get("application") ?? undefined,
     });
-  }, [location.pathname, params.get("application"), defaultTitle]);
+  }, [location.pathname, params.get("application"), params.get("action"), defaultTitle]);
   const open = () => {
     form.setFieldsValue({
       essayType: "personal_statement",
@@ -94,7 +96,7 @@ export default function ApplicantEssaysPage() {
   };
   const create = async (values: CreateStudentEssayRequest) => {
     try {
-      const result = await createEssay({ ...values, content: "" }).unwrap();
+      const result = await createEssay({ ...values, prompt: values.prompt?.trim() ?? "", content: "" }).unwrap();
       const entity =
         result && typeof result === "object" && "data" in result
           ? result.data
@@ -113,11 +115,11 @@ export default function ApplicantEssaysPage() {
       subtitle={isMasters
         ? "Draft statements for graduate programs and keep each program’s prompt close at hand."
         : "Draft, revise and review feedback without losing your place."}
-      actions={
+      actions={query.data?.data.length ? (
         <Button type="primary" icon={<Plus size={16} />} onClick={open}>
           New draft
         </Button>
-      }
+      ) : undefined}
     >
       <Breadcrumb>Statements & essays</Breadcrumb>
       <QueryState
@@ -191,21 +193,26 @@ export default function ApplicantEssaysPage() {
             label="Writing type"
             rules={[{ required: true }]}
           >
-            <Select options={writingTypes} />
+            <Select
+              options={writingTypes}
+              onChange={(type) => {
+                if (type === "personal_statement") form.setFieldValue("prompt", "");
+              }}
+            />
           </Form.Item>
-          <Form.Item name="collegeApplicationId" label="Related application">
+          <Form.Item name="collegeApplicationId" label="Related application (optional)">
             <Select
               allowClear
               loading={applications.isLoading}
               options={(applications.data?.data ?? []).map((app) => ({
                 value: app.id,
-                label: app.universityName || app.major || "Application",
+                label: <RelatedApplicationLabel application={app} />,
               }))}
             />
           </Form.Item>
-          <Form.Item
+          {promptRequired && <Form.Item
             name="prompt"
-            label="Prompt"
+            label="Essay question or prompt"
             rules={[
               {
                 required: true,
@@ -215,7 +222,7 @@ export default function ApplicantEssaysPage() {
             ]}
           >
             <Input.TextArea rows={4} />
-          </Form.Item>
+          </Form.Item>}
           {isMasters && (
             <p>Check the program’s exact prompt and word limit before you draft.</p>
           )}
@@ -247,18 +254,18 @@ export function ApplicantEssayEditorPage() {
   const { essayId = "" } = useParams();
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetStudentEssayQuery(essayId, { skip: !essayId });
-  const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId || !isMasters });
+  const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId });
   const [createVersion, createVersionState] = useCreateEssayVersionMutation();
   const [update, updateState] = useUpdateStudentEssayMutation();
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<StudentEssay["status"]>("draft");
   const [dirty, setDirty] = useState(false);
-  const [recovered, setRecovered] = useState(false);
   const snapshotRef = useRef("");
   const savingRef = useRef(false);
   const [params, setParams] = useSearchParams();
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
+  const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
   const essay = query.data?.data;
   const profileId = useTypedSelector((state) => state.auth.profile?.id);
   const localDraftKey = essayId
@@ -283,7 +290,6 @@ export function ApplicantEssayEditorPage() {
           setTitle(draft.title);
           setStatus(draft.status);
           setDirty(true);
-          setRecovered(true);
           return;
         }
       }
@@ -298,7 +304,6 @@ export function ApplicantEssayEditorPage() {
     setTitle(essay.title);
     setStatus(essay.status);
     setDirty(false);
-    setRecovered(false);
   }, [essay?.id, localDraftKey]);
   const words = useMemo(
     () => (content.trim() ? content.trim().split(/\s+/).length : 0),
@@ -333,7 +338,6 @@ export function ApplicantEssayEditorPage() {
       await update({ id: essay.id, data: { content, title, status } }).unwrap();
       if (snapshotRef.current === submitted) {
         setDirty(false);
-        setRecovered(false);
         try {
           localStorage.removeItem(localDraftKey);
         } catch {
@@ -353,6 +357,11 @@ export function ApplicantEssayEditorPage() {
       savingRef.current = false;
     }
   };
+  useEffect(() => {
+    if (!essay || !dirty || updateState.isLoading) return;
+    const timer = window.setTimeout(() => { void save(); }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [essay?.id, content, title, status, dirty, updateState.isLoading]);
   const saveVersion = async () => {
     if (!essay || !content.trim()) {
       message.error("Write your statement before saving a version.");
@@ -362,7 +371,6 @@ export function ApplicantEssayEditorPage() {
       if (dirty) await update({ id: essay.id, data: { content, title, status } }).unwrap();
       await createVersion({ essayId: essay.id, content, changeSummary: "Saved from statement editor" }).unwrap();
       setDirty(false);
-      setRecovered(false);
       try { localStorage.removeItem(localDraftKey); } catch { /* Server copy remains saved. */ }
       setReviewTab("versions");
       message.success("New statement version saved.");
@@ -382,31 +390,26 @@ export function ApplicantEssayEditorPage() {
             .filter(Boolean)
             .join("\n\n")
         : "";
+  useEffect(() => {
+    if (params.get("feedback") === "mentor" && feedback) setSidePanel("review");
+  }, [params.get("feedback"), feedback]);
   return (
     <ApplicantPage
-      title={isMasters && params.get("view") === "review" ? "Statement review" : "Focused editor"}
-      actions={
+      title={isMasters && params.get("view") === "review" ? "Statement review" : undefined}
+      actions={isMasters && params.get("view") === "review" ? (
         <div className="applicant-actions">
-          <span className="applicant-save-state">
-            {updateState.isLoading
-              ? "Saving…"
-              : recovered
-                ? "Recovered unsaved draft"
-                : dirty
-                  ? "Unsaved changes"
-                  : "Saved"}
-          </span>
-          <Button
-            type="primary"
-            icon={<Save size={15} />}
-            disabled={!dirty}
-            loading={updateState.isLoading}
-            onClick={save}
-          >
-            Save draft
-          </Button>
+          {(dirty || updateState.isLoading) && (
+            <Button
+              type="primary"
+              icon={<Save size={15} />}
+              loading={updateState.isLoading}
+              onClick={save}
+            >
+              Save draft
+            </Button>
+          )}
         </div>
-      }
+      ) : undefined}
     >
       <Breadcrumb>
         <Link to="/student-hub/essays">Statements & essays</Link>
@@ -458,17 +461,33 @@ export function ApplicantEssayEditorPage() {
             </div>
           </div>
         ) : essay && (
-          <div
-            className={`applicant-editor-layout${params.get("feedback") ? " has-feedback" : ""}`}
-          >
+          <div className="applicant-writing-desk">
+            <div className="applicant-writing-desk__bar">
+              <span>{essay.essayType === "personal_statement" ? "PERSONAL STATEMENT" : "ESSAY DRAFT"}</span>
+              <div className="applicant-actions">
+                {(dirty || updateState.isLoading) && (
+                  <Button
+                    icon={<Save size={15} />}
+                    loading={updateState.isLoading}
+                    onClick={save}
+                  >Save draft</Button>
+                )}
+                <Button
+                  icon={<Lightbulb size={17} />}
+                  type={sidePanel === "ideas" ? "primary" : "default"}
+                  onClick={() => setSidePanel(sidePanel === "ideas" ? null : "ideas")}
+                >Ideas</Button>
+                <Button
+                  type={sidePanel === "review" ? "primary" : "default"}
+                  onClick={() => setSidePanel(sidePanel === "review" ? null : "review")}
+                >Review & versions</Button>
+              </div>
+            </div>
+            <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
             <div className="applicant-panel applicant-editor">
-              {isMasters && <div className="applicant-actions applicant-editor__review-actions">
-                <Button onClick={() => {
-                  const next = new URLSearchParams(params); next.set("view", "review"); setParams(next);
-                }}>Review statement</Button>
-                <Button onClick={saveVersion} loading={createVersionState.isLoading}>Save new version</Button>
-              </div>}
+              <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">DRAFT TITLE</label>
               <Input
+                id="applicant-essay-title"
                 className="applicant-title-input"
                 value={title}
                 onChange={(event) => {
@@ -477,9 +496,10 @@ export function ApplicantEssayEditorPage() {
                 }}
                 aria-label="Draft title"
               />
-              <p>{essay.prompt}</p>
+              {essay.prompt?.trim() && <p className="applicant-editor__prompt"><strong>Essay question</strong>{essay.prompt}</p>}
               <Input.TextArea
                 className="applicant-writing"
+                rows={16}
                 value={content}
                 onChange={(event) => {
                   setContent(event.target.value);
@@ -487,77 +507,60 @@ export function ApplicantEssayEditorPage() {
                 }}
                 onBlur={save}
                 placeholder="Begin your draft…"
+                aria-label="Draft text"
               />
               <div className="applicant-editor__footer">
                 <span>{words} words</span>
-                <Select
-                  value={status}
-                  onChange={(value) => {
-                    setStatus(value);
-                    setDirty(true);
-                  }}
-                  options={[
-                    ...["draft", "review", "revision", "final"].map(
-                      (value) => ({
-                        value,
-                        label: value[0].toUpperCase() + value.slice(1),
-                      }),
-                    ),
-                    ...(status === "submitted"
-                      ? [
-                          {
-                            value: "submitted",
-                            label: "Submitted",
-                            disabled: true,
-                          },
-                        ]
-                      : []),
-                  ]}
-                />
+                <span>{dirty ? "Changes saved automatically after a pause" : "Private draft"}</span>
               </div>
             </div>
-            {params.get("feedback") && (
-              <aside className="applicant-panel applicant-feedback">
-                <div className="applicant-page__heading">
-                  <h2>Mentor feedback</h2>
-                  <Button
-                    type="text"
-                    onClick={() => {
-                      const next = new URLSearchParams(params);
-                      next.delete("feedback");
-                      setParams(next);
-                    }}
-                    icon={<ArrowLeft size={16} />}
-                  >
-                    Close
-                  </Button>
-                </div>
-                {feedback ? (
-                  <p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p>
-                ) : (
-                  <Alert
-                    type="info"
-                    message="No mentor feedback has been shared yet."
-                  />
-                )}
-              </aside>
-            )}
+            {sidePanel && <aside className="applicant-panel applicant-writing-desk__side">
+              <div className="applicant-page__heading">
+                <h2>{sidePanel === "ideas" ? "Ideas to get started" : "Review your draft"}</h2>
+                <Button type="text" onClick={() => setSidePanel(null)} aria-label="Close side panel">Close</Button>
+              </div>
+              {sidePanel === "ideas" ? <>
+                <p>Use a question if it helps. Your essay does not have to follow a template.</p>
+                <ol className="applicant-writing-desk__ideas">
+                  {(essay.essayType === "personal_statement"
+                    ? ["What is one specific moment you keep thinking about?", "What did you choose to do?", "What did you learn or see differently afterward?"]
+                    : ["What is this question really asking?", "Which specific example answers it best?", "What should the reader understand about you by the end?"]
+                  ).map((idea) => <li key={idea}>{idea}</li>)}
+                </ol>
+                <small>These are writing prompts from TopCoach, not official admission requirements.</small>
+              </> : <>
+                <label className="applicant-writing-desk__stage-label" htmlFor="applicant-essay-stage">Stage</label>
+                <Select
+                  id="applicant-essay-stage"
+                  value={status}
+                  onChange={(value) => { setStatus(value); setDirty(true); }}
+                  options={[
+                    { value: "draft", label: "Draft" },
+                    { value: "review", label: "Ready for review", disabled: !content.trim() },
+                    { value: "revision", label: "Revising", disabled: !content.trim() },
+                    { value: "final", label: "Final", disabled: !content.trim() },
+                    ...(status === "submitted" ? [{ value: "submitted", label: "Submitted", disabled: true }] : []),
+                  ]}
+                />
+                <p>Changing the stage organizes your writing. It does not submit an application.</p>
+                <Button onClick={saveVersion} loading={createVersionState.isLoading} disabled={!content.trim()}>Save a version</Button>
+                <h3>Saved versions</h3>
+                <QueryState loading={versionsQuery.isLoading} error={versionsQuery.isError} retry={versionsQuery.refetch}>
+                  {(versionsQuery.data?.data ?? []).length ? (
+                    <ol className="applicant-writing-desk__versions">
+                      {[...(versionsQuery.data?.data ?? [])].sort((a, b) => b.version - a.version).map((version) => (
+                        <li key={version.id}><strong>Version {version.version}</strong><small>{displayDate(version.createdAt)}</small></li>
+                      ))}
+                    </ol>
+                  ) : <p>No versions saved yet.</p>}
+                </QueryState>
+                {feedback && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
+              </>}
+            </aside>}
+            </div>
           </div>
         )}
       </QueryState>
-      {!params.get("feedback") && essay?.mentorFeedback && (
-        <Button
-          className="applicant-feedback-launcher"
-          onClick={() => {
-            const next = new URLSearchParams(params);
-            next.set("feedback", "mentor");
-            setParams(next);
-          }}
-          icon={<MessageSquareText size={17} />}
-        >
-          Review mentor feedback
-        </Button>
-      )}
     </ApplicantPage>
   );
 }

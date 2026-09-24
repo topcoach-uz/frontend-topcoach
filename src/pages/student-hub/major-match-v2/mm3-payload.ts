@@ -81,6 +81,10 @@ export const buildMm3Payload = (
       case 'single':
         if (typeof answer === 'number') {
           payload[question.slug] = optionLabel(t, question.slug, answer);
+        } else if (question.slug === 'grade' && typeof answer === 'object' && !Array.isArray(answer) &&
+          'option' in answer && answer.option === question.optionCount - 1 &&
+          'other' in answer && typeof answer.other === 'string' && answer.other.trim()) {
+          payload[question.slug] = `${optionLabel(t, question.slug, answer.option)}: ${answer.other.trim()}`;
         }
         break;
 

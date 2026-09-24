@@ -10,7 +10,7 @@ import { posthog, posthogEnabled } from 'src/lib/posthog';
 import styles from '../onboarding.module.scss';
 
 /**
- * Wizard Step 8 — academic qualification / placement-test handoff. This is
+ * Wizard Step 8 — Community handoff. This is
  * the FINAL step: onboarding completion (`patchOnboarding({completed:true})`)
  * fires from the two buttons here, not from the 'contact' step anymore (see
  * the removed TEMP comment in StepContact.tsx / index.tsx).
@@ -45,11 +45,8 @@ export default function StepAcademic() {
     setSubmitting('start');
     try {
       await completeOnboarding();
-      // `gate.destination` already falls back to the placement-test path
-      // while its underlying queries are still loading (see
-      // src/lib/communityAccess.ts `state: 'loading'` branch) and, for a
-      // brand-new onboarding user who hasn't taken the test yet, resolves
-      // to `needs_placement_test` -> the same placement-test path anyway.
+      // Community access no longer requires the separate placement profile.
+      // The gate sends unenrolled users straight to the plan page.
       navigate(gate.destination);
     } catch (err: any) {
       message.error(
@@ -85,8 +82,8 @@ export default function StepAcademic() {
           </span>
           <span>
             {t(
-              'onboarding.academic.benefit1',
-              "A short placement test (about 10 minutes) so we know your English level.",
+              'onboarding.academic.communityBenefit1',
+              'Explore the Community plan and the support available to you.',
             )}
           </span>
         </li>
@@ -96,8 +93,8 @@ export default function StepAcademic() {
           </span>
           <span>
             {t(
-              'onboarding.academic.benefit2',
-              'A quick academic profile that unlocks your personalized roadmap and the Community.',
+              'onboarding.academic.communityBenefit2',
+              'You can complete your academic profile later when you want a personalized roadmap.',
             )}
           </span>
         </li>
@@ -110,7 +107,7 @@ export default function StepAcademic() {
         loading={submitting === 'start'}
         disabled={submitting === 'skip'}
       >
-        {t('onboarding.academic.start', 'Start placement test')}
+        {t('onboarding.academic.viewCommunityPlans', 'View Community plans')}
       </CustomButton>
 
       <button

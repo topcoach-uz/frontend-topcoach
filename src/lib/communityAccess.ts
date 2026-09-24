@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 
-import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
 import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { useTypedSelector } from 'src/app/store';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
@@ -12,8 +11,8 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
  * query-param-driven via `?section=...`, matching how the rest of the
  * hub works.
  *
- * The English placement test that used to gate this funnel has been
- * removed — the profile wizard is now the first step.
+ * The placement profile remains available for roadmap personalization,
+ * but it is not required to join Community.
  *
  * The old top-level `/placement-test/profile*` and `/placement-test/roadmap`
  * URLs still exist as redirects for backwards compatibility, so
@@ -40,8 +39,7 @@ export type CommunityGateState =
   | 'loading'
   | 'eligible'                // Admin-granted OR active/trialing subscription
   | 'needs_sign_in'           // Anonymous user — bounce to /auth/signin first
-  | 'needs_profile'
-  | 'needs_subscription';     // Profile done; only payment is left
+  | 'needs_subscription';     // No access yet; show Community plans
 
 export interface CommunityGateScoreBadge {
   percentage: number;
@@ -66,13 +64,10 @@ export interface CommunityGateResult {
  * call this hook and route to `result.destination`.
  *
  * State precedence:
- *   1. Not signed in → bounce to /auth/signin?next=<funnel-start>
+ *   1. Not signed in → bounce to /auth/signin?next=<subscription tab>
  *   2. Admin-granted community access (`isCommunityEnrolled`) → already in
  *   3. Active or trialing subscription → already in
- *   4. No profile yet → /placement-test/profile/:lastEditedStep
- *   5. Profile done, no active subscription → Subscription tab in Settings
- *      (the only remaining step is payment; never bounce back to a stale
- *      previously-generated roadmap)
+ *   4. No access yet → Subscription tab in Settings
  *
  * Skip behaviour: queries are skipped while unauthenticated so we don't
  * hammer the backend for users who can't be funneled yet.
@@ -81,14 +76,12 @@ export function useCommunityAccessGate(): CommunityGateResult {
   const { isAuthenticated } = useTypedSelector((s) => s.auth);
   const { isCommunityEnrolled } = useJourneyExperience();
 
-  const { data: status, isLoading: statusLoading } =
-    useGetPlacementTestStatusQuery(undefined, { skip: !isAuthenticated });
   const { data: subscription, isLoading: subLoading } =
     useGetCurrentSubscriptionQuery(undefined, { skip: !isAuthenticated });
 
   return useMemo(() => {
     if (!isAuthenticated) {
-      const next = encodeURIComponent(COMMUNITY_FUNNEL_PATHS.profileBase);
+      const next = encodeURIComponent(COMMUNITY_FUNNEL_PATHS.subscriptionTab);
       return {
         state: 'needs_sign_in' as const,
         destination: `${COMMUNITY_FUNNEL_PATHS.signIn}?next=${next}`,
@@ -108,53 +101,26 @@ export function useCommunityAccessGate(): CommunityGateResult {
       return {
         state: 'eligible' as const,
         destination: COMMUNITY_FUNNEL_PATHS.community,
-        scoreBadge: status?.lastAttempt
-          ? {
-              percentage: status.lastAttempt.scorePercentage,
-              level: status.lastAttempt.level,
-            }
-          : null,
-      };
-    }
-
-    // While the status / subscription queries are still loading we don't
-    // want to flicker the CTA from "Subscribe" → "Continue profile" →
-    // final. Park on `loading` and let callers show a skeleton.
-    if (statusLoading || subLoading || !status) {
-      return {
-        state: 'loading' as const,
-        destination: COMMUNITY_FUNNEL_PATHS.profileBase,
         scoreBadge: null,
       };
     }
 
-    const scoreBadge: CommunityGateScoreBadge | null = status.lastAttempt
-      ? {
-          percentage: status.lastAttempt.scorePercentage,
-          level: status.lastAttempt.level,
-        }
-      : null;
-
-    if (!status.profile.completed) {
+    // Wait for subscription status before choosing a destination so an
+    // entitled user is never sent to the plan page prematurely.
+    if (subLoading) {
       return {
-        state: 'needs_profile' as const,
-        destination: profilePath(status.profile.lastEditedStep ?? 'basic'),
-        scoreBadge,
+        state: 'loading' as const,
+        destination: COMMUNITY_FUNNEL_PATHS.subscriptionTab,
+        scoreBadge: null,
       };
     }
 
-    // Profile done, no active sub (never subscribed, trial expired, or
-    // canceled) → the only thing left is payment, so send them straight
-    // to the Subscription tab in Settings. We intentionally do NOT route
-    // back to the roadmap: a returning user who already generated one
-    // would just see stale content instead of the place where they can
-    // actually re-subscribe.
     return {
       state: 'needs_subscription' as const,
       destination: COMMUNITY_FUNNEL_PATHS.subscriptionTab,
-      scoreBadge,
+      scoreBadge: null,
     };
-  }, [isAuthenticated, isCommunityEnrolled, status, statusLoading, subscription, subLoading]);
+  }, [isAuthenticated, isCommunityEnrolled, subscription, subLoading]);
 }
 
 /**

@@ -1,0 +1,9 @@
+# University logo source review
+
+Checked 24 September 2026. The live development catalogue has 99 university records. `src/pages/student-hub/applicant/catalogueUniversityLogos.json` contains 66 university-ID matches to logo assets found in the institutions' own websites or design systems. The local database stores the logo URL, official source page, and check date; the same fields are editable in the university admin form. The list and detail pages use these reviewed assets and show a neutral building icon when no reviewed logo is available.
+
+`university-logo-unmatched.json` lists the remaining 33 live records. Do not fill these with search-result thumbnails, Wikipedia files, generic favicon services, campus photographs, or a similarly named university. `university-logo-markup-review.json` contains website-header evidence for manual follow-up. For example, the captured page under the Durham row showed Purdue branding, so it was not accepted as a Durham source. The Tokyo Institute of Technology record also needs an identity review before selecting a current mark.
+
+Some institutions explicitly control external logo use. MIT's brand download page asks external users to request files; Oxford's and Melbourne's brand guidance requires approval. NUS, Princeton, Cornell, and Stanford also publish external-use restrictions. These entries remain in the review queue pending an approved asset or permission. A logo appearing on an official website establishes provenance, not a licence for TopCoach to redistribute it.
+
+The supplied spreadsheet lists 300 universities, while only 99 are currently in the live catalogue. `official-site-university-logos.json` is a broader research set from the spreadsheet; it is not a blanket approval or a complete 300-logo import. Match by the live university ID and verify institution identity and usage terms before adding any more assets.

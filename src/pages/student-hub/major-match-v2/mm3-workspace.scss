@@ -11,6 +11,10 @@
   }
 }
 
+.mm3-workspace.mm3-workspace--questions {
+  margin-top: -12px;
+}
+
 .mm3-workspace__breadcrumb {
   display: flex;
   align-items: center;
@@ -375,5 +379,242 @@
   .mm2-runner__btn--primary {
     background: #8b0000;
     border-color: #8b0000;
+  }
+}
+
+/* Shared question layout, following the approved Major Match Figma frames. */
+.mm3-workspace.mm3-workspace--questions {
+  width: min(100%, 1320px);
+  max-width: 1320px;
+
+  .mm3-runner {
+    font-family: inherit;
+  }
+
+  .mm2-runner__progress {
+    margin-bottom: 20px;
+    padding: 22px 30px;
+    border-color: #e9e4dc;
+    border-radius: 18px;
+    background: #fbfaf6;
+  }
+
+  .mm2-runner__progress-top {
+    margin-bottom: 16px;
+  }
+
+  .mm2-runner__section-label {
+    color: #76212c;
+    font-size: 0.85rem;
+    font-weight: 750;
+    letter-spacing: 0.035em;
+  }
+
+  .mm2-runner__count {
+    color: #6b7280;
+    font-size: 0.86rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .mm2-runner__bar {
+    height: 6px;
+    margin: 0;
+    background: #e9e5df;
+  }
+
+  .mm2-runner__bar-fill { background: #85232e; }
+
+  .mm2-runner__card {
+    padding: 38px 44px 28px;
+    border-color: #e9e4dc;
+    border-radius: 20px;
+    background: #fff;
+  }
+
+  .mm3-runner__question-head {
+    margin-bottom: 26px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid #eae5df;
+  }
+
+  .mm2-runner__question {
+    margin: 0;
+    color: #302f2d;
+    font-family: inherit;
+    font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+    font-weight: 700;
+    line-height: 1.23;
+    letter-spacing: -0.025em;
+  }
+
+  .mm3-runner__sub {
+    margin: 10px 0 0;
+    color: #626b78;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .mm2-runner__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .mm2-runner__option {
+    min-height: 76px;
+    padding: 17px 20px;
+    border-color: #e4e0d9;
+    border-radius: 12px;
+    background: #fcfaf7;
+    color: #33312f;
+    font-size: 1rem;
+    font-weight: 570;
+    line-height: 1.4;
+  }
+
+  .mm2-runner__option.is-selected {
+    border-color: #8b0000;
+    background: #fff5f3;
+  }
+
+  .mm2-runner__option-dot {
+    width: 22px;
+    height: 22px;
+    border-color: #cfcac3;
+  }
+
+  .mm2-runner__option.is-selected .mm2-runner__option-dot { border-color: #8b0000; }
+  .mm2-runner__option-dot::after { background: #8b0000; }
+
+  .mm3-option--other { grid-column: 1 / -1; }
+
+  .mm3-other-detail {
+    margin-top: 16px;
+
+    label {
+      display: block;
+      margin-bottom: 9px;
+      color: #76212c;
+      font-size: 0.79rem;
+      font-weight: 750;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      min-height: 56px;
+      padding: 13px 18px;
+      border: 1px solid #e4e0d9;
+      border-radius: 11px;
+      outline: none;
+      background: #fcfaf7;
+      color: #302f2d;
+      font: inherit;
+
+      &:focus { border-color: #8b0000; box-shadow: 0 0 0 3px rgb(139 0 0 / 10%); }
+    }
+  }
+
+  .mm3-count {
+    margin-top: 16px;
+    color: #626b78;
+    text-align: right;
+  }
+
+  .mm3-scale { max-width: none; }
+  .mm3-scale__ends {
+    margin: 0 0 12px;
+    color: #626b78;
+    font-size: 0.85rem;
+  }
+  .mm3-scale__row { gap: 12px; }
+  .mm3-scale__step {
+    min-height: 110px;
+    padding: 12px;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .mm3-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: none;
+  }
+  .mm3-field:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .mm3-field__label { color: #4c5057; font-size: 0.86rem; }
+  .mm3-field__control {
+    min-height: 58px;
+    border-color: #e4e0d9;
+    background: #fcfaf7;
+  }
+
+  .mm2-runner__actions {
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 22px;
+    border-top: 1px solid #eae5df;
+  }
+
+  .mm2-runner__btn {
+    min-height: 54px;
+    border-radius: 10px;
+    font-size: 0.96rem;
+  }
+  .mm2-runner__btn:first-child {
+    padding-left: 0;
+    border: 0;
+    background: transparent;
+  }
+  .mm2-runner__btn--primary { min-width: 210px; }
+}
+
+@media (max-width: 760px) {
+  .mm3-workspace.mm3-workspace--questions {
+    .mm2-runner__progress { padding: 18px; }
+    .mm2-runner__card { padding: 26px 22px; }
+    .mm2-runner__options { grid-template-columns: 1fr; }
+    .mm2-runner__option { min-height: 60px; }
+    .mm3-fields { grid-template-columns: 1fr; }
+    .mm3-field:last-child:nth-child(odd) { grid-column: auto; }
+    .mm3-scale__step { min-height: 76px; }
+  }
+}
+
+@media (max-width: 540px) {
+  .mm3-workspace.mm3-workspace--questions {
+    padding-inline: 12px;
+
+    .mm2-runner__progress {
+      margin-bottom: 14px;
+      padding: 16px;
+      border: 1px solid #e9e4dc;
+      border-radius: 14px;
+      background: #fbfaf6;
+    }
+    .mm2-runner__progress-top { display: flex; gap: 8px; margin-bottom: 12px; }
+    .mm2-runner__section-label { font-size: 0.69rem; }
+    .mm2-runner__count { display: inline; font-size: 0.73rem; }
+    .mm2-runner__bar { height: 5px; background: #e9e5df; }
+    .mm2-runner__card { padding: 24px 18px 20px; }
+    .mm2-runner__question { font-size: 1.55rem; line-height: 1.26; }
+    .mm3-runner__sub { margin-top: 8px; font-size: 0.92rem; }
+    .mm3-runner__question-head { margin-bottom: 20px; padding-bottom: 20px; }
+    .mm2-runner__options { gap: 10px; }
+    .mm2-runner__option {
+      min-height: 58px;
+      padding: 12px 14px;
+      border-color: #e4e0d9;
+      background: #fcfaf7;
+    }
+    .mm2-runner__option.is-selected { border-color: #8b0000; background: #fff5f3; }
+    .mm3-scale__row { gap: 6px; }
+    .mm3-scale__step { min-height: 64px; padding: 8px 4px; }
+    .mm2-runner__actions { flex-direction: row; margin-top: 26px; }
+    .mm2-runner__btn { min-height: 48px; }
+    .mm2-runner__btn--primary { min-width: 145px; }
   }
 }

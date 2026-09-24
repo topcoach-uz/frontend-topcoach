@@ -1,4 +1,5 @@
 import { UniversitiesSchema } from 'src/app/api/Api';
+import type { MajorsSchema } from 'src/app/api/Api';
 import { RtkApi } from '../api';
 import { normalizeUniversityList, universityListParams } from './universityQuery';
 export { normalizeUniversityList, universityListParams } from './universityQuery';
@@ -31,11 +32,11 @@ export const universityApi = RtkApi.injectEndpoints({
     }),
 
     // Get all universities (for listing page)
-    getUniversities: build.query<{ data: UniversitiesSchema[]; total: number }, { page?: number; limit?: number; search?: string }>({
-      query: ({ page = 1, limit = 20, search }) => ({
+    getUniversities: build.query<{ data: UniversitiesSchema[]; total: number }, { page?: number; limit?: number; search?: string; major?: string; majorName?: string; country?: string; majorType?: "undergraduate" | "graduate" }>({
+      query: ({ page = 1, limit = 20, search, major, majorName, country, majorType }) => ({
         url: '/university',
         method: 'GET',
-        params: universityListParams({ page, limit, search }),
+        params: universityListParams({ page, limit, search, major, majorName, country, majorType }),
         headers: {
           'Cache-Control': 'max-age=300', // 5 minutes
         },
@@ -51,6 +52,10 @@ export const universityApi = RtkApi.injectEndpoints({
           displayRanking: university.rankings?.[0]?.rank || null,
         })), total: normalized.total };
       },
+    }),
+
+    getUniversityFilters: build.query<{ majors: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries: string[] }, void>({
+      query: () => ({ url: '/university/filters', method: 'GET' }),
     }),
 
     // Prefetch university data (for background loading)
@@ -71,6 +76,7 @@ export const universityApi = RtkApi.injectEndpoints({
 export const {
   useGetUniversityDetailQuery,
   useGetUniversitiesQuery,
+  useGetUniversityFiltersQuery,
   useLazyGetUniversityDetailQuery,
   usePrefetchUniversityQuery,
 } = universityApi;

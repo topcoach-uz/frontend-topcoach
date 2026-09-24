@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TopCoach · Major Atlas motion concept</title>
+    <style>
+      :root {
+        font-family: "DM Sans", "Avenir Next", Arial, sans-serif;
+        color: #302d2a;
+        background: #fdfbfa;
+        --brand: #8b0000;
+        --copy: #625d59;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      button { font: inherit; }
+      .topbar {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 max(28px, calc((100vw - 1440px) / 2));
+        background: var(--brand);
+        color: white;
+      }
+      .brand { display: flex; align-items: center; gap: 10px; font-family: Georgia, serif; font-size: 19px; line-height: .9; }
+      .crest { display: grid; place-items: center; width: 32px; height: 37px; border: 1.5px solid white; border-radius: 3px 3px 15px 15px; font-size: 19px; }
+      .topbar-note { font-size: 12px; letter-spacing: .08em; opacity: .8; text-transform: uppercase; }
+      .workspace { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 38px; max-width: 1440px; margin: 0 auto; padding: 36px 28px 80px; }
+      .sidebar { padding-top: 4px; }
+      .profile { border: 1px solid #e0dfdd; border-radius: 16px; padding: 18px; background: white; box-shadow: 0 2px 5px #1b10100a; font-size: 13px; line-height: 1.45; }
+      .profile strong { display: block; font-size: 14px; }
+      .profile span { color: var(--copy); }
+      .nav { margin-top: 24px; display: grid; gap: 5px; font-size: 14px; }
+      .nav-item { padding: 11px 13px; color: #4b4e55; border-radius: 10px; }
+      .nav-item--group { color: var(--brand); }
+      .nav-item--active { margin-left: 23px; color: var(--brand); background: #fdf0f0; }
+      main { min-width: 0; }
+      .breadcrumb { margin: 3px 0 21px; color: #616772; font-size: 13px; }
+      .breadcrumb span { margin: 0 10px; color: #a3a6ad; }
+      .frame { padding: 30px; border-radius: 24px; background: white; }
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+        min-height: 520px;
+        overflow: hidden;
+        border: 1px solid #f2e3e0;
+        border-radius: 22px;
+        background: linear-gradient(93deg, #fff 0%, #fff 55%, #fff5f2 100%);
+        isolation: isolate;
+      }
+      .copy { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; padding: 43px 0 45px 42px; }
+      .eyebrow { color: var(--brand); font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+      h1 { max-width: 425px; margin: 39px 0 16px; font-size: clamp(40px, 4vw, 56px); line-height: 1.13; font-weight: 600; letter-spacing: -.045em; }
+      .lede { max-width: 375px; margin: 0; color: var(--copy); font-size: 17px; line-height: 1.45; }
+      .primary { min-width: 258px; margin-top: auto; padding: 18px 24px; border: 0; border-radius: 12px; color: white; background: var(--brand); font-weight: 700; font-size: 17px; text-align: left; cursor: pointer; box-shadow: 0 9px 19px #8b000016; transition: transform .25s, box-shadow .25s; }
+      .primary:hover, .primary:focus-visible { transform: translateY(-3px); box-shadow: 0 13px 24px #8b00002a; }
+      .primary:focus-visible, .replay:focus-visible, .map-node:focus-visible { outline: 3px solid #de938c; outline-offset: 4px; }
+      .primary .arrow { float: right; font-weight: 400; }
+      .scope { margin: 33px 0 0; color: var(--copy); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+      .map { position: relative; align-self: center; width: 100%; aspect-ratio: 470 / 480; max-height: 500px; }
+      .map::before { content: ""; position: absolute; inset: 12% 0 12% 4%; border-radius: 50%; background: radial-gradient(circle, #fff9f7 0%, transparent 62%); z-index: -1; }
+      .map svg { width: 100%; height: 100%; overflow: visible; }
+      .orbit { fill: none; stroke: var(--brand); stroke-width: 1; opacity: .09; animation: orbit-breathe 7s ease-in-out infinite alternate; }
+      .orbit:nth-of-type(2) { animation-delay: -2s; }
+      .orbit:nth-of-type(3) { animation-delay: -4s; }
+      .contour { fill: none; stroke: var(--brand); stroke-width: 1; opacity: .08; }
+      .strand { fill: none; stroke: var(--brand); stroke-width: 1; opacity: .16; }
+      .route { fill: none; stroke: var(--brand); stroke-width: 2.2; opacity: .72; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+      .is-playing .route--one { animation: draw 1.5s .35s ease forwards; }
+      .is-playing .route--two { animation: draw 1.55s .8s ease forwards; }
+      .is-playing .route--three { animation: draw 1.7s 1.25s ease forwards; }
+      .guide-dot { fill: var(--brand); opacity: .38; }
+      .tracer { fill: var(--brand); filter: drop-shadow(0 0 4px #8b000066); opacity: 0; }
+      .is-playing .tracer--one { animation: tracer 1.5s .35s ease forwards; }
+      .is-playing .tracer--two { animation: tracer 1.55s .8s ease forwards; }
+      .is-playing .tracer--three { animation: tracer 1.7s 1.25s ease forwards; }
+      .map-node { position: absolute; display: flex; align-items: center; gap: 8px; padding: 0; border: 0; color: var(--brand); background: transparent; font-size: 10px; font-weight: 700; letter-spacing: .08em; cursor: pointer; white-space: nowrap; opacity: 0; transform: translate(-10px, 5px); }
+      .map-node::before { content: ""; width: 13px; height: 13px; flex: 0 0 auto; border: 1px solid #8b000022; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 12px #8b00000e, 0 0 0 25px #8b00000a; transition: box-shadow .25s, transform .25s; }
+      .map-node:hover::before, .map-node:focus-visible::before { transform: scale(1.2); box-shadow: 0 0 0 13px #8b00001a, 0 0 0 29px #8b00000d; }
+      .map-node--origin { left: 11.8%; top: 48%; opacity: 1; transform: none; }
+      .map-node--one { left: 60.4%; top: 13.5%; }
+      .map-node--two { left: 74%; top: 47%; }
+      .map-node--three { left: 60%; top: 84%; }
+      .is-playing .map-node--one { animation: node-in .5s 1.45s forwards; }
+      .is-playing .map-node--two { animation: node-in .5s 1.9s forwards; }
+      .is-playing .map-node--three { animation: node-in .5s 2.35s forwards; }
+      .map-node--origin::before { width: 11px; height: 11px; box-shadow: 0 0 0 14px #8b000012, 0 0 0 28px #8b00000b; }
+      .tooltip { position: absolute; top: 31px; left: 4px; width: 196px; padding: 10px 12px; border: 1px solid #ecd7d4; border-radius: 9px; background: #fff; box-shadow: 0 14px 30px #2f15151e; color: #49403e; font-size: 12px; font-weight: 500; letter-spacing: 0; line-height: 1.35; white-space: normal; opacity: 0; visibility: hidden; transform: translateY(5px); transition: opacity .2s, transform .2s, visibility .2s; z-index: 5; }
+      .map-node:hover .tooltip, .map-node:focus-visible .tooltip { opacity: 1; visibility: visible; transform: translateY(0); }
+      .map-node--two .tooltip { left: auto; right: 0; }
+      .alternate { margin: 26px 0 0; color: var(--brand); font-size: 15px; }
+      .alternate a { color: inherit; text-decoration: none; font-weight: 600; }
+      .alternate a:hover { text-decoration: underline; }
+      .prototype-note { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin: 16px 0 0; color: #77716e; font-size: 12px; }
+      .replay { padding: 6px 10px; border: 1px solid #e7d6d3; border-radius: 8px; background: #fff; color: var(--brand); cursor: pointer; }
+      @keyframes draw { to { stroke-dashoffset: 0; } }
+      @keyframes tracer { 0% { opacity: 0; } 12%, 88% { opacity: 1; } 100% { opacity: 0; } }
+      @keyframes node-in { to { opacity: 1; transform: translate(0, 0); } }
+      @keyframes orbit-breathe { from { opacity: .06; } to { opacity: .13; } }
+      @media (max-width: 920px) {
+        .workspace { grid-template-columns: 1fr; padding: 22px 16px 60px; }
+        .sidebar { display: none; }
+        .frame { padding: 12px; }
+      }
+      @media (max-width: 680px) {
+        .topbar { padding: 0 20px; }
+        .topbar-note { font-size: 10px; }
+        .hero { display: flex; flex-direction: column; }
+        .copy { padding: 28px 24px 0; }
+        h1 { margin-top: 23px; font-size: 40px; }
+        .lede { font-size: 15px; }
+        .primary { order: 2; margin-top: 20px; min-width: 0; width: 100%; }
+        .scope { order: 3; margin-top: 17px; }
+        .map { width: min(100%, 440px); margin: 10px auto 14px; }
+        .map-node { font-size: 8px; gap: 6px; }
+        .map-node::before { width: 10px; height: 10px; box-shadow: 0 0 0 9px #8b00000e; }
+        .map-node--origin::before { width: 9px; height: 9px; }
+        .map-node--two { left: 73%; }
+        .tooltip { width: 150px; }
+        .alternate { margin: 20px 12px 8px; font-size: 13px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+        .route { stroke-dashoffset: 0; }
+        .tracer { display: none; }
+        .map-node { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar"><div class="brand"><span class="crest">✦</span><span>TOP<br />COACH</span></div><span class="topbar-note">AI Major Match · Motion study</span></header>
+    <div class="workspace">
+      <aside class="sidebar" aria-hidden="true">
+        <div class="profile"><strong>Aziza Karimova</strong><span>Bachelor’s applicant<br />Intake not set</span></div>
+        <nav class="nav"><span class="nav-item">Overview</span><span class="nav-item nav-item--group">Applications</span><span class="nav-item nav-item--active">AI Major Match</span><span class="nav-item">Find universities</span><span class="nav-item">College List</span><span class="nav-item">Essays</span><span class="nav-item">My learning</span><span class="nav-item">Full support</span><span class="nav-item">Community</span></nav>
+      </aside>
+      <main>
+        <div class="breadcrumb">My Journey <span>/</span> AI Major Match</div>
+        <div class="frame">
+          <section class="hero is-playing" id="hero" aria-labelledby="title">
+            <div class="copy">
+              <span class="eyebrow">AI MAJOR MATCH</span>
+              <h1 id="title">Find the path that fits you.</h1>
+              <p class="lede">Your interests, strengths and plans point in different directions. See where they meet.</p>
+              <button class="primary" id="start" type="button" title="Replay this motion concept">Start My Match <span class="arrow">→</span></button>
+              <p class="scope">10 MINUTES &nbsp;·&nbsp; 30 QUESTIONS</p>
+            </div>
+            <div class="map" aria-label="Animated paths connecting you with interests, strengths, and goals">
+              <svg viewBox="0 0 470 480" role="img" aria-hidden="true">
+                <circle class="orbit" cx="215" cy="238" r="183" /><circle class="orbit" cx="215" cy="238" r="143" /><circle class="orbit" cx="215" cy="238" r="103" />
+                <path class="contour" d="M62 238 C122 60 246 19 380 55" /><path class="contour" d="M62 238 C142 413 279 448 405 417" />
+                <path class="strand" d="M70 238 C155 160 170 70 288 72" /><path class="strand" d="M70 238 C165 145 195 105 288 72" />
+                <path class="strand" d="M70 238 C165 187 242 211 352 232" /><path class="strand" d="M70 238 C160 216 240 250 352 232" />
+                <path class="strand" d="M70 238 C154 328 211 383 286 405" /><path class="strand" d="M70 238 C125 315 188 411 286 405" />
+                <path class="route route--one" id="route-one" pathLength="100" d="M70 238 C165 167 224 103 288 72" />
+                <path class="route route--two" id="route-two" pathLength="100" d="M70 238 C177 199 252 231 352 232" />
+                <path class="route route--three" id="route-three" pathLength="100" d="M70 238 C133 316 211 366 286 405" />
+                <circle class="guide-dot" cx="170" cy="132" r="2" /><circle class="guide-dot" cx="235" cy="98" r="2" /><circle class="guide-dot" cx="180" cy="216" r="2" /><circle class="guide-dot" cx="247" cy="230" r="2" /><circle class="guide-dot" cx="160" cy="321" r="2" /><circle class="guide-dot" cx="220" cy="376" r="2" />
+                <circle class="tracer tracer--one" r="4"><animateMotion dur="1.5s" begin="0.35s" fill="freeze"><mpath href="#route-one" /></animateMotion></circle>
+                <circle class="tracer tracer--two" r="4"><animateMotion dur="1.55s" begin="0.8s" fill="freeze"><mpath href="#route-two" /></animateMotion></circle>
+                <circle class="tracer tracer--three" r="4"><animateMotion dur="1.7s" begin="1.25s" fill="freeze"><mpath href="#route-three" /></animateMotion></circle>
+              </svg>
+              <button class="map-node map-node--origin" type="button" aria-label="You: the starting point">YOU</button>
+              <button class="map-node map-node--one" type="button">INTERESTS <span class="tooltip">The subjects and problems that hold your attention.</span></button>
+              <button class="map-node map-node--two" type="button">STRENGTHS <span class="tooltip">What you’ve learned and where you feel capable.</span></button>
+              <button class="map-node map-node--three" type="button">GOALS <span class="tooltip">The life and work you want to move toward.</span></button>
+            </div>
+          </section>
+          <p class="alternate">Already know your major? &nbsp;<a href="http://127.0.0.1:5173/student-hub/psychometric-assessment">Choose it directly ↗</a></p>
+        </div>
+        <div class="prototype-note"><span>Standalone HTML motion prototype · no app code changed</span><button class="replay" type="button" id="replay">↻ Replay animation</button></div>
+      </main>
+    </div>
+    <script>
+      const hero = document.getElementById('hero');
+      const svg = document.querySelector('.map svg');
+      const replay = () => {
+        hero.classList.remove('is-playing');
+        void hero.offsetWidth;
+        if (svg && typeof svg.setCurrentTime === 'function') svg.setCurrentTime(0);
+        hero.classList.add('is-playing');
+      };
+      document.getElementById('replay').addEventListener('click', replay);
+      document.getElementById('start').addEventListener('click', replay);
+    </script>
+  </body>
+</html>

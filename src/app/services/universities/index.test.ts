@@ -11,6 +11,7 @@ describe("universityListParams", () => {
     ).toEqual({
       _start: 80,
       _end: 120,
+      _sort: 'rankings',
       name: "Oxford",
     });
   });
@@ -19,6 +20,24 @@ describe("universityListParams", () => {
     expect(universityListParams({ page: 1, limit: 20, search: " " })).toEqual({
       _start: 0,
       _end: 20,
+      _sort: 'rankings',
+    });
+  });
+
+  it("passes bachelor catalogue filters to the backend", () => {
+    expect(universityListParams({
+      page: 1,
+      limit: 40,
+      majorName: "Computer science",
+      country: "United Kingdom",
+      majorType: "undergraduate",
+    })).toEqual({
+      _start: 0,
+      _end: 40,
+      _sort: 'rankings',
+      majorName: "Computer science",
+      country: "United Kingdom",
+      majorType: "undergraduate",
     });
   });
 });

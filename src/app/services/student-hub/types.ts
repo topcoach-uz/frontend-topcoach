@@ -390,14 +390,15 @@ export interface CollegeApplication {
   studentProfileId: string;
   /** Stable graduate-program identity; universityId alone is not a program identity. */
   programId?: string;
+  undergraduateDegreeId?: string | null;
   universityId?: string;
   universityName?: string;
   major?: string;
   degreeLevel: 'bachelor' | 'master';
   intake?: string;
-  applicationType: 'common-app' | 'coalition' | 'direct' | 'ucas' | 'other';
+  applicationType?: 'common-app' | 'coalition' | 'direct' | 'ucas' | 'other' | null;
   status: 'researching' | 'applying' | 'submitted' | 'under_review' | 'accepted' | 'rejected' | 'waitlisted' | 'deferred';
-  category: 'reach' | 'target' | 'safety';
+  category?: 'reach' | 'target' | 'safety' | null;
   priority: number;
   deadline?: string;
   submittedAt?: string | null;
@@ -413,14 +414,15 @@ export interface CollegeApplication {
 
 export interface CreateCollegeApplicationRequest {
   programId?: string;
+  undergraduateDegreeId?: string | null;
   universityId?: string;
   universityName?: string;
   major?: string;
   degreeLevel?: 'bachelor' | 'master';
   intake?: string;
-  applicationType: CollegeApplication['applicationType'];
+  applicationType?: CollegeApplication['applicationType'];
   status?: CollegeApplication['status'];
-  category: CollegeApplication['category'];
+  category?: CollegeApplication['category'];
   priority?: CollegeApplication['priority'];
   deadline?: string;
   financialInfo?: Record<string, any>;

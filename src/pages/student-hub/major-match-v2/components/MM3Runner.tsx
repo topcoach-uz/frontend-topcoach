@@ -14,16 +14,7 @@ import { MM3Answer, MM3QuestionInput, isMM3Answered } from './MM3Inputs';
 import '../mm3-inputs.scss';
 import '../mm3-runner.scss';
 
-/**
- * The MM3 question runner — 30 questions across 3 parts (10/10/10).
- *
- * Mirrors `MM2Runner` closely (same `mm2-runner__*` classes, same keyboard
- * handling delegated to the input components) so the two sets are visually
- * indistinguishable. New pieces (part-aware progress header, per-question
- * sub-line, "answer first" hint) live in `mm3-runner.scss` with the
- * `mm3-` prefix, using the platform's own editorial tokens — nothing here
- * is styled after the prototype this content was transcribed from.
- */
+/** The shared 30-question runner across three assessment parts. */
 
 interface MM3RunnerProps {
   targetDegree?: string | null;
@@ -64,7 +55,7 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
   const part = MM3_PARTS[question.part - 1];
   const withinPartIndex = part.questionIds.indexOf(question.id) + 1;
   const withinPartTotal = part.questionIds.length;
-  const overallProgressPct = ((currentIndex + 1) / MM3_TOTAL_QUESTIONS) * 100;
+  const partProgressPct = (withinPartIndex / withinPartTotal) * 100;
 
   const root = mm3QuestionKey(question.slug);
   const value = answers[question.slug];
@@ -72,24 +63,20 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
   const isPrefilled = prefilledSlugs.includes(question.slug);
 
   return (
-    <div className="mm2-runner">
+    <div className="mm2-runner mm3-runner">
       <div className="mm2-runner__progress">
-        <div className="mm3-runner__parts" aria-label={t('majorMatch3.nav.parts', 'Assessment parts')}>
-          {MM3_PARTS.map((item) => (
-            <span key={item.slug} className={item.index === part.index ? 'is-current' : item.index < part.index ? 'is-complete' : ''}>
-              <b>{String(item.index).padStart(2, '0')}</b>{' '}
-              {targetDegree === 'master' && item.slug === 'academic'
-                ? t('majorMatch3.part.academic.masterLabel', 'Graduate profile')
-                : t(`majorMatch3.part.${item.slug}.label`)}
-            </span>
-          ))}
-        </div>
         <div className="mm2-runner__progress-top">
           <span className="mm2-runner__section-label">
             {t(`majorMatch3.part.${part.slug}.title`)} ·{' '}
             {t('majorMatch3.nav.partLabel', 'Part {{current}} of {{total}}', {
               current: part.index,
               total: MM3_TOTAL_PARTS,
+            })}
+          </span>
+          <span className="mm2-runner__count">
+            {t('majorMatch3.nav.progress', 'Question {{current}} of {{total}}', {
+              current: withinPartIndex,
+              total: withinPartTotal,
             })}
           </span>
           {showSaveExit && (
@@ -99,19 +86,15 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
           )}
         </div>
         <div className="mm2-runner__bar">
-          <div className="mm2-runner__bar-fill" style={{ width: `${overallProgressPct}%` }} />
+          <div className="mm2-runner__bar-fill" style={{ width: `${partProgressPct}%` }} />
         </div>
-        <span className="mm2-runner__count">
-          {t('majorMatch3.nav.progress', 'Question {{current}} of {{total}}', {
-            current: withinPartIndex,
-            total: withinPartTotal,
-          })}
-        </span>
       </div>
 
       <div className="mm2-runner__card">
-        <h2 className="mm2-runner__question">{t(`${root}.title`)}</h2>
-        {question.hasSub && <p className="mm3-runner__sub">{t(`${root}.sub`)}</p>}
+        <div className="mm3-runner__question-head">
+          <h2 className="mm2-runner__question">{t(`${root}.title`)}</h2>
+          {question.hasSub && <p className="mm3-runner__sub">{t(`${root}.sub`)}</p>}
+        </div>
 
         {isPrefilled && <div className="mm3-prefill-notice">{t('majorMatch3.prefill.notice')}</div>}
 
@@ -146,12 +129,6 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
           <button type="button" className="mm3-runner__review-return" onClick={onReturnToReview}>
             {t('majorMatch3.review.return', 'Return to review')}
           </button>
-        )}
-
-        {!answered && (
-          <p className="mm3-runner__hint" aria-live="polite">
-            {t('majorMatch3.nav.answerFirst')}
-          </p>
         )}
       </div>
     </div>

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "02bcf66c-758f-425e-8607-3befacd1ce56",
+    "name": "The University of Warwick",
+    "logoUrl": "https://d36jn9qou1tztq.cloudfront.net/static_war/render/id7/images/wordmark.svg.136055278947",
+    "sourcePage": "https://warwick.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header image"
+  },
+  {
+    "id": "ac14492d-aad6-4ebb-89d6-c06572f6b6ad",
+    "name": "Brown University",
+    "logoUrl": "https://www.brown.edu/themes/custom/brown/static/images/logo.svg",
+    "sourcePage": "https://www.brown.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header SVG use"
+  },
+  {
+    "id": "5854d3da-e097-47b0-a1ef-e83d4cbab079",
+    "name": "University of Amsterdam",
+    "logoUrl": "https://www.uva.nl/webfiles/1779862044324/icons/svg-logos.svg#logo-uva-large-nl",
+    "sourcePage": "https://www.uva.nl",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header SVG sprite"
+  }
+]
