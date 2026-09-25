@@ -27,6 +27,7 @@ import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
+  | 'course-classes'
   | 'availability'
   | 'students'
   | 'essay-reviews'
@@ -157,6 +158,12 @@ export default function MentorConsoleLayout() {
         icon: <CalendarClock size={18} strokeWidth={1.75} />,
         path: '/mentor/dashboard',
         badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
+      },
+      {
+        key: 'course-classes',
+        label: 'Course classes',
+        icon: <ClipboardCheck size={18} strokeWidth={1.75} />,
+        path: '/mentor/course-classes',
       },
       {
         key: 'availability',
