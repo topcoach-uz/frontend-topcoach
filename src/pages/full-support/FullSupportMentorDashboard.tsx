@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Tag, Progress, Modal, Form, Input, Select, DatePicker, Switch, Space, message, Upload } from 'antd';
+import { Card, Table, Button, Tag, Progress, Modal, Form, Input, InputNumber, Select, DatePicker, Switch, Space, message, Upload } from 'antd';
 import type { UploadFile } from 'antd';
 import { User, Plus, CheckCircle2, FileText, Globe, Pencil, Eye, Trash2, Download, Calendar, MessageCircle, CalendarClock, BarChart2, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -10,15 +10,18 @@ import ChatModal from 'src/components/chat/ChatModal';
 import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
 import { hostName } from 'src/app/services/api/const';
 import dayjs from 'src/lib/dayjs';
+import type { Dayjs } from 'dayjs';
 import {
   useGetMentorRosterQuery,
   useGetMentorSessionsQuery,
   useCreateMentorSessionMutation,
-  useUpdateMentorSessionMutation,
+  useRecordMentorLessonMutation,
+  useRescheduleMentorLessonMutation,
   useDeleteMentorSessionMutation,
   useGetMentorTasksQuery,
   useCreateMentorTaskMutation,
   useUpdateMentorTaskFeedbackMutation,
+  useLinkMentorTaskToLessonMutation,
   useDeleteMentorTaskMutation,
   useGetMentorMilestonesQuery,
   useCreateMentorMilestoneMutation,
@@ -79,15 +82,23 @@ export default function FullSupportMentorDashboard() {
   const roster: MentorRosterStudent[] = rosterData?.data ?? [];
   const [sessionLogStudent, setSessionLogStudent] = useState<MentorRosterStudent | null>(null);
   const { data: sessionsData } = useGetMentorSessionsQuery(sessionLogStudent?.id ?? null, { skip: !sessionLogStudent?.id });
+  const { data: allSessionsData } = useGetMentorSessionsQuery(null);
   const sessionLogs: SessionLogDto[] = sessionsData?.data ?? [];
+  const allSessions: SessionLogDto[] = allSessionsData?.data ?? [];
   const [createSession, { isLoading: createSessionLoading }] = useCreateMentorSessionMutation();
-  const [updateSession] = useUpdateMentorSessionMutation();
+  const [recordLesson, { isLoading: recordingLesson }] = useRecordMentorLessonMutation();
+  const [rescheduleLesson, { isLoading: reschedulingLesson }] = useRescheduleMentorLessonMutation();
   const [deleteSession] = useDeleteMentorSessionMutation();
+  const [lessonToRecord, setLessonToRecord] = useState<SessionLogDto | null>(null);
+  const [lessonToReschedule, setLessonToReschedule] = useState<SessionLogDto | null>(null);
+  const [recordForm] = Form.useForm();
+  const [rescheduleForm] = Form.useForm();
 
   const { data: tasksData } = useGetMentorTasksQuery();
   const tasks: TaskDto[] = tasksData?.data ?? [];
   const [createTask] = useCreateMentorTaskMutation();
   const [updateTaskFeedback] = useUpdateMentorTaskFeedbackMutation();
+  const [linkTaskToLesson] = useLinkMentorTaskToLessonMutation();
   const [deleteTask] = useDeleteMentorTaskMutation();
 
   const [assignTaskOpen, setAssignTaskOpen] = useState(false);
@@ -96,6 +107,7 @@ export default function FullSupportMentorDashboard() {
   const [feedbackFileList, setFeedbackFileList] = useState<UploadFile[]>([]);
   const [viewSubmissionTask, setViewSubmissionTask] = useState<TaskDto | null>(null);
   const [form] = Form.useForm();
+  const taskStudentId = Form.useWatch('student', form);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -145,8 +157,42 @@ export default function FullSupportMentorDashboard() {
     }
   }, [roster, selectedMilestoneStudentId]);
 
-  const handleSessionDoneToggle = (studentId: string, sessionId: string, checked: boolean) => {
-    updateSession({ id: sessionId, done: checked });
+  const handleRecordLesson = async (values: { outcome: 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show'; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string; existingTaskId?: string; homeworkTitle?: string; homeworkDeadline?: Dayjs; homeworkDescription?: string }) => {
+    if (!lessonToRecord) return;
+    try {
+      await recordLesson({ id: lessonToRecord.id, outcome: values.outcome, attendance: values.attendance, actualDurationMinutes: values.actualDurationMinutes, sharedNotes: values.sharedNotes }).unwrap();
+      if (values.existingTaskId) {
+        try { await linkTaskToLesson({ id: values.existingTaskId, lessonId: lessonToRecord.id }).unwrap(); }
+        catch { message.warning('Lesson saved, but the existing task could not be linked.'); }
+      }
+      if (values.homeworkTitle?.trim()) {
+        if (!values.homeworkDeadline) {
+          message.warning('Lesson recorded. Add a homework deadline before assigning the task.');
+          return;
+        }
+        try {
+          await createTask({ studentUserId: lessonToRecord.studentUserId!, lessonId: lessonToRecord.id, task: values.homeworkTitle.trim(), deadline: values.homeworkDeadline.format('YYYY-MM-DD'), description: values.homeworkDescription }).unwrap();
+        } catch {
+          setLessonToRecord(null);
+          recordForm.resetFields();
+          message.warning('Lesson saved, but homework was not assigned. Use Assign Task and select this lesson to retry.');
+          return;
+        }
+      }
+      message.success('Lesson record saved.');
+      setLessonToRecord(null);
+      recordForm.resetFields();
+    } catch { message.error('Could not record this lesson.'); }
+  };
+
+  const handleRescheduleLesson = async (values: { dateTime: Dayjs; duration: string }) => {
+    if (!lessonToReschedule) return;
+    try {
+      await rescheduleLesson({ id: lessonToReschedule.id, dateTime: values.dateTime.toISOString(), duration: values.duration }).unwrap();
+      message.success('Lesson rescheduled.');
+      setLessonToReschedule(null);
+      rescheduleForm.resetFields();
+    } catch { message.error('Could not reschedule this lesson.'); }
   };
 
   const confirmRemoveSession = (studentId: string, sessionId: string, sessionDescription?: string) => {
@@ -165,7 +211,7 @@ export default function FullSupportMentorDashboard() {
       const dateTime = values.dateTime ? dayjs(values.dateTime).toISOString() : new Date().toISOString();
       const duration = values.duration ?? '1h';
       const description = values.description ?? 'Session';
-      createSession({ studentUserId: studentId, dateTime, duration, description, done: false });
+      createSession({ studentUserId: studentId, dateTime, duration, description, meetingLink: values.meetingLink });
       sessionForm.resetFields();
       setAddSessionOpen(false);
     }).catch(() => {});
@@ -270,12 +316,15 @@ export default function FullSupportMentorDashboard() {
     });
   };
 
-  const handleAssignTask = (values: { title: string; student: string; deadline: unknown; description?: string }) => {
+  const handleAssignTask = async (values: { title: string; student: string; deadline: unknown; description?: string; lessonId?: string }) => {
     const studentUserId = values.student;
     const deadline = values.deadline ? dayjs(values.deadline as dayjs.Dayjs).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
-    createTask({ studentUserId, task: values.title, deadline, description: values.description });
-    setAssignTaskOpen(false);
-    form.resetFields();
+    try {
+      await createTask({ studentUserId, task: values.title, deadline, description: values.description, lessonId: values.lessonId }).unwrap();
+      setAssignTaskOpen(false);
+      form.resetFields();
+      message.success('Task assigned.');
+    } catch { message.error('Could not assign this task.'); }
   };
 
   const taskColumns = [
@@ -720,7 +769,10 @@ export default function FullSupportMentorDashboard() {
       >
         <Form form={pipelineForm} layout="vertical" onFinish={handleAddPipelineRow}>
           <Form.Item name="student" label="Student" rules={[{ required: true }]}>
-            <Select placeholder="Select student" options={roster.map((s) => ({ label: s.name, value: s.id }))} />
+            <Select placeholder="Select student" onChange={() => form.setFieldValue('lessonId', undefined)} options={roster.map((s) => ({ label: s.name, value: s.id }))} />
+          </Form.Item>
+          <Form.Item name="lessonId" label="Related lesson (optional)">
+            <Select allowClear disabled={!taskStudentId} placeholder="Choose a lesson" options={allSessions.filter((session) => session.studentUserId === taskStudentId).map((session) => ({ value: session.id, label: `${dayjs(session.dateTime).format('MMM D, YYYY')} · ${session.description}` }))} />
           </Form.Item>
           <Form.Item name="program" label="Program / Scholarship" rules={[{ required: true }]}>
             <Input placeholder="e.g. Yale Young Global Scholars" />
@@ -833,6 +885,9 @@ export default function FullSupportMentorDashboard() {
                   <Form.Item name="description" label="Description" rules={[{ required: true }]}>
                     <Input.TextArea placeholder="e.g. College list discussion" rows={2} />
                   </Form.Item>
+                  <Form.Item name="meetingLink" label="Meeting link (optional)" rules={[{ type: 'url', message: 'Enter a valid URL' }]}>
+                    <Input placeholder="https://meet.google.com/..." />
+                  </Form.Item>
                   <Space>
                     <Button type="primary" htmlType="submit" size="small" loading={createSessionLoading} style={{ backgroundColor: primary, borderColor: primary, borderRadius: 9999 }}>Save</Button>
                     <Button size="small" onClick={() => { setAddSessionOpen(false); sessionForm.resetFields(); }}>Cancel</Button>
@@ -849,18 +904,29 @@ export default function FullSupportMentorDashboard() {
                     <div>
                       <div style={{ fontWeight: 500 }}>{dayjs(session.dateTime).format('MMM D, YYYY h:mm A')}</div>
                       <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <Tag color={session.done ? 'green' : 'default'}>{session.done ? 'Done' : 'Pending'}</Tag>
+                        <Tag color={session.outcome === 'held' ? 'green' : session.outcome === 'scheduled' ? 'blue' : 'orange'}>
+                          {session.outcome === 'scheduled' && dayjs(session.dateTime).isBefore(dayjs()) ? 'Awaiting record' : session.outcome.replaceAll('_', ' ')}
+                        </Tag>
                         <span style={{ fontSize: 13, color: '#666' }}>{session.duration}</span>
                       </div>
                       <div style={{ marginTop: 6, fontSize: 14 }}>{session.description}</div>
+                      {session.outcome === 'held' && <div style={{ marginTop: 6, fontSize: 13 }}>Attendance: {session.attendance} · {session.actualDurationMinutes ?? Math.round(parseFloat(session.duration) * 60)} minutes</div>}
+                      {session.sharedNotes && <p style={{ margin: '6px 0', fontSize: 13 }}>{session.sharedNotes}</p>}
+                      {session.meetingLink && session.outcome === 'scheduled' && <a href={session.meetingLink} target="_blank" rel="noreferrer">Join lesson</a>}
+                      {session.homework?.length > 0 && <div style={{ marginTop: 8, fontSize: 13 }}>
+                        <strong>Homework</strong>
+                        {session.homework.map((item) => <div key={item.id}>
+                          {item.title} · {item.status.replaceAll('_', ' ')} · Due {dayjs(item.deadline).format('MMM D')}
+                          {item.status === 'submitted' && <Button size="small" type="link" onClick={() => { const task = tasks.find((entry) => entry.id === item.id); if (task) openFeedbackModal(task); }}>Review</Button>}
+                        </div>)}
+                      </div>}
                     </div>
-                    <Space align="center">
-                      <Switch
-                        checked={session.done}
-                        onChange={(checked) => handleSessionDoneToggle(sessionLogStudent.id, session.id, checked)}
-                        style={{ flexShrink: 0 }}
-                      />
-                      <Button type="text" size="small" danger icon={<Trash2 size={16} />} onClick={() => confirmRemoveSession(sessionLogStudent.id, session.id, session.description)} title="Remove session" />
+                    <Space align="center" wrap>
+                      <Button size="small" onClick={() => { setLessonToRecord(session); recordForm.setFieldsValue({ outcome: session.outcome === 'scheduled' ? 'held' : session.outcome, attendance: session.attendance === 'late' ? 'late' : 'present', actualDurationMinutes: session.actualDurationMinutes ?? Math.round(parseFloat(session.duration) * 60), sharedNotes: session.sharedNotes }); }}>
+                        {session.outcome === 'scheduled' ? 'Record lesson' : 'Edit record'}
+                      </Button>
+                      {session.outcome === 'scheduled' && <Button size="small" onClick={() => { setLessonToReschedule(session); rescheduleForm.setFieldsValue({ dateTime: dayjs(session.dateTime), duration: session.duration }); }}>Reschedule</Button>}
+                      {session.outcome === 'scheduled' && <Button type="text" size="small" danger icon={<Trash2 size={16} />} onClick={() => confirmRemoveSession(sessionLogStudent.id, session.id, session.description)} title="Remove session" />}
                     </Space>
                   </div>
                 </div>
@@ -868,6 +934,46 @@ export default function FullSupportMentorDashboard() {
             )}
           </div>
         )}
+      </Modal>
+
+      <Modal title="Record lesson" open={!!lessonToRecord} onCancel={() => { setLessonToRecord(null); recordForm.resetFields(); }} footer={null} destroyOnClose>
+        <Form form={recordForm} layout="vertical" onFinish={handleRecordLesson}>
+          <Form.Item name="outcome" label="Lesson outcome" rules={[{ required: true }]}>
+            <Select options={[{ value: 'held', label: 'Held' }, { value: 'student_no_show', label: 'Student no-show' }, { value: 'mentor_no_show', label: 'Mentor no-show' }, { value: 'cancelled', label: 'Cancelled' }]} />
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(previous, current) => previous.outcome !== current.outcome}>
+            {({ getFieldValue }) => getFieldValue('outcome') === 'held' ? <>
+              <Form.Item name="attendance" label="Student attendance" rules={[{ required: true }]}>
+                <Select options={[{ value: 'present', label: 'Present' }, { value: 'late', label: 'Late' }]} />
+              </Form.Item>
+              <Form.Item name="actualDurationMinutes" label="Actual teaching minutes" rules={[{ required: true }, { type: 'number', min: 1, max: 480 }]}>
+                <InputNumber min={1} max={480} style={{ width: '100%' }} />
+              </Form.Item>
+            </> : null}
+          </Form.Item>
+          <Form.Item name="sharedNotes" label="Notes shared with student">
+            <Input.TextArea rows={3} maxLength={5000} placeholder="What was covered and what happens next?" />
+          </Form.Item>
+          <Form.Item name="existingTaskId" label="Link existing homework (optional)">
+            <Select allowClear placeholder="Select a task" options={tasks.filter((task) => task.studentUserId === lessonToRecord?.studentUserId && (!task.lessonId || task.lessonId === lessonToRecord?.id)).map((task) => ({ value: task.id, label: `${task.task} · ${task.status.replaceAll('_', ' ')}` }))} />
+          </Form.Item>
+          <Form.Item name="homeworkTitle" label="Next homework (optional)"><Input placeholder="e.g. Revise university shortlist" /></Form.Item>
+          <Form.Item noStyle shouldUpdate={(previous, current) => previous.homeworkTitle !== current.homeworkTitle}>
+            {({ getFieldValue }) => getFieldValue('homeworkTitle')?.trim() ? <>
+              <Form.Item name="homeworkDeadline" label="Homework deadline" rules={[{ required: true }]}><DatePicker style={{ width: '100%' }} /></Form.Item>
+              <Form.Item name="homeworkDescription" label="Instructions"><Input.TextArea rows={2} /></Form.Item>
+            </> : null}
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={recordingLesson}>Save lesson record</Button>
+        </Form>
+      </Modal>
+
+      <Modal title="Reschedule lesson" open={!!lessonToReschedule} onCancel={() => setLessonToReschedule(null)} footer={null} destroyOnClose>
+        <Form form={rescheduleForm} layout="vertical" onFinish={handleRescheduleLesson}>
+          <Form.Item name="dateTime" label="New date and time" rules={[{ required: true }]}><DatePicker showTime style={{ width: '100%' }} /></Form.Item>
+          <Form.Item name="duration" label="Planned duration" rules={[{ required: true }]}><Select options={['0.5h', '1h', '1.5h', '2h'].map((value) => ({ value, label: value }))} /></Form.Item>
+          <Button type="primary" htmlType="submit" loading={reschedulingLesson}>Save new time</Button>
+        </Form>
       </Modal>
 
       {/* Add Milestone modal */}

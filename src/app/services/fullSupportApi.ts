@@ -43,16 +43,27 @@ export type StudentGoalDto = {
 
 export type SessionLogDto = {
   id: string;
+  mentorUserId?: string;
   studentUserId?: string;
+  studentName?: string;
+  mentorName?: string;
   dateTime: string;
   duration: string;
   description: string;
   done: boolean;
   meetingLink?: string | null;
+  outcome: 'scheduled' | 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show' | 'rescheduled';
+  attendance: 'unknown' | 'present' | 'late' | 'absent' | 'excused';
+  actualDurationMinutes: number | null;
+  sharedNotes: string;
+  recordedAt?: string | null;
+  homework: Array<{ id: string; title: string; status: string; deadline: string }>;
+  changeHistory?: Array<{ at: string; by: string; reason: string; before: Record<string, unknown>; after: Record<string, unknown> }>;
 };
 
 export type TaskDto = {
   id: string;
+  lessonId?: string | null;
   task: string;
   student?: string;
   studentUserId: string;
@@ -280,14 +291,14 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     createMentorSession: builder.mutation<
       { data: unknown; success: boolean },
-      { studentUserId: string; dateTime: string; duration?: string; description?: string; done?: boolean }
+      { studentUserId: string; dateTime: string; duration?: string; description?: string; meetingLink?: string }
     >({
       query: (body) => ({
         url: '/full-support/mentor/sessions',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     updateMentorSession: builder.mutation<
       { data: unknown; success: boolean },
@@ -298,14 +309,25 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: { done },
       }),
-      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
+    recordMentorLesson: builder.mutation<
+      { data: SessionLogDto; success: boolean },
+      { id: string; outcome: 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show'; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string }
+    >({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/record`, method: 'POST', body }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
+    rescheduleMentorLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; dateTime: string; duration: string }>({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/reschedule`, method: 'POST', body }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     deleteMentorSession: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/full-support/mentor/sessions/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions'],
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     getMentorTasks: builder.query<{ data: TaskDto[] }, void>({
       query: () => ({ url: '/full-support/mentor/tasks', method: 'GET' }),
@@ -317,14 +339,14 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     createMentorTask: builder.mutation<
       { data: unknown; success: boolean },
-      { studentUserId: string; task: string; deadline: string; description?: string }
+      { studentUserId: string; task: string; deadline: string; description?: string; lessonId?: string }
     >({
       query: (body) => ({
         url: '/full-support/mentor/tasks',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['FullSupportMentorTasks'],
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     updateMentorTaskFeedback: builder.mutation<
       { data: unknown; success: boolean },
@@ -335,14 +357,18 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: { feedback, decision, feedbackFileUrls },
       }),
-      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks'],
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
+    linkMentorTaskToLesson: builder.mutation<{ data: TaskDto; success: boolean }, { id: string; lessonId: string | null }>({
+      query: ({ id, lessonId }) => ({ url: `/full-support/mentor/tasks/${id}/lesson`, method: 'PATCH', body: { lessonId } }),
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     deleteMentorTask: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/full-support/mentor/tasks/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks'],
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     getMenteeTasks: builder.query<{ data: TaskDto[] }, void>({
       query: () => ({ url: '/full-support/mentee/tasks', method: 'GET' }),
@@ -383,7 +409,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks'],
+      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     submitMenteeTask: builder.mutation<
       { data: unknown; success: boolean },
@@ -394,7 +420,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: { submissionText, submissionFileUrls },
       }),
-      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks'],
+      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
     uploadMentorFeedbackFile: builder.mutation<
       { data: { fileName: string; url: string } },
@@ -618,6 +644,18 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       },
       providesTags: ['FullSupportMentorSessions'],
     }),
+    getAdminLessons: builder.query<{ data: SessionLogDto[] }, void>({
+      query: () => ({ url: '/full-support/admin/lessons', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw as SessionLogDto[] : [] };
+      },
+      providesTags: ['FullSupportAdmin'],
+    }),
+    correctAdminLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; reason: string; outcome: 'scheduled' | 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show'; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string }>({
+      query: ({ id, ...body }) => ({ url: `/full-support/admin/lessons/${id}/correct`, method: 'PATCH', body }),
+      invalidatesTags: ['FullSupportAdmin', 'FullSupportMentorSessions', 'FullSupportMentorRoster'],
+    }),
     getAdminStudentTasks: builder.query<{ data: TaskDto[] }, string>({
       query: (studentUserId) => ({ url: '/full-support/admin/student/tasks', method: 'GET', params: { studentUserId } }),
       transformResponse: (res: unknown) => {
@@ -737,10 +775,13 @@ export const {
   useGetMentorSessionsQuery,
   useCreateMentorSessionMutation,
   useUpdateMentorSessionMutation,
+  useRecordMentorLessonMutation,
+  useRescheduleMentorLessonMutation,
   useDeleteMentorSessionMutation,
   useGetMentorTasksQuery,
   useCreateMentorTaskMutation,
   useUpdateMentorTaskFeedbackMutation,
+  useLinkMentorTaskToLessonMutation,
   useDeleteMentorTaskMutation,
   useGetMenteeTasksQuery,
   useUploadTaskSubmissionFileMutation,
@@ -764,6 +805,8 @@ export const {
   useGetMenteeSatProgressQuery,
   useGetAdminCurriculumProgressQuery,
   useGetAdminStudentSessionsQuery,
+  useGetAdminLessonsQuery,
+  useCorrectAdminLessonMutation,
   useGetAdminStudentTasksQuery,
   useGetAdminStudentMilestonesQuery,
   useGetAdminStudentPipelineQuery,

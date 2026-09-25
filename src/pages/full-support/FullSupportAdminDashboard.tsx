@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Alert, Row, Col, Statistic, Modal, Progress, message } from 'antd';
+import FullSupportLessonLedger from './FullSupportLessonLedger';
 import { useTranslation } from 'react-i18next';
 import { User, Clock, FileText, Target, Users, ClipboardList, CalendarClock, BarChart2, CheckCircle2, Globe, History, Rocket, FlaskConical, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -352,6 +353,8 @@ export default function FullSupportAdminDashboard({
           style={{ marginTop: 24 }}
         />
       )}
+
+      <FullSupportLessonLedger />
 
       <Card title={<><Users size={16} style={{ marginRight: 8, color: accent }} />Student–Mentor Assignments</>} style={{ marginTop: 24 }} className="full-support-card">
         <Table
@@ -762,6 +765,13 @@ export default function FullSupportAdminDashboard({
                             {s.description}
                           </div>
                         )}
+                        <div style={{ color: subtextColor, fontSize: 12, marginTop: 4 }}>
+                          {s.outcome === 'scheduled' && dayjs(s.dateTime).isBefore(dayjs()) ? 'Awaiting record' : s.outcome.replaceAll('_', ' ')}
+                          {s.outcome === 'held' && ` · Attendance: ${s.attendance === 'unknown' ? 'unknown (legacy)' : s.attendance}`}
+                          {s.outcome === 'held' && ` · ${s.actualDurationMinutes ?? Math.round(parseFloat(s.duration) * 60)} min`}
+                        </div>
+                        {s.sharedNotes && <div style={{ color: subtextColor, fontSize: 12 }}>{s.sharedNotes}</div>}
+                        {s.homework?.map((task) => <div key={task.id} style={{ color: subtextColor, fontSize: 12 }}>Homework: {task.title} · {task.status.replaceAll('_', ' ')}</div>)}
                       </div>
                       <AcPill variant="cyan">{s.duration}</AcPill>
                     </li>

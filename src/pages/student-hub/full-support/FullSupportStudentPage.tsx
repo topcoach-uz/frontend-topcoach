@@ -299,10 +299,17 @@ export default function FullSupportStudentPage() {
                       {s.description && (
                         <div className="fseditorial__session-desc">{s.description}</div>
                       )}
+                      <div className="fseditorial__session-desc">
+                        {s.outcome === 'scheduled' && dayjs(s.dateTime).isBefore(dayjs()) ? 'Awaiting mentor record' : s.outcome.replaceAll('_', ' ')}
+                        {s.outcome === 'held' && ` · ${s.attendance === 'unknown' ? 'Attendance not recorded' : `Attendance: ${s.attendance}`}`}
+                      </div>
+                      {s.sharedNotes && <div className="fseditorial__session-desc">{s.sharedNotes}</div>}
+                      {s.meetingLink && s.outcome === 'scheduled' && <a href={s.meetingLink} target="_blank" rel="noreferrer">Join lesson</a>}
+                      {s.homework?.map((item) => <div key={item.id} className="fseditorial__session-desc">Homework: {item.title} · {item.status.replaceAll('_', ' ')} · Due {dayjs(item.deadline).format('MMM D')}</div>)}
                     </div>
                     <span className="fseditorial__session-duration">
                       <Clock size={12} />
-                      {s.duration}
+                      {s.outcome === 'held' && s.actualDurationMinutes ? `${s.actualDurationMinutes} min` : s.duration}
                     </span>
                   </li>
                 ))
