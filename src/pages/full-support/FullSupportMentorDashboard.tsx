@@ -769,10 +769,7 @@ export default function FullSupportMentorDashboard() {
       >
         <Form form={pipelineForm} layout="vertical" onFinish={handleAddPipelineRow}>
           <Form.Item name="student" label="Student" rules={[{ required: true }]}>
-            <Select placeholder="Select student" onChange={() => form.setFieldValue('lessonId', undefined)} options={roster.map((s) => ({ label: s.name, value: s.id }))} />
-          </Form.Item>
-          <Form.Item name="lessonId" label="Related lesson (optional)">
-            <Select allowClear disabled={!taskStudentId} placeholder="Choose a lesson" options={allSessions.filter((session) => session.studentUserId === taskStudentId).map((session) => ({ value: session.id, label: `${dayjs(session.dateTime).format('MMM D, YYYY')} · ${session.description}` }))} />
+            <Select placeholder="Select student" options={roster.map((s) => ({ label: s.name, value: s.id }))} />
           </Form.Item>
           <Form.Item name="program" label="Program / Scholarship" rules={[{ required: true }]}>
             <Input placeholder="e.g. Yale Young Global Scholars" />
@@ -1010,7 +1007,10 @@ export default function FullSupportMentorDashboard() {
             <Input placeholder="e.g. Personal Statement Draft" />
           </Form.Item>
           <Form.Item name="student" label="Student" rules={[{ required: true }]}>
-            <Select placeholder="Select student" options={roster.map((s) => ({ label: s.name, value: s.id }))} />
+            <Select placeholder="Select student" onChange={() => form.setFieldValue('lessonId', undefined)} options={roster.map((s) => ({ label: s.name, value: s.id }))} />
+          </Form.Item>
+          <Form.Item name="lessonId" label="Related lesson (optional)">
+            <Select allowClear disabled={!taskStudentId} placeholder="Choose a lesson" options={allSessions.filter((session) => session.studentUserId === taskStudentId).map((session) => ({ value: session.id, label: `${dayjs(session.dateTime).format('MMM D, YYYY')} · ${session.description}` }))} />
           </Form.Item>
           <Form.Item name="deadline" label="Deadline" rules={[{ required: true }]}>
             <DatePicker style={{ width: '100%' }} />
