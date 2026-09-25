@@ -38,6 +38,12 @@ import {
   displayDate,
 } from "./ApplicantPage";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
+import {
+  useGetEligibleEssayMentorsQuery,
+  useGetStudentEssayReviewsQuery,
+  useSubmitEssayReviewMutation,
+  useWithdrawEssayReviewMutation,
+} from "src/app/services/student-hub/essayReviewApi";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -144,7 +150,7 @@ export default function ApplicantEssaysPage() {
             {query.data.data.map((essay) => (
               <Link
                 className="applicant-writing-card"
-                to={`/student-hub/essays/${essay.id}${isMasters ? "?view=review" : ""}`}
+                to={`/student-hub/essays/${essay.id}`}
                 key={essay.id}
               >
                 <span className="applicant-kicker">
@@ -257,6 +263,13 @@ export function ApplicantEssayEditorPage() {
   const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId });
   const [createVersion, createVersionState] = useCreateEssayVersionMutation();
   const [update, updateState] = useUpdateStudentEssayMutation();
+  const { data: eligibleMentors = [], isError: eligibilityError, isLoading: eligibilityLoading, refetch: refetchEligibleMentors } = useGetEligibleEssayMentorsQuery(undefined, { pollingInterval: 30000, refetchOnMountOrArgChange: true });
+  const { data: reviewRequests = [] } = useGetStudentEssayReviewsQuery(essayId, { skip: !essayId, pollingInterval: 30000 });
+  const [submitReview, submitReviewState] = useSubmitEssayReviewMutation();
+  const [withdrawReview, withdrawReviewState] = useWithdrawEssayReviewMutation();
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState<string>();
+  const [reviewNote, setReviewNote] = useState("");
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<StudentEssay["status"]>("draft");
@@ -309,6 +322,34 @@ export function ApplicantEssayEditorPage() {
     () => (content.trim() ? content.trim().split(/\s+/).length : 0),
     [content],
   );
+  const openReview = reviewRequests.find((request) => ["pending", "in_review"].includes(request.status));
+  const openReviews = reviewRequests.filter((request) => ["pending", "in_review"].includes(request.status));
+  const availableMentors = eligibleMentors.filter((mentor) => !openReviews.some((request) => request.mentorUserId === mentor.id));
+  const reviewedRequests = reviewRequests.filter((request) => request.status === "feedback_ready");
+  const requestMentorReview = async () => {
+    if (!essay || !selectedMentor || !content.trim() || updateState.isLoading || savingRef.current) return;
+    const submitted = JSON.stringify({ content, title, status });
+    try {
+      await update({ id: essay.id, data: { content, title, status } }).unwrap();
+      await submitReview({ essayId: essay.id, mentorUserId: selectedMentor, note: reviewNote.trim() || undefined }).unwrap();
+      if (snapshotRef.current === submitted) {
+        setDirty(false);
+        try { localStorage.removeItem(localDraftKey); } catch { /* Server copy remains saved. */ }
+      }
+      setReviewModalOpen(false);
+      setReviewNote("");
+      setSidePanel("review");
+      message.success("Your saved draft was sent to your mentor.");
+    } catch (error: any) {
+      if (error?.status === 403) {
+        void refetchEligibleMentors();
+        setReviewModalOpen(false);
+        message.error("This mentor is no longer available for review. Your draft was saved; choose an eligible mentor if one appears.");
+      } else {
+        message.error("Could not send this draft for review. Your text remains in the editor.");
+      }
+    }
+  };
   snapshotRef.current = JSON.stringify({ content, title, status });
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
@@ -390,9 +431,10 @@ export function ApplicantEssayEditorPage() {
             .filter(Boolean)
             .join("\n\n")
         : "";
+  const latestFeedback = reviewedRequests[0]?.feedback || feedback;
   useEffect(() => {
-    if (params.get("feedback") === "mentor" && feedback) setSidePanel("review");
-  }, [params.get("feedback"), feedback]);
+    if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
+  }, [params.get("feedback"), latestFeedback]);
   return (
     <ApplicantPage
       title={isMasters && params.get("view") === "review" ? "Statement review" : undefined}
@@ -429,7 +471,7 @@ export function ApplicantEssayEditorPage() {
                 <button key={view} type="button" role="tab" aria-selected={reviewTab === view}
                   className={reviewTab === view ? "is-active" : ""} onClick={() => setReviewTab(view)}>
                   {view[0].toUpperCase() + view.slice(1)}
-                  {view === "feedback" && feedback && " · Available"}
+                  {view === "feedback" && latestFeedback && " · Available"}
                 </button>
               ))}
             </div>
@@ -439,7 +481,7 @@ export function ApplicantEssayEditorPage() {
             </div>}
             {reviewTab === "feedback" && <div className="applicant-panel applicant-statement-review__preview">
               <h2>Reviewer feedback</h2>
-              {feedback ? <p>{feedback}</p> : <p>No reviewer feedback has been shared yet.</p>}
+              {latestFeedback ? <p style={{ whiteSpace: "pre-wrap" }}>{latestFeedback}</p> : <p>No reviewer feedback has been shared yet.</p>}
             </div>}
             {reviewTab === "versions" && <div className="applicant-panel applicant-statement-review__preview">
               <h2>Saved versions</h2>
@@ -458,7 +500,12 @@ export function ApplicantEssayEditorPage() {
                 const next = new URLSearchParams(params); next.delete("view"); setParams(next);
               }}>Open draft editor</Button>
               <Button onClick={saveVersion} loading={createVersionState.isLoading}>Save new version</Button>
+              {availableMentors.length > 0 && <Button disabled={!content.trim()} onClick={() => {
+                setSelectedMentor(availableMentors[0]?.id);
+                setReviewModalOpen(true);
+              }}>{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>}
             </div>
+            {openReview && <p role="status">Version {openReview.snapshotVersion} is awaiting {openReview.mentorName || "mentor"}’s feedback.</p>}
           </div>
         ) : essay && (
           <div className="applicant-writing-desk">
@@ -481,6 +528,16 @@ export function ApplicantEssayEditorPage() {
                   type={sidePanel === "review" ? "primary" : "default"}
                   onClick={() => setSidePanel(sidePanel === "review" ? null : "review")}
                 >Review & versions</Button>
+                {availableMentors.length > 0 && (
+                  <Button
+                    type="primary"
+                    disabled={!content.trim()}
+                    onClick={() => {
+                      setSelectedMentor(availableMentors[0]?.id);
+                      setReviewModalOpen(true);
+                    }}
+                  >{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>
+                )}
               </div>
             </div>
             <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
@@ -544,6 +601,20 @@ export function ApplicantEssayEditorPage() {
                 />
                 <p>Changing the stage organizes your writing. It does not submit an application.</p>
                 <Button onClick={saveVersion} loading={createVersionState.isLoading} disabled={!content.trim()}>Save a version</Button>
+                {eligibilityError ? <Alert type="warning" message="Could not check mentor review availability" action={<Button size="small" onClick={() => void refetchEligibleMentors()}>Retry</Button>} />
+                  : !eligibilityLoading && eligibleMentors.length === 0 && <p>Keep writing and saving versions. Mentor review becomes available after you are assigned a mentor or complete a 1:1 meeting.</p>}
+                {openReviews.map((request) => <div key={request.id} role="status" className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
+                  <strong>{request.status === "in_review" ? "Being reviewed by" : "Awaiting"} {request.mentorName || "mentor"}{request.status === "pending" ? "’s review" : ""}</strong>
+                  <p>Version {request.snapshotVersion} was sent on {displayDate(request.createdAt)}. You can keep editing your draft.</p>
+                  {request.status === "pending" && <Button loading={withdrawReviewState.isLoading} onClick={async () => {
+                    try { await withdrawReview(request.id).unwrap(); message.success("Review request withdrawn."); }
+                    catch { message.error("Could not withdraw the request."); }
+                  }}>Withdraw request</Button>}
+                </div>)}
+                {reviewedRequests.map((request) => <div key={request.id} className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
+                  <strong>Feedback from {request.mentorName || "mentor"} · Version {request.snapshotVersion}</strong>
+                  <p style={{ whiteSpace: "pre-wrap" }}>{request.feedback}</p>
+                </div>)}
                 <h3>Saved versions</h3>
                 <QueryState loading={versionsQuery.isLoading} error={versionsQuery.isError} retry={versionsQuery.refetch}>
                   {(versionsQuery.data?.data ?? []).length ? (
@@ -554,13 +625,37 @@ export function ApplicantEssayEditorPage() {
                     </ol>
                   ) : <p>No versions saved yet.</p>}
                 </QueryState>
-                {feedback && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
+                {feedback && reviewedRequests.length === 0 && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
               </>}
             </aside>}
             </div>
           </div>
         )}
       </QueryState>
+      <Modal
+        title="Submit this draft for mentor review"
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        onOk={() => { void requestMentorReview(); }}
+        okText="Send saved version"
+        okButtonProps={{ disabled: !selectedMentor || !content.trim() || updateState.isLoading }}
+        confirmLoading={submitReviewState.isLoading || updateState.isLoading}
+      >
+        <p>Your current draft will be saved as a version. Your mentor will review that version while you can keep writing.</p>
+        <label htmlFor="essay-review-mentor">Mentor</label>
+        <Select
+          id="essay-review-mentor"
+          style={{ width: "100%", marginTop: 8 }}
+          value={selectedMentor}
+          onChange={setSelectedMentor}
+          options={availableMentors.map((mentor) => ({
+            value: mentor.id,
+            label: `${mentor.name} · ${mentor.source === "full_support" ? "Assigned mentor" : "1:1 mentor"}`,
+          }))}
+        />
+        <label htmlFor="essay-review-note" style={{ display: "block", marginTop: 16 }}>Note for your mentor (optional)</label>
+        <Input.TextArea id="essay-review-note" value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} maxLength={2000} rows={3} />
+      </Modal>
     </ApplicantPage>
   );
 }

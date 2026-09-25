@@ -17,6 +17,7 @@ import {
   useUploadDocumentVersionMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
+import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
 
 const saveBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
@@ -36,6 +37,8 @@ export default function ApplicantDocumentReviewPage() {
   const [downloadVersion] = useDownloadDocumentVersionMutation();
   const [uploadVersion, uploadState] = useUploadDocumentVersionMutation();
   const [updateAccess, accessState] = useUpdateDocumentAccessMutation();
+  const { data: eligibleMentors = [], isError: mentorCheckError, refetch: refetchMentors } = useGetEligibleEssayMentorsQuery(undefined, { refetchOnMountOrArgChange: true });
+  const hasAssignedMentor = eligibleMentors.some((mentor) => mentor.source === "full_support");
   const [tab, setTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [previewError, setPreviewError] = useState(false);
@@ -154,9 +157,9 @@ export default function ApplicantDocumentReviewPage() {
         </div>}
         <div className="applicant-panel applicant-document-review__access">
           <div><h2>{record.legacyPublic ? "Legacy file access" : reviewerAccess ? "Shared with assigned mentor" : record.privateStorage ? "Private by default" : "Reviewer access"}</h2><p>{record.legacyPublic ? "Upload a new private version before changing reviewer access." : reviewerAccess ? "Your assigned mentor can review this file. You can revoke access at any time." : "This file is not shared with a university or mentor through this workspace."}</p></div>
-          <Popconfirm title={reviewerAccess ? "Remove reviewer access?" : "Share with your assigned mentor?"} description={reviewerAccess ? "Your mentor will no longer be able to open this file." : "Only your current assigned mentor will gain access to this file."} onConfirm={toggleAccess}>
+          {(reviewerAccess || hasAssignedMentor) ? <Popconfirm title={reviewerAccess ? "Remove reviewer access?" : "Share with your assigned mentor?"} description={reviewerAccess ? "Your mentor will no longer be able to open this file." : "Only your current assigned mentor will gain access to this file."} onConfirm={toggleAccess}>
             <Button disabled={record.legacyPublic && !reviewerAccess} loading={accessState.isLoading}>{reviewerAccess ? "Remove access" : "Share with mentor"}</Button>
-          </Popconfirm>
+          </Popconfirm> : mentorCheckError ? <Alert type="warning" message="Could not check mentor access" action={<Button size="small" onClick={() => void refetchMentors()}>Retry</Button>} /> : <span>Sharing is available when a Full Support mentor is assigned.</span>}
         </div>
       </>}
     </QueryState>

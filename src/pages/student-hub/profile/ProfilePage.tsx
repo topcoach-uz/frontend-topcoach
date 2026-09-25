@@ -71,7 +71,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // derivation, so all three surfaces agree on when to show the
   // "unlock unlimited matches" edge, see useMajorMatchPrompt.ts.
   const mm = useMajorMatchPromptState();
-  const majorMatchStudentProfileId = !isReadOnly ? mm.studentProfileId : undefined;
+  const majorMatchStudentProfileId = !isReadOnly && !isMasters ? mm.studentProfileId : undefined;
 
   // The CTA below navigates STRAIGHT to the assessment. The old
   // pre-assessment collect modal was removed — MM3 asks these fields itself
@@ -84,7 +84,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // studentProfileId), so RTK Query serves this from the same cache entry
   // with no extra network call.
   const { data: majorMatchStatus } = useGetMajorMatchStatusQuery(majorMatchStudentProfileId ?? '', {
-    skip: isReadOnly || !majorMatchStudentProfileId,
+    skip: isReadOnly || isMasters || !majorMatchStudentProfileId,
   });
 
   // v2 result available → the normal "taken" display. A student who only
@@ -276,7 +276,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const isApplicationFlow = activeTab === 'college-lists' && ['new', 'edit'].includes(searchParams.get('applicationFlow') ?? '');
   const pageTitle = isReadOnly
     ? t('studentHub.profile.counselorTitle')
-    : t('studentHub.profile.myStudentProfile');
+    : isMasters
+      ? t('studentHub.profile.myGraduateProfile', 'My Graduate Profile')
+      : t('studentHub.profile.myStudentProfile');
   const pageSubtitle = isReadOnly
     ? t('studentHub.profile.counselorSubtitle')
     : t(isMasters
@@ -307,15 +309,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
         </div>
       </header>}
 
-      {/* Major Match status, own account only, hidden in the counselor's
-          read-only embed of this page. Always renders something: a
+      {/* Major Match status for undergraduate applicants only, hidden in the
+          counselor's read-only embed. Always renders something: a
           skeleton while genuinely loading, a pitch+CTA when not taken, a
           dimension + primary-major summary when a v2 result exists, a
           distinct notice for a legacy-only completer (Stage 5 cutover,
           see the `majorMatchLegacyOnly` comment above), and never a blank
           box (see states 1-5 in the task spec this card was originally
           built for). */}
-      {!isReadOnly && !isApplicationFlow && (
+      {!isReadOnly && !isMasters && !isApplicationFlow && (
         <aside className="pf-rail">
           <div className="profile-major-match-card__body">
             <div className="profile-major-match-card__text">

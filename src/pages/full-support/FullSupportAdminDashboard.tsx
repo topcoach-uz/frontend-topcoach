@@ -59,8 +59,9 @@ function assignmentError(error: unknown): string {
 }
 
 function getTaskStatus(r: TaskDto): string {
-  if (r.hasFeedback) return 'Reviewed';
-  if (r.submissionText) return 'Needs review';
+  if (r.status === 'approved') return 'Reviewed';
+  if (r.status === 'revision_requested') return 'Revision requested';
+  if (r.status === 'submitted') return 'Needs review';
   return 'Pending';
 }
 

@@ -39,8 +39,9 @@ import { ApplicantPage } from '../applicant/ApplicantPage';
 import '../../full-support/full-support.scss';
 
 function getTaskStatus(r: TaskDto): string {
-  if (r.hasFeedback) return 'Reviewed';
-  if (r.submissionText) return 'Needs review';
+  if (r.status === 'approved') return 'Approved';
+  if (r.status === 'revision_requested') return 'Revision requested';
+  if (r.status === 'submitted') return 'Needs review';
   return 'Pending';
 }
 
@@ -53,12 +54,14 @@ function formatDeadline(isoDate: string): string {
 function statusModifier(status: string): string {
   switch (status) {
     case 'Reviewed':
+    case 'Approved':
     case 'Done':
       return 'fseditorial__pill--done';
     case 'Needs review':
     case 'In-Process':
       return 'fseditorial__pill--progress';
     case 'Submitted':
+    case 'Revision requested':
       return 'fseditorial__pill--submitted';
     case 'Pending':
     default:
@@ -414,7 +417,11 @@ export default function FullSupportStudentPage() {
                     <span className={`fseditorial__pill ${statusModifier(status)}`}>{status}</span>
                   </span>
                   <span className="fseditorial__table-cell">
-                    {r.hasFeedback ? (
+                    {r.status === 'revision_requested' ? (
+                      <button type="button" className="fseditorial__link" onClick={() => { setSubmitModalTask(r); setSubmitComment(''); setSubmitFileList([]); }}>
+                        <UploadIcon size={14} /> Submit revision
+                      </button>
+                    ) : r.hasFeedback ? (
                       <button
                         type="button"
                         className="fseditorial__link"
@@ -616,6 +623,8 @@ export default function FullSupportStudentPage() {
       >
         {submitModalTask && (
           <>
+            {submitModalTask.description && <p style={{ marginBottom: 12 }}><strong>Instructions:</strong> {submitModalTask.description}</p>}
+            {submitModalTask.status === 'revision_requested' && submitModalTask.feedback && <Alert type="info" showIcon message="Your mentor requested a revision" description={submitModalTask.feedback} style={{ marginBottom: 16 }} />}
             <p style={{ color: '#6b6258', marginBottom: 12 }}>
               Upload your work and add an optional comment for your mentor.
             </p>

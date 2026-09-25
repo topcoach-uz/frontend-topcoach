@@ -33,6 +33,7 @@ import {
   RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
+import MentorAssignedTasks from "./MentorAssignedTasks";
 
 type TaskForm = Omit<CreateApplicationTaskRequest, "dueDate"> & {
   dueDate?: dayjs.Dayjs;
@@ -108,9 +109,11 @@ export default function ApplicantTasksPage() {
   }, [action, taskId, editingQuery.data?.data?.id]);
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    value === "all" || (key === "status" && value === "open") || (key === "sort" && value === "due")
-      ? next.delete(key)
-      : next.set(key, value);
+    if (value === "all" || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
+      next.delete(key);
+    } else {
+      next.set(key, value);
+    }
     setParams(next);
   };
   const open = (task?: ApplicationTask) => {
@@ -128,7 +131,8 @@ export default function ApplicantTasksPage() {
     );
     const next = new URLSearchParams(params);
     next.set("action", task ? "edit" : "new");
-    task ? next.set("task", task.id) : next.delete("task");
+    if (task) next.set("task", task.id);
+    else next.delete("task");
     setParams(next);
   };
   const close = () => {
@@ -193,6 +197,8 @@ export default function ApplicantTasksPage() {
       }
     >
       <Breadcrumb>Tasks</Breadcrumb>
+      <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />
+      <h2>My tasks</h2>
       <div className="applicant-filters applicant-panel">
         <label>
           Status

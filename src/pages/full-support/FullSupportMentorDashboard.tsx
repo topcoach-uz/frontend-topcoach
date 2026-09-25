@@ -43,8 +43,9 @@ import './full-support.scss';
 
 
 function getTaskStatus(r: TaskDto): string {
-  if (r.hasFeedback) return 'Reviewed';
-  if (r.submissionText) return 'Needs review';
+  if (r.status === 'approved') return 'Reviewed';
+  if (r.status === 'revision_requested') return 'Revision requested';
+  if (r.status === 'submitted') return 'Needs review';
   return 'Pending';
 }
 
@@ -296,14 +297,14 @@ export default function FullSupportMentorDashboard() {
       width: 320,
       render: (_: unknown, r: TaskDto) => (
         <Space size="middle" wrap align="center">
-          {r.submissionText ? (
+          {(r.submittedAt || r.submissionText || (r.submissionFileUrls?.length ?? 0) > 0) ? (
             <>
               <Button type="link" size="small" icon={<Eye size={16} />} onClick={() => setViewSubmissionTask(r)}>
                 View submission
               </Button>
-              <Button type="link" size="small" icon={<Pencil size={16} />} onClick={() => openFeedbackModal(r)}>
-                Feedback
-              </Button>
+              {r.status === 'submitted' && <Button type="link" size="small" icon={<Pencil size={16} />} onClick={() => openFeedbackModal(r)}>
+                Review
+              </Button>}
             </>
           ) : (
             <span style={{ color: '#999', fontSize: 13 }}>Not submitted</span>

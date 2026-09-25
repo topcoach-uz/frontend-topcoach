@@ -138,10 +138,12 @@ function ApplicantNavigation({
             { key: 'tasks', to: applicantLinks.tasks },
           ]
         : [
-            { key: 'allApplications', to: applicantLinks.applications },
+            { key: 'exploreDirection', to: applicantLinks.studyDirection },
+            { key: 'explorePrograms', to: applicantLinks.universities },
+            { key: 'shortlist', to: applicantLinks.applications },
+            { key: 'essays', to: applicantLinks.essays },
             { key: 'documents', to: applicantLinks.documents },
-            { key: 'statements', to: applicantLinks.essays },
-            { key: 'studyProfile', to: applicantLinks.profile },
+            { key: 'tasks', to: applicantLinks.tasks },
           ],
     },
     {

@@ -22,6 +22,7 @@ export const applicantLinks = {
   documents: '/student-hub/documents',
   essays: '/student-hub/essays',
   majorMatch: '/student-hub/psychometric-assessment',
+  studyDirection: '/student-hub/study-direction',
   learning: '/student-hub?section=my-learning',
   admissions: '/student-hub?section=admissions-program',
   fullSupport: '/student-hub?section=others&target=full-support',

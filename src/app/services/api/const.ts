@@ -30,6 +30,7 @@ export const apiTagTypes = [
   'StudentEssays',
   'EssayTemplates',
   'EssayFeedback',
+  'EssayReviews',
   'AiConsultationSessions',
   'Notifications',
   'ProgressTracking',

@@ -131,9 +131,7 @@ export default function ApplicantDocumentsPage() {
   return (
     <ApplicantPage
       title="Your documents"
-      subtitle={isMasters
-        ? "Keep your graduate application files together. Each program may ask for a different set."
-        : "Keep reusable application files together."}
+      subtitle="Keep reusable application files together."
       actions={
         <Button type="primary" icon={<Plus size={16} />} onClick={open}>
           Add document
@@ -182,9 +180,7 @@ export default function ApplicantDocumentsPage() {
             <p>
               {search || tab !== "all"
                 ? "Try another search or choose All files to see your library."
-                : isMasters
-                ? "Add your CV, university transcript or diploma, statement, and references as you prepare them."
-                : "Add a transcript, test score or other reusable application file."}
+                : "Add a transcript, test score, CV or other reusable application file."}
             </p>
           </div>
         ) : (
@@ -243,12 +239,6 @@ export default function ApplicantDocumentsPage() {
           </div>
         )}
       </QueryState>
-      {isMasters && (
-        <div className="applicant-document-privacy" role="note">
-          <Info size={18} aria-hidden />
-          <div><strong>New files are private by default</strong><p>Files in this library are not sent to universities. Reviewer access is controlled on each document. Older uploads marked “Legacy file” may need a new private version.</p></div>
-        </div>
-      )}
       <Modal
         rootClassName="applicant-modal"
         title="Add document"

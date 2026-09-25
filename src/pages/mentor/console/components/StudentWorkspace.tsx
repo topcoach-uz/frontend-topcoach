@@ -65,6 +65,7 @@ import { McPill, type McPillVariant } from './McPill';
 import { McStat } from './McStat';
 import { formatDate, formatDateTime } from '../utils';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
+import { hostName } from 'src/app/services/api/const';
 import './StudentWorkspace.scss';
 
 const { Text } = Typography;
@@ -95,10 +96,8 @@ type TaskScope = 'open' | 'awaiting-review' | 'done';
 type MoreView = 'milestones' | 'research' | 'curriculum';
 
 function taskStatus(t: TaskDto): TaskScope {
-  if (t.hasFeedback) return 'done';
-  if (t.submissionText || (t.submissionFileUrls && t.submissionFileUrls.length > 0)) {
-    return 'awaiting-review';
-  }
+  if (t.status === 'approved') return 'done';
+  if (t.status === 'submitted') return 'awaiting-review';
   return 'open';
 }
 
@@ -207,9 +206,10 @@ export default function StudentWorkspace({
 
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
+  const [quickTaskDescription, setQuickTaskDescription] = useState('');
   const [quickTaskDeadline, setQuickTaskDeadline] = useState<Dayjs | null>(null);
   const [feedbackTask, setFeedbackTask] = useState<TaskDto | null>(null);
-  const [feedbackForm] = Form.useForm<{ feedback: string }>();
+  const [feedbackForm] = Form.useForm<{ feedback: string; decision: 'approved' | 'revision_requested' }>();
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
@@ -274,6 +274,9 @@ export default function StudentWorkspace({
         .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()),
     [studentBookings],
   );
+  const canAssignTask = isFullSupport !== false || studentBookings.some(
+    (booking) => booking.source === 'platform' && (booking.status === 'completed' || booking.status === 'report-due'),
+  );
   const researchForStudent = useMemo(
     () => (inbox ?? []).filter((s) => s.studentId === studentId),
     [inbox, studentId],
@@ -307,6 +310,7 @@ export default function StudentWorkspace({
   const [deletePipeline] = useDeleteMentorPipelineRowMutation();
 
   const submitQuickTask = async () => {
+    if (!canAssignTask) { message.warning('You can assign tasks after your first completed 1:1 meeting.'); return; }
     const title = quickTaskTitle.trim();
     if (!title) {
       message.warning('Give the task a title');
@@ -319,12 +323,14 @@ export default function StudentWorkspace({
     await createTask({
       studentUserId: studentId,
       task: title,
+      description: quickTaskDescription.trim() || undefined,
       deadline: quickTaskDeadline.toISOString(),
     })
       .unwrap()
       .then(() => {
         message.success('Task assigned');
         setQuickTaskTitle('');
+        setQuickTaskDescription('');
         setQuickTaskDeadline(null);
       })
       .catch(() => message.error('Could not assign task'));
@@ -336,6 +342,7 @@ export default function StudentWorkspace({
     await updateFeedback({
       id: feedbackTask.id,
       feedback: values.feedback,
+      decision: values.decision,
       feedbackFileUrls: feedbackTask.feedbackFileUrls,
     })
       .unwrap()
@@ -399,7 +406,7 @@ export default function StudentWorkspace({
 
   const openFeedbackModal = (t: TaskDto) => {
     setFeedbackTask(t);
-    feedbackForm.setFieldsValue({ feedback: t.feedback || '' });
+    feedbackForm.setFieldsValue({ feedback: '', decision: 'approved' });
   };
 
   const sectionHead = (
@@ -426,7 +433,7 @@ export default function StudentWorkspace({
     const overdue =
       !done && t.deadline && new Date(t.deadline).getTime() < Date.now();
     const expanded = expandedTaskId === t.id;
-    const hasDetail = !!(t.submissionText || t.feedback);
+    const hasDetail = !!(t.description || t.submissionText || t.feedback);
 
     return (
       <div key={t.id} className={`mc-ws-task${done ? ' mc-ws-task--done' : ''}`}>
@@ -446,6 +453,7 @@ export default function StudentWorkspace({
           >
             <span className="mc-ws-task-title">{t.task}</span>
             {s === 'awaiting-review' && <McPill variant="warning">Awaiting review</McPill>}
+            {t.status === 'revision_requested' && <McPill variant="warning">Revision requested</McPill>}
           </button>
 
           <span className={`mc-ws-task-due${overdue ? ' mc-ws-task-due--overdue' : ''}`}>
@@ -456,11 +464,7 @@ export default function StudentWorkspace({
             <Button type="primary" size="small" onClick={() => openFeedbackModal(t)}>
               Review
             </Button>
-          ) : (
-            <Button size="small" type="text" onClick={() => openFeedbackModal(t)}>
-              {done ? 'Edit feedback' : 'Feedback'}
-            </Button>
-          )}
+          ) : null}
 
           <Popconfirm
             title="Delete this task?"
@@ -479,6 +483,7 @@ export default function StudentWorkspace({
 
         {expanded && hasDetail && (
           <div className="mc-ws-task-detail">
+            {t.description && <div className="mc-ws-task-detail-text">Instructions: {t.description}</div>}
             {t.submissionText ? (
               <>
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -674,12 +679,18 @@ export default function StudentWorkspace({
             ) : (
               <div className="mc-ws-tasklist">{tasks.map(renderTaskRow)}</div>
             )}
-            <div className="mc-ws-task-add">
+            {!canAssignTask && !loadingBookings && <div className="mc-ws-empty">Task assignment becomes available after your first completed 1:1 meeting with this student.</div>}
+            {canAssignTask && <div className="mc-ws-task-add">
               <Input
                 placeholder="New task title…"
                 value={quickTaskTitle}
                 onChange={(e) => setQuickTaskTitle(e.target.value)}
                 onPressEnter={submitQuickTask}
+              />
+              <Input
+                placeholder="Instructions for the student (optional)"
+                value={quickTaskDescription}
+                onChange={(e) => setQuickTaskDescription(e.target.value)}
               />
               <DatePicker
                 placeholder="Due date"
@@ -694,7 +705,7 @@ export default function StudentWorkspace({
               >
                 Add task
               </Button>
-            </div>
+            </div>}
           </div>
         </>
       ),
@@ -988,12 +999,12 @@ export default function StudentWorkspace({
       />
 
       <Modal
-        title={feedbackTask?.hasFeedback ? 'Edit feedback' : 'Give feedback'}
+        title="Review student work"
         open={!!feedbackTask}
         onCancel={() => setFeedbackTask(null)}
         onOk={submitFeedback}
         confirmLoading={savingFeedback}
-        okText="Save"
+        okText="Send review"
         destroyOnClose
         width={560}
       >
@@ -1022,7 +1033,15 @@ export default function StudentWorkspace({
                 </div>
               </>
             ) : null}
+            {feedbackTask.submissionFileUrls?.map((file) => (
+              <a key={file.url} href={`${hostName}${file.url}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 8 }}>
+                {file.fileName}
+              </a>
+            ))}
             <Form form={feedbackForm} layout="vertical">
+              <Form.Item name="decision" label="Decision" rules={[{ required: true }]}>
+                <Select options={[{ value: 'approved', label: 'Approve task' }, { value: 'revision_requested', label: 'Request revision' }]} />
+              </Form.Item>
               <Form.Item name="feedback" label="Feedback" rules={[{ required: true, message: 'Write your feedback' }]}>
                 <Input.TextArea rows={5} placeholder="What went well, what to improve…" />
               </Form.Item>

@@ -21,6 +21,7 @@ import {
 import { useMentorConsole } from './MentorConsoleContext';
 import { useMentorBookings, useMentorMentees } from './sessionSources';
 import { avatarStyleForId, initialsFromName } from './utils';
+import { useGetMentorEssayReviewsQuery } from 'src/app/services/student-hub/essayReviewApi';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
@@ -28,6 +29,7 @@ type NavKey =
   | 'schedule'
   | 'availability'
   | 'students'
+  | 'essay-reviews'
   | 'feed'
   | 'profile'
   | 'referrals'
@@ -94,6 +96,8 @@ export default function MentorConsoleLayout() {
   });
   const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor });
+  const { data: essayReviewRequests = [] } = useGetMentorEssayReviewsQuery(undefined, { skip: !isMentor });
+  const pendingEssayReviews = essayReviewRequests.filter((request) => request.status === 'pending' || request.status === 'in_review').length;
   const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
 
@@ -166,6 +170,13 @@ export default function MentorConsoleLayout() {
         icon: <MessageSquare size={18} strokeWidth={1.75} />,
         path: '/mentor/feed',
       },
+      {
+        key: 'essay-reviews',
+        label: 'Essay reviews',
+        icon: <ClipboardCheck size={18} strokeWidth={1.75} />,
+        path: '/mentor/essay-reviews',
+        badge: pendingEssayReviews > 0 ? String(pendingEssayReviews) : null,
+      },
     ];
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
@@ -212,7 +223,7 @@ export default function MentorConsoleLayout() {
       { id: 'overview', label: 'Overview', items: overviewItems },
       { id: 'account', label: 'Account', items: accountItems },
     ];
-  }, [managementRole, reportDueCount]);
+  }, [managementRole, reportDueCount, pendingEssayReviews]);
 
   const activeStudentId = useMemo(() => {
     const m = location.pathname.match(/^\/mentor\/students\/([^/]+)/);
@@ -223,6 +234,7 @@ export default function MentorConsoleLayout() {
     const p = location.pathname;
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
+    if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
     // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (
       p.startsWith('/mentor/dashboard') ||

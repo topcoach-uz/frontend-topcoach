@@ -23,6 +23,7 @@ const ApplicantEssayEditorPage = lazy(() => import('./applicant/ApplicantEssaysP
 const ApplicantUniversitiesPage = lazy(() => import('./applicant/ApplicantUniversitiesPage'));
 const ApplicantUniversityDetailPage = lazy(() => import('./applicant/ApplicantUniversitiesPage').then(module => ({ default: module.ApplicantUniversityDetailPage })));
 const ApplicantDegreeDetailPage = lazy(() => import('./applicant/ApplicantDegreeDetailPage'));
+const ApplicantStudyDirectionPage = lazy(() => import('./applicant/ApplicantStudyDirectionPage'));
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
 const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
@@ -191,6 +192,7 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/universities/:universityId/degrees/:degreeSlug" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDegreeDetailPage />) : <Navigate to="/universities" replace />} />
           <Route path="/universities/:universityId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversityDetailPage />) : <Navigate to="/universities" replace />} />
           <Route path="/universities" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversitiesPage />) : <Navigate to="/universities" replace />} />
+          <Route path="/study-direction" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantStudyDirectionPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=academic" replace />} />
 
           {/* Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover).
               Old URL kept per plan §6 Q10 — deep links in the wild — but now

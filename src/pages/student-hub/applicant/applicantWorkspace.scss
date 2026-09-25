@@ -111,6 +111,10 @@
   font-size: 15px;
   cursor: pointer;
 }
+.applicant-shell .applicant-nav-link:focus-visible,
+.applicant-drawer .applicant-nav-link:focus-visible {
+  outline-offset: -2px;
+}
 .applicant-nav-link span {
   flex: 1;
 }

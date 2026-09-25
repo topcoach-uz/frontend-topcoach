@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
-import { ArrowRight, Plus, ClipboardList } from "lucide-react";
+import { ArrowRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
 import {
   Link,
   useNavigate,
@@ -49,6 +49,7 @@ export default function ApplicantApplicationsPage() {
     comparedIds.includes(app.id),
   );
   const compareMode = listParams.get("view") === "compare";
+  const shortlistMode = isMasters && listParams.get("view") === "shortlist";
   const toggleComparison = (id: string, checked: boolean) => {
     const next = new URLSearchParams(listParams);
     const ids = checked
@@ -211,11 +212,35 @@ export default function ApplicantApplicationsPage() {
       </ApplicantPage>
     );
   }
+  if (shortlistMode) {
+    return (
+      <ApplicantPage
+        title="Your shortlist"
+        subtitle="Programs you have saved to consider. Open a workspace when you are ready to plan an application."
+        actions={<Button onClick={() => navigate("/student-hub/applications")}>View applications</Button>}
+      >
+        <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
+          {saved.length ? (
+            <div className="applicant-panel applicant-list">{saved.map(row)}</div>
+          ) : (
+            <div className="applicant-panel applicant-empty">
+              <Building2 size={36} />
+              <h2>Your shortlist is empty.</h2>
+              <p>Explore programs and save the ones you want to revisit.</p>
+              <Button type="primary" onClick={() => navigate("/student-hub/universities")}>Explore programs <ArrowRight size={16} /></Button>
+            </div>
+          )}
+        </QueryState>
+      </ApplicantPage>
+    );
+  }
   return (
     <ApplicantPage
       title={isMasters ? "Your graduate programs" : "Your applications"}
       subtitle={isMasters ? "Track each program’s requirements, deadlines and materials in one place." : "Keep your next steps, materials and progress in one place."}
-      actions={applications.length > 0 ? (
+      actions={isMasters && !applications.length ? (
+        <Button onClick={() => navigate("/student-hub/applications?view=shortlist")}>View shortlist <ArrowRight size={16} /></Button>
+      ) : applications.length > 0 ? (
         <Button
           onClick={() => navigate("/student-hub/applications/new")}
           icon={<Plus size={16} />}
@@ -224,13 +249,15 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
-      <Breadcrumb>{isMasters ? "Programs" : "College List"}</Breadcrumb>
+      {!isMasters && <Breadcrumb>College List</Breadcrumb>}
       <QueryState
         loading={query.isLoading}
         error={query.isError}
         retry={query.refetch}
       >
-        {!applications.length ? (
+        {!applications.length && isMasters ? (
+          <MasterApplicationsEmpty />
+        ) : !applications.length ? (
           <div className="applicant-panel applicant-empty">
             <ClipboardList size={36} />
             <h2>{isMasters ? "Your graduate program list starts here." : "Your applications start here."}</h2>
@@ -318,6 +345,56 @@ export default function ApplicantApplicationsPage() {
         )}
       </QueryState>
     </ApplicantPage>
+  );
+}
+
+function MasterApplicationsEmpty() {
+  return (
+    <div className="applicant-master-empty">
+      <section className="applicant-master-empty__hero" aria-labelledby="applications-empty-title">
+        <div className="applicant-master-empty__hero-copy">
+          <span className="applicant-master-empty__eyebrow">Your application workspace</span>
+          <h2 id="applications-empty-title">No applications yet</h2>
+          <p>Choose a university to create your first workspace.<br />Add your program and plan what comes next.</p>
+          <div className="applicant-master-empty__actions">
+            <Link className="applicant-master-empty__primary" to="/student-hub/applications/new">Start an application <ArrowRight size={17} /></Link>
+            <Link className="applicant-master-empty__secondary" to="/student-hub/universities">Explore programs <ArrowRight size={17} /></Link>
+          </div>
+        </div>
+        <div className="applicant-master-empty__illustration" aria-hidden="true">
+          <span className="applicant-master-empty__illustration-halo" />
+          <span className="applicant-master-empty__sheet applicant-master-empty__sheet--back"><span /><span /><span /></span>
+          <span className="applicant-master-empty__sheet applicant-master-empty__sheet--front"><span /><span /><span /></span>
+          <span className="applicant-master-empty__folder"><FileText size={24} /><span><i /><i /></span></span>
+          <span className="applicant-master-empty__plus"><Plus size={27} strokeWidth={1.8} /></span>
+          <small>A workspace for every application</small>
+        </div>
+      </section>
+      <section className="applicant-master-empty__steps" aria-labelledby="applications-steps-title">
+        <h2 id="applications-steps-title">From your first choice to your next step</h2>
+        <div className="applicant-master-empty__step-grid">
+          <article className="applicant-master-empty__step-card">
+            <span className="applicant-master-empty__step-meta"><span className="applicant-master-empty__step-icon applicant-master-empty__step-icon--choice"><Building2 size={18} /></span>01 · Choose</span>
+            <h3>Choose your university</h3>
+            <p>Start a workspace for the university and program you want to apply to.</p>
+          </article>
+          <article className="applicant-master-empty__step-card">
+            <span className="applicant-master-empty__step-meta"><span className="applicant-master-empty__step-icon applicant-master-empty__step-icon--prepare"><FileText size={18} /></span>02 · Prepare</span>
+            <h3>Prepare your materials</h3>
+            <p>Keep your drafts, documents and application tasks together.</p>
+          </article>
+          <article className="applicant-master-empty__step-card">
+            <span className="applicant-master-empty__step-meta"><span className="applicant-master-empty__step-icon applicant-master-empty__step-icon--track"><ListChecks size={18} /></span>03 · Track</span>
+            <h3>Track your next steps</h3>
+            <p>Record deadlines and update your application status as you go.</p>
+          </article>
+        </div>
+      </section>
+      <aside className="applicant-master-empty__notice">
+        <span className="applicant-master-empty__notice-icon"><ExternalLink size={19} /></span>
+        <span><strong>Prepare here. Submit through the university.</strong><small>Creating a workspace does not send an application. Use the university’s official platform to submit.</small></span>
+      </aside>
+    </div>
   );
 }
 

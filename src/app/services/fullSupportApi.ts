@@ -56,6 +56,12 @@ export type TaskDto = {
   task: string;
   student?: string;
   studentUserId: string;
+  mentorName?: string;
+  description?: string;
+  status: 'assigned' | 'submitted' | 'revision_requested' | 'approved';
+  submittedAt?: string;
+  reviewedAt?: string;
+  reviewHistory: Array<{ decision: 'approved' | 'revision_requested'; feedback: string; at: string; submissionText?: string; submissionFileUrls?: { fileName: string; url: string }[]; feedbackFileUrls?: { fileName: string; url: string }[]; submittedAt?: string }>;
   deadline: string;
   hasFeedback: boolean;
   feedback?: string;
@@ -322,12 +328,12 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     updateMentorTaskFeedback: builder.mutation<
       { data: unknown; success: boolean },
-      { id: string; feedback: string; feedbackFileUrls?: { fileName: string; url: string }[] }
+      { id: string; feedback: string; decision?: 'approved' | 'revision_requested'; feedbackFileUrls?: { fileName: string; url: string }[] }
     >({
-      query: ({ id, feedback, feedbackFileUrls }) => ({
+      query: ({ id, feedback, decision, feedbackFileUrls }) => ({
         url: `/full-support/mentor/tasks/${id}`,
         method: 'PATCH',
-        body: { feedback, feedbackFileUrls },
+        body: { feedback, decision, feedbackFileUrls },
       }),
       invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks'],
     }),
@@ -336,7 +342,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         url: `/full-support/mentor/tasks/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['FullSupportMentorTasks'],
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks'],
     }),
     getMenteeTasks: builder.query<{ data: TaskDto[] }, void>({
       query: () => ({ url: '/full-support/mentee/tasks', method: 'GET' }),
@@ -377,7 +383,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ['FullSupportMenteeTasks'],
+      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks'],
     }),
     submitMenteeTask: builder.mutation<
       { data: unknown; success: boolean },
@@ -388,7 +394,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body: { submissionText, submissionFileUrls },
       }),
-      invalidatesTags: ['FullSupportMenteeTasks'],
+      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks'],
     }),
     uploadMentorFeedbackFile: builder.mutation<
       { data: { fileName: string; url: string } },
