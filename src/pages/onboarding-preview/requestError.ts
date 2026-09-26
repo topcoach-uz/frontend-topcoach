@@ -4,14 +4,23 @@ type ValidationError = {
   children?: unknown;
 };
 
+function readableValidationMessage(property: unknown, message: string): string {
+  if (!/regular expression|must match\s*\//i.test(message)) return message;
+  if (property === 'startDate') return 'Enter the start date as Month YYYY, for example September 2021.';
+  if (property === 'endDate') return 'Enter the end date as Month YYYY, for example June 2025.';
+  if (property === 'linkedin') return 'Enter a full LinkedIn profile URL beginning with https://linkedin.com/.';
+  return 'Check the format of this field and try again.';
+}
+
 function validationMessages(value: unknown): string[] {
-  if (typeof value === 'string') return [value];
+  if (typeof value === 'string') return [readableValidationMessage(undefined, value)];
   if (Array.isArray(value)) return value.flatMap(validationMessages);
   if (!value || typeof value !== 'object') return [];
 
   const error = value as ValidationError;
   const constraints = error.constraints && typeof error.constraints === 'object'
     ? Object.values(error.constraints).filter((message): message is string => typeof message === 'string')
+      .map(message => readableValidationMessage(error.property, message))
     : [];
   return [...constraints, ...validationMessages(error.children)];
 }

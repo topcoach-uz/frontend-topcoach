@@ -12,4 +12,10 @@ describe('onboardingRequestError', () => {
     expect(onboardingRequestError({ status: 500, data: { message: [{ property: 'field' }] } }).message)
       .toBe('We could not save this step. Your answers are still here; please retry.');
   });
+
+  it('hides the backend regular expression for invalid mentor dates', () => {
+    expect(onboardingRequestError({ status: 400, data: { message: [
+      { property: 'startDate', constraints: { matches: 'startDate must match /\\d{4}-(?:0[1-9]|1[0-2])$/ regular expression' } },
+    ] } }).message).toBe('Enter the start date as Month YYYY, for example September 2021.');
+  });
 });
