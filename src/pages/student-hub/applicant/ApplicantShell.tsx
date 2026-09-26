@@ -342,7 +342,7 @@ function ApplicantNavigation({
         )}
         {group(groups[0])}
         {degree === 'bachelor' && group(groups[1])}
-        {navLink(
+        {degree === 'bachelor' && navLink(
           applicantLinks.fullSupport,
           t('applicant.fullSupport'),
           selected(applicantLinks.fullSupport),
