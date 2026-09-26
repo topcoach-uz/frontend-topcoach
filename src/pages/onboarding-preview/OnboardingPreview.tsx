@@ -21,6 +21,7 @@ import { useUnlinkTelegramMutation, useVerifyTelegramCodeMutation } from 'src/ap
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { baseUrl } from 'src/app/services/api/const';
 import { buildStepMutation, hydrateProductionState, mutationEnvelope, nextAfterSkip } from 'src/pages/onboarding/productionContract';
+import { onboardingRequestError } from './requestError';
 import './preview.scss';
 
 const LANGUAGES = ['English', 'O‘zbek', 'Русский', 'Qoraqalpoq'];
@@ -214,14 +215,9 @@ export default function OnboardingPreview({ mode = 'preview' }: OnboardingFlowPr
     };
   }
   function requestError(error: unknown) {
-    const problem = error as { status?: number | string; data?: { message?: string | string[] } };
-    if (problem.status === 409) {
-      setConflict(true);
-      setNotice('This onboarding was updated in another tab. Reload the saved version before continuing.');
-      return;
-    }
-    const message = Array.isArray(problem.data?.message) ? problem.data?.message[0] : problem.data?.message;
-    setNotice(problem.status === 'FETCH_ERROR' ? 'You appear to be offline. Your answers are still here—retry when you are connected.' : message || 'We could not save this step. Your answers are still here; please retry.');
+    const problem = onboardingRequestError(error);
+    if (problem.conflict) setConflict(true);
+    setNotice(problem.message);
   }
   async function reloadConflict() {
     setBusy(true);
