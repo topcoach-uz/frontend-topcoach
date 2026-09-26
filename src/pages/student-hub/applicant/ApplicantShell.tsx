@@ -341,7 +341,7 @@ function ApplicantNavigation({
           <House size={20} aria-hidden />,
         )}
         {group(groups[0])}
-        {group(groups[1])}
+        {!isLoading && degree !== 'master' && group(groups[1])}
         {navLink(
           applicantLinks.fullSupport,
           t('applicant.fullSupport'),
