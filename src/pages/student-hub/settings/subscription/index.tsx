@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Skeleton, message } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
+import { hasActiveCommunityOrgMembership } from 'src/lib/communityOrgAccess';
 import {
   useChangeSubscriptionPlanMutation,
   useGetBillingHistoryQuery,
@@ -76,6 +78,7 @@ export default function SubscriptionTab() {
   const subscriptionQuery = useGetCurrentSubscriptionQuery(undefined, { skip: mockMode });
   const paymentMethodsQuery = useGetPaymentMethodsQuery(undefined, { skip: mockMode });
   const billingHistoryQuery = useGetBillingHistoryQuery(undefined, { skip: mockMode });
+  const { data: studentOrgMemberships } = useGetMyOrgMembershipQuery(undefined, { skip: mockMode });
 
   // After Atmos's hosted bind page finishes, the user lands back here
   // with `?atmosBind=success`. The server-to-server callback that flips
@@ -160,6 +163,11 @@ export default function SubscriptionTab() {
   }, [subscription, paymentMethods]);
 
   const isEmpty = subscription === null;
+  const communityOrganization = hasActiveCommunityOrgMembership(studentOrgMemberships)
+    ? studentOrgMemberships?.find((member) =>
+        member.role === 'student' && member.status === 'active' && member.organization?.status === 'active',
+      )?.organization.name
+    : undefined;
 
   // Trial-start flow. Two paths:
   //   (a) User has a default card → call /subscriptions/start with
@@ -411,6 +419,18 @@ export default function SubscriptionTab() {
           description={t(
             'settings.subscription.error.description',
             'Please refresh the page or try again in a moment.',
+          )}
+        />
+      )}
+      {isEmpty && communityOrganization && (
+        <Alert
+          type="success"
+          showIcon
+          message={t('settings.subscription.organizationAccess.title', 'Community access is included')}
+          description={t(
+            'settings.subscription.organizationAccess.description',
+            'Your membership with {{organization}} gives you full Community access. You do not need to buy a plan while that membership is active.',
+            { organization: communityOrganization },
           )}
         />
       )}

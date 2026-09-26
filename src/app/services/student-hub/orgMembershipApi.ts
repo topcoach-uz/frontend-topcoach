@@ -20,6 +20,7 @@ export interface StudentOrgMembershipOrganization {
   name: string;
   logoUrl: string | null;
   slug: string | null;
+  status: string;
 }
 
 export interface StudentOrgMembership {
