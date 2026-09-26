@@ -22,6 +22,7 @@ import ActivitiesProfile from './ActivitiesProfile';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import DocumentsPage from '../documents/DocumentsPage';
 import { ApplicantPage } from '../applicant/ApplicantPage';
+import { APPLICANT_WORKSPACE_ENABLED } from 'src/lib/applicantWorkspace';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
@@ -53,16 +54,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, isLoading, error } = useStudentProfile(hookOptions);
   const isMasters = profile?.academicProfile?.targetDegree === 'master';
+  const useSeparateWorkspaces = APPLICANT_WORKSPACE_ENABLED && !isReadOnly;
 
-  // Graduate applicants use the current program and document workspaces.
-  // Keep legacy tab links useful, including links opened directly in a new tab.
+  // Applicant workspaces have their own routes. Keep old profile tab links useful.
   useEffect(() => {
-    if (isReadOnly || !isMasters) return;
+    if (!useSeparateWorkspaces) return;
     const tab = searchParams.get('tab');
     if (tab === 'college-lists' || tab === 'documents') {
       navigate(tab === 'college-lists' ? '/student-hub/applications' : '/student-hub/documents', { replace: true });
     }
-  }, [isReadOnly, isMasters, searchParams, navigate]);
+  }, [useSeparateWorkspaces, searchParams, navigate]);
 
   // Major Match (psychometric assessment) status card, own account only,
   // never in the counselor's read-only embed (see the `!isReadOnly` guard
@@ -129,16 +130,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   // Handle URL parameters for tab navigation
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    const allowedTabs = ['personal', 'academic', 'activities', 'college-lists', 'documents'];
+    const allowedTabs = useSeparateWorkspaces
+      ? ['personal', 'academic', 'activities']
+      : ['personal', 'academic', 'activities', 'college-lists', 'documents'];
     const next = tabFromUrl && allowedTabs.includes(tabFromUrl) ? tabFromUrl : 'personal';
     setActiveTab(next);
     setVisitedTabs((prev) => (prev.has(next) ? prev : new Set(prev).add(next)));
-  }, [searchParams]);
+  }, [searchParams, useSeparateWorkspaces]);
 
   // Handle tab changes, merge into the existing params so shell params
   // like ?section=others&target=profile survive the tab switch
   const handleTabChange = (key: string) => {
-    if (!isReadOnly && isMasters && (key === 'college-lists' || key === 'documents')) {
+    if (useSeparateWorkspaces && (key === 'college-lists' || key === 'documents')) {
       navigate(key === 'college-lists' ? '/student-hub/applications' : '/student-hub/documents');
       return;
     }
@@ -260,7 +263,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       label: t('studentHub.profile.activitiesAchievements'),
       children: <ActivitiesProfile data={profileData.sections.activities} readOnly={isReadOnly} studentId={studentId} />,
     },
-    {
+    ...(!useSeparateWorkspaces ? [{
       key: 'college-lists',
       label: isMasters ? 'Programs' : t('studentHub.hub.collegeLists', 'College Lists'),
       children: <ApplicationsPage readOnly={isReadOnly} studentId={studentId} />,
@@ -269,7 +272,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       key: 'documents',
       label: t('studentHub.hub.documentsLabel', 'Documents'),
       children: <DocumentsPage readOnly={isReadOnly} studentId={studentId} />,
-    },
+    }] : []),
   ];
 
   const activeTabItem = tabItems.find((tab) => tab.key === activeTab) ?? tabItems[0];
