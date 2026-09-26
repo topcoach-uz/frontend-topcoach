@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Input, Select, Spin } from 'antd';
-import { ArrowRight, BookOpenText, Check, GraduationCap, Plus } from 'lucide-react';
+import { ArrowRight, Check, GraduationCap, Plus } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useGetMyStudentProfileQuery, useUpdateMyStudentProfileMutation } from 'src/app/services/student-hub/studentProfileApi';
 import { applicantLinks } from 'src/lib/applicantWorkspace';
@@ -95,10 +95,10 @@ export default function ApplicantStudyDirectionPage() {
     }
     setCustomCountry('');
   };
-  const choosePathway = async (targetDegree: 'bachelor' | 'master') => {
+  const startMastersDirection = async () => {
     setPathError(false);
     try {
-      await saveProfile({ academicProfile: { targetDegree } }).unwrap();
+      await saveProfile({ academicProfile: { targetDegree: 'master' } }).unwrap();
     } catch {
       setPathError(true);
     }
@@ -109,35 +109,27 @@ export default function ApplicantStudyDirectionPage() {
   if (profileQuery.isLoading || overview.isLoading) return <ApplicantPage><div className="applicant-panel"><Spin aria-label="Loading study direction" /></div></ApplicantPage>;
   if (!degree) return <ApplicantPage
     title="Explore your study direction"
-    subtitle="Start with the degree you hope to pursue. Your choice is saved to your academic profile and can be changed later."
+    subtitle="Explore graduate fields based on your interests, goals and past study."
   >
     <Breadcrumb>Explore your direction</Breadcrumb>
     <div className="study-direction__intro study-direction__intro--pathway">
-      <span className="study-direction__eyebrow">Your starting point</span>
-      <h2>Which path are you exploring?</h2>
-      <p>Choose a degree level to see relevant guidance. This is a planning choice, not an application or eligibility decision.</p>
+      <span className="study-direction__eyebrow">Graduate study</span>
+      <h2>Start exploring master’s directions</h2>
+      <p>Save Master’s as your study goal to tailor this page. You can change it later in your academic profile.</p>
     </div>
     <div className="study-direction__pathways">
       <section className="study-direction__card study-direction__pathway-card">
         <span className="study-direction__pathway-icon"><GraduationCap size={23} aria-hidden /></span>
-        <h3>Master’s degree</h3>
+        <h3>Find a direction that fits your next step</h3>
         <p>Build on your current education, explore fields and goals, then look at verified graduate programs.</p>
-        <Button type="primary" loading={saveState.isLoading} onClick={() => void choosePathway('master')}>
+        <Button type="primary" loading={saveState.isLoading} onClick={() => void startMastersDirection()}>
           Explore master’s directions <ArrowRight size={16} aria-hidden />
-        </Button>
-      </section>
-      <section className="study-direction__card study-direction__pathway-card">
-        <span className="study-direction__pathway-icon"><BookOpenText size={23} aria-hidden /></span>
-        <h3>Bachelor’s degree</h3>
-        <p>Discover undergraduate fields through Major Match, then compare universities and degrees.</p>
-        <Button loading={saveState.isLoading} onClick={() => void choosePathway('bachelor')}>
-          Explore bachelor’s fields <ArrowRight size={16} aria-hidden />
         </Button>
       </section>
     </div>
     {pathError && <Alert type="error" showIcon message="Your study goal could not be saved. Please try again." />}
     <div className="study-direction__readiness study-direction__pathway-footer">
-      <div><h3>Still deciding?</h3><p>Add your education details first. You can change your degree pathway later.</p></div>
+      <div><h3>Want to add your background first?</h3><p>Your previous degree and field help you assess graduate options.</p></div>
       <div className="study-direction__pathway-links">
         <Link to={applicantLinks.profile}>Open academic profile <ArrowRight size={15} aria-hidden /></Link>
       </div>
