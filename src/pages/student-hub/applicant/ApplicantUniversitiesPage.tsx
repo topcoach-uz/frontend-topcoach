@@ -12,6 +12,7 @@ import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantP
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
+import { buildUniversityFieldOptions } from "./universityFieldOptions";
 
 const factValue = (value: GraduateProgramFact) => !value || !Object.keys(value).length
   ? "Verification needed"
@@ -35,14 +36,7 @@ export default function ApplicantUniversitiesPage() {
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;
   const perPage = isMasters ? programsQuery.data?.limit ?? 20 : 40;
-  const subjectOptions = [...new Map((filtersQuery.data?.majors ?? [])
-    .filter((item) => item.type === "undergraduate")
-    .map((item) => typeof item.name === "string" ? item.name : item.name?.en ?? "")
-    .map((name) => name.trim())
-    .filter(Boolean)
-    .map((name) => [name.toLocaleLowerCase(), name] as const)).values()]
-    .sort((a, b) => a.localeCompare(b))
-    .map((name) => ({ value: name, label: name }));
+  const subjectOptions = buildUniversityFieldOptions(filtersQuery.data?.majors ?? []);
   const setPage = (nextPage: number) => { const next = new URLSearchParams(params); next.set("page", String(nextPage)); setParams(next); };
   const setFilter = (key: "major" | "country", value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); next.delete("page"); setParams(next); };
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
