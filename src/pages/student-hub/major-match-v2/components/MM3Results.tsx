@@ -784,6 +784,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
   const majorTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const requiresEnrollment = !readOnly && !!access && !access.canStart && access.requiresCommunityEnrollment;
+  const hasCommunityAccess = !!access?.isCommunityEnrolled;
   const isPartial = report.meta?.source === 'partial';
 
   const majors = report.majors ?? [];
@@ -1305,17 +1306,19 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
           </div>
         </div>
 
-        {/* Signed-in student report: route through the same funnel every
-            other locked surface uses (`onUnlock` in the parent already
-            resolves to `navigate(useCommunityAccessGate().destination)`),
-            never a hardcoded URL or lead-capture form. Hidden entirely in
-            the counselor read-only embed — a counselor shouldn't be
-            pitched a subscription for their student. */}
+        {/* Signed-in students without Community access route through the
+            same funnel every other locked surface uses (`onUnlock` in the
+            parent already resolves to the shared Community destination).
+            The contact action remains useful after enrollment, but an
+            enrolled student must never be shown an unlock CTA. Hidden
+            entirely in the counselor read-only embed. */}
         {!readOnly && (
           <div className="mm3-results__programs-actions">
-            <button type="button" className="mm2__btn mm2__btn--primary" onClick={onUnlock}>
-              {t('majorMatch3.programs.unlockCta', 'Unlock my roadmap')}
-            </button>
+            {!hasCommunityAccess && (
+              <button type="button" className="mm2__btn mm2__btn--primary" onClick={onUnlock}>
+                {t('majorMatch3.programs.unlockCta', 'Unlock my roadmap')}
+              </button>
+            )}
             {/* "Learn more" now captures a contact instead of navigating to
                 /programs. A student who has just read a full report and wants
                 to know more is the warmest lead this product produces, and
