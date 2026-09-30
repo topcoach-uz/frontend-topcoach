@@ -26,7 +26,11 @@ function validationMessages(value: unknown): string[] {
 }
 
 export function onboardingRequestError(error: unknown): { conflict: boolean; message: string } {
-  const problem = error as { status?: number | string; data?: { message?: unknown } } | null;
+  const problem = error as { status?: number | string; data?: { code?: unknown; message?: unknown } } | null;
+  if (problem?.data?.code === 'PHONE_NUMBER_IN_USE') return {
+    conflict: false,
+    message: 'This phone number is already linked to another account. Use a different number to continue.',
+  };
   if (problem?.status === 409) return {
     conflict: true,
     message: 'This onboarding was updated in another tab. Reload the saved version before continuing.',

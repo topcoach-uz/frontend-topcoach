@@ -12,6 +12,7 @@ import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantP
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
+import { buildUniversityFieldOptions } from "./universityFieldOptions";
 
 const factValue = (value: GraduateProgramFact) => !value || !Object.keys(value).length
   ? "Verification needed"
@@ -35,14 +36,7 @@ export default function ApplicantUniversitiesPage() {
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;
   const perPage = isMasters ? programsQuery.data?.limit ?? 20 : 40;
-  const subjectOptions = [...new Map((filtersQuery.data?.majors ?? [])
-    .filter((item) => item.type === "undergraduate")
-    .map((item) => typeof item.name === "string" ? item.name : item.name?.en ?? "")
-    .map((name) => name.trim())
-    .filter(Boolean)
-    .map((name) => [name.toLocaleLowerCase(), name] as const)).values()]
-    .sort((a, b) => a.localeCompare(b))
-    .map((name) => ({ value: name, label: name }));
+  const subjectOptions = buildUniversityFieldOptions(filtersQuery.data?.majors ?? []);
   const setPage = (nextPage: number) => { const next = new URLSearchParams(params); next.set("page", String(nextPage)); setParams(next); };
   const setFilter = (key: "major" | "country", value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); next.delete("page"); setParams(next); };
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
@@ -150,6 +144,9 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const degreesQuery = useGetUndergraduateDegreesQuery(university.id);
   const degrees = [...(degreesQuery.data ?? [])].sort((a, b) => Number(degreeMatchesField(b, selectedField)) - Number(degreeMatchesField(a, selectedField)));
   const matchingDegreeCount = degrees.filter((degree) => degreeMatchesField(degree, selectedField)).length;
+  const catalogueFields = buildUniversityFieldOptions(university.majors ?? [])
+    .sort((a, b) => Number(b.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()) - Number(a.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()));
+  const matchingCatalogueFieldCount = catalogueFields.filter((field) => field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()).length;
   const name = getTranslation(university.name);
   const location = [getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(", ");
   const logoUrl = getUniversityLogoUrl(university);
@@ -172,14 +169,19 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       <h2>Explore undergraduate degrees</h2>
       <p>Start with your field of interest, then look at the course in detail.</p>
       <div className="applicant-university-detail__degree-tools">
-        {degrees.length > 0 && <span>{selectedField ? `${matchingDegreeCount} match${matchingDegreeCount === 1 ? "" : "es"} for ${selectedField} · ${degrees.length} degrees shown` : `${degrees.length} verified degrees`}</span>}
+        {degrees.length > 0
+          ? <span>{selectedField ? `${matchingDegreeCount} match${matchingDegreeCount === 1 ? "" : "es"} for ${selectedField} · ${degrees.length} degrees shown` : `${degrees.length} verified degrees`}</span>
+          : catalogueFields.length > 0 && <span>{selectedField ? `${matchingCatalogueFieldCount} match${matchingCatalogueFieldCount === 1 ? "" : "es"} for ${selectedField} · ${catalogueFields.length} study areas shown` : `${catalogueFields.length} undergraduate study areas listed`}</span>}
         {profile.undergraduateCoursesUrl && <a href={profile.undergraduateCoursesUrl} target="_blank" rel="noreferrer">All undergraduate majors on the official site <ArrowUpRight size={17} aria-hidden="true" /></a>}
       </div>
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
+      {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
       {!degreesQuery.isLoading && !degreesQuery.isError && (degrees.length > 0
         ? <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>
+        : catalogueFields.length > 0
+          ? <div className="applicant-university-detail__catalogue"><div className="applicant-university-detail__catalogue-note"><h3>Undergraduate study areas</h3><p>Detailed course pages are still being verified. These subjects are already associated with {name} in the university catalogue.</p></div><div className="applicant-university-detail__catalogue-grid">{catalogueFields.map((field) => <div className={field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() ? "applicant-university-detail__catalogue-field applicant-university-detail__catalogue-field--match" : "applicant-university-detail__catalogue-field"} key={field.value}>{field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() && <span>Matches selected field</span>}<strong>{field.label}</strong></div>)}</div></div>
         : <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>{selectedField ? `We have not verified an undergraduate degree in ${selectedField} at ${name} yet.` : `We don't have a confirmed undergraduate course list for ${name} yet.`}</p></div>)}
     </section>
 
