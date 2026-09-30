@@ -18,4 +18,17 @@ describe('onboardingRequestError', () => {
       { property: 'startDate', constraints: { matches: 'startDate must match /\\d{4}-(?:0[1-9]|1[0-2])$/ regular expression' } },
     ] } }).message).toBe('Enter the start date as Month YYYY, for example September 2021.');
   });
+
+  it('shows a phone-specific message without treating the response as a revision conflict', () => {
+    expect(onboardingRequestError({
+      status: 409,
+      data: {
+        code: 'PHONE_NUMBER_IN_USE',
+        message: 'This phone number is already linked to another account.',
+      },
+    })).toEqual({
+      conflict: false,
+      message: 'This phone number is already linked to another account. Use a different number to continue.',
+    });
+  });
 });
