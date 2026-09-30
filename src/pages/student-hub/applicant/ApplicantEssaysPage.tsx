@@ -44,6 +44,7 @@ import {
   useSubmitEssayReviewMutation,
   useWithdrawEssayReviewMutation,
 } from "src/app/services/student-hub/essayReviewApi";
+import { getMentorFeedbackText } from "./essayFeedbackModel";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -163,7 +164,7 @@ export default function ApplicantEssaysPage() {
                   {essay.wordCount ?? 0} words · Updated{" "}
                   {displayDate(essay.updatedAt)}
                 </small>
-                {essay.mentorFeedback && (
+                {getMentorFeedbackText(essay.mentorFeedback) && (
                   <span className="applicant-feedback-badge">
                     <MessageSquareText size={14} /> Mentor feedback available
                   </span>
@@ -419,18 +420,7 @@ export function ApplicantEssayEditorPage() {
       message.error("Could not save a new version. Your text remains in the editor.");
     }
   };
-  const feedback =
-    typeof essay?.mentorFeedback === "string"
-      ? essay.mentorFeedback
-      : essay?.mentorFeedback
-        ? [
-            essay.mentorFeedback.strengths?.join("\n"),
-            essay.mentorFeedback.areasForImprovement?.join("\n"),
-            essay.mentorFeedback.suggestions?.join("\n"),
-          ]
-            .filter(Boolean)
-            .join("\n\n")
-        : "";
+  const feedback = getMentorFeedbackText(essay?.mentorFeedback);
   const latestFeedback = reviewedRequests[0]?.feedback || feedback;
   useEffect(() => {
     if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
