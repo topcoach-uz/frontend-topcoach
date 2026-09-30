@@ -23,6 +23,7 @@ import {
   overviewVisit,
   safeMeetingLink,
 } from './applicantOverviewModel';
+import { getTranslation } from 'src/lib/i18n/translationUtils';
 
 const TextLink = ({
   to,
@@ -197,9 +198,9 @@ export default function ApplicantOverviewPage() {
         : [];
   const applicationCard = (app: OverviewApplication) => (
     <article className="applicant-card applicant-application" key={app.id}>
-      <h3>{app.major || t('applicant.fieldNotSet')}</h3>
+      <h3>{getTranslation(app.major) || t('applicant.fieldNotSet')}</h3>
       <p className="applicant-muted">
-        {app.universityName || t('applicant.universityNotSet')}
+        {getTranslation(app.universityName) || t('applicant.universityNotSet')}
       </p>
       {app.degreeLevel && (
         <small>{t(`applicant.${app.degreeLevel}Degree`)}</small>
@@ -644,7 +645,7 @@ export default function ApplicantOverviewPage() {
             <section className="applicant-card">
               <p className="applicant-eyebrow">{t('applicant.nextDeadline')}</p>
               <h3>
-                {nextDeadline.universityName || t('applicant.application')}
+                {getTranslation(nextDeadline.universityName) || t('applicant.application')}
               </h3>
               <p>{date(nextDeadline.deadline)}</p>
               <TextLink to={applicationWorkspaceLink(nextDeadline.id)}>
