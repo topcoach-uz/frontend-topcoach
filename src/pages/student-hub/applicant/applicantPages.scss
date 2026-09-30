@@ -451,6 +451,8 @@
     font-size: 19px;
   }
   .ant-select-selection-item, .ant-select-selection-placeholder { line-height: 30px !important; color: #323947; }
+  .ant-select-focused .ant-select-selection-placeholder,
+  .ant-select-open .ant-select-selection-placeholder { visibility: hidden; }
   .ant-select-arrow { color: #596575; }
 }
 .applicant-find-filter--active { border-color: #e4b5b5; background: #fff9f8; color: #8b0000; }
