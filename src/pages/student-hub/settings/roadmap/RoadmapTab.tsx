@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
+import { useGetAdmissionsProfileQuery } from 'src/app/services/admissionsProfileApi';
 import { useGetRoadmapQuery } from 'src/app/services/roadmapApi';
 import { profilePath } from 'src/lib/communityAccess';
 
@@ -96,12 +96,12 @@ export function RoadmapTab({ readOnly = false, studentId, freshSince }: RoadmapT
   // change later, matching every sibling profile-hub tab.
   void studentId;
 
-  const { data: status, isLoading: statusLoading } = useGetPlacementTestStatusQuery(
+  const { data: profile, isLoading: profileLoading } = useGetAdmissionsProfileQuery(
     undefined,
     { skip: readOnly },
   );
 
-  const profileReady = !readOnly && !!status?.profile.completed;
+  const profileReady = !readOnly && !!profile?.completedAt;
   const awaitingFresh = !readOnly && !!freshSince;
 
   // Holds off the FIRST fetch attempt while `awaitingFresh` — see the prop
@@ -166,7 +166,7 @@ export function RoadmapTab({ readOnly = false, studentId, freshSince }: RoadmapT
     );
   }
 
-  if (statusLoading) {
+  if (profileLoading) {
     return (
       <Card className={styles.card} title={titleEl(t)}>
         <div className={styles.centered}>Loading your roadmap…</div>
@@ -174,7 +174,7 @@ export function RoadmapTab({ readOnly = false, studentId, freshSince }: RoadmapT
     );
   }
 
-  if (!status?.profile.completed) {
+  if (!profile?.completedAt) {
     // `awaitingFresh` means this render is embedded on the Major Match
     // results page right after a fresh submission (see `freshSince` doc
     // comment above) — that's the cohort this ties back to: they just

@@ -12,14 +12,11 @@ import {
 import {
   AdmissionsProfileDto,
   PatchAdmissionsProfileBody,
+  ProfileStep,
   useCompleteAdmissionsProfileMutation,
   useGetAdmissionsProfileQuery,
   usePatchAdmissionsProfileMutation,
 } from 'src/app/services/admissionsProfileApi';
-import {
-  ProfileStep,
-  useGetPlacementTestStatusQuery,
-} from 'src/app/services/placementTestApi';
 import { useTypedSelector } from 'src/app/store';
 import {
   COMMUNITY_FUNNEL_PATHS,
@@ -68,8 +65,6 @@ export default function ProfileWizardPage() {
 
   const { isAuthenticated } = useTypedSelector((s) => s.auth);
 
-  const { data: status } =
-    useGetPlacementTestStatusQuery(undefined, { skip: !isAuthenticated });
   const { data: profile } = useGetAdmissionsProfileQuery(undefined, {
     skip: !isAuthenticated,
   });
@@ -100,7 +95,7 @@ export default function ProfileWizardPage() {
   // they can refine their answers, and the roadmap's "profile changed"
   // banner picks up the change when they're done.
   const editIntent = searchParams.get('edit') === '1';
-  if (status?.profile.completed && !editIntent) {
+  if (profile?.completedAt && !editIntent) {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.roadmap} replace />;
   }
 
@@ -111,7 +106,6 @@ export default function ProfileWizardPage() {
 
   if (!validStep(stepParam)) {
     const resume =
-      status?.profile.lastEditedStep ??
       profile?.lastEditedStep ??
       'basic';
     // Preserve every other search param (notably `edit=1` from the
@@ -157,8 +151,6 @@ export default function ProfileWizardPage() {
       }}
       onStepChange={(next) => navigate(profilePath(next))}
       onExit={() => navigate(COMMUNITY_FUNNEL_PATHS.community)}
-      lastAttemptScore={status?.lastAttempt?.scorePercentage ?? null}
-      lastAttemptLevel={status?.lastAttempt?.level ?? null}
     />
   );
 }
@@ -176,8 +168,6 @@ type InnerProps = {
   complete: () => Promise<void>;
   onStepChange: (next: ProfileStep) => void;
   onExit: () => void;
-  lastAttemptScore: number | null;
-  lastAttemptLevel: string | null;
 };
 
 function ProfileWizardInner({
@@ -191,8 +181,6 @@ function ProfileWizardInner({
   complete,
   onStepChange,
   onExit,
-  lastAttemptScore,
-  lastAttemptLevel,
 }: InnerProps) {
   const { t } = useTranslation();
   const stepIndex = STEP_ORDER.indexOf(step);
@@ -392,12 +380,6 @@ function ProfileWizardInner({
         <SubStepper current={step} done={doneSteps} />
 
         <section className={styles.card}>
-          {lastAttemptScore !== null ? (
-            <span className={styles.placementChip}>
-              ✓ Placement <strong>{lastAttemptScore}%</strong>
-              {lastAttemptLevel ? <> · <strong>{lastAttemptLevel}</strong></> : null}
-            </span>
-          ) : null}
           <div className={styles.card__eyebrow}>
             Step {stepIndex + 1} of {STEP_ORDER.length}
           </div>

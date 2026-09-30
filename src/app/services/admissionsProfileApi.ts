@@ -1,5 +1,5 @@
 import { RtkApi } from './api';
-import type { ProfileStep } from './placementTestApi';
+export type ProfileStep = 'basic' | 'academic' | 'goals' | 'needs';
 
 // ── DTO mirrors of `src/modules/admissions-profile/...` ────────────────────────
 
@@ -105,17 +105,14 @@ export const admissionsProfileApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body,
       }),
-      // Optimistic-light: don't invalidate (we keep the editing surface
-      // owning the source of truth between PATCH calls). The result
-      // returned by the mutation is what callers consume.
+      invalidatesTags: ['AdmissionsProfile'],
     }),
     completeAdmissionsProfile: builder.mutation<AdmissionsProfileDto, void>({
       query: () => ({
         url: 'admissions-profile/me/complete',
         method: 'POST',
       }),
-      // After complete, we DO invalidate — funnel-status queries care.
-      invalidatesTags: ['AdmissionsProfile', 'PlacementTest'],
+      invalidatesTags: ['AdmissionsProfile'],
     }),
   }),
 });

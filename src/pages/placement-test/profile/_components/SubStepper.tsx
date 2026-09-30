@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 
-import type { ProfileStep } from 'src/app/services/placementTestApi';
+import type { ProfileStep } from 'src/app/services/admissionsProfileApi';
 
 import styles from '../Profile.module.scss';
 
