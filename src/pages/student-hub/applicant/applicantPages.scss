@@ -944,6 +944,36 @@
   flex-direction: column;
   gap: 16px;
 }
+.applicant-university-detail__catalogue {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.applicant-university-detail__catalogue-note {
+  padding: 20px 22px;
+  border-radius: 14px;
+  background: #f6f8fb;
+  h3 { font-size: 19px; }
+  p { margin-top: 6px; color: #596575; }
+}
+.applicant-university-detail__catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.applicant-university-detail__catalogue-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 76px;
+  padding: 16px 18px;
+  border: 1px solid #d8dfeb;
+  border-radius: 12px;
+  background: #fff;
+  strong { font-size: 17px; font-weight: 500; }
+  span { margin-bottom: 4px; color: #8b0000; font-size: 12px; font-weight: 600; }
+}
+.applicant-university-detail__catalogue-field--match { border-color: #d7a0a0; background: #fff8f7; }
 .applicant-university-detail__degree-note {
   padding: 12px 16px;
   border-radius: 10px;
@@ -1073,6 +1103,7 @@
   .applicant-university-detail__hero-actions > .ant-btn { width: 100%; min-width: 0; }
   .applicant-university-detail__degree-card { flex-direction: column; padding: 20px; }
   .applicant-university-detail__degree-button { width: 100%; }
+  .applicant-university-detail__catalogue-grid { grid-template-columns: 1fr; }
   .applicant-university-detail__lower { grid-template-columns: 1fr; gap: 18px; }
   .applicant-page {
     gap: 20px;
