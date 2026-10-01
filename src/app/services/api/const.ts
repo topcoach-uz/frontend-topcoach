@@ -9,6 +9,7 @@ export const baseUrl = `${hostName}/api`;
 export const apiTagTypes = [
   'Auth',
   'GetMe',
+  'Onboarding',
   'MySessions',
   'GetMentorBalance',
   'GetMentorDetail',

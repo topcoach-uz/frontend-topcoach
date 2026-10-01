@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 import Footer from '../components/footer';
 import Header from '../components/header';
@@ -9,6 +9,7 @@ import styles from './main.module.scss';
 import 'src/lib/dayjs';
 
 function Main() {
+  const { pathname } = useLocation();
   // NOTE: the signed-in profile (getMe) is fetched ONCE at the app root
   // (RouterProvider) behind a single bootstrap loader, so this layout no
   // longer fetches it — that previously caused a second stacked spinner.
@@ -21,6 +22,7 @@ function Main() {
     refetchOnReconnect: false,
   });
 
+  if (/^\/onboarding\/?$/.test(pathname)) return <Outlet />;
   return (
     <div className={styles.main}>
       <Header />
