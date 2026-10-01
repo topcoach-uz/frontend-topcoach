@@ -55,12 +55,15 @@ export function validateScreen(screen: Screen, values: Values): Values {
   const errors: Values = {};
   for (const field of fieldsOf(screen)) {
     const label = field.label || '';
-    if (label.includes('optional') || label.includes('EDIT')) continue;
+    if (label.includes('EDIT')) continue;
     const key = valueKey(label, screen.key);
     const value = (values[key] || '').trim();
+    if (label.includes('optional') && !['Start date · optional', 'End date · optional'].includes(label)) continue;
+    if (label.includes('optional') && !value) continue;
     if (!value) errors[key] = `Enter ${label.toLowerCase()}.`;
     else if (label === 'Email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) errors[key] = 'Enter a valid email address.';
     else if (label === 'Graduation year' && (!/^\d{4}$/.test(value) || +value < 1900 || +value > 2100)) errors[key] = 'Enter a year from 1900 to 2100.';
+    else if ((label === 'Start date · optional' || label === 'End date · optional') && value && !/^(?:(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}|\d{4}-(?:0[1-9]|1[0-2])(?:-\d{2})?)$/i.test(value)) errors[key] = `Enter the ${label.startsWith('Start') ? 'start' : 'end'} date as Month YYYY, for example September 2021.`;
     else if (label === 'Password' && screen.key === 'signup' && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(value)) errors[key] = 'Use 8+ characters with uppercase, lowercase, a number and a symbol (@$!%*?&).';
     else if (label === 'Confirm password' && value !== values.Password) errors[key] = 'Passwords must match.';
     else if (label === 'Connection code' && !/^[A-Z0-9]{6}$/.test(value)) errors[key] = 'Enter the six-character code.';

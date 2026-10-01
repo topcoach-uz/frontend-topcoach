@@ -47,7 +47,7 @@ export default function ActionsMobileVersion({
           <LanguageSelect />
         </>
       )}
-      <ChatIcon />
+      {screenSize > 360 && <ChatIcon />}
       {isAuthenticated && <NotificationBell />}
       {isAuthenticated ? (
         <ProfileDropdown profileMenuItems={profileMenuItems} />

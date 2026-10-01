@@ -20,6 +20,53 @@ $st-brand-soft: $brand-tint;
   gap: 32px;
 }
 
+.gateAlert {
+  align-items: flex-start;
+
+  :global(.ant-alert-action) {
+    flex: 0 0 auto;
+    margin-inline-start: 16px;
+  }
+}
+
+.gateAlertAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: $st-brand;
+  color: #fff;
+  border: 1px solid $st-brand;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family: $serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover,
+  &:focus-visible {
+    background: darken($st-brand, 6%);
+    border-color: darken($st-brand, 6%);
+  }
+}
+
+@media (max-width: 600px) {
+  .gateAlert {
+    flex-wrap: wrap;
+
+    :global(.ant-alert-action) {
+      width: 100%;
+      margin: 14px 0 0;
+    }
+  }
+
+  .gateAlertAction {
+    width: 100%;
+  }
+}
+
 /* Hero plan picker, anchors the empty state with serif headline +
    eyebrow, then drops the two cards below. */
 .heroPicker {

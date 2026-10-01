@@ -1,0 +1,5452 @@
+[
+  {
+    "rank": 1,
+    "name": "Massachusetts Institute of Technology, MIT",
+    "region": "USA",
+    "city": "Cambridge",
+    "website": "https://www.mit.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.mit.edu"
+  },
+  {
+    "rank": 2,
+    "name": "Imperial College London",
+    "region": "UK",
+    "city": "London",
+    "website": "https://www.imperial.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.imperial.ac.uk"
+  },
+  {
+    "rank": 3,
+    "name": "University of Oxford",
+    "region": "UK",
+    "city": "Oxford",
+    "website": "https://www.ox.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 4,
+    "name": "Harvard University",
+    "region": "USA",
+    "city": "Cambridge",
+    "website": "https://www.harvard.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.harvard.edu"
+  },
+  {
+    "rank": 5,
+    "name": "University of Cambridge",
+    "region": "UK",
+    "city": "Cambridge",
+    "website": "https://www.cam.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.cam.ac.uk/themes/custom/fresh/images/interface/cambridge_university2.svg",
+        "alt": "University of Cambridge",
+        "score": 10,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.cam.ac.uk/themes/custom/fresh/images/interface/university_logo_white-01.svg",
+        "alt": "",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.cam.ac.uk"
+  },
+  {
+    "rank": 6,
+    "name": "Stanford University",
+    "region": "USA",
+    "city": "Stanford",
+    "website": "https://www.stanford.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.stanford.edu"
+  },
+  {
+    "rank": 7,
+    "name": "Swiss Federal Institute of Technology Zurich, ETHZ",
+    "region": "EU",
+    "city": "Zurich",
+    "website": "https://ethz.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://ethz.ch/de.html"
+  },
+  {
+    "rank": 8,
+    "name": "National University of Singapore",
+    "region": "ASIA",
+    "city": "Singapore",
+    "website": "https://www.nus.edu.sg",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.nus.edu.sg"
+  },
+  {
+    "rank": 9,
+    "name": "University College London",
+    "region": "UK",
+    "city": "London",
+    "website": "https://www.ucl.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://cdn.ucl.ac.uk/logos/ucl/ucl-logo--primary.svg",
+        "alt": "UCL Logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://cdn.ucl.ac.uk/logos/ucl/ucl-logo--secondary-inverted.svg",
+        "alt": "UCL Logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.ucl.ac.uk/sites/home/files/styles/content_cards_mobile/public/2025-11/QS-World-University-Rankings-Sustainability-2026-logo.png.jpg?itok=kVc_kEOa",
+        "alt": "QS World University Rankings Sustainability 2026 logo",
+        "score": 9,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.ucl.ac.uk"
+  },
+  {
+    "rank": 10,
+    "name": "California Institute of Technology, Caltech",
+    "region": "USA",
+    "city": "Pasadena",
+    "website": "https://www.caltech.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.caltech.edu/static/core/img/caltech-new-logo.png",
+        "alt": "Caltech",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://caltech-prod.resources.caltech.edu/main/images/D2024_0823_RL0018472_1.4d5f9e0e.max-1400x800.jpg",
+        "alt": "Tracy Drain in front of a wall with logos for NASA, Europa, JPL, and Caltech, and an Americal flag",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://caltech-prod.resources.caltech.edu/main/images/2026_LAist_EDUHero.fe488352.fill-710x400-c100.jpg",
+        "alt": "President Ray Jayawardhana speaking to students, with the LAist logo.",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.caltech.edu"
+  },
+  {
+    "rank": 11,
+    "name": "University of Pennsylvania",
+    "region": "USA",
+    "city": "Philadelphia",
+    "website": "https://www.upenn.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.upenn.edu/themes/custom/penn_starter/assets/img/UPenn-logo.svg",
+        "alt": "University of Pennsylvania",
+        "score": 8,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.upenn.edu"
+  },
+  {
+    "rank": 12,
+    "name": "University of California, Berkeley",
+    "region": "USA",
+    "city": "Berkeley",
+    "website": "https://www.berkeley.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.berkeley.edu/wp-content/themes/berkeleygateway/img/logo-berkeley.svg?v=3",
+        "alt": "UC Berkeley home",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.berkeley.edu/wp-content/themes/berkeleygateway/img/logo-berkeley.svg?v=3",
+        "alt": "UC Berkeley home",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.berkeley.edu"
+  },
+  {
+    "rank": 13,
+    "name": "University of Melbourne",
+    "region": "ASIA",
+    "city": "Melbourne",
+    "website": "https://www.unimelb.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 14,
+    "name": "Peking University",
+    "region": "ASIA",
+    "city": "Beijing",
+    "website": "https://www.pku.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.pku.edu.cn"
+  },
+  {
+    "rank": 15,
+    "name": "Nanyang Technological University",
+    "region": "ASIA",
+    "city": "Singapore",
+    "website": "https://www.ntu.edu.sg",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ntu.edu.sg/ResourcePackages/NTU/assets/images/NTU_Logo.png",
+        "alt": "NTU Logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ntu.edu.sg"
+  },
+  {
+    "rank": 16,
+    "name": "Cornell University",
+    "region": "USA",
+    "city": "Ithaca",
+    "website": "https://www.cornell.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.cornell.edu"
+  },
+  {
+    "rank": 17,
+    "name": "University of Hong Kong",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://www.hku.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.hku.hk/adobe/dynamicmedia/deliver/dm-aid--afc8d43c-587a-43f0-b93c-26f8bd397e0e/logo-hku.svg.webp?width=208&preferwebp=true",
+        "alt": "The University of Hong Kong (HKU)",
+        "score": 6,
+        "context": "main/header"
+      }
+    ],
+    "sourcePage": "https://www.hku.hk"
+  },
+  {
+    "rank": 18,
+    "name": "University of Sydney",
+    "region": "ASIA",
+    "city": "Sydney",
+    "website": "https://www.sydney.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.sydney.edu.au/content/dam/icons/logos/logo-usyd-dark.svg",
+        "alt": "University Home",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.sydney.edu.au/content/dam/icons/logos/logo-usyd-dark.svg",
+        "alt": "University Home",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.sydney.edu.au"
+  },
+  {
+    "rank": 19,
+    "name": "University of New South Wales",
+    "region": "ASIA",
+    "city": "Sydney",
+    "website": "https://www.unsw.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unsw.edu.au/content/dam/images/graphics/logos/unsw/unsw_0.png",
+        "alt": "UNSW Logo",
+        "score": 11,
+        "context": "main/header"
+      },
+      {
+        "url": "https://www.unsw.edu.au/content/dam/images/graphics/logos/unsw/unsw_0.png",
+        "alt": "UNSW Logo",
+        "score": 11,
+        "context": "main/header"
+      }
+    ],
+    "sourcePage": "https://www.unsw.edu.au"
+  },
+  {
+    "rank": 20,
+    "name": "Tsinghua University",
+    "region": "ASIA",
+    "city": "Beijing",
+    "website": "https://www.tsinghua.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.tsinghua.edu.cn"
+  },
+  {
+    "rank": 21,
+    "name": "University of Chicago",
+    "region": "USA",
+    "city": "Chicago",
+    "website": "https://www.uchicago.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uchicago.edu/-/media/images/logo-background.svg?iar=0&hash=C926BC4DECB90E6437DD2525482760AF",
+        "alt": "The University of Chicago Logo ",
+        "score": 11,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uchicago.edu/-/media/images/logo-background-mobile.svg?iar=0&hash=72DEE767D878668741296F29D0ABA96F",
+        "alt": "The University of Chicago Logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uchicago.edu"
+  },
+  {
+    "rank": 22,
+    "name": "Princeton University",
+    "region": "USA",
+    "city": "Princeton",
+    "website": "https://www.princeton.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 23,
+    "name": "Yale University",
+    "region": "USA",
+    "city": "New Haven",
+    "website": "https://www.yale.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.yale.edu/sites/all/themes/yale_blue/images/logo-print.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.yale.edu"
+  },
+  {
+    "rank": 24,
+    "name": "PSL Research University Paris",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.psl.eu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1010)>"
+  },
+  {
+    "rank": 25,
+    "name": "University of Toronto",
+    "region": "USA",
+    "city": "Toronto",
+    "website": "https://www.utoronto.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [Errno 54] Connection reset by peer>"
+  },
+  {
+    "rank": 26,
+    "name": "Swiss Federal Institute of Technology Lausanne, EPFL",
+    "region": "EU",
+    "city": "Lausanne",
+    "website": "https://www.epfl.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.epfl.ch/wp-content/themes/wp-theme-2018/assets/svg/epfl-logo.svg",
+        "alt": "Logo EPFL, École polytechnique fédérale de Lausanne",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.epfl.ch/wp-content/uploads/2025/03/EPFL-logo.png",
+        "alt": "Logo de l'EPFL",
+        "score": 9,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.epfl.ch/fr/"
+  },
+  {
+    "rank": 27,
+    "name": "University of Edinburgh",
+    "region": "UK",
+    "city": "Edinburgh",
+    "website": "https://www.ed.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ed.ac.uk/themes/upstream/wpp_theme/images/logo.png",
+        "alt": "The University of Edinburgh home",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ed.ac.uk"
+  },
+  {
+    "rank": 28,
+    "name": "Technical University of Mnchen",
+    "region": "EU",
+    "city": "Munich",
+    "website": "https://www.tum.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.tum.de/typo3conf/ext/in2template/Resources/Public/Images/Backend/tum-logo.svg",
+        "alt": "",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.tum.de"
+  },
+  {
+    "rank": 29,
+    "name": "McGill University",
+    "region": "USA",
+    "city": "Montreal",
+    "website": "https://www.mcgill.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.mcgill.ca"
+  },
+  {
+    "rank": 30,
+    "name": "Australian National University",
+    "region": "ASIA",
+    "city": "Canberra",
+    "website": "https://www.anu.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.anu.edu.au"
+  },
+  {
+    "rank": 31,
+    "name": "Seoul National University",
+    "region": "ASIA",
+    "city": "Seoul",
+    "website": "https://en.snu.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://en.snu.ac.kr"
+  },
+  {
+    "rank": 32,
+    "name": "Johns Hopkins University",
+    "region": "USA",
+    "city": "Baltimore",
+    "website": "https://www.jhu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 32,
+    "name": "The University of Tokyo",
+    "region": "ASIA",
+    "city": "Tokyo",
+    "website": "https://www.u-tokyo.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.u-tokyo.ac.jp/content/400244322.svg",
+        "alt": "東京大学",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.u-tokyo.ac.jp/ja/index.html"
+  },
+  {
+    "rank": 34,
+    "name": "Columbia University",
+    "region": "USA",
+    "city": "New York",
+    "website": "https://www.columbia.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 34,
+    "name": "University of Manchester",
+    "region": "UK",
+    "city": "Manchester",
+    "website": "https://www.manchester.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://assets.manchester.ac.uk/corporate/images/design/logo-university-of-manchester.png",
+        "alt": "The University of Manchester home",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.manchester.ac.uk"
+  },
+  {
+    "rank": 36,
+    "name": "Chinese University of Hong Kong",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://www.cuhk.edu.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.cuhk.edu.hk"
+  },
+  {
+    "rank": 37,
+    "name": "Monash University",
+    "region": "ASIA",
+    "city": "Melbourne",
+    "website": "https://www.monash.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 38,
+    "name": "University of British Columbia",
+    "region": "USA",
+    "city": "Vancouver",
+    "website": "https://www.ubc.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ubc.ca"
+  },
+  {
+    "rank": 39,
+    "name": "Fudan University",
+    "region": "ASIA",
+    "city": "Shanghai",
+    "website": "https://www.fudan.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.fudan.edu.cn"
+  },
+  {
+    "rank": 40,
+    "name": "King’s College London",
+    "region": "UK",
+    "city": "London",
+    "website": "https://www.kcl.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kcl.ac.uk/SiteElements/2017/images/kcl-logo.svg",
+        "alt": "King's College London",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.kcl.ac.uk"
+  },
+  {
+    "rank": 40,
+    "name": "University of Queensland",
+    "region": "ASIA",
+    "city": "Brisbane",
+    "website": "https://www.uq.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://static.uq.net.au/v11/logos/corporate/uq-logo--reversed.svg",
+        "alt": "The University of Queensland",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uq.edu.au/styleguide/images/universities-australia-logo.svg",
+        "alt": "Universities Australia",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.uq.edu.au/styleguide/images/go8-logo.svg",
+        "alt": "Group of Eight",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.uq.edu.au/styleguide/images/u21-logo.svg",
+        "alt": "Universitas 21",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.uq.edu.au/styleguide/images/wun-logo.svg",
+        "alt": "Worldwide Universities Network",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.uq.edu.au"
+  },
+  {
+    "rank": 42,
+    "name": "University of California, Los Angeles",
+    "region": "USA",
+    "city": "Los Angeles",
+    "website": "https://www.ucla.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucla.edu/img/logo-ucla.svg",
+        "alt": "UCLA Logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://s3.us-west-1.amazonaws.com/webcomponents.ucla.edu/img/icons/social/instagram--brand.svg",
+        "alt": "instagram",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://s3.us-west-1.amazonaws.com/webcomponents.ucla.edu/img/icons/social/instagram--brand.svg",
+        "alt": "instagram",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://s3.us-west-1.amazonaws.com/webcomponents.ucla.edu/img/icons/social/instagram--brand.svg",
+        "alt": "instagram",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://s3.us-west-1.amazonaws.com/webcomponents.ucla.edu/img/icons/social/tiktok--brand.svg",
+        "alt": "tiktok",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.ucla.edu"
+  },
+  {
+    "rank": 43,
+    "name": "New York University",
+    "region": "USA",
+    "city": "New York",
+    "website": "https://www.nyu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.nyu.edu/_jcr_content/root/container/nyu_fullwidth_promo_2129526352.coreimg.jpeg/1785789085905/20260723-nyucutouts-ds-16.jpeg",
+        "alt": "hand holding paper with NYU logo cutout in front of a crosswalk on West Fourth Street",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.nyu.edu"
+  },
+  {
+    "rank": 44,
+    "name": "University of Michigan - Ann Arbor",
+    "region": "USA",
+    "city": "Ann Arbor",
+    "website": "https://umich.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 45,
+    "name": "Shanghai Jiao Tong University",
+    "region": "ASIA",
+    "city": "Shanghai",
+    "website": "https://en.sjtu.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://global.sjtu.edu.cn/en/assets/images/logo_white_130.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://en.sjtu.edu.cn"
+  },
+  {
+    "rank": 46,
+    "name": "Institut Polytechnique de Paris",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.ip-paris.fr",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ip-paris.fr/themes/project/img/header/logo-blanc.png",
+        "alt": "Institut Polytechnique de Paris",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ip-paris.fr/sites/default/files/logo.png",
+        "alt": "Institut Polytechnique de Paris",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ip-paris.fr/themes/project/img/header/logo-enpc.png",
+        "alt": "Ecole des Ponts",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ip-paris.fr"
+  },
+  {
+    "rank": 47,
+    "name": "Hong Kong University of Science and Technology",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://hkust.edu.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [Errno 54] Connection reset by peer>"
+  },
+  {
+    "rank": 47,
+    "name": "Zhejiang University",
+    "region": "ASIA",
+    "city": "Hangzhou",
+    "website": "https://www.zju.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.zju.edu.cn"
+  },
+  {
+    "rank": 49,
+    "name": "Delft University of Technology",
+    "region": "EU",
+    "city": "Delft",
+    "website": "https://www.tudelft.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.tudelft.nl"
+  },
+  {
+    "rank": 50,
+    "name": "London School of Economics",
+    "region": "UK",
+    "city": "London",
+    "website": "https://www.lse.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.lse.ac.uk/_mClaLQ_835c64d6-1bea-452b-b1f2-b3dc907a4dfb/static/assets/LSE_logo.svg",
+        "alt": "The London School of Economics and Political Science",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.lse.ac.uk/_mClaLQ_835c64d6-1bea-452b-b1f2-b3dc907a4dfb/static/assets/LSE_logo_mobile.svg",
+        "alt": "The London School of Economics and Political Science",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.lse.ac.uk/_mClaLQ_835c64d6-1bea-452b-b1f2-b3dc907a4dfb/static/assets/logo_whiteText.svg",
+        "alt": "The London School of Economics and Political Science",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.lse.ac.uk"
+  },
+  {
+    "rank": 50,
+    "name": "Northwestern University",
+    "region": "USA",
+    "city": "Evanston",
+    "website": "https://www.northwestern.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://common.northwestern.edu/v9/css/images/northwestern.svg",
+        "alt": "Northwestern University",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.northwestern.edu"
+  },
+  {
+    "rank": 50,
+    "name": "Kyoto University",
+    "region": "ASIA",
+    "city": "Kyoto",
+    "website": "https://www.kyoto-u.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kyoto-u.ac.jp/themes/custom/camphor/images/header-logo-vertical.svg",
+        "alt": "Kyoto University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kyoto-u.ac.jp/themes/custom/camphor/images/header-logo-horizontal.svg",
+        "alt": "Kyoto University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kyoto-u.ac.jp/themes/custom/camphor/images/logo.svg",
+        "alt": "Kyoto University",
+        "score": 8,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.kyoto-u.ac.jp/ja"
+  },
+  {
+    "rank": 53,
+    "name": "Korea Advanced Institute of Science and Technology",
+    "region": "ASIA",
+    "city": "Daejeon",
+    "website": "https://www.kaist.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.kaist.ac.kr"
+  },
+  {
+    "rank": 54,
+    "name": "University of Bristol",
+    "region": "UK",
+    "city": "Bristol",
+    "website": "https://www.bristol.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.bristol.ac.uk/assets/responsive-web-project/2.7.4/images/logos/uob-logo.svg",
+        "alt": "University of Bristol logo",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.bristol.ac.uk"
+  },
+  {
+    "rank": 55,
+    "name": "University of Amsterdam",
+    "region": "EU",
+    "city": "Amsterdam",
+    "website": "https://www.uva.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.uva.nl"
+  },
+  {
+    "rank": 56,
+    "name": "Yonsei University",
+    "region": "ASIA",
+    "city": "Seoul",
+    "website": "https://www.yonsei.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.yonsei.ac.kr"
+  },
+  {
+    "rank": 57,
+    "name": "Hong Kong Polytechnic University",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://www.polyu.edu.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.polyu.edu.hk/assets/img/main-logo-1x.png",
+        "alt": "PolyU Logo",
+        "score": 11,
+        "context": "header"
+      },
+      {
+        "url": "https://www.polyu.edu.hk/assets/img/blank.png",
+        "alt": "PolyU Logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.polyu.edu.hk"
+  },
+  {
+    "rank": 58,
+    "name": "Carnegie Mellon University",
+    "region": "USA",
+    "city": "Pittsburgh",
+    "website": "https://www.cmu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.cmu.edu"
+  },
+  {
+    "rank": 59,
+    "name": "University of Mnchen",
+    "region": "EU",
+    "city": "Munich",
+    "website": "https://www.lmu.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://cms-cdn.lmu.de/assets/img/Logo_LMU.svg",
+        "alt": "Logo Ludwig Maximilians Universität München",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.lmu.de/de/index.html"
+  },
+  {
+    "rank": 60,
+    "name": "University of Malaya",
+    "region": "ASIA",
+    "city": "Kuala Lumpur",
+    "website": "https://www.um.edu.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.um.edu.my/images/img-logo-UM.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.um.edu.my"
+  },
+  {
+    "rank": 61,
+    "name": "Duke University",
+    "region": "USA",
+    "city": "Durham",
+    "website": "https://duke.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.duke.edu/wp-content/plugins/duke-blocks/assets/images/dt-logo.svg",
+        "alt": "Duke Today logo",
+        "score": 12,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.duke.edu/wp-content/plugins/duke-blocks/assets/images/dd-white.svg",
+        "alt": "Duke Delivered logo",
+        "score": 8,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.duke.edu/wp-content/uploads/2026/08/20181207_duke_nus_1826-1024x683.jpg",
+        "alt": "A professor speaking to students with the Duke NUS logo on the wall in the background",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.duke.edu/"
+  },
+  {
+    "rank": 62,
+    "name": "City University of Hong Kong",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://www.cityu.edu.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.cityu.edu.hk"
+  },
+  {
+    "rank": 63,
+    "name": "Sorbonne University",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.sorbonne-universite.fr",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.sorbonne-universite.fr/sites/default/files/media/2019-10/logo_4.svg",
+        "alt": "",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.sorbonne-universite.fr/sites/default/files/media/2019-10/logo_4.svg",
+        "alt": "",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.sorbonne-universite.fr/themes/custom/boots/assets/images/intuitiv-logo.svg",
+        "alt": "Intuitiv Interactive",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.sorbonne-universite.fr"
+  },
+  {
+    "rank": 63,
+    "name": "Catholic University of Leuven",
+    "region": "EU",
+    "city": "Leuven",
+    "website": "https://www.kuleuven.be",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://stijl.kuleuven.be/releases/latest/img/svg/logo.svg",
+        "alt": "KU Leuven Logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.kuleuven.be/kuleuven/"
+  },
+  {
+    "rank": 65,
+    "name": "University of Auckland",
+    "region": "ASIA",
+    "city": "Auckland",
+    "website": "https://www.auckland.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.auckland.ac.nz/en.html"
+  },
+  {
+    "rank": 66,
+    "name": "University of Texas at Austin",
+    "region": "USA",
+    "city": "Austin",
+    "website": "https://www.utexas.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 67,
+    "name": "Korea University",
+    "region": "ASIA",
+    "city": "Seoul",
+    "website": "https://www.korea.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error _ssl.c:993: The handshake operation timed out>"
+  },
+  {
+    "rank": 68,
+    "name": "National Taiwan University",
+    "region": "ASIA",
+    "city": "Taipei",
+    "website": "https://www.ntu.edu.tw",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ntu.edu.tw/images/icon-logo-header.svg",
+        "alt": "國立臺灣大學",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ntu.edu.tw"
+  },
+  {
+    "rank": 69,
+    "name": "University of Warwick",
+    "region": "UK",
+    "city": "Coventry",
+    "website": "https://warwick.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://warwick.ac.uk/linkedin.png",
+        "alt": "LinkedIn logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://warwick.ac.uk/instagram.png",
+        "alt": "Instagram logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://warwick.ac.uk/facebook.png",
+        "alt": "Facebook logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://warwick.ac.uk/youtube.png",
+        "alt": "YouTube logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://warwick.ac.uk/tiktok.png",
+        "alt": "Tiktok logo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://warwick.ac.uk"
+  },
+  {
+    "rank": 69,
+    "name": "University of Illinois at Urbana-Champaign",
+    "region": "USA",
+    "city": "Urbana",
+    "website": "https://illinois.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://illinois.edu"
+  },
+  {
+    "rank": 71,
+    "name": "University of Buenos Aires",
+    "region": "OTHER",
+    "city": "Buenos Aires",
+    "website": "https://www.uba.ar",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uba.ar/imgs/logoheader40anios.png",
+        "alt": "UBA Universidad de Buenos Aires",
+        "score": 6,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.uba.ar"
+  },
+  {
+    "rank": 72,
+    "name": "University of California, San Diego",
+    "region": "USA",
+    "city": "San Diego",
+    "website": "https://ucsd.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucsd.edu/_resources/img/logo_UCSD.png",
+        "alt": "UC San Diego",
+        "score": 6,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.ucsd.edu/_resources/img/logo_UCSD.png",
+        "alt": "Brand",
+        "score": 6,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://ucsd.edu"
+  },
+  {
+    "rank": 73,
+    "name": "Universit Paris-Saclay",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.universite-paris-saclay.fr",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.universite-paris-saclay.fr/sites/default/files/media/2019-12/logo-ups-white_1.svg",
+        "alt": "Université Paris-Saclay (logo)",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.universite-paris-saclay.fr/sites/default/files/styles/345xauto/public/2021-02/GS_logos_0.png?itok=v7e_WAmO",
+        "alt": "Logo des Graduate Schools",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.universite-paris-saclay.fr/sites/default/files/styles/345xauto/public/2026-07/eupc-logo.jpg?itok=ozAYgwWg",
+        "alt": "eupc-logo",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.universite-paris-saclay.fr/sites/default/files/media/2019-12/logo-ups.svg",
+        "alt": "Université Paris-Saclay (aller à l'accueil)",
+        "score": 7,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.universite-paris-saclay.fr/sites/default/files/menu_icons/logo-pluginlabs-gris_0_0.svg",
+        "alt": "",
+        "score": 7,
+        "context": "main/nav"
+      }
+    ],
+    "sourcePage": "https://www.universite-paris-saclay.fr"
+  },
+  {
+    "rank": 74,
+    "name": "KTH - Royal Institute of Technology",
+    "region": "EU",
+    "city": "Stockholm",
+    "website": "https://www.kth.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kth.se/img/logotype-white-6f02f4554cba157ca832fa452bf242a4.svg",
+        "alt": "Till KTH:s startsida",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kth.se/polopoly_fs/1.1464756.1773991821!/image/_DSC7640_920_518.webp",
+        "alt": "KTH-logotyp på fasaden.",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.kth.se/polopoly_fs/1.1292383.1731584774!/image/full_hor9_750.webp",
+        "alt": "Unite-logotyp.",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.kth.se"
+  },
+  {
+    "rank": 75,
+    "name": "Lund University",
+    "region": "EU",
+    "city": "Lund",
+    "website": "https://www.lunduniversity.lu.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/LERU-logo.png",
+        "alt": "LERU logo",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/U21-logo.png",
+        "alt": "U21 logo",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/EUGLOH-logo-grayscale.jpg",
+        "alt": "EUGLOH logo",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/Lund_university_L_CMYK.svg",
+        "alt": "Lund university logotype, link to home page.",
+        "score": 8,
+        "context": "header"
+      },
+      {
+        "url": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/LundUniversity_C2line_NEG.svg",
+        "alt": "Lund university logotype.",
+        "score": 6,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.lunduniversity.lu.se"
+  },
+  {
+    "rank": 76,
+    "name": "University of Washington",
+    "region": "USA",
+    "city": "Seattle",
+    "website": "https://www.washington.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1010)>"
+  },
+  {
+    "rank": 77,
+    "name": "University of Western Australia",
+    "region": "ASIA",
+    "city": "Perth",
+    "website": "https://www.uwa.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.uwa.edu.au/home"
+  },
+  {
+    "rank": 78,
+    "name": "University of Glasgow",
+    "region": "UK",
+    "city": "Glasgow",
+    "website": "https://www.gla.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.gla.ac.uk/3t4/img/ug-keyline.svg",
+        "alt": "University of Glasgow logo small",
+        "score": 6,
+        "context": ""
+      },
+      {
+        "url": "https://www.gla.ac.uk/3t4/img/ug-keyline-large.svg",
+        "alt": "University of Glasgow logo",
+        "score": 6,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.gla.ac.uk"
+  },
+  {
+    "rank": 79,
+    "name": "Brown University",
+    "region": "USA",
+    "city": "Providence",
+    "website": "https://www.brown.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.brown.edu"
+  },
+  {
+    "rank": 80,
+    "name": "University of Birmingham",
+    "region": "UK",
+    "city": "Birmingham",
+    "website": "https://www.birmingham.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.birmingham.ac.uk/Images/logos/uob/uob-uk-logo-light.svg",
+        "alt": "University of Birmingham",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.birmingham.ac.uk/Images/logos/uob/uob-uk-logo-dark.svg",
+        "alt": "University of Birmingham",
+        "score": 8,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.birmingham.ac.uk"
+  },
+  {
+    "rank": 80,
+    "name": "University of Southampton",
+    "region": "UK",
+    "city": "Southampton",
+    "website": "https://www.southampton.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.southampton.ac.uk/themes/custom/drupal_endeavour/images/logo/logo-uk.svg",
+        "alt": "University of Southampton logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.southampton.ac.uk/themes/custom/drupal_endeavour/images/logo/shield-white.svg",
+        "alt": "University shield logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.southampton.ac.uk/themes/custom/drupal_endeavour/images/logo/russell-group.svg",
+        "alt": "Russell Group logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.southampton.ac.uk"
+  },
+  {
+    "rank": 82,
+    "name": "University of Adelaide",
+    "region": "ASIA",
+    "city": "Adelaide",
+    "website": "https://www.adelaide.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://adelaide.edu.au/content/dam/adelaideuniversity/images/global/logos/au-logo-dark-blue-horizontal.svg",
+        "alt": "Adelaide University",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://adelaide.edu.au/"
+  },
+  {
+    "rank": 82,
+    "name": "University of Leeds",
+    "region": "UK",
+    "city": "Leeds",
+    "website": "https://www.leeds.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.leeds.ac.uk"
+  },
+  {
+    "rank": 84,
+    "name": "Tokyo Institute of Technology",
+    "region": "ASIA",
+    "city": "Tokyo",
+    "website": "https://www.titech.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.titech.ac.jp/common/img/logo-header.svg",
+        "alt": "Institute of Science Tokyo 旧・東京工業大学",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.titech.ac.jp/common/img/logo-print01.gif",
+        "alt": "東京工業大学　Tokyo Institute of Technology",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.titech.ac.jp/common/img/logo.svg",
+        "alt": "Institute of Science Tokyo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.titech.ac.jp"
+  },
+  {
+    "rank": 84,
+    "name": "University of Heidelberg",
+    "region": "EU",
+    "city": "Heidelberg",
+    "website": "https://www.uni-heidelberg.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://backend.uni-heidelberg.de/sites/default/files/site_logo/icon-symbol-uh-logo-black_1_0.svg",
+        "alt": "Heidelberg University logo",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uni-heidelberg.de/en"
+  },
+  {
+    "rank": 86,
+    "name": "Osaka University",
+    "region": "ASIA",
+    "city": "Osaka",
+    "website": "https://www.osaka-u.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.osaka-u.ac.jp/assets/images/header/logo_for_folder.svg",
+        "alt": "教職員採用情報",
+        "score": 7,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.osaka-u.ac.jp/assets/images/header/logo_for_folder.svg",
+        "alt": "学内専用マイハンダイ",
+        "score": 7,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://www.osaka-u.ac.jp/ja"
+  },
+  {
+    "rank": 87,
+    "name": "Trinity College Dublin",
+    "region": "EU",
+    "city": "Dublin",
+    "website": "https://www.tcd.ie",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.tcd.ie/media/tcd/site-assets/images/tcd-logo.png",
+        "alt": "Trinity College Dublin, the University of Dublin",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.tcd.ie/media/tcd/site-assets/images/x-logo.svg",
+        "alt": "X",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.tcd.ie/media/tcd/site-assets/images/x-logo.svg",
+        "alt": "Twitter",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.tcd.ie"
+  },
+  {
+    "rank": 88,
+    "name": "University of Technology Sydney",
+    "region": "ASIA",
+    "city": "Sydney",
+    "website": "https://www.uts.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uts.edu.au/globalassets/resizer/restricted/media/all-pages-sitewide/header/restricteduts-alt-logoheader.svg",
+        "alt": "University of Technology Sydney home",
+        "score": 7,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.uts.edu.au/globalassets/resizer/restricted/media/all-pages-sitewide/header/restricteduts-alt-logoheader.svg",
+        "alt": "University of Technology Sydney home",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uts.edu.au/globalassets/resizer/restricted/media/all-pages-sitewide/header/restricteduts-logoheader.svg",
+        "alt": "University of Technology Sydney home",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uts.edu.au/globalassets/resizer/restricted/media/all-pages-sitewide/header/restricteduts-alt-logoheader.svg",
+        "alt": "University of Technology Sydney home",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uts.edu.au"
+  },
+  {
+    "rank": 89,
+    "name": "University of Durham",
+    "region": "UK",
+    "city": "Durham",
+    "website": "https://www.durham.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 89,
+    "name": "Pennsylvania State University",
+    "region": "USA",
+    "city": "University Park",
+    "website": "https://www.psu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://images.ctfassets.net/p7x3ai5plaz1/1wVBvFkhF0ArrdaMlzLiCi/125b0659267cacef241e88b5517a51eb/logotype.svg",
+        "alt": "Penn State",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.psu.edu"
+  },
+  {
+    "rank": 89,
+    "name": "Purdue University",
+    "region": "USA",
+    "city": "West Lafayette",
+    "website": "https://www.purdue.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.purdue.edu/home/wp-content/themes/purdue-home-theme-beta/imgs/PU-V.svg",
+        "alt": "Purdue Logo",
+        "score": 6,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.purdue.edu"
+  },
+  {
+    "rank": 92,
+    "name": "University of Sao Paulo",
+    "region": "OTHER",
+    "city": "São Paulo",
+    "website": "https://www5.usp.br",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 93,
+    "name": "Pontifical Catholic University of Chile",
+    "region": "OTHER",
+    "city": "Santiago",
+    "website": "https://www.uc.cl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uc.cl/site/templates/dist/images/logo-uc-wh.svg",
+        "alt": "Logo UC Footer",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uc.cl/site/templates/dist/images/logo-g9_blanco.svg",
+        "alt": "Logo G9",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uc.cl/site/assets/files/25087/logo_vision_universitaria_560x350_px.560x350.jpg",
+        "alt": "Logo de Visión Universitaria",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://kit-digital-uc-prod.s3.amazonaws.com/assets/acreditaciones/acreditacion_7_grande_sin-areas_v11.svg",
+        "alt": "Logotipo del proceso de Acreditación Institucional con el número 7 prominente, el texto Máxima Acreditación en todas las áreas, y la fecha de finalización.",
+        "score": 6,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uc.cl/site/assets/files/10516/canvas-uc_560x350-1.560x350.jpg",
+        "alt": "Logo de Canvas",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.uc.cl"
+  },
+  {
+    "rank": 94,
+    "name": "Moscow State University",
+    "region": "EU",
+    "city": "Moscow",
+    "website": "https://www.msu.ru",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://msu.ru/"
+  },
+  {
+    "rank": 94,
+    "name": "National Autonomous University of Mexico",
+    "region": "OTHER",
+    "city": "Mexico City",
+    "website": "https://www.unam.mx",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unam.mx/sites/all/themes/unam/logo.png",
+        "alt": "Inicio",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.unam.mx"
+  },
+  {
+    "rank": 96,
+    "name": "University of Alberta",
+    "region": "USA",
+    "city": "Edmonton",
+    "website": "https://www.ualberta.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 97,
+    "name": "Free University of Berlin",
+    "region": "EU",
+    "city": "Berlin",
+    "website": "https://www.fu-berlin.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.fu-berlin.de"
+  },
+  {
+    "rank": 98,
+    "name": "Pohang University of Science and Technology",
+    "region": "ASIA",
+    "city": "Pohang",
+    "website": "https://www.postech.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.postech.ac.kr/kor/index.do"
+  },
+  {
+    "rank": 99,
+    "name": "RWTH Aachen University",
+    "region": "EU",
+    "city": "Aachen",
+    "website": "https://www.rwth-aachen.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.rwth-aachen.de/global/show_picture.asp?id=aaaaaaaaaaagazb",
+        "alt": "RWTH Logo",
+        "score": 11,
+        "context": "header"
+      },
+      {
+        "url": "https://www.rwth-aachen.de/global/show_picture.asp?id=aaaaaaaaaaaaafa",
+        "alt": "Logo JARA - Jülich Aachen Research Alliance",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.rwth-aachen.de/global/show_picture.asp?id=aaaaaaaaaaescnc",
+        "alt": "Logo Uniklinik RWTH Aachen",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.rwth-aachen.de/go/id/a/?lidx=1"
+  },
+  {
+    "rank": 100,
+    "name": "University of Copenhagen",
+    "region": "EU",
+    "city": "Copenhagen",
+    "website": "https://www.ku.dk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ku.dk"
+  },
+  {
+    "rank": 101,
+    "name": "King Fahd University of Petroleum & Minerals",
+    "region": "ASIA",
+    "city": "Dhahran",
+    "website": "https://www.kfupm.edu.sa",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kfupm.edu.sa/images/default-source/default-album/kfupm_logo_en.svg?sfvrsn=f12b570c_0",
+        "alt": "kfupm_logo_en",
+        "score": 11,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://www.kfupm.edu.sa"
+  },
+  {
+    "rank": 102,
+    "name": "Karlsruhe Institute of Technology",
+    "region": "EU",
+    "city": "Karlsruhe",
+    "website": "https://www.kit.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.kit.edu"
+  },
+  {
+    "rank": 103,
+    "name": "Uppsala University",
+    "region": "EU",
+    "city": "Uppsala",
+    "website": "https://www.uu.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uu.se/images/18.17dda5f1791cdbd287d9b55/1622452923523/uu-logo-red.svg",
+        "alt": "Uppsala universitet",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uu.se/images/18.568cd288179fad3f3ec3b54/1624518935591/logo-facebook.svg",
+        "alt": "Uppsala universitet på facebook",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uu.se/images/18.568cd288179fad3f3ec3b51/1624518935561/logo-instagram.svg",
+        "alt": "Uppsala universitet på Instagram",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uu.se/images/18.568cd288179fad3f3ec3b53/1624518935581/logo-youtube.svg",
+        "alt": "Uppsala universitet på Youtube",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uu.se/images/18.568cd288179fad3f3ec3b52/1624518935571/logo-linkedin.svg",
+        "alt": "Uppsala universitet på Linkedin",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.uu.se"
+  },
+  {
+    "rank": 104,
+    "name": "University of St. Andrews",
+    "region": "UK",
+    "city": "St Andrews",
+    "website": "https://www.st-andrews.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.st-andrews.ac.uk"
+  },
+  {
+    "rank": 105,
+    "name": "Utrecht University",
+    "region": "EU",
+    "city": "Utrecht",
+    "website": "https://www.uu.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uu.nl/themes/custom/corp/src/images/uu-logo-nl.svg",
+        "alt": "Logo Universiteit Utrecht, link naar homepage",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uu.nl"
+  },
+  {
+    "rank": 105,
+    "name": "University of Sheffield",
+    "region": "UK",
+    "city": "Sheffield",
+    "website": "https://www.sheffield.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://sheffield.ac.uk/themes/custom/uos_public/images/logos/uos-crest.svg",
+        "alt": "University of Sheffield homepage",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://sheffield.ac.uk/sites/default/files/styles/original/public/2022-10/social-in.png?itok=m9DqQQ2X",
+        "alt": "Instagram logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://sheffield.ac.uk/sites/default/files/styles/original/public/2025-10/social-icon-threads.png?h=ebc76fda&itok=5WdwSc4H",
+        "alt": "Threads logo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://sheffield.ac.uk/"
+  },
+  {
+    "rank": 107,
+    "name": "Tohoku University",
+    "region": "ASIA",
+    "city": "Sendai",
+    "website": "https://www.tohoku.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.tohoku.ac.jp/assets/img/svgs/logo.svg",
+        "alt": "Tohoku University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.tohoku.ac.jp/assets/img/svgs/logo.svg",
+        "alt": "Tohoku University",
+        "score": 8,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.tohoku.ac.jp/en/"
+  },
+  {
+    "rank": 108,
+    "name": "Boston University",
+    "region": "USA",
+    "city": "Boston",
+    "website": "https://www.bu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.bu.edu"
+  },
+  {
+    "rank": 108,
+    "name": "University of Nottingham",
+    "region": "UK",
+    "city": "Nottingham",
+    "website": "https://www.nottingham.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.nottingham.ac.uk/etc.clientlibs/uon/clientlibs/clientlib-v2/resources/images/UoN-Logo-Dark.svg",
+        "alt": "University of Nottingham Logo",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.nottingham.ac.uk"
+  },
+  {
+    "rank": 109,
+    "name": "Technical University of Denmark",
+    "region": "EU",
+    "city": "Lyngby",
+    "website": "https://www.dtu.dk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1010)>"
+  },
+  {
+    "rank": 109,
+    "name": "University of Zurich",
+    "region": "EU",
+    "city": "Zurich",
+    "website": "https://www.uzh.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uzh.ch/dam/jcr:aab89268-9d70-4e28-b49e-77f7298dcf58/logo_swissuniversities.svg",
+        "alt": "swissuniversities",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uzh.ch/dam/jcr:483afe9a-d8eb-4324-93d6-3195b72cf2c6/logo_u21.svg",
+        "alt": "Universitas 21",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.uzh.ch/de.html"
+  },
+  {
+    "rank": 111,
+    "name": "Polytechnic University of Milan",
+    "region": "EU",
+    "city": "Milan",
+    "website": "https://www.polimi.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.polimi.it/fileadmin/user_upload/Ricerca/images/hr-excellence/HR_Excellence_in_Research_Logo_Bianco.svg",
+        "alt": "HR excellence logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.polimi.it/_assets/4b51f00386267395f41e0940abbcd656/Images/logo.svg",
+        "alt": "Politecnico di Milano",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.polimi.it/_assets/4b51f00386267395f41e0940abbcd656/Images/logo-light.svg",
+        "alt": "",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.polimi.it"
+  },
+  {
+    "rank": 113,
+    "name": "Aalto University",
+    "region": "EU",
+    "city": "Espoo",
+    "website": "https://www.aalto.fi",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 114,
+    "name": "Georgia Institute of Technology",
+    "region": "USA",
+    "city": "Atlanta",
+    "website": "https://www.gatech.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.gatech.edu/themes/custom/gatech/images/gatech-color_logo.png",
+        "alt": "Logo",
+        "score": 11,
+        "context": "header"
+      },
+      {
+        "url": "https://www.gatech.edu/modules/contrib/gt_tools/images/gt-logo.svg",
+        "alt": "Georgia Tech",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.gatech.edu"
+  },
+  {
+    "rank": 115,
+    "name": "University of Waterloo",
+    "region": "USA",
+    "city": "Waterloo",
+    "website": "https://uwaterloo.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://uwaterloo.ca"
+  },
+  {
+    "rank": 116,
+    "name": "University of Wisconsin-Madison",
+    "region": "USA",
+    "city": "Madison",
+    "website": "https://www.wisc.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.wisc.edu/images/news/JEOP-S41-091724-01667-4x3-1-608x456.jpg",
+        "alt": "The empty studio set of the Jeopardy! game show features a large illuminated screen displaying the logo, a central host lectern, and contestant podiums under blue and purple studio lighting.",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.wisc.edu"
+  },
+  {
+    "rank": 117,
+    "name": "University of Helsinki",
+    "region": "EU",
+    "city": "Helsinki",
+    "website": "https://www.helsinki.fi",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.helsinki.fi/en"
+  },
+  {
+    "rank": 118,
+    "name": "Indian Institute of Technology, Bombay",
+    "region": "ASIA",
+    "city": "Mumbai",
+    "website": "https://www.iitb.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error timed out>"
+  },
+  {
+    "rank": 119,
+    "name": "University of Oslo",
+    "region": "EU",
+    "city": "Oslo",
+    "website": "https://www.uio.no",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ub.uio.no/kurs-arrangement/arrangementer/realfag/abels-tarn/bilder/abelstarn_nylogo_nett.jpeg?alt=listing",
+        "alt": "Bildet kan inneholde: logo",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.ub.uio.no/kurs-arrangement/arrangementer/realfag/abels-tarn/bilder/abelstarn_nylogo_nett.jpeg?alt=listing",
+        "alt": "Bildet kan inneholde: logo",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uio.no/bilder/circleu-theguild-logo.png",
+        "alt": "Circle U. og The Guild logoer",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uio.no/vrtx/dist/resources/uio2/css/images/footer/uio-logo-no.svg",
+        "alt": "Universitetet i Oslo logo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.uio.no"
+  },
+  {
+    "rank": 120,
+    "name": "Queen Mary, University of London",
+    "region": "UK",
+    "city": "London",
+    "website": "https://www.qmul.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 120,
+    "name": "Western University",
+    "region": "USA",
+    "city": "London (Ontario)",
+    "website": "https://www.uwo.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uwo.ca/web_standards/2025-global/assets/img/logos/d-western-logo.svg",
+        "alt": "Western University",
+        "score": 10,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.uwo.ca/web_standards/2025-global/assets/img/logos/d-western-logo.svg",
+        "alt": "Western University",
+        "score": 8,
+        "context": ""
+      },
+      {
+        "url": "https://www.uwo.ca/web_standards/2025-global/assets/img/logos/allin-lockup-full-reversed-white.svg",
+        "alt": "Western University",
+        "score": 8,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uwo.ca/web_standards/2023-hp/assets/img/assets/logos/u15-logo.svg",
+        "alt": "U15 Group of Canadian Research Universities",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.uwo.ca/web_standards/2023-hp/assets/img/assets/logos/mustangs-logo.svg",
+        "alt": "Western Mugstangs",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.uwo.ca"
+  },
+  {
+    "rank": 122,
+    "name": "University of Qatar",
+    "region": "ASIA",
+    "city": "Doha",
+    "website": "https://www.qu.edu.qa",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.qu.edu.qa/Style Library/assets/images/qulogo.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.qu.edu.qa/Style Library/assets/images/qulogo.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.qu.edu.qa/en-us/Offices/its/SiteAssets/danger.png",
+        "alt": "Qatar University Logo",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.qu.edu.qa/ar/"
+  },
+  {
+    "rank": 123,
+    "name": "Sungkyunkwan University",
+    "region": "ASIA",
+    "city": "Seoul",
+    "website": "https://www.skku.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.skku.edu/skku/index.do"
+  },
+  {
+    "rank": 123,
+    "name": "RMIT University",
+    "region": "ASIA",
+    "city": "Melbourne",
+    "website": "https://www.rmit.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.rmit.edu.au"
+  },
+  {
+    "rank": 125,
+    "name": "University of Southern California",
+    "region": "USA",
+    "city": "Los Angeles",
+    "website": "https://www.usc.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.usc.edu"
+  },
+  {
+    "rank": 126,
+    "name": "University College Dublin",
+    "region": "EU",
+    "city": "Dublin",
+    "website": "https://www.ucd.ie",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 126,
+    "name": "Humboldt University of Berlin",
+    "region": "EU",
+    "city": "Berlin",
+    "website": "https://www.hu-berlin.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.hu-berlin.de"
+  },
+  {
+    "rank": 128,
+    "name": "Stockholm University",
+    "region": "EU",
+    "city": "Stockholm",
+    "website": "https://www.su.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.su.se/images/18.5a231a8f188bd840a1328111/1692259247399/su_logo_horizontal_swedish.svg",
+        "alt": "Stockholms universitet",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.su.se/images/18.7e64877b1926afdc099b19f/1729174936147/su_logo_print_swedish.svg",
+        "alt": "Stockholms universitet",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.su.se/images/18.16e68fb219937120b11cba5/1759220649190/su_logo_horizontal_no_text.svg",
+        "alt": "Stockholms universitet",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.su.se/images/18.16e68fb219937120b11cba5/1759220649190/su_logo_horizontal_no_text.svg",
+        "alt": "Stockholms universitet",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.su.se"
+  },
+  {
+    "rank": 129,
+    "name": "Newcastle University, Newcastle-upon-Tyne",
+    "region": "UK",
+    "city": "Newcastle",
+    "website": "https://www.ncl.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ncl.ac.uk"
+  },
+  {
+    "rank": 130,
+    "name": "University of California, Davis",
+    "region": "USA",
+    "city": "Davis",
+    "website": "https://www.ucdavis.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucdavis.edu/sites/default/files/uc-davis-extended-logo.svg",
+        "alt": "Site Logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.ucdavis.edu"
+  },
+  {
+    "rank": 131,
+    "name": "University of Basel",
+    "region": "EU",
+    "city": "Basel",
+    "website": "https://www.unibas.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unibas.ch/dam/jcr:93abfa0e-58d6-45ed-930a-de414ca40b13/uni-basel-logo.2018-03-26-12-26-39.svg",
+        "alt": "Universität Basel",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.unibas.ch/dam/jcr:57b41f98-5c89-4684-ac5a-a02739f0a5ac/swissuni.2014-12-23-01-45-25.gif",
+        "alt": "Logo Swiss Universities Footer",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.unibas.ch/de"
+  },
+  {
+    "rank": 132,
+    "name": "University of Rome - La Sapienza",
+    "region": "EU",
+    "city": "Rome",
+    "website": "https://www.uniroma1.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.uniroma1.it/it/"
+  },
+  {
+    "rank": 133,
+    "name": "Macquarie University",
+    "region": "ASIA",
+    "city": "Sydney",
+    "website": "https://www.mq.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 133,
+    "name": "University of Bologna",
+    "region": "EU",
+    "city": "Bologna",
+    "website": "https://www.unibo.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unibo.it/it/++theme++unibotheme.portale/img/header/sigillo1x_xl.png?v=2",
+        "alt": "Logo Università di Bologna",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.unibo.it/it"
+  },
+  {
+    "rank": 133,
+    "name": "University of Science and Technology of China",
+    "region": "ASIA",
+    "city": "Hefei",
+    "website": "https://en.ustc.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://en.ustc.edu.cn"
+  },
+  {
+    "rank": 136,
+    "name": "Eindhoven University of Technology",
+    "region": "EU",
+    "city": "Eindhoven",
+    "website": "https://www.tue.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.tue.nl/en/"
+  },
+  {
+    "rank": 137,
+    "name": "University of Vienna",
+    "region": "EU",
+    "city": "Vienna",
+    "website": "https://www.univie.ac.at",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 138,
+    "name": "National University of Malaysia",
+    "region": "ASIA",
+    "city": "Bangi",
+    "website": "https://www.ukm.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ukm.my/portal/"
+  },
+  {
+    "rank": 139,
+    "name": "Chalmers University of Technology",
+    "region": "EU",
+    "city": "Gothenburg",
+    "website": "https://www.chalmers.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.chalmers.se/_next/static/media/chalmers-emblem-white.11pif_jbe56ne.svg",
+        "alt": "Chalmers logo",
+        "score": 6,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.chalmers.se"
+  },
+  {
+    "rank": 139,
+    "name": "University of Chile",
+    "region": "OTHER",
+    "city": "Santiago",
+    "website": "https://www.uchile.cl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://uchile.cl/.resources/portal-uchile/images/logo-universidad-de-chile.svg",
+        "alt": "Escudo Universidad de Chile",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://uchile.cl/"
+  },
+  {
+    "rank": 141,
+    "name": "Lancaster University",
+    "region": "UK",
+    "city": "Lancaster",
+    "website": "https://www.lancaster.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.lancaster.ac.uk/media/wdp/style-assets/images/logos/lu-logo.svg",
+        "alt": "Lancaster University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.lancaster.ac.uk/media/wdp/style-assets/images/RGB_Prize-winners-White.png",
+        "alt": "Queen Elizabeth Prize for Education 2025 logo",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.lancaster.ac.uk/media/wdp/style-assets/images/qs-stars-overall-rating.png",
+        "alt": "QS Stars rating excellent logo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.lancaster.ac.uk"
+  },
+  {
+    "rank": 141,
+    "name": "Rice University",
+    "region": "USA",
+    "city": "Houston",
+    "website": "https://www.rice.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.rice.edu/sites/g/files/bxs2566/files/2019-08/Rice_University_Horizontal_Blue.svg",
+        "alt": "Rice University Logo",
+        "score": 8,
+        "context": "header"
+      },
+      {
+        "url": "https://www.rice.edu/sites/g/files/bxs2566/files/2019-08/Rice_University_Horizontal_Blue.svg",
+        "alt": "Rice University Logo",
+        "score": 6,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.rice.edu"
+  },
+  {
+    "rank": 141,
+    "name": "University of Leiden",
+    "region": "EU",
+    "city": "Leiden",
+    "website": "https://www.universiteitleiden.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.universiteitleiden.nl"
+  },
+  {
+    "rank": 144,
+    "name": "Aarhus University",
+    "region": "EU",
+    "city": "Aarhus",
+    "website": "https://international.au.dk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://international.au.dk"
+  },
+  {
+    "rank": 145,
+    "name": "Nanjing University",
+    "region": "ASIA",
+    "city": "Nanjing",
+    "website": "https://www.nju.edu.cn/EN",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "rank": 146,
+    "name": "University of Science, Malaysia",
+    "region": "ASIA",
+    "city": "Penang",
+    "website": "https://www.usm.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 147,
+    "name": "Technical University of Berlin",
+    "region": "EU",
+    "city": "Berlin",
+    "website": "https://www.tu.berlin/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.static.tu.berlin/_assets/2ff76cde2126808ef662c87f1945ad8e/Images/Logos/tu-berlin-wortmarke-white.svg",
+        "alt": "TU Berlin Logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.static.tu.berlin/_assets/2ff76cde2126808ef662c87f1945ad8e/Images/Logos/tu-berlin-logo-long-red.svg",
+        "alt": "TU Berlin",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.tu.berlin/en"
+  },
+  {
+    "rank": 148,
+    "name": "University of Putra Malaysia",
+    "region": "ASIA",
+    "city": "Selangor",
+    "website": "https://upm.edu.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://upm.edu.my/assets/images23/20170406143426UPM-New_FINAL.jpg",
+        "alt": "Universiti Putra Malaysia",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://upm.edu.my/assets/images23/20170406143426UPM-New_FINAL.jpg",
+        "alt": "Universiti Putra Malaysia",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://upm.edu.my"
+  },
+  {
+    "rank": 149,
+    "name": "King Abdulaziz University",
+    "region": "ASIA",
+    "city": "Jeddah",
+    "website": "https://www.kau.edu.sa",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kau.edu.sa/images/dga/ai_logo.svg",
+        "alt": "Artificial Intelligence Logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.kau.edu.sa/_next/image?url=%2Fimages%2Flogo-dark.png&w=384&q=75",
+        "alt": "King Abdulaziz University",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kau.edu.sa/_next/image?url=%2Fimages%2Flogo-dark.png&w=384&q=75",
+        "alt": "King Abdulaziz University",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kau.edu.sa/_next/image?url=%2Fimages%2Flogo.webp&w=640&q=75",
+        "alt": "KAU Logo",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.kau.edu.sa/_next/image?url=%2Fimages%2Flogo-dark.png&w=384&q=75",
+        "alt": "King Abdulaziz University",
+        "score": 7,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.kau.edu.sa/en"
+  },
+  {
+    "rank": 150,
+    "name": "University of Bath",
+    "region": "UK",
+    "city": "Bath",
+    "website": "https://www.bath.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.bath.ac.uk"
+  },
+  {
+    "rank": 150,
+    "name": "Indian Institute of Technology, Delhi",
+    "region": "ASIA",
+    "city": "Delhi",
+    "website": "https://home.iitd.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 152,
+    "name": "Michigan State University",
+    "region": "USA",
+    "city": "East Lansing",
+    "website": "https://msu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://msu.edu"
+  },
+  {
+    "rank": 152,
+    "name": "Nagoya University",
+    "region": "ASIA",
+    "city": "Nagoya",
+    "website": "https://en.nagoya-u.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://en.nagoya-u.ac.jp/assets/img/common/logo-nagoya-university.svg",
+        "alt": "名古屋大学 NAGOYA UNIVERSITY",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://en.nagoya-u.ac.jp/assets/img/common/logo-nagoya-university.svg",
+        "alt": "名古屋大学 NAGOYA UNIVERSITY",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://en.nagoya-u.ac.jp/assets/img/common/logo-nagoya-university.svg",
+        "alt": "名古屋大学 NAGOYA UNIVERSITY",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://en.nagoya-u.ac.jp/assets/img/common/logo-nagoya-university.svg",
+        "alt": "名古屋大学 NAGOYA UNIVERSITY",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://en.nagoya-u.ac.jp"
+  },
+  {
+    "rank": 154,
+    "name": "Texas A&M University",
+    "region": "USA",
+    "city": "College Station",
+    "website": "https://www.tamu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.tamu.edu/_files/images/logos/primaryTAM.png",
+        "alt": "Texas A&M University",
+        "score": 9,
+        "context": "nav/nav/header"
+      },
+      {
+        "url": "https://www.tamu.edu/_files/images/logos/TAM-Stack-white.png",
+        "alt": "Texas A&M University",
+        "score": 7,
+        "context": "footer/footer"
+      },
+      {
+        "url": "https://cache.cloud.tamu.edu/logo-strips/150.svg",
+        "alt": "150 Here for Good",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.tamu.edu/_files/images/home/_events/JKW-150-Celebration.jpg",
+        "alt": "Jack K. Williams Administration building at sunset with the 150th celebration logo in the bottom right corner",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.tamu.edu/_files/images/home/_events/Kyle-Field-150-fireworks.jpg",
+        "alt": "Fireworks over Kyle Field at night with the Texas A&M 150th celebration logo in the bottom right corner",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.tamu.edu"
+  },
+  {
+    "rank": 155,
+    "name": "University of Geneva",
+    "region": "EU",
+    "city": "Geneva",
+    "website": "https://www.unige.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unige.ch/cdn/themes/unige2016/img/unige-logo.svg",
+        "alt": "Université de Genève",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unige.ch/cdn/themes/unige2016/img/unige-logo.svg",
+        "alt": "Université de Genève",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.unige.ch"
+  },
+  {
+    "rank": 155,
+    "name": "University of North Carolina at Chapel Hill",
+    "region": "USA",
+    "city": "Chapel Hill",
+    "website": "https://www.unc.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unc.edu/wp-content/uploads/2025/11/University_Signature_White_Navy_rgb_h.svg",
+        "alt": "The University of North Carolina at Chapel Hill",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unc.edu/wp-content/uploads/2025/11/University_Signature_White_Navy_rgb_h.svg",
+        "alt": "The University of North Carolina at Chapel Hill logo",
+        "score": 6,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.unc.edu"
+  },
+  {
+    "rank": 155,
+    "name": "Wageningen University & Research Center",
+    "region": "EU",
+    "city": "Wageningen",
+    "website": "https://www.wur.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1010)>"
+  },
+  {
+    "rank": 158,
+    "name": "Erasmus University Rotterdam",
+    "region": "EU",
+    "city": "Rotterdam",
+    "website": "https://www.eur.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.eur.nl/sites/corporate/files/styles/responsive_w50_r16_9/public/2026-05/eur-6117-ai-hhh_website_header_01.png.avif?h=b22bdfc9&itok=NOVuoIQx",
+        "alt": "AI HHH logo",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.eur.nl"
+  },
+  {
+    "rank": 159,
+    "name": "University of Groningen",
+    "region": "EU",
+    "city": "Groningen",
+    "website": "https://www.rug.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.rug.nl/_definition/shared/images/logo--nl.svg",
+        "alt": "Rijksuniversiteit Groningen",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.rug.nl"
+  },
+  {
+    "rank": 159,
+    "name": "University of Montreal",
+    "region": "USA",
+    "city": "Montreal",
+    "website": "https://www.umontreal.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.umontreal.ca"
+  },
+  {
+    "rank": 161,
+    "name": "University of Bern",
+    "region": "EU",
+    "city": "Bern",
+    "website": "https://www.unibe.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unibe.ch/assets/media/image/logo_unibern@2x.png",
+        "alt": "Universität Bern",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unibe.ch/unibe/portal/content/e1256742/teaser_item1732937/initiativeafrique_website_teaser_ger.jpg",
+        "alt": "Logo Initiative Afrqiue",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.unibe.ch/assets/media/image/logo-uni-bern.svg",
+        "alt": "Universität Bern",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.unibe.ch/assets/media/image/logo-swissuniversities.svg",
+        "alt": "Swiss University",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.unibe.ch/assets/media/image/logo-sakkr.svg",
+        "alt": "Akkreditierung",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.unibe.ch"
+  },
+  {
+    "rank": 162,
+    "name": "Hanyang University",
+    "region": "ASIA",
+    "city": "Seoul",
+    "website": "https://www.hanyang.ac.kr",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.hanyang.ac.kr/o/hyu_homepage-theme/images/icons/logo_global.png",
+        "alt": "한양대학교",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.hanyang.ac.kr/home"
+  },
+  {
+    "rank": 163,
+    "name": "Al-Farabi Kazakh National University",
+    "region": "ASIA",
+    "city": "Almaty",
+    "website": "https://www.kaznu.kz",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010)>"
+  },
+  {
+    "rank": 164,
+    "name": "Complutense University of Madrid",
+    "region": "EU",
+    "city": "Madrid",
+    "website": "https://www.ucm.es",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucm.es/themes/ucm24/media/img/logo.svg",
+        "alt": "Universidad Complutense de Madrid",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ucm.es"
+  },
+  {
+    "rank": 165,
+    "name": "University of Liverpool",
+    "region": "UK",
+    "city": "Liverpool",
+    "website": "https://www.liverpool.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://wsrv.nl/?url=www.liverpool.ac.uk/media/livacuk/redbrick/QS-rankings-2027.png&fit=contain&w=720&h=720&trim=10",
+        "alt": "QS World rankings logo",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://wsrv.nl/?url=www.liverpool.ac.uk/media/livacuk/about/Accolades,-,TEF.png&fit=contain&w=720&h=720&trim=10",
+        "alt": "The TEF 2023 Gold logo.",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://wsrv.nl/?url=www.liverpool.ac.uk/media/livacuk/about/the-ranking.png&fit=contain&w=720&h=720&trim=10",
+        "alt": "The Times Higher Education logo. Next to it, it says 'World University Rankings",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.liverpool.ac.uk/media/livacuk/redbrick/the-promo-black.jpg",
+        "alt": "Times Higher Education Awards logo",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.liverpool.ac.uk"
+  },
+  {
+    "rank": 165,
+    "name": "University of Barcelona",
+    "region": "EU",
+    "city": "Barcelona",
+    "website": "https://www.ub.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 167,
+    "name": "University of Wollongong",
+    "region": "ASIA",
+    "city": "Wollongong",
+    "website": "https://www.uow.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uow.edu.au/assets/logos/logo-svgs/logo-horizontal.svg",
+        "alt": "University of Wollongong Australia logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uow.edu.au/assets/logos/logo-svgs/logo-white.svg",
+        "alt": "University of Wollongong Australia logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://pxl-uoweduau.terminalfour.net/prod01/channel_3/assets/logos/icons/study-area-icons/Accounting_Finance_Economics.svg",
+        "alt": "",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://pxl-uoweduau.terminalfour.net/prod01/channel_3/assets/logos/icons/study-area-icons/Business_Management_Marketing_RED.svg",
+        "alt": "",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://pxl-uoweduau.terminalfour.net/prod01/channel_3/assets/logos/icons/study-area-icons/Communications_Media_RED.svg",
+        "alt": "",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.uow.edu.au"
+  },
+  {
+    "rank": 167,
+    "name": "Kyushu University",
+    "region": "ASIA",
+    "city": "Fukuoka",
+    "website": "https://www.kyushu-u.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.kyushu-u.ac.jp/img/header_common/logo_header.png",
+        "alt": "九州大学 Kyushu University",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kyushu-u.ac.jp/img/header_common/logo_header_sp_active.png",
+        "alt": "九州大学 Kyushu University",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.kyushu-u.ac.jp/img/header_common/logo_header_sp.png",
+        "alt": "九州大学 Kyushu University",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.kyushu-u.ac.jp/ja/"
+  },
+  {
+    "rank": 169,
+    "name": "University of Exeter",
+    "region": "UK",
+    "city": "Exeter",
+    "website": "https://www.exeter.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.exeter.ac.uk/v8media/recruitmentsites/images/homepage/uoe-logo.svg",
+        "alt": "University of Exeter",
+        "score": 10,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.exeter.ac.uk/v8media/recruitmentsites/images/homepage/uoe-logo.svg",
+        "alt": "University of Exeter logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.exeter.ac.uk/v8media/recruitmentsites/images/homepage/homepage-banner-SOMO2.webp",
+        "alt": "UK Social Mobility Awards logo",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.exeter.ac.uk/v8media/recruitmentsites/images/homepage/TEF-2023-banner.webp",
+        "alt": "TEF 2023 logo",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.exeter.ac.uk"
+  },
+  {
+    "rank": 169,
+    "name": "University of Gent",
+    "region": "EU",
+    "city": "Ghent",
+    "website": "https://www.ugent.be",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ugent.be/++theme++ugent/static/images/logo_ugent_nl.svg",
+        "alt": "Universiteit Gent",
+        "score": 7,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.ugent.be"
+  },
+  {
+    "rank": 171,
+    "name": "University of Cape Town",
+    "region": "OTHER",
+    "city": "Cape Town",
+    "website": "https://www.uct.ac.za",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uct.ac.za/themes/custom/blip_uct/logo.svg",
+        "alt": "University of Cape Town logo",
+        "score": 12,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.uct.ac.za/themes/custom/blip_uct/logo.svg",
+        "alt": "University of Cape Town logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.uct.ac.za"
+  },
+  {
+    "rank": 172,
+    "name": "University of Reading",
+    "region": "UK",
+    "city": "Reading",
+    "website": "https://www.reading.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.reading.ac.uk"
+  },
+  {
+    "rank": 173,
+    "name": "Hokkaido University",
+    "region": "ASIA",
+    "city": "Sapporo",
+    "website": "https://www.global.hokudai.ac.jp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.global.hokudai.ac.jp/wp/wp-content/themes/HU_2510/assets/images/title.svg",
+        "alt": "Hokkaido University",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.global.hokudai.ac.jp"
+  },
+  {
+    "rank": 174,
+    "name": "Curtin University",
+    "region": "ASIA",
+    "city": "Perth",
+    "website": "https://www.curtin.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.curtin.edu.au"
+  },
+  {
+    "rank": 175,
+    "name": "Autonomous University of Barcelona",
+    "region": "EU",
+    "city": "Barcelona",
+    "website": "https://www.uab.cat",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uab.cat/Imatge/423/772/logo-hr,0.png",
+        "alt": "Logotip HR Excellence in Research",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uab.cat/Imatge/615/621/logo-ECIU,0.png",
+        "alt": "Logo ECIU University",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uab.cat/Imatge/554/849/logo-EUA,0.png",
+        "alt": "Logo Xarxa EUA",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uab.cat/Imatge/688/150/logo-XVU,0.png",
+        "alt": "Logo Xarxa Vives",
+        "score": 9,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.uab.cat"
+  },
+  {
+    "rank": 176,
+    "name": "Washington University in St. Louis",
+    "region": "USA",
+    "city": "St. Louis",
+    "website": "https://www.wustl.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://washu.edu/"
+  },
+  {
+    "rank": 176,
+    "name": "McMaster University",
+    "region": "USA",
+    "city": "Hamilton",
+    "website": "https://www.mcmaster.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.mcmaster.ca"
+  },
+  {
+    "rank": 178,
+    "name": "University of California, Santa Barbara",
+    "region": "USA",
+    "city": "Santa Barbara",
+    "website": "https://www.ucsb.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ucsb.edu"
+  },
+  {
+    "rank": 179,
+    "name": "University of Newcastle, Australia",
+    "region": "ASIA",
+    "city": "Newcastle",
+    "website": "https://www.newcastle.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 179,
+    "name": "University of Los Andes",
+    "region": "OTHER",
+    "city": "Bogotá",
+    "website": "https://uniandes.edu.co",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.uniandes.edu.co:443/"
+  },
+  {
+    "rank": 181,
+    "name": "University of Technology, Malaysia",
+    "region": "ASIA",
+    "city": "Johor Bahru",
+    "website": "https://www.utm.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.utm.my/wp-content/uploads/2026/07/Logo-UTM-white.png",
+        "alt": "UTM Admission",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.utm.my"
+  },
+  {
+    "rank": 181,
+    "name": "Waseda University",
+    "region": "ASIA",
+    "city": "Tokyo",
+    "website": "https://www.waseda.jp/top/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.waseda.jp/top/en/assets/themes/waseda-template-engine-main-en/img/logo_top.png",
+        "alt": "Waseda University",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.waseda.jp/top/en/assets/themes/waseda-template-engine-main-en/img/logo_top.png",
+        "alt": "Waseda University",
+        "score": 9,
+        "context": "main/header"
+      },
+      {
+        "url": "https://www.waseda.jp/top/en/assets/themes/waseda-template-engine-main-en/img/logo_top.png",
+        "alt": "Waseda University",
+        "score": 7,
+        "context": ""
+      },
+      {
+        "url": "https://www.waseda.jp/top/en/assets/themes/waseda-template-engine-main-en/img/logo_top.png",
+        "alt": "Waseda University",
+        "score": 7,
+        "context": ""
+      },
+      {
+        "url": "https://www.waseda.jp/top/en/assets/themes/waseda-template-engine-main-en/img/logo_top.png",
+        "alt": "Waseda University",
+        "score": 7,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.waseda.jp/top/en/"
+  },
+  {
+    "rank": 183,
+    "name": "Hamad Bin Khalifa University",
+    "region": "ASIA",
+    "city": "Doha",
+    "website": "https://www.hbku.edu.qa",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.hbku.edu.qa/themes/custom/hbku/images/logo-white.svg",
+        "alt": "HBKU logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.hbku.edu.qa/en"
+  },
+  {
+    "rank": 184,
+    "name": "University of York",
+    "region": "UK",
+    "city": "York",
+    "website": "https://www.york.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.york.ac.uk/static/2/images/uoy_logo_white.svg",
+        "alt": "University of York homepage",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.york.ac.uk/static/2/images/uoy_logo_white.svg",
+        "alt": "University of York homepage",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.york.ac.uk"
+  },
+  {
+    "rank": 185,
+    "name": "Monterrey Institute of Technology and Higher Education",
+    "region": "OTHER",
+    "city": "Monterrey",
+    "website": "https://tec.mx",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://tec.mx/es"
+  },
+  {
+    "rank": 186,
+    "name": "Cardiff University",
+    "region": "UK",
+    "city": "Cardiff",
+    "website": "https://www.cardiff.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 187,
+    "name": "Ecole Normale Suprieure de Lyon",
+    "region": "EU",
+    "city": "Lyon",
+    "website": "https://www.ens-lyon.fr/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ens-lyon.fr/en/themes/custom/ens_theme/logo.svg",
+        "alt": "Home",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ens-lyon.fr/en/"
+  },
+  {
+    "rank": 188,
+    "name": "Keio University",
+    "region": "ASIA",
+    "city": "Tokyo",
+    "website": "https://www.keio.ac.jp/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.keio.ac.jp/logos/keio-en.svg",
+        "alt": "Keio University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.keio.ac.jp/logos/keio-en.svg",
+        "alt": "Keio University",
+        "score": 10,
+        "context": "header"
+      },
+      {
+        "url": "https://www.keio.ac.jp/logos/keio-life.svg",
+        "alt": "Keio LIFE",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.keio.ac.jp/logos/keio-life.svg",
+        "alt": "Keio LIFE",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.keio.ac.jp/logos/keio-future.svg",
+        "alt": "Keio FUTURE",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.keio.ac.jp/en/"
+  },
+  {
+    "rank": 189,
+    "name": "University of Ottawa",
+    "region": "USA",
+    "city": "Ottawa",
+    "website": "https://www.uottawa.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uottawa.ca/themes/custom/uottawa/dist/assets/logo.png",
+        "alt": "University of Ottawa home page",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uottawa.ca/themes/custom/uottawa/dist/assets/logo--white.png",
+        "alt": "University of Ottawa home page",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uottawa.ca/themes/custom/uottawa/dist/assets/uottawa-logo-horizontal-white1.png",
+        "alt": "",
+        "score": 6,
+        "context": "nav/footer"
+      }
+    ],
+    "sourcePage": "https://www.uottawa.ca/en"
+  },
+  {
+    "rank": 190,
+    "name": "Vienna University of Technology",
+    "region": "EU",
+    "city": "Vienna",
+    "website": "https://www.tuwien.at/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.tuwien.at/en"
+  },
+  {
+    "rank": 191,
+    "name": "University of Hamburg",
+    "region": "EU",
+    "city": "Hamburg",
+    "website": "https://www.uni-hamburg.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://assets.rrz.uni-hamburg.de/assets/uhh-logo-16dab7756eecc70a7649a242498868c6bb37872e5eae6023b38026faeef923c3.svg",
+        "alt": "Universität Hamburg - der Forschung, der Lehre, der Bildung, zur Homepage",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uni-hamburg.de"
+  },
+  {
+    "rank": 192,
+    "name": "Tongji University",
+    "region": "ASIA",
+    "city": "Shanghai",
+    "website": "https://www.tongji.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.tongji.edu.cn"
+  },
+  {
+    "rank": 193,
+    "name": "Queen’s University",
+    "region": "USA",
+    "city": "Kingston",
+    "website": "https://www.queensu.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.queensu.ca/resources/assets/logos/Queens-logo-reversed.svg",
+        "alt": "Queen's Logo",
+        "score": 12,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.queensu.ca/resources/assets/logos/Queens-logo-reversed.svg",
+        "alt": "Queen's Logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.queensu.ca/themes/contrib/charlie_theme/assets/icons/U15.png",
+        "alt": "U15 logo",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.queensu.ca"
+  },
+  {
+    "rank": 194,
+    "name": "Gteborg University",
+    "region": "EU",
+    "city": "Gothenburg",
+    "website": "https://www.gu.se",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.gu.se"
+  },
+  {
+    "rank": 194,
+    "name": "Wuhan University",
+    "region": "ASIA",
+    "city": "Wuhan",
+    "website": "https://www.whu.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.whu.edu.cn/new2024/js/logo.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.whu.edu.cn"
+  },
+  {
+    "rank": 196,
+    "name": "Emory University",
+    "region": "USA",
+    "city": "Atlanta",
+    "website": "https://www.emory.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.emory.edu/sites/emorymain/files/logos/logo-dark.svg?1785786799",
+        "alt": "Home",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.emory.edu/sites/emorymain/files/logos/logo-light.svg?1785786801",
+        "alt": "Home",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.emory.edu/sites/emorymain/files/logos/logo-light.svg?1785786801",
+        "alt": "Home",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.emory.edu/sites/emorymain/files/logos/logo-dark.svg?1785786799",
+        "alt": "Home",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.emory.edu/sites/emorymain/files/logos/logo-light.svg?1785786801",
+        "alt": "Home",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.emory.edu"
+  },
+  {
+    "rank": 197,
+    "name": "Deakin University",
+    "region": "ASIA",
+    "city": "Geelong",
+    "website": "https://www.deakin.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 198,
+    "name": "Autonomous University of Madrid",
+    "region": "EU",
+    "city": "Madrid",
+    "website": "https://www.uam.es",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 198,
+    "name": "University of Calgary",
+    "region": "USA",
+    "city": "Calgary",
+    "website": "https://www.ucalgary.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucalgary.ca/themes/ucalgary/ucws_theme/images/UCalgary.svg",
+        "alt": "University of Calgary",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ucalgary.ca"
+  },
+  {
+    "rank": 200,
+    "name": "Arizona State University",
+    "region": "USA",
+    "city": "Tempe",
+    "website": "https://www.asu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.asu.edu/profiles/contrib/webspark/modules/asu_brand/dist/assets/img/arizona-state-university-logo-vertical.png",
+        "alt": "Arizona State University logo",
+        "score": 11,
+        "context": "header/header"
+      }
+    ],
+    "sourcePage": "https://www.asu.edu"
+  },
+  {
+    "rank": 200,
+    "name": "King Saud University",
+    "region": "ASIA",
+    "city": "Riyadh",
+    "website": "https://www.ksu.edu.sa",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://ksu.edu.sa/_next/image?url=%2Fksu_logo.png&w=384&q=75",
+        "alt": "Logo 1",
+        "score": 9,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://ksu.edu.sa/"
+  },
+  {
+    "rank": 202,
+    "name": "Khalifa University",
+    "region": "ASIA",
+    "city": "Abu Dhabi",
+    "website": "https://www.ku.ac.ae",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ku.ac.ae/wp-content/uploads/2021/08/cropped-logo.png",
+        "alt": "Khalifa University",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ku.ac.ae/wp-content/uploads/2019/10/logo-white.png",
+        "alt": "Khalifa University",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ku.ac.ae/wp-content/uploads/2019/10/logo-white.png",
+        "alt": "Khalifa University",
+        "score": 7,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.ku.ac.ae"
+  },
+  {
+    "rank": 203,
+    "name": "Catholic University of Louvain",
+    "region": "EU",
+    "city": "Louvain",
+    "website": "https://uclouvain.be",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1010)>"
+  },
+  {
+    "rank": 203,
+    "name": "University of Minnesota - Twin Cities",
+    "region": "USA",
+    "city": "Minneapolis",
+    "website": "https://twin-cities.umn.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 205,
+    "name": "Ecole des Ponts ParisTech",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.ecoledesponts.fr/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://ecoledesponts.fr/themes/project/img/header/logo-ip-enpc.png",
+        "alt": "École nationale des ponts et chaussées",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://ecoledesponts.fr/en"
+  },
+  {
+    "rank": 206,
+    "name": "Queen’s University Belfast",
+    "region": "UK",
+    "city": "Belfast",
+    "website": "https://www.qub.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 206,
+    "name": "University of Indonesia",
+    "region": "ASIA",
+    "city": "Depok",
+    "website": "https://www.ui.ac.id",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ui.ac.id/wp-content/uploads/2022/12/logoui_hres.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ui.ac.id"
+  },
+  {
+    "rank": 208,
+    "name": "Ohio State University",
+    "region": "USA",
+    "city": "Columbus",
+    "website": "https://www.osu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.osu.edu"
+  },
+  {
+    "rank": 209,
+    "name": "Tel Aviv University",
+    "region": "ASIA",
+    "city": "Tel Aviv",
+    "website": "https://english.tau.ac.il",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://english.tau.ac.il/sites/default/files/TAU_Logo_HomePage_Eng.png",
+        "alt": "Tel Aviv University",
+        "score": 7,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://english.tau.ac.il"
+  },
+  {
+    "rank": 210,
+    "name": "National Tsinghua University",
+    "region": "ASIA",
+    "city": "Hsinchu",
+    "website": "https://www.nthu.edu.tw",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.nthu.edu.tw/images/logo.png",
+        "alt": "國立清華大學logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.nthu.edu.tw"
+  },
+  {
+    "rank": 211,
+    "name": "Indian Institute of Science",
+    "region": "ASIA",
+    "city": "Bangalore",
+    "website": "https://www.iisc.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.iisc.ac.in/wp-content/uploads/2016/06/logo-iisc.png",
+        "alt": "Indian Institute of Science",
+        "score": 9,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.iisc.ac.in"
+  },
+  {
+    "rank": 212,
+    "name": "University of Freiburg",
+    "region": "EU",
+    "city": "Freiburg",
+    "website": "https://www.uni-freiburg.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://uni-freiburg.de/wp-content/uploads/logo-CoARA-full-blue.png",
+        "alt": "Logo der Coalition for Advancing Research Assessment",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://uni-freiburg.de/wp-content/uploads/Unbenannt-2-e1753866377719.png",
+        "alt": "Logo EPICUR und EU Beisatz 2025 mit transparentem Hintergrund",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://uni-freiburg.de/wp-content/uploads/diversity.png",
+        "alt": "Das Logo der Vielfaltsinitiative der Universität Freiburg",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://uni-freiburg.de/wp-content/uploads/charta-1.png",
+        "alt": "Logo der Charta der Vielfalt",
+        "score": 5,
+        "context": "footer"
+      },
+      {
+        "url": "https://uni-freiburg.de/wp-content/uploads/u15-2.png",
+        "alt": "Logo der German U15",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://uni-freiburg.de/"
+  },
+  {
+    "rank": 213,
+    "name": "Queensland University of Technology",
+    "region": "ASIA",
+    "city": "Brisbane",
+    "website": "https://www.qut.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 214,
+    "name": "University of Otago",
+    "region": "ASIA",
+    "city": "Dunedin",
+    "website": "https://www.otago.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 215,
+    "name": "National Cheng Kung University",
+    "region": "ASIA",
+    "city": "Tainan",
+    "website": "https://www.ncku.edu.tw",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://web.ncku.edu.tw/var/file/0/1000/img/3993/logo_2.png",
+        "alt": "校徽logo",
+        "score": 9,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://web.ncku.edu.tw/"
+  },
+  {
+    "rank": 215,
+    "name": "University of Florida",
+    "region": "USA",
+    "city": "Gainesville",
+    "website": "https://www.ufl.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ufl.edu/wp-content/uploads/sites/5/2023/09/UF-logo.png",
+        "alt": "Logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ufl.edu"
+  },
+  {
+    "rank": 217,
+    "name": "La Trobe University",
+    "region": "ASIA",
+    "city": "Melbourne",
+    "website": "https://www.latrobe.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 218,
+    "name": "University of Maryland at College Park",
+    "region": "USA",
+    "city": "College Park",
+    "website": "https://umd.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://umd-main.files.svdcdn.com/production/umd/logos/default/primary-logo-dark.svg?dm=1722455539",
+        "alt": "University of Maryland",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://umd-main.transforms.svdcdn.com/production/umd/images/default/generated-image.png?w=1920&h=1920&q=80&fm=webp&fit=max&dm=1790092735&s=e92793a952dba85af4ba8e68cc588301",
+        "alt": "Quantum world congress logo",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://umd.edu"
+  },
+  {
+    "rank": 219,
+    "name": "National University of Colombia",
+    "region": "OTHER",
+    "city": "Bogotá",
+    "website": "https://unal.edu.co",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 219,
+    "name": "National Yang Ming Chiao Tung University",
+    "region": "ASIA",
+    "city": "Hsinchu",
+    "website": "https://www.nycu.edu.tw/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.nycu.edu.tw/userfiles/images/all/logo.svg",
+        "alt": "國立陽明交通大學",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.nycu.edu.tw/nycu/ch/index"
+  },
+  {
+    "rank": 221,
+    "name": "VU University Amsterdam",
+    "region": "EU",
+    "city": "Amsterdam",
+    "website": "https://vu.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://vu.nl/nl"
+  },
+  {
+    "rank": 222,
+    "name": "University of Tbingen",
+    "region": "EU",
+    "city": "Tübingen",
+    "website": "https://uni-tuebingen.de",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://uni-tuebingen.de/_assets/7d66ab3e4599366251c5af46f0e770b9/Images/Logo_Universitaet_Tuebingen.svg",
+        "alt": "Logo der Universität Tübingen",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://uni-tuebingen.de/_assets/7d66ab3e4599366251c5af46f0e770b9/Images/Logo_Universitaet_Tuebingen_Exzellent_EN.svg",
+        "alt": "Logo der Exzellenzstrategie",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://uni-tuebingen.de"
+  },
+  {
+    "rank": 222,
+    "name": "Indian Institute of Technology, Kharagpur",
+    "region": "ASIA",
+    "city": "Kharagpur",
+    "website": "https://www.iitkgp.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error timed out>"
+  },
+  {
+    "rank": 224,
+    "name": "University of Erlangen-Nrnberg",
+    "region": "EU",
+    "city": "Erlangen",
+    "website": "https://www.fau.eu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.fau.eu/wp-content/themes/FAU-Elemental/assets/images/logo-print.svg",
+        "alt": "FAU Logo",
+        "score": 10,
+        "context": ""
+      },
+      {
+        "url": "https://www.fau.eu/wp-content/themes/FAU-Elemental/assets/images/Logo-white.svg",
+        "alt": "FAU Logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.fau.eu/wp-content/themes/FAU-Elemental/assets/images/Logo-white.svg",
+        "alt": "FAU Erlangen-Nürnberg",
+        "score": 7,
+        "context": "header/nav/nav"
+      }
+    ],
+    "sourcePage": "https://www.fau.eu"
+  },
+  {
+    "rank": 224,
+    "name": "Loughborough University",
+    "region": "UK",
+    "city": "Loughborough",
+    "website": "https://www.lboro.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.lboro.ac.uk"
+  },
+  {
+    "rank": 224,
+    "name": "University of Lausanne",
+    "region": "EU",
+    "city": "Lausanne",
+    "website": "https://www.unil.ch",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unil.ch/modules/refonte-assets/images/unil-logo.svg",
+        "alt": "Université de Lausanne",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unil.ch/modules/refonte-assets/images/unil-logo.svg",
+        "alt": "Université de Lausanne",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.unil.ch/unil/fr/home.html"
+  },
+  {
+    "rank": 227,
+    "name": "University of Bonn",
+    "region": "EU",
+    "city": "Bonn",
+    "website": "https://www.uni-bonn.de/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uni-bonn.de/de/medien-startseite-uni-bonn/sv_logo_vielfalt_gestalten_zertifikat_rgb-100.png/@@images/image",
+        "alt": "Logo Zertifikat \"Vielfalt gestalten\"",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.uni-bonn.de/en/++theme++unibonn.theme/images/logos/logo_desktop.svg",
+        "alt": "Universität Bonn",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uni-bonn.de/en/++theme++unibonn.theme/images/logos/logo_mobile.svg",
+        "alt": "Universität Bonn",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uni-bonn.de/en/++theme++unibonn.theme/images/logos/logo_mobile_navigation.svg",
+        "alt": "Universität Bonn",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uni-bonn.de/en/++theme++unibonn.theme/images/logos/logo_mobile_navigation.svg",
+        "alt": "Universität Bonn",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uni-bonn.de/en"
+  },
+  {
+    "rank": 227,
+    "name": "Indian Institute of Technology, Madras",
+    "region": "ASIA",
+    "city": "Chennai",
+    "website": "https://www.iitm.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.iitm.ac.in/themes/custom/iitm/assets/images/iitm_logo.png",
+        "alt": "IIT Madras",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.iitm.ac.in/themes/custom/iitm/assets/images/g20-logo.png",
+        "alt": "G20",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.iitm.ac.in"
+  },
+  {
+    "rank": 229,
+    "name": "Chulalongkorn University",
+    "region": "ASIA",
+    "city": "Bangkok",
+    "website": "https://www.chula.ac.th",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.chula.ac.th/wp-content/themes/phrakieo/assets/images/logo-secondary.svg",
+        "alt": "",
+        "score": 5,
+        "context": "main/footer"
+      }
+    ],
+    "sourcePage": "https://www.chula.ac.th"
+  },
+  {
+    "rank": 230,
+    "name": "University of Maastricht",
+    "region": "EU",
+    "city": "Maastricht",
+    "website": "https://www.maastrichtuniversity.nl/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "rank": 230,
+    "name": "Universit Libre de Bruxelles",
+    "region": "EU",
+    "city": "Brussels",
+    "website": "https://www.ulb.be",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ulb.be/uas/ulbout/NOM_PROPRIETE_LOGO_MOBILE/ulb-mobile.svg",
+        "alt": "logo-ULB",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ulb.be/uas/ulbout/LOGO/Logo-ULB.svg",
+        "alt": "logo-ULB",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ulb.be"
+  },
+  {
+    "rank": 232,
+    "name": "State University of Campinas",
+    "region": "OTHER",
+    "city": "Campinas",
+    "website": "https://www.unicamp.br/unicamp/english",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 233,
+    "name": "University of Twente",
+    "region": "EU",
+    "city": "Enschede",
+    "website": "https://www.utwente.nl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.utwente.nl/.utdesign/img/ut-logo-sta-white-en.svg",
+        "alt": "UT Logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.utwente.nl"
+  },
+  {
+    "rank": 234,
+    "name": "Technical University of Dresden",
+    "region": "EU",
+    "city": "Dresden",
+    "website": "https://tu-dresden.de/?set_language=en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://tu-dresden.de/++theme++tud.theme.webcms2/img/tud-logo-white-en-2025-v2.svg",
+        "alt": "Logo: TUD Dresden University of Technology",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://tu-dresden.de/studium/im-studium/ressourcen/bilder/scs/logos/copy_of_SCS_farbig-immeraufdunklemGrund_RGB.png/@@images/4bffeeff-7889-4147-976b-2bb6aa918a06.png",
+        "alt": "Logo SCS: Drei bunte Buchstaben \"SCS\" auf weißem Hintergrund",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://tu-dresden.de/++theme++tud.theme.webcms2/img/eutopia-logo.svg",
+        "alt": "EUTOPIA Alliance of 10 European Universities homepage",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://tu-dresden.de/?set_language=en"
+  },
+  {
+    "rank": 235,
+    "name": "University of Waikato",
+    "region": "ASIA",
+    "city": "Hamilton",
+    "website": "https://www.waikato.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.waikato.ac.nz/_resources/themes/app/dist/icons/logo.svg?m=1787376166",
+        "alt": "University of Waikato",
+        "score": 9,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.waikato.ac.nz"
+  },
+  {
+    "rank": 236,
+    "name": "University of Padua",
+    "region": "EU",
+    "city": "Padova",
+    "website": "https://www.unipd.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.unipd.it"
+  },
+  {
+    "rank": 236,
+    "name": "University of Rochester",
+    "region": "USA",
+    "city": "Rochester",
+    "website": "https://www.rochester.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.rochester.edu/assets/images/brand/logos/primary_horizontal_navy.svg",
+        "alt": "University of Rochester logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.rochester.edu/assets/images/brand/logos/primary_horizontal_knockout.svg",
+        "alt": "University of Rochester logo in white",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.rochester.edu"
+  },
+  {
+    "rank": 236,
+    "name": "University of Aberdeen",
+    "region": "UK",
+    "city": "Aberdeen",
+    "website": "https://www.abdn.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.abdn.ac.uk/abdn-design-system/releases/3.2.7/dist/images/layout/UoA_Primary_Logo_MONO_white.png",
+        "alt": "University of Aberdeen",
+        "score": 9,
+        "context": "header"
+      },
+      {
+        "url": "https://www.abdn.ac.uk/abdn-design-system/releases/3.2.7/dist/images/layout/UoA_Landscape_Logo_REVERSE.png",
+        "alt": "University of Aberdeen",
+        "score": 7,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.abdn.ac.uk"
+  },
+  {
+    "rank": 239,
+    "name": "Massey University",
+    "region": "ASIA",
+    "city": "Palmerston North",
+    "website": "https://www.massey.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://d2ub1k1pknil0e.cloudfront.net/media/images/massey-logo-dark.width-600.webp",
+        "alt": "Massey University logo",
+        "score": 11,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://d2ub1k1pknil0e.cloudfront.net/media/images/massey-logo-dark.width-600.webp",
+        "alt": "Massey University logo",
+        "score": 11,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://d2ub1k1pknil0e.cloudfront.net/media/images/massey-logo-dark.width-600.webp",
+        "alt": "Massey University logo",
+        "score": 9,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.massey.ac.nz"
+  },
+  {
+    "rank": 239,
+    "name": "Gadjah Mada University",
+    "region": "ASIA",
+    "city": "Yogyakarta",
+    "website": "https://www.ugm.ac.id/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://ugm.ac.id/en/"
+  },
+  {
+    "rank": 241,
+    "name": "Polytechnic University of Turin",
+    "region": "EU",
+    "city": "Turin",
+    "website": "https://www.polito.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 241,
+    "name": "Technical University of Darmstadt",
+    "region": "EU",
+    "city": "Darmstadt",
+    "website": "https://www.tu-darmstadt.de/index.en.jsp",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.tu-darmstadt.de/media/daa_responsives_design/01_die_universitaet_medien/international_medien/01_netzwerke_medien/unite_ordner/logos_unite/unite_Logo_2_colour_475x475.jpg",
+        "alt": "Logo von \"UNITE! University Network for Innovation, Technology and Engineering\" ",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.tu-darmstadt.de/media/daa_responsives_design/01_die_universitaet_medien/international_medien/01_netzwerke_medien/unite_ordner/logos_unite/unite_Logo_2_colour_475x475.jpg",
+        "alt": "Logo von \"UNITE! University Network for Innovation, Technology and Engineering\" ",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://www.tu-darmstadt.de/media/daa_responsives_design/01_die_universitaet_medien/favicon_475x475.jpg",
+        "alt": "Logo von \"CLUSTER - Leading Universities of Science and Technology\"",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.tu-darmstadt.de/media/daa_responsives_design/01_die_universitaet_medien/favicon_475x475.jpg",
+        "alt": "Logo von \"CLUSTER - Leading Universities of Science and Technology\"",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.tu-darmstadt.de/index.en.jsp"
+  },
+  {
+    "rank": 243,
+    "name": "Dartmouth College",
+    "region": "USA",
+    "city": "Hanover",
+    "website": "https://home.dartmouth.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://home.dartmouth.edu"
+  },
+  {
+    "rank": 244,
+    "name": "Victoria University of Wellington",
+    "region": "ASIA",
+    "city": "Wellington",
+    "website": "https://www.wgtn.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.wgtn.ac.nz/__data/assets/git_bridge/0005/1778018/dist/images/social/facebook.svg",
+        "alt": "Facebook logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.wgtn.ac.nz/__data/assets/git_bridge/0005/1778018/dist/images/social/youtube.svg",
+        "alt": "YouTube logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.wgtn.ac.nz/__data/assets/git_bridge/0005/1778018/dist/images/social/linkedin.svg",
+        "alt": "LinkedIn logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.wgtn.ac.nz/__data/assets/git_bridge/0005/1778018/dist/images/social/instagram.svg",
+        "alt": "Instagram logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.wgtn.ac.nz/__data/assets/git_bridge/0005/1778018/src/assets/toolkit/images/social/tiktok.svg",
+        "alt": "tiktok logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.wgtn.ac.nz"
+  },
+  {
+    "rank": 245,
+    "name": "University of Macau",
+    "region": "ASIA",
+    "city": "Macau",
+    "website": "https://www.um.edu.mo",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.um.edu.mo/wp-content/uploads/2026/01/web-version.png",
+        "alt": "University of Macau Logo",
+        "score": 11,
+        "context": "header"
+      },
+      {
+        "url": "https://www.um.edu.mo/wp-content/uploads/2026/01/Mobile-version.png",
+        "alt": "University of Macau Logo",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.um.edu.mo"
+  },
+  {
+    "rank": 246,
+    "name": "University of Sussex",
+    "region": "UK",
+    "city": "Guildford",
+    "website": "https://www.sussex.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.sussex.ac.uk/assets/images/logos/research-plus-wide.svg",
+        "alt": "ResearchPlus",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.sussex.ac.uk"
+  },
+  {
+    "rank": 246,
+    "name": "Charles University Prague",
+    "region": "EU",
+    "city": "Prague",
+    "website": "https://cuni.cz",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://cuni.cz/UK-1-version1-afoto2.png",
+        "alt": "Logo",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://cuni.cz/UK-1-version1-afoto2small.png",
+        "alt": "Logo",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://cuni.cz"
+  },
+  {
+    "rank": 248,
+    "name": "Vanderbilt University",
+    "region": "USA",
+    "city": "Nashville",
+    "website": "https://www.vanderbilt.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.vanderbilt.edu"
+  },
+  {
+    "rank": 249,
+    "name": "University of Navarra",
+    "region": "EU",
+    "city": "Pamplona",
+    "website": "https://www.unav.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unav.edu/o/unav-principal-theme/images/unav-white-logo.svg",
+        "alt": "Logotipo Universidad de Navarra",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unav.edu/o/unav-principal-theme/images/unav-black-logo.svg",
+        "alt": "Logotipo Universidad de Navarra",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.unav.edu"
+  },
+  {
+    "rank": 250,
+    "name": "American University of Beirut",
+    "region": "ASIA",
+    "city": "Beirut",
+    "website": "https://www.aub.edu.lb",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 251,
+    "name": "Taylor’s University",
+    "region": "ASIA",
+    "city": "Subang Jaya",
+    "website": "https://university.taylors.edu.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://university.taylors.edu.my/content/dam/taylorsrevamp/university/homepage/header/taylors-university-logo-color-198x72.svg",
+        "alt": "Taylor's University color logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://university.taylors.edu.my/content/dam/taylorsrevamp/university/homepage/header/taylors-university-logo-white-198x72.svg",
+        "alt": "Taylor's University white logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://university.taylors.edu.my/content/dam/taylorsrevamp/icons-custom/XiaohongshuLOGO_updated.svg",
+        "alt": "contact icon",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://university.taylors.edu.my/en.html"
+  },
+  {
+    "rank": 252,
+    "name": "University of Gttingen",
+    "region": "EU",
+    "city": "Göttingen",
+    "website": "https://www.uni-goettingen.de/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uni-goettingen.de/img/redesign/logo.svg",
+        "alt": "Georg-August-Universität Göttingen",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uni-goettingen.de/img/redesign/print-logo.svg",
+        "alt": "Georg-August-Universität Göttingen",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uni-goettingen.de/storage/pictures/8343f97999fbfe69e90d22a1ec70a9f3.png",
+        "alt": "Göttingen Campus Logo",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.uni-goettingen.de/storage/pictures/ac733cb0b2575c4f3ad6b2da2935b6a5.png",
+        "alt": "Deutschlandstipendium Logo",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.uni-goettingen.de/storage/pictures/0b1b54ca9e89ef6c46b1275d57a4b797.png",
+        "alt": "Weltoffene Hochschule Logo",
+        "score": 5,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.uni-goettingen.de/en/1.html"
+  },
+  {
+    "rank": 252,
+    "name": "Harbin Institute of Technology",
+    "region": "ASIA",
+    "city": "Harbin",
+    "website": "http://en.hit.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "http://en.hit.edu.cn"
+  },
+  {
+    "rank": 252,
+    "name": "Hong Kong Baptist University",
+    "region": "ASIA",
+    "city": "Hong Kong",
+    "website": "https://www.hkbu.edu.hk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.hkbu.edu.hk/content/dam/hongkongbaptistuniversity/logo/hkbu/20210106_newLogo.svg",
+        "alt": "footer-logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.hkbu.edu.hk/content/dam/hongkongbaptistuniversity/logo/hkbu/20210106_newLogo.svg",
+        "alt": "HKBU",
+        "score": 7,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.hkbu.edu.hk/content/dam/hongkongbaptistuniversity/logo/hkbu/svg/HKBU-logo-side-menu.svg",
+        "alt": "HKBU",
+        "score": 7,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.hkbu.edu.hk/content/dam/hongkongbaptistuniversity/logo/hkbu/20210106_newLogo.svg",
+        "alt": "HKBU",
+        "score": 7,
+        "context": "nav"
+      },
+      {
+        "url": "https://www.hkbu.edu.hk/content/dam/hongkongbaptistuniversity/logo/hkbu/20210106_newLogo.svg",
+        "alt": "HKBU",
+        "score": 7,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://www.hkbu.edu.hk"
+  },
+  {
+    "rank": 255,
+    "name": "Griffith University",
+    "region": "ASIA",
+    "city": "Brisbane",
+    "website": "https://www.griffith.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 256,
+    "name": "Heriot-Watt University",
+    "region": "UK",
+    "city": "Edinburgh",
+    "website": "https://www.hw.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.hw.ac.uk"
+  },
+  {
+    "rank": 256,
+    "name": "Institute of Technology Bandung",
+    "region": "ASIA",
+    "city": "Bandung",
+    "website": "https://www.itb.ac.id",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://itb.ac.id/assets/images/Logo ITB_COLOR_2026@4x.png",
+        "alt": "Logo",
+        "score": 11,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://itb.ac.id:443/"
+  },
+  {
+    "rank": 258,
+    "name": "University of Warsaw",
+    "region": "EU",
+    "city": "Warsaw",
+    "website": "https://en.uw.edu.pl",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://en.uw.edu.pl/wp-content/uploads/2018/09/logo-pi.png",
+        "alt": "Logo Univeristy of Warsaw - Homepage",
+        "score": 11,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://en.uw.edu.pl"
+  },
+  {
+    "rank": 259,
+    "name": "Case Western Reserve University",
+    "region": "USA",
+    "city": "Cleveland",
+    "website": "https://case.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://dudbm6bcnmy8e.cloudfront.net/cwru/img/cwru_logo_primary_white.svg",
+        "alt": "CWRU Logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://case.edu/static/bicentennial-logo-horizontal-dd58ae4455db6a22eebebc3585b304f1.png",
+        "alt": "CWRU bicentennial logo",
+        "score": 9,
+        "context": "main"
+      },
+      {
+        "url": "https://dudbm6bcnmy8e.cloudfront.net/cwru/img/bicentennial-logo-horizontal-white.png",
+        "alt": "Case Western Reserve University Bicentennial Logo",
+        "score": 9,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://case.edu"
+  },
+  {
+    "rank": 260,
+    "name": "University of Lisbon",
+    "region": "EU",
+    "city": "Lisbon",
+    "website": "https://www.ulisboa.pt",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 261,
+    "name": "University of Canterbury",
+    "region": "ASIA",
+    "city": "Christchurch",
+    "website": "https://www.canterbury.ac.nz",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.canterbury.ac.nz"
+  },
+  {
+    "rank": 261,
+    "name": "United Arab Emirates University",
+    "region": "ASIA",
+    "city": "Al Ain",
+    "website": "https://www.uaeu.ac.ae",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uaeu.ac.ae/assets/images/uaeu-logo.svg",
+        "alt": "",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uaeu.ac.ae/assets/images/uaeu-logo.svg",
+        "alt": "",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uaeu.ac.ae/assets/images/uaeu-logo.svg",
+        "alt": "",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uaeu.ac.ae/images/global-star.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.uaeu.ac.ae/images/global-star.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.uaeu.ac.ae/ar/"
+  },
+  {
+    "rank": 263,
+    "name": "Indian Institute of Technology, Kanpur",
+    "region": "ASIA",
+    "city": "Kanpur",
+    "website": "https://www.iitk.ac.in",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.iitk.ac.in"
+  },
+  {
+    "rank": 264,
+    "name": "Norwegian University of Science and Technology",
+    "region": "EU",
+    "city": "Trondheim",
+    "website": "https://www.ntnu.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ntnu.edu/o/ntnu-theme/images/logo_ntnu_tag_english.svg",
+        "alt": "NTNU logo",
+        "score": 10,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.ntnu.edu/o/ntnu-theme/images/ntnu-logo-web-v1.svg",
+        "alt": "NTNU Home",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ntnu.edu"
+  },
+  {
+    "rank": 265,
+    "name": "University Pompeu Fabra",
+    "region": "EU",
+    "city": "Barcelona",
+    "website": "https://www.upf.edu/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.upf.edu/o/upf-2016-theme/images/upf/logo.png",
+        "alt": "Home UPF",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.upf.edu/en"
+  },
+  {
+    "rank": 265,
+    "name": "UCSI University",
+    "region": "ASIA",
+    "city": "Kuala Lumpur",
+    "website": "https://www.ucsiuniversity.edu.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.ucsiuniversity.edu.my"
+  },
+  {
+    "rank": 267,
+    "name": "University of Antwerp",
+    "region": "EU",
+    "city": "Antwerp",
+    "website": "https://www.uantwerpen.be",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.uantwerpen.be/img/logo-nl.svg",
+        "alt": "UAntwerpen",
+        "score": 7,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://www.uantwerpen.be/nl/"
+  },
+  {
+    "rank": 267,
+    "name": "University of Witwatersrand",
+    "region": "OTHER",
+    "city": "Johannesburg",
+    "website": "https://www.wits.ac.za",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 269,
+    "name": "Tianjin University",
+    "region": "ASIA",
+    "city": "Tianjin",
+    "website": "http://www.tju.edu.cn/english",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "rank": 269,
+    "name": "University of Technology, Petronas",
+    "region": "ASIA",
+    "city": "Seri Iskandar",
+    "website": "https://www.utp.edu.my",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.utp.edu.my/Pages/Home.aspx"
+  },
+  {
+    "rank": 271,
+    "name": "Beijing Normal University",
+    "region": "ASIA",
+    "city": "Beijing",
+    "website": "https://english.bnu.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://english.bnu.edu.cn"
+  },
+  {
+    "rank": 272,
+    "name": "Radboud University of Nijmegen",
+    "region": "EU",
+    "city": "Nijmegen",
+    "website": "https://www.ru.nl/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ru.nl/themes/custom/ru/logo.svg",
+        "alt": "Radboud University logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.ru.nl/themes/custom/ru/logo.svg",
+        "alt": "Radboud University logo",
+        "score": 10,
+        "context": ""
+      }
+    ],
+    "sourcePage": "https://www.ru.nl/en"
+  },
+  {
+    "rank": 273,
+    "name": "National University of Ireland, Galway",
+    "region": "EU",
+    "city": "Galway",
+    "website": "https://www.universityofgalway.ie",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.universityofgalway.ie"
+  },
+  {
+    "rank": 273,
+    "name": "University College Cork",
+    "region": "EU",
+    "city": "Cork",
+    "website": "https://www.ucc.ie",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.ucc.ie/en/media/2017siteassets/images/ucc-central-header-logo.svg",
+        "alt": "UCC - University College Cork - Coláiste na hOllscoile Corcaigh",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.ucc.ie/en/"
+  },
+  {
+    "rank": 275,
+    "name": "University of Massachusetts, Amherst",
+    "region": "USA",
+    "city": "Amherst",
+    "website": "https://www.umass.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 275,
+    "name": "Dalhousie University",
+    "region": "USA",
+    "city": "Halifax",
+    "website": "https://www.dal.ca",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.dal.ca/content/experience-fragments/www/global/homepage-header/master/_jcr_content/root/wrapper/flex_wrapper/image.coreimg.svg/1709069699013/dalhousie-logo-black.svg",
+        "alt": "Dalhousie University Logo",
+        "score": 12,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.dal.ca"
+  },
+  {
+    "rank": 275,
+    "name": "University of Pittsburgh",
+    "region": "USA",
+    "city": "Pittsburgh",
+    "website": "https://www.pitt.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.pitt.edu"
+  },
+  {
+    "rank": 278,
+    "name": "University of Porto",
+    "region": "EU",
+    "city": "Porto",
+    "website": "https://www.up.pt",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://www.up.pt/portal/pt/"
+  },
+  {
+    "rank": 278,
+    "name": "Vrije Universiteit Brussel",
+    "region": "EU",
+    "city": "Brussels",
+    "website": "https://www.vub.be/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.vub.be/themes/custom/ocelot_vub/assets/vectors/vub-logo-icon.svg",
+        "alt": "VUB logo in blue with white letters",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.vub.be/themes/custom/ocelot_vub/assets/vectors/vub-logo-icon.svg",
+        "alt": "Logo Vrije Universiteit Brussel",
+        "score": 10,
+        "context": ""
+      },
+      {
+        "url": "https://www.vub.be/themes/custom/ocelot_vub/assets/vectors/vub-logo-icon-text.svg",
+        "alt": "Logo Vrije Universiteit Brussel",
+        "score": 10,
+        "context": ""
+      },
+      {
+        "url": "https://www.vub.be/themes/custom/ocelot_vub/assets/vectors/vub-logo-long.svg",
+        "alt": "",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.vub.be/en"
+  },
+  {
+    "rank": 280,
+    "name": "Ulsan National Institute of Science and Technology",
+    "region": "ASIA",
+    "city": "Ulsan",
+    "website": "https://www.unist.ac.kr/eng",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.unist.ac.kr/_res/unist/unist/img/common/img-logo-new.png",
+        "alt": "UNIST",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unist.ac.kr/_res/unist/unist/img/common/img-logo-new-b.png",
+        "alt": "UNIST",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unist.ac.kr/_res/unist/unist/img/common/img-logo-new-sp.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unist.ac.kr/_res/unist/unist/img/common/img-logo-new-sp-b.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.unist.ac.kr/_res/unist/unist/img/common/logo-sp-unist.png",
+        "alt": "UNIST",
+        "score": 6,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.unist.ac.kr/unist/index.do"
+  },
+  {
+    "rank": 281,
+    "name": "University of Strathclyde",
+    "region": "UK",
+    "city": "Glasgow",
+    "website": "https://www.strath.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.strath.ac.uk/media/1newwebsite/webteam/logos/200x60xstrathcrest-whitetext-202x60.png.pagespeed.ic.JP0d5Psbgb.png",
+        "alt": "University of Strathclyde",
+        "score": 7,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.strath.ac.uk/media/strathwebui/logos/strath-logo-420x132.png",
+        "alt": "University of Strathclyde homepage",
+        "score": 6,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.strath.ac.uk/media/strathwebui/logos/strath-logo-whitetext-420x132.png",
+        "alt": "University of Strathclyde, Glasgow and Royal Charter since 1964. Useful learning since 1796, Diamond Jubilee",
+        "score": 6,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.strath.ac.uk/media/strathwebui/logos/StrathBahrain-340x111.png",
+        "alt": "University of Strathclyde Bahrain homepage",
+        "score": 6,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.strath.ac.uk"
+  },
+  {
+    "rank": 281,
+    "name": "Hebrew University of Jerusalem",
+    "region": "ASIA",
+    "city": "Jerusalem",
+    "website": "https://new.huji.ac.il",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://new.huji.ac.il/profiles/openscholar/themes/os_bootstrap/images/logo.png",
+        "alt": "האוניברסיטה העברית בירושלים, דף הבית",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://new.huji.ac.il/profiles/openscholar/themes/os_bootstrap/images/logo.png",
+        "alt": "האוניברסיטה העברית בירושלים, דף הבית",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://new.huji.ac.il"
+  },
+  {
+    "rank": 283,
+    "name": "University Panthon-Sorbonne (Paris I)",
+    "region": "EU",
+    "city": "Paris",
+    "website": "https://www.pantheonsorbonne.fr/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 284,
+    "name": "Southern University of Science and Technology",
+    "region": "ASIA",
+    "city": "Shenzhen",
+    "website": "https://www.sustech.edu.cn/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.sustech.edu.cn/wp-content/themes/twentyseventeen/imgs/logo1.png",
+        "alt": "",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.sustech.edu.cn/en/"
+  },
+  {
+    "rank": 285,
+    "name": "University Carlos III de Madrid",
+    "region": "EU",
+    "city": "Madrid",
+    "website": "https://www.uc3m.es/Home",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 285,
+    "name": "Middle East Technical University",
+    "region": "EU",
+    "city": "Ankara",
+    "website": "https://www.metu.edu.tr",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.metu.edu.tr/sites/all/themes/odtu/images/logo_hr.png",
+        "alt": "HR Excellence in Research Logo",
+        "score": 9,
+        "context": ""
+      },
+      {
+        "url": "https://www.metu.edu.tr/sites/all/themes/odtu/images/YOKAK-logo_beyaz_tr.png",
+        "alt": "YÖKAK Logo",
+        "score": 9,
+        "context": ""
+      },
+      {
+        "url": "https://www.metu.edu.tr/sites/all/themes/odtu/images/odtu-logo-en.svg",
+        "alt": "ODTÜ",
+        "score": 5,
+        "context": ""
+      },
+      {
+        "url": "https://www.metu.edu.tr/tr/system/files/images/ncc.jpg",
+        "alt": "ODTÜ Kuzey Kıbrıs Kampüsü Logosu",
+        "score": 5,
+        "context": "main"
+      },
+      {
+        "url": "https://www.metu.edu.tr/tr/system/files/images/tau.png",
+        "alt": "Türkiye-Azerbaycan Üniversitesi Logosu",
+        "score": 5,
+        "context": "main"
+      }
+    ],
+    "sourcePage": "https://www.metu.edu.tr"
+  },
+  {
+    "rank": 285,
+    "name": "University of Leicester",
+    "region": "UK",
+    "city": "Leicester",
+    "website": "https://le.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 285,
+    "name": "University of Milan",
+    "region": "EU",
+    "city": "Milan",
+    "website": "https://www.unimi.it",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 285,
+    "name": "University of Cologne",
+    "region": "EU",
+    "city": "Cologne",
+    "website": "https://www.uni-koeln.de/en",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://uni-koeln.de/en"
+  },
+  {
+    "rank": 285,
+    "name": "University of Surrey",
+    "region": "UK",
+    "city": "Guildford",
+    "website": "https://www.surrey.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.surrey.ac.uk/themes/custom/surrey/assets/dist/img/uos-logo.svg",
+        "alt": "University of Surrey logo",
+        "score": 12,
+        "context": "header/nav/nav"
+      },
+      {
+        "url": "https://www.surrey.ac.uk/sites/default/files/styles/medium/public/2026-06/QS-2027-Logo.png?itok=v0YU0bSG",
+        "alt": "QS World Rankings 2027 logo",
+        "score": 9,
+        "context": "footer"
+      },
+      {
+        "url": "https://www.surrey.ac.uk/themes/custom/surrey/logo.svg",
+        "alt": "Home",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www.surrey.ac.uk"
+  },
+  {
+    "rank": 291,
+    "name": "Swinburne University of Technology",
+    "region": "ASIA",
+    "city": "Melbourne",
+    "website": "https://www.swinburne.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.swinburne.edu.au/content/dam/media/brand/logo-small.svg",
+        "alt": "Home - Swinburne - Swinburne University of Technology logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.swinburne.edu.au/content/dam/media/brand/logo-long-full.svg",
+        "alt": "Home - Swinburne - Swinburne University of Technology logo",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://www.swinburne.edu.au/content/dam/media/brand/logo-long-full-keyline.svg",
+        "alt": "Swinburne University of Technology logo",
+        "score": 10,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.swinburne.edu.au"
+  },
+  {
+    "rank": 291,
+    "name": "University of Bergen",
+    "region": "EU",
+    "city": "Bergen",
+    "website": "https://www.uib.no",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www4.uib.no/themes/custom/uib/public/image/logo-uib-dark.svg",
+        "alt": "UiB hjemmeside",
+        "score": 7,
+        "context": "header"
+      },
+      {
+        "url": "https://www4.uib.no/themes/custom/uib/public/image/logo-uib-light.svg",
+        "alt": "UiB hjemmeside",
+        "score": 7,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://www4.uib.no/"
+  },
+  {
+    "rank": 293,
+    "name": "University of Arizona",
+    "region": "USA",
+    "city": "Iowa City",
+    "website": "https://www.arizona.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.arizona.edu/libraries/arizona-bootstrap/css/img/arizona-bootstrap-logo-webheader-white.svg",
+        "alt": "The University of Arizona Wordmark Logo White",
+        "score": 12,
+        "context": "header/nav"
+      },
+      {
+        "url": "https://www.arizona.edu/libraries/arizona-bootstrap/css/img/arizona-bootstrap-logo-webheader-white.svg",
+        "alt": "The University of Arizona Wordmark Logo White",
+        "score": 12,
+        "context": "header"
+      },
+      {
+        "url": "https://digital.arizona.edu/arizona-bootstrap/v5/docs/5.2/assets/brand/arizona-bootstrap-logo-webheader-white.svg",
+        "alt": "The University of Arizona",
+        "score": 5,
+        "context": "footer"
+      }
+    ],
+    "sourcePage": "https://www.arizona.edu"
+  },
+  {
+    "rank": 293,
+    "name": "University of Tasmania",
+    "region": "ASIA",
+    "city": "Hobart",
+    "website": "https://www.utas.edu.au",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "rank": 295,
+    "name": "Xi’an Jiaotong University",
+    "region": "ASIA",
+    "city": "Xi'an",
+    "website": "https://en.xjtu.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "https://en.xjtu.edu.cn"
+  },
+  {
+    "rank": 296,
+    "name": "University of Stellenbosch",
+    "region": "OTHER",
+    "city": "Stellenbosch",
+    "website": "https://www.sun.ac.za",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>"
+  },
+  {
+    "rank": 297,
+    "name": "University of Virginia",
+    "region": "USA",
+    "city": "Charlottesville",
+    "website": "https://www.virginia.edu",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://www.virginia.edu/assets/images/logo-horizontal-ko.png",
+        "alt": "The University of Virginia",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.virginia.edu/assets/images/logo-primary-ko.png",
+        "alt": "The University of Virginia",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://www.virginia.edu/assets/images/logo-primary-blue.png",
+        "alt": "The University of Virginia",
+        "score": 6,
+        "context": "header/nav"
+      }
+    ],
+    "sourcePage": "https://www.virginia.edu"
+  },
+  {
+    "rank": 298,
+    "name": "Swansea University",
+    "region": "UK",
+    "city": "Swansea",
+    "website": "https://www.swansea.ac.uk",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://ik.imagekit.io/s1sp3stox/_web/img/logo/stacked/logo-white-stacked-en.png",
+        "alt": "Swansea University's Homepage",
+        "score": 6,
+        "context": "header"
+      },
+      {
+        "url": "https://ik.imagekit.io/s1sp3stox/_web/img/logo/stacked/logo-white-stacked-en.png",
+        "alt": "Swansea University's Homepage",
+        "score": 6,
+        "context": "nav"
+      }
+    ],
+    "sourcePage": "https://www.swansea.ac.uk"
+  },
+  {
+    "rank": 298,
+    "name": "Bauman Moscow State Technical University",
+    "region": "EU",
+    "city": "Moscow",
+    "website": "https://bmstu.ru",
+    "checkedAt": "2026-09-24",
+    "candidates": [
+      {
+        "url": "https://bmstu.ru/assets/images/logo/logo.png",
+        "alt": "МГТУ им. Н.Э. Баумана",
+        "score": 6,
+        "context": "header"
+      }
+    ],
+    "sourcePage": "https://bmstu.ru"
+  },
+  {
+    "rank": 300,
+    "name": "Huazhong University of Science and Technology",
+    "region": "ASIA",
+    "city": "Wuhan",
+    "website": "http://english.hust.edu.cn",
+    "checkedAt": "2026-09-24",
+    "candidates": [],
+    "sourcePage": "http://english.hust.edu.cn"
+  }
+]

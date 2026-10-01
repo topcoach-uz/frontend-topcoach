@@ -6,6 +6,18 @@
   box-sizing: border-box;
 }
 
+// Existing feature panes can live in the applicant shell without a second sidebar.
+.hubPageOuter.hubEmbedded {
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  .hub { display: block; }
+  .leftCol { display: none; }
+  .centerCol { width: 100%; min-width: 0; }
+  .sectionSwapHubPad { padding: 0; }
+}
+
 /* Feed editorial mode: paint cream behind the entire hub row so the feed,
    sidebars, and any gap between them read as one continuous spread. The
    negative side margins extend the cream past the centered max-width so
@@ -2887,9 +2899,15 @@
     box-shadow: 0 0 0 3px rgba(123, 31, 47, 0.08);
   }
 
-  :global(.ant-input-affix-wrapper .ant-input) {
+  :global(.ant-input-affix-wrapper > input.ant-input) {
     background: transparent;
     font-size: 0.92rem;
+    min-height: 0;
+    height: auto;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
   }
 
   :global(.ant-input-affix-wrapper .ant-input-prefix) {
@@ -3093,6 +3111,18 @@
   box-shadow:
     0 -200px 0 0 #faf8f3,
     0 200px 0 0 #faf8f3;
+}
+
+/* The applicant workspace already provides its own sidebar and content
+ * column. Keep the admissions treatment inside that column when this hub is
+ * embedded; the viewport breakout above would otherwise pull the page under
+ * the sidebar and make the section heading collide with the active nav item. */
+.hubEmbedded.admissionsShellOuter {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 0 48px !important;
+  box-shadow: none;
 }
 
 /* Centering wrapper — matches SAT prep's 1200px clamp. */

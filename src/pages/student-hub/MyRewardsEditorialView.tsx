@@ -51,6 +51,7 @@ import {
   type Redemption,
   type RedemptionStatus,
 } from 'src/app/services/coinsApi';
+import { ApplicantPage } from './applicant/ApplicantPage';
 
 import './MyRewardsEditorialView.scss';
 
@@ -253,18 +254,13 @@ const MyRewardsEditorialView: React.FC = () => {
   };
 
   return (
+    <ApplicantPage
+      title="My rewards"
+      subtitle={`Earn TopCoach coins by completing lessons, modules, and daily check-ins.${marketplaceOpen
+        ? ' The marketplace is open — redeem your coins for real rewards below.'
+        : ` The marketplace opens ${launchDate} — start stacking coins now.`}`}
+    >
     <div className="rewards">
-      {/* Header ─────────────────────────────────────────────────── */}
-      <header className="rewards__header">
-        <div className="rewards__eyebrow">Account · Rewards</div>
-        <h1 className="rewards__title">My Rewards</h1>
-        <p className="rewards__subtitle">
-          Earn TopCoach coins by completing lessons, modules, and daily check-ins.
-          {marketplaceOpen
-            ? ' The marketplace is open — redeem your coins for real rewards below.'
-            : ` The marketplace opens ${launchDate} — start stacking coins now.`}
-        </p>
-      </header>
 
       {/* Coin balance hero ──────────────────────────────────────── */}
       <section className="rewards__hero">
@@ -531,6 +527,7 @@ const MyRewardsEditorialView: React.FC = () => {
         )}
       </Modal>
     </div>
+    </ApplicantPage>
   );
 };
 

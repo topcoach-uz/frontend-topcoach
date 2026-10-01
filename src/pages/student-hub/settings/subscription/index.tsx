@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Skeleton, message } from 'antd';
-import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
+import { hasActiveCommunityOrgMembership } from 'src/lib/communityOrgAccess';
 import {
   useChangeSubscriptionPlanMutation,
   useGetBillingHistoryQuery,
@@ -11,7 +12,6 @@ import {
   useGetSubscriptionPlansQuery,
   useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
-import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import {
   FIXTURE_BILLING_HISTORY,
   FIXTURE_PAYMENT_METHODS,
@@ -60,14 +60,8 @@ const isSubscriptionState = (value: string | null): value is SubscriptionState =
  */
 export default function SubscriptionTab() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stateParam = searchParams.get('state');
-
-  // Funnel gate. Users who haven't completed the admissions profile
-  // can't enter the Community subscription flow. Admin-granted users +
-  // already-subscribed users are `eligible` and see the normal tab below.
-  const communityGate = useCommunityAccessGate();
 
   // Mock mode: `?state=mock` always pulls fixtures (defaults to 'active').
   // Any explicit known state name (`active`, `none`, …) is also treated
@@ -84,6 +78,7 @@ export default function SubscriptionTab() {
   const subscriptionQuery = useGetCurrentSubscriptionQuery(undefined, { skip: mockMode });
   const paymentMethodsQuery = useGetPaymentMethodsQuery(undefined, { skip: mockMode });
   const billingHistoryQuery = useGetBillingHistoryQuery(undefined, { skip: mockMode });
+  const { data: studentOrgMemberships } = useGetMyOrgMembershipQuery(undefined, { skip: mockMode });
 
   // After Atmos's hosted bind page finishes, the user lands back here
   // with `?atmosBind=success`. The server-to-server callback that flips
@@ -168,6 +163,11 @@ export default function SubscriptionTab() {
   }, [subscription, paymentMethods]);
 
   const isEmpty = subscription === null;
+  const communityOrganization = hasActiveCommunityOrgMembership(studentOrgMemberships)
+    ? studentOrgMemberships?.find((member) =>
+        member.role === 'student' && member.status === 'active' && member.organization?.status === 'active',
+      )?.organization.name
+    : undefined;
 
   // Trial-start flow. Two paths:
   //   (a) User has a default card → call /subscriptions/start with
@@ -397,61 +397,6 @@ export default function SubscriptionTab() {
     );
   }
 
-  // Funnel gate. Before the user is allowed to subscribe (or even see
-  // the plan picker / card-add CTA), they must complete the admissions
-  // profile. Show a focused "complete this first" card instead of the
-  // full tab.
-  //
-  // Mock mode (`?state=...`) bypasses the gate so designers can still
-  // flip through every fixture variant offline.
-  const showGate = !mockMode && communityGate.state === 'needs_profile';
-
-  if (showGate) {
-    return (
-      <div className={styles.page}>
-        <Alert
-          type="success"
-          showIcon
-          icon={<Sparkles size={18} />}
-          message={t(
-            'settings.subscription.gate.title',
-            'One quick step before you can subscribe',
-          )}
-          description={t(
-            'settings.subscription.gate.descProfile',
-            'Finish your admissions profile (a few quick questions) so we can personalize your roadmap before you start your trial.',
-          )}
-          action={
-            <button
-              type="button"
-              onClick={() => navigate(communityGate.destination)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                background: '#7b1f2f',
-                color: '#fff',
-                border: '1px solid #7b1f2f',
-                padding: '8px 16px',
-                borderRadius: 10,
-                fontFamily:
-                  "'Iowan Old Style', 'Charter', 'Georgia', serif",
-                fontSize: '0.92rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <BookOpen size={14} />
-              {t('settings.subscription.gate.ctaProfile', 'Continue profile')}
-              <ArrowRight size={14} />
-            </button>
-          }
-        />
-      </div>
-    );
-  }
-
   return (
     <div className={styles.page}>
       <ConfettiCelebration
@@ -474,6 +419,18 @@ export default function SubscriptionTab() {
           description={t(
             'settings.subscription.error.description',
             'Please refresh the page or try again in a moment.',
+          )}
+        />
+      )}
+      {isEmpty && communityOrganization && (
+        <Alert
+          type="success"
+          showIcon
+          message={t('settings.subscription.organizationAccess.title', 'Community access is included')}
+          description={t(
+            'settings.subscription.organizationAccess.description',
+            'Your membership with {{organization}} gives you full Community access. You do not need to buy a plan while that membership is active.',
+            { organization: communityOrganization },
           )}
         />
       )}

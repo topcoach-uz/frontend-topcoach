@@ -3,7 +3,7 @@ import { Card, Form, Input, Select, DatePicker, Button, Row, Col, message, Space
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { useCreateApplicationTaskMutation } from '../../../app/services/student-hub/applicationTrackingApi';
+import { useCreateApplicationTaskMutation, useGetCollegeApplicationsQuery } from '../../../app/services/student-hub/applicationTrackingApi';
 import './NewTaskPage.scss';
 
 const { Option } = Select;
@@ -14,6 +14,7 @@ const NewTaskPage: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [createApplicationTask, { isLoading }] = useCreateApplicationTaskMutation();
+  const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
 
   const handleSubmit = async (values: any) => {
     try {
@@ -23,7 +24,7 @@ const NewTaskPage: React.FC = () => {
       const taskData = {
         title: values.title,
         description: values.description,
-        taskType: values.taskType || 'document',
+        taskType: values.taskType || 'other',
         status: values.status || 'pending',
         priority: values.priority || 'medium',
         dueDate: values.dueDate?.toISOString(),
@@ -34,7 +35,7 @@ const NewTaskPage: React.FC = () => {
       await createApplicationTask(taskData).unwrap();
       
       message.success('Task created successfully!');
-      navigate('/student-hub/applications?tab=tasks');
+      navigate('/student-hub/tasks');
     } catch (error) {
       console.error('Error creating task:', error);
       message.error('Failed to create task. Please try again.');
@@ -42,7 +43,7 @@ const NewTaskPage: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/student-hub/applications?tab=tasks');
+    navigate('/student-hub/tasks');
   };
 
   return (
@@ -74,12 +75,12 @@ const NewTaskPage: React.FC = () => {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                name="type"
+                name="taskType"
                 label="Task Type"
                 rules={[{ required: true, message: 'Please select task type' }]}
               >
                 <Select placeholder="Select type" size="large">
-                  <Option value="document">Document Submission</Option>
+                  <Option value="transcript">Transcript</Option>
                   <Option value="essay">Essay Writing</Option>
                   <Option value="recommendation">Recommendation Request</Option>
                   <Option value="test_score">Test Score Submission</Option>
@@ -136,13 +137,11 @@ const NewTaskPage: React.FC = () => {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                name="applicationId"
+                name="collegeApplicationId"
                 label="Related Application"
               >
-                <Select placeholder="Select application (optional)" size="large">
-                  <Option value="harvard">Harvard University</Option>
-                  <Option value="mit">MIT</Option>
-                  <Option value="stanford">Stanford University</Option>
+                <Select placeholder="Select application (optional)" size="large" loading={applications.isLoading} disabled={applications.isError} allowClear>
+                  {(applications.data?.data ?? []).map(application => <Option key={application.id} value={application.id}>{application.universityName || application.major || 'Application'}</Option>)}
                 </Select>
               </Form.Item>
             </Col>

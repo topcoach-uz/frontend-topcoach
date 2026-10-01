@@ -13,6 +13,8 @@ import { useGetMeQuery } from "src/app/services/users";
 import { useGetMyOrgsQuery } from "src/app/services/counselorConsoleApi";
 import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboardApi";
 import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
+import { useGetMyOrgMembershipQuery } from "src/app/services/student-hub/orgMembershipApi";
+import { hasActiveCommunityOrgMembership } from "src/lib/communityOrgAccess";
 import { useListPostsQuery } from "src/app/services/communityFeedApi";
 
 // Stable args for the feed prefetch — must serialize identically to the
@@ -163,7 +165,9 @@ const CourseManagementAdminLazy = lazy(() => import("src/pages/admin/courses/mod
 const MentorConsoleGateLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleGate"));
 const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/MentorConsoleLayout"));
 const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pages/SchedulePage"));
+const MentorCourseClassesLazy = lazy(() => import("src/pages/mentor/console/pages/CourseClassesPage"));
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
+const MentorEssayReviewsLazy = lazy(() => import("src/pages/mentor/console/pages/EssayReviewsPage"));
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
@@ -287,19 +291,20 @@ function RouterProvider() {
   );
   const { data: subscriptionData, isLoading: subscriptionLoading } =
     useGetCurrentSubscriptionQuery(undefined, { skip: !isAuthenticated });
+  const { data: studentOrgMemberships, isLoading: studentOrgMembershipsLoading } =
+    useGetMyOrgMembershipQuery(undefined, { skip: !isAuthenticated });
 
   // Prefetch the feed's first page for community-entitled users so the
   // default landing paints with content instead of skeletons. Entitlement
-  // mirrors JourneyExperienceContext: subscription active/trialing, the
-  // preferences flag, or the localStorage fast-path.
+  // mirrors JourneyExperienceContext: subscription, direct grant, or an
+  // active student seat in an active organization.
   const communityEntitled =
     isAuthenticated &&
     (subscriptionData?.status === 'active' ||
       subscriptionData?.status === 'trialing' ||
       ((prefsData as any)?.data ?? prefsData)?.applicationSettings
         ?.communityExperienceMode === 'community' ||
-      (typeof localStorage !== 'undefined' &&
-        localStorage.getItem('topcoach_community_enrolled') === 'true'));
+      hasActiveCommunityOrgMembership(studentOrgMemberships));
   useListPostsQuery(FEED_DEFAULT_ARGS, { skip: !communityEntitled });
 
   // Warm the landing-page chunks while the bootstrap data loads, so the
@@ -336,7 +341,8 @@ function RouterProvider() {
     ((profileLoading && !userData) ||
       (orgsLoading && !orgsData) ||
       (prefsLoading && !prefsData) ||
-      (subscriptionLoading && !subscriptionData));
+      (subscriptionLoading && !subscriptionData) ||
+      (studentOrgMembershipsLoading && !studentOrgMemberships));
 
   // Use userData if available, otherwise fall back to userProfile from store
   const currentUser = userData || userProfile;
@@ -788,7 +794,9 @@ function RouterProvider() {
                     <Route index element={<Navigate to="dashboard" replace />} />
                     {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
                     <Route path="dashboard" element={<MentorConsoleScheduleLazy />} />
+                    <Route path="course-classes" element={<MentorCourseClassesLazy />} />
                     <Route path="students" element={<MentorConsoleStudentsLazy />} />
+                    <Route path="essay-reviews" element={<MentorEssayReviewsLazy />} />
                     <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
                     <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
                     <Route path="feed" element={<MentorConsoleFeedLazy />} />

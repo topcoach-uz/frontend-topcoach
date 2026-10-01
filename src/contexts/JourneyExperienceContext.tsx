@@ -6,6 +6,8 @@ import {
 } from 'src/app/services/student-hub/dashboardApi';
 import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { useTypedSelector } from 'src/app/store';
+import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
+import { hasActiveCommunityOrgMembership } from 'src/lib/communityOrgAccess';
 
 const LEGACY_PREMIUM_KEY = 'topcoach_journey_premium';
 const COMMUNITY_ENROLLED_KEY = 'topcoach_community_enrolled';
@@ -15,12 +17,12 @@ type JourneyExperienceValue = {
   hasPremiumJourney: boolean;
   setPremiumJourney: (value: boolean) => void;
   unlockPremiumJourney: () => void;
-  /** Community enrollment (mock: localStorage). Controls feed vs dashboard default & locked learning items. */
+  /** Community entitlement. Controls feed vs dashboard default and locked learning items. */
   isCommunityEnrolled: boolean;
   setCommunityEnrolled: (value: boolean) => void;
   /**
-   * True while the entitlement sources (user preferences + subscription)
-   * are still loading AND local storage didn't already say "enrolled".
+   * True while preferences, subscription, or organization membership are loading
+   * and no entitlement has been confirmed yet.
    * Consumers that route/redirect based on isCommunityEnrolled should
    * wait for this to go false — otherwise an enrolled user on a fresh
    * device gets routed as not-enrolled and then yanked to the right
@@ -30,16 +32,6 @@ type JourneyExperienceValue = {
 };
 
 const JourneyExperienceContext = createContext<JourneyExperienceValue | null>(null);
-
-function readCommunityEnrolled(): boolean {
-  try {
-    if (localStorage.getItem(COMMUNITY_ENROLLED_KEY) === 'true') return true;
-    if (localStorage.getItem(LEGACY_PREMIUM_KEY) === 'true') return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
 
 export function JourneyExperienceProvider({ children }: { children: React.ReactNode }) {
   const profile = useTypedSelector((s) => s.auth.profile);
@@ -55,17 +47,25 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     useGetCurrentSubscriptionQuery(undefined, {
       skip: !isAuthenticated,
     });
+  const { data: orgMemberships, isLoading: orgMembershipsLoading } =
+    useGetMyOrgMembershipQuery(undefined, {
+      skip: !isAuthenticated,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+      pollingInterval: 60_000,
+    });
   const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
-  const [preferenceMode, setState] = useState(readCommunityEnrolled);
+  // Local storage is never an entitlement: an organization can revoke a seat
+  // from another session, and an old browser flag must not keep access open.
+  const [preferenceMode, setState] = useState(false);
   const preferences = ((rawPreferences as any)?.data ?? rawPreferences ?? null) as any;
   const isSuperAdmin =
     profile?.managementRole === 'SuperAdmin' || (profile?.managementRole as string) === 'Owner';
 
   useEffect(() => {
     const mode = preferences?.applicationSettings?.communityExperienceMode;
-    if (mode === 'community') setState(true);
-    if (mode === 'standard') setState(false);
+    setState(mode === 'community');
   }, [preferences?.applicationSettings?.communityExperienceMode]);
 
   // A `trialing` / `active` subscription with `cancelAtPeriodEnd=true`
@@ -75,11 +75,11 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
   const hasEntitlingSubscription =
     subscription?.status === 'active' || subscription?.status === 'trialing';
 
-  const isCommunityEnrolled = preferenceMode || hasEntitlingSubscription;
-  // Already-enrolled-per-localStorage users don't need to wait; only an
-  // unknown entitlement (fresh device) is "loading".
+  const isCommunityEnrolled = preferenceMode || hasEntitlingSubscription ||
+    hasActiveCommunityOrgMembership(orgMemberships);
+  // Only an unconfirmed entitlement needs the loading state.
   const isEntitlementLoading =
-    !isCommunityEnrolled && (preferencesLoading || subscriptionLoading);
+    !isCommunityEnrolled && (preferencesLoading || subscriptionLoading || orgMembershipsLoading);
 
   const setCommunityEnrolled = useCallback((value: boolean) => {
     setState(value);

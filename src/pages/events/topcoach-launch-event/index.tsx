@@ -169,7 +169,7 @@ export default function TopcoachLaunchEventPage() {
   const alreadyRegistered = data?.registration?.status === 'confirmed';
 
   // Funnel-aware Community CTA (shown on the registration success screen).
-  // The gate routes registrants to the right next-step — profile wizard,
+  // The gate routes registrants to the Community plan or their unlocked hub,
   // roadmap preview, or subscription tab — based on how far through the
   // Community membership funnel they are.
   const communityGate = useCommunityAccessGate();
@@ -377,10 +377,8 @@ export default function TopcoachLaunchEventPage() {
             >
               {communityGate.state === 'eligible'
                 ? 'Open Community'
-                : communityGate.state === 'needs_profile'
-                  ? 'Finish your profile'
-                  : communityGate.state === 'needs_subscription'
-                    ? 'See your roadmap'
+                : communityGate.state === 'needs_subscription'
+                    ? 'View Community plans'
                     : 'Join the Community'}
               <ArrowRight size={14} />
             </button>

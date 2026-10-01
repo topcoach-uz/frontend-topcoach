@@ -1297,8 +1297,13 @@ function AssignTaskBar({
           { subscribe: false, forceRefetch: true },
         ),
       );
-    } catch {
-      message.error('Could not assign the task. Please try again.');
+    } catch (error) {
+      const status = (error as { status?: unknown } | null)?.status;
+      message.error(
+        status === 403
+          ? 'Task not assigned. Check that you have organization access and that this student is an active member.'
+          : 'Could not confirm the assignment. Refresh the task list before trying again.',
+      );
     }
   };
 

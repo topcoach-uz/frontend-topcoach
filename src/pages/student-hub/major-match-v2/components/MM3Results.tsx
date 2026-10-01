@@ -270,8 +270,9 @@ const SectionHeading: React.FC<{ number: string; title: string; subtitle?: strin
  * card used to render inline, unchanged, now shown in a modal opened from
  * the compact list row. Portaled to document.body so it isn't clipped by
  * any ancestor's overflow/stacking context. */
-const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => void; readOnly: boolean }> = ({
+const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'bachelor' | 'master'; onClose: () => void; readOnly: boolean }> = ({
   university,
+  degreeLevel,
   onClose,
   readOnly,
 }) => {
@@ -288,7 +289,9 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
     { page: 1, limit: 100 },
     { skip: readOnly },
   );
-  const alreadySaved = !readOnly && !!collegeApplications?.data?.some((a) => a.universityId === university.id);
+  const alreadySaved = !readOnly && !!collegeApplications?.data?.some((a) =>
+    a.universityId === university.id && (a.degreeLevel ?? 'bachelor') === degreeLevel && a.major === university.matchedMajor,
+  );
 
   const [createCollegeApplication, { isLoading: isSaving }] = useCreateCollegeApplicationMutation();
   const [justSaved, setJustSaved] = useState(false);
@@ -303,6 +306,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
         !university.tuitionUnreliable && university.tuition ? parseTuitionForSave(university.tuition) : null;
 
       const payload: CreateCollegeApplicationRequest = {
+        degreeLevel,
         // Only universityId is sent, never universityName alongside it — the
         // college_applications table has a CHECK constraint requiring
         // exactly one of the two, and we always have the real catalogue id.
@@ -314,7 +318,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; onClose: () => v
         // value; the frontend's own CollegeApplication['applicationType']
         // union type is stale here (says 'common_app'), same workaround
         // already used in NewApplicationPage.tsx/EditApplicationPage.tsx.
-        applicationType: 'common-app' as CreateCollegeApplicationRequest['applicationType'],
+        applicationType: (degreeLevel === 'master' ? 'direct' : 'common-app') as CreateCollegeApplicationRequest['applicationType'],
         status: 'researching',
         ...(parsedTuition ? { financialInfo: parsedTuition } : {}),
       };
@@ -780,6 +784,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
   const majorTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const requiresEnrollment = !readOnly && !!access && !access.canStart && access.requiresCommunityEnrollment;
+  const hasCommunityAccess = !!access?.isCommunityEnrolled;
   const isPartial = report.meta?.source === 'partial';
 
   const majors = report.majors ?? [];
@@ -1301,17 +1306,19 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
           </div>
         </div>
 
-        {/* Signed-in student report: route through the same funnel every
-            other locked surface uses (`onUnlock` in the parent already
-            resolves to `navigate(useCommunityAccessGate().destination)`),
-            never a hardcoded URL or lead-capture form. Hidden entirely in
-            the counselor read-only embed — a counselor shouldn't be
-            pitched a subscription for their student. */}
+        {/* Signed-in students without Community access route through the
+            same funnel every other locked surface uses (`onUnlock` in the
+            parent already resolves to the shared Community destination).
+            The contact action remains useful after enrollment, but an
+            enrolled student must never be shown an unlock CTA. Hidden
+            entirely in the counselor read-only embed. */}
         {!readOnly && (
           <div className="mm3-results__programs-actions">
-            <button type="button" className="mm2__btn mm2__btn--primary" onClick={onUnlock}>
-              {t('majorMatch3.programs.unlockCta', 'Unlock my roadmap')}
-            </button>
+            {!hasCommunityAccess && (
+              <button type="button" className="mm2__btn mm2__btn--primary" onClick={onUnlock}>
+                {t('majorMatch3.programs.unlockCta', 'Unlock my roadmap')}
+              </button>
+            )}
             {/* "Learn more" now captures a contact instead of navigating to
                 /programs. A student who has just read a full report and wants
                 to know more is the warmest lead this product produces, and
@@ -1364,7 +1371,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
       </p>
 
       {selectedUniversity && (
-        <Mm3UniversityModal university={selectedUniversity} onClose={closeUniversityModal} readOnly={readOnly} />
+        <Mm3UniversityModal university={selectedUniversity} degreeLevel={report.meta.targetDegree ?? 'bachelor'} onClose={closeUniversityModal} readOnly={readOnly} />
       )}
     </div>
   );

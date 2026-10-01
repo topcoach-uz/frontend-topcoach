@@ -21,6 +21,7 @@ import {
 import { getAdminConsoleAntdTheme } from '../adminConsoleThemeConfig';
 import { AcPill, type AcPillVariant } from './AcPill';
 import { avatarStyleForId, formatUZS, initialsFromName } from '../utils';
+import AccountAccessPanel from './AccountAccessPanel';
 
 const { Text, Paragraph } = Typography;
 
@@ -241,6 +242,7 @@ export default function UserDetailDrawer({ user, open, onClose }: Props) {
                   )}
                   <Descriptions.Item label="Joined">{formatDate(detail.createdAt)}</Descriptions.Item>
                 </Descriptions>
+                <AccountAccessPanel key={detail.id} userId={detail.id} />
                 {detail.bio && (
                   <div>
                     <Text style={{ color: 'var(--ac-text-muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>

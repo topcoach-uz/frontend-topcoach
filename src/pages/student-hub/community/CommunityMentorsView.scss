@@ -8,16 +8,16 @@
    only adds the ranking chrome (reason chips, recommended section).
    ───────────────────────────────────────────────────────────── */
 
-$cm-cream: #faf8f3;
-$cm-ink: #1c1a17;
-$cm-muted: #6b6258;
-$cm-hairline: #e5e3da;
+$cm-cream: #f7f5f2;
+$cm-ink: #302f2d;
+$cm-muted: #606976;
+$cm-hairline: #e7e2dc;
 $cm-brand: #7B1F2F;
 $cm-brand-soft: rgba(123, 31, 47, 0.08);
 $cm-gold: #b6824b;
 
 .communityMentors {
-  padding: 4px 0 32px;
+  padding: 0 0 24px;
   color: $cm-ink;
 
   &__eyebrow {
@@ -66,6 +66,14 @@ $cm-gold: #b6824b;
     }
   }
 
+  &__advancedFilters {
+    display: contents;
+  }
+
+  &__filterToggle {
+    display: none;
+  }
+
   &__filterField {
     flex: 1 1 180px;
     min-width: 160px;
@@ -74,6 +82,58 @@ $cm-gold: #b6824b;
     @media (max-width: 700px) {
       flex: 1 1 100%;
       max-width: none;
+    }
+  }
+
+  @media (max-width: 700px) {
+    &__filterBar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+    }
+
+    &__filterSearch {
+      min-width: 0;
+    }
+
+    &__filterToggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 0 12px;
+      border: 1px solid $cm-hairline;
+      border-radius: 12px;
+      color: $cm-ink;
+      background: #fff;
+      font-weight: 600;
+      cursor: pointer;
+
+      svg:last-child {
+        transition: transform 160ms ease;
+      }
+
+      svg.is-open {
+        transform: rotate(180deg);
+      }
+    }
+
+    &__filterDot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $cm-brand;
+    }
+
+    &__advancedFilters {
+      display: none;
+      grid-column: 1 / -1;
+      gap: 10px;
+
+      &.is-open {
+        display: grid;
+      }
     }
   }
 

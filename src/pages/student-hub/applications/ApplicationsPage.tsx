@@ -758,6 +758,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                                   {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
                                 </span>
                                 <Space size={6} wrap className="application-card-tags">
+                                  {!isSch && item.degreeLevel && <Tag>{item.degreeLevel === 'master' ? 'Master’s' : 'Bachelor’s'}</Tag>}
+                                  {!isSch && item.intake && <Tag>{item.intake}</Tag>}
                                   {matchScore && !isSch && matchScore >= 60 && (
                                     <Tag color={matchScore >= 80 ? 'success' : 'warning'} className="application-tag">{matchScore}% Match</Tag>
                                   )}
@@ -896,6 +898,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
                               {isSch ? (item.scholarshipName || t('studentHub.applications.unknownScholarship')) : <UniversityNameDisplay universityId={item.universityId} universityName={item.universityName} />}
                             </span>
                             <Space size={6} wrap className="application-card-tags">
+                              {!isSch && item.degreeLevel && <Tag>{item.degreeLevel === 'master' ? 'Master’s' : 'Bachelor’s'}</Tag>}
+                              {!isSch && item.intake && <Tag>{item.intake}</Tag>}
                               {matchScore && !isSch && matchScore >= 60 && (
                                 <Tag color={matchScore >= 80 ? 'success' : 'warning'} className="application-tag">
                                   {matchScore}% Match

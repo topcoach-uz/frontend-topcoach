@@ -77,6 +77,7 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
   const isOthers = (targ: string) => section === 'others' && target === targ;
   const isAiMajor = section === 'ai-major-match';
   const isAdmissions = section === 'admissions-program';
+  const isApplications = isOthers('profile') && new URLSearchParams(location.search).get('tab') === 'college-lists';
   const isSat = section === 'sat-course';
   const isResearch = section === 'research-program';
   const isRewards = section === 'account' && target === 'rewards';
@@ -217,6 +218,16 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
         </button>
         <button
           type="button"
+          className={`${styles.navItem} ${isApplications ? styles.navItemActive : ''}`}
+          onClick={() => go('/student-hub?section=others&target=profile&tab=college-lists')}
+        >
+          <span className={styles.navIconCircle}>
+            <UnifiedIcon name="applications" size="md" color="primary" />
+          </span>
+          <span className={styles.navLabel}>{t('studentHub.nav.applications', 'Applications')}</span>
+        </button>
+        <button
+          type="button"
           className={`${styles.navItem} ${isSat ? styles.navItemActive : ''}`}
           onClick={() => go('/student-hub?section=sat-course')}
         >
@@ -233,7 +244,7 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           <span className={styles.navIconCircle}>
             <UnifiedIcon name="admissions" size="md" color="primary" />
           </span>
-          <span className={styles.navLabel}>{t('studentHub.hub.admissions', 'Admissions')}</span>
+          <span className={styles.navLabel}>{t('studentHub.hub.admissionsCourse', 'Admissions course')}</span>
         </button>
         <button
           type="button"

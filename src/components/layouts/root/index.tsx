@@ -5,6 +5,7 @@ import { useAppDispatch, useTypedSelector } from 'src/app/store';
 import { scrollToTop } from 'src/utils';
 import CustomChatAgent from 'src/components/CustomChatAgent';
 import ElevenLabsLoginPrompt from 'src/components/ElevenLabsLoginPrompt';
+import { isApplicantWorkspacePath } from 'src/lib/applicantWorkspace';
 
 export default function RootLayout() {
   const dispatch = useAppDispatch();
@@ -22,7 +23,8 @@ export default function RootLayout() {
   const hideChatFab =
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/student-hub/sat-prep/runner');
+    pathname.startsWith('/student-hub/sat-prep/runner') ||
+    isApplicantWorkspacePath(pathname);
 
   return (
     <>

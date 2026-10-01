@@ -11,6 +11,7 @@ import VideoPlayer from './components/VideoPlayer';
 import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
 import TaskSubmission from './components/TaskSubmission';
+import LiveClassSchedule from './components/LiveClassSchedule';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 import { useDispatch } from 'react-redux';
@@ -1007,30 +1008,9 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                 ) : selectedLesson.lessonType === 'live_session' ? (
                   <section className="live-session-card" aria-label="Live session details">
                     <div className="live-session-card__label">
-                      {t('Scheduled session')}
+                      {t('Live classes')}
                     </div>
-                    <p className="live-session-card__lead">
-                      {t(
-                        'This lesson is delivered live with your mentor. The join link is sent to your email a few minutes before the session.',
-                      )}
-                    </p>
-                    {selectedLesson.contentUrl && (
-                      <a
-                        href={selectedLesson.contentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="live-session-card__link"
-                      >
-                        {t('Open meeting room')} →
-                      </a>
-                    )}
-                    <p className="live-session-card__footnote">
-                      <em>
-                        {t(
-                          'Check your inbox for the calendar invite. Reach out to your mentor if you don\'t receive it 30 minutes before the start.',
-                        )}
-                      </em>
-                    </p>
+                    <LiveClassSchedule lessonId={selectedLesson.id} />
                   </section>
                 ) : (
                   <div className="unknown-lesson-type">

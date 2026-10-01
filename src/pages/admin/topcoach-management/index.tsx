@@ -22,7 +22,6 @@ import { useGetMeQuery } from 'src/app/services/users';
 import { useGetAdminStudentsQuery } from 'src/app/services/fullSupportApi';
 import FullSupportAdminDashboard from 'src/pages/full-support/FullSupportAdminDashboard';
 import ResearchPrepProgressTab from './ResearchPrepProgressTab';
-import PlacementTestPassesTab from './PlacementTestPassesTab';
 import type { ColumnsType } from 'antd/es/table';
 import { AcPill, type AcPillVariant } from 'src/pages/admin/console/components/AcPill';
 import { cleanUserName } from 'src/pages/admin/console/utils';
@@ -65,7 +64,6 @@ const MANAGEMENT_TAB_KEYS = new Set([
   'users',
   'full_support',
   'research_prep',
-  'placement_test',
 ]);
 
 const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
@@ -661,11 +659,6 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
             label: 'Research Prep',
             children: <ResearchPrepProgressTab />,
           },
-          {
-            key: 'placement_test',
-            label: 'Placement Test',
-            children: <PlacementTestPassesTab />,
-          },
         ]}
       />
 
@@ -682,4 +675,3 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
 };
 
 export default ProgramDashboard;
-

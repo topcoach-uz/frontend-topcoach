@@ -32,7 +32,7 @@ export default function SignupPage() {
         </Link>
         <TitleDescriptionPair
           title={t('signIn.know')}
-          description={t('signIn.description')}
+          description={t('signUp.studentDescription')}
         />
       </Flex>
 

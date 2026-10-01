@@ -6,10 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { useCommunityAccessGate } from 'src/lib/communityAccess';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 
 import styles from './CommunityLockedPage.module.scss';
 
 export type CommunityLockVariant =
+  | 'community'
   | 'feed'
   | 'ai-major-match'
   | 'admissions-program'
@@ -66,6 +68,40 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
 
   const copy = useMemo((): VariantCopy => {
     const defaults: Record<CommunityLockVariant, VariantCopy> = {
+      community: {
+        badge: t('studentHub.communityLock.badgeCommunity', 'Community'),
+        title: t(
+          'studentHub.communityLock.communityTitle',
+          'Join Community to connect with mentors and students',
+        ),
+        lead: t(
+          'studentHub.communityLock.communityLead',
+          'Community access unlocks messages, peer connections, mentor guidance, and the shared admissions workspace.',
+        ),
+        bullets: [
+          {
+            icon: 'message',
+            text: t(
+              'studentHub.communityLock.communityB1',
+              'Message mentors and keep admissions conversations in one place',
+            ),
+          },
+          {
+            icon: 'users',
+            text: t(
+              'studentHub.communityLock.communityB2',
+              'Connect with study buddies who share your goals and timeline',
+            ),
+          },
+          {
+            icon: 'sparkles',
+            text: t(
+              'studentHub.communityLock.communityB3',
+              'Unlock Community learning tracks, rewards, and progress tools',
+            ),
+          },
+        ],
+      },
       feed: {
         badge: t('studentHub.communityLock.badgeFeed', 'Community Feed'),
         title: t('studentHub.communityLock.feedTitle', 'A live feed of admissions wins, advice, and questions'),
@@ -176,15 +212,19 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
 
   const isResearchComingSoon = variant === 'research-prep-coming-soon';
 
-  // Funnel-aware destination. The gate decides whether to send the user
-  // to the profile wizard, the roadmap preview, or the subscription tab —
-  // based on how far they've made it through the Community-membership
-  // funnel. Admin-granted users land back in /student-hub (the gate's
-  // "eligible" branch).
+  // Community access is based on enrollment or subscription. The placement
+  // profile is optional and does not block the plan page.
   const gate = useCommunityAccessGate();
+  const unlockLabel = gate.state === 'needs_subscription'
+      ? t('studentHub.communityLock.viewPlansCta', 'View Community plans')
+      : gate.state === 'eligible'
+        ? t('studentHub.communityLock.openCommunityCta', 'Open Community')
+        : gate.state === 'loading'
+          ? t('studentHub.communityLock.checkingAccessCta', 'Checking access…')
+          : t('studentHub.communityLock.unlockCta', 'Unlock Community');
 
   const handleUpgrade = () => {
-    if (isResearchComingSoon) return;
+    if (isResearchComingSoon || gate.state === 'loading') return;
     navigate(gate.destination);
   };
 
@@ -212,6 +252,53 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
   // own shadow does the visual lift for these.
   const usesBlurredPreview = variant === 'sat-course' || variant === 'research-program';
 
+  const panel = (
+    <div className={styles.panel} onClick={(e) => e.stopPropagation()} role="document">
+      <div className={styles.panelHeader}>
+        <div className={styles.panelHeaderLeft}>
+          <Lock className={styles.headerLock} size={16} strokeWidth={2.5} aria-hidden />
+          <span className={styles.badgeLabel}>{copy.badge}</span>
+        </div>
+        <button type="button" className={styles.closeBtn} onClick={dismiss} aria-label={t('studentHub.communityLock.close', 'Close')}>
+          <X size={18} strokeWidth={2} />
+        </button>
+      </div>
+      <h2 id="community-lock-headline" className={styles.headline}>{copy.title}</h2>
+      <p className={styles.lead}>{copy.lead}</p>
+      <ul className={styles.points}>
+        {copy.bullets.map((b) => (
+          <li key={b.text}>
+            <span className={styles.bulletIcon}><BulletIcon kind={b.icon} /></span>
+            <span>{b.text}</span>
+          </li>
+        ))}
+      </ul>
+      <div className={styles.actions}>
+        <Button type="primary" size="large" className={styles.primaryBtn} onClick={isResearchComingSoon ? dismiss : handleUpgrade} loading={!isResearchComingSoon && gate.state === 'loading'}>
+          {isResearchComingSoon
+            ? t('studentHub.communityLock.backCta', 'Back to hub')
+            : unlockLabel}
+        </Button>
+      </div>
+      {!isResearchComingSoon && (
+        <p className={styles.finePrint}>
+          {gate.state === 'needs_subscription'
+              ? t('studentHub.communityLock.planStepDisclaimer', 'Choose a Community plan to unlock access.')
+              : t('studentHub.communityLock.modalDisclaimer', 'Unlock switches your account view to the Community experience.')}
+        </p>
+      )}
+    </div>
+  );
+
+  const applicantInline = variant === 'community' || variant === 'feed' || variant === 'my-rewards' || variant === 'study-buddies';
+  if (applicantInline) {
+    return (
+      <ApplicantPage title={copy.badge} subtitle="Available with Community membership">
+        <div className={styles.inlineWrap}>{panel}</div>
+      </ApplicantPage>
+    );
+  }
+
   /**
    * Portal to document.body: the hub wraps content in `.sectionSwap`, which uses a CSS
    * animation with `transform`. Transformed ancestors break `position: fixed` (modal
@@ -225,68 +312,7 @@ export default function CommunityLockedPage({ variant = 'feed', onClose }: Commu
       aria-labelledby="community-lock-headline"
       onClick={dismiss}
     >
-      <div
-        className={styles.panel}
-        onClick={(e) => e.stopPropagation()}
-        role="document"
-      >
-        <div className={styles.panelHeader}>
-          <div className={styles.panelHeaderLeft}>
-            <Lock className={styles.headerLock} size={16} strokeWidth={2.5} aria-hidden />
-            <span className={styles.badgeLabel}>{copy.badge}</span>
-          </div>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={dismiss}
-            aria-label={t('studentHub.communityLock.close', 'Close')}
-          >
-            <X size={18} strokeWidth={2} />
-          </button>
-        </div>
-
-        <h2 id="community-lock-headline" className={styles.headline}>
-          {copy.title}
-        </h2>
-
-        <p className={styles.lead}>{copy.lead}</p>
-
-        <ul className={styles.points}>
-          {copy.bullets.map((b) => (
-            <li key={b.text}>
-              <span className={styles.bulletIcon}>
-                <BulletIcon kind={b.icon} />
-              </span>
-              <span>{b.text}</span>
-            </li>
-          ))}
-        </ul>
-
-        {!isResearchComingSoon && (
-          <div className={styles.actions}>
-            <Button type="primary" size="large" className={styles.primaryBtn} onClick={handleUpgrade}>
-              {t('studentHub.communityLock.unlockCta', 'Unlock Community')}
-            </Button>
-          </div>
-        )}
-
-        {isResearchComingSoon && (
-          <div className={styles.actions}>
-            <Button type="primary" size="large" className={styles.primaryBtn} onClick={dismiss}>
-              {t('studentHub.communityLock.backCta', 'Back to hub')}
-            </Button>
-          </div>
-        )}
-
-        {!isResearchComingSoon && (
-          <p className={styles.finePrint}>
-            {t(
-              'studentHub.communityLock.modalDisclaimer',
-              'Unlock switches your account view to the Community experience.',
-            )}
-          </p>
-        )}
-      </div>
+      {panel}
     </div>
   );
 

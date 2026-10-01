@@ -1,0 +1,586 @@
+[
+  {
+    "id": "5ee20b22-0cca-4e70-a216-3961e8154eaf",
+    "name": "Harvard University",
+    "logoUrl": "https://www.harvard.edu/wp-content/themes/core/assets/img/theme/branding-assets/footer-logo.svg",
+    "sourcePage": "https://www.harvard.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "97a7cd05-72a1-48eb-939e-573127041d03",
+    "name": "University of Cambridge",
+    "logoUrl": "https://www.cam.ac.uk/themes/custom/fresh/images/interface/cambridge_university2.svg",
+    "sourcePage": "https://www.cam.ac.uk/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "0dce90c5-df2e-485e-9e55-121cf0029a4d",
+    "name": "UCL",
+    "logoUrl": "https://cdn.ucl.ac.uk/logos/ucl/ucl-logo--primary.svg",
+    "sourcePage": "https://www.ucl.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "153e9cda-8e0e-472d-8b9d-29fab2231f7c",
+    "name": "California Institute of Technology",
+    "logoUrl": "https://www.caltech.edu/static/core/img/caltech-new-logo.png",
+    "sourcePage": "https://www.caltech.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "7b1711b7-b90f-4dce-8454-cc8bf60f021f",
+    "name": "University of Pennsylvania",
+    "logoUrl": "https://www.upenn.edu/themes/custom/penn_starter/assets/img/UPenn-logo.svg",
+    "sourcePage": "https://www.upenn.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "51663db4-9387-4d9b-b881-ed7dd00b70c1",
+    "name": "University of California, Berkeley (UCB)",
+    "logoUrl": "https://www.berkeley.edu/wp-content/themes/berkeleygateway/img/logo-berkeley.svg?v=3",
+    "sourcePage": "https://www.berkeley.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "1ae085d5-9ad7-45c6-83fc-5f676166fbb6",
+    "name": "Peking University",
+    "logoUrl": "https://www.pku.edu.cn/Uploads/Picture/2019/12/26/s5e04147ee4a83.png",
+    "sourcePage": "https://www.pku.edu.cn/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "37714cb3-5891-43e9-ba62-204dc6cfad42",
+    "name": "Nanyang Technological University, Singapore (NTU Singapore)",
+    "logoUrl": "https://www.ntu.edu.sg/ResourcePackages/NTU/assets/images/NTU_Logo.png",
+    "sourcePage": "https://www.ntu.edu.sg",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "8b806383-c210-48d1-92a5-6bff0e1a76f2",
+    "name": "The University of Hong Kong",
+    "logoUrl": "https://www.hku.hk/adobe/dynamicmedia/deliver/dm-aid--afc8d43c-587a-43f0-b93c-26f8bd397e0e/logo-hku.svg.webp?width=208&preferwebp=true",
+    "sourcePage": "https://www.hku.hk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "1a0b72fd-d414-4451-9092-9bd5c38bd7a3",
+    "name": "The University of Sydney",
+    "logoUrl": "https://www.sydney.edu.au/content/dam/icons/logos/logo-usyd-dark.svg",
+    "sourcePage": "https://www.sydney.edu.au",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "7e968f1d-ba43-460e-bcea-d4f3d95b14e4",
+    "name": "The University of New South Wales (UNSW Sydney)",
+    "logoUrl": "https://www.unsw.edu.au/content/dam/images/graphics/logos/unsw/unsw_0.png",
+    "sourcePage": "https://www.unsw.edu.au",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "5bbb732f-c4ec-4034-8c68-ffb91bc17f53",
+    "name": "Tsinghua University",
+    "logoUrl": "https://www.tsinghua.edu.cn/image/logo180.png",
+    "sourcePage": "https://www.tsinghua.edu.cn/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "07da8abd-9232-45e0-953c-8a7c0ced4fb4",
+    "name": "University of Chicago",
+    "logoUrl": "https://www.uchicago.edu/-/media/images/logo-background.svg?iar=0&hash=C926BC4DECB90E6437DD2525482760AF",
+    "sourcePage": "https://www.uchicago.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "3bd5ccc9-448f-4bf3-8dc7-f30fcdbf28eb",
+    "name": "Yale University",
+    "logoUrl": "https://www.yale.edu/sites/all/themes/yale_blue/images/logo-print.png",
+    "sourcePage": "https://www.yale.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "9eaf6c10-7521-4806-ac5a-bae56f836aca",
+    "name": "Université PSL",
+    "logoUrl": "https://www.psl.eu/themes/custom/oooooo/assets/images/Header-150x61.svg",
+    "sourcePage": "https://www.psl.eu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "51f205de-3af3-4fc1-b370-a8de769e955a",
+    "name": "EPFL – École polytechnique fédérale de Lausanne",
+    "logoUrl": "https://www.epfl.ch/wp-content/themes/wp-theme-2018/assets/svg/epfl-logo.svg",
+    "sourcePage": "https://www.epfl.ch/fr/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "78611f1d-6444-4d50-9a01-cbcf54c6fff6",
+    "name": "The University of Edinburgh",
+    "logoUrl": "https://www.ed.ac.uk/themes/upstream/wpp_theme/images/logo.png",
+    "sourcePage": "https://www.ed.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "4190bc2c-753f-4c78-b422-9b2b4e4844f2",
+    "name": "Technical University of Munich",
+    "logoUrl": "https://www.tum.de/typo3conf/ext/in2template/Resources/Public/Images/Backend/tum-logo.svg",
+    "sourcePage": "https://www.tum.de/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "0267dcd6-5866-4371-9d1c-d6765a5901a6",
+    "name": "The University of Tokyo",
+    "logoUrl": "https://www.u-tokyo.ac.jp/content/400244322.svg",
+    "sourcePage": "https://www.u-tokyo.ac.jp/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "66e1c842-408b-4c32-b678-3fb5c725558c",
+    "name": "The University of Manchester",
+    "logoUrl": "https://assets.manchester.ac.uk/corporate/images/design/logo-university-of-manchester.png",
+    "sourcePage": "https://www.manchester.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "2bc7a9a7-aed6-4698-bb03-09149f0a3240",
+    "name": "Fudan University",
+    "logoUrl": "https://www.fudan.edu.cn/_upload/site/00/02/2/logo.png",
+    "sourcePage": "https://www.fudan.edu.cn/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "10625788-592e-496e-9657-da9e468938a0",
+    "name": "King's College London",
+    "logoUrl": "https://www.kcl.ac.uk/SiteElements/2017/images/kcl-logo.svg",
+    "sourcePage": "https://www.kcl.ac.uk/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "d90e2d13-d587-418f-bde1-7905642fd159",
+    "name": "The University of Queensland",
+    "logoUrl": "https://static.uq.net.au/v11/logos/corporate/uq-logo--reversed.svg",
+    "sourcePage": "https://www.uq.edu.au",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "1b921b70-2639-4d05-8559-36b77211852d",
+    "name": "University of California, Los Angeles (UCLA)",
+    "logoUrl": "https://www.ucla.edu/img/logo-ucla.svg",
+    "sourcePage": "https://www.ucla.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "a70615a5-cbd8-41e3-ae41-d949b635dcad",
+    "name": "Shanghai Jiao Tong University",
+    "logoUrl": "https://global.sjtu.edu.cn/en/assets/images/logo_white_130.png",
+    "sourcePage": "https://en.sjtu.edu.cn",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "name"
+  },
+  {
+    "id": "0746790a-9ace-4c22-aa3d-1f02e2be3987",
+    "name": "Institut Polytechnique de Paris",
+    "logoUrl": "https://www.ip-paris.fr/themes/project/img/header/logo-blanc.png",
+    "sourcePage": "https://www.ip-paris.fr",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "name"
+  },
+  {
+    "id": "965dbcb9-b40a-49b0-9a11-ef69b9806c1c",
+    "name": "The Hong Kong University of Science and Technology",
+    "logoUrl": "https://hkust.edu.hk/sites/default/files/2026-01/Standard%2035A%20Logo%20-%20FC%20%28B%29%20English.png",
+    "sourcePage": "https://hkust.edu.hk/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "0bcbf503-e767-474a-a5df-b4d2bad04ddc",
+    "name": "The London School of Economics and Political Science (LSE)",
+    "logoUrl": "https://www.lse.ac.uk/_mClaLQ_835c64d6-1bea-452b-b1f2-b3dc907a4dfb/static/assets/LSE_logo.svg",
+    "sourcePage": "https://www.lse.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "3cc988c7-16f3-4d2b-a7ea-5b6eafa85e14",
+    "name": "Kyoto University",
+    "logoUrl": "https://www.kyoto-u.ac.jp/themes/custom/camphor/images/header-logo-vertical.svg",
+    "sourcePage": "https://www.kyoto-u.ac.jp/ja",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "8d89eabe-dd38-4284-b9eb-f5a181edaf82",
+    "name": "Northwestern University",
+    "logoUrl": "https://common.northwestern.edu/v9/css/images/northwestern.svg",
+    "sourcePage": "https://www.northwestern.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "2288e167-b347-4023-b3be-d3c70fd2c24f",
+    "name": "University of Bristol",
+    "logoUrl": "https://www.bristol.ac.uk/assets/responsive-web-project/2.7.4/images/logos/uob-logo.svg",
+    "sourcePage": "https://www.bristol.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "43e239ea-508e-4836-aeda-7ea91d906849",
+    "name": "The Hong Kong Polytechnic University",
+    "logoUrl": "https://www.polyu.edu.hk/assets/img/main-logo-1x.png",
+    "sourcePage": "https://www.polyu.edu.hk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "0884cc53-848b-425d-836e-83c99d08b8b7",
+    "name": "Ludwig-Maximilians-Universität München",
+    "logoUrl": "https://cms-cdn.lmu.de/assets/img/Logo_LMU.svg",
+    "sourcePage": "https://www.lmu.de/de/index.html",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "722e7148-b23c-4097-a4f7-0a3445059c6d",
+    "name": "Universiti Malaya (UM)",
+    "logoUrl": "https://www.um.edu.my/images/img-logo-UM.png",
+    "sourcePage": "https://www.um.edu.my",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "d689a3e2-4442-44ee-8e43-fe5b308059b8",
+    "name": "Duke University",
+    "logoUrl": "https://www.duke.edu/wp-content/plugins/duke-blocks/assets/images/dt-logo.svg",
+    "sourcePage": "https://www.duke.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "4e54fc2b-a78b-4098-b3f5-98abf624a71d",
+    "name": "KU Leuven",
+    "logoUrl": "https://stijl.kuleuven.be/releases/latest/img/svg/logo.svg",
+    "sourcePage": "https://www.kuleuven.be/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "5c1aa6e5-1efb-4bbc-85a0-9091532eef20",
+    "name": "Sorbonne University",
+    "logoUrl": "https://www.sorbonne-universite.fr/sites/default/files/media/2019-10/logo_4.svg",
+    "sourcePage": "https://www.sorbonne-universite.fr",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "16b31786-9693-4eb8-b863-416ae22851e1",
+    "name": "National Taiwan University (NTU)",
+    "logoUrl": "https://www.ntu.edu.tw/images/icon-logo-header.svg",
+    "sourcePage": "https://www.ntu.edu.tw",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "931da0e2-d684-4f27-a5ce-f0fa7a095938",
+    "name": "Universidad de Buenos Aires (UBA)",
+    "logoUrl": "https://www.uba.ar/imgs/logofooter.png",
+    "sourcePage": "https://www.uba.ar/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "a331dfdb-280f-4398-82cb-4303d8f11cd5",
+    "name": "University of California, San Diego (UCSD)",
+    "logoUrl": "https://www.ucsd.edu/_resources/img/logo_UCSD.png",
+    "sourcePage": "https://ucsd.edu",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "caa27df0-39a1-47e9-b4c3-70128a758743",
+    "name": "Université Paris-Saclay",
+    "logoUrl": "https://www.universite-paris-saclay.fr/sites/default/files/media/2019-12/logo-ups-white_1.svg",
+    "sourcePage": "https://www.universite-paris-saclay.fr/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "45ca1780-578b-4303-8e60-533bf49b4932",
+    "name": "KTH Royal Institute of Technology",
+    "logoUrl": "https://www.kth.se/img/logotype-white-6f02f4554cba157ca832fa452bf242a4.svg",
+    "sourcePage": "https://www.kth.se",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "name"
+  },
+  {
+    "id": "089c3bc5-d6e1-46d3-bb44-45e34d6d09d4",
+    "name": "Lund University",
+    "logoUrl": "https://www.lunduniversity.lu.se/sites/www.lunduniversity.lu.se/files/Lund_university_L_CMYK.svg",
+    "sourcePage": "https://www.lunduniversity.lu.se/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "3c72917c-3397-46a1-9224-5fa7283deeac",
+    "name": "The University of Western Australia",
+    "logoUrl": "https://static.weboffice.uwa.edu.au/visualid/devcore/1/_assets/img/uwacrest-small-white.svg",
+    "sourcePage": "https://www.uwa.edu.au/home",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "6997fadc-315b-4555-b0a5-4b8d294d12a7",
+    "name": "University of Glasgow",
+    "logoUrl": "https://www.gla.ac.uk/3t4/img/ug-keyline.svg",
+    "sourcePage": "https://www.gla.ac.uk/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "b022a341-4322-4ba0-9362-e8300b7f7c69",
+    "name": "University of Southampton",
+    "logoUrl": "https://www.southampton.ac.uk/themes/custom/drupal_endeavour/images/logo/logo-uk.svg",
+    "sourcePage": "https://www.southampton.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "e49c3561-3db1-4ca8-939d-f0ae7e45b513",
+    "name": "University of Birmingham",
+    "logoUrl": "https://www.birmingham.ac.uk/Images/logos/uob/uob-uk-logo-light.svg",
+    "sourcePage": "https://www.birmingham.ac.uk",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "name"
+  },
+  {
+    "id": "3c049e2b-6ea0-4aa1-b979-44f07c8b73f9",
+    "name": "Universität Heidelberg",
+    "logoUrl": "https://backend.uni-heidelberg.de/sites/default/files/site_logo/icon-symbol-uh-logo-black_1_0.svg",
+    "sourcePage": "https://www.uni-heidelberg.de/en",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name and QS rank"
+  },
+  {
+    "id": "4078c649-6150-4954-b2de-11e8749bb0cf",
+    "name": "Osaka University",
+    "logoUrl": "https://www.osaka-u.ac.jp/assets/images/header/logo_for_folder.svg",
+    "sourcePage": "https://www.osaka-u.ac.jp/ja",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "44e8c539-8544-4c59-a896-56e9db5ad801",
+    "name": "Trinity College Dublin, The University of Dublin",
+    "logoUrl": "https://www.tcd.ie/media/tcd/site-assets/images/tcd-logo.png",
+    "sourcePage": "https://www.tcd.ie",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "0ea9721c-288e-4fde-93ef-c2b95eedf583",
+    "name": "University of Technology Sydney",
+    "logoUrl": "https://www.uts.edu.au/globalassets/resizer/restricted/media/all-pages-sitewide/header/restricteduts-alt-logoheader.svg",
+    "sourcePage": "https://www.uts.edu.au",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "name"
+  },
+  {
+    "id": "028c1228-36cf-4ec8-bef4-ce77675b396f",
+    "name": "Purdue University",
+    "logoUrl": "https://www.purdue.edu/home/wp-content/themes/purdue-home-theme-beta/imgs/PU-V.svg",
+    "sourcePage": "https://www.purdue.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "8fabeee6-c1ca-44f8-af2b-0ffdd1db472e",
+    "name": "Pennsylvania State University",
+    "logoUrl": "https://images.ctfassets.net/p7x3ai5plaz1/1wVBvFkhF0ArrdaMlzLiCi/125b0659267cacef241e88b5517a51eb/logotype.svg",
+    "sourcePage": "https://www.psu.edu/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "277d3feb-5b9f-4405-935b-4b60f1ca5f53",
+    "name": "Universidade de São Paulo",
+    "logoUrl": "https://www5.usp.br/wp-content/uploads/usp-2018.png?x34176",
+    "sourcePage": "https://www5.usp.br/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "c70b4db6-57ed-4233-af2b-fb74bd7e3ba5",
+    "name": "Pontificia Universidad Católica de Chile (UC)",
+    "logoUrl": "https://www.uc.cl/site/templates/dist/images/logo-uc-wh.svg",
+    "sourcePage": "https://www.uc.cl/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": true,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "c744a973-92a6-4001-8741-1bafc8f13c48",
+    "name": "RWTH Aachen University",
+    "logoUrl": "https://www.rwth-aachen.de/global/show_picture.asp?id=aaaaaaaaaaagazb",
+    "sourcePage": "https://www.rwth-aachen.de/",
+    "checkedAt": "2026-09-24",
+    "darkBackground": false,
+    "matchedBy": "official homepage review"
+  },
+  {
+    "id": "a896b9bd-3936-4423-92e4-969c83d5cee9",
+    "name": "Imperial College London",
+    "logoUrl": "/official-university-logos/imperial-college-london.svg",
+    "sourcePage": "https://www.imperial.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "b6337fd5-a83c-4dc0-893e-4ce161cbe3d6",
+    "name": "ETH Zurich",
+    "logoUrl": "/official-university-logos/eth-zurich.svg",
+    "sourcePage": "https://ethz.ch/de.html",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "0330c8d8-b54b-4afc-b62c-9c41fd5f75c9",
+    "name": "University of Illinois at Urbana-Champaign",
+    "logoUrl": "/official-university-logos/illinois-urbana-champaign.svg",
+    "sourcePage": "https://illinois.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "1011f791-f9f3-40d8-81f8-b50dbab6c15b",
+    "name": "University of Leeds",
+    "logoUrl": "/official-university-logos/university-of-leeds.svg",
+    "sourcePage": "https://www.leeds.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "4a1b7815-982b-44a6-bc62-7f740d7b47f1",
+    "name": "Freie Universität Berlin",
+    "logoUrl": "/official-university-logos/freie-universitat-berlin.svg",
+    "sourcePage": "https://www.fu-berlin.de",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "4472a4c7-663a-4d28-9352-a118afae9300",
+    "name": "Carnegie Mellon University",
+    "logoUrl": "/official-university-logos/carnegie-mellon.svg",
+    "sourcePage": "https://www.cmu.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "2cf7bafd-a560-4dfd-b326-b8a6fce25400",
+    "name": "University of Copenhagen",
+    "logoUrl": "/official-university-logos/university-of-copenhagen.svg",
+    "sourcePage": "https://www.ku.dk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "02bcf66c-758f-425e-8607-3befacd1ce56",
+    "name": "The University of Warwick",
+    "logoUrl": "https://d36jn9qou1tztq.cloudfront.net/static_war/render/id7/images/wordmark.svg.136055278947",
+    "sourcePage": "https://warwick.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header image"
+  },
+  {
+    "id": "ac14492d-aad6-4ebb-89d6-c06572f6b6ad",
+    "name": "Brown University",
+    "logoUrl": "https://www.brown.edu/themes/custom/brown/static/images/logo.svg",
+    "sourcePage": "https://www.brown.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header SVG use"
+  },
+  {
+    "id": "5854d3da-e097-47b0-a1ef-e83d4cbab079",
+    "name": "University of Amsterdam",
+    "logoUrl": "https://www.uva.nl/webfiles/1779862044324/icons/svg-logos.svg#logo-uva-large-nl",
+    "sourcePage": "https://www.uva.nl",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage header SVG sprite"
+  }
+]

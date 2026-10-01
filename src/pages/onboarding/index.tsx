@@ -299,8 +299,15 @@ function LegacyOnboardingWizardPage() {
  */
 export default function OnboardingWizardPage() {
   const profile = useTypedSelector((state) => state.auth.profile);
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data: studentProfile, isLoading } = useGetMyStudentProfileQuery(undefined, {
+    skip: !isAuthenticated || profile?.profile?.role === UserRole.Mentor,
+  });
   const version = (profile as (typeof profile & OnboardingStatus) | undefined)?.onboardingVersion;
   const enrollV2 = import.meta.env.VITE_ONBOARDING_V2_ENABLED === 'true';
+
+  if (isLoading) return <Loader height="100vh" />;
+  if (usesJuniorCommunity(studentProfile?.academicProfile)) return <Navigate to="/student-hub?section=feed" replace />;
 
   if (shouldUseOnboardingV2(version, enrollV2)) return <OnboardingPreview mode="production" />;
   return <LegacyOnboardingWizardPage />;

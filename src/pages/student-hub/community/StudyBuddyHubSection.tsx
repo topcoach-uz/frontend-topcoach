@@ -11,6 +11,7 @@ import {
 } from 'src/app/services/student-hub/studyBuddyApi';
 import { getLatestCreatedImg } from 'src/utils';
 import StudyBuddyPreferencesPanel from './StudyBuddyPreferencesPanel';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 import styles from './communityHubMock.module.scss';
 
 const PAGE_SIZE = 6;
@@ -306,7 +307,11 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   };
 
   return (
-    <div className={styles.studyBuddyHub}>
+    <ApplicantPage
+      title="Study buddies"
+      subtitle="Find peers with similar goals, timelines, and study plans."
+    >
+    <div className={`${styles.studyBuddyHub} applicant-panel`}>
       <StudyBuddyPreferencesPanel />
       <div className={styles.studyBuddySearchRow}>
         <Input
@@ -520,5 +525,6 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
         ]}
       />
     </div>
+    </ApplicantPage>
   );
 }

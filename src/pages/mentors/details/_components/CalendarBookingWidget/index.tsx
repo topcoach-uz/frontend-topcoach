@@ -17,6 +17,9 @@ import { useTypedSelector } from 'src/app/store';
 import { themeFontSize, themeFontWeight } from 'src/constants/theme';
 import RequestSessionModal from '../RequestSessionModal';
 import SessionCheckoutSheet from '../SessionCheckoutSheet';
+import type { PaymentPlansSchema } from 'src/app/api/Api';
+import { getBookingPriceQuote } from './bookingPrice';
+import { buildCalendarGrid } from './calendarGrid';
 import styles from './calendarBooking.module.scss';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -26,6 +29,7 @@ interface Props {
   mentorName?: string;
   timezone?: string;
   mentorLevel?: string;
+  paymentPlans?: PaymentPlansSchema[];
   onPaymentRequired?: (params: { mentorId: string; sessionId: string; start: string; end: string; type: string }) => void;
 }
 
@@ -34,6 +38,7 @@ export default function CalendarBookingWidget({
   mentorName = 'Mentor',
   timezone: propTimezone,
   mentorLevel,
+  paymentPlans,
   onPaymentRequired,
 }: Props) {
   const colors = useColors();
@@ -85,50 +90,16 @@ export default function CalendarBookingWidget({
 
   const isLoading = availLoading || slotsLoading;
 
+  const pendingPrice = useMemo(
+    () => getBookingPriceQuote(paymentPlans, pendingSlot?.type, mentorLevel),
+    [paymentPlans, pendingSlot?.type, mentorLevel],
+  );
+
   const slotsForDate = (slots || []).filter(
     (s) => dayjs.utc(s.start).tz(menteeTimezone).format('YYYY-MM-DD') === selectedDate
   );
 
-  // Build calendar grid: 6 rows x 7 cols (Calendly-style)
-  const calendarGrid = useMemo(() => {
-    const start = displayMonth.clone().startOf('month');
-    const end = displayMonth.clone().endOf('month');
-    const startDayOfWeek = start.day();
-    const daysInMonth = end.date();
-    const prevMonth = displayMonth.clone().subtract(1, 'month');
-    const prevMonthDays = prevMonth.daysInMonth();
-    const nextMonth = displayMonth.clone().add(1, 'month');
-
-    const cells: { date: dayjs.Dayjs; isCurrentMonth: boolean }[] = [];
-
-    // Leading days from previous month
-    for (let i = 0; i < startDayOfWeek; i++) {
-      cells.push({
-        date: prevMonth.date(prevMonthDays - startDayOfWeek + i + 1),
-        isCurrentMonth: false,
-      });
-    }
-
-    // Current month days
-    for (let d = 1; d <= daysInMonth; d++) {
-      cells.push({ date: start.date(d), isCurrentMonth: true });
-    }
-
-    // Trailing days to fill 5 rows (35 cells) - avoids extra row
-    const totalCells = 35;
-    let d = 1;
-    while (cells.length < totalCells) {
-      cells.push({ date: nextMonth.date(d), isCurrentMonth: false });
-      d++;
-    }
-
-    // Chunk into 5 rows of 7
-    const rows: { date: dayjs.Dayjs; isCurrentMonth: boolean }[][] = [];
-    for (let r = 0; r < 5; r++) {
-      rows.push(cells.slice(r * 7, (r + 1) * 7));
-    }
-    return rows;
-  }, [displayMonth]);
+  const calendarGrid = useMemo(() => buildCalendarGrid(displayMonth), [displayMonth]);
 
   const datesWithSlots = useMemo(() => {
     const set = new Set<string>();
@@ -234,7 +205,7 @@ export default function CalendarBookingWidget({
               >
                 ‹
               </button>
-              <span className={styles.monthLabel}>
+              <span className={styles.monthLabel} aria-live="polite">
                 {displayMonth.format('MMMM YYYY')}
               </span>
               <button
@@ -266,6 +237,9 @@ export default function CalendarBookingWidget({
                       type="button"
                       className={`${styles.calendarCell} ${!isCurrentMonth ? styles.otherMonth : ''} ${hasSlots && isCurrentMonth ? styles.hasSlots : ''} ${isClickable ? styles.clickable : ''} ${isSelected ? styles.selected : ''} ${isPast ? styles.past : ''}`}
                       disabled={!isClickable}
+                      aria-label={date.format('dddd, MMMM D, YYYY')}
+                      aria-pressed={isSelected && isCurrentMonth}
+                      aria-current={isCurrentMonth && date.isSame(dayjs(), 'day') ? 'date' : undefined}
                       onClick={() => isClickable && setSelectedDate(dateStr)}
                     >
                       {date.date()}
@@ -416,8 +390,8 @@ export default function CalendarBookingWidget({
         onOk={handleConfirmBooking}
         onCancel={() => { setConfirmModalOpen(false); setPendingSlot(null); setBookingNote(''); }}
         okText={mentorLevel?.toLowerCase() === 'probono'
-          ? t('mentors.confirm', 'Confirm')
-          : t('mentors.confirmAndPay', 'Confirm & Proceed to Payment')}
+          ? t('mentors.confirmBooking', 'Confirm booking')
+          : t('mentors.continueToPayment', 'Continue to payment')}
         cancelText={t('shared.modalCancel', 'Cancel')}
         okButtonProps={{ style: { backgroundColor: '#8b0000', borderColor: '#8b0000' } }}
       >
@@ -434,6 +408,14 @@ export default function CalendarBookingWidget({
               <strong>{t('mentors.dateTime', 'Date & Time')}:</strong>{' '}
               {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('ddd, MMM D, YYYY')} • {dayjs.utc(pendingSlot.start).tz(menteeTimezone).format('h:mm')} – {dayjs.utc(pendingSlot.end).tz(menteeTimezone).format('h:mm A')}
             </p>
+            {mentorLevel?.toLowerCase() !== 'probono' && pendingPrice && (
+              <div className={styles.priceSummary}>
+                <span>{t('mentors.sessionPrice', 'Session price')}</span>
+                <strong>
+                  {pendingPrice.amount.toLocaleString()} {pendingPrice.currency}
+                </strong>
+              </div>
+            )}
             <div className={styles.noteField}>
               <label htmlFor="booking-note" className={styles.noteLabel}>
                 {t('mentors.notesForMentorLabel', 'Notes for your mentor (optional)')}

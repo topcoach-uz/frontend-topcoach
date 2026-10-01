@@ -10,16 +10,16 @@
  */
 
 :root {
-  --sat-brand: #7B1F2F;
-  --sat-brand-soft: #fbe9ec;
-  --sat-brand-deep: #5d1622;
-  --sat-text: #1f2937;
-  --sat-text-muted: #6b7280;
+  --sat-brand: #8b0000;
+  --sat-brand-soft: #f6e8e7;
+  --sat-brand-deep: #6d0000;
+  --sat-text: #302f2d;
+  --sat-text-muted: #606976;
   --sat-text-dim: #9ca3af;
-  --sat-bg: #faf8f3;
+  --sat-bg: #fbf9f6;
   --sat-card: #ffffff;
-  --sat-border: #e5e3da;
-  --sat-border-strong: #d6d3c8;
+  --sat-border: #e7e2dc;
+  --sat-border-strong: #d8d0c8;
   --sat-success: #15803d;
   --sat-success-soft: #dcfce7;
   --sat-warning: #c2410c;
@@ -381,6 +381,83 @@
   &--filled { background: var(--sat-success, #15803d); }
   &--building { background: var(--sat-warning, #c2410c); }
   &--focus { background: var(--sat-danger, #b91c1c); }
+}
+
+/* Applicant workspace adapter: keep the SAT information architecture and
+   test runner intact, but make the route chrome read as part of My Journey. */
+.sat-shell.applicant-specialist-page {
+  gap: 0;
+  min-height: 100%;
+  background: #fbf9f6;
+  color: #302f2d;
+
+  .sat-shell__header {
+    position: relative;
+    top: auto;
+    background: #fbf9f6;
+    border-bottom-color: #e7e2dc;
+  }
+
+  .sat-shell__header-inner,
+  .sat-shell__tabs-inner,
+  .sat-shell__body {
+    max-width: 1280px;
+  }
+
+  .sat-shell__header-inner { padding: 18px 32px 14px; }
+  .sat-shell__brand-badge {
+    min-height: 34px;
+    padding: 6px 11px;
+    border: 1px solid #ead6d4;
+    border-radius: 8px;
+    background: #f6e8e7;
+    color: #8b0000;
+  }
+  .sat-shell__crumb-current { color: #302f2d; font-weight: 500; }
+  .sat-shell__back-btn {
+    min-height: 40px;
+    border-color: #e7e2dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #302f2d;
+  }
+  .sat-shell__tabs { border-color: #e7e2dc; }
+  .sat-shell__tabs-inner { padding: 0 32px; }
+  .sat-shell__tab {
+    min-height: 46px;
+    padding: 12px 15px;
+    color: #606976;
+
+    &--active { color: #8b0000; border-bottom-color: #8b0000; }
+  }
+  .sat-shell__body { padding: 28px 32px 56px; }
+
+  .sat-card,
+  .sat-stat,
+  [class*='sat-packs__card'],
+  [class*='sat-mocks__card'],
+  [class*='sat-library__card'] {
+    border-color: #e7e2dc;
+    box-shadow: none;
+  }
+
+  .sat-page-title,
+  .sat-card__title { color: #302f2d; }
+  .sat-page-desc,
+  .sat-card__subtitle { color: #606976; }
+  .sat-btn--primary { background: #8b0000; border-color: #8b0000; }
+}
+
+@media (max-width: 700px) {
+  .sat-shell.applicant-specialist-page {
+    .sat-shell__header-inner { padding: 14px 16px 12px; align-items: flex-start; }
+    .sat-shell__crumb { min-width: 0; flex-wrap: wrap; gap: 7px; }
+    .sat-shell__back-btn { width: 40px; padding: 0; font-size: 0; }
+    .sat-shell__back-btn svg { width: 16px; height: 16px; }
+    .sat-shell__tabs-inner { padding: 0 8px; }
+    .sat-shell__tab { padding-inline: 12px; }
+    .sat-shell__body { padding: 20px 16px 40px; }
+  }
 }
 
 /* Mini progress bar */

@@ -1,6 +1,7 @@
 import { App, message } from 'antd';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Navigate,
   useNavigate,
@@ -11,14 +12,11 @@ import {
 import {
   AdmissionsProfileDto,
   PatchAdmissionsProfileBody,
+  ProfileStep,
   useCompleteAdmissionsProfileMutation,
   useGetAdmissionsProfileQuery,
   usePatchAdmissionsProfileMutation,
 } from 'src/app/services/admissionsProfileApi';
-import {
-  ProfileStep,
-  useGetPlacementTestStatusQuery,
-} from 'src/app/services/placementTestApi';
 import { useTypedSelector } from 'src/app/store';
 import {
   COMMUNITY_FUNNEL_PATHS,
@@ -67,8 +65,6 @@ export default function ProfileWizardPage() {
 
   const { isAuthenticated } = useTypedSelector((s) => s.auth);
 
-  const { data: status } =
-    useGetPlacementTestStatusQuery(undefined, { skip: !isAuthenticated });
   const { data: profile } = useGetAdmissionsProfileQuery(undefined, {
     skip: !isAuthenticated,
   });
@@ -99,7 +95,7 @@ export default function ProfileWizardPage() {
   // they can refine their answers, and the roadmap's "profile changed"
   // banner picks up the change when they're done.
   const editIntent = searchParams.get('edit') === '1';
-  if (status?.profile.completed && !editIntent) {
+  if (profile?.completedAt && !editIntent) {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.roadmap} replace />;
   }
 
@@ -110,7 +106,6 @@ export default function ProfileWizardPage() {
 
   if (!validStep(stepParam)) {
     const resume =
-      status?.profile.lastEditedStep ??
       profile?.lastEditedStep ??
       'basic';
     // Preserve every other search param (notably `edit=1` from the
@@ -156,8 +151,6 @@ export default function ProfileWizardPage() {
       }}
       onStepChange={(next) => navigate(profilePath(next))}
       onExit={() => navigate(COMMUNITY_FUNNEL_PATHS.community)}
-      lastAttemptScore={status?.lastAttempt?.scorePercentage ?? null}
-      lastAttemptLevel={status?.lastAttempt?.level ?? null}
     />
   );
 }
@@ -175,8 +168,6 @@ type InnerProps = {
   complete: () => Promise<void>;
   onStepChange: (next: ProfileStep) => void;
   onExit: () => void;
-  lastAttemptScore: number | null;
-  lastAttemptLevel: string | null;
 };
 
 function ProfileWizardInner({
@@ -190,19 +181,19 @@ function ProfileWizardInner({
   complete,
   onStepChange,
   onExit,
-  lastAttemptScore,
-  lastAttemptLevel,
 }: InnerProps) {
+  const { t } = useTranslation();
   const stepIndex = STEP_ORDER.indexOf(step);
   const isLast = stepIndex === STEP_ORDER.length - 1;
 
   const doneSteps = useMemo<Set<ProfileStep>>(() => {
     const done = new Set<ProfileStep>();
     if (!profile) return done;
-    if (profile.fullName && profile.gradeLevel != null && profile.country) {
+    if (profile.fullName && profile.targetDegree && profile.country &&
+      (profile.targetDegree === 'master' ? profile.educationStatus && profile.previousInstitution : profile.gradeLevel != null)) {
       done.add('basic');
     }
-    if (profile.satPlan) done.add('academic');
+    if (profile.targetDegree === 'master' ? profile.previousDegree && profile.previousField && profile.bachelorGraduationYear : profile.satPlan) done.add('academic');
     if (
       profile.goals.length &&
       profile.academicInterests.length &&
@@ -269,11 +260,17 @@ function ProfileWizardInner({
       const country = ((valueOf('country') as string | undefined) ?? '').trim();
       const currentSchool = ((valueOf('currentSchool') as string | undefined) ?? '').trim();
       const parentInvolvement = valueOf('parentInvolvement') ?? null;
+      const targetDegree = valueOf('targetDegree') ?? null;
       if (!fullName) e.fullName = 'Please enter your full name.';
-      if (gradeLevel == null) e.gradeLevel = 'Pick your grade level.';
+      if (!targetDegree) e.targetDegree = 'Choose the degree you plan to pursue.';
+      if (targetDegree !== 'master' && gradeLevel == null) e.gradeLevel = 'Pick your grade level.';
       if (!country) e.country = 'Tell us which country you\'re applying from.';
-      if (!currentSchool) e.currentSchool = 'Add the school you currently attend.';
-      if (!parentInvolvement) e.parentInvolvement = 'Pick one option.';
+      if (targetDegree !== 'master' && !currentSchool) e.currentSchool = 'Add the school you currently attend.';
+      if (targetDegree !== 'master' && !parentInvolvement) e.parentInvolvement = 'Pick one option.';
+      if (targetDegree === 'master') {
+        if (!valueOf('educationStatus')) e.educationStatus = 'Select your bachelor’s status.';
+        if (!String(valueOf('previousInstitution') ?? '').trim()) e.previousInstitution = 'Enter your university.';
+      }
     }
     if (step === 'academic') {
       // SAT score stays optional ("if taken"). SAT plan is required so
@@ -281,10 +278,17 @@ function ProfileWizardInner({
       // are required because Gemini personalizes the entire summary
       // and action plan off them — a blank field produces a generic
       // roadmap and defeats the point of running the wizard at all.
+      const targetDegree = valueOf('targetDegree') ?? 'bachelor';
       const satPlan = valueOf('satPlan') ?? null;
       const extracurriculars = ((valueOf('extracurriculars') as string | undefined) ?? '').trim();
-      if (!satPlan) e.satPlan = 'Pick your SAT plan.';
-      if (extracurriculars.length < 20) {
+      if (targetDegree !== 'master' && !satPlan) e.satPlan = 'Pick your SAT plan.';
+      if (targetDegree === 'master') {
+        if (!String(valueOf('previousDegree') ?? '').trim()) e.previousDegree = 'Enter your bachelor’s degree.';
+        if (!String(valueOf('previousField') ?? '').trim()) e.previousField = 'Enter your field of study.';
+        const year = Number(valueOf('bachelorGraduationYear'));
+        if (!Number.isInteger(year) || year < 1900 || year > 2100) e.bachelorGraduationYear = 'Enter a year from 1900 to 2100.';
+      }
+      if (targetDegree !== 'master' && extracurriculars.length < 20) {
         e.extracurriculars =
           'Add a few sentences — clubs, sports, awards, or volunteer work. We use this to personalize your roadmap.';
       }
@@ -376,12 +380,6 @@ function ProfileWizardInner({
         <SubStepper current={step} done={doneSteps} />
 
         <section className={styles.card}>
-          {lastAttemptScore !== null ? (
-            <span className={styles.placementChip}>
-              ✓ Placement <strong>{lastAttemptScore}%</strong>
-              {lastAttemptLevel ? <> · <strong>{lastAttemptLevel}</strong></> : null}
-            </span>
-          ) : null}
           <div className={styles.card__eyebrow}>
             Step {stepIndex + 1} of {STEP_ORDER.length}
           </div>
@@ -391,7 +389,11 @@ function ProfileWizardInner({
               <span className={styles.savingBadge}>· saving…</span>
             ) : null}
           </h1>
-          <p className={styles.card__lede}>{STEP_LEDES[step]}</p>
+          <p className={styles.card__lede}>
+            {step === 'academic' && (draft.targetDegree ?? profile?.targetDegree) === 'master'
+              ? t('placementProfile.academicMasterLede', 'Your university education, graduate tests, and relevant experience.')
+              : STEP_LEDES[step]}
+          </p>
 
           {stepNode}
 

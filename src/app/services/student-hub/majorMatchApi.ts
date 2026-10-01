@@ -89,6 +89,9 @@ export interface MajorMatchAccessStatus {
 export interface MajorMatchStatusResponse {
   hasCompletedV2: boolean;
   hasCompletedLegacy: boolean;
+  /** Present on newer servers. The latest-report query remains the safe
+   * fallback while older deployments/cached responses omit it. */
+  hasCompletedMm3?: boolean;
   latest: MajorMatchResult | null;
   access: MajorMatchAccessStatus;
 }
@@ -217,6 +220,7 @@ export interface Mm3Report {
    *  4". Optional for the same reason as `masterRoadmapLocked`. */
   masterRoadmapTotalPhases?: number;
   meta: {
+    targetDegree?: 'bachelor' | 'master';
     source: 'ai' | 'partial';
     /** How many universities the model had to choose from. */
     groundedCandidates: number;
@@ -232,6 +236,7 @@ export interface Mm3Report {
 export interface AnalyseMm3Request {
   answers: Record<string, unknown>; // keyed by question SLUG
   countryHints?: string[];
+  targetDegree?: 'bachelor' | 'master';
 }
 
 // ── Public, unauthenticated Major Match (lead magnet) ──────────────────────
@@ -303,6 +308,11 @@ export const majorMatchApi = RtkApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+      // The endpoint identifies the current student from auth, so there is no
+      // profile id in the mutation arg. Invalidate the small MM3/status
+      // families: mounted consumers immediately reconcile completion and the
+      // intro's persisted report after a successful analysis.
+      invalidatesTags: ['MajorMatchMm3Latest', 'MajorMatchV2Status'],
     }),
 
     // Latest persisted MM3 report for a student, or null if none exists yet.
@@ -310,6 +320,9 @@ export const majorMatchApi = RtkApi.injectEndpoints({
     // for the counselor read-only view.
     getLatestMm3Report: builder.query<Mm3Report | null, string>({
       query: (studentProfileId) => `/major-match/mm3/latest/${studentProfileId}`,
+      providesTags: (_result, _error, studentProfileId) => [
+        { type: 'MajorMatchMm3Latest', id: studentProfileId },
+      ],
     }),
 
     // Public, unauthenticated, rate-limited per IP on the backend — nothing

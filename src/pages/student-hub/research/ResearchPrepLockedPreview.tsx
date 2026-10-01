@@ -1,5 +1,7 @@
 import React from 'react';
 import { Lock, Star, BookOpen } from 'lucide-react';
+import '../applicant/applicantPages.scss';
+import './research-prep.scss';
 
 /**
  * Static "first page" of Research Prep, rendered as a teaser behind the
@@ -46,7 +48,7 @@ const MODULES: Module[] = [
 
 export default function ResearchPrepLockedPreview() {
   return (
-    <div style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto', fontFamily: 'inherit' }}>
+    <div className="applicant-page applicant-specialist-page rp-locked-preview" style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto', fontFamily: 'inherit' }}>
       {/* Top bar */}
       <div
         style={{

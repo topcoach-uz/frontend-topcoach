@@ -56,6 +56,11 @@ describe('onboarding preview screen registry', () => {
 });
 
 describe('onboarding preview validation', () => {
+  it('explains the mentor date format without showing a regular expression', () => {
+    const values = { ...initialValues(), 'mentor:Start date · optional': '2021' };
+    expect(validateScreen(screen('mentor-academic'), values)['mentor:Start date · optional'])
+      .toBe('Enter the start date as Month YYYY, for example September 2021.');
+  });
   it.each(['20', '1899', '2101', 'abcd'])('rejects invalid graduation year %s', year => {
     const values = { ...initialValues(), 'validation:Graduation year': year };
 

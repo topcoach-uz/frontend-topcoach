@@ -1,23 +1,22 @@
 /* Editorial palette — match the rest of My Journey. */
-$st-cream: #faf8f3;
-$st-cream-elevated: #fbfaf6;
-$st-ink: #1c1a17;
-$st-muted: #6b6258;
-$st-hairline: #e5e3da;
+$st-cream: #f7f5f2;
+$st-cream-elevated: #ffffff;
+$st-ink: #302f2d;
+$st-muted: #606976;
+$st-hairline: #e7e2dc;
 $st-brand: #7B1F2F;
 $st-brand-soft: rgba(123, 31, 47, 0.08);
 
 .page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 8px 16px 48px;
+  width: 100%;
+  padding: 0 0 24px;
 }
 
 /* Inside Community Hub center column — full width of column, no extra side margins */
 .pageEmbedded {
   max-width: none;
   margin: 0;
-  padding: 4px 0 32px;
+  padding: 0 0 24px;
   width: 100%;
   color: $st-ink;
 }
@@ -75,7 +74,7 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
   border: 0;
   border-bottom: 2px solid transparent;
   color: $st-muted;
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+  font-family: inherit;
   font-size: 0.95rem;
   font-weight: 500;
   padding: 12px 4px;
@@ -129,7 +128,7 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
 /* Editorial card override — cream surface, hairline border, serif title. */
 .card {
   margin-bottom: 20px;
-  border-radius: 14px !important;
+  border-radius: 16px !important;
   border: 1px solid $st-hairline !important;
   background: $st-cream-elevated !important;
   box-shadow: none !important;
@@ -141,7 +140,7 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
     min-height: auto !important;
   }
   :global(.ant-card-head-title) {
-    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
+    font-family: inherit !important;
     font-weight: 600 !important;
     font-size: 1.05rem !important;
     color: $st-ink !important;
@@ -153,7 +152,7 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
   :global(.ant-btn-primary) {
     background: $st-brand !important;
     border-color: $st-brand !important;
-    border-radius: 999px !important;
+    border-radius: 10px !important;
     font-weight: 600 !important;
 
     &:hover, &:focus {

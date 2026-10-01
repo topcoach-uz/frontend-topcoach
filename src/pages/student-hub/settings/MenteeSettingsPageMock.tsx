@@ -25,9 +25,10 @@ import { ACCESS_TOKEN } from 'src/constants/storage';
 import SubscriptionTab from './subscription';
 import ReferralsTab from './ReferralsTab';
 import { sanitizeName } from 'src/utils/displayName';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 import styles from './MenteeSettingsPageMock.module.scss';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 const PROFILE_PHOTO_MAX_MB = 2;
 const PROFILE_PHOTO_MAX_BYTES = PROFILE_PHOTO_MAX_MB * 1024 * 1024;
 const PROFILE_PHOTO_ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
@@ -223,22 +224,11 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   };
 
   return (
+    <ApplicantPage
+      title={t('studentHub.settingsMock.title', 'Settings')}
+      subtitle={t('studentHub.settingsMock.subtitle', 'Manage your profile, subscription, and preferences.')}
+    >
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
-      {/* Editorial header — single serif title + subtitle. The "Account"
-          eyebrow was redundant with the tab strip below, and every
-          per-tab body block has its own contextual heading, so a third
-          layer of label was just noise. */}
-      <div className={styles.editorialHeader}>
-        <Title level={1} className={styles.editorialTitle}>
-          {t('studentHub.settingsMock.title', 'Settings')}
-        </Title>
-        <Paragraph className={styles.editorialSubtitle}>
-          {t(
-            'studentHub.settingsMock.subtitle',
-            'Manage your profile, subscription, and preferences.',
-          )}
-        </Paragraph>
-      </div>
 
       {/* Tab strip — Subscription / Account / Experience / Notifications.
           Roadmap moved to the profile hub (see the redirect effect
@@ -434,6 +424,7 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
             </Text>
             <Select
               className={styles.mockJourneySelect}
+              aria-label={t('studentHub.settingsMock.experienceModeAria', 'Choose My Journey experience mode')}
               value={isCommunityEnrolled ? 'in' : 'out'}
               onChange={(v) => {
                 setCommunityEnrolled(v === 'in');
@@ -520,5 +511,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
         </Card>
       )}
     </div>
+    </ApplicantPage>
   );
 }

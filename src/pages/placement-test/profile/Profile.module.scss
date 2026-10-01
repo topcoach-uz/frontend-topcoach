@@ -169,25 +169,6 @@ $ed-serif: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
   line-height: 1.5;
 }
 
-/* Score badge on the profile pages — a quiet breadcrumb that the test
-   was already passed. Sits at the top of every sub-step. */
-.placementChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: $ed-success-bg;
-  border: 1px solid rgba(4, 120, 87, 0.25);
-  border-radius: 999px;
-  padding: 5px 14px 5px 10px;
-  font-family: $ed-serif;
-  font-size: 0.88rem;
-  color: $ed-success;
-  align-self: flex-start;
-
-  strong {
-    font-weight: 600;
-  }
-}
 
 /* ── Form primitives ────────────────────────────────────────────── */
 

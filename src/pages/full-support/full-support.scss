@@ -91,6 +91,88 @@ $fs-amber: #b6824b;
     margin-top: 14px;
   }
 
+  &__access-lock {
+    position: relative;
+    overflow: hidden;
+    min-height: 420px;
+    display: grid;
+    place-items: center;
+    border: 1px solid $fs-hairline;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(60, 45, 30, 0.06);
+  }
+
+  &__access-preview {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: end;
+    gap: 18px;
+    padding: 44px;
+    opacity: 0.5;
+    filter: blur(7px);
+    background: linear-gradient(135deg, #fffaf7, #f3ded9);
+
+    span {
+      display: block;
+      height: 84px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e5d7d2;
+    }
+  }
+
+  &__access-content {
+    position: relative;
+    z-index: 1;
+    max-width: 540px;
+    padding: 36px;
+    text-align: center;
+  }
+
+  &__access-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: $fs-brand;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(123, 31, 47, 0.22);
+  }
+
+  &__access-title {
+    margin: 0 0 12px;
+    font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+    font-size: clamp(1.7rem, 3vw, 2.25rem);
+    line-height: 1.12;
+    color: $fs-ink;
+  }
+
+  &__access-copy {
+    margin: 0 auto;
+    color: $fs-ink-soft;
+    line-height: 1.65;
+    max-width: 52ch;
+  }
+
+  &__access-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  &__access-note {
+    margin: 16px 0 0;
+    color: $fs-muted;
+    font-size: 0.8rem;
+    font-style: italic;
+  }
+
   /* — buttons ───────────────────────────────────────────────────── */
   &__btn {
     display: inline-flex;
@@ -578,6 +660,241 @@ $fs-amber: #b6824b;
   }
 }
 
+/* Applicant workspace adaptation for the student-facing Full Support view.
+   Admin Full Support screens use other class roots and are intentionally
+   unaffected. */
+.applicant-full-support-page.fseditorial {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0;
+  color: #302f2d;
+
+  .fseditorial__row {
+    gap: 24px;
+    margin: 0;
+  }
+
+  .fseditorial__card {
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+    background: #fff;
+    border-color: #e7e2dc;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .fseditorial__card-head {
+    padding: 20px 24px;
+    border-bottom-color: #e7e2dc;
+  }
+
+  .fseditorial__card-body {
+    padding: 24px;
+  }
+
+  .fseditorial__card-title,
+  .fseditorial__hours-num,
+  .fseditorial__session-date,
+  .fseditorial__stat-value,
+  .fseditorial__table-cell--task,
+  .fseditorial__milestone-label,
+  .fseditorial__access-title {
+    font-family: inherit;
+    color: #302f2d;
+  }
+
+  .fseditorial__lede,
+  .fseditorial__muted,
+  .fseditorial__muted-row,
+  .fseditorial__hours-total,
+  .fseditorial__session-desc,
+  .fseditorial__table-cell--meta,
+  .fseditorial__milestone-date,
+  .fseditorial__empty,
+  .fseditorial__access-copy,
+  .fseditorial__access-note {
+    color: #606976;
+  }
+
+  .fseditorial__btn,
+  .fseditorial__card-action {
+    min-height: 44px;
+    border-radius: 10px;
+    padding: 10px 16px;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .fseditorial__btn--primary {
+    background: #8b0000;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #6d0000;
+      color: #fff;
+    }
+  }
+
+  .fseditorial__btn--ghost,
+  .fseditorial__card-action {
+    background: #fff;
+    border-color: #e7e2dc;
+  }
+
+  .fseditorial__bar {
+    background: #f3f1ed;
+  }
+
+  .fseditorial__bar-fill {
+    background: #8b0000;
+  }
+
+  .fseditorial__table-head {
+    background: #f7f5f2;
+    border-bottom-color: #e7e2dc;
+  }
+
+  .fseditorial__table-row,
+  .fseditorial__session,
+  .fseditorial__milestone {
+    border-color: #e7e2dc;
+  }
+
+  .fseditorial__access-lock {
+    width: 100%;
+    min-height: 420px;
+    padding: 0;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  &.fseditorial--loading {
+    min-height: 280px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.fseditorial--gated {
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .fseditorial__gated-card {
+    width: 100%;
+    max-width: none;
+    padding: 24px 28px;
+    background: #fff;
+    border-color: #e7e2dc;
+    border-radius: 16px;
+  }
+}
+
+.applicant-page__actions {
+  .fseditorial__btn {
+    min-height: 44px;
+    border-radius: 10px;
+    padding: 10px 16px;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .fseditorial__btn--primary {
+    background: #8b0000;
+
+    &:hover:not(:disabled) {
+      background: #6d0000;
+    }
+  }
+
+  .fseditorial__btn--ghost {
+    color: #302f2d;
+    background: #fff;
+    border-color: #e7e2dc;
+  }
+}
+
+@media (max-width: 767px) {
+  .applicant-full-support-page.fseditorial {
+    gap: 20px;
+
+    .fseditorial__row {
+      gap: 20px;
+    }
+
+    .fseditorial__card {
+      border-radius: 14px;
+    }
+
+    .fseditorial__card-head,
+    .fseditorial__card-body {
+      padding: 20px;
+    }
+
+    .fseditorial__table-head {
+      display: none;
+    }
+
+    .fseditorial__table-row,
+    .fseditorial__table--applications .fseditorial__table-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      padding: 20px;
+    }
+
+    .fseditorial__table-cell {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      min-width: 0;
+      text-align: right;
+      overflow-wrap: anywhere;
+
+      &::before {
+        flex: 0 0 auto;
+        color: #606976;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+    }
+
+    .fseditorial__table:not(.fseditorial__table--applications) {
+      .fseditorial__table-cell:nth-child(1)::before { content: 'Task'; }
+      .fseditorial__table-cell:nth-child(2)::before { content: 'Deadline'; }
+      .fseditorial__table-cell:nth-child(3)::before { content: 'Status'; }
+      .fseditorial__table-cell:nth-child(4)::before { content: 'Actions'; }
+    }
+
+    .fseditorial__table--applications {
+      .fseditorial__table-cell:nth-child(1)::before { content: 'Program'; }
+      .fseditorial__table-cell:nth-child(2)::before { content: 'Stage'; }
+      .fseditorial__table-cell:nth-child(3)::before { content: 'Status'; }
+      .fseditorial__table-cell:nth-child(4)::before { content: 'Aid'; }
+    }
+
+    .fseditorial__access-content {
+      padding: 28px 20px;
+    }
+
+    .fseditorial__access-actions {
+      flex-direction: column;
+    }
+  }
+
+  .applicant-full-support-page.fseditorial {
+    .fseditorial__gated-card {
+      padding: 20px;
+      border-radius: 14px;
+    }
+  }
+}
+
 .full-support-page {
   padding: 24px;
   max-width: 1200px;
@@ -814,4 +1131,3 @@ $fs-amber: #b6824b;
     color: #6ee7b7 !important;
   }
 }
-

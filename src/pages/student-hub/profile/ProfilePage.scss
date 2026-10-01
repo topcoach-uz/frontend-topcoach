@@ -331,3 +331,39 @@
     }
   }
 }
+
+// The detailed forms remain shared with counselor views, while the student
+// surface adopts the applicant workspace rhythm and panel treatment.
+.applicant-profile-page {
+  .pf-masthead {
+    padding: 0 0 18px;
+    margin: -8px 0 0;
+  }
+
+  .pf-statusline {
+    margin-top: 0;
+  }
+
+  .pf-rail {
+    background: #fff;
+    border: 1px solid #e7e2dc;
+    border-left: 3px solid #8b0000;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .pf-tabs {
+    gap: 22px;
+    margin-bottom: 24px;
+  }
+
+  .pf-tab {
+    font-family: inherit;
+    font-size: 0.94rem;
+    font-weight: 500;
+  }
+
+  .pf-tab--active {
+    color: #8b0000;
+  }
+}

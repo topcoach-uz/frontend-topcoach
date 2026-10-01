@@ -17,7 +17,7 @@ import './EssaysPage.scss';
 const { Option } = Select;
 
 // Set to false to show full essays functionality
-const ESSAYS_COMING_SOON = true;
+const ESSAYS_COMING_SOON = false;
 
 // Props interface for EssaysPage - supports both normal and read-only mode
 export interface EssaysPageProps {
@@ -85,7 +85,7 @@ const EssaysPage: React.FC<EssaysPageProps> = ({ readOnly = false, studentId }) 
   // Merge data based on mode - type as any[] for flexibility
   const finalEssaysData: any[] = isReadOnly 
     ? (readOnlyEssaysResponse?.data as any)?.essays || []
-    : (essaysResponse?.data as any)?.essays || [];
+    : (Array.isArray(essaysResponse?.data) ? essaysResponse.data : (essaysResponse?.data as any)?.essays) || [];
   
   const [deleteStudentEssay, { isLoading: isDeleting }] = useDeleteStudentEssayMutation();
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Table, Button, Alert, Row, Col, Statistic, Modal, Progress, message } from 'antd';
+import FullSupportLessonLedger from './FullSupportLessonLedger';
 import { useTranslation } from 'react-i18next';
 import { User, Clock, FileText, Target, Users, ClipboardList, CalendarClock, BarChart2, CheckCircle2, Globe, History, Rocket, FlaskConical, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -51,9 +52,17 @@ function coerceArray<T>(value: unknown): T[] {
   return [];
 }
 
+function assignmentError(error: unknown): string {
+  const message = (error as { data?: { message?: unknown } })?.data?.message;
+  if (typeof message === 'string') return message;
+  if (Array.isArray(message)) return message.filter((item) => typeof item === 'string').join(' ');
+  return 'The mentor assignment could not be confirmed. Refresh the student list before retrying.';
+}
+
 function getTaskStatus(r: TaskDto): string {
-  if (r.hasFeedback) return 'Reviewed';
-  if (r.submissionText) return 'Needs review';
+  if (r.status === 'approved') return 'Reviewed';
+  if (r.status === 'revision_requested') return 'Revision requested';
+  if (r.status === 'submitted') return 'Needs review';
   return 'Pending';
 }
 
@@ -115,7 +124,7 @@ export default function FullSupportAdminDashboard({
   const { data: mentorsFromPage } = useGetMentorsQuery(); // same API as Mentors page (accepted only)
   const { data: assignmentsData } = useGetAdminMentorAssignmentsQuery();
   const stats = statsData?.data;
-  const [assignMentor] = useAssignMentorMutation();
+  const [assignMentor, { isLoading: assignLoading }] = useAssignMentorMutation();
   const [unassignMentor, { isLoading: unassignLoading }] = useUnassignMentorMutation();
 
   const students: AdminStudentRow[] = studentsData?.data ?? [];
@@ -178,14 +187,25 @@ export default function FullSupportAdminDashboard({
   );
   const satCoursePayload = satCourseData?.data;
 
-  const handleUnassign = (studentUserId: string) => {
-    unassignMentor(studentUserId);
+  const handleUnassign = async (studentUserId: string) => {
+    if (unassignLoading || assignLoading) return;
+    try {
+      await unassignMentor(studentUserId).unwrap();
+      message.success('Mentor unassigned. Student records are preserved.');
+    } catch (error) {
+      message.error(assignmentError(error));
+    }
   };
   const handleAssignClick = (record: AdminStudentRow) => setAssignModalStudent(record);
-  const handleAssignConfirm = (mentorUserId: string) => {
-    if (!assignModalStudent) return;
-    assignMentor({ studentUserId: assignModalStudent.id, mentorUserId: mentorUserId });
-    setAssignModalStudent(null);
+  const handleAssignConfirm = async (mentorUserId: string) => {
+    if (!assignModalStudent || assignLoading || unassignLoading) return;
+    try {
+      await assignMentor({ studentUserId: assignModalStudent.id, mentorUserId }).unwrap();
+      setAssignModalStudent(null);
+      message.success('Mentor assigned.');
+    } catch (error) {
+      message.error(assignmentError(error));
+    }
   };
 
   const columns = [
@@ -234,7 +254,7 @@ export default function FullSupportAdminDashboard({
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Button type="link" size="small" onClick={() => setSelectedStudent({ id: record.id, name: record.name, mentorName: record.mentorName ?? '' })}>View</Button>
           {record.mentorId ? (
-            <Button type="link" size="small" danger loading={unassignLoading} onClick={() => handleUnassign(record.id)}>Unassign</Button>
+            <Button type="link" size="small" danger loading={unassignLoading} disabled={assignLoading} onClick={() => handleUnassign(record.id)}>Unassign</Button>
           ) : (
             <Button
               type="primary"
@@ -246,6 +266,7 @@ export default function FullSupportAdminDashboard({
                 ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
               }}
               onClick={() => handleAssignClick(record)}
+              disabled={assignLoading || unassignLoading}
             >
               Assign Mentor
             </Button>
@@ -333,6 +354,8 @@ export default function FullSupportAdminDashboard({
         />
       )}
 
+      <FullSupportLessonLedger />
+
       <Card title={<><Users size={16} style={{ marginRight: 8, color: accent }} />Student–Mentor Assignments</>} style={{ marginTop: 24 }} className="full-support-card">
         <Table
           dataSource={students}
@@ -389,7 +412,9 @@ export default function FullSupportAdminDashboard({
       <Modal
         title={`Assign mentor: ${assignModalStudent?.name ?? ''}`}
         open={!!assignModalStudent}
-        onCancel={() => setAssignModalStudent(null)}
+        onCancel={() => { if (!assignLoading) setAssignModalStudent(null); }}
+        closable={!assignLoading}
+        maskClosable={!assignLoading}
         footer={null}
         width={400}
         className={modalDarkClassName}
@@ -410,6 +435,8 @@ export default function FullSupportAdminDashboard({
                     ...(integratedInAdminConsole ? { color: '#04120c' } : {}),
                   }}
                   onClick={() => handleAssignConfirm(m.id)}
+                  loading={assignLoading}
+                  disabled={unassignLoading}
                 >
                   {m.name}
                 </Button>
@@ -738,6 +765,13 @@ export default function FullSupportAdminDashboard({
                             {s.description}
                           </div>
                         )}
+                        <div style={{ color: subtextColor, fontSize: 12, marginTop: 4 }}>
+                          {s.outcome === 'scheduled' && dayjs(s.dateTime).isBefore(dayjs()) ? 'Awaiting record' : s.outcome.replaceAll('_', ' ')}
+                          {s.outcome === 'held' && ` · Attendance: ${s.attendance === 'unknown' ? 'unknown (legacy)' : s.attendance}`}
+                          {s.outcome === 'held' && ` · ${s.actualDurationMinutes ?? Math.round(parseFloat(s.duration) * 60)} min`}
+                        </div>
+                        {s.sharedNotes && <div style={{ color: subtextColor, fontSize: 12 }}>{s.sharedNotes}</div>}
+                        {s.homework?.map((task) => <div key={task.id} style={{ color: subtextColor, fontSize: 12 }}>Homework: {task.title} · {task.status.replaceAll('_', ' ')}</div>)}
                       </div>
                       <AcPill variant="cyan">{s.duration}</AcPill>
                     </li>

@@ -19,7 +19,7 @@ $mm2-muted: #6b6258;
 $mm2-hairline: #e5e3da;
 $mm2-brand: #7b1f2f;
 $mm2-brand-soft: rgba(123, 31, 47, 0.08);
-$mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
+$mm2-serif: "Iowan Old Style", "Charter", "Georgia", serif;
 
 // ── question sub-line (rendered under the title when hasSub is true) ─────
 .mm3-runner__sub {
@@ -125,9 +125,140 @@ $mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
   color: #1b6b44;
 }
 
+// The illustration previews the shape of a report, never a student's scores.
+.mm3-intro__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 26px;
+  padding: 10px 12px 10px 0;
+  border-radius: 16px;
+  background: linear-gradient(90deg, transparent 45%, #fff4f1 100%);
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+    padding: 0;
+    background: none;
+  }
+}
+
+.mm3-intro__hero-copy {
+  min-width: 0;
+}
+.mm3-intro__hero .mm2__subtitle {
+  margin-bottom: 18px;
+}
+.mm3-intro__hero .mm2__stats {
+  gap: 0;
+  margin: 0;
+}
+.mm3-intro__hero .mm2__stat {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  &:not(:first-child)::before {
+    content: "·";
+    margin: 0 9px;
+    color: $mm2-muted;
+  }
+}
+.mm3-intro__hero .mm2__stat-value {
+  display: inline;
+  color: $mm2-ink-soft;
+  font-weight: 500;
+}
+
+.mm3-intro__preview {
+  min-width: 0;
+  padding: 17px 18px 13px;
+  border: 1px solid #e6e1dd;
+  border-radius: 14px;
+  background: #fff;
+
+  h2 {
+    margin: 5px 0 1px;
+    color: $mm2-ink;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+.mm3-intro__preview-eyebrow {
+  color: #850900;
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.mm3-intro__preview-subtitle {
+  margin: 0 0 11px;
+  color: $mm2-muted;
+  font-size: 0.69rem;
+}
+.mm3-intro__preview-row {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 9px;
+  color: $mm2-ink-soft;
+  font-size: 0.7rem;
+}
+.mm3-intro__preview-track {
+  display: block;
+  height: 6px;
+  border-radius: 5px;
+  background: #f1e8e6;
+  overflow: hidden;
+}
+.mm3-intro__preview-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #8a0900;
+}
+.mm3-intro__preview-fill--interests {
+  width: 73%;
+}
+.mm3-intro__preview-fill--skills {
+  width: 47%;
+}
+.mm3-intro__preview-fill--workStyle {
+  width: 62%;
+}
+.mm3-intro__preview-fill--goals {
+  width: 67%;
+}
+.mm3-intro__preview-insight {
+  margin: 12px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid $mm2-hairline;
+  color: $mm2-muted;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .mm3-intro__preview {
+    max-width: 420px;
+  }
+}
+
 /* Shown only while the student is part-way through, under the CTA row. */
 .mm3-intro__reminder {
   margin: 10px 0 0;
   font-size: 0.8rem;
   color: $mm2-muted;
+}
+.mm3-intro__results-first {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .mm3-intro__results-first .mm2__btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

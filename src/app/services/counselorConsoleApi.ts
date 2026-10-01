@@ -884,6 +884,8 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
         { type: 'CounselorStudents' as const, id: targetOrgId },
         { type: 'CounselorDashboard' as const, id: orgId },
         { type: 'CounselorDashboard' as const, id: targetOrgId },
+        { type: 'CounselorAudit' as const, id: orgId },
+        { type: 'CounselorAudit' as const, id: targetOrgId },
       ],
     }),
   }),

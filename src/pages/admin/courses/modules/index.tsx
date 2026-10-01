@@ -30,6 +30,7 @@ import { Segmented } from 'antd';
 import { useGetCourseStructureQuery } from 'src/app/services/courses';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import ResearchAdminTab from '../research/ResearchAdminTab';
+import LiveAttendanceModal from './LiveAttendanceModal';
 import './index.scss';
 
 const { TextArea } = Input;
@@ -249,6 +250,7 @@ const CourseManagementAdmin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [moduleModalVisible, setModuleModalVisible] = useState(false);
   const [lessonModalVisible, setLessonModalVisible] = useState(false);
+  const [attendanceLesson, setAttendanceLesson] = useState<Lesson | null>(null);
   const [resourceModalVisible, setResourceModalVisible] = useState(false);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
@@ -916,6 +918,7 @@ const CourseManagementAdmin: React.FC = () => {
       key: 'actions',
       render: (_: any, record: Lesson) => (
         <Space>
+          {record.lessonType === 'live_session' && <Button size="small" onClick={() => setAttendanceLesson(record)}>Classes & attendance</Button>}
           <Button
             type="primary"
             size="small"
@@ -2044,6 +2047,7 @@ const CourseManagementAdmin: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <LiveAttendanceModal lesson={attendanceLesson} open={!!attendanceLesson} onClose={() => setAttendanceLesson(null)} />
     </div>
   );
 };

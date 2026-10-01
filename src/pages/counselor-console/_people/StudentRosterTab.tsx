@@ -270,8 +270,17 @@ export function StudentRosterTab({
       message.success(`${transferTarget.name} transferred to ${destName}`);
       setTransferTarget(null);
       refetch();
-    } catch {
-      message.error('Could not transfer this student. Please try again.');
+    } catch (error) {
+      const status = (error as { status?: unknown } | null)?.status;
+      message.error(
+        status === 409
+          ? 'This student already has a staff role in the destination organization. The transfer was not applied.'
+          : status === 403
+            ? 'You no longer have permission to transfer this student. Refresh the roster and check your organization access.'
+            : status === 404
+              ? 'This student membership is no longer available. Refresh the roster before trying again.'
+              : 'Could not confirm the transfer. Refresh the roster to check its status before trying again.',
+      );
     }
   };
 
@@ -732,9 +741,10 @@ export function StudentRosterTab({
         destroyOnClose
       >
         <p className="cc-roster-transfer-lead">
-          Move this student to another organization you manage. They’ll appear in
-          the destination organization and be removed from{' '}
-          <b>{org?.name ?? 'this organization'}</b>.
+          Move this student to another organization you manage. Their membership
+          in <b>{org?.name ?? 'this organization'}</b> will be archived, and they’ll
+          become active in the destination organization. They keep their TopCoach
+          account, applications and learning history.
         </p>
         <div className="cc-roster-transfer-field">
           <label className="cc-roster-transfer-label">

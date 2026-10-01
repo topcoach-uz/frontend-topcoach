@@ -2583,7 +2583,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @response `500` `void` Internal server error
      */
     registerStudentByEmail: (data: RegisterStudentEmailDto, params: RequestParams = {}) =>
-      this.request<void, void>({
+      this.request<{ message: string; emailVerificationRequired?: boolean }, void>({
         path: `/auth/student/register/email`,
         method: "POST",
         body: data,

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useGetRoadmapQuery } from 'src/app/services/roadmapApi';
-import { useGetPlacementTestStatusQuery } from 'src/app/services/placementTestApi';
+import { useGetAdmissionsProfileQuery } from 'src/app/services/admissionsProfileApi';
 import { useTypedSelector } from 'src/app/store';
 import { COMMUNITY_FUNNEL_PATHS } from 'src/lib/communityAccess';
 
@@ -29,11 +29,11 @@ export default function RoadmapPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useTypedSelector((s) => s.auth);
 
-  const { data: status, isLoading: statusLoading } =
-    useGetPlacementTestStatusQuery(undefined, { skip: !isAuthenticated });
+  const { data: profile, isLoading: profileLoading } =
+    useGetAdmissionsProfileQuery(undefined, { skip: !isAuthenticated });
 
   const { data, isLoading } = useGetRoadmapQuery(undefined, {
-    skip: !isAuthenticated || !status?.profile.completed,
+    skip: !isAuthenticated || !profile?.completedAt,
   });
 
   if (!isAuthenticated) {
@@ -45,7 +45,7 @@ export default function RoadmapPage() {
     );
   }
 
-  if (!statusLoading && status && !status.profile.completed) {
+  if (!profileLoading && !profile?.completedAt) {
     return <Navigate to={COMMUNITY_FUNNEL_PATHS.profileBase} replace />;
   }
 

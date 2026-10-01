@@ -1,5 +1,5 @@
 import { RtkApi } from './api';
-import type { ProfileStep } from './placementTestApi';
+export type ProfileStep = 'basic' | 'academic' | 'goals' | 'needs';
 
 // ── DTO mirrors of `src/modules/admissions-profile/...` ────────────────────────
 
@@ -23,6 +23,17 @@ export type AdmissionsProfileDto = {
   country: string | null;
   currentSchool: string | null;
   parentInvolvement: ParentInvolvement | null;
+  targetDegree: 'bachelor' | 'master' | null;
+  educationStatus: 'studying' | 'graduated' | null;
+  previousInstitution: string | null;
+  previousDegree: string | null;
+  previousField: string | null;
+  bachelorGraduationYear: number | null;
+  universityGpa: string | null;
+  universityGpaScale: string | null;
+  relevantExperience: string | null;
+  greScore: string | null;
+  gmatScore: string | null;
 
   // Step 2 (NO GPA)
   satScore: number | null;
@@ -54,6 +65,17 @@ export type PatchAdmissionsProfileBody = Partial<{
   country: string;
   currentSchool: string;
   parentInvolvement: ParentInvolvement;
+  targetDegree: 'bachelor' | 'master';
+  educationStatus: 'studying' | 'graduated';
+  previousInstitution: string;
+  previousDegree: string;
+  previousField: string;
+  bachelorGraduationYear: number;
+  universityGpa: string;
+  universityGpaScale: string;
+  relevantExperience: string;
+  greScore: string;
+  gmatScore: string;
   satScore: number;
   satPlan: SatPlan;
   extracurriculars: string;
@@ -83,17 +105,14 @@ export const admissionsProfileApi = RtkApi.injectEndpoints({
         method: 'PATCH',
         body,
       }),
-      // Optimistic-light: don't invalidate (we keep the editing surface
-      // owning the source of truth between PATCH calls). The result
-      // returned by the mutation is what callers consume.
+      invalidatesTags: ['AdmissionsProfile'],
     }),
     completeAdmissionsProfile: builder.mutation<AdmissionsProfileDto, void>({
       query: () => ({
         url: 'admissions-profile/me/complete',
         method: 'POST',
       }),
-      // After complete, we DO invalidate — funnel-status queries care.
-      invalidatesTags: ['AdmissionsProfile', 'PlacementTest'],
+      invalidatesTags: ['AdmissionsProfile'],
     }),
   }),
 });

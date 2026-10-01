@@ -18,6 +18,7 @@ import {
   ListChecks,
   Sparkles,
 } from 'lucide-react';
+import 'src/pages/student-hub/applicant/applicantPages.scss';
 import './sat-prep-shell.scss';
 
 interface Tab {
@@ -47,7 +48,7 @@ const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 
   return (
-    <div className="sat-shell">
+    <div className="applicant-page applicant-specialist-page sat-shell">
       <header className="sat-shell__header">
         <div className="sat-shell__header-inner">
           <div className="sat-shell__crumb">

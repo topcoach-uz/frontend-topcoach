@@ -110,7 +110,7 @@ export const MM3_PARTS: readonly MM3Part[] = [
 
 export const MM3_QUESTIONS: readonly MM3Question[] = [
   // ── Part I — Academic Profile ──────────────────────────────────────────
-  { id: 1, part: 1, slug: 'grade', type: 'single', hasSub: true, optionCount: 6, optionHints: [] },
+  { id: 1, part: 1, slug: 'grade', type: 'single', hasSub: true, optionCount: 7, optionHints: [] },
   { id: 2, part: 1, slug: 'curriculum', type: 'single', hasSub: true, optionCount: 6, optionHints: [0] },
   {
     id: 3, part: 1, slug: 'gpa', type: 'fields', hasSub: true,
@@ -199,6 +199,39 @@ export const MM3_QUESTIONS_BY_ID: ReadonlyMap<number, MM3Question> = new Map(
 export const MM3_QUESTIONS_BY_SLUG: ReadonlyMap<string, MM3Question> = new Map(
   MM3_QUESTIONS.map((q) => [q.slug, q]),
 );
+
+// Keep stable question IDs and the shared interests/preferences sections, but
+// never ask graduate applicants to describe themselves as school pupils.
+export const MM3_MASTERS_REPLACEMENTS: readonly MM3Question[] = [
+  { id: 1, part: 1, slug: 'education', type: 'fields', hasSub: true,
+    fields: [{ key: 'status', kind: 'select', optionCount: 2 }, { key: 'year', kind: 'text', hasPlaceholder: true }],
+    requiredFields: ['status', 'year'] },
+  { id: 2, part: 1, slug: 'degreeBackground', type: 'fields', hasSub: true,
+    fields: [{ key: 'institution', kind: 'text' }, { key: 'degree', kind: 'text' }, { key: 'field', kind: 'text' }],
+    requiredFields: ['institution', 'degree', 'field'] },
+  { id: 3, part: 1, slug: 'graduateGpa', type: 'fields', hasSub: true,
+    fields: [{ key: 'value', kind: 'text' }, { key: 'scale', kind: 'text', hasPlaceholder: true }], requiredFields: [] },
+  { id: 4, part: 1, slug: 'graduateTests', type: 'fields', hasSub: true,
+    fields: [{ key: 'status', kind: 'select', optionCount: 3 }, { key: 'gre', kind: 'text' }, { key: 'gmat', kind: 'text' }],
+    requiredFields: ['status'] },
+  { id: 6, part: 1, slug: 'coursework', type: 'fields', hasSub: true,
+    fields: [{ key: 'summary', kind: 'text', hasPlaceholder: true }], requiredFields: [] },
+  { id: 8, part: 1, slug: 'achievements', type: 'fields', hasSub: true,
+    fields: [{ key: 'summary', kind: 'text', hasPlaceholder: true }], requiredFields: [] },
+  { id: 9, part: 1, slug: 'experience', type: 'fields', hasSub: true,
+    fields: [{ key: 'summary', kind: 'text', hasPlaceholder: true }], requiredFields: [] },
+  { id: 30, part: 3, slug: 'graduateTimeline', type: 'fields', hasSub: true,
+    fields: [{ key: 'intake', kind: 'text', hasPlaceholder: true }, { key: 'extra', kind: 'text', hasPlaceholder: true }],
+    requiredFields: ['intake'] },
+];
+
+export const getMm3Questions = (targetDegree?: string | null): readonly MM3Question[] =>
+  targetDegree === 'master'
+    ? MM3_QUESTIONS.map((question) => MM3_MASTERS_REPLACEMENTS.find((replacement) => replacement.id === question.id) ?? question)
+    : MM3_QUESTIONS;
+
+export const getMm3QuestionMap = (targetDegree?: string | null): ReadonlyMap<number, MM3Question> =>
+  new Map(getMm3Questions(targetDegree).map((question) => [question.id, question]));
 
 /** i18n key root for a question's copy: `majorMatch3.q.<slug>.*` */
 export const mm3QuestionKey = (slug: string) => `majorMatch3.q.${slug}`;

@@ -1,9 +1,10 @@
 import { RtkApi } from './api';
-import type { PlacementLevel } from './placementTestApi';
 
 // ── DTO mirrors of `src/modules/roadmap/...` ────────────────────────────────
 
 export type RoadmapSource = 'ai' | 'fallback';
+/** Historical assessment level, present only on older roadmaps. */
+export type PlacementLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 export type RoadmapStrength = 'Developing' | 'Competitive' | 'Strong';
 export type RoadmapPriority = 'high' | 'medium' | 'low';
 export type RoadmapCategory =

@@ -5,6 +5,7 @@ import Header from '../components/header';
 import MentorPrefetch from 'src/components/MentorPrefetch';
 import UniversityPrefetch from 'src/components/UniversityPrefetch';
 import styles from './main.module.scss';
+import { isApplicantWorkspacePath } from 'src/lib/applicantWorkspace';
 // Initialize global dayjs configuration
 import 'src/lib/dayjs';
 
@@ -29,7 +30,7 @@ function Main() {
       <MentorPrefetch />
       <UniversityPrefetch />
       <Outlet />
-      <Footer />
+      {!isApplicantWorkspacePath(pathname) && <Footer />}
     </div>
   );
 }

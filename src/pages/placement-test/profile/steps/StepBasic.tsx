@@ -9,6 +9,7 @@ import {
   PARENT_INVOLVEMENT_OPTIONS,
 } from '../_vocab';
 import styles from '../Profile.module.scss';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   draft: PatchAdmissionsProfileBody;
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
+  const { t } = useTranslation();
   const get = <K extends keyof PatchAdmissionsProfileBody>(
     key: K,
   ): PatchAdmissionsProfileBody[K] | undefined =>
@@ -34,6 +36,9 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
   const country = (get('country') as string | undefined) ?? '';
   const currentSchool = (get('currentSchool') as string | undefined) ?? '';
   const parentInvolvement = get('parentInvolvement') ?? null;
+  const targetDegree = get('targetDegree') ?? null;
+  const educationStatus = get('educationStatus') ?? null;
+  const previousInstitution = (get('previousInstitution') as string | undefined) ?? '';
 
   const inputCls = (field: string) =>
     `${styles.input} ${errors[field] ? styles.inputError : ''}`;
@@ -59,6 +64,13 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
 
       <div className={styles.fieldRow}>
         <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="targetDegree">{t('placementProfile.targetDegree', 'What degree are you applying for?')}</label>
+          <select id="targetDegree" className={selectCls('targetDegree')} value={targetDegree ?? ''} onChange={(e) => onChange({ targetDegree: e.target.value as 'bachelor' | 'master' })}>
+            <option value="">{t('placementProfile.targetDegreePlaceholder', 'Choose a degree…')}</option><option value="bachelor">{t('placementProfile.targetDegreeBachelor', 'Bachelor’s')}</option><option value="master">{t('placementProfile.targetDegreeMaster', 'Master’s')}</option>
+          </select>
+          {errors.targetDegree && <div className={styles.errorText}>{errors.targetDegree}</div>}
+        </div>
+        {targetDegree !== 'master' && <div className={styles.fieldGroup}>
           <label className={styles.label} htmlFor="gradeLevel">
             Grade level
           </label>
@@ -83,7 +95,7 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
           {errors.gradeLevel && (
             <div className={styles.errorText}>{errors.gradeLevel}</div>
           )}
-        </div>
+        </div>}
 
         <div className={styles.fieldGroup}>
           <label className={styles.label} htmlFor="country">
@@ -101,7 +113,12 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
         </div>
       </div>
 
-      <div className={styles.fieldGroup}>
+      {targetDegree === 'master' && <div className={styles.fieldRow}>
+        <div className={styles.fieldGroup}><label className={styles.label} htmlFor="educationStatus">{t('placementProfile.educationStatus', 'Bachelor’s status')}</label><select id="educationStatus" className={selectCls('educationStatus')} value={educationStatus ?? ''} onChange={(e)=>onChange({educationStatus:e.target.value as 'studying'|'graduated'})}><option value="">{t('placementProfile.educationStatusPlaceholder', 'Choose status…')}</option><option value="studying">{t('placementProfile.educationStatusStudying', 'Currently studying')}</option><option value="graduated">{t('placementProfile.educationStatusGraduated', 'Graduated')}</option></select>{errors.educationStatus && <div className={styles.errorText}>{errors.educationStatus}</div>}</div>
+        <div className={styles.fieldGroup}><label className={styles.label} htmlFor="previousInstitution">{t('placementProfile.previousInstitution', 'University')}</label><input id="previousInstitution" className={inputCls('previousInstitution')} value={previousInstitution} onChange={(e)=>onChange({previousInstitution:e.target.value})}/>{errors.previousInstitution && <div className={styles.errorText}>{errors.previousInstitution}</div>}</div>
+      </div>}
+
+      {targetDegree !== 'master' && <div className={styles.fieldGroup}>
         <label className={styles.label} htmlFor="currentSchool">
           Current school
         </label>
@@ -116,9 +133,9 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
         {errors.currentSchool && (
           <div className={styles.errorText}>{errors.currentSchool}</div>
         )}
-      </div>
+      </div>}
 
-      <div className={styles.fieldGroup}>
+      {targetDegree !== 'master' && <div className={styles.fieldGroup}>
         <label className={styles.label}>
           Is a parent or guardian involved in the process?
         </label>
@@ -131,7 +148,7 @@ export function StepBasic({ draft, onChange, profile, errors = {} }: Props) {
         {errors.parentInvolvement && (
           <div className={styles.errorText}>{errors.parentInvolvement}</div>
         )}
-      </div>
+      </div>}
     </>
   );
 }

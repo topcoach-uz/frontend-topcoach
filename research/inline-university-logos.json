@@ -1,0 +1,58 @@
+[
+  {
+    "id": "a896b9bd-3936-4423-92e4-969c83d5cee9",
+    "name": "Imperial College London",
+    "logoUrl": "/official-university-logos/imperial-college-london.svg",
+    "sourcePage": "https://www.imperial.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "b6337fd5-a83c-4dc0-893e-4ce161cbe3d6",
+    "name": "ETH Zurich",
+    "logoUrl": "/official-university-logos/eth-zurich.svg",
+    "sourcePage": "https://ethz.ch/de.html",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "0330c8d8-b54b-4afc-b62c-9c41fd5f75c9",
+    "name": "University of Illinois at Urbana-Champaign",
+    "logoUrl": "/official-university-logos/illinois-urbana-champaign.svg",
+    "sourcePage": "https://illinois.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "1011f791-f9f3-40d8-81f8-b50dbab6c15b",
+    "name": "University of Leeds",
+    "logoUrl": "/official-university-logos/university-of-leeds.svg",
+    "sourcePage": "https://www.leeds.ac.uk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "4a1b7815-982b-44a6-bc62-7f740d7b47f1",
+    "name": "Freie Universität Berlin",
+    "logoUrl": "/official-university-logos/freie-universitat-berlin.svg",
+    "sourcePage": "https://www.fu-berlin.de",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "4472a4c7-663a-4d28-9352-a118afae9300",
+    "name": "Carnegie Mellon University",
+    "logoUrl": "/official-university-logos/carnegie-mellon.svg",
+    "sourcePage": "https://www.cmu.edu",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  },
+  {
+    "id": "2cf7bafd-a560-4dfd-b326-b8a6fce25400",
+    "name": "University of Copenhagen",
+    "logoUrl": "/official-university-logos/university-of-copenhagen.svg",
+    "sourcePage": "https://www.ku.dk",
+    "checkedAt": "2026-09-24",
+    "matchedBy": "official homepage inline SVG"
+  }
+]

@@ -10,6 +10,8 @@ import { useStudentHub } from 'src/hooks/useStudentHub';
 import CommunityHubMobileDrawerNav from 'src/pages/student-hub/community/CommunityHubMobileDrawerNav';
 import StudyGoalsStickyBanner from 'src/components/student-hub/StudyGoalsStickyBanner';
 import './StudentHubLayout.scss';
+import { isApplicantWorkspacePath } from 'src/lib/applicantWorkspace';
+import ApplicantShell from 'src/pages/student-hub/applicant/ApplicantShell';
 
 const { Header, Sider, Content } = Layout;
 
@@ -18,6 +20,15 @@ interface StudentHubLayoutProps {
 }
 
 const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
+  const { pathname } = useLocation();
+  // Keep the legacy hooks out of the read-only overview: useStudentHub's
+  // dashboard request bootstraps missing student profiles on the server.
+  return isApplicantWorkspacePath(pathname)
+    ? <ApplicantShell>{children}</ApplicantShell>
+    : <LegacyStudentHubLayout>{children}</LegacyStudentHubLayout>;
+};
+
+const LegacyStudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -54,7 +65,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
     () => [
       { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('studentHub.nav.dashboard', 'Dashboard') },
       { key: '/student-hub/full-support', icon: <UnifiedIcon name="full-support" size="md" color="primary" />, label: t('fullSupport.navLabel', 'Full Support') },
-      { key: '/student-hub?section=others&target=profile&tab=college-lists', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.collegeLists', 'College Lists') },
+      { key: '/student-hub?section=others&target=profile&tab=college-lists', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.applications', 'Applications') },
       { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: t('studentHub.psychometric.majorMatch', 'Major Match') },
       { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: t('studentHub.nav.opportunities', 'Opportunities') },
       { key: '/student-hub/essays', icon: <UnifiedIcon name="essays" size="md" color="primary" />, label: t('Essays') },
@@ -102,6 +113,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 icon={<MenuIcon />}
                 onClick={() => setMobileDrawerVisible(true)}
                 className="mobile-menu-trigger"
+                aria-label={t('studentHub.nav.openJourneyMenu', 'Open My Journey menu')}
               />
               <h1 className="mobile-title">{t('studentHub.nav.myJourney', 'My Journey')}</h1>
             </div>
@@ -129,6 +141,9 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               icon={<MenuIcon />}
               onClick={() => setCollapsed(!collapsed)}
               className="sidebar-toggle"
+              aria-label={collapsed
+                ? t('studentHub.nav.expandJourneyMenu', 'Expand My Journey menu')
+                : t('studentHub.nav.collapseJourneyMenu', 'Collapse My Journey menu')}
             />
           </div>
 
@@ -179,6 +194,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               icon={<FontAwesomeIcon icon="times" />}
               onClick={() => setMobileDrawerVisible(false)}
               className="mobile-drawer-close"
+              aria-label={t('studentHub.nav.closeJourneyMenu', 'Close My Journey menu')}
             />
           </div>
           <Menu
@@ -239,6 +255,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
               icon={<MenuIcon />}
               onClick={() => setMobileDrawerVisible(true)}
               className="mobile-menu-trigger"
+              aria-label={t('studentHub.nav.openJourneyMenu', 'Open My Journey menu')}
             />
             <h1 className="mobile-title">{t('studentHub.nav.myJourney', 'My Journey')}</h1>
           </div>
@@ -285,6 +302,9 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 icon={<MenuIcon />}
                 onClick={() => setCollapsed(!collapsed)}
                 className="sidebar-toggle"
+                aria-label={collapsed
+                  ? t('studentHub.nav.expandJourneyMenu', 'Expand My Journey menu')
+                  : t('studentHub.nav.collapseJourneyMenu', 'Collapse My Journey menu')}
               />
             </div>
 
@@ -335,6 +355,7 @@ const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
                 icon={<FontAwesomeIcon icon="times" />}
                 onClick={() => setMobileDrawerVisible(false)}
                 className="mobile-drawer-close"
+                aria-label={t('studentHub.nav.closeJourneyMenu', 'Close My Journey menu')}
               />
             </div>
             <Menu

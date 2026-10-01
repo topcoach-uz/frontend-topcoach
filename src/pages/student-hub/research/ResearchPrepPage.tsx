@@ -24,6 +24,7 @@ import {
 import ResearchTopBar from './components/ResearchTopBar';
 import ResearchOverview from './components/ResearchOverview';
 import ResearchModuleView from './components/ResearchModuleView';
+import '../applicant/applicantPages.scss';
 import './research-prep.scss';
 
 interface ResearchPrepPageProps {
@@ -97,7 +98,7 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
 
   if (weeksLoading || lockLoading || !weeks || !lockState) {
     return (
-      <div className="rp">
+      <div className="applicant-page applicant-specialist-page rp">
         <div style={{ display: 'flex', justifyContent: 'center', padding: 96 }}>
           <Spin size="large" />
         </div>
@@ -110,7 +111,7 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
   const currentWeekNumber = summary?.currentWeekNumber ?? 1;
 
   return (
-    <div className="rp">
+    <div className="applicant-page applicant-specialist-page rp">
       <ResearchTopBar
         view={view}
         selectedWeekNumber={openWeekNumber ?? undefined}

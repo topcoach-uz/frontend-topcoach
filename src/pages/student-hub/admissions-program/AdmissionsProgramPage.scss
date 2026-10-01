@@ -1774,6 +1774,214 @@
   }
 }
 
+}
+
+/* Applicant workspace adapter. The program keeps its data and enrollment
+   behavior, while its marketing-era full-width sections use the same quiet
+   canvas, bordered panels, type scale, and controls as the applicant pages. */
+.admissions-program-page.applicant-specialist-page {
+  min-height: auto;
+  max-width: 1040px;
+  margin: 0 auto;
+  background: transparent;
+
+  .hero-section,
+  .enrollment-status,
+  .mentors-section,
+  .modules-section,
+  .different-section,
+  .referral-section,
+  .cta-section {
+    width: 100%;
+    margin: 0;
+    padding: 28px;
+    border: 1px solid #e7e2dc;
+    border-radius: 16px;
+    background: #fff;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .hero-section {
+    color: #302f2d;
+
+    &::before { display: none; }
+
+    .hero-content {
+      max-width: none;
+      padding: 0;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+      gap: 36px;
+    }
+
+    .hero-title {
+      margin: 0 0 14px;
+      color: #302f2d;
+      font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+      font-size: clamp(2.1rem, 4.5vw, 3.2rem);
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+
+      .program-word { margin-left: 10px; }
+    }
+
+    .hero-subtitle {
+      max-width: 58ch;
+      margin: 0 0 24px;
+      color: #606976;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+
+      .stat {
+        align-items: flex-start;
+        gap: 9px;
+        padding: 13px;
+        border: 1px solid #e7e2dc;
+        border-radius: 12px;
+        background: #fbf9f6;
+
+        svg { flex: 0 0 auto; color: #8b0000; }
+        .stat-content .stat-value { font-size: 20px; font-weight: 600; color: #302f2d; }
+        .stat-content .stat-label { font-size: 11px; color: #606976; white-space: normal; }
+      }
+    }
+
+    .hero-actions {
+      margin-top: 24px;
+      gap: 12px;
+
+      .apply-now-btn,
+      .contact-us-btn {
+        width: auto !important;
+        min-width: 150px;
+        min-height: 46px !important;
+        height: auto !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+    }
+
+    .hero-visual {
+      min-width: 0;
+      padding: 10px;
+      border-radius: 14px;
+      background: #f5f2ee;
+    }
+  }
+
+  .enrollment-status {
+    .enrollment-alert,
+    .learning-card {
+      border: 1px solid #e7e2dc;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .continue-learning-section .learning-card .ant-card-body { padding: 24px; }
+    .continue-learning-section .learning-card .learning-header { margin-bottom: 22px; text-align: left; }
+    .continue-learning-section .learning-card .learning-stats { gap: 12px; margin-bottom: 22px; }
+  }
+
+  .section-header {
+    margin-bottom: 24px;
+    text-align: left;
+
+    h2 {
+      margin: 0 0 8px;
+      color: #302f2d;
+      font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+    }
+
+    p { max-width: 680px; margin: 0; color: #606976; font-size: 15px; }
+  }
+
+  .mentors-section {
+    color: #302f2d;
+
+    .mentors-bg-image { display: none; }
+    .mentors-grid { gap: 16px; }
+    .mentor-card {
+      border: 1px solid #e7e2dc;
+      border-radius: 14px;
+      box-shadow: none;
+      background: #fff;
+      transform: none;
+
+      &:hover { border-color: #d6cbc0; box-shadow: 0 8px 24px rgba(48, 43, 40, 0.06); transform: none; }
+    }
+  }
+
+  .modules-section .module-card,
+  .different-section .different-item {
+    border: 1px solid #e7e2dc;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .cta-section {
+    background: #f6e8e7;
+    color: #302f2d;
+    text-align: left;
+
+    .cta-content { max-width: 720px; margin: 0; text-align: left; }
+    .cta-content h2 { color: #302f2d; font-family: 'Iowan Old Style', 'Charter', Georgia, serif; font-size: 28px; font-weight: 500; }
+    .cta-content p { margin-bottom: 22px; color: #606976; font-size: 15px; }
+    .cta-content .ant-btn { min-height: 46px; height: auto; padding: 10px 22px; border-radius: 10px; background: #8b0000; color: #fff; font-size: 14px; font-weight: 500; }
+  }
+
+  .admissions-loading-content {
+    position: static;
+    min-height: 320px;
+    border: 1px solid #e7e2dc;
+    border-radius: 16px;
+    background: #fff;
+
+    .loading-spinner-container p { color: #606976; font-size: 14px; }
+  }
+}
+
+@media (max-width: 820px) {
+  .admissions-program-page.applicant-specialist-page {
+    .hero-section .hero-content { grid-template-columns: 1fr; gap: 28px; text-align: left; }
+    .hero-section .hero-title { text-align: left; }
+    .hero-section .hero-title .program-word { display: inline; margin-left: 6px; }
+    .hero-section .hero-stats { grid-template-columns: 1fr; }
+    .hero-section .hero-actions { align-items: stretch; }
+    .hero-section .hero-actions .apply-now-btn,
+    .hero-section .hero-actions .contact-us-btn { width: 100% !important; }
+  }
+}
+
+@media (max-width: 560px) {
+  .admissions-program-page.applicant-specialist-page {
+    gap: 16px;
+
+    .hero-section,
+    .enrollment-status,
+    .mentors-section,
+    .modules-section,
+    .different-section,
+    .referral-section,
+    .cta-section { padding: 20px 16px; border-radius: 14px; }
+
+    .enrollment-status .continue-learning-section .learning-card .learning-stats { grid-template-columns: 1fr 1fr; }
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -1789,5 +1997,3 @@
 // Place image at: /public/img/university-campus-bg.jpg
 // Then change the background in .mentors-section from gradient to:
 // background: url('/img/university-campus-bg.jpg') center/cover no-repeat;
-}
- 

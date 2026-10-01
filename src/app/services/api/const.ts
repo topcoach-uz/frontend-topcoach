@@ -30,6 +30,7 @@ export const apiTagTypes = [
   'StudentEssays',
   'EssayTemplates',
   'EssayFeedback',
+  'EssayReviews',
   'AiConsultationSessions',
   'Notifications',
   'ProgressTracking',
@@ -61,4 +62,5 @@ export const apiTagTypes = [
   // documented app-wide runaway-refetch storm from 'PsychometricAssessment'.
   'MajorMatchV2Status',
   'MajorMatchV2Result',
+  'MajorMatchMm3Latest',
 ];

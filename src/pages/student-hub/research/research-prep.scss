@@ -13,6 +13,87 @@
   padding: 0 !important;
 }
 
+/* Applicant workspace adapter. Research keeps its module grid and sequential
+   locks, while sharing the applicant canvas, cards, and navigation rhythm. */
+.rp.applicant-specialist-page {
+  gap: 0;
+  min-height: 100%;
+  background: #fbf9f6;
+  color: #302f2d;
+
+  --rp-accent: #8b0000;
+  --rp-accent-strong: #6d0000;
+  --rp-accent-soft: #f6e8e7;
+  --rp-text: #302f2d;
+  --rp-text-muted: #606976;
+  --rp-text-subtle: #8b929c;
+  --rp-border: #e7e2dc;
+  --rp-border-strong: #d8d0c8;
+  --rp-surface-soft: #fbf9f6;
+  --rp-surface-tonal: #f5f2ee;
+
+  .rp-topbar {
+    position: relative;
+    top: auto;
+    background: #fbf9f6;
+    border-bottom-color: #e7e2dc;
+  }
+
+  .rp-topbar-row-inner,
+  .rp-body { max-width: 1280px; }
+  .rp-topbar-row-inner { padding-inline: 32px; }
+  .rp-topbar-row-inner--tabs { padding-block: 0; }
+  .rp-brand { border-radius: 8px; background: #f6e8e7; border-color: #ead6d4; }
+  .rp-back-btn { min-height: 40px; border-radius: 9px; }
+  .rp-progress-chip { border-radius: 10px; }
+  .rp-body { padding: 28px 32px 56px; }
+
+  .rp-section,
+  .rp-module-grid > *,
+  .rp-upnext {
+    border-color: #e7e2dc;
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .rp-section-head { color: #606976; }
+  .rp-week-tile,
+  .rp-module-grid > * { box-shadow: none; }
+  .rp-week-tile:not(.is-active) { border-color: #e7e2dc; background: #fff; }
+  .rp-week-tile.is-active { background: #8b0000; border-color: #8b0000; }
+  .rp-tab--active { color: #8b0000; border-bottom-color: #8b0000; }
+}
+
+.rp-locked-preview.applicant-specialist-page {
+  width: min(100%, 1040px);
+  min-width: 0;
+  box-sizing: border-box;
+  color: #302f2d;
+
+  > section {
+    border-color: #e7e2dc !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .rp.applicant-specialist-page {
+    .rp-topbar-row-inner { padding-inline: 16px; }
+    .rp-progress-chip .bar,
+    .rp-progress-chip .chip-label { display: none; }
+    .rp-body { padding: 20px 16px 40px; }
+  }
+
+  .rp-locked-preview.applicant-specialist-page {
+    padding: 20px 16px !important;
+    overflow: hidden;
+
+    > div:first-child { align-items: flex-start !important; }
+    > section { padding: 20px 16px !important; }
+  }
+}
+
 .rp {
   --rp-accent: #7B1F2F;
   --rp-accent-strong: #5d1622;

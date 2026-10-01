@@ -26,7 +26,7 @@
 
 import { useMemo, useState } from 'react';
 import { Input, Skeleton } from 'antd';
-import { Search, X, Sparkles, GraduationCap, Compass } from 'lucide-react';
+import { Search, X, Sparkles, GraduationCap, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import CustomSelect from 'src/components/common/select';
@@ -36,6 +36,7 @@ import { useGetMentorsQuery } from 'src/app/services/mentors';
 import { useGetCollegeApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useStudentProfile } from 'src/hooks/useStudentHub';
 import MentorCard from '../../mentors/_components/mentorCard';
+import { ApplicantPage } from '../applicant/ApplicantPage';
 
 import './CommunityMentorsView.scss';
 
@@ -201,6 +202,7 @@ export default function CommunityMentorsView() {
   const [selectedMajor, setSelectedMajor] = useState('all');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedRating, setSelectedRating] = useState<string>('all');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // `useStudentProfile()` widens to `any` (its read-only branch casts), so the
   // handful of fields this view reads are narrowed here instead.
@@ -237,7 +239,7 @@ export default function CommunityMentorsView() {
     matchInputs.careerGoals.length > 0;
 
   const mentorLevelOptions = [
-    { label: t('mentors.filters.allRatings', 'All'), value: 'all' },
+    { label: t('mentors.filters.allCoachingTiers', 'All coaching tiers'), value: 'all' },
     { label: 'Pro bono', value: MentorExperienceLevel.Probono },
     { label: 'Junior', value: MentorExperienceLevel.Junior },
     { label: 'Senior', value: MentorExperienceLevel.Senior },
@@ -328,7 +330,7 @@ export default function CommunityMentorsView() {
 
   const renderFilterBar = () => (
     <div className="communityMentors__filterBar">
-      <div className="communityMentors__filterField">
+      <div className="communityMentors__filterField communityMentors__filterSearch">
         <Input
           allowClear
           prefix={<Search size={15} style={{ opacity: 0.45 }} />}
@@ -337,6 +339,22 @@ export default function CommunityMentorsView() {
           onChange={(e) => setNameQuery(e.target.value)}
         />
       </div>
+      <button
+        type="button"
+        className="communityMentors__filterToggle"
+        aria-expanded={filtersOpen}
+        aria-controls="community-mentor-filters"
+        onClick={() => setFiltersOpen((open) => !open)}
+      >
+        <SlidersHorizontal size={16} aria-hidden />
+        {t('mentors.filters.filters', 'Filters')}
+        {hasActiveFilters && <span className="communityMentors__filterDot" aria-hidden />}
+        <ChevronDown size={15} aria-hidden className={filtersOpen ? 'is-open' : ''} />
+      </button>
+      <div
+        id="community-mentor-filters"
+        className={`communityMentors__advancedFilters${filtersOpen ? ' is-open' : ''}`}
+      >
       {universityOptions.length > 0 && (
         <div className="communityMentors__filterField">
           <CustomSelect
@@ -379,6 +397,7 @@ export default function CommunityMentorsView() {
           {t('mentors.filters.clearFilters', 'Clear filters')}
         </button>
       )}
+      </div>
     </div>
   );
 
@@ -436,15 +455,11 @@ export default function CommunityMentorsView() {
     ));
 
   return (
+    <ApplicantPage
+      title={t('studentHub.communityMentors.title', 'Mentors for you')}
+      subtitle={t('studentHub.communityMentors.subtitle', 'Mentors ranked by how well they match your college list and profile goals.')}
+    >
     <div className="communityMentors">
-      <div className="communityMentors__eyebrow">
-        <Compass size={13} aria-hidden />
-        {t('studentHub.hub.navCommunity', 'COMMUNITY')}
-      </div>
-      <h1 className="communityMentors__title">{t('studentHub.communityMentors.title', 'Mentors for you')}</h1>
-      <p className="communityMentors__subtitle">
-        {t('studentHub.communityMentors.subtitle', 'Mentors ranked by how well they match your college list and profile goals.')}
-      </p>
 
       {renderFilterBar()}
 
@@ -522,10 +537,7 @@ export default function CommunityMentorsView() {
                 <p className="communityMentors__sectionSubtitle">
                   {recommended.length > 0
                     ? t('studentHub.communityMentors.allMentorsSubtextWithMatches', 'Everyone else on the mentor roster')
-                    : t(
-                        'studentHub.communityMentors.allMentorsSubtextNoMatches',
-                        "We couldn't find a mentor match yet — here's the full roster"
-                      )}
+                    : t('studentHub.communityMentors.allMentorsSubtextNoMatches', 'Explore the full mentor roster')}
                 </p>
               </div>
               <div className="communityMentors__cards">
@@ -536,5 +548,6 @@ export default function CommunityMentorsView() {
         </>
       )}
     </div>
+    </ApplicantPage>
   );
 }
