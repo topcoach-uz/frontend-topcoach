@@ -805,6 +805,26 @@ $mm2-serif: 'Iowan Old Style', 'Charter', 'Georgia', serif;
   // Same elevated-panel treatment as `&__outcomes` below (cream, hairline,
   // 3px brand top rule) — the platform's established "this is the important
   // panel" pattern, not a new one invented for this CTA.
+  &__mentor-note,
+  &__community-ad {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 28px 0;
+    padding: 24px;
+    border: 1px solid #e7d7d2;
+    border-radius: 16px;
+    background: #fcf8f5;
+
+    strong { display: block; font-size: 18px; color: #302f2d; }
+    p { margin: 8px 0 0; color: #5f5a55; }
+    small { display: block; color: #6e6862; }
+  }
+
+  &__mentor-note { display: block; }
+
   &__roadmap-lock {
     background: $mm2-cream-elevated;
     border: 1px solid $mm2-hairline;
