@@ -34,7 +34,7 @@ export default function RoadmapJourneyBoard({ phases, readOnly = false }: { phas
     <div className="mm3-results__board-intro"><strong>{t('majorMatch3.board.title', 'The bigger picture')}</strong><span>{t('majorMatch3.board.note', 'Every stage is open. These are suggestions, not tracked completion.')}</span></div>
     <ol className="mm3-results__board-columns">
       {phases.map((phase, index) => {
-        const stage = journeyStage(phase.when);
+        const stage = journeyStage(phase.when, phase.actions);
         return <li className={`mm3-results__board-stage mm3-results__board-stage--${index % 4}`} key={index}>
           <header><span className="mm3-results__board-number">{String(index + 1).padStart(2, '0')}</span><JourneyStageIllustration kind={stage.kind} /><h3>{stage.kind === 'plan' ? stage.label : t(`majorMatch3.results.journey${stage.label}`, stage.label)}</h3>{stage.detail && <p className="mm3-results__stage-detail">{stage.detail}</p>}</header>
           <ul>{(phase.actions ?? []).map((action, actionIndex) => {
