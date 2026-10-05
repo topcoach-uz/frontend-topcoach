@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import { useGetApplicantOverviewQuery } from 'src/app/services/student-hub/applicantOverviewApi';
 import { applicantLinks, isOverviewLocation } from 'src/lib/applicantWorkspace';
-import { displayName } from './applicantOverviewModel';
+import { applicantDegree, displayName } from './applicantOverviewModel';
 import {
   ApplicantOverviewContext,
   useApplicantOverview,
@@ -119,7 +119,7 @@ function ApplicantNavigation({
   const { t } = useTranslation();
   const { pathname, search } = useLocation();
   const current = new URLSearchParams(search);
-  const degree = data?.profile?.targetDegree;
+  const degree = applicantDegree(data?.profile?.targetDegree);
   const name =
     displayName(data?.profile?.name) ||
     displayName(authName) ||
