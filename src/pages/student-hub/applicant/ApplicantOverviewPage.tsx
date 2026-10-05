@@ -17,6 +17,7 @@ import {
 } from 'src/lib/applicantWorkspace';
 import { useApplicantOverview } from './ApplicantOverviewContext';
 import {
+  applicantDegree,
   assessmentState,
   displayName,
   hasAssessmentDraft,
@@ -66,7 +67,7 @@ export default function ApplicantOverviewPage() {
     };
   }, []);
   const profile = data?.profile;
-  const degree = profile?.targetDegree;
+  const degree = applicantDegree(profile?.targetDegree);
   const needsAssessment = degree === 'bachelor' && !!profile?.id;
   const status = useGetMajorMatchStatusQuery(profile?.id ?? '', {
     skip: !needsAssessment,

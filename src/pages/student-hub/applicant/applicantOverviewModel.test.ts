@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  applicantDegree,
   assessmentState,
   displayName,
   hasAssessmentDraft,
@@ -26,6 +27,15 @@ const empty = {
   documents: ready,
   sessions: ready,
 } as ApplicantOverview;
+
+describe('legacy applicant degree fallback', () => {
+  it.each([undefined, null, '', 'unknown', 'bachelor'])('defaults %s to Bachelor’s', (degree) => {
+    expect(applicantDegree(degree)).toBe('bachelor');
+  });
+  it('preserves an explicit Master’s selection', () => {
+    expect(applicantDegree('master')).toBe('master');
+  });
+});
 
 describe('applicant overview states', () => {
   it('never calls a partial failure a first visit', () => {

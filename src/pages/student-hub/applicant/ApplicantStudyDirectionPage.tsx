@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Input, Select, Spin } from 'antd';
-import { ArrowRight, Check, GraduationCap, Plus } from 'lucide-react';
+import { ArrowRight, Check, Plus } from 'lucide-react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useGetMyStudentProfileQuery, useUpdateMyStudentProfileMutation } from 'src/app/services/student-hub/studentProfileApi';
 import { applicantLinks } from 'src/lib/applicantWorkspace';
 import { ApplicantPage, Breadcrumb } from './ApplicantPage';
 import { useApplicantOverview } from './ApplicantOverviewContext';
+import { applicantDegree } from './applicantOverviewModel';
 import {
   countryOptions,
   directionIdeas,
@@ -50,11 +51,10 @@ export default function ApplicantStudyDirectionPage() {
   const [customInterest, setCustomInterest] = useState('');
   const [customCountry, setCustomCountry] = useState('');
   const [saveError, setSaveError] = useState(false);
-  const [pathError, setPathError] = useState(false);
   const editing = params.get('edit') === '1';
   const profile = profileQuery.data;
   const academic = profile?.academicProfile;
-  const degree = academic?.targetDegree ?? overview.currentData?.profile?.targetDegree;
+  const degree = applicantDegree(academic?.targetDegree ?? overview.currentData?.profile?.targetDegree);
   const saved = readStudyDirectionChoices(profile?.preferences);
   const hasChoices = hasDirectionChoices(saved);
   const ideas = directionIdeas(saved);
@@ -95,46 +95,9 @@ export default function ApplicantStudyDirectionPage() {
     }
     setCustomCountry('');
   };
-  const startMastersDirection = async () => {
-    setPathError(false);
-    try {
-      await saveProfile({ academicProfile: { targetDegree: 'master' } }).unwrap();
-    } catch {
-      setPathError(true);
-    }
-  };
-
-  if (degree === 'bachelor') return <Navigate to={applicantLinks.majorMatch} replace />;
   if (profileQuery.isError || (!profileQuery.isLoading && !profile)) return <ApplicantPage title="Explore your study direction"><Alert type="error" showIcon message="Your saved choices could not be loaded." action={<Button onClick={() => profileQuery.refetch()}>Try again</Button>} /></ApplicantPage>;
   if (profileQuery.isLoading || overview.isLoading) return <ApplicantPage><div className="applicant-panel"><Spin aria-label="Loading study direction" /></div></ApplicantPage>;
-  if (!degree) return <ApplicantPage
-    title="Explore your study direction"
-    subtitle="Explore graduate fields based on your interests, goals and past study."
-  >
-    <Breadcrumb>Explore your direction</Breadcrumb>
-    <div className="study-direction__intro study-direction__intro--pathway">
-      <span className="study-direction__eyebrow">Graduate study</span>
-      <h2>Start exploring master’s directions</h2>
-      <p>Save Master’s as your study goal to tailor this page. You can change it later in your academic profile.</p>
-    </div>
-    <div className="study-direction__pathways">
-      <section className="study-direction__card study-direction__pathway-card">
-        <span className="study-direction__pathway-icon"><GraduationCap size={23} aria-hidden /></span>
-        <h3>Find a direction that fits your next step</h3>
-        <p>Build on your current education, explore fields and goals, then look at verified graduate programs.</p>
-        <Button type="primary" loading={saveState.isLoading} onClick={() => void startMastersDirection()}>
-          Explore master’s directions <ArrowRight size={16} aria-hidden />
-        </Button>
-      </section>
-    </div>
-    {pathError && <Alert type="error" showIcon message="Your study goal could not be saved. Please try again." />}
-    <div className="study-direction__readiness study-direction__pathway-footer">
-      <div><h3>Want to add your background first?</h3><p>Your previous degree and field help you assess graduate options.</p></div>
-      <div className="study-direction__pathway-links">
-        <Link to={applicantLinks.profile}>Open academic profile <ArrowRight size={15} aria-hidden /></Link>
-      </div>
-    </div>
-  </ApplicantPage>;
+  if (degree === 'bachelor') return <Navigate to={applicantLinks.majorMatch} replace />;
 
   const profileSummary = [academic?.previousDegree, academic?.previousField, academic?.previousInstitution].filter(Boolean).join(' · ');
   const intakeOptions = ['Not sure yet', ...[0, 1, 2, 3].flatMap((offset) => {
