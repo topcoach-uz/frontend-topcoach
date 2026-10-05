@@ -31,6 +31,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
+        id: frontend_image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -55,6 +56,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd ~/topcoach/prod
           docker pull ${{ secrets.DOCKER_USERNAME }}/topcoach-frontend:latest
-          docker service update --image ${{ secrets.DOCKER_USERNAME }}/topcoach-frontend:latest topcoach-prod-stack_frontend
+          docker service update --force --image ${{ secrets.DOCKER_USERNAME }}/topcoach-frontend@${{ steps.frontend_image.outputs.digest }} topcoach-prod-stack_frontend
           docker service ls
           EOF
