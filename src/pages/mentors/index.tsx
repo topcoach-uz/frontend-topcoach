@@ -382,6 +382,8 @@ export default function MentorsPage() {
                   major={mentor?.mentorProfile?.major}
                   university={(mentor as any).displayUniversity || mentor?.mentorProfile?.university || ''}
                   level={mentor.mentorProfile?.level}
+                  mentorshipType={mentor.mentorProfile?.mentorshipType}
+                  showPrice={mentor.mentorProfile?.showPrice}
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
                   isGiveaway={giveawayMentorIds.includes(mentor.id)}
                   giveawaySessionsCount={giveawaySessionsCount}
