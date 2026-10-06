@@ -90,6 +90,8 @@ export default function SimilarMentors() {
                   major={mentor?.mentorProfile?.major || ''}
                   university={(mentor as any).displayUniversity || mentor?.mentorProfile?.university || ''}
                   level={mentor.mentorProfile?.level}
+                  mentorshipType={mentor.mentorProfile?.mentorshipType}
+                  showPrice={mentor.mentorProfile?.showPrice}
                   availableSessions={mentor.sessionStats?.availableSessions || 0}
                   email={mentor.email}
                 />
@@ -101,4 +103,3 @@ export default function SimilarMentors() {
     </div>
   );
 }
-

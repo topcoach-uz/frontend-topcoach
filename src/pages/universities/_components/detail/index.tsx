@@ -213,6 +213,9 @@ const UniversityDetailSection = React.memo(({
                     major={transformedMentor?.mentorProfile?.major}
                     university={(transformedMentor as any).displayUniversity || transformedMentor?.mentorProfile?.university || ''}
                     level={transformedMentor.mentorProfile?.level}
+                    mentorshipType={transformedMentor.mentorProfile?.mentorshipType}
+                    showPrice={transformedMentor.mentorProfile?.showPrice}
+                    email={transformedMentor.email}
                     availableSessions={transformedMentor.sessionStats?.availableSessions || 0}
                   />
                 );
