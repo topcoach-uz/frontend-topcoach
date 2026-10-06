@@ -22,6 +22,7 @@ import { getAdminConsoleAntdTheme } from '../adminConsoleThemeConfig';
 import { AcPill, type AcPillVariant } from './AcPill';
 import { avatarStyleForId, formatUZS, initialsFromName } from '../utils';
 import AccountAccessPanel from './AccountAccessPanel';
+import MentorDisplayControls from './MentorDisplayControls';
 
 const { Text, Paragraph } = Typography;
 
@@ -286,6 +287,7 @@ export default function UserDetailDrawer({ user, open, onClose }: Props) {
                         {mp.summary}
                       </Paragraph>
                     )}
+                    <MentorDisplayControls key={detail.id} userId={detail.id} profile={mp} />
                   </div>
                 )}
               </Space>

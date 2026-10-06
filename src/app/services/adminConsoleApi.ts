@@ -264,6 +264,8 @@ export type AdminUserDetailOrganization = {
 };
 
 export type AdminUserDetailMentorProfile = {
+  mentorshipType?: 'bachelor' | 'master' | 'both';
+  showPrice?: boolean;
   title?: string | null;
   summary?: string | null;
   university?: string | null;
@@ -627,6 +629,10 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
       providesTags: ['AdminConsoleSessions'],
     }),
 
+    updateAdminMentorDisplay: builder.mutation<{ mentorshipType: 'bachelor' | 'master' | 'both'; showPrice: boolean }, { userId: string; mentorshipType: 'bachelor' | 'master' | 'both'; showPrice: boolean }>({
+      query: ({ userId, ...body }) => ({ url: `/admin/users/${userId}/mentor-display`, method: 'PATCH', body }),
+      invalidatesTags: (_result, error, { userId }) => error ? [] : [{ type: 'AdminConsoleUserDetail', id: userId }, 'GetMentors', 'GetMentorDetail'],
+    }),
     getAdminUserDetail: builder.query<AdminUserDetail, string>({
       query: (id) => ({ url: `/admin/users/${id}/detail`, method: 'GET' }),
       transformResponse: (res: unknown) => unwrap<AdminUserDetail>(res),
@@ -875,6 +881,7 @@ export const {
   useGetAdminSessionsOverviewQuery,
   useGetAdminEventsQuery,
   useGetAdminUserDetailQuery,
+  useUpdateAdminMentorDisplayMutation,
   useGetAdminMajorMatchPolicyQuery,
   useUpdateAdminMajorMatchPolicyMutation,
   useGetAdminMajorMatchUsageQuery,
