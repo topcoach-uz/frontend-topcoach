@@ -7,9 +7,14 @@
  * Future tabs can slot in next to these without restructuring the page.
  */
 
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import React, { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  useGetCourseStructureQuery,
+  useGetUserProgressQuery,
+} from "src/app/services/courses";
+import "./sat-platform.scss";
+import { message } from "antd";
 import {
   ArrowRight,
   BookmarkCheck,
@@ -19,9 +24,13 @@ import {
   Search,
   Trash2,
   X,
-} from 'lucide-react';
-import SatHtml from 'src/components/sat-prep/SatHtml';
-import { ConfirmDialog, RunnerModal } from 'src/components/sat-prep/RunnerModal';
+} from "lucide-react";
+import { useSatSkillCountsQuery } from "src/app/services/sat-prep";
+import SatHtml from "src/components/sat-prep/SatHtml";
+import {
+  ConfirmDialog,
+  RunnerModal,
+} from "src/components/sat-prep/RunnerModal";
 import {
   useClearVocabularyMutation,
   useGetMarkedQuestionsQuery,
@@ -29,50 +38,482 @@ import {
   useRemoveVocabularyMutation,
   useUnmarkQuestionMutation,
   type MarkedQuestion,
-} from 'src/app/services/sat-prep/library';
-import 'src/components/sat-prep/sat-prep-shell.scss';
-import './sat-library.scss';
+} from "src/app/services/sat-prep/library";
+import "src/components/sat-prep/sat-prep-shell.scss";
+import "./sat-library.scss";
+import "./sat-secondary-pages.scss";
 
-type Tab = 'vocabulary' | 'marked';
-
+// Illustrative equations from the approved design, not course-progress data.
+const LESSON_EXAMPLES: Record<string, string> = {
+  "linear equations in one variable": "3x + 5 = 20",
+  "linear equations": "3x + 5 = 20",
+  "slope and intercept": "y = 2x + 1",
+  "linear equations in two variables": "ax + by = c",
+  "two variables": "ax + by = c",
+  "systems of linear equations": "x + y = 12",
+  "systems of equations": "x + y = 12",
+  "linear inequalities": "2x + 3 > 11",
+};
+type Tab = "lessons" | "practice" | "vocabulary" | "marked";
 const SatLibraryPage: React.FC = () => {
-  const [tab, setTab] = useState<Tab>('vocabulary');
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const tab = (
+    ["lessons", "practice", "vocabulary", "marked"].includes(
+      params.get("tab") ?? "",
+    )
+      ? params.get("tab")
+      : "lessons"
+  ) as Tab;
+  const [topic, setTopic] = useState<string | null>(null);
+  const [bankDomain, setBankDomain] = useState<string | null>(null);
+  const [recentOnly, setRecentOnly] = useState(false);
+  const [subtopic, setSubtopic] = useState("all");
+  const [search, setSearch] = useState("");
+  const {
+    data: modules = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useGetCourseStructureQuery("sat");
+  const {
+    data: bankSkills = [],
+    isLoading: skillsLoading,
+    isError: skillsError,
+    refetch: refetchSkills,
+  } = useSatSkillCountsQuery();
+  const { data: progress } = useGetUserProgressQuery("sat");
   const { data: vocab = [] } = useGetVocabularyQuery();
   const { data: marked = [] } = useGetMarkedQuestionsQuery();
-
+  const lessons = modules
+    .filter((m) => m.isActive)
+    .flatMap((m) =>
+      [
+        ...m.lessons,
+        ...m.submodules.filter((s) => s.isActive).flatMap((s) => s.lessons),
+      ]
+        .filter((l) => l.isActive)
+        .map((l) => ({
+          ...l,
+          topic: m.id,
+          topicTitle:
+            m.submodules.find((s) => s.id === l.submoduleId)?.title ?? m.title,
+        })),
+    );
+  const activeTopic =
+    topic ??
+    modules.find((m) => lessons.some((l) => l.topic === m.id))?.id ??
+    "all";
+  const selected = modules.find((m) => m.id === activeTopic);
+  const subtopics = selected?.submodules.filter((s) => s.isActive) ?? [];
+  const visible = lessons.filter(
+    (l) =>
+      (activeTopic === "all" || l.topic === activeTopic) &&
+      (subtopic === "all" || l.submoduleId === subtopic) &&
+      (!recentOnly ||
+        progress?.progress.some(
+          (p) => p.lessonId === l.id && p.lastWatchedAt,
+        )) &&
+      `${l.title} ${l.description ?? ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  const bankDomains = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { key: string; section: string; domain: string; count: number }
+    >();
+    bankSkills.forEach((s) => {
+      const key = `${s.section}/${s.domain}`;
+      const existing = grouped.get(key);
+      if (existing) existing.count += s.count;
+      else
+        grouped.set(key, {
+          key,
+          section: s.section,
+          domain: s.domain,
+          count: s.count,
+        });
+    });
+    return Array.from(grouped.values());
+  }, [bankSkills]);
+  const practiceDomainTitle =
+    bankDomains.find((d) => d.key === bankDomain)?.domain ??
+    selected?.title ??
+    "All topics";
+  const practiceTopics = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { section: string; domain: string; skill: string; count: number }
+    >();
+    bankSkills.forEach((s) => {
+      const key = `${s.section}/${s.domain}/${s.skill}`;
+      const existing = grouped.get(key);
+      if (existing) existing.count += s.count;
+      else
+        grouped.set(key, {
+          section: s.section,
+          domain: s.domain,
+          skill: s.skill,
+          count: s.count,
+        });
+    });
+    return Array.from(grouped.values()).filter(
+      (s) =>
+        s.count > 0 &&
+        (bankDomain
+          ? `${s.section}/${s.domain}` === bankDomain
+          : activeTopic === "all" ||
+            s.domain.toLowerCase() === selected?.title.toLowerCase()) &&
+        `${s.skill} ${s.domain}`.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [bankSkills, bankDomain, activeTopic, selected?.title, search]);
+  const openLesson = (id: string) => {
+    localStorage.setItem("topcoach-selected-lesson-sat", id);
+    localStorage.setItem(
+      "topcoach-last-viewed-lesson-sat",
+      JSON.stringify({ id, ts: Date.now() }),
+    );
+    navigate("/learning?course=sat");
+  };
   return (
-    <div className="sat-library">
-      <header className="sat-library__header">
-        <div>
-          <div className="sat-eyebrow">Study tools</div>
-          <h1 className="sat-page-title">My Library</h1>
-          <p className="sat-page-desc">
-            Vocabulary you've tagged and questions you've flagged for review — saved across
-            sessions, devices, and retakes.
-          </p>
+    <div className="sat-catalog">
+      <aside>
+        <div className="sat-catalog__quick">
+          <button
+            onClick={() => {
+              setTopic("all");
+              setBankDomain(null);
+              setSubtopic("all");
+              setRecentOnly(false);
+              setParams({ tab: tab === "practice" ? "practice" : "lessons" });
+            }}
+          >
+            All resources{" "}
+            <span>
+              {tab === "practice"
+                ? bankSkills.reduce((n, s) => n + s.count, 0)
+                : lessons.length}
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              setTopic("all");
+              setSubtopic("all");
+              setRecentOnly(true);
+              setParams({ tab: "lessons" });
+            }}
+          >
+            Recently opened
+          </button>
+          <button onClick={() => setParams({ tab: "marked" })}>
+            Saved questions <span>{marked.length}</span>
+          </button>
         </div>
-      </header>
-
-      <div className="sat-library__tabs">
-        <button
-          className={`sat-library__tab ${tab === 'vocabulary' ? 'sat-library__tab--active' : ''}`}
-          onClick={() => setTab('vocabulary')}
-        >
-          <BookmarkCheck size={14} />
-          <span>Vocabulary</span>
-          <span className="sat-library__tab-count">{vocab.length}</span>
-        </button>
-        <button
-          className={`sat-library__tab ${tab === 'marked' ? 'sat-library__tab--active' : ''}`}
-          onClick={() => setTab('marked')}
-        >
-          <Flag size={14} />
-          <span>Marked questions</span>
-          <span className="sat-library__tab-count">{marked.length}</span>
-        </button>
-      </div>
-
-      {tab === 'vocabulary' ? <VocabularyTab /> : <MarkedTab />}
+        <div className="sat-catalog__label">My library</div>
+        {tab === "practice" &&
+          bankDomains.map((d) => (
+            <button
+              key={d.key}
+              className={`sat-catalog__topic ${practiceDomainTitle === d.domain ? "sat-catalog__topic--active" : ""}`}
+              onClick={() => setBankDomain(d.key)}
+            >
+              <i
+                style={{
+                  background: d.section === "math" ? "#8b0000" : "#929aa4",
+                }}
+              />
+              <span>{d.domain}</span>
+              <span>{d.count}</span>
+            </button>
+          ))}
+        {tab !== "practice" &&
+          modules
+            .filter((m) => m.isActive)
+            .map((m, index) => (
+              <React.Fragment key={m.id}>
+                <button
+                  className={`sat-catalog__topic ${activeTopic === m.id ? "sat-catalog__topic--active" : ""}`}
+                  onClick={() => {
+                    setTopic(m.id);
+                    setSubtopic("all");
+                    setRecentOnly(false);
+                    setParams({ tab: "lessons" });
+                  }}
+                >
+                  <i
+                    style={{ background: index === 0 ? "#8b0000" : "#aa9297" }}
+                  />
+                  <span>{m.title}</span>
+                  <span>{lessons.filter((l) => l.topic === m.id).length}</span>
+                </button>
+                {activeTopic === m.id &&
+                  m.submodules.some((s) => s.isActive) && (
+                    <div className="sat-catalog__subtopics">
+                      {m.submodules
+                        .filter((s) => s.isActive)
+                        .map((t) => (
+                          <button
+                            key={t.id}
+                            aria-pressed={subtopic === t.id}
+                            onClick={() => {
+                              setSubtopic(t.id);
+                              setParams({ tab: "lessons" });
+                            }}
+                          >
+                            {t.title}
+                            <span>
+                              {
+                                lessons.filter((l) => l.submoduleId === t.id)
+                                  .length
+                              }
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
+              </React.Fragment>
+            ))}
+      </aside>
+      <main>
+        <div className="sat-catalog__crumb">
+          My Library /{" "}
+          {tab === "practice"
+            ? practiceDomainTitle
+            : (selected?.title ?? "All lessons")}
+        </div>
+        <h1>
+          {tab === "marked"
+            ? "Saved questions"
+            : tab === "vocabulary"
+              ? "Your vocabulary"
+              : tab === "practice"
+                ? practiceDomainTitle
+                : (selected?.title ?? "Your SAT library")}
+        </h1>
+        <p className="sat-catalog__description">
+          {tab === "lessons"
+            ? (selected?.description ??
+              "Explore your SAT course lessons. Revisit an explanation, then put it into practice.")
+            : tab === "marked"
+              ? "Questions you flagged during practice, with their explanations."
+              : tab === "vocabulary"
+                ? "Words you saved from Reading & Writing passages."
+                : "Choose a topic-based set or a timed mock."}
+        </p>
+        <div className="sat-catalog__tools">
+          <nav aria-label="Library content">
+            {(
+              [
+                ["lessons", "Lessons", lessons.length],
+                ["practice", "Practice sets", null],
+                ["marked", "Saved", marked.length],
+                ["vocabulary", "Vocabulary", vocab.length],
+              ] as const
+            ).map(([id, label, count]) => (
+              <button
+                key={id}
+                aria-pressed={tab === id}
+                onClick={() => setParams({ tab: id })}
+              >
+                {label}
+                {count != null ? ` · ${count}` : ""}
+              </button>
+            ))}
+          </nav>
+          {(tab === "lessons" || tab === "practice") && (
+            <input
+              aria-label="Search collection"
+              placeholder="Search collection"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          )}
+        </div>
+        {tab === "lessons" && !isLoading && !isError && (
+          <>
+            <div className="sat-catalog__tags">
+              <span>Topics</span>
+              <div>
+                <button
+                  aria-pressed={subtopic === "all"}
+                  onClick={() => setSubtopic("all")}
+                >
+                  All topics{" "}
+                  <small>
+                    {
+                      lessons.filter(
+                        (l) => activeTopic === "all" || l.topic === activeTopic,
+                      ).length
+                    }
+                  </small>
+                </button>
+                {subtopics.map((t) => (
+                  <button
+                    key={t.id}
+                    aria-pressed={subtopic === t.id}
+                    onClick={() => {
+                      setSubtopic(t.id);
+                      setParams({ tab: "lessons" });
+                    }}
+                  >
+                    {t.title}{" "}
+                    <small>
+                      {lessons.filter((l) => l.submoduleId === t.id).length}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="sat-catalog__collection">
+              <h2>{recentOnly ? "Recently opened" : "Lessons"}</h2>
+              <span>
+                {visible.length} {visible.length === 1 ? "item" : "items"}
+              </span>
+            </div>
+          </>
+        )}
+        {tab === "lessons" ? (
+          isLoading ? (
+            <p className="sat-catalog__empty" role="status">
+              Loading lessons…
+            </p>
+          ) : isError ? (
+            <div className="sat-catalog__empty">
+              We couldn’t load your course lessons.{" "}
+              <button className="sat-action" onClick={() => refetch()}>
+                Try again
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="sat-catalog__grid">
+                {visible.map((l) => (
+                  <button
+                    className="sat-catalog__card"
+                    key={l.id}
+                    onClick={() => openLesson(l.id)}
+                  >
+                    <div className="sat-catalog__card-top">
+                      <span>
+                        LESSON{" "}
+                        {String(
+                          lessons.findIndex((item) => item.id === l.id) + 1,
+                        ).padStart(2, "0")}
+                      </span>
+                      <span>{l.topicTitle}</span>
+                    </div>
+                    <h2>{l.title}</h2>
+                    <p>
+                      {(
+                        l.description ??
+                        "Open this lesson to explore the topic."
+                      ).replace(/<[^>]*>/g, "")}
+                    </p>
+                    {LESSON_EXAMPLES[l.title.trim().toLowerCase()] && (
+                      <div
+                        className="sat-catalog__formula"
+                        aria-label="Illustrative equation"
+                      >
+                        {LESSON_EXAMPLES[l.title.trim().toLowerCase()]}
+                      </div>
+                    )}
+                    <footer>
+                      <span>{l.duration ? `${l.duration} min` : "Lesson"}</span>
+                      <span>
+                        {progress?.progress.find((p) => p.lessonId === l.id)
+                          ?.isCompleted
+                          ? "Completed"
+                          : "Open lesson"}{" "}
+                        →
+                      </span>
+                    </footer>
+                  </button>
+                ))}
+              </div>
+              {!visible.length && (
+                <p className="sat-catalog__empty">
+                  {search
+                    ? "No lessons match your search."
+                    : "No lessons available in this collection yet."}
+                </p>
+              )}
+            </>
+          )
+        ) : tab === "marked" ? (
+          <MarkedTab />
+        ) : tab === "vocabulary" ? (
+          <VocabularyTab />
+        ) : skillsLoading ? (
+          <p className="sat-catalog__empty" role="status">
+            Loading practice topics…
+          </p>
+        ) : skillsError ? (
+          <div className="sat-catalog__empty">
+            Couldn’t load practice topics.{" "}
+            <button className="sat-action" onClick={() => refetchSkills()}>
+              Try again
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="sat-catalog__collection">
+              <h2>Practice sets</h2>
+              <span>
+                {practiceTopics.length}{" "}
+                {practiceTopics.length === 1 ? "topic" : "topics"}
+              </span>
+            </div>
+            <div className="sat-catalog__grid">
+              {practiceTopics.map((t, index) => (
+                <button
+                  key={`${t.section}/${t.domain}/${t.skill}`}
+                  className="sat-catalog__card"
+                  onClick={() =>
+                    navigate(
+                      `/student-hub/sat-prep/practice?${new URLSearchParams({ section: t.section, domain: t.domain, skill: t.skill, count: "10" })}`,
+                    )
+                  }
+                >
+                  <div className="sat-catalog__card-top">
+                    <span>PRACTICE {String(index + 1).padStart(2, "0")}</span>
+                    <span>{t.domain}</span>
+                  </div>
+                  <h2>{t.skill}</h2>
+                  <p>
+                    {t.section === "math" ? "Math" : "Reading & Writing"} ·
+                    Choose your difficulty before starting.
+                  </p>
+                  <footer>
+                    <span>Up to {Math.min(10, t.count)} questions</span>
+                    <span>Build set →</span>
+                  </footer>
+                </button>
+              ))}
+            </div>
+            {!practiceTopics.length && (
+              <p className="sat-catalog__empty">
+                No matching practice topics. Try another collection or clear
+                your search.
+              </p>
+            )}
+            <div className="sat-catalog__more-practice">
+              <button
+                className="sat-action"
+                onClick={() => navigate("/student-hub/sat-prep/test-packs")}
+              >
+                Browse test packs <ArrowRight size={14} />
+              </button>
+              <button
+                className="sat-action"
+                onClick={() => navigate("/student-hub/sat-prep/mock-tests")}
+              >
+                Timed mock tests <ArrowRight size={14} />
+              </button>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 };
@@ -82,7 +523,7 @@ const VocabularyTab: React.FC = () => {
   const { data: words = [] } = useGetVocabularyQuery();
   const [removeWord] = useRemoveVocabularyMutation();
   const [clearAll] = useClearVocabularyMutation();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
 
   const filtered = useMemo(() => {
@@ -96,7 +537,7 @@ const VocabularyTab: React.FC = () => {
       await removeWord(id).unwrap();
       message.success(`Removed "${word}"`);
     } catch {
-      message.error('Could not remove word.');
+      message.error("Could not remove word.");
     }
   };
 
@@ -104,20 +545,23 @@ const VocabularyTab: React.FC = () => {
     setConfirmClear(false);
     try {
       const r = await clearAll().unwrap();
-      message.success(`Removed ${r.removed} word${r.removed === 1 ? '' : 's'}`);
+      message.success(`Removed ${r.removed} word${r.removed === 1 ? "" : "s"}`);
     } catch {
-      message.error('Could not clear vocabulary.');
+      message.error("Could not clear vocabulary.");
     }
   };
 
   if (!words.length) {
     return (
       <div className="sat-card sat-library__empty">
-        <div className="sat-library__empty-glyph"><BookmarkCheck size={20} /></div>
+        <div className="sat-library__empty-glyph">
+          <BookmarkCheck size={20} />
+        </div>
         <div className="sat-library__empty-title">No vocabulary saved yet</div>
         <div className="sat-library__empty-desc">
-          During a Reading &amp; Writing test, click <strong>Add vocabulary</strong> at the bottom of the
-          runner to save unfamiliar words. They'll show up here so you can review them later.
+          During a Reading &amp; Writing test, click{" "}
+          <strong>Add vocabulary</strong> at the bottom of the runner to save
+          unfamiliar words. They'll show up here so you can review them later.
         </div>
       </div>
     );
@@ -135,7 +579,11 @@ const VocabularyTab: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
-            <button className="sat-library__search-clear" onClick={() => setSearch('')} aria-label="Clear">
+            <button
+              className="sat-library__search-clear"
+              onClick={() => setSearch("")}
+              aria-label="Clear"
+            >
               <X size={13} />
             </button>
           )}
@@ -152,13 +600,17 @@ const VocabularyTab: React.FC = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="sat-library__no-results">No words match "{search}".</div>
+        <div className="sat-library__no-results">
+          No words match "{search}".
+        </div>
       ) : (
         <ul className="sat-library__vocab">
           {filtered.map((w) => (
             <li key={w.id} className="sat-library__vocab-row">
               <span className="sat-library__vocab-word">{w.word}</span>
-              <span className="sat-library__vocab-date">{fmtRelative(w.createdAt)}</span>
+              <span className="sat-library__vocab-date">
+                {fmtRelative(w.createdAt)}
+              </span>
               <button
                 className="sat-library__vocab-remove"
                 onClick={() => onRemove(w.id, w.word)}
@@ -177,7 +629,7 @@ const VocabularyTab: React.FC = () => {
         onCancel={() => setConfirmClear(false)}
         onConfirm={onClear}
         title="Clear all vocabulary?"
-        description={`This will remove all ${words.length} word${words.length === 1 ? '' : 's'} from your library. This cannot be undone.`}
+        description={`This will remove all ${words.length} word${words.length === 1 ? "" : "s"} from your library. This cannot be undone.`}
         confirmLabel="Clear all"
         cancelLabel="Keep them"
         destructive
@@ -196,22 +648,28 @@ const MarkedTab: React.FC = () => {
   const onUnmark = async (questionId: string) => {
     try {
       await unmark(questionId).unwrap();
-      message.success('Unmarked.');
+      message.success("Unmarked.");
     } catch {
-      message.error('Could not unmark.');
+      message.error("Could not unmark.");
     }
   };
 
   if (!marks.length) {
     return (
       <div className="sat-card sat-library__empty">
-        <div className="sat-library__empty-glyph"><Flag size={20} /></div>
+        <div className="sat-library__empty-glyph">
+          <Flag size={20} />
+        </div>
         <div className="sat-library__empty-title">No marked questions yet</div>
         <div className="sat-library__empty-desc">
-          Tap the <strong>Mark for Review</strong> bookmark on any question while taking a test, and
-          it will appear here so you can revisit it later.
+          Tap the <strong>Mark for Review</strong> bookmark on any question
+          while taking a test, and it will appear here so you can revisit it
+          later.
         </div>
-        <button className="sat-btn sat-btn--ghost" onClick={() => navigate('/student-hub/sat-prep/practice')}>
+        <button
+          className="sat-btn sat-btn--ghost"
+          onClick={() => navigate("/student-hub/sat-prep/practice")}
+        >
           Browse practice <ArrowRight size={13} />
         </button>
       </div>
@@ -222,25 +680,33 @@ const MarkedTab: React.FC = () => {
     <div className="sat-card sat-library__panel">
       <div className="sat-library__panel-toolbar">
         <span className="sat-library__panel-count">
-          {marks.length} marked question{marks.length === 1 ? '' : 's'}
+          {marks.length} marked question{marks.length === 1 ? "" : "s"}
         </span>
       </div>
 
       <ul className="sat-library__marked">
         {marks.map((m) => {
           const q = m.question;
-          const isMath = q?.section === 'math';
+          const isMath = q?.section === "math";
           return (
             <li key={m.id} className="sat-library__marked-row">
-              <div className={`sat-library__marked-icon sat-library__marked-icon--${isMath ? 'math' : 'rw'}`}>
+              <div
+                className={`sat-library__marked-icon sat-library__marked-icon--${isMath ? "math" : "rw"}`}
+              >
                 {isMath ? <Calculator size={15} /> : <BookOpen size={15} />}
               </div>
               <div className="sat-library__marked-body">
                 <div className="sat-library__marked-eyebrow">
-                  {q ? `${q.domain} · ${capitalize(q.difficulty)}` : 'Question removed'}
+                  {q
+                    ? `${q.domain} · ${capitalize(q.difficulty)}`
+                    : "Question removed"}
                 </div>
                 <div className="sat-library__marked-stem">
-                  {q ? <SatHtml html={truncateHtml(q.stemHtml, 220)} /> : <span>Question is no longer in the bank.</span>}
+                  {q ? (
+                    <SatHtml html={truncateHtml(q.stemHtml, 220)} />
+                  ) : (
+                    <span>Question is no longer in the bank.</span>
+                  )}
                 </div>
                 <div className="sat-library__marked-meta">
                   Marked {fmtRelative(m.createdAt)}
@@ -274,38 +740,59 @@ const MarkedTab: React.FC = () => {
       <RunnerModal
         open={!!open}
         onClose={() => setOpen(null)}
-        eyebrow={open?.question
-          ? `${open.question.section === 'math' ? 'Math' : 'Reading & Writing'} · ${capitalize(open.question.difficulty)}`
-          : 'Marked question'}
-        title={open?.question?.skill ?? 'Question review'}
+        eyebrow={
+          open?.question
+            ? `${open.question.section === "math" ? "Math" : "Reading & Writing"} · ${capitalize(open.question.difficulty)}`
+            : "Marked question"
+        }
+        title={open?.question?.skill ?? "Question review"}
         size="lg"
         footer={
           <>
             {open && (
               <button
                 className="rm-btn rm-btn--ghost"
-                onClick={() => { onUnmark(open.questionId); setOpen(null); }}
+                onClick={() => {
+                  onUnmark(open.questionId);
+                  setOpen(null);
+                }}
               >
                 <X size={13} /> Unmark
               </button>
             )}
-            <button className="rm-btn rm-btn--primary" onClick={() => setOpen(null)}>Done</button>
+            <button
+              className="rm-btn rm-btn--primary"
+              onClick={() => setOpen(null)}
+            >
+              Done
+            </button>
           </>
         }
       >
         {open?.question ? (
           <div className="sat-library__review">
             {open.question.passageHtml && (
-              <SatHtml html={open.question.passageHtml} className="sat-library__review-passage" />
+              <SatHtml
+                html={open.question.passageHtml}
+                className="sat-library__review-passage"
+              />
             )}
-            <SatHtml html={open.question.stemHtml} className="sat-library__review-stem" />
+            <SatHtml
+              html={open.question.stemHtml}
+              className="sat-library__review-stem"
+            />
             {open.question.choices && (
               <ul className="sat-library__review-choices">
                 {open.question.choices.map((c) => {
                   const correct = open.question?.correctAnswer === c.label;
                   return (
-                    <li key={c.label} className={`sat-library__review-choice ${correct ? 'sat-library__review-choice--correct' : ''}`}>
-                      <span className="sat-library__review-letter">{c.label}</span>
+                    <li
+                      key={c.label}
+                      className={`sat-library__review-choice ${correct ? "sat-library__review-choice--correct" : ""}`}
+                    >
+                      <span className="sat-library__review-letter">
+                        {c.label}
+                      </span>
                       <SatHtml html={c.text} />
                     </li>
                   );
@@ -326,31 +813,35 @@ const MarkedTab: React.FC = () => {
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────
-const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const capitalize = (s: string) =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 const fmtRelative = (iso: string): string => {
   const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return '';
+  if (Number.isNaN(t)) return "";
   const min = Math.floor((Date.now() - t) / 60_000);
-  if (min < 1) return 'just now';
+  if (min < 1) return "just now";
   if (min < 60) return `${min}m ago`;
   const hr = Math.floor(min / 60);
   if (hr < 24) return `${hr}h ago`;
   const d = Math.floor(hr / 24);
-  if (d === 1) return 'yesterday';
+  if (d === 1) return "yesterday";
   if (d < 7) return `${d} days ago`;
   if (d < 30) return `${Math.floor(d / 7)}w ago`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 };
 
 const truncateHtml = (html: string, max: number): string => {
-  if (!html) return '';
+  if (!html) return "";
   // Strip tags for the truncation budget so we don't snip mid-tag; the
   // returned string is still rendered as HTML by SatHtml.
-  const txt = html.replace(/<[^>]+>/g, '').trim();
+  const txt = html.replace(/<[^>]+>/g, "").trim();
   if (txt.length <= max) return html;
   // Cheap approximation — find a sentence end near the budget.
-  const cutAt = txt.lastIndexOf(' ', max);
+  const cutAt = txt.lastIndexOf(" ", max);
   return `${txt.slice(0, cutAt > max - 60 ? cutAt : max)}…`;
 };
 

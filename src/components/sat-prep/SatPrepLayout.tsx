@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import 'src/pages/student-hub/applicant/applicantPages.scss';
 import './sat-prep-shell.scss';
+import 'src/pages/student-hub/sat-prep/sat-platform.scss';
 
 interface Tab {
   to: string;
@@ -28,11 +29,11 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { to: '/student-hub/sat-prep', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
+  { to: '/student-hub/sat-prep', label: 'Overview', icon: <LayoutDashboard size={15} /> },
   { to: '/student-hub/sat-prep/practice', label: 'Practice', icon: <Layers size={15} /> },
-  { to: '/student-hub/sat-prep/test-packs', label: 'Test Packs', icon: <ListChecks size={15} /> },
   { to: '/student-hub/sat-prep/mock-tests', label: 'Mock Tests', icon: <Sparkles size={15} /> },
-  { to: '/student-hub/sat-prep/library', label: 'My Library', icon: <BookmarkCheck size={15} /> },
+  { to: '/student-hub/sat-prep/review', label: 'Review', icon: <ListChecks size={15} /> },
+  { to: '/student-hub/sat-prep/library', label: 'Library', icon: <BookmarkCheck size={15} /> },
 ];
 
 const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -57,11 +58,11 @@ const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               SAT Test Prep
             </span>
             <span className="sat-shell__crumb-sep">›</span>
-            <span className="sat-shell__crumb-current">{activeTab?.label ?? 'Dashboard'}</span>
+            <span className="sat-shell__crumb-current">{activeTab?.label ?? 'Overview'}</span>
           </div>
           <button className="sat-shell__back-btn" onClick={() => navigate('/student-hub')}>
             <ArrowLeft size={13} />
-            Back to main menu
+            My Journey
           </button>
         </div>
         <nav className="sat-shell__tabs">

@@ -41,6 +41,7 @@ const SatPracticeFlowPage = lazy(() => import('./sat-prep/SatPracticeFlowPage'))
 const SatTestPacksPage = lazy(() => import('./sat-prep/SatTestPacksPage'));
 const SatMockTestsPage = lazy(() => import('./sat-prep/SatMockTestsPage'));
 const SatTestRunnerPage = lazy(() => import('./sat-prep/SatMockTestPage'));
+const SatReviewPage = lazy(() => import('./sat-prep/SatReviewPage'));
 const SatLibraryPage = lazy(() => import('./sat-prep/SatLibraryPage'));
 const SatPrepComingSoonPage = lazy(() => import('./sat-prep/SatPrepComingSoonPage'));
 const ResearchPrepLockedPreview = lazy(() => import('./research/ResearchPrepLockedPreview'));
@@ -229,6 +230,10 @@ const StudentHubRoutes: React.FC = () => {
           <Route
             path="/sat-prep/mock-tests"
             element={withSuspense(<SatGate><SatPrepLayout><SatMockTestsPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/review"
+            element={withSuspense(<SatGate><SatPrepLayout><SatReviewPage /></SatPrepLayout></SatGate>)}
           />
           <Route
             path="/sat-prep/library"
