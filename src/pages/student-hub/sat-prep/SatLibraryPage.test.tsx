@@ -21,6 +21,7 @@ vi.mock("src/app/services/courses", () => ({
     ...state.enrollment,
     refetch: vi.fn(),
   }),
+  useUpdateLessonProgressMutation: () => [vi.fn(), {}],
   useGetCourseStructureQuery: state.structure,
   useGetUserProgressQuery: state.progress,
 }));

@@ -30,7 +30,7 @@
   }
   p {
     color: #727983;
-    font-size: 13px;
+    font-size: 0.875rem;
     line-height: 1.6;
   }
   a {
@@ -46,7 +46,7 @@
     cursor: wait;
   }
   &__eyebrow {
-    font-size: 10px;
+    font-size: 0.75rem;
     letter-spacing: 1.7px;
     font-weight: 600;
     color: #8b0000;
@@ -60,7 +60,7 @@
     align-items: center;
     gap: 70px;
     span {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #747b85;
     }
     strong {
@@ -78,7 +78,7 @@
     }
     p {
       max-width: 230px;
-      font-size: 12px;
+      font-size: 0.875rem;
     }
   }
   &__score-track {
@@ -100,7 +100,7 @@
     gap: 20px;
     align-items: center;
     p {
-      font-size: 12px;
+      font-size: 0.875rem;
     }
   }
   &__plan {
@@ -114,7 +114,7 @@
         margin-top: 6px;
       }
       > span {
-        font-size: 12px;
+        font-size: 0.875rem;
         color: #7c838d;
       }
     }
@@ -151,7 +151,7 @@
   }
   &__step {
     color: #9ba1aa;
-    font-size: 12px;
+    font-size: 0.875rem;
     font-weight: 500;
   }
   &__selection {
@@ -160,7 +160,7 @@
     gap: 22px;
     padding: 16px 0 24px;
     border-bottom: 1px solid #e4e6e9;
-    font-size: 12px;
+    font-size: 0.875rem;
     span {
       color: #7b828c;
     }
@@ -185,11 +185,11 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 11px;
+        font-size: 0.75rem;
         color: #7b828c;
       }
       span {
-        font-size: 11px;
+        font-size: 0.75rem;
         color: #7b828c;
       }
     }
@@ -199,13 +199,13 @@
     > div:first-child {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 0.875rem;
     }
     strong {
       font-weight: 500;
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
       margin: 6px 0 10px;
     }
   }
@@ -229,7 +229,7 @@
       padding-left: 24px;
     }
     span {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #7b828c;
     }
     strong {
@@ -240,20 +240,20 @@
       margin: 12px 0;
     }
     small {
-      font-size: 13px;
+      font-size: 0.875rem;
       letter-spacing: 0;
       color: #959ba3;
       font-weight: 400;
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
     }
   }
   &__text-link {
     display: flex;
     gap: 8px;
     align-items: center;
-    font-size: 12px;
+    font-size: 0.875rem;
     margin-top: 28px;
     color: #717782 !important;
   }
@@ -281,12 +281,12 @@
     gap: 20px;
     padding: 18px 0;
     border-bottom: 1px solid #e5e7ea;
-    font-size: 13px;
+    font-size: 0.875rem;
     strong {
       font-weight: 500;
     }
     p {
-      font-size: 12px;
+      font-size: 0.875rem;
       margin-top: 5px;
     }
   }
@@ -296,14 +296,14 @@
   gap: 18px;
   align-items: center;
   justify-content: space-between;
-  min-height: 40px;
+  min-height: 44px;
   padding: 8px 14px;
   border: 1px solid #dce0e5;
   border-radius: 7px;
   background: #fff;
   color: #4d535c !important;
   font:
-    500 12px "DM Sans",
+    500 0.875rem "DM Sans",
     sans-serif;
   text-decoration: none;
   box-shadow: 0 1px 2px #19202b08;
@@ -369,7 +369,7 @@
     padding-right: 20px;
   }
   &__label {
-    font-size: 10px;
+    font-size: 0.75rem;
     letter-spacing: 1.2px;
     color: #8e959d;
     margin: 14px 0;
@@ -386,12 +386,12 @@
     text-align: left;
     background: transparent;
     font:
-      12px "DM Sans",
+      0.875rem "DM Sans",
       sans-serif;
     color: #737a84;
     cursor: pointer;
     span:last-child {
-      font-size: 10px;
+      font-size: 0.75rem;
       color: #9298a0;
     }
     &--active {
@@ -403,7 +403,7 @@
     }
   }
   &__crumb {
-    font-size: 10px;
+    font-size: 0.75rem;
     color: #8f969e;
     margin: 16px 0 22px;
   }
@@ -415,7 +415,7 @@
     margin: 0 0 12px;
   }
   &__description {
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #7c838c;
     line-height: 1.7;
     max-width: 570px;
@@ -440,7 +440,7 @@
         background: #fff;
         color: #80868f;
         font:
-          11px "DM Sans",
+          .75rem "DM Sans",
           sans-serif;
         padding: 8px 12px;
         cursor: pointer;
@@ -460,7 +460,7 @@
       padding: 8px 12px;
       max-width: 180px;
       font:
-        11px "DM Sans",
+        .75rem "DM Sans",
         sans-serif;
       &:focus {
         outline: 1px solid #8b0000;
@@ -500,7 +500,7 @@
       outline-offset: 3px;
     }
     > span {
-      font-size: 9px;
+      font-size: 0.75rem;
       letter-spacing: 0.7px;
       color: #8a7880;
       text-transform: uppercase;
@@ -513,7 +513,7 @@
       margin: 22px 0 12px;
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
       color: #83858c;
       line-height: 1.7;
       margin: 0;
@@ -526,7 +526,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 0.75rem;
       color: #8b7179;
       border-top: 1px solid #e6e0e2;
       padding-top: 12px;
@@ -536,7 +536,7 @@
   }
   &__empty {
     color: #7b828c;
-    font-size: 13px;
+    font-size: 0.875rem;
     padding: 30px 0;
     line-height: 1.6;
   }
@@ -684,7 +684,7 @@
   .sat-shell__brand-badge {
     border: 0;
     padding: 0;
-    font-size: 12px;
+    font-size: 0.875rem;
     min-height: 0;
   }
   .sat-shell__back-btn {
@@ -694,7 +694,7 @@
     padding: 0;
     color: #818791;
     background: transparent;
-    font-size: 11px;
+    font-size: 0.75rem;
   }
   .sat-shell__tabs {
     border: 0;
@@ -706,7 +706,7 @@
   .sat-shell__tab {
     min-height: 58px;
     padding: 18px 12px;
-    font-size: 12px;
+    font-size: 0.875rem;
     svg {
       display: none;
     }
@@ -737,7 +737,7 @@
     }
     .sat-shell__back-btn {
       width: auto;
-      font-size: 11px;
+      font-size: 0.75rem;
     }
     .sat-shell__tabs-inner {
       min-width: max-content;
@@ -765,11 +765,11 @@
     margin-bottom: 17px;
     gap: 20px;
     > span {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #67717c;
     }
     h1 {
-      font-size: 11px !important;
+      font-size: .75rem !important;
       font-weight: 500;
       letter-spacing: 1.1px;
       color: #67717c;
@@ -779,7 +779,7 @@
   }
   &__score-line {
     justify-content: space-between;
-    align-items: end;
+    align-items: flex-start;
     gap: 30px;
     strong {
       font-size: 56px;
@@ -790,7 +790,7 @@
     span {
       display: block;
       margin-top: 4px;
-      font-size: 13px;
+      font-size: 0.875rem;
       color: #67717c;
     }
   }
@@ -811,7 +811,7 @@
     display: flex;
     justify-content: space-between;
     gap: 20px;
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #67717c;
   }
   &__hero-action {
@@ -821,7 +821,7 @@
       min-height: 44px;
     }
     p {
-      font-size: 13px;
+      font-size: 0.875rem;
     }
   }
   &__plan {
@@ -848,7 +848,7 @@
     }
     .sat-action {
       min-width: 132px;
-      font-size: 12px;
+      font-size: 0.875rem;
     }
   }
   &__tasks {
@@ -860,7 +860,7 @@
   }
   &__selection {
     padding: 20px 0;
-    font-size: 12px;
+    font-size: 0.875rem;
     gap: 28px;
   }
   &__performance {
@@ -887,7 +887,7 @@
       border-bottom: 1px solid #edf0f2;
       padding: 9px 0 !important;
       > span {
-        font-size: 13px;
+        font-size: 0.875rem;
         color: #444d57;
       }
       strong {
@@ -898,10 +898,10 @@
         letter-spacing: -0.4px;
       }
       small {
-        font-size: 11px;
+        font-size: 0.75rem;
       }
       p {
-        font-size: 11px;
+        font-size: 0.75rem;
         text-align: right;
       }
     }
@@ -913,7 +913,7 @@
     font-size: 25px !important;
     color: #30353b !important;
     small {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #929aa4;
       margin-left: 4px;
     }
@@ -924,7 +924,7 @@
   &__skill {
     margin-bottom: 17px;
     > div:first-child {
-      font-size: 13px;
+      font-size: 0.875rem;
     }
     p {
       margin: 3px 0 8px;
@@ -954,18 +954,18 @@
       background: none;
       text-align: left;
       font:
-        12px "DM Sans",
+        0.875rem "DM Sans",
         sans-serif;
       color: #777b82;
       cursor: pointer;
       span {
-        font-size: 10px;
+        font-size: 0.75rem;
         color: #9b9fa6;
       }
     }
   }
   &__label {
-    font-size: 12px;
+    font-size: 0.875rem;
     letter-spacing: 0;
     text-transform: none;
     color: #393c40;
@@ -974,7 +974,7 @@
   &__topic {
     padding: 7px 0;
     border-radius: 0;
-    font-size: 12px;
+    font-size: 0.875rem;
     gap: 8px;
     i {
       width: 7px;
@@ -1006,7 +1006,7 @@
       background: none;
       color: #868b93;
       font:
-        10px "DM Sans",
+        0.875rem "DM Sans",
         sans-serif;
       padding: 6px 0;
       text-align: left;
@@ -1030,7 +1030,7 @@
         border-radius: 9px 9px 0 0;
         background: #e8e9ec;
         padding: 9px 12px;
-        font-size: 11px;
+        font-size: 0.75rem;
         color: #73777e;
         &[aria-pressed="true"] {
           background: #fcfcfb;
@@ -1051,7 +1051,7 @@
     margin-bottom: 25px;
     > span {
       display: block;
-      font-size: 10px;
+      font-size: 0.75rem;
       color: #777b82;
       margin-bottom: 8px;
     }
@@ -1066,13 +1066,13 @@
       background: #e9eaed;
       color: #777b82;
       font:
-        10px "DM Sans",
+        0.875rem "DM Sans",
         sans-serif;
       padding: 3px 7px;
       line-height: 1.4;
       cursor: pointer;
       small {
-        font-size: 9px;
+        font-size: 0.75rem;
         color: #9298a0;
         margin-left: 4px;
       }
@@ -1089,12 +1089,12 @@
     padding-bottom: 9px;
     margin-bottom: 16px;
     h2 {
-      font-size: 12px;
+      font-size: 0.875rem;
       font-weight: 500;
       margin: 0;
     }
     span {
-      font-size: 10px;
+      font-size: 0.75rem;
       color: #9298a0;
     }
   }
@@ -1117,11 +1117,11 @@
       margin: 0 0 9px;
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
       line-height: 1.55;
     }
     footer {
-      font-size: 10px;
+      font-size: 0.75rem;
       min-height: 33px;
       padding-top: 12px;
       border: 0;
@@ -1133,10 +1133,10 @@
     align-items: center;
     gap: 6px;
     margin-bottom: 10px;
-    font-size: 9px;
+    font-size: 0.75rem;
     color: #777b82;
     span:first-child {
-      font-size: 8px;
+      font-size: .75rem;
       letter-spacing: 0.2px;
       padding: 2px 4px;
       background: #ffffff88;
@@ -1147,7 +1147,7 @@
 @media (max-width: 700px) {
   .sat-platform {
     &__journey-top > span {
-      font-size: 10px;
+      font-size: 0.75rem;
     }
     &__score-line strong {
       font-size: 46px;
@@ -1158,7 +1158,7 @@
     &__journey-meta {
       flex-wrap: wrap;
       gap: 6px;
-      font-size: 11px;
+      font-size: 0.75rem;
     }
     &__task {
       padding: 18px 16px;
@@ -1166,7 +1166,7 @@
         font-size: 16px;
       }
       p {
-        font-size: 12px;
+        font-size: 0.875rem;
       }
     }
     &__breakdown {
@@ -1186,7 +1186,7 @@
       width: 100%;
       margin-bottom: 16px;
       button {
-        font-size: 11px;
+        font-size: 0.75rem;
       }
     }
     &__subtopics {
@@ -1200,4 +1200,165 @@
     }
   }
 }
-.sat-catalog__formula{font-family:Lora,Georgia,serif;font-size:16px;letter-spacing:-.2px;color:#8b0000;margin:13px 0 20px}
+.sat-catalog__formula {
+  font-family: Lora, Georgia, serif;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  color: #8b0000;
+  margin: 13px 0 20px;
+}
+
+/* Shared controls keep immediate press feedback and a readable touch target. */
+.sat-shell .sat-shell__tab {
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+.sat-shell .sat-chip,
+.sat-shell .sat-secondary-filters button {
+  min-height: 44px;
+}
+.sat-shell button:active {
+  transition-duration: 0s;
+}
+.sat-shell button:focus-visible,
+.sat-shell a:focus-visible,
+.sat-shell input:focus-visible,
+.sat-shell summary:focus-visible {
+  outline: 2px solid #8b0000;
+  outline-offset: 3px;
+}
+.sat-catalog__subjects-toggle {
+  display: none;
+}
+@media (max-width: 700px) {
+  .sat-catalog__subjects-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dce0e5;
+    border-radius: 8px;
+    background: white;
+    color: #30353b;
+    font:
+      500 0.875rem "DM Sans",
+      sans-serif;
+    margin: 8px 0;
+    text-align: left;
+  }
+  .sat-catalog__subjects-list {
+    display: none;
+  }
+  .sat-catalog__subjects-list--open {
+    display: block;
+  }
+  .sat-catalog__quick {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sat-catalog__quick button {
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+  .sat-catalog__topic {
+    min-height: 44px;
+  }
+  .sat-catalog__topics button {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sat-shell *,
+  .sat-shell *::before,
+  .sat-shell *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sat-target-link {
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #dce0e5;
+  border-radius: 8px;
+  color: #8b0000;
+  font:
+    500 0.875rem "DM Sans",
+    sans-serif;
+  cursor: pointer;
+}
+.sat-target-gap {
+  margin-top: 6px;
+  color: #565e68;
+  font-size: 0.875rem;
+}
+.sat-target-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.sat-target-input {
+  display: block;
+  min-height: 44px;
+  width: 100%;
+  max-width: 240px;
+  padding: 10px 12px;
+  border: 1px solid #c6ccd4;
+  border-radius: 8px;
+  color: #30353b;
+  font:
+    500 1.125rem "DM Sans",
+    sans-serif;
+}
+.sat-target-input:focus-visible {
+  outline: 2px solid #8b0000;
+  outline-offset: 3px;
+}
+.sat-target-error {
+  color: #8b0000;
+  min-height: 24px;
+  margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+  .sat-catalog aside {
+    display: block;
+  }
+  .sat-catalog__subjects-list--open {
+    width: 100%;
+  }
+  .sat-catalog__subjects-list .sat-catalog__topic {
+    display: flex;
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .sat-shell.applicant-specialist-page .sat-shell__tabs-inner {
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    gap: 0;
+  }
+  .sat-shell.applicant-specialist-page .sat-shell__tab {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 3px;
+    font-size: 0.8125rem;
+    text-align: center;
+    justify-content: center;
+  }
+  .sat-catalog__quick button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sat-catalog {
+    gap: 20px;
+  }
+}
