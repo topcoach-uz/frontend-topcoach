@@ -12,6 +12,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   useGetCourseStructureQuery,
   useGetUserProgressQuery,
+  useGetEnrollmentStatusQuery,
 } from "src/app/services/courses";
 import "./sat-platform.scss";
 import { message } from "antd";
@@ -71,18 +72,29 @@ const SatLibraryPage: React.FC = () => {
   const [subtopic, setSubtopic] = useState("all");
   const [search, setSearch] = useState("");
   const {
+    data: enrollment,
+    isLoading: enrollmentLoading,
+    isError: enrollmentError,
+    refetch: refetchEnrollment,
+  } = useGetEnrollmentStatusQuery("sat", { skip: tab !== "lessons" });
+  const canLoadLessons =
+    enrollment?.isEnrolled === true && enrollment.canAccessLearning === true;
+  const skipLessons = tab !== "lessons" || !canLoadLessons;
+  const {
     data: modules = [],
     isLoading,
     isError,
     refetch,
-  } = useGetCourseStructureQuery("sat");
+  } = useGetCourseStructureQuery("sat", { skip: skipLessons });
   const {
     data: bankSkills = [],
     isLoading: skillsLoading,
     isError: skillsError,
     refetch: refetchSkills,
   } = useSatSkillCountsQuery();
-  const { data: progress } = useGetUserProgressQuery("sat");
+  const { data: progress } = useGetUserProgressQuery("sat", {
+    skip: skipLessons,
+  });
   const { data: vocab = [] } = useGetVocabularyQuery();
   const { data: marked = [] } = useGetMarkedQuestionsQuery();
   const lessons = modules
@@ -374,10 +386,39 @@ const SatLibraryPage: React.FC = () => {
           </>
         )}
         {tab === "lessons" ? (
-          isLoading ? (
+          isLoading || enrollmentLoading ? (
             <p className="sat-catalog__empty" role="status">
               Loading lessons…
             </p>
+          ) : enrollmentError ? (
+            <div className="sat-catalog__empty" role="alert">
+              We couldn’t check your lesson access.{" "}
+              <button
+                className="sat-action"
+                onClick={() => refetchEnrollment()}
+              >
+                Try again
+              </button>
+            </div>
+          ) : !canLoadLessons ? (
+            <div className="sat-catalog__empty">
+              <h2>
+                {enrollment?.isEnrolled
+                  ? "SAT lesson access is pending"
+                  : "SAT lessons require course enrollment"}
+              </h2>
+              <p>
+                {enrollment?.isEnrolled
+                  ? "Your lessons will be available when your enrollment is approved."
+                  : "You can still use practice sets and review your saved questions."}
+              </p>
+              <button
+                className="sat-action"
+                onClick={() => setParams({ tab: "practice" })}
+              >
+                Browse practice sets <ArrowRight size={14} />
+              </button>
+            </div>
           ) : isError ? (
             <div className="sat-catalog__empty">
               We couldn’t load your course lessons.{" "}
