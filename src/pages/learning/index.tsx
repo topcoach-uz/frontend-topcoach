@@ -12,6 +12,8 @@ import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
 import TaskSubmission from './components/TaskSubmission';
 import LiveClassSchedule from './components/LiveClassSchedule';
+import SatHtml from 'src/components/sat-prep/SatHtml';
+import 'src/pages/student-hub/sat-prep/sat-text-lesson.scss';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
 import { useDispatch } from 'react-redux';
@@ -832,13 +834,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   <span className="lh-meta__icon">
                     {selectedLesson.lessonType === 'video'
                       ? <Video size={14} />
-                      : selectedLesson.lessonType === 'pdf'
+                      : selectedLesson.lessonType === 'pdf' || selectedLesson.lessonType === 'text'
                         ? <FileText size={14} />
                         : <Target size={14} />}
                   </span>
                   <span className="lh-meta__type">
                     {selectedLesson.lessonType === 'video'
                       ? t('Video')
+                      : selectedLesson.lessonType === 'text'
+                        ? t('Text lesson')
                       : selectedLesson.lessonType === 'pdf'
                         ? t('PDF')
                         : t('Live session')}
@@ -863,11 +867,19 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               </div>
 
               <div className="lesson-content">
-                {!selectedLesson.contentUrl && !selectedLesson.useVdoCipher ? (
+                {!selectedLesson.contentUrl && selectedLesson.lessonType !== 'text' && !selectedLesson.useVdoCipher ? (
                   <div className="lesson-error">
                     <h2>{t('Content not available')}</h2>
                     <p>{t('This lesson has no video/PDF. Please contact support.')}</p>
                   </div>
+                ) : selectedLesson.lessonType === 'text' ? (
+                  <section className="sat-text-lesson" aria-label="Text lesson">
+                    {selectedLesson.isDraft && <p className="sat-text-lesson__draft">Draft lesson · Educator review pending</p>}
+                    <SatHtml html={selectedLesson.textContentHtml ?? ''} className="sat-text-lesson__body" />
+                    {selectedLesson.textPracticeUrl?.startsWith('/student-hub/sat-prep/practice?') && (
+                      <Button onClick={() => navigate(selectedLesson.textPracticeUrl!)}>Practice this skill</Button>
+                    )}
+                  </section>
                 ) : selectedLesson.lessonType === 'video' ? (
                   <div className="video-content">
                     {isSafariBrowser && (

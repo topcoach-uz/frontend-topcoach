@@ -13,6 +13,7 @@ import {
   useGetCourseStructureQuery,
   useGetUserProgressQuery,
   useGetEnrollmentStatusQuery,
+  type CourseLessonDto,
 } from "src/app/services/courses";
 import "./sat-platform.scss";
 import { message } from "antd";
@@ -43,6 +44,7 @@ import {
 import "src/components/sat-prep/sat-prep-shell.scss";
 import "./sat-library.scss";
 import "./sat-secondary-pages.scss";
+import SatTextLessonReader from "./SatTextLessonReader";
 
 // Illustrative equations from the approved design, not course-progress data.
 const LESSON_EXAMPLES: Record<string, string> = {
@@ -71,6 +73,7 @@ const SatLibraryPage: React.FC = () => {
   const [recentOnly, setRecentOnly] = useState(false);
   const [subtopic, setSubtopic] = useState("all");
   const [search, setSearch] = useState("");
+  const [textLesson, setTextLesson] = useState<CourseLessonDto | null>(null);
   const {
     data: enrollment,
     isLoading: enrollmentLoading,
@@ -180,7 +183,12 @@ const SatLibraryPage: React.FC = () => {
         `${s.skill} ${s.domain}`.toLowerCase().includes(search.toLowerCase()),
     );
   }, [bankSkills, bankDomain, activeTopic, selected?.title, search]);
-  const openLesson = (id: string) => {
+  const openLesson = (lesson: CourseLessonDto) => {
+    if (lesson.lessonType === "text") {
+      setTextLesson(lesson);
+      return;
+    }
+    const id = lesson.id;
     localStorage.setItem("topcoach-selected-lesson-sat", id);
     localStorage.setItem(
       "topcoach-last-viewed-lesson-sat",
@@ -433,7 +441,7 @@ const SatLibraryPage: React.FC = () => {
                   <button
                     className="sat-catalog__card"
                     key={l.id}
-                    onClick={() => openLesson(l.id)}
+                    onClick={() => openLesson(l)}
                   >
                     <div className="sat-catalog__card-top">
                       <span>
@@ -460,12 +468,20 @@ const SatLibraryPage: React.FC = () => {
                       </div>
                     )}
                     <footer>
-                      <span>{l.duration ? `${l.duration} min` : "Lesson"}</span>
+                      <span>
+                        {l.lessonType === "text"
+                          ? "Text lesson"
+                          : l.duration
+                            ? `${l.duration} min`
+                            : "Lesson"}
+                      </span>
                       <span>
                         {progress?.progress.find((p) => p.lessonId === l.id)
                           ?.isCompleted
                           ? "Completed"
-                          : "Open lesson"}{" "}
+                          : l.lessonType === "text"
+                            ? "Read lesson"
+                            : "Open lesson"}{" "}
                         →
                       </span>
                     </footer>
@@ -555,6 +571,10 @@ const SatLibraryPage: React.FC = () => {
           </>
         )}
       </main>
+      <SatTextLessonReader
+        lesson={textLesson}
+        onClose={() => setTextLesson(null)}
+      />
     </div>
   );
 };
