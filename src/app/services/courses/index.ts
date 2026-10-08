@@ -81,8 +81,12 @@ export interface CourseLessonDto {
   moduleId?: string;
   submoduleId?: string;
   orderIndex: number;
-  lessonType: 'video' | 'pdf' | 'live_session';
+  lessonType: 'video' | 'pdf' | 'live_session' | 'text';
   contentUrl?: string;
+  textContentHtml?: string;
+  textPracticeUrl?: string;
+  textReferences?: { provider: string; url: string }[];
+  isDraft?: boolean;
   duration: number;
   isActive: boolean;
   isPremium: boolean;
