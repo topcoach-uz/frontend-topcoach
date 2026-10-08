@@ -298,6 +298,7 @@ export const coursesApi = RtkApi.injectEndpoints({
             if (!draft) return;
             const existing = draft.progress.find((p) => p.lessonId === lessonId);
             if (existing) {
+              existing.lastWatchedAt = new Date().toISOString();
               existing.isCompleted = data.isCompleted ?? existing.isCompleted;
               existing.progressPercentage =
                 data.progressPercentage ?? existing.progressPercentage;

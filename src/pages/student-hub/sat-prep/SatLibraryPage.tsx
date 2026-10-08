@@ -14,6 +14,7 @@ import {
   useGetUserProgressQuery,
   useGetEnrollmentStatusQuery,
   type CourseLessonDto,
+  useUpdateLessonProgressMutation,
 } from "src/app/services/courses";
 import "./sat-platform.scss";
 import { message } from "antd";
@@ -68,6 +69,8 @@ const SatLibraryPage: React.FC = () => {
       ? params.get("tab")
       : "lessons"
   ) as Tab;
+  const [subjectsOpen, setSubjectsOpen] = useState(false);
+  const [recordOpen] = useUpdateLessonProgressMutation();
   const [topic, setTopic] = useState<string | null>(null);
   const [bankDomain, setBankDomain] = useState<string | null>(null);
   const [recentOnly, setRecentOnly] = useState(false);
@@ -186,6 +189,13 @@ const SatLibraryPage: React.FC = () => {
   const openLesson = (lesson: CourseLessonDto) => {
     if (lesson.lessonType === "text") {
       setTextLesson(lesson);
+      void recordOpen({ lessonId: lesson.id, courseName: "sat", data: {} })
+        .unwrap()
+        .catch(() => {
+          message.error(
+            "The lesson is open, but reading history could not be saved.",
+          );
+        });
       return;
     }
     const id = lesson.id;
@@ -230,70 +240,97 @@ const SatLibraryPage: React.FC = () => {
             Saved questions <span>{marked.length}</span>
           </button>
         </div>
-        <div className="sat-catalog__label">My library</div>
-        {tab === "practice" &&
-          bankDomains.map((d) => (
-            <button
-              key={d.key}
-              className={`sat-catalog__topic ${practiceDomainTitle === d.domain ? "sat-catalog__topic--active" : ""}`}
-              onClick={() => setBankDomain(d.key)}
-            >
-              <i
-                style={{
-                  background: d.section === "math" ? "#8b0000" : "#929aa4",
+        <button
+          className="sat-catalog__subjects-toggle"
+          aria-expanded={subjectsOpen}
+          aria-controls="sat-library-subjects"
+          onClick={() => setSubjectsOpen((v) => !v)}
+        >
+          <span>
+            Subjects ·{" "}
+            {tab === "practice"
+              ? practiceDomainTitle
+              : (selected?.title ?? "All resources")}
+          </span>
+          <span aria-hidden="true">{subjectsOpen ? "−" : "+"}</span>
+        </button>
+        <div
+          id="sat-library-subjects"
+          className={`sat-catalog__subjects-list ${subjectsOpen ? "sat-catalog__subjects-list--open" : ""}`}
+        >
+          <div className="sat-catalog__label">My library</div>
+          {tab === "practice" &&
+            bankDomains.map((d) => (
+              <button
+                key={d.key}
+                className={`sat-catalog__topic ${practiceDomainTitle === d.domain ? "sat-catalog__topic--active" : ""}`}
+                onClick={() => {
+                  setBankDomain(d.key);
+                  setSubjectsOpen(false);
                 }}
-              />
-              <span>{d.domain}</span>
-              <span>{d.count}</span>
-            </button>
-          ))}
-        {tab !== "practice" &&
-          modules
-            .filter((m) => m.isActive)
-            .map((m, index) => (
-              <React.Fragment key={m.id}>
-                <button
-                  className={`sat-catalog__topic ${activeTopic === m.id ? "sat-catalog__topic--active" : ""}`}
-                  onClick={() => {
-                    setTopic(m.id);
-                    setSubtopic("all");
-                    setRecentOnly(false);
-                    setParams({ tab: "lessons" });
+              >
+                <i
+                  style={{
+                    background: d.section === "math" ? "#8b0000" : "#929aa4",
                   }}
-                >
-                  <i
-                    style={{ background: index === 0 ? "#8b0000" : "#aa9297" }}
-                  />
-                  <span>{m.title}</span>
-                  <span>{lessons.filter((l) => l.topic === m.id).length}</span>
-                </button>
-                {activeTopic === m.id &&
-                  m.submodules.some((s) => s.isActive) && (
-                    <div className="sat-catalog__subtopics">
-                      {m.submodules
-                        .filter((s) => s.isActive)
-                        .map((t) => (
-                          <button
-                            key={t.id}
-                            aria-pressed={subtopic === t.id}
-                            onClick={() => {
-                              setSubtopic(t.id);
-                              setParams({ tab: "lessons" });
-                            }}
-                          >
-                            {t.title}
-                            <span>
-                              {
-                                lessons.filter((l) => l.submoduleId === t.id)
-                                  .length
-                              }
-                            </span>
-                          </button>
-                        ))}
-                    </div>
-                  )}
-              </React.Fragment>
+                />
+                <span>{d.domain}</span>
+                <span>{d.count}</span>
+              </button>
             ))}
+          {tab !== "practice" &&
+            modules
+              .filter((m) => m.isActive)
+              .map((m, index) => (
+                <React.Fragment key={m.id}>
+                  <button
+                    className={`sat-catalog__topic ${activeTopic === m.id ? "sat-catalog__topic--active" : ""}`}
+                    onClick={() => {
+                      setSubjectsOpen(false);
+                      setTopic(m.id);
+                      setSubtopic("all");
+                      setRecentOnly(false);
+                      setParams({ tab: "lessons" });
+                    }}
+                  >
+                    <i
+                      style={{
+                        background: index === 0 ? "#8b0000" : "#aa9297",
+                      }}
+                    />
+                    <span>{m.title}</span>
+                    <span>
+                      {lessons.filter((l) => l.topic === m.id).length}
+                    </span>
+                  </button>
+                  {activeTopic === m.id &&
+                    m.submodules.some((s) => s.isActive) && (
+                      <div className="sat-catalog__subtopics">
+                        {m.submodules
+                          .filter((s) => s.isActive)
+                          .map((t) => (
+                            <button
+                              key={t.id}
+                              aria-pressed={subtopic === t.id}
+                              onClick={() => {
+                                setSubtopic(t.id);
+                                setParams({ tab: "lessons" });
+                              }}
+                            >
+                              {t.title}
+                              <span>
+                                {
+                                  lessons.filter((l) => l.submoduleId === t.id)
+                                    .length
+                                }
+                              </span>
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                </React.Fragment>
+              ))}
+        </div>
       </aside>
       <main>
         <div className="sat-catalog__crumb">
