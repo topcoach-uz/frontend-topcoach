@@ -23,6 +23,7 @@ function Main() {
     refetchOnReconnect: false,
   });
 
+  if (pathname.startsWith('/student-hub/ielts-prep')) return <Outlet />;
   if (/^\/onboarding\/?$/.test(pathname)) return <Outlet />;
   return (
     <div className={styles.main}>

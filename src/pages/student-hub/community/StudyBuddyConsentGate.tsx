@@ -34,11 +34,14 @@ const GUIDELINES: Array<{ title: string; body?: string }> = [
  * The feature is free, but a user is not discoverable and cannot send/accept
  * requests until they accept here (backend records `studyBuddyConsent`).
  */
-export default function StudyBuddyConsentGate({ children }: { children: React.ReactNode }) {
+export default function StudyBuddyConsentGate({ children, browseOnly = false }: { children: React.ReactNode; browseOnly?: boolean }) {
   const { t } = useTranslation();
-  const { data, isLoading } = useStudyBuddyConsentStatusQuery();
+  const { data, isLoading } = useStudyBuddyConsentStatusQuery(undefined, { skip: browseOnly });
   const [acceptConsent, { isLoading: accepting }] = useStudyBuddyAcceptConsentMutation();
   const [agreed, setAgreed] = useState(false);
+
+  // Browsing must not opt this student into discovery or peer contact.
+  if (browseOnly) return <>{children}</>;
 
   if (isLoading) {
     return (
@@ -74,7 +77,7 @@ export default function StudyBuddyConsentGate({ children }: { children: React.Re
           Find someone on the same path
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: 20 }}>
-          Study Buddy is free for everyone. Before you join, agree to keep this a
+          Browsing Study Buddy is available to everyone. Connecting requires Community access. Before you join, agree to keep this a
           safe, respectful space — then we'll connect you with peers who share
           your goals.
         </Paragraph>

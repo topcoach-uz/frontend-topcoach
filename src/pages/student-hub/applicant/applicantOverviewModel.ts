@@ -9,6 +9,11 @@ export type AssessmentState =
   | 'draft'
   | 'complete';
 
+/** Legacy accounts without a saved degree use the Bachelor’s workspace. */
+export function applicantDegree(value: unknown): 'bachelor' | 'master' {
+  return value === 'master' ? 'master' : 'bachelor';
+}
+
 export function hasAssessmentDraft(raw: string | null): boolean {
   try {
     const answers: unknown = JSON.parse(raw ?? 'null')?.answers;

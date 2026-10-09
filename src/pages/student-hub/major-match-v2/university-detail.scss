@@ -1,0 +1,102 @@
+@use 'src/styles/editorial-tokens' as ed;
+
+.mm3-modal__panel.mm3-modal__panel--university {
+  max-width: 960px; max-height: 90vh; padding: 0; overflow: hidden;
+  display: flex; flex-direction: column; background: ed.$cream-elev;
+  .mm3-modal__close { top: 18px; right: 18px; z-index: 2; }
+}
+.mm3-university {
+  &__header { flex-shrink: 0; padding: 22px 64px 18px 28px; margin: 0; border-bottom: 1px solid ed.$hairline; background: #fffdf9; }
+  &__header .mm3-modal__sample-note { padding: 6px 10px; font-size: 10px; border: 0; background: #f3eee5; margin: 0 0 12px; display: inline-block; }
+  &__eyebrow { display: flex; align-items: center; gap: 7px; font-size: 10px; color: ed.$brand; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+  &__identity-grid { display: grid; grid-template-columns: minmax(0, 1fr) 245px; align-items: center; gap: 24px; }
+  &__campus-visual { position: relative; align-self: end; margin-right: -25px; }
+  &__campus-art { display: block; width: 100%; height: 120px; }
+  &__campus-visual > span { display: block; text-align: center; font-size: 8px; line-height: 1.5; color: ed.$muted; margin-top: 2px; }
+  &__header h3 { font-family: ed.$sans; font-size: 26px; letter-spacing: -.035em; line-height: 1.2; margin: 8px 0 7px; }
+  &__header .mm3-results__uni-meta { font-size: 12px; }
+  &__tier-explanation { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+  &__tier-explanation .mm3-results__tier { margin: 0; flex-shrink: 0; }
+  &__tier-explanation > span:last-child { color: ed.$muted; font-size: 10px; line-height: 1.6; }
+  &__body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 22px 28px; margin: 0; }
+  &__body h4 { font-size: 13px; line-height: 1.6; font-weight: 600; color: ed.$ink; margin: 0 0 10px; }
+  &__reason { display: flex; gap: 14px; padding: 17px 20px; border: 1px solid #e8d9d8; background: #f8eeec; border-radius: 12px; margin-bottom: 18px; }
+  &__reason > svg { flex-shrink: 0; color: ed.$brand; margin-top: 2px; }
+  &__reason h4 { color: ed.$brand; margin-bottom: 5px; }
+  &__reason p { font-size: 12px; color: ed.$ink-soft; line-height: 1.7; margin: 0; }
+  &__costs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 24px; border: 1px solid #e7ded0; background: #f4eee3; border-radius: 12px; }
+  &__costs > section { position: relative; padding: 20px; }
+  &__costs > section + section { border-left: 1px solid #e7ded0; }
+  &__costs h4 { margin: 0 32px 9px 0; color: ed.$ink-soft; font-size: 11px; }
+  &__section-icon { position: absolute; top: 17px; right: 17px; color: ed.$brand; }
+  &__costs strong { display: block; font-size: 22px; line-height: 1.4; color: ed.$ink; letter-spacing: -.025em; font-weight: 600; }
+  &__costs p { color: ed.$muted; font-size: 11px; line-height: 1.65; margin: 10px 0 0; }
+  &__costs small { display: block; font-size: 10px; line-height: 1.65; color: ed.$brand; margin-top: 10px; }
+  &__aid ul { list-style: none; padding: 0; margin: 0; }
+  &__aid li + li { margin-top: 12px; padding-top: 12px; border-top: 1px solid ed.$hairline; }
+  &__match-story { margin-bottom: 22px; }
+  &__story-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  &__story-heading h4 { color: ed.$brand; margin: 0; font-size: 15px; }
+  &__story-heading > span { font-size: 9px; color: ed.$muted; }
+  &__match-map { display: flex; gap: 18px; align-items: flex-start; padding: 18px 0; border-top: 1px solid ed.$hairline; border-bottom: 1px solid ed.$hairline; }
+  &__match-map > div { flex: 1; min-width: 0; }
+  &__match-map > div:nth-of-type(2) { flex: 1.65; }
+  &__match-map > svg { flex-shrink: 0; color: #aa8b79; margin-top: 27px; }
+  &__map-label { display: block; color: ed.$brand; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 9px; }
+  &__match-map strong { display: block; font-size: 16px; line-height: 1.5; color: ed.$ink; font-weight: 600; }
+  &__match-map p { color: ed.$ink-soft; font-size: 12px; line-height: 1.7; margin: 0; }
+  &__application-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  &__application-grid > section { min-width: 0; }
+  &__application-grid h4 { display: flex; gap: 8px; align-items: flex-start; }
+  &__application-grid h4 svg { flex-shrink: 0; color: ed.$brand; margin-top: 1px; }
+  &__section-note { color: ed.$muted; font-size: 10px; line-height: 1.6; margin: 0 0 12px; }
+  &__essentials dl { margin: 0; border-top: 1px solid ed.$hairline; padding: 0; }
+  &__essentials dl > div { padding: 13px 0; border-bottom: 1px solid ed.$hairline; }
+  &__essentials dl > div:last-child { border: 0; }
+  &__essentials dt { color: ed.$muted; font-size: 10px; margin-bottom: 5px; }
+  &__essentials dd { color: ed.$ink-soft; font-size: 12px; line-height: 1.65; margin: 0; }
+  &__roadmap > ol { list-style: none; margin: 16px 0 0; padding: 0; }
+  &__roadmap > ol > li { display: flex; gap: 12px; position: relative; padding-bottom: 20px; }
+  &__roadmap > ol > li:not(:last-child)::before { content: ''; position: absolute; left: 13px; top: 28px; bottom: 0; border-left: 1px solid #d9cbc2; }
+  &__phase-number { flex-shrink: 0; width: 27px; height: 27px; display: grid; place-items: center; background: #ece1d8; color: ed.$brand; font-size: 11px; font-weight: 600; border-radius: 50%; }
+  &__roadmap h5 { margin: 3px 0 8px; color: ed.$ink; font-size: 12px; font-weight: 600; }
+  &__roadmap ul { list-style: disc; padding-left: 14px; margin: 0; }
+  &__roadmap ul li { font-size: 11px; line-height: 1.65; color: ed.$ink-soft; margin: 5px 0; }
+  &__roadmap ul li::marker { color: ed.$brand; }
+  &__extras { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-top: 18px; border-top: 1px solid ed.$hairline; margin-top: 20px; }
+  &__extras details { border: 1px solid ed.$hairline; border-radius: 10px; background: #fffdf9; }
+  &__extras summary { display: flex; align-items: center; gap: 8px; list-style: none; padding: 14px; font-size: 12px; color: ed.$ink; cursor: pointer; }
+  &__extras summary::-webkit-details-marker { display: none; }
+  &__extras summary > svg { flex-shrink: 0; color: ed.$brand; }
+  &__extras summary > svg:last-child { margin-left: auto; }
+  &__extras details[open] summary > svg:last-child { transform: rotate(180deg); }
+  &__extras details > div { padding: 0 14px 14px; }
+  &__extras article + article { padding-top: 12px; margin-top: 12px; border-top: 1px solid ed.$hairline; }
+  &__extras article strong { font-size: 12px; color: ed.$ink; }
+  &__extras article p { font-size: 11px; line-height: 1.65; color: ed.$muted; margin: 6px 0 0; }
+  &__extras a { color: ed.$brand; text-decoration: underline; }
+  &__footer { display: flex; align-items: center; gap: 20px; justify-content: space-between; padding: 16px 28px; background: #fffdf9; border-top: 1px solid ed.$hairline; flex-shrink: 0; }
+  &__footer > p { max-width: 390px; font-size: 10px; color: ed.$muted; line-height: 1.6; margin: 0; }
+  &__footer .mm3-modal__save { margin: 0; }
+  &__footer .mm3-modal__save-btn { background: ed.$brand; border-color: ed.$brand; color: #fffdf9; border-radius: 8px; font-size: 12px; padding: 11px 16px; white-space: nowrap; }
+  &__footer .mm3-modal__save-error { max-width: 280px; }
+  @media (max-width: 700px) {
+    &__header { padding: 18px 50px 16px 20px; }
+    &__header h3 { font-size: 23px; }
+    &__identity-grid { grid-template-columns: 1fr; gap: 14px; }
+    &__campus-visual { margin: 0; }
+    &__campus-art { height: 80px; }
+    &__campus-visual > span { display: none; }
+    &__match-map { flex-direction: column; gap: 14px; }
+    &__match-map > svg { margin: 0; transform: rotate(90deg); }
+    &__story-heading { align-items: flex-start; }
+    &__costs > section + section { border-left: 0; border-top: 1px solid #e7ded0; }
+    &__body { padding: 18px 20px; }
+    &__costs, &__application-grid, &__extras { grid-template-columns: 1fr; }
+    &__reason { padding: 14px; gap: 10px; }
+    &__costs strong { font-size: 20px; }
+    &__footer { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 20px; }
+    &__footer .mm3-modal__save-btn { justify-content: center; width: 100%; }
+    &__tier-explanation { align-items: flex-start; }
+  }
+}

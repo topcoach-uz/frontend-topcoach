@@ -17,8 +17,9 @@ import {
   useAcceptInvitationMutation,
 } from 'src/app/services/publicInvitationsApi';
 import { useGetMyOrgsQuery } from 'src/app/services/counselorConsoleApi';
-import type { OrgMembershipRole } from 'src/app/services/counselorConsoleApi';
 import './JoinPage.scss';
+import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
+import { findInvitedMembership } from './invitationMembership';
 
 const ROLE_LABEL: Record<string, string> = {
   owner: 'Owner',
@@ -27,10 +28,10 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 /** Staff roles land in the counselor console; only students belong in the hub. */
-const isStaffRole = (role?: OrgMembershipRole | null) =>
+const isStaffRole = (role?: string | null) =>
   role === 'owner' || role === 'counselor';
 
-const homeForRole = (role?: OrgMembershipRole | null) =>
+const homeForRole = (role?: string | null) =>
   isStaffRole(role) ? '/counselor-console' : '/student-hub';
 
 function initials(name: string): string {
@@ -61,7 +62,10 @@ export default function JoinPage() {
    * memberships so we can recognise that case and send them onward instead.
    */
   const { data: myOrgs, isLoading: orgsLoading } = useGetMyOrgsQuery(undefined, {
-    skip: !isAuthenticated,
+    skip: !isAuthenticated, refetchOnMountOrArgChange: true,
+  });
+  const { data: studentOrgs, isLoading: studentOrgsLoading } = useGetMyOrgMembershipQuery(undefined, {
+    skip: !isAuthenticated, refetchOnMountOrArgChange: true,
   });
 
   const org = data?.organization;
@@ -70,16 +74,8 @@ export default function JoinPage() {
 
   /** The invitee's existing membership in the invited org, if any. */
   const membership = useMemo(() => {
-    const invitedOrg = data?.organization;
-    if (!invitedOrg || !myOrgs?.length) return null;
-    // Slug is the identifier; the public DTO exposes no org id and slug is
-    // nullable, so fall back to the (org-unique) name.
-    if (invitedOrg.slug) {
-      const bySlug = myOrgs.find((m) => m.organization.slug === invitedOrg.slug);
-      if (bySlug) return bySlug;
-    }
-    return myOrgs.find((m) => m.organization.name === invitedOrg.name) ?? null;
-  }, [data?.organization, myOrgs]);
+    return findInvitedMembership(data?.organization.id, [...(myOrgs ?? []), ...(studentOrgs ?? [])]);
+  }, [data?.organization.id, myOrgs, studentOrgs]);
 
   /**
    * Show the "you're already in" exit instead of the accept/invalid states.
@@ -102,28 +98,10 @@ export default function JoinPage() {
   }, [data]);
 
   /**
-   * Send the invitee to auth, carrying the invitation with them.
-   *
-   * `redirectAfterLogin` is best-effort only — it does NOT survive the signup →
-   * email-verification hop, and it obviously can't follow someone who opens the
-   * link on another device. Membership no longer depends on it: the server
-   * auto-enrols on the authenticated email (see OrgInvitationsService
-   * .onUserAuthenticated). This just gets them back here when it does work.
-   *
-   * Signup goes STRAIGHT to the email-registration form, skipping
-   * /auth/signup's Student-or-Mentor chooser. Asking a counselor to pick is
-   * nonsense, and the choice is irrelevant to their access: the org role comes
-   * from the invitation, and the gates route on org membership rather than the
-   * profile role. The invited email is passed through so the form can lock it —
-   * registering with a different address is what silently breaks the enrolment.
-   *
-   * `role` is forwarded so the form can speak in the invitation's terms
-   * ("Join as a counselor") instead of framing everyone as a student. NOTE: the
-   * account is still created through /auth/student/register/email — the only
-   * email-signup endpoint there is — so a counselor invitee ends up with
-   * `profile.role === 'Student'` at the API level. Fixing that properly needs a
-   * backend change (registration that honours the invitation role); it is not
-   * fixable from this page.
+   * Preserve the invitation through authentication and email verification.
+   * The server also enrolls by verified email when the link opens on another device.
+   * Staff use the same account registration endpoint; organization membership
+   * determines counselor access and bypasses student onboarding.
    */
   const goToAuth = (mode: 'signup' | 'signin') => {
     const target = `/join/${encodeURIComponent(token)}`;
@@ -144,7 +122,7 @@ export default function JoinPage() {
   };
 
   /** Leave the join flow for the surface this person's org role belongs to. */
-  const goToConsole = (role?: OrgMembershipRole | null) => {
+  const goToConsole = (role?: string | null) => {
     try {
       localStorage.removeItem('redirectAfterLogin');
     } catch {
@@ -201,7 +179,7 @@ export default function JoinPage() {
               Go to homepage
             </Button>
           </div>
-        ) : isAuthenticated && orgsLoading ? (
+        ) : isAuthenticated && (orgsLoading || studentOrgsLoading) ? (
           // Don't decide between "already a member" and "can't be used" until
           // the memberships are in — guessing early is exactly what produced
           // the dead end this branch exists to remove.

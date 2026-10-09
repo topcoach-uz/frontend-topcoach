@@ -8,6 +8,7 @@ import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
 import { hasActiveCommunityOrgMembership } from 'src/lib/communityOrgAccess';
+import { hasActiveDirectCommunityAccess } from 'src/lib/communityAccess';
 
 const LEGACY_PREMIUM_KEY = 'topcoach_journey_premium';
 const COMMUNITY_ENROLLED_KEY = 'topcoach_community_enrolled';
@@ -64,9 +65,11 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     profile?.managementRole === 'SuperAdmin' || (profile?.managementRole as string) === 'Owner';
 
   useEffect(() => {
-    const mode = preferences?.applicationSettings?.communityExperienceMode;
-    setState(mode === 'community');
-  }, [preferences?.applicationSettings?.communityExperienceMode]);
+    setState(hasActiveDirectCommunityAccess(preferences?.applicationSettings));
+  }, [
+    preferences?.applicationSettings?.communityExperienceMode,
+    preferences?.applicationSettings?.communityAccessExpiresAt,
+  ]);
 
   // A `trialing` / `active` subscription with `cancelAtPeriodEnd=true`
   // still grants access until the period actually ends — Stripe / Apple
@@ -160,4 +163,10 @@ const FALLBACK_VALUE: JourneyExperienceValue = {
 export function useJourneyExperience(): JourneyExperienceValue {
   const ctx = useContext(JourneyExperienceContext);
   return ctx ?? FALLBACK_VALUE;
+}
+
+/** Visual walkthrough only. Never changes persisted account entitlements. */
+export function LocalFreeJourneyPreview({ children }: { children: React.ReactNode }) {
+  if (!import.meta.env.DEV) return null;
+  return <JourneyExperienceContext.Provider value={FALLBACK_VALUE}>{children}</JourneyExperienceContext.Provider>;
 }

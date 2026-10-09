@@ -159,3 +159,19 @@ function isEntitled(
   if (accessUntil === 0) return true;
   return accessUntil > now;
 }
+
+type CommunityAccessSettings = {
+  communityExperienceMode?: 'community' | 'standard';
+  communityAccessExpiresAt?: string | null;
+};
+
+export function hasActiveDirectCommunityAccess(
+  settings?: CommunityAccessSettings | null,
+  now = Date.now(),
+): boolean {
+  if (settings?.communityExperienceMode !== 'community') return false;
+  if (!settings.communityAccessExpiresAt) return true;
+
+  const expiresAt = Date.parse(settings.communityAccessExpiresAt);
+  return Number.isFinite(expiresAt) && expiresAt > now;
+}

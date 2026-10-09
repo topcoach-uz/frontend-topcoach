@@ -64,6 +64,9 @@ export interface StudentJourneyTask {
   id: string;
   task: string;
   studentUserId: string;
+  mentorUserId: string;
+  status: 'assigned' | 'submitted' | 'approved' | 'revision_requested';
+  description?: string;
   deadline: string;
   hasFeedback: boolean;
   feedback?: string;
@@ -172,6 +175,7 @@ export const studentJourneyReadonlyApi = RtkApi.injectEndpoints({
         url: `/student-journey/${userId}/tasks`,
         method: 'GET',
       }),
+      providesTags: (_result, _error, userId) => [{ type: 'StudentJourneyTasks', id: userId }],
     }),
   }),
 });

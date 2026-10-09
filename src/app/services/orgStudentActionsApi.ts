@@ -1,4 +1,4 @@
-import { RtkApi } from './api';
+import { RtkApi } from "./api";
 
 /**
  * Counselor Console — org-scoped *write* actions on a single student.
@@ -34,6 +34,25 @@ export interface AssignedStudentTask {
 
 export const orgStudentActionsApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    reviewStudentTask: builder.mutation<
+      { id: string; status: string },
+      {
+        orgId: string;
+        userId: string;
+        taskId: string;
+        feedback: string;
+        decision: "approved" | "revision_requested";
+      }
+    >({
+      query: ({ orgId, userId, taskId, ...body }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/tasks/${encodeURIComponent(taskId)}/review`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { userId }) => [
+        { type: "StudentJourneyTasks", id: userId },
+      ],
+    }),
     assignStudentTask: builder.mutation<
       AssignedStudentTask,
       AssignStudentTaskArgs
@@ -42,11 +61,15 @@ export const orgStudentActionsApi = RtkApi.injectEndpoints({
         url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(
           userId,
         )}/tasks`,
-        method: 'POST',
+        method: "POST",
         body,
       }),
+      invalidatesTags: (_result, _error, { userId }) => [
+        { type: "StudentJourneyTasks", id: userId },
+      ],
     }),
   }),
 });
 
-export const { useAssignStudentTaskMutation } = orgStudentActionsApi;
+export const { useAssignStudentTaskMutation, useReviewStudentTaskMutation } =
+  orgStudentActionsApi;

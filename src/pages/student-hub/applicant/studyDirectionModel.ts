@@ -36,8 +36,41 @@ const strings = (value: unknown): string[] =>
     ? [...new Set(value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean))].slice(0, 12)
     : [];
 
-export function readStudyDirectionChoices(preferences: Record<string, unknown> | null | undefined): StudyDirectionChoices {
+type LegacyPersonalChoices = {
+  intendedMajors?: Array<{ major?: string }>;
+  personalInterests?: string[];
+  careerGoals?: string[];
+  studyAbroadGoals?: { targetCountries?: string[] };
+};
+
+const legacyCountries: Record<string, string> = {
+  usa: 'United States',
+  uk: 'United Kingdom',
+  canada: 'Canada',
+  australia: 'Australia',
+};
+
+export function readStudyDirectionChoices(
+  preferences: Record<string, unknown> | null | undefined,
+  personal?: LegacyPersonalChoices | null,
+): StudyDirectionChoices {
   const raw = preferences?.studyDirection;
+  // Older profiles saved these choices in Personal Profile. Show them as a
+  // starting point until the student saves the dedicated direction form.
+  if ((!raw || typeof raw !== 'object' || Array.isArray(raw)) && personal) {
+    return {
+      interests: strings([
+        ...(personal.intendedMajors || []).map((item) => item.major),
+        ...(personal.personalInterests || []),
+      ]),
+      goals: strings(personal.careerGoals),
+      countries: strings(personal.studyAbroadGoals?.targetCountries).map((country) =>
+        legacyCountries[country.toLowerCase()] || country,
+      ),
+      intake: '',
+      funding: '',
+    };
+  }
   const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
   return {
     interests: strings(value.interests),

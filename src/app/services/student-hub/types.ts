@@ -819,6 +819,7 @@ export interface UserPreferences {
     reminderDays?: number;
     defaultPriority?: string;
     communityExperienceMode?: 'community' | 'standard';
+    communityAccessExpiresAt?: string | null;
     studyBuddyInterests?: {
       examPrep?: string[];
       applicationGoals?: string[];

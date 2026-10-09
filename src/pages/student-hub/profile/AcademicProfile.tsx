@@ -23,17 +23,19 @@ interface AcademicProfileProps {
 // Which test-score card a given field belongs to, and which fields make up
 // each card — used both to render the card and to know what to clear when
 // a card is removed.
-type TestKey = 'sat' | 'act' | 'ielts' | 'toefl' | 'duolingo';
+type TestKey = 'sat' | 'act' | 'gre' | 'gmat' | 'ielts' | 'toefl' | 'duolingo';
 
 const TEST_FIELD_NAMES: Record<TestKey, string[]> = {
   sat: ['satMath', 'satReading', 'satTotal'],
   act: ['actComposite', 'actMath', 'actReading', 'actScience', 'actWriting'],
+  gre: ['greScore'],
+  gmat: ['gmatScore'],
   ielts: ['ieltsOverall', 'ieltsListening', 'ieltsReading', 'ieltsWriting', 'ieltsSpeaking'],
   toefl: ['toeflTotal', 'toeflReading', 'toeflListening', 'toeflSpeaking', 'toeflWriting'],
   duolingo: ['duolingoScore'],
 };
 
-const TEST_ORDER: TestKey[] = ['sat', 'act', 'ielts', 'toefl', 'duolingo'];
+const TEST_ORDER: TestKey[] = ['sat', 'act', 'gre', 'gmat', 'ielts', 'toefl', 'duolingo'];
 
 // True if any field in the given testScores subtree is a non-empty value.
 // Used to derive which cards should be visible on load from saved data.
@@ -55,6 +57,15 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
   const targetDegree = Form.useWatch('targetDegree', form) ?? profile?.academicProfile?.targetDegree ?? 'bachelor';
+  const educationStatus = Form.useWatch('educationStatus', form);
+  const previousInstitution = Form.useWatch('previousInstitution', form);
+  const previousDegree = Form.useWatch('previousDegree', form);
+  const previousField = Form.useWatch('previousField', form);
+  const bachelorGraduationYear = Form.useWatch('bachelorGraduationYear', form);
+  const universityGpa = Form.useWatch('universityGpa', form);
+  const universityGpaScale = Form.useWatch('universityGpaScale', form);
+  const greScore = Form.useWatch('greScore', form);
+  const gmatScore = Form.useWatch('gmatScore', form);
 
   // Which test-score cards are currently rendered. Bootstrapped from saved
   // data on load (see effect below), then grown/shrunk by the "+ Add test
@@ -63,10 +74,36 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   // explicit Remove takes it away — so a card the student is mid-filling-in
   // doesn't vanish out from under them.
   const [visibleTests, setVisibleTests] = useState<TestKey[]>([]);
+  const [editingMasterTests, setEditingMasterTests] = useState<TestKey[]>([]);
+  const [editingEducation, setEditingEducation] = useState(false);
+
+  const educationFieldNames = ['educationStatus', 'previousInstitution', 'previousDegree', 'previousField', 'bachelorGraduationYear'];
+  const educationComplete = [educationStatus, previousInstitution, previousDegree, previousField, bachelorGraduationYear].every(hasAnyValue);
+  const qualification = [previousDegree, previousField]
+    .filter(hasAnyValue)
+    .filter((value, index, values) => index === 0 || !String(values[0]).toLowerCase().includes(String(value).toLowerCase()))
+    .join(' · ');
+
+  const finishEducationEdit = async () => {
+    try {
+      await form.validateFields(educationFieldNames);
+      setEditingEducation(false);
+    } catch {
+      // Keep the editor open so its field-level validation messages stay visible.
+    }
+  };
+
+  const handleFinishFailed = ({ errorFields }: { errorFields: { name: (string | number)[] }[] }) => {
+    if (targetDegree === 'master' && errorFields.some(({ name }) => educationFieldNames.includes(String(name[0])))) {
+      setEditingEducation(true);
+    }
+  };
 
   const testMeta: Record<TestKey, { icon: string; label: string }> = {
     sat: { icon: ACADEMIC_ICONS.SAT, label: t('studentHub.profile.satScores', 'SAT Scores') },
     act: { icon: ACADEMIC_ICONS.ACT, label: t('studentHub.profile.actScores', 'ACT Scores') },
+    gre: { icon: ACADEMIC_ICONS.DEGREE, label: t('studentHub.profile.gre', 'GRE') },
+    gmat: { icon: ACADEMIC_ICONS.DEGREE, label: t('studentHub.profile.gmat', 'GMAT') },
     ielts: { icon: ACADEMIC_ICONS.IELTS, label: t('studentHub.profile.ielts', 'IELTS') },
     toefl: { icon: ACADEMIC_ICONS.TOEFL, label: t('studentHub.profile.toefl', 'TOEFL') },
     duolingo: { icon: 'language', label: t('studentHub.profile.duolingo', 'Duolingo') },
@@ -141,9 +178,11 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
       // Merge with (never replace) whatever's already showing so a
       // just-added-but-still-empty card doesn't get hidden by a refetch.
       const testScores = academicData.testScores || {};
-      const hydrated: TestKey[] = TEST_ORDER.filter((key) =>
-        key === 'duolingo' ? hasAnyValue(testScores.duolingo) : hasAnyValue((testScores as any)[key]),
-      );
+      const hydrated: TestKey[] = TEST_ORDER.filter((key) => {
+        if (key === 'gre') return hasAnyValue(academicData.greScore);
+        if (key === 'gmat') return hasAnyValue(academicData.gmatScore);
+        return key === 'duolingo' ? hasAnyValue(testScores.duolingo) : hasAnyValue((testScores as any)[key]);
+      });
       if (hydrated.length > 0) {
         setVisibleTests((prev) => TEST_ORDER.filter((key) => prev.includes(key) || hydrated.includes(key)));
       }
@@ -166,6 +205,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
 
   const handleAddTest = (key: TestKey) => {
     setVisibleTests((prev) => (prev.includes(key) ? prev : TEST_ORDER.filter((k) => prev.includes(k) || k === key)));
+    if (key === 'gre' || key === 'gmat') {
+      setEditingMasterTests((prev) => (prev.includes(key) ? prev : [...prev, key]));
+    }
   };
 
   const handleRemoveTest = (key: TestKey) => {
@@ -174,12 +216,13 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
     const hasValues = Object.values(currentValues).some((v) => v !== undefined && v !== null && v !== '');
 
     const clearAndRemove = () => {
-      const cleared: Record<string, undefined> = {};
+      const cleared: Record<string, null | undefined> = {};
       fieldNames.forEach((name) => {
-        cleared[name] = undefined;
+        cleared[name] = key === 'gre' || key === 'gmat' ? null : undefined;
       });
       form.setFieldsValue(cleared);
       setVisibleTests((prev) => prev.filter((k) => k !== key));
+      setEditingMasterTests((prev) => prev.filter((k) => k !== key));
     };
 
     if (!hasValues) {
@@ -203,8 +246,11 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
     });
   };
 
-  const addTestMenuItems: MenuProps['items'] = TEST_ORDER.filter(
-    (key) => !visibleTests.includes(key) && (targetDegree !== 'master' || !['sat', 'act'].includes(key)),
+  const availableTests = TEST_ORDER.filter((key) =>
+    targetDegree === 'master' ? key !== 'sat' && key !== 'act' : key !== 'gre' && key !== 'gmat',
+  );
+  const addTestMenuItems: MenuProps['items'] = availableTests.filter(
+    (key) => !visibleTests.includes(key),
   ).map(
     (key) => ({
       key,
@@ -262,7 +308,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         graduationYear: values.graduationYear,
         gapYear: values.gapYear,
         firstGeneration: values.firstGeneration,
-        financialAid: values.financialAid,
+        financialAid: targetDegree === 'master' ? profile?.academicProfile?.financialAid : values.financialAid,
         targetDegree: values.targetDegree,
         educationStatus: values.educationStatus,
         previousInstitution: values.previousInstitution,
@@ -271,9 +317,8 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         bachelorGraduationYear: values.bachelorGraduationYear,
         universityGpa: values.universityGpa,
         universityGpaScale: values.universityGpaScale,
-        relevantExperience: values.relevantExperience,
-        greScore: values.greScore,
-        gmatScore: values.gmatScore,
+        greScore: targetDegree === 'master' ? (visibleTests.includes('gre') ? values.greScore ?? null : null) : profile?.academicProfile?.greScore,
+        gmatScore: targetDegree === 'master' ? (visibleTests.includes('gmat') ? values.gmatScore ?? null : null) : profile?.academicProfile?.gmatScore,
       };
 
       await updateStudentProfile({
@@ -284,6 +329,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
 
       // Refetch the profile data to update the UI
       await refetchProfile();
+      setEditingMasterTests((prev) => prev.filter((key) => !hasAnyValue(form.getFieldValue(`${key}Score`))));
     } catch (error: any) {
       message.error(`Failed to save academic profile: ${error?.message || 'Unknown error'}`);
     } finally {
@@ -313,40 +359,106 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         form={form}
         layout="vertical"
         onFinish={handleSave}
+        onFinishFailed={handleFinishFailed}
         onValuesChange={handleValuesChange}
         disabled={isReadOnly}
         className="academic-form"
       >
         <Card title={t('studentHub.profile.applicationGoal', 'Application goal')} className="section-card">
-          <Form.Item name="targetDegree" label={t('studentHub.profile.targetDegree', 'Degree you plan to pursue')} rules={[{ required: true }]}>
-            <Select disabled={isReadOnly}><Option value="bachelor">{t('studentHub.applications.degreeBachelor', 'Bachelor’s')}</Option><Option value="master">{t('studentHub.applications.degreeMaster', 'Master’s')}</Option></Select>
-          </Form.Item>
+          {targetDegree === 'master' ? (
+            <>
+              <div className="master-goal-summary"><FontAwesomeIcon icon={ACADEMIC_ICONS.DEGREE} />{t('studentHub.applications.degreeMaster', 'Master’s')}</div>
+              <Form.Item name="targetDegree" hidden rules={[{ required: true }]}><Input type="hidden" /></Form.Item>
+            </>
+          ) : (
+            <Form.Item name="targetDegree" label={t('studentHub.profile.targetDegree', 'Degree you plan to pursue')} rules={[{ required: true }]}>
+              <Select disabled={isReadOnly}><Option value="bachelor">{t('studentHub.applications.degreeBachelor', 'Bachelor’s')}</Option><Option value="master">{t('studentHub.applications.degreeMaster', 'Master’s')}</Option></Select>
+            </Form.Item>
+          )}
         </Card>
 
         {targetDegree === 'master' && <Card title={t('studentHub.profile.previousEducation', 'Previous education')} className="section-card">
-          <Row gutter={[24,24]}>
-            <Col xs={24} lg={12}><Form.Item name="educationStatus" label={t('studentHub.profile.educationStatus','Bachelor’s status')} rules={[{required:true}]}><Select disabled={isReadOnly}><Option value="studying">{t('studentHub.profile.educationStatusStudying','Currently studying')}</Option><Option value="graduated">{t('studentHub.profile.educationStatusGraduated','Graduated')}</Option></Select></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="previousInstitution" label={t('studentHub.profile.previousInstitution','University')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="previousDegree" label={t('studentHub.profile.previousDegree','Bachelor’s degree')} rules={[{required:true}]}><Input disabled={isReadOnly} placeholder="e.g. BSc" /></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="previousField" label={t('studentHub.profile.previousField','Field of study')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="bachelorGraduationYear" label={t('studentHub.profile.bachelorGraduationYear','Graduation year')} rules={[{required:true}]}><InputNumber disabled={isReadOnly} min={1900} max={2100} style={{width:'100%'}} /></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="universityGpa" label={t('studentHub.profile.universityGpa','University GPA')}><Input disabled={isReadOnly}/></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="universityGpaScale" label={t('studentHub.profile.universityGpaScale','GPA scale')}><Input disabled={isReadOnly} placeholder="e.g. 4.0 or 100" /></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="greScore" label={t('studentHub.profile.greScore','GRE score (optional)')}><Input disabled={isReadOnly}/></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="gmatScore" label={t('studentHub.profile.gmatScore','GMAT score (optional)')}><Input disabled={isReadOnly}/></Form.Item></Col>
-            <Col xs={24}><Form.Item name="relevantExperience" label={t('studentHub.profile.relevantExperience','Relevant experience')}><Input.TextArea disabled={isReadOnly} rows={4} /></Form.Item></Col>
-            <Col xs={24} lg={12}><Form.Item name="financialAid" label={t('studentHub.profile.financialAidNeeded','Financial Aid Needed')}><Select disabled={isReadOnly}><Option value={false}>{t('common.no','No')}</Option><Option value={true}>{t('common.yes','Yes')}</Option></Select></Form.Item></Col>
-          </Row>
+          {!editingEducation && (
+            <div className="master-education-summary">
+              <div className="master-education-summary-head">
+                <div>
+                  <h3>{previousInstitution || t('studentHub.profile.addPreviousEducation', 'Add previous education')}</h3>
+                  {qualification && <p>{qualification}</p>}
+                </div>
+                {!isReadOnly && <Button type="default" icon={<FontAwesomeIcon icon={ACTION_ICONS.EDIT} />} onClick={() => setEditingEducation(true)}>{educationComplete ? t('common.edit', 'Edit') : t('common.addDetails', 'Add details')}</Button>}
+              </div>
+              {educationComplete && (
+                <div className="master-education-facts">
+                  <div><span>{t('studentHub.profile.educationStatus', 'Bachelor’s status')}</span><strong>{educationStatus === 'studying' ? t('studentHub.profile.educationStatusStudying', 'Currently studying') : t('studentHub.profile.educationStatusGraduated', 'Graduated')}</strong></div>
+                  <div><span>{educationStatus === 'studying' ? t('studentHub.profile.expectedGraduationYear', 'Expected graduation year') : t('studentHub.profile.bachelorGraduationYear', 'Graduation year')}</span><strong>{bachelorGraduationYear}</strong></div>
+                  <div><span>{t('studentHub.profile.universityGpa', 'University GPA')}</span><strong>{universityGpa ? `${universityGpa}${universityGpaScale ? ` / ${universityGpaScale}` : ''}` : t('studentHub.profile.notAdded', 'Not added')}</strong></div>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="master-education-editor" hidden={!editingEducation}>
+            <Row gutter={[24, 8]}>
+              <Col xs={24} md={12}><Form.Item name="educationStatus" label={t('studentHub.profile.educationStatus','Bachelor’s status')} rules={[{required:true}]}><Select disabled={isReadOnly}><Option value="studying">{t('studentHub.profile.educationStatusStudying','Currently studying')}</Option><Option value="graduated">{t('studentHub.profile.educationStatusGraduated','Graduated')}</Option></Select></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="bachelorGraduationYear" label={educationStatus === 'studying' ? t('studentHub.profile.expectedGraduationYear','Expected graduation year') : t('studentHub.profile.bachelorGraduationYear','Graduation year')} rules={[{required:true}]}><InputNumber disabled={isReadOnly} min={1900} max={2100} style={{width:'100%'}} /></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="previousInstitution" label={t('studentHub.profile.previousInstitution','University')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="previousDegree" label={t('studentHub.profile.previousDegree','Bachelor’s degree')} rules={[{required:true}]}><Input disabled={isReadOnly} placeholder="e.g. BSc" /></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="previousField" label={t('studentHub.profile.previousField','Field of study')} rules={[{required:true}]}><Input disabled={isReadOnly}/></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="universityGpa" label={t('studentHub.profile.universityGpa','University GPA (optional)')}><Input disabled={isReadOnly}/></Form.Item></Col>
+              <Col xs={24} md={12}><Form.Item name="universityGpaScale" label={t('studentHub.profile.universityGpaScale','GPA scale (optional)')}><Input disabled={isReadOnly} placeholder="e.g. 4.0 or 100" /></Form.Item></Col>
+            </Row>
+            {!isReadOnly && <div className="master-education-editor-actions"><Button type="default" icon={<FontAwesomeIcon icon={ACTION_ICONS.CHECK} />} onClick={finishEducationEdit}>{t('common.done', 'Done')}</Button></div>}
+          </div>
         </Card>}
         {/* Test Scores Section — cards are added on demand; only tests the
             student has data for (or has explicitly added) render below. */}
         <Card title={t('studentHub.profile.testScores', 'Test Scores')} className="section-card">
-          {visibleTests.length === 0 ? (
+          {!availableTests.some((key) => visibleTests.includes(key)) ? (
             <p className="no-test-scores">
               {t('studentHub.profile.noTestScoresYet', "You haven't added any test scores yet.")}
             </p>
           ) : (
             <Row gutter={[24, 24]}>
+              {targetDegree === 'master' && (['gre', 'gmat'] as const).filter((key) => visibleTests.includes(key)).map((key) => {
+                const score = key === 'gre' ? greScore : gmatScore;
+                const editing = editingMasterTests.includes(key) || !hasAnyValue(score);
+                return (
+                  <Col xs={24} md={12} key={key}>
+                    <div className="master-test-item">
+                      {editing ? (
+                        <div className="master-test-editing">
+                          <div className="master-test-heading">
+                            <strong className="master-test-name"><FontAwesomeIcon icon={testMeta[key].icon} />{testMeta[key].label}</strong>
+                            {!isReadOnly && <Button type="text" size="small" icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />} onClick={() => handleRemoveTest(key)}>{t('common.remove', 'Remove')}</Button>}
+                          </div>
+                          <div className="master-test-editor">
+                            <Form.Item name={`${key}Score`}>
+                              <Input
+                                disabled={isReadOnly}
+                                inputMode="numeric"
+                                aria-label={`${testMeta[key].label} ${t('studentHub.profile.score', 'Score')}`}
+                                placeholder={t('studentHub.profile.enterScore', 'Enter score')}
+                              />
+                            </Form.Item>
+                            {!isReadOnly && <Button icon={<FontAwesomeIcon icon={ACTION_ICONS.CHECK} />} disabled={!hasAnyValue(score)} onClick={() => setEditingMasterTests((prev) => prev.filter((item) => item !== key))}>{t('common.done', 'Done')}</Button>}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="master-test-summary">
+                          <strong className="master-test-name"><FontAwesomeIcon icon={testMeta[key].icon} />{testMeta[key].label}</strong>
+                          <span className="master-test-value">{score}</span>
+                          {!isReadOnly && (
+                            <div className="master-test-actions">
+                              <Button type="text" size="small" icon={<FontAwesomeIcon icon={ACTION_ICONS.EDIT} />} onClick={() => setEditingMasterTests((prev) => [...prev, key])}>{t('common.edit', 'Edit')}</Button>
+                              <Button type="text" size="small" icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />} onClick={() => handleRemoveTest(key)}>{t('common.remove', 'Remove')}</Button>
+                            </div>
+                          )}
+                          <Form.Item name={`${key}Score`} hidden><Input type="hidden" /></Form.Item>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+                );
+              })}
               {targetDegree !== 'master' && visibleTests.includes('sat') && (
                 <Col xs={24} lg={12}>
                   <div className="test-section">

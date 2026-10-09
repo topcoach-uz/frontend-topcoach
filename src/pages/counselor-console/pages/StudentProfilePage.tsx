@@ -1,5 +1,5 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { lazy, Suspense, useMemo, useState, useEffect, type ReactNode } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
   DatePicker,
@@ -39,17 +39,16 @@ import { CcAvatar } from '../components/CcAvatar';
 import { CcPageHead } from '../components/CcPageHead';
 import { CcEmpty } from '../components/CcEmpty';
 import { CC_PROGRAM_COLOR, CC_OTHER } from '../charts/ccEcharts';
-import { useAppDispatch } from 'src/app/store';
 import { useGetUserByIdQuery } from 'src/app/services/users';
 import { useFindOrCreateCounselorConversationMutation } from 'src/app/services/chat/chatApi';
 import ChatModal from 'src/components/chat/ChatModal';
 import {
-  studentJourneyReadonlyApi,
   useGetStudentJourneyDashboardQuery,
   useGetStudentJourneyProfileQuery,
   useGetStudentJourneyMentorBookingsQuery,
   useGetStudentJourneyTasksQuery,
 } from 'src/app/services/student-hub/studentJourneyReadonlyApi';
+import CounselorTasksPanel from '../_journey/CounselorTasksPanel';
 import { useAssignStudentTaskMutation } from 'src/app/services/orgStudentActionsApi';
 import {
   useGetStudentProgramsQuery,
@@ -185,7 +184,9 @@ function Section({ title, children, action }: SectionProps) {
 export default function CounselorConsoleStudentProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { orgId, org } = useCounselorConsole();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('overview');
+  useEffect(() => { setActiveTab(searchParams.get('tab') === 'tasks' ? 'tasks' : 'overview'); }, [userId, searchParams]);
 
   const hasUser = !!userId;
 
@@ -288,6 +289,14 @@ export default function CounselorConsoleStudentProfilePage() {
       ),
     },
 
+    {
+      key: 'tasks', label: 'Tasks',
+      children: orgId && <>
+        <AssignTaskBar userId={userId!} studentName={studentName} orgId={orgId} />
+        <CounselorTasksPanel orgId={orgId} userId={userId!} />
+      </>,
+    },
+
     ...(programsData?.fullSupport
       ? [
           {
@@ -299,13 +308,7 @@ export default function CounselorConsoleStudentProfilePage() {
             ),
             children: (
               <div className="cc-profile-program-tab">
-                {/* Tasks live in Full Support, so the assign action lives here
-                    too — the tab itself renders the (read-only) task list. */}
-                <AssignTaskBar
-                  userId={userId!}
-                  studentName={studentName}
-                  orgId={orgId}
-                />
+
                 <Suspense fallback={<TabFallback />}>
                   <FullSupportTab orgId={orgId!} userId={userId!} />
                 </Suspense>
@@ -1260,7 +1263,6 @@ function AssignTaskBar({
   studentName: string;
   orgId: string | null;
 }) {
-  const dispatch = useAppDispatch();
   const [assignTask, { isLoading }] = useAssignStudentTaskMutation();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
@@ -1289,14 +1291,7 @@ function AssignTaskBar({
       message.success('Task assigned');
       setOpen(false);
       form.resetFields();
-      // The read-only journey tasks query carries no cache tag, so force it to
-      // refetch directly rather than relying on tag invalidation.
-      dispatch(
-        studentJourneyReadonlyApi.endpoints.getStudentJourneyTasks.initiate(
-          userId,
-          { subscribe: false, forceRefetch: true },
-        ),
-      );
+
     } catch (error) {
       const status = (error as { status?: unknown } | null)?.status;
       message.error(
@@ -1311,7 +1306,7 @@ function AssignTaskBar({
     <div className="cc-tasks-tab">
       <div className="cc-tasks-toolbar">
         <div className="cc-tasks-toolbar-text">
-          <span className="cc-tasks-toolbar-title">Mentor tasks</span>
+          <span className="cc-tasks-toolbar-title">Student tasks</span>
           <span className="cc-tasks-toolbar-sub">
             Assign a follow-up for {firstName} — it appears in their task list
             below.

@@ -1,8 +1,10 @@
 import { Button, message } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
+import { login } from 'src/app/slices/authSlice';
+import { useAppDispatch } from 'src/app/store';
 import useParamsHook from 'src/hooks/params';
 import useColors from 'src/hooks/useColors';
 import styles from './verification.module.scss';
@@ -15,21 +17,15 @@ export default function VerificationPage() {
   const colors = useColors();
   const { searchParams } = useParamsHook();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const verificationStarted = useRef(false);
   const { t } = useTranslation();
   const verified =
     searchParams.get('verified') && !!searchParams.get('verified');
   const email = searchParams.get('email') ?? '';
   const token = searchParams.get('token') ?? '';
-  /**
-   * Where to send the user once they're through — e.g. `/join/<token>` for an
-   * organization invite. Same-site paths only.
-   *
-   * It arrives on the URL only when the user stayed in this tab (signup →
-   * verification). The email link itself leaves the SPA entirely (backend
-   * redirect to `/?verified=true`, then HomeRouter bounces here), so on that
-   * path `localStorage.redirectAfterLogin` — written by /join and by the invite
-   * signup — is the surviving carrier. Prefer the param, fall back to storage.
-   */
+  // Keep the invitation destination through email verification. Only same-site
+  // paths may be restored from the URL or local storage.
   const redirectTo = (() => {
     const raw = searchParams.get('redirect');
     if (raw && raw.startsWith('/') && !raw.startsWith('//') && !raw.startsWith('/auth'))
@@ -69,7 +65,8 @@ export default function VerificationPage() {
 
   // Handle token verification
   useEffect(() => {
-    if (token && !isVerified && !isProcessing) {
+    if (token && !isVerified && !verificationStarted.current) {
+      verificationStarted.current = true;
       setIsProcessing(true);
       setVerificationError('');
       
@@ -78,8 +75,15 @@ export default function VerificationPage() {
         .verifyEmail({ token })
         .then((response: any) => {
           // Success - use redirectUrl from response if available, otherwise use default
-          const redirectUrl = response?.data?.redirectUrl || '/?verified=true';
-          window.location.href = redirectUrl;
+          const tokens = response?.data?.user;
+          if (tokens?.access && tokens?.refresh) {
+            dispatch(login(tokens));
+            api.instance.defaults.headers['Authorization'] = `Bearer ${tokens.access}`;
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectTo || '/';
+          } else {
+            window.location.href = response?.data?.redirectUrl || '/?verified=true';
+          }
         })
         .catch((error) => {
           console.error('Verification error:', error);
@@ -87,18 +91,9 @@ export default function VerificationPage() {
           setIsProcessing(false);
         });
     }
-  }, [token, isVerified, isProcessing]);
+  }, [token, isVerified, redirectTo, dispatch, navigate]);
 
-  // After the email is verified, show the success state briefly then send the
-  // user to sign in. Must live in an effect — doing it in render queued a new
-  // timer (and navigation) on every re-render.
-  //
-  // The second sign-in is friction we can't remove from here: the backend does
-  // log the user in during verification, but it only sets cookies — the SPA's
-  // auth state is driven by the access/refresh tokens returned by
-  // /auth/login, which verification never hands back. What we CAN do is carry
-  // the destination across, so an invitee lands back on their invite instead
-  // of the generic home page.
+  // Compatibility for older verification links that return only a success flag.
   useEffect(() => {
     if (!verified) return;
     const target = redirectTo

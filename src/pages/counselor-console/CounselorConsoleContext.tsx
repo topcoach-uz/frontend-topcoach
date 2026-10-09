@@ -49,7 +49,7 @@ export function CounselorConsoleProvider({
 }) {
   const [orgId, setOrgIdState] = useState<string | null>(() => readStoredOrgId());
   const [searchParams] = useSearchParams();
-  const deepLinkApplied = useRef(false);
+  const deepLinkApplied = useRef<string | null>(null);
 
   const setOrgId = (next: string) => {
     setOrgIdState(next);
@@ -69,13 +69,11 @@ export function CounselorConsoleProvider({
     if (orgs.length === 0) return;
     const ids = orgs.map((m) => m.organization.id);
 
-    if (!deepLinkApplied.current) {
-      deepLinkApplied.current = true;
-      const requested = searchParams.get('org');
-      if (requested && ids.includes(requested)) {
-        if (requested !== orgId) setOrgId(requested);
-        return;
-      }
+    const requested = searchParams.get('org');
+    if (requested && requested !== deepLinkApplied.current && ids.includes(requested)) {
+      deepLinkApplied.current = requested;
+      if (requested !== orgId) setOrgId(requested);
+      return;
     }
 
     if (!orgId || !ids.includes(orgId)) {

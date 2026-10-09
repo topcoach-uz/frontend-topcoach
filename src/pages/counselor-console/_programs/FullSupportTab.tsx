@@ -47,7 +47,7 @@ import './FullSupportTab.scss';
    Derivations
    ──────────────────────────────────────────────────────────────────────────── */
 
-type TaskStatus = 'Reviewed' | 'Needs review' | 'Pending';
+type TaskStatus = 'Reviewed' | 'Needs review' | 'Pending' | 'Revision requested';
 
 /**
  * Feedback wins, then any submission (text OR files), else pending.
@@ -61,7 +61,9 @@ type TaskStatus = 'Reviewed' | 'Needs review' | 'Pending';
  * the costlier error here, and this matches `_journey/Tasks.tsx`.
  */
 function taskStatus(t: StudentJourneyTask): TaskStatus {
-  if (t.hasFeedback) return 'Reviewed';
+  if (t.status === 'revision_requested') return 'Revision requested';
+  if (t.status === 'submitted') return 'Needs review';
+  if (t.status === 'approved' || t.hasFeedback) return 'Reviewed';
   if (t.submissionText || t.submissionFileUrls?.length) return 'Needs review';
   return 'Pending';
 }
@@ -72,6 +74,7 @@ function taskStatus(t: StudentJourneyTask): TaskStatus {
 const TASK_PILL: Record<TaskStatus, CcPillVariant> = {
   Reviewed: 'success',
   'Needs review': 'warning',
+  'Revision requested': 'warning',
   Pending: 'neutral',
 };
 

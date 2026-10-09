@@ -9,6 +9,70 @@
       // tabs share one treatment. The old block here centred input text
       // and stripped every focus ring; both are gone on purpose.
 
+      .personal-summary-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: $space-4;
+
+        h3 {
+          margin: 0;
+          color: $text-primary;
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+        }
+
+        p {
+          margin: $space-1 0 0;
+          color: $text-tertiary;
+          font-size: $text-sm;
+        }
+
+        > .ant-btn {
+          flex-shrink: 0;
+        }
+      }
+
+      .personal-summary-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $space-2;
+
+        span {
+          padding: $space-2 $space-3;
+          border: 1px solid $border-light;
+          border-radius: $radius-md;
+          background: #fff;
+          color: $text-secondary;
+          font-size: $text-sm;
+        }
+      }
+
+      .personal-summary-editor[hidden] {
+        display: none;
+      }
+
+      .personal-summary-editor > p {
+        margin: 0 0 $space-4;
+        color: $text-tertiary;
+        font-size: $text-sm;
+      }
+
+      .language-remove-cell {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .personal-summary-editor-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: $space-3;
+
+        &--grouped {
+          gap: $space-3;
+        }
+      }
+
       .form-input,
       .form-select {
         width: 100%;
@@ -393,6 +457,14 @@
   .personal-profile {
     .personal-form {
       .section-card {
+        .personal-summary-row {
+          flex-wrap: wrap;
+        }
+
+        .personal-summary-editor-actions--grouped {
+          flex-wrap: wrap;
+        }
+
         margin-bottom: $space-4;
 
         .ant-card-body {

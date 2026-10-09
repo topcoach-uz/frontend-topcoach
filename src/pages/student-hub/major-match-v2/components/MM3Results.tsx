@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, BookmarkCheck, BookmarkPlus, ChevronRight, Lock, RotateCcw, X } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookmarkCheck, BookmarkPlus, Building2, ChevronDown, ChevronRight, Clock3, Compass, Flag, Lock, MessageCircle, RotateCcw, Sparkles, Users, X } from 'lucide-react';
 import type {
   MajorMatchAccessStatus,
-  Mm3FitBreakdown,
   Mm3Major,
   Mm3Report,
   Mm3University,
@@ -15,21 +14,23 @@ import {
   useGetCollegeApplicationsQuery,
 } from '../../../../app/services/student-hub/applicationTrackingApi';
 import type { CreateCollegeApplicationRequest } from '../../../../app/services/student-hub/types';
-import { MajorMatchUpsell } from '../../psychometric-assessment/components/MajorMatchUpsell';
-import { COMMUNITY_FUNNEL_PATHS } from '../../../../lib/communityAccess';
 import { useSubmitFormMutation } from '../../../../app/services/contactApi';
 import { useTypedSelector } from '../../../../app/store';
 import { renderEmphasis } from '../renderEmphasis';
+import { useGetMentorsQuery } from 'src/app/services/mentors';
+import { suggestMentors } from '../mentorSuggestions';
+import { getLatestCreatedImg } from 'src/utils';
+import MajorIllustration from './MajorIllustration';
+import MajorComparison from './MajorComparison';
+import MajorProfileOverview from './MajorProfileOverview';
+import UniversityDetailContent from './UniversityDetailContent';
+import CampusEditorialIllustration from './CampusEditorialIllustration';
+import RoadmapJourneyBoard from './RoadmapJourneyBoard';
+import OutcomeWorkPreview from './OutcomeWorkPreview';
 import '../mm3-results.scss';
-
-/** Row order + i18n for the four-signal fit breakdown. Module-scope since it
- * doesn't depend on component state. */
-const BREAKDOWN_ROWS: Array<{ key: keyof Mm3FitBreakdown; labelKey: string; fallback: string }> = [
-  { key: 'interests', labelKey: 'majorMatch3.results.breakdownInterests', fallback: 'Interests' },
-  { key: 'skills', labelKey: 'majorMatch3.results.breakdownSkills', fallback: 'Skills' },
-  { key: 'workStyle', labelKey: 'majorMatch3.results.breakdownWorkStyle', fallback: 'Work style' },
-  { key: 'goals', labelKey: 'majorMatch3.results.breakdownGoals', fallback: 'Goals' },
-];
+import '../mm3-results-refresh.scss';
+import '../university-detail.scss';
+import '../topcoach-programs.scss';
 
 /** Rank label shown above the fit score on each major tab, by position.
  * Indices past the array length re-use the last (most modest) label rather
@@ -47,11 +48,8 @@ const MAJOR_RANK_LABELS: Array<{ key: string; fallback: string }> = [
  * six outcomes, so this is authored content with i18n fallbacks, module-scope
  * like the tables above, not something threaded through `Mm3Report`.
  *
- * Section 02 (just above this one, in the JSX below) is the OTHER roadmap —
- * `report.masterRoadmap`, the AI-personalised, subscription-gated master
- * timeline. The two are deliberately adjacent: the personalised plan shows
- * what's ahead specifically for this student and ends in an unlock CTA; the
- * catalogue underneath answers "what does TopCoach itself actually offer".
+ * The personalised `report.masterRoadmap` stays independent and accessible.
+ * This optional catalogue explains TopCoach's authored support options.
  */
 interface RoadmapProgramBullet {
   key: string;
@@ -209,7 +207,6 @@ const ROADMAP_OUTCOMES: RoadmapOutcome[] = [
   },
 ];
 
-const clampPercent = (value: number): number => Math.max(0, Math.min(100, value));
 
 const tierClass = (tier: Mm3University['tier']): string => {
   switch (tier) {
@@ -266,18 +263,61 @@ const SectionHeading: React.FC<{ number: string; title: string; subtitle?: strin
   </div>
 );
 
+/** Authored programme catalogue; independent of whether an assessment exists. */
+export function TopCoachPrograms({ readOnly = false, defaultOpen = false, onLearnMore }: { readOnly?: boolean; defaultOpen?: boolean; onLearnMore?: () => void }) {
+  const { t } = useTranslation();
+  const visuals = [
+    { image: '/img/viola_programs.jpeg', caption: 'Viola Fur · Oxford & Yale graduate', label: 'Your story. Your voice.', workspace: 'Essay & portfolio', steps: ['Find your story', 'Shape your draft', 'Review with your coach'] },
+    { image: null, caption: '', label: 'From question to discovery.', workspace: 'Research workspace', steps: ['Research question', 'Evidence & methodology', 'Paper & presentation'] },
+    { image: '/img/abdulaziz_sat.jpg', caption: 'TopCoach SAT Prep', label: 'Practice with a purpose.', workspace: 'Practice workspace', steps: ['Full mock tests', 'Focused section drills', 'Review your progress'] },
+    { image: '/img/azizbek_programs.jpeg', caption: 'Azizbek Zaylobiddinov · Harvard University', label: 'A path built around you.', workspace: 'Your personal plan', steps: ['Explore your direction', 'Plan with a mentor', 'Build your next step'] },
+  ];
+  return <details className="mm3-results__section mm3-results__catalogue mm3-program-catalogue" open={defaultOpen || undefined}>
+    <summary><span className="mm3-program-catalogue__summary-icon"><Sparkles size={22} aria-hidden="true" /></span><div><strong>{t('majorMatch3.results.supportCatalogue', 'Explore TopCoach programs')}</strong><span>{t('majorMatch3.results.supportCatalogueHint', 'Optional support for your next steps')}</span></div><ChevronDown size={20} aria-hidden="true" /></summary>
+    <div className="mm3-program-catalogue__intro"><span className="mm3-results__eyebrow">{t('majorMatch3.programs.supportEyebrow', 'Support for the path ahead')}</span><h2>{t('majorMatch3.programs.title', 'What TopCoach includes')}</h2><p>{t('majorMatch3.programs.subtitle', 'Every program, what it includes, and how long it takes.')}</p><small>{t('majorMatch3.programs.optionalSupport', 'These are separate support options—not a required sequence. Your personal roadmap remains available.')}</small></div>
+    <div className="mm3-program-catalogue__grid">{ROADMAP_PROGRAMS.map((program, index) => <article className="mm3-program-catalogue__card" key={program.nameKey}>
+      <header><span className="mm3-program-catalogue__number">{String(index + 1).padStart(2, '0')}</span><span className="mm3-program-catalogue__duration"><Clock3 size={13} aria-hidden="true" />{t(program.durationKey, program.durationFallback)}</span></header>
+      <div className="mm3-program-catalogue__identity"><h3>{t(program.nameKey, program.nameFallback)}</h3><p>{t(`majorMatch3.programs.visual${index}Tagline`, visuals[index].label)}</p></div>
+      <div className={`mm3-program-catalogue__visual mm3-program-catalogue__visual--${index}`}>
+        {visuals[index].image && <figure><img src={visuals[index].image!} alt={visuals[index].caption} loading="lazy" /><figcaption>{visuals[index].caption}</figcaption></figure>}
+        <div className="mm3-program-catalogue__workspace"><span className="mm3-program-catalogue__workspace-label">{t('majorMatch3.programs.featureIllustration', 'Feature illustration')}</span><strong>{t(`majorMatch3.programs.visual${index}Workspace`, visuals[index].workspace)}</strong><div>{visuals[index].steps.map((step, stepIndex) => <div key={step}><span aria-hidden="true">{String(stepIndex + 1).padStart(2, '0')}</span>{t(`majorMatch3.programs.visual${index}Step${stepIndex}`, step)}</div>)}</div><span className="mm3-program-catalogue__workspace-footer"><Sparkles size={12} aria-hidden="true" />{t('majorMatch3.programs.visualSupport', 'With TopCoach support')}</span></div>
+      </div>
+      {program.bullets && <ul className="mm3-program-catalogue__bullets">{program.bullets.map(bullet => <li key={bullet.key}>{t(bullet.key, bullet.fallback)}</li>)}</ul>}
+      {program.phases && <div className="mm3-program-catalogue__phases">{program.phases.map((phase, phaseIndex) => <div key={phase.nameKey}><span aria-hidden="true">{phaseIndex + 1}</span><div><header><h4>{t(phase.nameKey, phase.nameFallback)}</h4><small>{t(phase.weeksKey, phase.weeksFallback)}</small></header><p>{t(phase.descKey, phase.descFallback)}</p></div></div>)}</div>}
+    </article>)}</div>
+    <section className="mm3-program-catalogue__outcomes">
+      <header><div><span className="mm3-results__eyebrow">{t('majorMatch3.programs.outcomesEyebrow', 'The bigger picture')}</span><h3>{t('majorMatch3.programs.outcomesStoryTitle', 'Build a profile with a story.')}</h3><p>{t('majorMatch3.programs.outcomesStoryBody', 'Turn your interests into work you can share—and a direction you can explain.')}</p></div><div className="mm3-program-catalogue__outcome-note"><Compass size={24} aria-hidden="true" /><span>{t('majorMatch3.programs.outcomesScope', 'Depending on your chosen programme. Outcomes vary; publication and admission are not guaranteed.')}</span></div></header>
+      <div className="mm3-program-catalogue__deliverables">{[3, 2, 4].map((index, position) => {
+        const outcome = ROADMAP_OUTCOMES[index];
+        return <article key={outcome.titleKey}>
+          <OutcomeWorkPreview kind={position} />
+          <div className="mm3-program-catalogue__deliverable-copy"><span>{t(`majorMatch3.programs.outputCategory${position}`, ['DIRECTION', 'DISCOVERY', 'EVIDENCE'][position])}</span><h4>{position === 1 ? t('majorMatch3.programs.researchOutputTitle', 'A research paper to build on') : t(outcome.titleKey, outcome.titleFallback)}</h4><p>{position === 1 ? t('majorMatch3.programs.researchOutputBody', 'Develop a research question into a paper, with guidance through writing and revision.') : t(outcome.bodyKey, outcome.bodyFallback)}</p></div>
+        </article>;
+      })}</div>
+      <div className="mm3-program-catalogue__support"><span>{t('majorMatch3.programs.supportBehindWork', 'The support behind your work')}</span><div>{[0, 1, 5].map((index, position) => {
+        const outcome = ROADMAP_OUTCOMES[index];
+        const Icon = [Clock3, Users, Compass][position];
+        return <article key={outcome.titleKey}><span><Icon size={19} aria-hidden="true" /></span><div><h4>{t(outcome.titleKey, outcome.titleFallback)}</h4><p>{t(outcome.bodyKey, outcome.bodyFallback)}</p></div></article>;
+      })}</div></div>
+    </section>
+    {!readOnly && <div className="mm3-program-catalogue__cta"><div><strong>{t('majorMatch3.programs.supportChoiceTitle', 'Choose support that fits your next step.')}</strong><p>{t('majorMatch3.programs.supportChoiceNote', 'Explore the options with the TopCoach team before choosing a programme.')}</p></div>{onLearnMore ? <button type="button" className="mm2__btn mm2__btn--secondary" onClick={onLearnMore}>{t('majorMatch3.programs.learnMoreCta', 'Learn more')}<ArrowUpRight size={16} aria-hidden="true" /></button> : <Link to="/programs">{t('majorMatch3.programs.learnMoreCta', 'Learn more')}<ArrowUpRight size={16} aria-hidden="true" /></Link>}</div>}
+  </details>;
+}
+
 /** The full detail for one university — everything the old per-university
  * card used to render inline, unchanged, now shown in a modal opened from
  * the compact list row. Portaled to document.body so it isn't clipped by
  * any ancestor's overflow/stacking context. */
-const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'bachelor' | 'master'; onClose: () => void; readOnly: boolean }> = ({
+const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'bachelor' | 'master'; onClose: () => void; readOnly: boolean; sampleReport?: boolean }> = ({
   university,
   degreeLevel,
   onClose,
   readOnly,
+  sampleReport = false,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const universityPanelRef = useRef<HTMLDivElement>(null);
 
   // "Already saved" is detected against the student's real college list
   // rather than tracked in purely local state, because the backend has NO
@@ -287,7 +327,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
   // must never write into a student's list.
   const { data: collegeApplications } = useGetCollegeApplicationsQuery(
     { page: 1, limit: 100 },
-    { skip: readOnly },
+    { skip: readOnly || sampleReport },
   );
   const alreadySaved = !readOnly && !!collegeApplications?.data?.some((a) =>
     a.universityId === university.id && (a.degreeLevel ?? 'bachelor') === degreeLevel && a.major === university.matchedMajor,
@@ -299,7 +339,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
   const isSavedNow = alreadySaved || justSaved;
 
   const handleSave = async () => {
-    if (!university.id || isSaving || isSavedNow) return;
+    if (sampleReport || readOnly || !university.id || isSaving || isSavedNow) return;
     setSaveError(null);
     try {
       const parsedTuition =
@@ -336,8 +376,16 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
   };
 
   useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    universityPanelRef.current?.querySelector<HTMLButtonElement>('.mm3-modal__close')?.focus();
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(universityPanelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], summary, [tabindex="0"]') ?? []).filter(element => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (first && e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (last && !e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
     document.addEventListener('keydown', onKeyDown);
 
@@ -350,13 +398,15 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
       // leaves the whole page unscrollable if the component ever unmounts
       // while open (e.g. navigating away).
       document.body.style.overflow = previousOverflow;
+      previousFocus?.focus({ preventScroll: true });
     };
   }, [onClose]);
 
   return createPortal(
     <div className="mm3-modal__backdrop" onClick={onClose}>
       <div
-        className="mm3-modal__panel"
+        className="mm3-modal__panel mm3-modal__panel--university"
+        ref={universityPanelRef}
         role="dialog"
         aria-modal="true"
         aria-label={university.name}
@@ -371,12 +421,26 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
           <X size={16} />
         </button>
 
-        <div className="mm3-modal__header">
+        <div className="mm3-modal__header mm3-university__header">
+          {sampleReport && <p className="mm3-modal__sample-note">Design preview · Fictional university & illustrative data · Saving disabled</p>}
+          <div className="mm3-university__identity-grid"><div>
+          <span className="mm3-university__eyebrow"><Building2 size={16} aria-hidden="true" />{t('majorMatch3.results.universityMatch', 'Your university match')}</span>
           <h3>{university.name}</h3>
           <div className="mm3-results__uni-meta">
             {[university.country, university.matchedMajor].filter(Boolean).join(' · ')}
           </div>
-          <span className={`mm3-results__tier ${tierClass(university.tier)}`}>{university.tier}</span>
+          <div className="mm3-university__tier-explanation"><span className={`mm3-results__tier ${tierClass(university.tier)}`}>{university.tier}</span><span>{university.tier === 'Reach'
+            ? t('majorMatch3.results.tierReachDef', 'A stretch for your current profile.')
+            : university.tier === 'Match' ? t('majorMatch3.results.tierMatchDef', 'A realistic, well-aligned fit.')
+            : t('majorMatch3.results.tierSafetyDef', 'Likely admission based on your profile.')} {t('majorMatch3.results.tierNotProbability', 'Not an admission probability or guarantee.')}</span></div>
+          </div><div className="mm3-university__campus-visual"><CampusEditorialIllustration /><span>{t('majorMatch3.results.campusIllustration', 'Decorative illustration · not the university campus')}</span></div></div>
+        </div>
+        <div className="mm3-modal__body mm3-university__body">
+          {university.admissionOdds && <div className="mm3-results__uni-row"><span>{t('majorMatch3.results.admissionOddsLabel', 'Admission odds')}</span><span>{university.admissionOdds}</span></div>}
+          <UniversityDetailContent university={university} />
+        </div>
+        <div className="mm3-university__footer">
+          <p>{sampleReport ? 'Sample data only. No changes will be saved.' : t('majorMatch3.results.verifyUniversityDetails', 'Confirm fees, requirements and deadlines with the university before applying.')}</p>
 
           {/* Hidden entirely for the counselor read-only embed — a
               counselor must not write into a student's college list. */}
@@ -401,7 +465,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
                   type="button"
                   className="mm2__btn mm2__btn--secondary mm3-modal__save-btn"
                   onClick={handleSave}
-                  disabled={!university.id || isSaving}
+                  disabled={sampleReport || !university.id || isSaving}
                 >
                   <BookmarkPlus size={14} aria-hidden="true" />
                   {isSaving
@@ -414,124 +478,6 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
           )}
         </div>
 
-        <div className="mm3-modal__body">
-          {university.requirements?.length > 0 && (
-            <>
-              <div className="mm3-results__uni-label">
-                {t('majorMatch3.results.requirementsLabel', 'Requirements for your intake')}
-              </div>
-              {university.requirements.map((r, ri) => (
-                <div className="mm3-results__uni-row mm3-results__uni-row--req" key={ri}>
-                  <span>{r.label}</span>
-                  <span>{r.value}</span>
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* admissionOdds: currently always null (no acceptance-rate
-              source). Rendered only when non-null so it lights up with
-              zero code change once that data lands — never a
-              placeholder row. */}
-          {university.admissionOdds && (
-            <div className="mm3-results__uni-row">
-              <span>{t('majorMatch3.results.admissionOddsLabel', 'Admission odds')}</span>
-              <span>{university.admissionOdds}</span>
-            </div>
-          )}
-
-          <div className="mm3-results__uni-label">{t('majorMatch3.results.costLabel', 'Cost & financial aid')}</div>
-          <div className="mm3-results__uni-row">
-            <span>{t('majorMatch3.results.tuitionLabel', 'Tuition (our records)')}</span>
-            <span>
-              {university.tuitionUnreliable
-                ? t('majorMatch3.results.tuitionUnreliable', 'See official page (figure under review)')
-                : university.tuition ?? t('majorMatch3.results.tuitionUnknown', 'See official page')}
-            </span>
-          </div>
-
-          {university.scholarships?.length > 0 &&
-            university.scholarships.map((s, si) => (
-              <div className="mm3-results__aid" key={si}>
-                <b>{t('majorMatch3.results.aidLabel', 'Financial Aid:')}</b> {s.text}
-                {/* amount: null until a real figure lands in our
-                    records — never a placeholder. */}
-                {s.amount && <> — {s.amount}</>}
-              </div>
-            ))}
-
-          {university.whyFit && (
-            <div className="mm3-results__why">
-              <b>{t('majorMatch3.results.whyFitLabel', 'Why this fits you:')}</b> {university.whyFit}
-            </div>
-          )}
-
-          {/* professors: optional — most universities have none seeded
-              yet. Render only when non-empty, never an empty heading. */}
-          {university.professors && university.professors.length > 0 && (
-            <>
-              <div className="mm3-results__uni-label">{t('majorMatch3.results.professorsLabel', 'Professors & labs')}</div>
-              <div className="mm3-results__professors">
-                {university.professors.map((p, pi) => (
-                  <div className="mm3-results__professor" key={pi}>
-                    <div className="mm3-results__professor-name">
-                      {p.profileUrl ? (
-                        <a href={p.profileUrl} target="_blank" rel="noopener noreferrer">
-                          {p.name}
-                        </a>
-                      ) : (
-                        p.name
-                      )}
-                    </div>
-                    {(p.title || p.researchArea) && (
-                      <div className="mm3-results__professor-meta">
-                        {[p.title, p.researchArea].filter(Boolean).join(' · ')}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* employers: optional — most universities have none seeded
-              yet. Render only when non-empty, never a placeholder. */}
-          {university.employers && university.employers.length > 0 && (
-            <>
-              <div className="mm3-results__uni-label">
-                {t('majorMatch3.results.employersLabel', 'Where graduates get hired')}
-              </div>
-              <div className="mm3-results__chips">
-                {university.employers.map((e, ei) => (
-                  <span className="mm3-results__chip mm3-results__chip--employer" key={ei}>
-                    <span className="mm3-results__chip-name">{e.companyName}</span>
-                    {(e.industry || e.note) && (
-                      <span className="mm3-results__chip-sub">{[e.industry, e.note].filter(Boolean).join(' · ')}</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-
-          {university.roadmap?.length > 0 && (
-            <>
-              <div className="mm3-results__uni-label">
-                {t('majorMatch3.results.uniRoadmapLabel', 'Your roadmap to {{name}}', { name: university.name })}
-              </div>
-              {university.roadmap.map((phase, pi) => (
-                <div className="mm3-results__uni-roadmap-phase" key={pi}>
-                  <b>{phase.when}</b>
-                  <ul>
-                    {phase.actions.map((a, ai) => (
-                      <li key={ai}>{a}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
       </div>
     </div>,
     document.body,
@@ -541,6 +487,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
 interface MM3ResultsProps {
   report: Mm3Report;
   readOnly?: boolean;
+  sampleReport?: boolean;
   access?: MajorMatchAccessStatus;
   onRetake: () => void;
   onUnlock: () => void;
@@ -770,15 +717,17 @@ const LearnMoreContactModal: React.FC<{
 export const MM3Results: React.FC<MM3ResultsProps> = ({
   report,
   readOnly = false,
+  sampleReport = false,
   access,
   onRetake,
   onUnlock,
   onBack,
 }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const [selectedMajorIndex, setSelectedMajorIndex] = useState(0);
+  const { data: mentorDirectory = [], isLoading: mentorsLoading } = useGetMentorsQuery(undefined, { skip: readOnly });
+  const suggestedMentors = suggestMentors(mentorDirectory, (report.majors ?? []).map(major => major.name));
   const [selectedUniversity, setSelectedUniversity] = useState<Mm3University | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const majorTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -835,10 +784,11 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
   const closeUniversityModal = useCallback(() => setSelectedUniversity(null), []);
 
   return (
-    <div className="mm3-results">
+    <div className="mm3-results mm3-results--discovery">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <div className="mm3-results__hero">
-        <div className="mm3-results__eyebrow">{t('majorMatch3.results.eyebrow', 'Your TOP300 Majors report')}</div>
+        <div className="mm3-results__hero-copy">
+        <div className="mm3-results__eyebrow">{t('majorMatch3.results.discoveryEyebrow', 'AI Major Match · Your future, mapped')}{sampleReport && <span className="mm3-results__sample-badge">Sample report</span>}</div>
         <h1 className="mm3-results__title">
           {report.personaTitle ||
             t('majorMatch3.results.title', 'Here is where you stand, and where you can go.')}
@@ -860,7 +810,19 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
             ))}
           </div>
         )}
+        <a className="mm3-results__hero-link" href="#mm3-matches">{t('majorMatch3.results.exploreMatches', 'Explore your matches')} <ArrowUpRight size={18} /></a>
+        </div>
+        <div className="mm3-results__direction-art" aria-hidden="true">
+          <svg viewBox="0 0 260 260" fill="none"><circle cx="130" cy="130" r="112" stroke="currentColor" strokeOpacity=".18" /><circle cx="130" cy="130" r="78" stroke="currentColor" strokeOpacity=".24" strokeDasharray="3 7" /><path d="M18 130h224M130 18v224M51 51l158 158M51 209 209 51" stroke="currentColor" strokeOpacity=".12" /><circle cx="130" cy="18" r="5" fill="currentColor" /><circle cx="209" cy="209" r="5" fill="currentColor" /><path d="m169 88-23 58-58 25 24-59 57-24Z" fill="currentColor" /><path d="m169 88-39 42-42 41 24-59 57-24Z" fill="#f6c7aa" /><circle cx="130" cy="130" r="7" fill="#7b1f2f" /></svg>
+          <span><Compass size={15} /> {t('majorMatch3.results.directionLabel', 'A direction, not a destination')}</span>
+          <div className="mm3-results__orbit-labels">{majors.slice(0, 3).map((major, index) => <span key={index}><Sparkles size={12} />{major.name}</span>)}</div>
+        </div>
       </div>
+      <nav className="mm3-results__report-nav" aria-label={t('majorMatch3.results.reportNav', 'Report sections')}>
+        <a href="#mm3-matches"><Sparkles size={16} />{t('majorMatch3.results.matchesNav', 'Your matches')}</a>
+        {!!report.masterRoadmap?.length && <a href="#mm3-roadmap"><Flag size={16} />{t('majorMatch3.results.planNav', 'Your roadmap')}</a>}
+        {!readOnly && majors.length > 0 && <a href="#mm3-mentor-suggestions"><Users size={16} />{t('majorMatch3.results.mentorsNav', 'Find your mentor')}</a>}
+      </nav>
 
       {/* Detailed strengths (full sentences) paired with gaps in a 2-up
           grid — they read as a matched pair, not two unrelated panels. */}
@@ -891,7 +853,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
 
       {/* ── 01 · Majors as tabs ──────────────────────────────────────── */}
       {majors.length > 0 && (
-        <section className="mm3-results__section">
+        <section className="mm3-results__section" id="mm3-matches">
           <SectionHeading
             number="01"
             title={t('majorMatch3.results.majorsTitle', 'Your best-fit majors')}
@@ -918,21 +880,22 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
                   aria-controls="mm3-major-panel"
                   tabIndex={isActive ? 0 : -1}
                   className={
-                    isActive ? 'mm3-results__major-tab mm3-results__major-tab--active' : 'mm3-results__major-tab'
+                    `mm3-results__major-tab mm3-results__major-tab--tone-${i % 3}${isActive ? ' mm3-results__major-tab--active' : ''}`
                   }
                   onClick={() => setSelectedMajorIndex(i)}
                   onKeyDown={(e) => handleMajorTabKeyDown(e, i)}
                 >
                   <span className="mm3-results__major-tab-rank">{rankLabelFor(i)}</span>
-                  <span className="mm3-results__major-tab-fit">
-                    {m.fitScore}
-                    <small> {t('majorMatch3.results.fitSuffix', '/100 FIT')}</small>
-                  </span>
+                  <MajorIllustration name={m.name} />
                   <span className="mm3-results__major-tab-name">{m.name}</span>
+                  {m.why && <span className="mm3-results__card-reason">{m.why}</span>}
+                  <span className="mm3-results__card-footer"><span>{m.fitScore} <small>{t('majorMatch3.results.fitSuffix', '/100 FIT')}</small></span><ArrowUpRight size={18} aria-hidden="true" /></span>
                 </button>
               );
             })}
           </div>
+
+          {majors.length > 1 && <MajorComparison majors={majors} />}
 
           {selectedMajor && (
             <div
@@ -941,51 +904,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
               id="mm3-major-panel"
               aria-labelledby={`mm3-major-tab-${selectedMajorIndex}`}
             >
-              {selectedMajor.why && <div className="mm3-results__major-why-callout">{selectedMajor.why}</div>}
-
-              {/* about: optional plain-language blurb — older/in-flight
-                  reports may not carry it yet. */}
-              {selectedMajor.about && (
-                <p className="mm3-results__major-about">
-                  <b>{t('majorMatch3.results.aboutTitle', 'What is {{name}}?', { name: selectedMajor.name })}</b>{' '}
-                  {selectedMajor.about}
-                </p>
-              )}
-
-              {/* breakdown: optional — older/in-flight reports may not carry
-                  it yet. Render only when present, never a placeholder. */}
-              {selectedMajor.breakdown && (
-                <div className="mm3-results__breakdown">
-                  {BREAKDOWN_ROWS.map((row) => (
-                    <div className="mm3-results__breakdown-row" key={row.key}>
-                      <span className="mm3-results__breakdown-label">{t(row.labelKey, row.fallback)}</span>
-                      <div className="mm3-results__breakdown-track">
-                        <span
-                          className="mm3-results__breakdown-fill"
-                          style={{ width: `${clampPercent(selectedMajor.breakdown![row.key])}%` }}
-                        />
-                      </div>
-                      <span className="mm3-results__breakdown-value">{selectedMajor.breakdown![row.key]}</span>
-                    </div>
-                  ))}
-                  <p className="mm3-results__breakdown-note">
-                    {t(
-                      'majorMatch3.results.breakdownNote',
-                      'How your answers scored across four signals. This shows fit, not ability.',
-                    )}
-                  </p>
-                </div>
-              )}
-
-              {selectedMajor.careers?.length > 0 && (
-                <div className="mm3-results__chips">
-                  {selectedMajor.careers.map((c, ci) => (
-                    <span className="mm3-results__chip" key={ci}>
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <MajorProfileOverview major={selectedMajor} />
 
               {/* Universities for THIS major only, grouped by majorIndex —
                   previously a single flat list shared across all majors,
@@ -996,9 +915,10 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
               {!isPartial &&
                 (universitiesForSelectedMajor.length > 0 ? (
                   <div className="mm3-results__major-universities">
-                    <div className="mm3-results__uni-label">
+                    <h3 className="mm3-results__university-heading">
+                      <Building2 size={22} aria-hidden="true" />
                       {t('majorMatch3.results.universitiesForMajorTitle', 'Universities for this major')}
-                    </div>
+                    </h3>
 
                     {/* The count comes from `meta.catalogueSize`, computed per
                         report against the live catalogue. It used to be the
@@ -1009,7 +929,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
                         print a stale one. */}
                     <div className="mm3-results__note">
                       <b>{t('majorMatch3.results.provenanceLabel', 'How these were chosen:')}</b>{' '}
-                      {report.meta?.catalogueSize
+                      {sampleReport ? 'Fictional examples for this local design preview—not university recommendations or verified admissions data.' : report.meta?.catalogueSize
                         ? t('majorMatch3.results.provenanceBodyCount', {
                             count: report.meta.catalogueSize,
                             defaultValue:
@@ -1056,13 +976,17 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
                           key={u.id}
                           onClick={() => setSelectedUniversity(u)}
                         >
+                          <span className="mm3-results__university-card-top"><Building2 size={23} aria-hidden="true" /><span className={`mm3-results__tier ${tierClass(u.tier)}`}>{u.tier}</span></span>
                           <span className="mm3-results__uni-list-row-main">
                             <span className="mm3-results__uni-list-row-name">{u.name}</span>
                             <span className="mm3-results__uni-list-row-meta">
                               {[u.country, u.matchedMajor].filter(Boolean).join(' · ')}
                             </span>
                           </span>
-                          <span className={`mm3-results__tier ${tierClass(u.tier)}`}>{u.tier}</span>
+                          <span className="mm3-results__uni-list-row-cost"><span>{t('majorMatch3.results.tuitionLabel', 'Tuition (our records)')}</span><strong>{u.tuitionUnreliable
+                              ? t('majorMatch3.results.tuitionUnreliable', 'See official page (figure under review)')
+                              : u.tuition ?? t('majorMatch3.results.tuitionUnknown', 'See official page')}</strong></span>
+                          <span className="mm3-results__university-card-link">{t('majorMatch3.results.viewUniversityDetails', 'View details')}<ArrowUpRight size={16} aria-hidden="true" /></span>
                         </button>
                       ))}
                     </div>
@@ -1130,21 +1054,9 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
         </div>
       )}
 
-      {/* ── 02 · Your personalised roadmap ──────────────────────────────
-          `report.masterRoadmap` — Gemini-generated, specific to THIS
-          student's answers and stated intake. Truncated server-side (never
-          in CSS — see `Mm3AnalysisService.gateMasterRoadmap()`) to the first
-          phase when the report owner isn't subscribed, reusing the exact
-          same TRIALING/ACTIVE check `RoadmapService` already gates the
-          standalone roadmap's action items on. LIGHT card only — every
-          accent token this design system owns is tuned for light
-          backgrounds; a dark panel here has twice produced contrast
-          failures elsewhere in this report (1.86:1, 1.72:1) and is
-          deliberately not repeated. Hidden entirely for a legacy/partial
-          report with no phases at all rather than rendering an empty
-          section. */}
+      {/* Full personalised roadmap from this student's report. */}
       {report.masterRoadmap && report.masterRoadmap.length > 0 && (
-        <section className="mm3-results__section">
+        <section className="mm3-results__section" id="mm3-roadmap">
           <SectionHeading
             number="02"
             title={t('majorMatch3.results.roadmapTitle', 'Your roadmap')}
@@ -1154,185 +1066,56 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
             )}
           />
 
-          <ol className="mm3-results__timeline">
-            {report.masterRoadmap.map((phase, pi) => (
-              <li className="mm3-results__timeline-phase" key={pi}>
-                <span className="mm3-results__timeline-marker" aria-hidden="true">
-                  {pi + 1}
-                </span>
-                <div className="mm3-results__timeline-body">
-                  <div className="mm3-results__timeline-when">{phase.when}</div>
-                  <ul className="mm3-results__timeline-actions">
-                    {(phase.actions ?? []).map((a, ai) => (
-                      <li key={ai}>{renderEmphasis(a)}</li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <RoadmapJourneyBoard phases={report.masterRoadmap} readOnly={readOnly} />
 
-          {report.masterRoadmapLocked && (
-            <div className="mm3-results__roadmap-lock">
-              <div className="mm3-results__roadmap-lock-eyebrow">
-                {t('majorMatch3.results.roadmapLockedEyebrow', 'The plan continues')}
-              </div>
-              <h3 className="mm3-results__roadmap-lock-title">
-                {t(
-                  'majorMatch3.results.roadmapLockedTitle',
-                  'Your full roadmap runs all the way to your target intake',
-                )}
-              </h3>
-              <p className="mm3-results__roadmap-lock-body">
-                {t(
-                  'majorMatch3.results.roadmapLockedBody',
-                  'Showing {{visible}} of {{total}} phases. Subscribe to unlock every remaining step, dated and specific to you.',
-                  {
-                    visible: report.masterRoadmap.length,
-                    total: report.masterRoadmapTotalPhases ?? report.masterRoadmap.length,
-                  },
-                )}
-              </p>
-              {/* Straight to the subscription tab — deliberately NOT the
-                  shared `onUnlock`, which resolves to
-                  `useCommunityAccessGate().destination` and, for a student who
-                  hasn't finished the admissions wizard, lands on
-                  `?section=placement-profile&step=basic`.
-
-                  That gate encodes the COMMUNITY funnel (profile, then plan).
-                  This lock is a different gate entirely: the roadmap is
-                  truncated by `hasActiveSubscription()` alone, so completing
-                  the profile wizard unlocks NOTHING here. Sending a student
-                  who just read "Subscribe to unlock" into a profile form is
-                  the same broken promise as a card offering "View full
-                  results" that lands on "Begin the assessment".
-
-                  Subscribing without the profile is genuinely allowed —
-                  `subscriptions.service.start()` requires a connected Telegram
-                  and a card, not a completed admissions profile; the
-                  profile-first ordering is a frontend funnel convention. */}
-              {!readOnly && (
-                <button
-                  type="button"
-                  className="mm2__btn mm2__btn--primary"
-                  onClick={() => navigate(COMMUNITY_FUNNEL_PATHS.subscriptionTab)}
-                >
-                  <Lock size={14} />
-                  {t('majorMatch3.results.roadmapUnlockCta', 'Unlock my full roadmap')}
-                </button>
-              )}
-            </div>
-          )}
         </section>
       )}
 
-      {/* ── 03 · TopCoach's static programme catalogue ───────────────────
-          Not model-generated: every student sees the same four programmes,
-          read in full BEFORE the unlock CTA at the end of this section. */}
-      <section className="mm3-results__section">
-        <SectionHeading
-          number="03"
-          title={t('majorMatch3.programs.title', 'What TopCoach includes')}
-          subtitle={t(
-            'majorMatch3.programs.subtitle',
-            'Read the whole path first: every program, what it includes, how long it takes. Unlock it at the end.',
-          )}
-        />
+      {!readOnly && report.majors?.[0] && (
+        <aside className="mm3-results__mentor-note" id="mm3-mentor-suggestions">
+          <div className="mm3-results__eyebrow"><Users size={16} /> {t('majorMatch3.results.mentorEyebrow', 'People behind the possibilities')}</div>
+          <h3>{t('majorMatch3.results.mentorsTitle', 'Mentors for your direction')}</h3>
+          <p>Explore mentors whose subjects overlap with your matches. These are directory suggestions, not mentor feedback or a guarantee of fit.</p>
+          <div className="mm3-results__mentor-grid">{suggestedMentors.map(mentor => {
+            const photo = getLatestCreatedImg(mentor.profile?.media || []);
+            const name = mentor.profile?.name || 'Mentor';
+            return <Link className="mm3-results__mentor-card" key={mentor.id} to={`/mentors/${mentor.id}`}>
+              <div className="mm3-results__mentor-avatar">{photo ? <img src={photo} alt="" loading="lazy" /> : <span>{name.split(' ').map(part => part[0]).slice(0, 2).join('')}</span>}<ArrowUpRight size={17} /></div>
+              <strong>{name}</strong><span className="mm3-results__mentor-university">{mentor.mentorProfile.university}</span><span className="mm3-results__mentor-subject">{mentor.mentorProfile.major}</span>
+              <span className="mm3-results__mentor-cta">{t('majorMatch3.results.viewMentor', 'Meet this mentor')} <ArrowUpRight size={15} /></span>
+            </Link>;
+          })}</div>
+          {!mentorsLoading && !suggestedMentors.length && <p>No subject-specific mentor match is available yet.</p>}
+          <Link to="/mentors">Browse all mentors</Link>
+          <div className="mm3-results__mentor-prompt"><MessageCircle size={22} aria-hidden="true" /><div><strong>{t('majorMatch3.results.mentorSuggestionTitle', 'A question for your mentor')}</strong>
+          <p>{t('majorMatch3.results.mentorSuggestionBody', {
+            major: report.majors[0].name,
+            defaultValue: 'Ask a mentor how {{major}} compares with your other matches, and which projects or courses could help you test that direction.',
+          })}</p>
+          <small>{t('majorMatch3.results.mentorSuggestionDisclaimer', 'Suggested by AI from your report; not feedback written by a mentor.')}</small>
+          </div></div>
+        </aside>
+      )}
 
-        <div className="mm3-results__programs">
-          {ROADMAP_PROGRAMS.map((program, pi) => (
-            <div className="mm3-results__program" key={program.nameKey}>
-              <div className="mm3-results__program-head">
-                <span className="mm3-results__program-marker" aria-hidden="true">
-                  {pi + 1}
-                </span>
-                <span className="mm3-results__program-icon" aria-hidden="true">
-                  {program.icon}
-                </span>
-                <span className="mm3-results__program-name">{t(program.nameKey, program.nameFallback)}</span>
-                <span className="mm3-results__program-duration">
-                  ⏱ {t(program.durationKey, program.durationFallback)}
-                </span>
-              </div>
+      {majors.length > 0 && !report.masterRoadmap?.length && (
+        <div className="mm3-results__next-step"><div><span className="mm3-results__eyebrow">{t('majorMatch3.results.nextStepEyebrow', 'From insight to action')}</span><h3>{t('majorMatch3.results.nextStepTitle', 'Start with one small step.')}</h3><p>{report.masterRoadmap?.[0]?.actions?.[0] || t('majorMatch3.results.nextStepFallback', 'Explore an introductory course in the direction that interests you most.')}</p><small>{t('majorMatch3.results.nextStepNote', 'A suggested starting point—not a completed task.')}</small></div><a href={report.masterRoadmap?.length ? '#mm3-roadmap' : '#mm3-matches'}>{report.masterRoadmap?.length ? t('majorMatch3.results.planNav', 'Your roadmap') : t('majorMatch3.results.matchesNav', 'Your matches')} <ArrowUpRight size={18} /></a></div>
+      )}
 
-              {program.bullets && (
-                <ul className="mm3-results__program-bullets">
-                  {program.bullets.map((b) => (
-                    <li key={b.key}>{t(b.key, b.fallback)}</li>
-                  ))}
-                </ul>
-              )}
-
-              {program.phases && (
-                <div className="mm3-results__program-phases">
-                  {program.phases.map((phase, phi) => (
-                    <div className="mm3-results__program-phase" key={phase.nameKey}>
-                      <span className="mm3-results__program-phase-num" aria-hidden="true">
-                        {phi + 1}
-                      </span>
-                      <div className="mm3-results__program-phase-body">
-                        <div className="mm3-results__program-phase-head">
-                          <b>{t(phase.nameKey, phase.nameFallback)}</b>
-                          <span className="mm3-results__program-phase-weeks">
-                            {t(phase.weeksKey, phase.weeksFallback)}
-                          </span>
-                        </div>
-                        <p>{t(phase.descKey, phase.descFallback)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="mm3-results__outcomes">
-          <h3 className="mm3-results__outcomes-title">
-            <span aria-hidden="true">✨</span> {t('majorMatch3.programs.outcomesTitle', 'What it all adds up to')}
-          </h3>
-          <div className="mm3-results__outcomes-grid">
-            {ROADMAP_OUTCOMES.map((o, oi) => (
-              <div className="mm3-results__outcome" key={o.titleKey}>
-                <span className="mm3-results__outcome-num" aria-hidden="true">
-                  {String(oi + 1).padStart(2, '0')}
-                </span>
-                <div className="mm3-results__outcome-body">
-                  <b>{t(o.titleKey, o.titleFallback)}</b>
-                  <p>{t(o.bodyKey, o.bodyFallback)}</p>
-                </div>
-              </div>
-            ))}
+      {!readOnly && !hasCommunityAccess && (
+        <aside className="mm3-results__community-ad" id="mm3-community-access">
+          <div className="mm3-results__community-art" aria-hidden="true"><Users size={34} /><span /><span /></div>
+          <div>
+            <strong>{t('majorMatch3.results.communityAdTitle', 'Keep making progress together')}</strong>
+            <p>{t('majorMatch3.results.communityAdBody', 'Your full roadmap stays available. Community access adds peer connections and a place to learn together.')}</p>
           </div>
-        </div>
+          <button type="button" className="mm2__btn mm2__btn--secondary" onClick={onUnlock}>
+            {t('majorMatch3.results.communityAdCta', 'Explore Community access')}
+          </button>
+        </aside>
+      )}
 
-        {/* Signed-in students without Community access route through the
-            same funnel every other locked surface uses (`onUnlock` in the
-            parent already resolves to the shared Community destination).
-            The contact action remains useful after enrollment, but an
-            enrolled student must never be shown an unlock CTA. Hidden
-            entirely in the counselor read-only embed. */}
-        {!readOnly && (
-          <div className="mm3-results__programs-actions">
-            {!hasCommunityAccess && (
-              <button type="button" className="mm2__btn mm2__btn--primary" onClick={onUnlock}>
-                {t('majorMatch3.programs.unlockCta', 'Unlock my roadmap')}
-              </button>
-            )}
-            {/* "Learn more" now captures a contact instead of navigating to
-                /programs. A student who has just read a full report and wants
-                to know more is the warmest lead this product produces, and
-                bouncing them to a marketing page lost that entirely. */}
-            <button
-              type="button"
-              className="mm2__btn mm2__btn--secondary"
-              onClick={() => setContactOpen(true)}
-            >
-              {t('majorMatch3.programs.learnMoreCta', 'Learn more')}
-            </button>
-          </div>
-        )}
-      </section>
+      {/* TopCoach's static programme catalogue, separate from the roadmap. */}
+      <TopCoachPrograms defaultOpen readOnly={readOnly || sampleReport} onLearnMore={() => setContactOpen(true)} />
 
       <div className="mm3-results__actions">
         {onBack && (
@@ -1348,14 +1131,12 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
               {t('studentHub.psychometric.unlockUnlimited', 'Unlock unlimited matches')}
             </button>
           ) : (
-            <button type="button" className="mm2__btn mm2__btn--primary" onClick={onRetake}>
+            <button type="button" className="mm2__btn mm2__btn--primary" onClick={onRetake} disabled={sampleReport}>
               <RotateCcw size={14} />
               {t('majorMatch3.results.retakeCta', 'Retake the assessment')}
             </button>
           ))}
       </div>
-
-      {requiresEnrollment && <MajorMatchUpsell message={access?.promptMessage} onUnlock={onUnlock} />}
 
       <LearnMoreContactModal
         open={contactOpen}
@@ -1364,14 +1145,14 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
       />
 
       <p className="mm3-results__disclaimer">
-        {t(
+        {sampleReport ? 'Local sample only: scores, phases, university names, tuition, aid and requirements are fictional display data, not an assessment or admissions advice.' : t(
           'majorMatch3.results.disclaimer',
           "This report is generated from your answers together with TopCoach's university records. Requirements, deadlines and aid policies change every cycle, so always confirm on the university's official admissions page, and review your final list with a TopCoach mentor.",
         )}
       </p>
 
       {selectedUniversity && (
-        <Mm3UniversityModal university={selectedUniversity} degreeLevel={report.meta.targetDegree ?? 'bachelor'} onClose={closeUniversityModal} readOnly={readOnly} />
+        <Mm3UniversityModal university={selectedUniversity} degreeLevel={report.meta.targetDegree ?? 'bachelor'} onClose={closeUniversityModal} readOnly={readOnly} sampleReport={sampleReport} />
       )}
     </div>
   );

@@ -19,6 +19,7 @@ export type PublicInvitationStatus =
   | 'revoked';
 
 export interface PublicInvitationOrg {
+  id: string;
   name: string;
   logoUrl: string | null;
   /** Nullable server-side (PublicInvitationOrgDto) — never assume it's set. */
@@ -63,6 +64,7 @@ export const publicInvitationsApi = RtkApi.injectEndpoints({
       invalidatesTags: (_res, _err, token) => [
         { type: 'PublicInvitation' as const, id: token },
         'CounselorOrgs',
+        'StudentOrgMembership',
       ],
     }),
   }),

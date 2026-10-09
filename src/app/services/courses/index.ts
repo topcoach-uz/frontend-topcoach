@@ -16,6 +16,9 @@ export interface CourseEnrollmentDto {
   status: 'pending' | 'completed' | 'rejected';
 }
 
+export interface CoursePreviewLesson { id: string; title: string; duration: number; isLocked: boolean; contentUrl?: string }
+export interface CoursePreviewModule { id: string; title: string; description?: string; lessons: CoursePreviewLesson[]; submodules: { id: string; title: string; lessons: CoursePreviewLesson[] }[] }
+
 export interface CreateCourseEnrollmentDto {
   courseType: 'standard' | 'premium';
   courseName?: 'admissions' | 'sat';
@@ -81,8 +84,12 @@ export interface CourseLessonDto {
   moduleId?: string;
   submoduleId?: string;
   orderIndex: number;
-  lessonType: 'video' | 'pdf' | 'live_session';
+  lessonType: 'video' | 'pdf' | 'live_session' | 'text';
   contentUrl?: string;
+  textContentHtml?: string;
+  textPracticeUrl?: string;
+  textReferences?: { provider: string; url: string }[];
+  isDraft?: boolean;
   duration: number;
   isActive: boolean;
   isPremium: boolean;
@@ -177,6 +184,9 @@ export interface TaskResultDto {
 
 export const coursesApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getCoursePreview: builder.query<CoursePreviewModule[], 'admissions' | 'sat'>({
+      query: courseName => ({ url: 'courses/learning/preview', params: { courseName } }),
+    }),
     // Get active program pricing
     getActivePricing: builder.query<ProgramPricingDto, string | void>({
       query: (courseName) => {
@@ -393,6 +403,7 @@ export const coursesApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetCoursePreviewQuery,
   useGetActivePricingQuery,
   useGetEnrollmentStatusQuery,
   useCreateEnrollmentMutation,
@@ -409,4 +420,4 @@ export const {
   useGetTaskResultsQuery,
   useGetLessonTaskSubmissionsQuery,
   useRetakeTaskMutation,
-} = coursesApi; 
+} = coursesApi;

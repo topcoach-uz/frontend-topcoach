@@ -1,0 +1,93 @@
+.cc-task-review {
+  margin-top: 1.25rem;
+  &-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  &-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    background: var(--cc-bg-surface);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-radius);
+    > div:first-child {
+      flex: 1;
+      min-width: 12rem;
+    }
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      line-height: 1.4;
+      color: var(--cc-text);
+    }
+    p {
+      margin: 0;
+      color: var(--cc-text-secondary);
+      font-size: 0.875rem;
+    }
+  }
+  &-empty {
+    padding: 1.5rem;
+    background: var(--cc-bg-surface);
+    border-radius: var(--cc-radius);
+    color: var(--cc-text-secondary);
+  }
+  &-action:active {
+    transform: scale(0.98);
+  }
+  &-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+  }
+  &-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  &-modal {
+    .ant-modal-header {
+      background: transparent;
+    }
+    .ant-btn-primary {
+      background: var(--cc-accent);
+      border-color: var(--cc-accent);
+    }
+    .ant-btn-primary:not(:disabled):hover {
+      background: var(--cc-accent-hover);
+      border-color: var(--cc-accent-hover);
+    }
+    .ant-btn:focus-visible {
+      outline: 3px solid var(--cc-accent-ring);
+      outline-offset: 2px;
+    }
+    h3 {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+    }
+    .ant-modal-content {
+      background: var(--cc-bg-surface);
+    }
+  }
+}
+@media (max-width: 600px) {
+  .cc-task-review-action {
+    width: 100%;
+    min-height: 44px;
+  }
+  .cc-task-review-footer .ant-btn {
+    min-height: 44px;
+  }
+  .cc-task-review-modal textarea {
+    font-size: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-task-review-action:active {
+    transform: none;
+  }
+}

@@ -53,8 +53,8 @@ export default function GoogleAuthenticationPage() {
   // cached. Without this, navigating away re-triggered the router's
   // bootstrap overlay — a SECOND full-screen loader right after this
   // page's own one. Same cache entries as RouterProvider's hooks.
-  const { isLoading: orgsWarming } = useGetMyOrgsQuery(undefined, {
-    skip: !exchangeSuccess,
+  const { data: orgs, isLoading: orgsWarming, isFetching: orgsFetching } = useGetMyOrgsQuery(undefined, {
+    skip: !exchangeSuccess, refetchOnMountOrArgChange: true,
   });
   const { isLoading: prefsWarming } = useGetUserPreferencesQuery(undefined, {
     skip: !exchangeSuccess,
@@ -63,7 +63,7 @@ export default function GoogleAuthenticationPage() {
     undefined,
     { skip: !exchangeSuccess },
   );
-  const bootstrapReady = !orgsWarming && !prefsWarming && !subscriptionWarming;
+  const bootstrapReady = !orgsWarming && !orgsFetching && !prefsWarming && !subscriptionWarming;
 
   useEffect(() => {
     if (exchangeSuccess) {
@@ -88,6 +88,12 @@ export default function GoogleAuthenticationPage() {
     // the landing page renders instantly, with no second loader.
     if (!profileReady || !bootstrapReady) return;
 
+    if (orgs?.some(m => m.status === 'active' && m.organization.status === 'active' && (m.role === 'owner' || m.role === 'counselor')) && data?.managementRole !== 'SuperAdmin') {
+      const target = localStorage.getItem('redirectAfterLogin');
+      localStorage.removeItem('redirectAfterLogin');
+      navigate(target?.startsWith('/join/') ? target : '/counselor-console', { replace: true });
+      return;
+    }
     if (!onboardingComplete) {
       navigate('/onboarding', { replace: true });
       return;
@@ -106,7 +112,7 @@ export default function GoogleAuthenticationPage() {
     } else {
       navigate(target, { replace: true });
     }
-  }, [profileReady, onboardingComplete, bootstrapReady, navigate]);
+  }, [profileReady, onboardingComplete, bootstrapReady, orgs, data, navigate]);
 
   useEffect(() => {
     const code = shortCode || exchangeToken;
@@ -153,7 +159,7 @@ export default function GoogleAuthenticationPage() {
         // Meta Pixel: the exchange response carries only tokens — there is no
         // flag telling us whether this Google account is new. A first-time
         // Google user is therefore counted as a Login, not a registration.
-        trackLogin('google');
+        trackLogin(searchParams.get('method') === 'email' ? 'email' : 'google');
         setExchangeSuccess(true);
       })
       .catch((err: any) => {

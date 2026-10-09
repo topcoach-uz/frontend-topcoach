@@ -1,273 +1,230 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Row, Col, Select, DatePicker, Space, message } from 'antd';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Checkbox, Col, Form, Input, Row, Select, Space, message } from 'antd';
 import FontAwesomeIcon from '../../../components/common/icons/FontAwesomeIcon';
-import { ACTIVITY_ICONS, ACTION_ICONS } from '../../../constants/icons';
+import { ACTION_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import './ActivitiesProfile.scss';
 
-const { Option } = Select;
-const { TextArea } = Input;
-
 interface ActivitiesProfileProps {
-  data: {
-    completed: boolean;
-    percentage: number;
-    lastUpdated: string;
-  };
+  data: { completed: boolean; percentage: number; lastUpdated: string };
   readOnly?: boolean;
   studentId?: string;
 }
 
-const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ data, readOnly = false, studentId }) => {
-  const { t } = useTranslation();
+const experienceTypes = [
+  { value: 'project', label: 'Project' },
+  { value: 'research', label: 'Research' },
+  { value: 'work', label: 'Work or internship' },
+  { value: 'leadership', label: 'Leadership' },
+  { value: 'volunteering', label: 'Volunteering' },
+  { value: 'activity', label: 'Other activity' },
+];
+
+const ActivitiesProfile: React.FC<ActivitiesProfileProps> = ({ readOnly = false, studentId }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const isReadOnly = readOnly === true;
-  const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
-  const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
+  const [saving, setSaving] = useState(false);
+  const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(
+    readOnly && studentId ? { studentId } : undefined,
+  );
   const isMasters = profile?.academicProfile?.targetDegree === 'master';
 
-  // Initialize form with data from API
   useEffect(() => {
-    if (profile?.activitiesProfile) {
-      const activitiesData = profile.activitiesProfile;
-      form.setFieldsValue({
-        extracurricularActivities: activitiesData.extracurricularActivities || [],
-        leadershipRoles: activitiesData.leadershipRoles || [],
-        volunteerWork: activitiesData.volunteerWork || [],
-        workExperience: activitiesData.workExperience || [],
-        awards: activitiesData.awards || [],
-        certifications: activitiesData.certifications || [],
-        hobbies: activitiesData.hobbies || [],
-      });
-    }
-  }, [profile?.activitiesProfile, form]);
+    const saved = profile?.activitiesProfile;
+    if (!saved) return;
+    form.setFieldsValue({
+      experiences: [
+        ...(saved.extracurricularActivities || []).map((item: any) => ({
+          ...item,
+          type: item.type || 'activity',
+          name: item.name,
+          role: item.position || item.role,
+        })),
+        ...(saved.leadershipRoles || []).map((item: any) => ({
+          ...item,
+          type: 'leadership',
+          name: item.role,
+          role: item.position,
+        })),
+      ],
+      awards: saved.awards || [],
+    });
+  }, [form, profile?.activitiesProfile]);
 
-  const handleSave = async (values: any) => {
-    setLoading(true);
+  const save = async (values: any) => {
+    setSaving(true);
     try {
-      console.log('=== ACTIVITIES PROFILE SAVE DEBUG ===');
-      console.log('Form values:', values);
-      console.log('Current profile ID:', profile?.id);
-      console.log('Activities profile data to save:', values);
-      console.log('API call payload:', { activitiesProfile: values });
-
-      const result = await updateStudentProfile({
-        activitiesProfile: values
+      const experiences = values.experiences || [];
+      await updateStudentProfile({
+        activitiesProfile: {
+          extracurricularActivities: experiences
+            .filter((item: any) => item.type !== 'leadership')
+            .map((item: any) => ({
+              name: item.name,
+              position: item.role,
+              duration: item.startDate
+                ? `${item.startDate}–${item.ongoing ? 'present' : item.endDate || ''}`
+                : item.duration,
+              startDate: item.startDate,
+              endDate: item.ongoing ? undefined : item.endDate,
+              ongoing: !!item.ongoing,
+              type: item.type,
+              organization: item.organization,
+              description: item.description,
+            })),
+          leadershipRoles: experiences
+            .filter((item: any) => item.type === 'leadership')
+            .map((item: any) => ({
+              role: item.name,
+              position: item.role,
+              organization: item.organization || '',
+              duration: item.startDate
+                ? `${item.startDate}–${item.ongoing ? 'present' : item.endDate || ''}`
+                : item.duration,
+              startDate: item.startDate,
+              endDate: item.ongoing ? undefined : item.endDate,
+              ongoing: !!item.ongoing,
+              description: item.description,
+            })),
+          awards: values.awards || [],
+        } as any,
       });
-      
-      console.log('Activities profile save result:', result);
-      message.success('Activities profile saved successfully!');
-      
-      // Refetch the profile data to update the UI
       await refetchProfile();
-      console.log('Activities profile refetched after save');
-      console.log('=== ACTIVITIES PROFILE SAVE COMPLETED ===');
-    } catch (error: any) {
-      console.error('=== ACTIVITIES PROFILE SAVE ERROR ===');
-      console.error('Error details:', error);
-      console.error('Error message:', error?.message);
-      console.error('Error data:', error?.data);
-      message.error(`Failed to save activities profile: ${error?.message || 'Unknown error'}`);
+      message.success('Activities and achievements saved');
+    } catch {
+      message.error('Could not save activities and achievements');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return (
     <div className="activities-profile">
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSave}
-        disabled={isReadOnly}
-        className="activities-form"
-      >
-        {/* Extracurricular Activities */}
-        <Card title={isMasters ? 'Research, projects & professional activities' : t('studentHub.profile.extracurricularActivities', 'Extracurricular Activities')} className="section-card">
-          <Form.List name="extracurricularActivities">
+      <Form form={form} layout="vertical" onFinish={save} disabled={readOnly} className="activities-form">
+        <Card title="Experience" className="section-card">
+          <Form.List name="experiences">
             {(fields, { add, remove }) => (
               <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row key={key} gutter={16}>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'name']}
-                        label="Activity Name"
-                        rules={[{ required: true, message: 'Please enter activity name' }]}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., Undergraduate research project' : 'e.g., Debate Team'} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'position']}
-                        label={t('studentHub.profile.positionRole', 'Position/Role')}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., Research assistant' : 'e.g., Captain'} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'duration']}
-                        label={t('studentHub.profile.duration', 'Duration')}
-                      >
-                        <Input placeholder="e.g., 2 years" />
-                      </Form.Item>
-                    </Col>
-                    {!isReadOnly && (
-                      <Col span={4}>
-                        <Form.Item label=" ">
-                          <Button type="link" danger onClick={() => remove(name)}>
-                            {t('common.remove', 'Remove')}
-                          </Button>
+                <div className="profile-list-intro">
+                  <p>{isMasters
+                    ? 'Add research, projects, jobs, internships, leadership and volunteering in one place.'
+                    : 'Add projects, activities, jobs, leadership and volunteering in one place.'}</p>
+                  {!readOnly && <Button icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />} onClick={() => add()}>Add experience</Button>}
+                </div>
+                {fields.map(({ key, name }) => (
+                  <div key={key} className="profile-experience-entry">
+                    <div className="profile-entry-heading">
+                      <strong>Experience {name + 1}</strong>
+                      {!readOnly && <Button type="text" danger icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />} aria-label={`Remove experience ${name + 1}`} onClick={() => remove(name)} />}
+                    </div>
+                    <Row gutter={[16, 4]}>
+                      <Col xs={24} md={8}>
+                        <Form.Item name={[name, 'type']} label="Type" rules={[{ required: true }]}>
+                          <Select placeholder="Choose the kind of experience" options={experienceTypes} />
                         </Form.Item>
                       </Col>
-                    )}
-                  </Row>
+                      <Col xs={24} md={16}>
+                        <Form.Item name={[name, 'name']} label="Activity or project" rules={[{ required: true, message: 'Enter a name' }]}>
+                          <Input placeholder={isMasters ? 'e.g. Undergraduate research project' : 'e.g. Debate team'} />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item name={[name, 'organization']} label="Organization">
+                          <Input placeholder="School, university, employer or group" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item name={[name, 'role']} label="Your role">
+                          <Input placeholder="e.g. Research assistant" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Form.Item name={[name, 'startDate']} label="Start month">
+                          <Input type="month" />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Form.Item name={[name, 'ongoing']} label=" " valuePropName="checked">
+                          <Checkbox>Ongoing</Checkbox>
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Form.Item noStyle shouldUpdate={(previous, current) =>
+                          previous.experiences?.[name]?.ongoing !== current.experiences?.[name]?.ongoing
+                        }>
+                          {({ getFieldValue }) => !getFieldValue(['experiences', name, 'ongoing']) && (
+                            <Form.Item name={[name, 'endDate']} label="End month" rules={[({ getFieldValue: getValue }) => ({
+                              validator(_, endDate) {
+                                const startDate = getValue(['experiences', name, 'startDate']);
+                                return !endDate || !startDate || endDate >= startDate
+                                  ? Promise.resolve()
+                                  : Promise.reject(new Error('End month must follow start month'));
+                              },
+                            })]}>
+                              <Input type="month" />
+                            </Form.Item>
+                          )}
+                        </Form.Item>
+                      </Col>
+                      <Form.Item noStyle shouldUpdate>
+                        {({ getFieldValue }) => {
+                          const oldDuration = getFieldValue(['experiences', name, 'duration']);
+                          return oldDuration && !getFieldValue(['experiences', name, 'startDate'])
+                            ? <Col xs={24}><p>Previously saved duration: {oldDuration}</p></Col>
+                            : null;
+                        }}
+                      </Form.Item>
+                      <Col xs={24}>
+                        <Form.Item name={[name, 'description']} label="What you did or achieved">
+                          <Input.TextArea rows={2} placeholder="Describe your contribution and outcome" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
                 ))}
-                {!isReadOnly && (
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      {t('studentHub.profile.addActivity', 'Add Activity')}
-                    </Button>
-                  </Form.Item>
-                )}
               </>
             )}
           </Form.List>
         </Card>
 
-        {/* Leadership Roles */}
-        <Card title={t('studentHub.profile.leadershipRoles', 'Leadership Roles')} className="section-card">
-          <Form.List name="leadershipRoles">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row key={key} gutter={16}>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'role']}
-                        label={t('studentHub.profile.leadershipRole', 'Leadership Role')}
-                        rules={[{ required: true, message: t('studentHub.profile.pleaseEnterLeadershipRole', 'Please enter leadership role') }]}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., Project lead' : 'e.g., Student Council President'} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'organization']}
-                        label={t('studentHub.profile.organization', 'Organization')}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., University research lab' : 'e.g., High School Student Council'} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'duration']}
-                        label={t('studentHub.profile.duration', 'Duration')}
-                      >
-                        <Input placeholder="e.g., 1 year" />
-                      </Form.Item>
-                    </Col>
-                    {!isReadOnly && (
-                      <Col span={2}>
-                        <Form.Item label=" ">
-                          <Button type="link" danger onClick={() => remove(name)}>
-                            {t('common.remove', 'Remove')}
-                          </Button>
-                        </Form.Item>
-                      </Col>
-                    )}
-                  </Row>
-                ))}
-                {!isReadOnly && (
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      {t('studentHub.profile.addLeadershipRole', 'Add Leadership Role')}
-                    </Button>
-                  </Form.Item>
-                )}
-              </>
-            )}
-          </Form.List>
-        </Card>
-
-        {/* Awards & Achievements */}
-        <Card title={t('studentHub.profile.awardsAchievements', 'Awards & Achievements')} className="section-card">
+        <Card title="Awards & achievements" className="section-card">
           <Form.List name="awards">
             {(fields, { add, remove }) => (
               <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row key={key} gutter={16}>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'name']}
-                        label={t('studentHub.profile.awardName', 'Award Name')}
-                        rules={[{ required: true, message: t('studentHub.profile.pleaseEnterAwardName', 'Please enter award name') }]}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., Undergraduate research award' : 'e.g., National Merit Scholar'} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'year']}
-                        label={t('studentHub.profile.year', 'Year')}
-                      >
-                        <Input placeholder="e.g., 2024" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'organization']}
-                        label={t('studentHub.profile.awardingOrganization', 'Awarding Organization')}
-                      >
-                        <Input placeholder={isMasters ? 'e.g., University department' : 'e.g., National Merit Corporation'} />
-                      </Form.Item>
-                    </Col>
-                    {!isReadOnly && (
-                      <Col span={2}>
-                        <Form.Item label=" ">
-                          <Button type="link" danger onClick={() => remove(name)}>
-                            {t('common.remove', 'Remove')}
-                          </Button>
+                <div className="profile-list-intro">
+                  <p>Keep each award as a dated record. You can reuse it across applications.</p>
+                  {!readOnly && <Button icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />} onClick={() => add()}>Add award</Button>}
+                </div>
+                {fields.map(({ key, name }) => (
+                  <div key={key} className="profile-experience-entry">
+                    <div className="profile-entry-heading">
+                      <strong>Award {name + 1}</strong>
+                      {!readOnly && <Button type="text" danger icon={<FontAwesomeIcon icon={ACTION_ICONS.DELETE} />} aria-label={`Remove award ${name + 1}`} onClick={() => remove(name)} />}
+                    </div>
+                    <Row gutter={[16, 4]}>
+                      <Col xs={24} md={12}>
+                        <Form.Item name={[name, 'name']} label="Award" rules={[{ required: true, message: 'Enter an award name' }]}>
+                          <Input placeholder="Award or achievement" />
                         </Form.Item>
                       </Col>
-                    )}
-                  </Row>
+                      <Col xs={24} md={4}>
+                        <Form.Item name={[name, 'year']} label="Year"><Input type="number" min={1900} max={new Date().getFullYear() + 5} placeholder="2026" /></Form.Item>
+                      </Col>
+                      <Col xs={24} md={8}>
+                        <Form.Item name={[name, 'organization']} label="Awarding organization"><Input /></Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
                 ))}
-                {!isReadOnly && (
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<FontAwesomeIcon icon={ACTION_ICONS.ADD} />}>
-                      {t('studentHub.profile.addAward', 'Add Award')}
-                    </Button>
-                  </Form.Item>
-                )}
               </>
             )}
           </Form.List>
         </Card>
 
-        {/* Save/Reset – hidden in read-only (counselor) view */}
-        {!isReadOnly && (
+        {!readOnly && (
           <Card className="save-section">
             <Space>
-              <Button type="primary" htmlType="submit" loading={loading} size="large">
-                {t('studentHub.profile.saveActivitiesProfile', 'Save Activities Profile')}
-              </Button>
-              <Button size="large" onClick={() => form.resetFields()}>
-                {t('common.reset', 'Reset')}
-              </Button>
+              <Button type="primary" htmlType="submit" loading={saving} size="large">Save activities & achievements</Button>
+              <Button onClick={() => form.resetFields()} size="large">Reset</Button>
             </Space>
           </Card>
         )}

@@ -21,4 +21,19 @@ describe('study direction choices', () => {
       because: expect.stringContaining('You selected Artificial intelligence'),
     })]);
   });
+
+  it('shows older personal-profile choices until direction choices are saved', () => {
+    const personal = {
+      intendedMajors: [{ major: 'Computer Science' }],
+      personalInterests: ['Technology'],
+      careerGoals: ['Research software systems'],
+      studyAbroadGoals: { targetCountries: ['uk'] },
+    };
+    expect(readStudyDirectionChoices({}, personal)).toMatchObject({
+      interests: ['Computer Science', 'Technology'],
+      goals: ['Research software systems'],
+      countries: ['United Kingdom'],
+    });
+    expect(readStudyDirectionChoices({ studyDirection: { interests: [], goals: [] } }, personal).interests).toEqual([]);
+  });
 });

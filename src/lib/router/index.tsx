@@ -15,6 +15,7 @@ import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboa
 import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
 import { useGetMyOrgMembershipQuery } from "src/app/services/student-hub/orgMembershipApi";
 import { hasActiveCommunityOrgMembership } from "src/lib/communityOrgAccess";
+import { hasActiveDirectCommunityAccess } from "src/lib/communityAccess";
 import { useListPostsQuery } from "src/app/services/communityFeedApi";
 
 // Stable args for the feed prefetch — must serialize identically to the
@@ -302,8 +303,9 @@ function RouterProvider() {
     isAuthenticated &&
     (subscriptionData?.status === 'active' ||
       subscriptionData?.status === 'trialing' ||
-      ((prefsData as any)?.data ?? prefsData)?.applicationSettings
-        ?.communityExperienceMode === 'community' ||
+      hasActiveDirectCommunityAccess(
+        ((prefsData as any)?.data ?? prefsData)?.applicationSettings,
+      ) ||
       hasActiveCommunityOrgMembership(studentOrgMemberships));
   useListPostsQuery(FEED_DEFAULT_ARGS, { skip: !communityEntitled });
 

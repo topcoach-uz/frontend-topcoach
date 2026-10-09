@@ -5,6 +5,7 @@ import {
   UpdateStudentDocumentRequest,
   PaginatedResponse,
   ApiResponse,
+  StudentEssay,
 } from './types';
 
 // Document types enum matching backend
@@ -150,6 +151,11 @@ export const documentManagementApi = RtkApi.injectEndpoints({
     }),
 
     // Upload document
+    reviewDocumentWithAi: builder.mutation<ApiResponse<StudentEssay['aiFeedback']>, { id: string; text: string }>({
+      query: ({ id, text }) => ({ url: `/document-management/${id}/ai-review`, method: 'POST', body: { text } }),
+      transformResponse: asData<StudentEssay['aiFeedback']>,
+    }),
+
     uploadDocument: builder.mutation<
       ApiResponse<StudentDocument>,
       FormData
@@ -262,6 +268,7 @@ export const documentManagementApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useReviewDocumentWithAiMutation,
   useGetDocumentsQuery,
   useGetDocumentQuery,
   useGetDocumentVersionsQuery,

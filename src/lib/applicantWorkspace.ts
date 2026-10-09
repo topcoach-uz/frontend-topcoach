@@ -6,7 +6,7 @@ export function isApplicantWorkspacePath(pathname: string) {
   return (
     APPLICANT_WORKSPACE_ENABLED &&
     /^\/student-hub(?:\/|$)/.test(pathname) &&
-    !/^\/student-hub\/(?:sat-prep|research-prep)(?:\/|$)/.test(pathname)
+    !/^\/student-hub\/(?:sat-prep|research-prep|ielts-prep)(?:\/|$)/.test(pathname)
   );
 }
 
