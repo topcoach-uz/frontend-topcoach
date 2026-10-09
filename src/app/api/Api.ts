@@ -170,6 +170,8 @@ export interface MentorEducationHistorySchema {
 }
 
 export interface MentorProfilesSchema {
+  mentorshipType?: 'bachelor' | 'master' | 'both';
+  showPrice?: boolean;
   id: string;
   /** @format date-time */
   createdAt: string;

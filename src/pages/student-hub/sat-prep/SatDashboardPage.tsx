@@ -1,3 +1,4 @@
+import SatTargetScore from './SatTargetScore';
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, RotateCcw, Timer } from "lucide-react";
@@ -78,15 +79,12 @@ const SatDashboardPage: React.FC = () => {
             <strong>{score.total ?? "—"}</strong>
             <span>Latest combined estimate</span>
           </div>
-          <div className="sat-platform__target">
-            <strong>—</strong>
-            <span>Target score not set</span>
-          </div>
+          <SatTargetScore score={score.total} />
         </div>
         <div className="sat-platform__score-track" aria-hidden="true">
           <i
             style={{
-              width: `${score.total ? (score.total / 1600) * 100 : 0}%`,
+              width: `${score.total ? ((score.total - 400) / 1200) * 100 : 0}%`,
             }}
           />
         </div>
@@ -96,7 +94,7 @@ const SatDashboardPage: React.FC = () => {
               ? "Based on your latest Math and Reading & Writing mocks"
               : "Complete both section mocks to establish your baseline"}
           </span>
-          <span>SAT scale: 400–1600</span>
+          <span>Score scale: 400–1600</span>
         </div>
         <div className="sat-platform__hero-action">
           <button

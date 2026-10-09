@@ -68,7 +68,6 @@ jobs:
         env:
           # Same-origin API: caddy on the dev server proxies /api → dev backend
           VITE_API_HOST: ''
-          VITE_ONBOARDING_V2_ENABLED: 'true'
           VITE_APPLICANT_WORKSPACE_ENABLED: 'true'
           NODE_OPTIONS: --max-old-space-size=4096
         run: yarn build
@@ -85,7 +84,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no $DEST "mkdir -p /srv/previews/frontend/$SLUG"
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" dist/ $DEST:/srv/previews/frontend/$SLUG/
 
+      - name: Record preview URL
+        run: echo "Preview deployed to ${{ needs.slug.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Comment preview URL on PR
+        continue-on-error: true
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
@@ -112,6 +115,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }} "rm -rf /srv/previews/frontend/$SLUG"
 
       - name: Comment cleanup on PR
+        continue-on-error: true
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: preview

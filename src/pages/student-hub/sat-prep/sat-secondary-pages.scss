@@ -19,7 +19,7 @@
   .sat-packs__header .sat-eyebrow,
   .sat-secondary-heading .sat-eyebrow {
     font:
-      500 10px "DM Sans",
+      500 .75rem "DM Sans",
       sans-serif;
     letter-spacing: 1.1px;
     text-transform: uppercase;
@@ -40,7 +40,7 @@
   .sat-mocks__hero p,
   .sat-packs__header p,
   .sat-secondary-heading p {
-    font-size: 13px;
+    font-size: 0.875rem;
     color: #747d88;
     line-height: 1.6;
     margin: 0;
@@ -49,7 +49,7 @@
   .sat-secondary-notice {
     padding: 20px 0;
     color: #747d88;
-    font-size: 13px;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -59,10 +59,10 @@
     color: #747d88;
     border: 1px solid transparent;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: 0.875rem;
     font-weight: 400;
     padding: 7px 11px;
-    min-height: 32px;
+    min-height: 44px;
     box-shadow: none;
     transition:
       background 0.15s,
@@ -84,7 +84,7 @@
     margin: 0 0 20px;
     button {
       font:
-        12px "DM Sans",
+         0.875rem "DM Sans",
         sans-serif;
       color: #777f89;
       background: #eff0f2;
@@ -121,7 +121,7 @@
     background: #e5e7eb;
   }
   .sat-flow__control-label {
-    font-size: 10px;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #858c95;
   }
@@ -145,10 +145,10 @@
     background: #eff0f2;
     color: #858c95;
     padding: 2px 6px;
-    font-size: 10px;
+    font-size: 0.75rem;
   }
   .sat-flow__select-all {
-    font-size: 11px;
+    font-size: 0.75rem;
     color: #8b0000;
     &:hover {
       color: #650000;
@@ -163,10 +163,10 @@
     }
   }
   .sat-flow__domain-name {
-    font-size: 13px;
+    font-size: 0.875rem;
   }
   .sat-flow__domain-skills {
-    font-size: 10px;
+    font-size: 0.75rem;
   }
   .sat-flow__skills {
     border-color: #e2e5e9;
@@ -178,7 +178,7 @@
     }
   }
   .sat-flow__skill-label {
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #67717c;
   }
   .sat-flow__check {
@@ -215,7 +215,7 @@
     box-shadow: 0 4px 18px #26323f0c;
   }
   .sat-flow__sticky-stat {
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #67717c;
     strong {
       color: #30353b;
@@ -232,13 +232,13 @@
     background: #e5e7eb;
   }
   .sat-flow__sticky-cta {
-    min-height: 40px;
+    min-height: 44px;
     padding: 10px 16px;
     border: 1px solid #790000;
     border-radius: 7px;
     background: #8b0000;
     color: #fff;
-    font-size: 12px;
+    font-size: 0.875rem;
     font-weight: 500;
     box-shadow: inset 0 1px #ffffff20;
     gap: 8px;
@@ -288,7 +288,7 @@
     gap: 8px;
   }
   .sat-mocks__progress .sat-eyebrow {
-    font-size: 10px;
+    font-size: 0.75rem;
     letter-spacing: 1px;
     color: #858c95;
   }
@@ -299,7 +299,7 @@
   }
   .sat-mocks__progress-label,
   .sat-mocks__progress-track-label {
-    font-size: 11px;
+    font-size: 0.75rem;
   }
   .sat-mocks__progress-divider {
     background: #e5e7eb;
@@ -317,7 +317,7 @@
     font-weight: 500;
   }
   .sat-mocks__list-meta {
-    font-size: 11px;
+    font-size: 0.75rem;
     color: #858c95;
   }
   .sat-mocks__grid,
@@ -369,19 +369,19 @@
   }
   .sat-mocks__card-eyebrow,
   .sat-packs__card-eyebrow {
-    font-size: 9px;
+    font-size: 0.75rem;
     font-weight: 400;
     letter-spacing: 0.5px;
     color: #858c95;
   }
   .sat-mocks__card-meta,
   .sat-packs__card-meta {
-    font-size: 11px;
+    font-size: 0.75rem;
     color: #747d88;
   }
   .sat-mocks__card-date,
   .sat-packs__card-status {
-    font-size: 10px;
+    font-size: 0.75rem;
     color: #929aa4;
   }
   .sat-mocks__card-done-pill,
@@ -390,7 +390,7 @@
     color: #587160;
     border: 0;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: 0.75rem;
   }
   .sat-mocks__card-attempt,
   .sat-packs__card-attempt {
@@ -417,9 +417,9 @@
     border-radius: 7px;
     background: #fff;
     color: #444d57;
-    min-height: 40px;
+    min-height: 44px;
     font:
-      500 12px "DM Sans",
+      500  0.875rem "DM Sans",
       sans-serif;
     padding: 8px 12px;
     margin-top: 18px;
@@ -457,7 +457,7 @@
     gap: 24px;
   }
   .sat-packs__hstat-label {
-    font-size: 10px;
+    font-size: 0.75rem;
     color: #858c95;
   }
   .sat-packs__hstat-value {
@@ -477,7 +477,7 @@
     box-shadow: none;
   }
   .sat-packs__count {
-    font-size: 11px;
+    font-size: 0.75rem;
     color: #858c95;
   }
   .sat-packs__card-stripe {
@@ -488,7 +488,7 @@
     border-radius: 4px;
     background: #eff0f2;
     color: #858c95;
-    font-size: 10px;
+    font-size: 0.75rem;
     border: 0;
   }
   .sat-catalog .sat-library__panel {
@@ -502,7 +502,7 @@
     border-color: #e1e4e8;
     border-radius: 5px;
     input {
-      font-size: 12px;
+      font-size: 0.875rem;
     }
   }
   .sat-catalog .sat-library__vocab-row,
@@ -515,7 +515,7 @@
   }
   .sat-catalog .sat-btn {
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 0.875rem;
     min-height: 34px;
     border-color: #d5dbe2;
     box-shadow: none;
@@ -528,7 +528,7 @@
       font-size: 18px;
     }
     .sat-library__empty-desc {
-      font-size: 12px;
+      font-size: 0.875rem;
     }
   }
 }
@@ -549,7 +549,7 @@
     color: inherit;
   }
   &__back {
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #858c95 !important;
     white-space: nowrap;
   }
@@ -576,7 +576,7 @@
         letter-spacing: -0.3px;
       }
       span {
-        font-size: 11px;
+        font-size: 0.75rem;
         color: #858c95;
       }
     }
@@ -591,7 +591,7 @@
       padding-left: 24px;
     }
     p {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #747d88;
       line-height: 1.5;
     }
@@ -606,7 +606,7 @@
       margin: 7px 0 8px;
     }
     small {
-      font-size: 12px;
+      font-size: 0.875rem;
       color: #929aa4;
       font-weight: 400;
       letter-spacing: 0;
@@ -622,11 +622,11 @@
     padding-top: 16px;
     margin-bottom: 16px;
     h3 {
-      font-size: 11px;
+      font-size: 0.75rem;
       font-weight: 500;
     }
     span {
-      font-size: 11px;
+      font-size: 0.75rem;
       color: #858c95;
     }
   }
@@ -637,12 +637,12 @@
       justify-content: space-between;
       align-items: baseline;
       margin-bottom: 9px;
-      font-size: 12px;
+      font-size: 0.875rem;
       strong {
         font-weight: 500;
       }
       span {
-        font-size: 11px;
+        font-size: 0.75rem;
         color: #858c95;
       }
     }
@@ -659,7 +659,7 @@
     }
   }
   &__caption {
-    font-size: 10px;
+    font-size: 0.75rem;
     color: #929aa4;
     border-top: 1px solid #edf0f2;
     padding-top: 16px;
@@ -670,7 +670,7 @@
     align-self: start;
     margin-top: 12px;
     .sat-eyebrow {
-      font-size: 10px;
+      font-size: 0.75rem;
       letter-spacing: 1px;
       color: #858c95;
     }
@@ -681,13 +681,13 @@
       margin: 18px 0 10px;
     }
     small {
-      font-size: 13px;
+      font-size: 0.875rem;
       color: #858c95;
       font-weight: 400;
       letter-spacing: 0;
     }
     p {
-      font-size: 13px;
+      font-size: 0.875rem;
       line-height: 1.6;
       color: #747d88;
       max-width: 300px;
@@ -711,12 +711,12 @@
     gap: 20px;
     border-bottom: 1px solid #e5e7eb;
     padding: 16px 0;
-    font-size: 13px;
+    font-size: 0.875rem;
     strong {
       font-weight: 500;
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
       color: #858c95;
       margin-top: 6px;
       line-height: 1.5;
@@ -727,19 +727,19 @@
     > div:first-child {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 0.875rem;
       strong {
         font-weight: 500;
       }
     }
     p {
-      font-size: 11px;
+      font-size: 0.75rem;
       color: #858c95;
       margin: 5px 0 9px;
     }
   }
   &__empty {
-    font-size: 12px;
+    font-size: 0.875rem;
     color: #858c95;
     line-height: 1.7;
     padding: 14px 0;
@@ -795,7 +795,7 @@
       flex-wrap: wrap;
     }
     .sat-flow__sticky-stat {
-      font-size: 11px;
+      font-size: 0.75rem;
     }
     .sat-flow__sticky-stat--muted,
     .sat-flow__sticky-sep {
@@ -803,7 +803,7 @@
     }
     .sat-flow__sticky-cta {
       margin-left: auto;
-      font-size: 11px;
+      font-size: 0.75rem;
       padding: 10px;
     }
     .sat-flow__controls-row {
@@ -813,7 +813,7 @@
       gap: 6px;
     }
     .sat-flow__panel-count {
-      font-size: 9px;
+      font-size: 0.75rem;
     }
     .sat-secondary-heading {
       display: block;
@@ -826,7 +826,7 @@
       flex-wrap: wrap;
     }
     .sat-mocks__list-meta {
-      font-size: 10px;
+      font-size: 0.75rem;
     }
     .sat-catalog .sat-library__panel {
       padding: 16px;
@@ -851,14 +851,14 @@
         font-size: 36px;
       }
       p {
-        font-size: 11px;
+        font-size: 0.75rem;
       }
     }
     &__telemetry {
       padding: 18px;
     }
     &__record {
-      font-size: 12px;
+      font-size: 0.875rem;
       gap: 10px;
     }
   }
@@ -878,3 +878,6 @@
 .sat-catalog__more-practice{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
 @media(max-width:420px){.sat-shell.applicant-specialist-page .sat-catalog__grid{grid-template-columns:1fr}}
 .sat-shell.applicant-specialist-page .sat-catalog__formula{font-family:Lora,Georgia,serif!important}
+
+.sat-flow__domain-disclosure { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; min-height: 44px; border: 0; padding: 8px 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sat-flow__domain-header .sat-flow__check { flex-shrink: 0; }

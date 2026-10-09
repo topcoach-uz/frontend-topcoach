@@ -10,6 +10,7 @@ import { getLatestCreatedImg } from 'src/utils';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'lucide-react';
 import MentorDetailsSocials from '../socials';
+import { mentorDisplay } from 'src/pages/mentors/_components/mentorCard/mentorDisplay';
 
 interface Props {}
 
@@ -54,6 +55,7 @@ export default function MentorDetailsAvatar({}: Props) {
 
   return (
     <div className={styles.mentor_profile_container}>
+      <CustomText fontSize={14} mb={12}>{mentorDisplay(mentorData?.mentorProfile ?? {}, mentorData?.email).label}</CustomText>
       <Flex
         className={styles.mentor_avatar}
         vertical={screenSize < 1024}

@@ -843,7 +843,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               </div>
 
               <div className="lesson-content">
-                {!selectedLesson.contentUrl && !selectedLesson.useVdoCipher ? (
+                {!selectedLesson.contentUrl && selectedLesson.lessonType !== 'text' && !selectedLesson.useVdoCipher ? (
                   <div className="lesson-error">
                     <h2>{t('Content not available')}</h2>
                     <p>{t('This lesson has no video/PDF. Please contact support.')}</p>

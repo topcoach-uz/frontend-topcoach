@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OnboardingState } from 'src/app/services/onboardingApi';
-import { buildStepMutation, hydrateProductionState, nextAfterSkip, shouldUseOnboardingV2 } from './productionContract';
+import { buildStepMutation, hydrateProductionState, nextAfterSkip } from './productionContract';
 
 describe('production onboarding contract', () => {
   it.each(['master', 'mentor'] as const)('round-trips %s university country', (degree) => {
@@ -106,9 +106,4 @@ describe('production onboarding contract', () => {
     expect(hydrateProductionState({ ...base, student: { intendedMajor: null, intendedMajorUnsure: false } }).values['b:targetField']).toBe('');
   });
 
-  it('keeps enrolled v2 users on v2 when new enrollment is disabled', () => {
-    expect(shouldUseOnboardingV2(2, false)).toBe(true);
-    expect(shouldUseOnboardingV2(1, false)).toBe(false);
-    expect(shouldUseOnboardingV2(1, true)).toBe(true);
-  });
 });

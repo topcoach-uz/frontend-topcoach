@@ -418,12 +418,7 @@ const SectionPanel: React.FC<{
           const isExpanded = expanded.has(`${section}/${dom.domain}`);
           return (
             <div key={dom.domain} className="sat-flow__domain">
-              <button
-                type="button"
-                className="sat-flow__domain-header"
-                aria-expanded={isExpanded}
-                onClick={() => onToggleExpand(`${section}/${dom.domain}`)}
-              >
+              <div className="sat-flow__domain-header">
                 <input
                   type="checkbox"
                   className="sat-flow__check"
@@ -436,18 +431,25 @@ const SectionPanel: React.FC<{
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => onToggleDomain(section, dom)}
                 />
-                <span className="sat-flow__domain-name">{dom.domain}</span>
-                <span className="sat-flow__domain-skills">
-                  {dom.skills.length}{" "}
-                  {dom.skills.length === 1 ? "skill" : "skills"}
-                </span>
-                <Dots domain={dom} />
-                {isExpanded ? (
-                  <ChevronDown size={14} />
-                ) : (
-                  <ChevronRight size={14} />
-                )}
-              </button>
+                <button
+                  type="button"
+                  className="sat-flow__domain-disclosure"
+                  aria-expanded={isExpanded}
+                  onClick={() => onToggleExpand(`${section}/${dom.domain}`)}
+                >
+                  <span className="sat-flow__domain-name">{dom.domain}</span>
+                  <span className="sat-flow__domain-skills">
+                    {dom.skills.length}{" "}
+                    {dom.skills.length === 1 ? "skill" : "skills"}
+                  </span>
+                  <Dots domain={dom} />
+                  {isExpanded ? (
+                    <ChevronDown size={14} />
+                  ) : (
+                    <ChevronRight size={14} />
+                  )}
+                </button>
+              </div>
               {isExpanded && (
                 <ul className="sat-flow__skills">
                   {dom.skills.map((s) => {

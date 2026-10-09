@@ -6,7 +6,7 @@ import { CustomText } from 'src/components/common';
 import styles from './mentorCard.module.scss';
 import { useTranslation } from 'react-i18next';
 import { getUniversityFlag } from 'src/utils/countryFlags';
-import { isMasterProgramMentorEmail } from './masterProgramMentors';
+import { mentorDisplay, type MentorshipType } from './mentorDisplay';
 
 function initialsFromName(name: string | null | undefined): string {
   if (!name) return '?';
@@ -23,6 +23,8 @@ function hashHue(key: string): number {
 }
 
 interface MentorCardProps {
+  mentorshipType?: MentorshipType;
+  showPrice?: boolean;
   id: string;
   imgSrc: string;
   major: string;
@@ -55,10 +57,12 @@ function MentorCard({
   giveawaySessionsCount = 0,
   email,
   cardIndex = 99,
+  mentorshipType,
+  showPrice,
 }: MentorCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const navigate = useNavigate();
-  const isMasterProgramMentor = isMasterProgramMentorEmail(email);
+  const display = mentorDisplay({ mentorshipType, showPrice }, email);
 
   const handleCardClick = () => {
     navigate(`/mentors/${id}`);
@@ -111,9 +115,7 @@ function MentorCard({
         {/* Coach level badge */}
         <CustomCard
           bgColor={
-            isMasterProgramMentor
-              ? '#0D9488' // Teal for Master Program (distinct from UzCombinator purple)
-              : level === 'expert'
+            level === 'expert'
                 ? '#FF8C42' // Vibrant orange for expert
                 : level === 'senior'
                   ? '#4A90E2' // Professional blue for senior
@@ -128,12 +130,12 @@ function MentorCard({
           <CustomText
             fontSize={12}
             fontWeight={500}
-            color={isMasterProgramMentor ? '#ffffff' : level === 'probono' ? '#333333' : '#ffffff'}
+            color={level === 'probono' ? '#333333' : '#ffffff'}
             style={{ 
               letterSpacing: '0.2px'
             }}
           >
-            {isMasterProgramMentor ? 'Master Program Mentor' : level === 'uzcombinator' ? 'UzCombinator' : level} Coach
+            {level === 'uzcombinator' ? 'UzCombinator' : level} Coach
           </CustomText>
         </CustomCard>
 
@@ -202,7 +204,8 @@ function MentorCard({
 
         {/* Pricing based on mentor level - hidden for UzCombinator mentors (rate, contact for pricing) */}
         <div className={styles.sessionsSection}>
-          {level !== 'uzcombinator' && (
+          <CustomText color={colors.colorTextSecondary} fontSize={13} fontWeight={500} mb={8}>{display.label}</CustomText>
+          {display.showPrice && level !== 'uzcombinator' && (
             <>
               <CustomText
                 color={colors.colorTextSecondary}
@@ -210,21 +213,16 @@ function MentorCard({
                 fontWeight={500}
                 style={{ marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}
               >
-                {isMasterProgramMentor
-                  ? 'Master Program'
-                  : level === 'probono'
+                {level === 'probono'
                     ? t('mentors.complimentarySession') || 'Complimentary'
                     : t('mentors.rate') || 'Rate'}
               </CustomText>
               <CustomText
                 color={colors.colorText}
-                fontSize={isMasterProgramMentor ? 14 : 16}
+                fontSize={16}
                 fontWeight={600}
-                style={isMasterProgramMentor ? { lineHeight: 1.35 } : undefined}
               >
-                {isMasterProgramMentor
-                  ? "Currently mentoring in Master's program."
-                  : level === 'expert'
+                {level === 'expert'
                     ? '$50 – $100 / session'
                     : level === 'senior'
                       ? '$25 – $50 / session'

@@ -223,7 +223,3 @@ export function mutationEnvelope(revision: number, action: OnboardingAction) {
 }
 
 export function pathFromDegree(degree: Degree): OnboardingPath { return degree; }
-
-export function shouldUseOnboardingV2(version: number | null | undefined, enabled: boolean): boolean {
-  return version === 2 || enabled;
-}
