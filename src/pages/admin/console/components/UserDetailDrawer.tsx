@@ -21,6 +21,7 @@ import {
 import { getAdminConsoleAntdTheme } from '../adminConsoleThemeConfig';
 import { AcPill, type AcPillVariant } from './AcPill';
 import { avatarStyleForId, formatUZS, initialsFromName } from '../utils';
+import UserSetupControls from './UserSetupControls';
 import AccountAccessPanel from './AccountAccessPanel';
 import MentorDisplayControls from './MentorDisplayControls';
 
@@ -243,6 +244,7 @@ export default function UserDetailDrawer({ user, open, onClose }: Props) {
                   )}
                   <Descriptions.Item label="Joined">{formatDate(detail.createdAt)}</Descriptions.Item>
                 </Descriptions>
+                <UserSetupControls key={`setup-${detail.id}`} userId={detail.id} />
                 <AccountAccessPanel key={detail.id} userId={detail.id} />
                 {detail.bio && (
                   <div>
