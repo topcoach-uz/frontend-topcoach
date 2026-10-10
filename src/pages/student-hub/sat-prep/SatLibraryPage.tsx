@@ -373,8 +373,10 @@ const SatLibraryPage: React.FC = () => {
                 aria-pressed={tab === id}
                 onClick={() => setParams({ tab: id })}
               >
-                {label}
-                {count != null ? ` · ${count}` : ""}
+                <span className="sat-catalog__tab-label">{label}</span>
+                {count != null && (
+                  <span className="sat-catalog__tab-count">{count}</span>
+                )}
               </button>
             ))}
           </nav>
