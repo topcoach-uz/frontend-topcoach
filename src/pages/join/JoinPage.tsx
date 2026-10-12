@@ -98,8 +98,9 @@ export default function JoinPage() {
   }, [data]);
 
   /**
-   * Preserve the invitation through authentication and email verification.
-   * The server also enrolls by verified email when the link opens on another device.
+   * Pass the email invitation proof through password setup. The server validates
+   * and consumes it during signup, verifies the invited email, and signs in.
+   * Existing accounts return here after ordinary authentication.
    * Staff use the same account registration endpoint; organization membership
    * determines counselor access and bypasses student onboarding.
    */
@@ -115,6 +116,7 @@ export default function JoinPage() {
       return;
     }
     const params = new URLSearchParams({ redirect: target });
+    params.set('invitationToken', token);
     if (data?.email) params.set('email', data.email);
     if (orgName) params.set('org', orgName);
     if (data?.role) params.set('role', data.role);

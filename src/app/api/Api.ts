@@ -895,6 +895,7 @@ export interface RegisterMentorEmailDto {
 }
 
 export interface RegisterStudentEmailDto {
+  invitationToken?: string;
   email: string;
   phoneNumber?: string | null;
   name: string;
@@ -2585,7 +2586,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @response `500` `void` Internal server error
      */
     registerStudentByEmail: (data: RegisterStudentEmailDto, params: RequestParams = {}) =>
-      this.request<{ message: string; emailVerificationRequired?: boolean }, void>({
+      this.request<{ message: string; emailVerificationRequired?: boolean; user?: { access: string; refresh: string } }, void>({
         path: `/auth/student/register/email`,
         method: "POST",
         body: data,
