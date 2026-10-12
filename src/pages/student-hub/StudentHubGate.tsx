@@ -2,8 +2,8 @@
  * Gate for /student-hub: redirect ALL mentors (platform staff or not — they
  * work from the mentor dashboard) and org staff to their own home surfaces.
  *
- * Platform staff (SuperAdmin/Owner `managementRole`) keep the hub: `/org/me`
- * returns every org for them, so they must not be treated as org staff here.
+ * Platform staff retain hub preview access unless they have an actual active
+ * school staff assignment. Global organization preview access is not a seat.
  *
  * Hook-order fix: useCounselorStatus (useState/useEffect) + useGetMeQuery(skip) caused
  * "change in order of Hooks" on refresh. We use Redux for profile and the
@@ -44,27 +44,18 @@ export default function StudentHubGate() {
     );
   }
 
-  // Platform staff (SuperAdmin/Owner) keep the hub — unless they are mentors,
-  // who fall through to the mentor check below like any other mentor.
+  // An actual school assignment wins even when the account is an admin or
+  // still has a Student/Mentor profile. Admin preview access alone stays here.
+  if (isOrgStaff) {
+    return <Navigate to="/counselor-console" replace />;
+  }
+
   if (isPlatformStaff && !isMentor) {
     return (
       <JourneyExperienceProvider>
         <StudentHubRoutes />
       </JourneyExperienceProvider>
     );
-  }
-
-  // Org staff FIRST — before the mentor check.
-  //
-  // `/org/me` returns only owner/counselor memberships, so this means "this
-  // user helps run an organization", which outranks their personal profile
-  // role. The counselor invite flow routes new staff through the ordinary
-  // signup, where they must pick Student or Mentor — so an owner/counselor very
-  // often also carries `profile.role === 'Mentor'`. With the mentor check
-  // first, those accounts were sent to the mentor home and could never reach
-  // their console.
-  if (isOrgStaff) {
-    return <Navigate to="/counselor-console" replace />;
   }
 
   if (isMentor) {
