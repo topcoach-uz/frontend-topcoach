@@ -60,8 +60,8 @@ function HomeRouterContent({ profile }: HomeRouterContentProps) {
   // the ordinary signup, where they must pick Student or Mentor, so staff
   // carrying `role === 'Mentor'` is the norm, not the exception.
   //
-  // Platform staff (SuperAdmin/Owner) are excluded inside useOrgStaff — for
-  // them `/org/me` returns EVERY org, so they'd all be hijacked here.
+  // Admin preview access alone is excluded inside useOrgStaff. A real school
+  // assignment still takes priority for an administrator.
   if (isOrgStaff) {
     return <Navigate to="/counselor-console" replace />;
   }

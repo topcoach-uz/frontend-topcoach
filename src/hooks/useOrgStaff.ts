@@ -1,27 +1,14 @@
-/**
- * Single source of truth for "does this user run an organization?".
- *
- * Backed by `GET /org/me` (`useGetMyOrgsQuery`), which returns OWNER +
- * COUNSELOR memberships with `status = ACTIVE`. It deliberately excludes
- * STUDENT memberships — org students keep the ordinary student experience.
- *
- * ⚠️ `/org/me` also returns EVERY organization when the caller is platform
- * staff (SuperAdmin/Owner `managementRole`). So a non-empty response is NOT
- * on its own proof of org staff: without the `isPlatformStaff` subtraction
- * below, every SuperAdmin would be force-redirected into the counselor
- * console and lose the admin experience. Platform staff can still ENTER any
- * console (CounselorConsoleGate lets them in, and the console has a "Back to
- * admin" link) — they are simply never auto-routed there.
- */
-
+/** Actual owner/counselor assignments take priority over the account profile,
+ * including for platform administrators. Preview access alone is not staff. */
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import { useGetMyOrgsQuery } from 'src/app/services/counselorConsoleApi';
+import { resolveOrgStaffStatus } from 'src/lib/orgStaff';
 
 export interface OrgStaffStatus {
-  /** Runs an org AND is not acting as platform staff — the routing signal. */
+  /** Holds an active school staff assignment — the routing signal. */
   isOrgStaff: boolean;
-  /** Platform-level SuperAdmin/Owner. Never auto-redirected to the console. */
+  /** Platform-level SuperAdmin/Owner; explicit school assignments still win. */
   isPlatformStaff: boolean;
   /** Raw `/org/me` non-empty. For platform staff this means "all orgs". */
   hasOrgMembership: boolean;
@@ -37,7 +24,6 @@ export default function useOrgStaff(): OrgStaffStatus {
   const currentUser = userData ?? authProfile;
   const managementRole = (currentUser as { managementRole?: string } | null | undefined)
     ?.managementRole;
-  const isPlatformStaff = managementRole === 'SuperAdmin' || managementRole === 'Owner';
 
   const {
     data: orgs,
@@ -45,12 +31,8 @@ export default function useOrgStaff(): OrgStaffStatus {
     isFetching,
   } = useGetMyOrgsQuery(undefined, { skip: !isAuthenticated });
 
-  const hasOrgMembership = Array.isArray(orgs) && orgs.length > 0;
-
   return {
-    isOrgStaff: hasOrgMembership && !isPlatformStaff,
-    isPlatformStaff,
-    hasOrgMembership,
+    ...resolveOrgStaffStatus(managementRole, orgs),
     isLoading: isAuthenticated && (isLoading || (isFetching && !orgs)),
   };
 }

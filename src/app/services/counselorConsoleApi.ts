@@ -37,6 +37,8 @@ export interface Organization {
 
 /** One row of `GET /org/me` — the user's membership in an organization. */
 export interface OrgMembership {
+  /** Actual school assignment, distinguished from administrator preview access. */
+  isAssignedMember?: boolean;
   organization: Organization;
   role: OrgMembershipRole;
   status: OrgMembershipStatus;
