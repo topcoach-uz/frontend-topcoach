@@ -21,6 +21,7 @@ import {
   useGetStudentEssayQuery,
   useGetStudentEssaysQuery,
   useGetEssayVersionsQuery,
+  useGetEnhancedFeedbackQuery,
   useCreateEssayVersionMutation,
   useUpdateStudentEssayMutation,
 } from "src/app/services/student-hub/essayManagementApi";
@@ -280,7 +281,13 @@ export function ApplicantEssayEditorPage() {
   const [params, setParams] = useSearchParams();
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
+  useEffect(() => { if (params.get('helper') === 'ai') setSidePanel('review'); }, [params.get('helper')]);
+  const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
   const essay = query.data?.data;
+  const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
+    skip: !essayId || !aiFeedbackRequested,
+  });
+  const aiFeedback = aiFeedbackQuery.data?.data;
   const profileId = useTypedSelector((state) => state.auth.profile?.id);
   const localDraftKey = essayId
     ? `topcoach:essay-draft:${profileId || "current"}:${essayId}`
@@ -576,6 +583,26 @@ export function ApplicantEssayEditorPage() {
                 </ol>
                 <small>These are writing prompts from TopCoach, not official admission requirements.</small>
               </> : <>
+                <h3>Writing helper</h3>
+                <p>Get suggestions for your saved draft. This is automated guidance, not mentor feedback.</p>
+                <Button
+                  onClick={() => {
+                    if (aiFeedbackRequested) void aiFeedbackQuery.refetch();
+                    else setAiFeedbackRequested(true);
+                  }}
+                  loading={aiFeedbackQuery.isFetching}
+                  disabled={!content.trim() || dirty}
+                >
+                  {aiFeedbackRequested ? 'Refresh suggestions' : 'Review saved draft'}
+                </Button>
+                {dirty && <p>Save your latest changes before requesting suggestions.</p>}
+                {aiFeedbackQuery.isError && <Alert type="warning" message="Could not review this draft. Please try again." />}
+                {aiFeedback && <div className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
+                  {aiFeedback.analysisVersion === 'checklist' && <Alert type="info" message="AI is unavailable. This is a general writing checklist, not an analysis of your draft." />}
+                  {aiFeedback.strengths?.length ? <><strong>What works</strong><ul>{aiFeedback.strengths.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
+                  {aiFeedback.weaknesses?.length ? <><strong>What to improve</strong><ul>{aiFeedback.weaknesses.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
+                  {aiFeedback.suggestions?.length ? <><strong>Suggestions</strong><ul>{aiFeedback.suggestions.map((item, index) => <li key={index}>{item.text}</li>)}</ul></> : null}
+                </div>}
                 <label className="applicant-writing-desk__stage-label" htmlFor="applicant-essay-stage">Stage</label>
                 <Select
                   id="applicant-essay-stage"

@@ -226,6 +226,10 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
           </span>
           <span className={styles.navLabel}>{t('studentHub.nav.applications', 'Applications')}</span>
         </button>
+        <button type="button" className={styles.navItem} onClick={() => go('/student-hub/ielts-prep')}>
+          <span className={styles.navIconCircle}><UnifiedIcon name="language" size="md" color="primary" /></span>
+          <span className={styles.navLabel}>{t('studentHub.hub.ieltsTestPrep', 'IELTS test prep')}</span>
+        </button>
         <button
           type="button"
           className={`${styles.navItem} ${isSat ? styles.navItemActive : ''}`}

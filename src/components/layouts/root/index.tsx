@@ -24,6 +24,7 @@ export default function RootLayout() {
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/admin') ||
     pathname.startsWith('/student-hub/sat-prep/runner') ||
+    pathname.startsWith('/student-hub/ielts-prep') ||
     isApplicantWorkspacePath(pathname);
 
   return (

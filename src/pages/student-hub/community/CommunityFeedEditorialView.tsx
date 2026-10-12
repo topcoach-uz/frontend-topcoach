@@ -406,6 +406,7 @@ export const renderBody = (body: string, onTagClick?: (tag: string) => void) =>
 /* ─── component ─────────────────────────────────────────────── */
 
 type Props = {
+  readOnly?: boolean;
   currentUser: {
     id: string;
     name: string;
@@ -431,6 +432,7 @@ type Props = {
 const CommunityFeedEditorialView: React.FC<Props> = ({
   currentUser,
   showUpcomingSessions = false,
+  readOnly = false,
 }) => {
   const navigate = useNavigate();
   // Only the "Upcoming sessions" widget's strings are localized via `t()` —
@@ -868,10 +870,11 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
       title="Community Feed"
       subtitle="Ask clearly, learn together, and celebrate meaningful progress."
     >
-    <div className="cf" ref={feedTopRef}>
+    <div className={`cf ${readOnly ? 'cf--read-only' : ''}`} ref={feedTopRef}>
       <div className="cf__layout">
         {/* ═══ MAIN COLUMN ═════════════════════════════════════════ */}
         <main className="cf__main">
+          {readOnly && <p className="cf__read-only-note">Explore the community feed. Community access is needed to post or interact.</p>}
           {/* Saved view title strip — only in saved mode, so the user knows
               what they're looking at now that the loud tab strip is gone. */}
           {viewMode === 'saved' && (
@@ -971,7 +974,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
           )}
 
           {/* composer */}
-          {currentUser.canPost && viewMode === 'feed' && (
+          {!readOnly && currentUser.canPost && viewMode === 'feed' && (
             <div className="cf__composer">
               <div className="cf__composer-top">
                 {currentUser.avatarUrl ? (

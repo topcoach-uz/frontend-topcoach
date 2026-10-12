@@ -4,18 +4,35 @@
  * in the progress summary (latest attempt wins).
  */
 
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Empty, Spin, message, Input } from 'antd';
-import { ArrowRight, BookOpen, Calculator, CheckCircle2, FileQuestion, Play, RotateCcw, Search, TimerReset } from 'lucide-react';
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Empty, Spin, message, Input } from "antd";
+import {
+  ArrowRight,
+  BookOpen,
+  Calculator,
+  CheckCircle2,
+  FileQuestion,
+  Play,
+  RotateCcw,
+  Search,
+  TimerReset,
+} from "lucide-react";
 import {
   useAggregateSatCountsQuery,
   useLazyFilterSatQuestionsQuery,
-} from 'src/app/services/sat-prep';
-import { useGetSatProgressQuery, type SessionRecord } from 'src/app/services/sat-prep/local-progress';
-import type { SatDifficulty, SatSection } from 'src/app/services/sat-prep/types';
-import 'src/components/sat-prep/sat-prep-shell.scss';
-import './sat-test-packs.scss';
+} from "src/app/services/sat-prep";
+import {
+  useGetSatProgressQuery,
+  type SessionRecord,
+} from "src/app/services/sat-prep/local-progress";
+import type {
+  SatDifficulty,
+  SatSection,
+} from "src/app/services/sat-prep/types";
+import "src/components/sat-prep/sat-prep-shell.scss";
+import "./sat-test-packs.scss";
+import "./sat-secondary-pages.scss";
 
 interface PackAttempt {
   attempts: number;
@@ -42,13 +59,21 @@ const MIN_PER_QUESTION = 3.4; // ~75 min for a 22-q pack — close to a real DSA
 // Pack title format used when starting: `${domain} · ${cap(difficulty)}`.
 // Parsing it back lets us join sessions to packs without a packId column.
 const TITLE_RE = /^(.+?)\s*·\s*(Easy|Medium|Hard)\s*$/;
-const parsePackTitle = (title: string): { domain: string; difficulty: SatDifficulty } | null => {
+const parsePackTitle = (
+  title: string,
+): { domain: string; difficulty: SatDifficulty } | null => {
   const m = title.match(TITLE_RE);
   if (!m) return null;
-  return { domain: m[1].trim(), difficulty: m[2].toLowerCase() as SatDifficulty };
+  return {
+    domain: m[1].trim(),
+    difficulty: m[2].toLowerCase() as SatDifficulty,
+  };
 };
-const packKey = (section: SatSection, domain: string, difficulty: SatDifficulty) =>
-  `${section}-${domain}-${difficulty}`;
+const packKey = (
+  section: SatSection,
+  domain: string,
+  difficulty: SatDifficulty,
+) => `${section}-${domain}-${difficulty}`;
 
 const SatTestPacksPage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,9 +81,11 @@ const SatTestPacksPage: React.FC = () => {
   const { data: progress } = useGetSatProgressQuery();
   const [fetch] = useLazyFilterSatQuestionsQuery();
 
-  const [search, setSearch] = useState('');
-  const [filterSection, setFilterSection] = useState<SatSection | 'all'>('all');
-  const [filterDifficulty, setFilterDifficulty] = useState<SatDifficulty | 'all'>('all');
+  const [search, setSearch] = useState("");
+  const [filterSection, setFilterSection] = useState<SatSection | "all">("all");
+  const [filterDifficulty, setFilterDifficulty] = useState<
+    SatDifficulty | "all"
+  >("all");
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
 
   // Build pack-id → aggregate from packSessions. Sessions arrive newest-first
@@ -103,7 +130,7 @@ const SatTestPacksPage: React.FC = () => {
         domain: c.domain,
         difficulty: c.difficulty,
         questionCount: cappedCount,
-        estimatedMin: Math.round(cappedCount * MIN_PER_QUESTION / 5) * 5,
+        estimatedMin: Math.round((cappedCount * MIN_PER_QUESTION) / 5) * 5,
         attempt: attemptByPack.get(id),
       });
     }
@@ -124,9 +151,11 @@ const SatTestPacksPage: React.FC = () => {
   }, [packs]);
 
   const filtered = packs.filter((p) => {
-    if (filterSection !== 'all' && p.section !== filterSection) return false;
-    if (filterDifficulty !== 'all' && p.difficulty !== filterDifficulty) return false;
-    if (search && !p.domain.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterSection !== "all" && p.section !== filterSection) return false;
+    if (filterDifficulty !== "all" && p.difficulty !== filterDifficulty)
+      return false;
+    if (search && !p.domain.toLowerCase().includes(search.toLowerCase()))
+      return false;
     return true;
   });
 
@@ -134,35 +163,42 @@ const SatTestPacksPage: React.FC = () => {
     setLoadingPack(pack.id);
     try {
       // Deterministic ordering — same questions every retake (the whole
-       // point of "test packs"). The backend already sorts by questionId
-       // when `order: 'default'`.
+      // point of "test packs"). The backend already sorts by questionId
+      // when `order: 'default'`.
       const result = await fetch({
         section: pack.section,
         domain: pack.domain,
         difficulty: pack.difficulty,
         limit: pack.questionCount,
-        order: 'default',
+        order: "default",
       }).unwrap();
       if (!result.items.length) {
-        message.warning('Pack is empty.');
+        message.warning("Pack is empty.");
         return;
       }
-      sessionStorage.setItem('sat-mock-test', JSON.stringify(result.items));
-      sessionStorage.setItem('sat-mock-test-meta', JSON.stringify({
-        title: `${pack.domain} · ${cap(pack.difficulty)}`,
-        section: pack.section,
-        mode: 'pack',
-      }));
-      navigate('/student-hub/sat-prep/runner');
+      sessionStorage.setItem("sat-mock-test", JSON.stringify(result.items));
+      sessionStorage.setItem(
+        "sat-mock-test-meta",
+        JSON.stringify({
+          title: `${pack.domain} · ${cap(pack.difficulty)}`,
+          section: pack.section,
+          mode: "pack",
+        }),
+      );
+      navigate("/student-hub/sat-prep/runner");
     } catch {
-      message.error('Could not load pack.');
+      message.error("Could not load pack.");
     } finally {
       setLoadingPack(null);
     }
   };
 
   if (isLoading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', padding: 96 }}><Spin size="large" /></div>;
+    return (
+      <div style={{ display: "flex", justifyContent: "center", padding: 96 }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return (
@@ -173,7 +209,8 @@ const SatTestPacksPage: React.FC = () => {
           <div className="sat-eyebrow">Curated sets</div>
           <h1 className="sat-page-title">Test Packs</h1>
           <p className="sat-page-desc">
-            Domain-focused, fixed-length practice sets. Same questions on retake — measure improvement, not luck.
+            Choose a domain and difficulty for a focused practice set. Retake a
+            set to compare your accuracy.
           </p>
         </div>
         <div className="sat-packs__header-stats">
@@ -181,12 +218,12 @@ const SatTestPacksPage: React.FC = () => {
           <HeaderStat
             label="Completed"
             value={String(completedCount)}
-            tone={completedCount === 0 ? 'muted' : 'normal'}
+            tone={completedCount === 0 ? "muted" : "normal"}
           />
           <HeaderStat
             label="Avg accuracy"
-            value={avgAccuracy == null ? '—' : `${avgAccuracy}%`}
-            tone={avgAccuracy == null ? 'muted' : 'normal'}
+            value={avgAccuracy == null ? "—" : `${avgAccuracy}%`}
+            tone={avgAccuracy == null ? "muted" : "normal"}
           />
         </div>
       </header>
@@ -196,28 +233,68 @@ const SatTestPacksPage: React.FC = () => {
         <Input
           allowClear
           placeholder="Search packs by domain…"
-          prefix={<Search size={14} style={{ color: '#9ca3af' }} />}
+          prefix={<Search size={14} style={{ color: "#9ca3af" }} />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sat-packs__search"
         />
         <div className="sat-chips">
-          <button className={`sat-chip ${filterSection === 'all' ? 'sat-chip--active' : ''}`} onClick={() => setFilterSection('all')}>All sections</button>
-          <button className={`sat-chip ${filterSection === 'math' ? 'sat-chip--active' : ''}`} onClick={() => setFilterSection('math')}>Math</button>
-          <button className={`sat-chip ${filterSection === 'reading-writing' ? 'sat-chip--active' : ''}`} onClick={() => setFilterSection('reading-writing')}>R&W</button>
+          <button
+            className={`sat-chip ${filterSection === "all" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterSection("all")}
+          >
+            All sections
+          </button>
+          <button
+            className={`sat-chip ${filterSection === "math" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterSection("math")}
+          >
+            Math
+          </button>
+          <button
+            className={`sat-chip ${filterSection === "reading-writing" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterSection("reading-writing")}
+          >
+            R&W
+          </button>
         </div>
         <div className="sat-chips">
-          <button className={`sat-chip ${filterDifficulty === 'all' ? 'sat-chip--active' : ''}`} onClick={() => setFilterDifficulty('all')}>All difficulties</button>
-          <button className={`sat-chip sat-chip--easy ${filterDifficulty === 'easy' ? 'sat-chip--active' : ''}`} onClick={() => setFilterDifficulty('easy')}>Easy</button>
-          <button className={`sat-chip sat-chip--medium ${filterDifficulty === 'medium' ? 'sat-chip--active' : ''}`} onClick={() => setFilterDifficulty('medium')}>Medium</button>
-          <button className={`sat-chip sat-chip--hard ${filterDifficulty === 'hard' ? 'sat-chip--active' : ''}`} onClick={() => setFilterDifficulty('hard')}>Hard</button>
+          <button
+            className={`sat-chip ${filterDifficulty === "all" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterDifficulty("all")}
+          >
+            All difficulties
+          </button>
+          <button
+            className={`sat-chip sat-chip--easy ${filterDifficulty === "easy" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterDifficulty("easy")}
+          >
+            Easy
+          </button>
+          <button
+            className={`sat-chip sat-chip--medium ${filterDifficulty === "medium" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterDifficulty("medium")}
+          >
+            Medium
+          </button>
+          <button
+            className={`sat-chip sat-chip--hard ${filterDifficulty === "hard" ? "sat-chip--active" : ""}`}
+            onClick={() => setFilterDifficulty("hard")}
+          >
+            Hard
+          </button>
         </div>
       </section>
 
-      <div className="sat-packs__count">Showing <strong>{filtered.length}</strong> of {packs.length} packs</div>
+      <div className="sat-packs__count">
+        Showing <strong>{filtered.length}</strong> of {packs.length} packs
+      </div>
 
       {filtered.length === 0 ? (
-        <Empty description="No packs match the filters." style={{ padding: 64 }} />
+        <Empty
+          description="No packs match the filters."
+          style={{ padding: 64 }}
+        />
       ) : (
         <div className="sat-packs__grid">
           {filtered.map((p) => (
@@ -234,22 +311,40 @@ const SatTestPacksPage: React.FC = () => {
   );
 };
 
-const HeaderStat: React.FC<{ label: string; value: string; tone?: 'normal' | 'muted' }> = ({ label, value, tone }) => (
+const HeaderStat: React.FC<{
+  label: string;
+  value: string;
+  tone?: "normal" | "muted";
+}> = ({ label, value, tone }) => (
   <div className="sat-packs__hstat">
     <div className="sat-packs__hstat-label">{label}</div>
-    <div className={`sat-packs__hstat-value ${tone === 'muted' ? 'sat-packs__hstat-value--muted' : ''}`}>{value}</div>
+    <div
+      className={`sat-packs__hstat-value ${tone === "muted" ? "sat-packs__hstat-value--muted" : ""}`}
+    >
+      {value}
+    </div>
   </div>
 );
 
-const PackCard: React.FC<{ pack: Pack; loading: boolean; onStart: () => void }> = ({ pack, loading, onStart }) => {
-  const isMath = pack.section === 'math';
+const PackCard: React.FC<{
+  pack: Pack;
+  loading: boolean;
+  onStart: () => void;
+}> = ({ pack, loading, onStart }) => {
+  const isMath = pack.section === "math";
   const attempt = pack.attempt;
   return (
-    <article className={`sat-packs__card ${attempt ? 'sat-packs__card--done' : ''}`}>
-      <div className={`sat-packs__card-stripe sat-packs__card-stripe--${pack.difficulty}`} />
+    <article
+      className={`sat-packs__card ${attempt ? "sat-packs__card--done" : ""}`}
+    >
+      <div
+        className={`sat-packs__card-stripe sat-packs__card-stripe--${pack.difficulty}`}
+      />
       <div className="sat-packs__card-body">
         <div className="sat-packs__card-top">
-          <div className={`sat-packs__card-icon sat-packs__card-icon--${isMath ? 'math' : 'rw'}`}>
+          <div
+            className={`sat-packs__card-icon sat-packs__card-icon--${isMath ? "math" : "rw"}`}
+          >
             {isMath ? <Calculator size={16} /> : <BookOpen size={16} />}
           </div>
           <div className="sat-packs__card-top-right">
@@ -258,25 +353,39 @@ const PackCard: React.FC<{ pack: Pack; loading: boolean; onStart: () => void }> 
                 <CheckCircle2 size={11} /> Attempted
               </span>
             )}
-            <span className={`sat-packs__diff sat-packs__diff--${pack.difficulty}`}>{cap(pack.difficulty)}</span>
+            <span
+              className={`sat-packs__diff sat-packs__diff--${pack.difficulty}`}
+            >
+              {cap(pack.difficulty)}
+            </span>
           </div>
         </div>
 
-        <div className="sat-packs__card-eyebrow">{isMath ? 'Math' : 'Reading & Writing'}</div>
+        <div className="sat-packs__card-eyebrow">
+          {isMath ? "Math" : "Reading & Writing"}
+        </div>
         <h3 className="sat-packs__card-title">{pack.domain}</h3>
 
         <div className="sat-packs__card-meta">
-          <span><TimerReset size={13} /> ~{pack.estimatedMin} m</span>
-          <span><FileQuestion size={13} /> {pack.questionCount} q</span>
+          <span>
+            <TimerReset size={13} /> ~{pack.estimatedMin} m
+          </span>
+          <span>
+            <FileQuestion size={13} /> {pack.questionCount} q
+          </span>
         </div>
 
         {attempt ? (
           <div className="sat-packs__card-attempt">
             <div className="sat-packs__card-attempt-label">Last attempt</div>
             <div className="sat-packs__card-attempt-value">
-              <span className="sat-packs__card-attempt-frac">{attempt.lastCorrect}/{attempt.lastTotal}</span>
+              <span className="sat-packs__card-attempt-frac">
+                {attempt.lastCorrect}/{attempt.lastTotal}
+              </span>
               <span className="sat-packs__card-attempt-sep">·</span>
-              <span className="sat-packs__card-attempt-pct">{attempt.lastPct}%</span>
+              <span className="sat-packs__card-attempt-pct">
+                {attempt.lastPct}%
+              </span>
             </div>
             <div className="sat-packs__card-attempt-bar">
               <div
@@ -300,7 +409,9 @@ const PackCard: React.FC<{ pack: Pack; loading: boolean; onStart: () => void }> 
         disabled={loading}
         onClick={onStart}
       >
-        {loading ? 'Loading…' : attempt ? (
+        {loading ? (
+          "Loading…"
+        ) : attempt ? (
           <>
             <RotateCcw size={13} />
             <span>Retake pack</span>

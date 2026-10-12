@@ -15,6 +15,7 @@ import { useGetUserPreferencesQuery } from "src/app/services/student-hub/dashboa
 import { useGetCurrentSubscriptionQuery } from "src/app/services/subscription";
 import { useGetMyOrgMembershipQuery } from "src/app/services/student-hub/orgMembershipApi";
 import { hasActiveCommunityOrgMembership } from "src/lib/communityOrgAccess";
+import { hasActiveDirectCommunityAccess } from "src/lib/communityAccess";
 import { useListPostsQuery } from "src/app/services/communityFeedApi";
 
 // Stable args for the feed prefetch — must serialize identically to the
@@ -276,7 +277,14 @@ function RouterProvider() {
   // showing their own loader.
   const { data: orgsData, isLoading: orgsLoading } = useGetMyOrgsQuery(
     undefined,
-    { skip: !isAuthenticated },
+    {
+      skip: !isAuthenticated,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      // Role assignments can happen in an admin's separate session. Refresh
+      // in the background so an open student/onboarding page follows them.
+      pollingInterval: 30_000,
+    },
   );
 
   // Community entitlement (preferences + subscription) decides the hub's
@@ -302,8 +310,9 @@ function RouterProvider() {
     isAuthenticated &&
     (subscriptionData?.status === 'active' ||
       subscriptionData?.status === 'trialing' ||
-      ((prefsData as any)?.data ?? prefsData)?.applicationSettings
-        ?.communityExperienceMode === 'community' ||
+      hasActiveDirectCommunityAccess(
+        ((prefsData as any)?.data ?? prefsData)?.applicationSettings,
+      ) ||
       hasActiveCommunityOrgMembership(studentOrgMemberships));
   useListPostsQuery(FEED_DEFAULT_ARGS, { skip: !communityEntitled });
 

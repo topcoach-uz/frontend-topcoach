@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import Loader from 'src/components/loader';
+import useOrgStaff from 'src/hooks/useOrgStaff';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import { isOnboardingComplete, OnboardingStatus, usesJuniorCommunity } from 'src/lib/onboarding';
@@ -29,9 +30,10 @@ export default function OnboardingGate() {
     skip: !isAuthenticated,
   });
   const currentUser = userData || storeProfile;
+  const { isOrgStaff, isPlatformStaff, isLoading: staffLoading } = useOrgStaff();
   const incomplete = !isOnboardingComplete(currentUser as OnboardingStatus | undefined);
   const { data: studentProfile, isLoading: studentLoading } = useGetMyStudentProfileQuery(undefined, {
-    skip: !isAuthenticated || !incomplete || currentUser?.profile?.role === 'Mentor',
+    skip: !isAuthenticated || staffLoading || isOrgStaff || isPlatformStaff || !incomplete || currentUser?.profile?.role === 'Mentor',
   });
 
   if (!isAuthenticated) {
@@ -48,6 +50,8 @@ export default function OnboardingGate() {
   // `onboardingCompletedAt` isn't on the generated UsersSchema yet (backend
   // companion PR ships after the client was regenerated) — cast through the
   // OnboardingStatus shape, same as the wizard shell does.
+  if (staffLoading) return <Loader height="100vh" />;
+  if (isOrgStaff || isPlatformStaff) return <Outlet />;
   if (incomplete && studentLoading) return <Loader height="100vh" />;
   if (incomplete && !usesJuniorCommunity(studentProfile?.academicProfile)) {
     return <Navigate to="/onboarding" replace />;

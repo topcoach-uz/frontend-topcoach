@@ -16,7 +16,7 @@ import './CourseSidebar.scss';
 interface Lesson {
   id: string;
   title: string;
-  lessonType?: 'video' | 'pdf' | 'live_session';
+  lessonType?: 'video' | 'pdf' | 'live_session' | 'text';
   duration?: number;
   isPremium?: boolean;
   submoduleId?: string | null;

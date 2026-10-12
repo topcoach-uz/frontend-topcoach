@@ -1,0 +1,25 @@
+// Development-only preview of the production SAT components. No production auth changes.
+import React, { lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { ConfigProvider } from 'antd';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createStore } from './src/app/store';
+import { changeTheme } from './src/app/slices/layoutSlice';
+import Header from './src/components/layouts/components/header';
+import SatPrepLayout from './src/components/sat-prep/SatPrepLayout';
+import Dashboard from './src/pages/student-hub/sat-prep/SatDashboardPage';
+import Library from './src/pages/student-hub/sat-prep/SatLibraryPage';
+import Review from './src/pages/student-hub/sat-prep/SatReviewPage';
+const Practice = lazy(() => import('./src/pages/student-hub/sat-prep/SatPracticeFlowPage'));
+const MockTests = lazy(() => import('./src/pages/student-hub/sat-prep/SatMockTestsPage'));
+const Packs = lazy(() => import('./src/pages/student-hub/sat-prep/SatTestPacksPage'));
+const Runner = lazy(() => import('./src/pages/student-hub/sat-prep/SatMockTestPage'));
+const Learning = lazy(() => import('./src/pages/learning'));
+import './src/lib/i18n';
+import './src/styles/global.scss';
+const profile = {id:'local-preview',email:'preview@example.test',managementRole:'User',profile:{name:'Preview Student',role:'Student',media:[],studentProfile:{id:'local-student'}}};
+const store = createStore({preloadedState:{auth:{isAuthenticated:true,profile}}});
+store.dispatch(changeTheme('light'));
+const shell = (page:React.ReactNode) => <SatPrepLayout>{page}</SatPrepLayout>;
+createRoot(document.getElementById('root')!).render(<Provider store={store}><ConfigProvider theme={{token:{colorPrimary:'#8b0000',fontFamily:'"DM Sans", sans-serif'}}}><BrowserRouter><Suspense fallback={<p>Loading platform…</p>}><Header/><div style={{font:'11px "DM Sans", sans-serif',background:'#f3edef',color:'#78545c',padding:'6px 24px',textAlign:'center'}}>Local platform preview · 29 draft text lessons · Local SAT bank: 3,460 questions · Sample account and score history</div><Routes><Route path="/student-hub/sat-prep" element={shell(<Dashboard/>)}/><Route path="/student-hub/sat-prep/library" element={shell(<Library/>)}/><Route path="/student-hub/sat-prep/review" element={shell(<Review/>)}/><Route path="/student-hub/sat-prep/practice" element={shell(<Practice/>)}/><Route path="/student-hub/sat-prep/mock-tests" element={shell(<MockTests/>)}/><Route path="/student-hub/sat-prep/test-packs" element={shell(<Packs/>)}/><Route path="/student-hub/sat-prep/runner" element={<Runner/>}/><Route path="/learning" element={<Learning/>}/><Route path="*" element={<Navigate to="/student-hub/sat-prep" replace/>}/></Routes></Suspense></BrowserRouter></ConfigProvider></Provider>);

@@ -708,10 +708,10 @@ const SatMockTestPage: React.FC = () => {
       <div className="sat-runner__divider" />
       <footer className="sat-runner__bottombar">
         <div className="sat-runner__bottombar-left">
-          <button className="sat-runner__vocab-btn" onClick={() => setVocabOpen((v) => !v)}>
+          {current.section === 'reading-writing' && <button className="sat-runner__vocab-btn" onClick={() => setVocabOpen((v) => !v)}>
             <Plus size={13} />
             <span>Add vocabulary</span>
-          </button>
+          </button>}
           {vocabOpen && (
             <div className="sat-runner__vocab-pop">
               <input

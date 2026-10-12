@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate, useSearchParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import Loader from 'src/components/loader';
 import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
@@ -8,10 +8,11 @@ import { useTypedSelector } from 'src/app/store';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { APPLICANT_WORKSPACE_ENABLED, isOverviewLocation } from 'src/lib/applicantWorkspace';
-import { ApplicantPage, Breadcrumb } from './applicant/ApplicantPage';
-import { Button } from 'antd';
+import CoursePreview from '../learning/CoursePreview';
+import ResearchIntroPreview from './research/ResearchIntroPreview';
 
 const ApplicantOverviewPage = lazy(() => import('./applicant/ApplicantOverviewPage'));
+const LocalChangesWalkthrough = lazy(() => import('./LocalChangesWalkthrough'));
 const ApplicantApplicationsPage = lazy(() => import('./applicant/ApplicantApplicationsPage'));
 const ApplicantApplicationPage = lazy(() => import('./applicant/ApplicantApplicationsPage').then(module => ({ default: module.ApplicantApplicationPage })));
 const ApplicantApplicationFormPage = lazy(() => import('./applicant/ApplicantApplicationFormPage'));
@@ -35,16 +36,15 @@ const EditApplicationPage = lazy(() => import('./applications/EditApplicationPag
 // Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover) — now the live
 // engine at all four production mounts (this route included).
 const MajorMatchV2Page = lazy(() => import('./major-match-v2/MajorMatchV2Page'));
+const IeltsPrepPage = lazy(() => import('./ielts-prep/IeltsPrepPage'));
 const SatPrepLayout = lazy(() => import('src/components/sat-prep/SatPrepLayout'));
 const SatDashboardPage = lazy(() => import('./sat-prep/SatDashboardPage'));
 const SatPracticeFlowPage = lazy(() => import('./sat-prep/SatPracticeFlowPage'));
 const SatTestPacksPage = lazy(() => import('./sat-prep/SatTestPacksPage'));
 const SatMockTestsPage = lazy(() => import('./sat-prep/SatMockTestsPage'));
 const SatTestRunnerPage = lazy(() => import('./sat-prep/SatMockTestPage'));
+const SatReviewPage = lazy(() => import('./sat-prep/SatReviewPage'));
 const SatLibraryPage = lazy(() => import('./sat-prep/SatLibraryPage'));
-const SatPrepComingSoonPage = lazy(() => import('./sat-prep/SatPrepComingSoonPage'));
-const ResearchPrepLockedPreview = lazy(() => import('./research/ResearchPrepLockedPreview'));
-const CommunityLockedPage = lazy(() => import('./community/CommunityLockedPage'));
 
 const RouteFallback = () => <Loader height="60vh" />;
 
@@ -88,11 +88,7 @@ const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
     canUseSatPrep(profile?.managementRole as string | undefined, profile?.email) ||
     isCommunityEnrolled;
   if (allowed) return children;
-  return (
-    <SatPrepLayout>
-      <SatPrepComingSoonPage />
-    </SatPrepLayout>
-  );
+  return <CoursePreview course="sat" />;
 };
 
 /**
@@ -105,45 +101,12 @@ const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
  */
 const ResearchPrepLockedSurface: React.FC = () => {
   const { isCommunityEnrolled } = useJourneyExperience();
-  const navigate = useNavigate();
   if (isCommunityEnrolled) {
     // Defer to a redirect into the in-hub research section, which has
     // the real ResearchPrepPage wired up with mentor/Full-Support context.
     return <Navigate to="/student-hub?section=research-program" replace />;
   }
-  if (APPLICANT_WORKSPACE_ENABLED) {
-    return <ApplicantPage title="Program access" subtitle="Learning access depends on enrollment—not on completing Major Match.">
-      <Breadcrumb>Program access</Breadcrumb>
-      <div className="applicant-panel applicant-program-access">
-        <h2>This program is not in your current enrollment</h2>
-        <p>You can still use your applications, profile and documents. Review the program details to decide whether additional support fits your goals.</p>
-      </div>
-      <div className="applicant-actions">
-        <Button type="primary" onClick={() => navigate('/student-hub/programs')}>View program details</Button>
-        <Link to="/student-hub?section=my-learning">Return to learning</Link>
-      </div>
-    </ApplicantPage>;
-  }
-  return (
-    <>
-      <div
-        aria-hidden
-        // @ts-expect-error — `inert` is valid HTML; React types lag.
-        inert=""
-        style={{
-          filter: 'blur(6px)',
-          pointerEvents: 'none',
-          userSelect: 'none',
-        }}
-      >
-        <ResearchPrepLockedPreview />
-      </div>
-      {/* Portaled to body — overlays the blurred surface with the
-          research-program unlock modal (transparent backdrop so the
-          preview reads through). */}
-      <CommunityLockedPage variant="research-program" />
-    </>
-  );
+  return <ResearchIntroPreview />;
 };
 
 /**
@@ -155,6 +118,7 @@ const StudentHubRoutes: React.FC = () => {
     <StudentHubErrorBoundary>
       <StudentHubLayout>
         <Routes>
+          {import.meta.env.DEV && <Route path="/local-walkthrough" element={withSuspense(<LocalChangesWalkthrough />)} />}
           <Route
             path="/settings"
             element={<Navigate to="/student-hub?section=account&target=settings" replace />}
@@ -211,6 +175,8 @@ const StudentHubRoutes: React.FC = () => {
             }
           />
 
+          <Route path="/ielts-prep/*" element={withSuspense(<IeltsPrepPage />)} />
+
           {/* SAT Prep — full College Board question bank, wrapped in shared shell.
               Gated by SatGate (SAT_PREP_SHOW_ALL flag) so non-SuperAdmins
               currently see the "coming soon" placeholder. */}
@@ -229,6 +195,10 @@ const StudentHubRoutes: React.FC = () => {
           <Route
             path="/sat-prep/mock-tests"
             element={withSuspense(<SatGate><SatPrepLayout><SatMockTestsPage /></SatPrepLayout></SatGate>)}
+          />
+          <Route
+            path="/sat-prep/review"
+            element={withSuspense(<SatGate><SatPrepLayout><SatReviewPage /></SatPrepLayout></SatGate>)}
           />
           <Route
             path="/sat-prep/library"

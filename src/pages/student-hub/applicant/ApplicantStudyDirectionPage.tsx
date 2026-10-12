@@ -55,12 +55,12 @@ export default function ApplicantStudyDirectionPage() {
   const profile = profileQuery.data;
   const academic = profile?.academicProfile;
   const degree = applicantDegree(academic?.targetDegree ?? overview.currentData?.profile?.targetDegree);
-  const saved = readStudyDirectionChoices(profile?.preferences);
+  const saved = readStudyDirectionChoices(profile?.preferences, profile?.personalProfile);
   const hasChoices = hasDirectionChoices(saved);
   const ideas = directionIdeas(saved);
 
   useEffect(() => {
-    if (profile) setChoices(readStudyDirectionChoices(profile.preferences));
+    if (profile) setChoices(readStudyDirectionChoices(profile.preferences, profile.personalProfile));
   }, [profile]);
 
   const setEditing = (value: boolean) => {
@@ -123,7 +123,7 @@ export default function ApplicantStudyDirectionPage() {
         <ChoiceGroup options={[...new Set([...interestOptions, ...choices.interests])]} selected={choices.interests} onChange={(next) => update('interests', next)} />
         <div className="study-direction__add"><Input value={customInterest} maxLength={80} placeholder="Another subject" aria-label="Another subject" onChange={(event) => setCustomInterest(event.target.value)} onPressEnter={addInterest} /><Button icon={<Plus size={15} />} onClick={addInterest} disabled={!customInterest.trim()}>Add</Button></div>
         <p>What do you want from a master’s degree?</p>
-        <ChoiceGroup options={goalOptions} selected={choices.goals} exclusiveOption="Not sure yet" onChange={(next) => update('goals', next)} />
+        <ChoiceGroup options={[...new Set([...goalOptions, ...choices.goals])]} selected={choices.goals} exclusiveOption="Not sure yet" onChange={(next) => update('goals', next)} />
         <small>Optional. Choose “Not sure yet” if you are still exploring.</small>
       </section>
       <section className="study-direction__card" aria-labelledby="study-preferences-title">

@@ -29,6 +29,7 @@ import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import CommunityFeedEditorialView from './CommunityFeedEditorialView';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
 import ResearchPrepPage from '../research/ResearchPrepPage';
+import CoursePreview from 'src/pages/learning/CoursePreview';
 // ResearchPrepLockedPreview is now imported by StudentHubRoutes for the
 // standalone /student-hub/research-prep surface (non-community users).
 // The in-hub branch no longer renders the blurred preview.
@@ -50,7 +51,6 @@ import MenteeSettingsPageMock from '../settings/MenteeSettingsPageMock';
 import PlacementProfileWizardPage from '../../placement-test/profile';
 import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
-import { isFeedAllowed as checkFeedAllowed } from './communityFeedAccess';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
 import StudyBuddyConsentGate from './StudyBuddyConsentGate';
 import { useStudyBuddyConsentStatusQuery } from 'src/app/services/student-hub/studyBuddyApi';
@@ -196,7 +196,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
       if (section && aliases[section]) return aliases[section];
       if (section && ['feed', 'messages', 'buddies', 'more', 'others', 'account', 'dashboard', 'mentors'].includes(section)) return section as CommunitySectionKey;
     }
-    if (ENABLE_COMMUNITY_FEED && checkFeedAllowed(profile, isCommunityEnrolled)) return 'feed';
+    if (ENABLE_COMMUNITY_FEED) return 'feed';
     return 'myLearning';
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(() => embedded ? new URLSearchParams(location.search).get('target') : null);
@@ -373,9 +373,8 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
 
   }, [location.search]);
 
-  // Feed is open to community-enrolled users and staff — see
-  // `communityFeedAccess.ts` (kept in sync with the backend guard).
-  const isFeedAllowed = checkFeedAllowed(profile, isCommunityEnrolled);
+  // Everyone can read the feed; posting and interactions remain gated.
+  const isFeedAllowed = ENABLE_COMMUNITY_FEED;
 
   const navItems: CommunityNavItem[] = useMemo(
     () => [
@@ -462,17 +461,9 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
     }
     if (!isCommunityEnrolled) {
       switch (activeSection) {
-        case 'feed':
-          return 'feed';
         case 'messages':
         case 'mentors':
           return 'community';
-        case 'buddies':
-          return 'study-buddies';
-        case 'admissionsProgram':
-          return 'admissions-program';
-        case 'satCourse':
-          return 'sat-course';
         case 'researchProgram':
           return 'research-program';
         default:
@@ -500,13 +491,13 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
     activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive;
   // Admissions Program also goes full-bleed for the editorial layout —
   // a breadcrumb at the top + cream-toned cards underneath.
-  const isAdmissionsFullBleed = activeSection === 'admissionsProgram' && isCommunityEnrolled;
+  const isAdmissionsFullBleed = activeSection === 'admissionsProgram';
   const isFullBleed = isResearchFullBleed || isAdmissionsFullBleed;
 
   return (
     <div
       className={`${styles.hubPageOuter} ${embedded ? styles.hubEmbedded : ''} ${
-        activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
+        activeSection === 'feed' && ENABLE_COMMUNITY_FEED
           ? styles.hubPageOuterFeedCream
           : ''
       } ${
@@ -673,7 +664,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                 setActiveSection('feed');
                 navigate('/student-hub?section=feed', { replace: true });
               }}
-              title={!isCommunityEnrolled ? t('studentHub.hub.feedLocked', 'Community access required') : undefined}
             >
               <span className={styles.navIconCircle}>
                 <Compass size={20} color="#8b0000" />
@@ -682,7 +672,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
               {/* Match the shared lock-icon pattern used by SAT/Admissions/
                   Research/My Rewards so the Feed row reads as part of the
                   same locked-items family — same size, same SCSS class. */}
-              {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
             </button>
           )}
 
@@ -765,6 +754,11 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
           >
             <span className={styles.navIconCircle}><UnifiedIcon name="applications" size="md" color="primary" /></span>
             <span className={styles.navLabel}>{t('studentHub.nav.applications', 'Applications')}</span>
+          </button>
+
+          <button type="button" className={styles.navItem} onClick={() => navigate('/student-hub/ielts-prep')}>
+            <span className={styles.navIconCircle}><UnifiedIcon name="language" size="md" color="primary" /></span>
+            <span className={styles.navLabel}>{t('studentHub.hub.ieltsTestPrep', 'IELTS test prep')}</span>
           </button>
 
           <button
@@ -888,7 +882,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
       >
         <div
           className={`${styles.centerBody} ${
-            activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED
+            activeSection === 'feed' && ENABLE_COMMUNITY_FEED
               ? styles.centerBodyFeedEditorial
               : ''
           } ${activeSection === 'messages' ? styles.centerBodyMessenger : ''}`}
@@ -896,7 +890,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
           <div
             key={`${activeSection}-${othersTarget ?? 'none'}-${accountTarget ?? 'none'}`}
             className={`${styles.sectionSwap} ${
-              !(activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED) &&
+              !(activeSection === 'feed' && ENABLE_COMMUNITY_FEED) &&
               !isResearchFullBleed
                 ? styles.sectionSwapHubPad
                 : ''
@@ -1028,8 +1022,9 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
               />
             )}
 
-            {activeSection === 'feed' && isCommunityEnrolled && ENABLE_COMMUNITY_FEED && isFeedAllowed && (
+            {activeSection === 'feed' && ENABLE_COMMUNITY_FEED && isFeedAllowed && (
               <CommunityFeedEditorialView
+                readOnly={!isCommunityEnrolled}
                 currentUser={{
                   id: profile?.id ?? '',
                   name: currentProfile.name,
@@ -1263,9 +1258,10 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
             </div>
           )}
 
-            {activeSection === 'buddies' && isCommunityEnrolled && (
-              <StudyBuddyConsentGate>
+            {activeSection === 'buddies' && (
+              <StudyBuddyConsentGate browseOnly={!isCommunityEnrolled}>
                 <StudyBuddyHubSection
+                  readOnly={!isCommunityEnrolled}
                   onOpenChat={(conversationId) => {
                     setMessagesConversationId(conversationId);
                     setActiveSection('messages');
@@ -1289,7 +1285,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
               </div>
             )}
 
-            {activeSection === 'admissionsProgram' && isCommunityEnrolled && (
+            {activeSection === 'admissionsProgram' && (
               <div className={styles.admissionsBody}>
                 <div className={styles.admissionsListHeader}>
                   <div>
@@ -1321,7 +1317,9 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                       }
                     }}
                   >
-                    {t('studentHub.hub.goToAdmissionsLessons', 'Go to admissions lessons')}
+                    {isCommunityEnrolled
+                      ? t('studentHub.hub.goToAdmissionsLessons', 'Go to admissions lessons')
+                      : 'Unlock all admissions lessons'}
                   </Button>
                 </div>
 
@@ -1381,7 +1379,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
               </div>
             )}
 
-            {activeSection === 'satCourse' && null}
+            {activeSection === 'satCourse' && <CoursePreview course="sat" />}
 
             {activeSection === 'researchProgram' && isCommunityEnrolled && null}
           </div>

@@ -9,6 +9,8 @@ import AlreadyHaveAccount from 'src/components/AlreadyHaveAccount';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import { trackCompleteRegistration } from 'src/lib/meta-pixel';
+import { useAppDispatch } from 'src/app/store';
+import { login } from 'src/app/slices/authSlice';
 
 export default function StudentRegistrationPage() {
   const [form] = useForm();
@@ -17,6 +19,8 @@ export default function StudentRegistrationPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
+  const invitationToken = searchParams.get('invitationToken') || undefined;
 
   /**
    * Organization-invitation signup.
@@ -43,7 +47,7 @@ export default function StudentRegistrationPage() {
    * membership, not from this. Aligning the profile role needs a backend change.
    */
   const invitedRole = searchParams.get('role')?.trim().toLowerCase() || undefined;
-  /** Same-site only — this is echoed into a navigation after verification. */
+  /** Same-site only — used when ordinary signup needs verification/sign-in. */
   const redirectTo = useMemo(() => {
     const raw = searchParams.get('redirect');
     return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : undefined;
@@ -77,11 +81,22 @@ export default function StudentRegistrationPage() {
           email,
           password: values.password?.trim(),
           name: values.name?.trim(),
+          ...(invitationToken ? { invitationToken } : {}),
         } as any)
         .then((response) => {
-          // Meta Pixel: the account exists now. Email is still unverified at
-          // this point, which is what `CompleteRegistration` means here.
+          // Meta Pixel: the account exists now, including invitation signups.
           trackCompleteRegistration('student');
+          const session = response.data?.user;
+          if (session?.access && session?.refresh) {
+            dispatch(login(session));
+            api.instance.defaults.headers['Authorization'] = `Bearer ${session.access}`;
+            try {
+              localStorage.removeItem('redirectAfterLogin');
+            } catch { /* private-mode storage may be unavailable */ }
+            // Membership was committed before the session was issued.
+            navigate(invitedRole === 'counselor' ? '/counselor-console' : '/student-hub', { replace: true });
+            return;
+          }
           if (response.data?.emailVerificationRequired === false) {
             navigate(redirectTo ? `/auth/signin?redirect=${encodeURIComponent(redirectTo)}` : '/auth/signin');
             return;
@@ -106,8 +121,8 @@ export default function StudentRegistrationPage() {
             setErrorMessage(t('signUp.emailMust'));
             message.error(t('signUp.emailMust'));
           }
-          // setErrorMessage(err?.response?.data?.message);
-          console.log(err.response.data.message);
+          const reason = err?.response?.data?.message;
+          setErrorMessage(Array.isArray(reason) ? reason.join('. ') : reason || 'Could not create your account. Please try again.');
         })
         .finally(() => {
           setLoading(false);

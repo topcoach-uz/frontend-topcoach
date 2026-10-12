@@ -212,7 +212,12 @@ interface Lesson {
   moduleId: string;
   submoduleId?: string;
   orderIndex: number;
-  lessonType: 'video' | 'pdf' | 'live_session';
+  lessonType: 'video' | 'pdf' | 'live_session' | 'text';
+  textContentHtml?: string;
+  textPracticeUrl?: string;
+  textReferences?: { provider: string; url: string }[];
+  isDraft?: boolean;
+
   contentUrl?: string;
   duration: number;
   isActive: boolean;
@@ -986,6 +991,7 @@ const CourseManagementAdmin: React.FC = () => {
             options={[
               { label: 'Admissions', value: 'admissions' },
               { label: 'Research Prep', value: 'research' },
+              { label: 'SAT', value: 'sat' },
             ]}
             value={courseName}
             onChange={(value) => setCourseName(value as 'admissions' | 'sat' | 'research')}
@@ -1208,7 +1214,7 @@ const CourseManagementAdmin: React.FC = () => {
                 label="Duration (minutes)"
                 rules={[{ required: true, message: 'Please enter duration' }]}
               >
-                <InputNumber min={1} placeholder="Duration" style={{ width: '100%' }} />
+                <InputNumber min={0} placeholder="Duration" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -1355,6 +1361,7 @@ const CourseManagementAdmin: React.FC = () => {
                 <Select placeholder="Select type">
                   <Option value="video">Video</Option>
                   <Option value="pdf">PDF</Option>
+                  <Option value="text">Text lesson</Option>
                   <Option value="live_session">Live Session</Option>
                 </Select>
               </Form.Item>
@@ -1377,7 +1384,7 @@ const CourseManagementAdmin: React.FC = () => {
                 label="Duration (minutes)"
                 rules={[{ required: true, message: 'Please enter duration' }]}
               >
-                <InputNumber min={1} placeholder="Duration" style={{ width: '100%' }} />
+                <InputNumber min={0} placeholder="Duration" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
@@ -1390,6 +1397,21 @@ const CourseManagementAdmin: React.FC = () => {
             {({ getFieldValue }) => {
               const lessonType = getFieldValue('lessonType');
               
+              if (lessonType === 'text') {
+                return <>
+                  <Form.Item name="textContentHtml" label="Lesson text (HTML)" rules={[{ required: true, message: 'Enter lesson content' }]}><Input.TextArea rows={14} /></Form.Item>
+                  <Form.Item name="textPracticeUrl" label="SAT practice link"><Input placeholder="/student-hub/sat-prep/practice?..." /></Form.Item>
+                  <Form.Item name="isDraft" label="Educator review pending" valuePropName="checked"><Switch /></Form.Item>
+                  <Form.List name="textReferences">{(fields, { add, remove }) => <>
+                    {fields.map(field => <Row key={field.key} gutter={8}>
+                      <Col span={6}><Form.Item name={[field.name, 'provider']} rules={[{ required: true }]}><Input placeholder="Provider" /></Form.Item></Col>
+                      <Col span={14}><Form.Item name={[field.name, 'url']} rules={[{ required: true }, { type: 'url' }]}><Input placeholder="https://..." /></Form.Item></Col>
+                      <Col span={4}><Button onClick={() => remove(field.name)}>Remove</Button></Col>
+                    </Row>)}
+                    <Button onClick={() => add()}>Add reference link</Button>
+                  </>}</Form.List>
+                </>;
+              }
               if (lessonType === 'video') {
                 return (
                   <>
@@ -1583,6 +1605,7 @@ const CourseManagementAdmin: React.FC = () => {
               >
                 <Select placeholder="Select type">
                   <Option value="pdf">PDF</Option>
+                  <Option value="text">Text lesson</Option>
                   <Option value="document">Document</Option>
                   <Option value="link">Link</Option>
                   <Option value="template">Template</Option>

@@ -20,14 +20,15 @@ const { Paragraph } = Typography;
 
 export type StudyBuddyHubSectionProps = {
   onOpenChat: (conversationId: string) => void;
+  readOnly?: boolean;
 };
 
-export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectionProps) {
+export default function StudyBuddyHubSection({ onOpenChat, readOnly = false }: StudyBuddyHubSectionProps) {
   // Honor a `tab` deep-link (e.g. from a "View request" notification) on mount.
   const [mainTab, setMainTab] = useState<'discover' | 'requests' | 'connected'>(() => {
     try {
       const tab = new URLSearchParams(window.location.search).get('tab');
-      if (tab === 'requests' || tab === 'connected') return tab;
+      if (!readOnly && (tab === 'requests' || tab === 'connected')) return tab;
     } catch {
       /* ignore */
     }
@@ -50,7 +51,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
 
   const { data: requestsData, isLoading: requestsLoading } = useStudyBuddyRequestsQuery(
     { direction: reqDirection },
-    { skip: mainTab !== 'requests', refetchOnMountOrArgChange: true },
+    { skip: readOnly || mainTab !== 'requests', refetchOnMountOrArgChange: true },
   );
 
   // Always-on count of incoming pending requests, used to badge the Requests
@@ -59,7 +60,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const { data: incomingPendingData } = useStudyBuddyRequestsQuery({
     direction: 'in',
     status: 'pending',
-  });
+  }, { skip: readOnly });
   const incomingPendingCount = incomingPendingData?.requests?.length ?? 0;
 
   const [sendRequest, { isLoading: sending }] = useStudyBuddySendRequestMutation();
@@ -92,10 +93,10 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
   const discoverItems = useMemo(
     () =>
       items
-        .filter((r) => r.requestStatus !== 'connected')
+        .filter((r) => readOnly || r.requestStatus !== 'connected')
         .filter((r) => matchesSearch(r.name, r.username)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, searchNeedle],
+    [items, searchNeedle, readOnly],
   );
   const connectedItems = useMemo(
     () =>
@@ -235,6 +236,9 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
               : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
           </div>
           <div className={styles.studyBuddyInstaActions}>
+            {readOnly ? (
+              <Button disabled>Community access to connect</Button>
+            ) : <>
             {row.requestStatus === 'none' && (
               <Button
                 type="primary"
@@ -300,6 +304,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
                 Message
               </Button>
             )}
+            </>}
           </div>
         </div>
       </div>
@@ -312,7 +317,8 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
       subtitle="Find peers with similar goals, timelines, and study plans."
     >
     <div className={`${styles.studyBuddyHub} applicant-panel`}>
-      <StudyBuddyPreferencesPanel />
+      {!readOnly && <StudyBuddyPreferencesPanel />}
+      {readOnly && <p>Browse study buddies. Community access is needed to connect or message.</p>}
       <div className={styles.studyBuddySearchRow}>
         <Input
           allowClear={{
@@ -522,7 +528,7 @@ export default function StudyBuddyHubSection({ onOpenChat }: StudyBuddyHubSectio
               </>
             ),
           },
-        ]}
+        ].filter((item) => !readOnly || item.key === 'discover')}
       />
     </div>
     </ApplicantPage>

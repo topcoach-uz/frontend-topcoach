@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, Button, Form, Input, Modal, Popconfirm, Upload, message } from "antd";
 import type { UploadFile } from "antd";
 import { Download, FileText, UploadCloud } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
-import { Document, Page } from "react-pdf";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "src/pages/learning/components/pdfWorker";
@@ -15,6 +15,7 @@ import {
   useGetDocumentVersionsQuery,
   useUpdateDocumentAccessMutation,
   useUploadDocumentVersionMutation,
+  useReviewDocumentWithAiMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
 import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
@@ -30,6 +31,7 @@ const saveBlob = (blob: Blob, fileName: string) => {
 
 export default function ApplicantDocumentReviewPage() {
   const { documentId = "" } = useParams();
+  const [params] = useSearchParams();
   const documentQuery = useGetDocumentQuery(documentId, { skip: !documentId });
   const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId });
   const versionsQuery = useGetDocumentVersionsQuery(documentId, { skip: !documentId });
@@ -37,9 +39,12 @@ export default function ApplicantDocumentReviewPage() {
   const [downloadVersion] = useDownloadDocumentVersionMutation();
   const [uploadVersion, uploadState] = useUploadDocumentVersionMutation();
   const [updateAccess, accessState] = useUpdateDocumentAccessMutation();
+  const [reviewWithAi, aiState] = useReviewDocumentWithAiMutation();
+  const [reviewText, setReviewText] = useState('');
+  const [extracting, setExtracting] = useState(false);
   const { data: eligibleMentors = [], isError: mentorCheckError, refetch: refetchMentors } = useGetEligibleEssayMentorsQuery(undefined, { refetchOnMountOrArgChange: true });
   const hasAssignedMentor = eligibleMentors.some((mentor) => mentor.source === "full_support");
-  const [tab, setTab] = useState<"preview" | "feedback" | "versions">("preview");
+  const [tab, setTab] = useState<"preview" | "feedback" | "versions" | "ai helper">(params.get('helper') === 'ai' ? 'ai helper' : 'preview');
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [previewError, setPreviewError] = useState(false);
   const [pdfPages, setPdfPages] = useState(0);
@@ -53,6 +58,30 @@ export default function ApplicantDocumentReviewPage() {
   const record = documentQuery.data?.data;
   const review = reviewQuery.data?.data;
   const reviewerAccess = review?.reviewerAccess ?? record?.reviewerAccess ?? false;
+  useEffect(() => { setReviewText(''); aiState.reset(); }, [record?.id, record?.updatedAt]);
+
+  const extractText = async () => {
+    if (!record) return;
+    setExtracting(true);
+    try {
+      const blob = await download(record.id).unwrap();
+      if (blob.size > 10 * 1024 * 1024) throw new Error('File too large');
+      if (record.mimeType === 'text/plain') setReviewText((await blob.text()).slice(0, 30000));
+      else if (record.mimeType === 'application/pdf') {
+        const pdf = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+        try {
+          const pages: string[] = [];
+          for (let page = 1; page <= Math.min(pdf.numPages, 20); page++) {
+            const content = await (await pdf.getPage(page)).getTextContent();
+            pages.push(content.items.map(item => 'str' in item ? item.str : '').join(' '));
+          }
+          setReviewText(pages.join('\n').slice(0, 30000));
+          message.info('Check the extracted text before review. Up to 20 pages and 30,000 characters are included.');
+        } finally { await pdf.destroy(); }
+      } else message.info('Paste the text you want reviewed. Automatic extraction supports text PDFs and TXT files.');
+    } catch { message.error('Could not extract text. Paste the relevant text instead; scanned PDFs need OCR.'); }
+    finally { setExtracting(false); }
+  };
 
   useEffect(() => {
     const container = pdfContainerRef.current;
@@ -125,8 +154,19 @@ export default function ApplicantDocumentReviewPage() {
       {record && <>
         {record.legacyPublic && <Alert type="warning" showIcon message="This older upload uses legacy storage" description="Upload a new private version before sharing it with a mentor. Earlier links may still exist until the legacy file is migrated." />}
         <div className="applicant-tabs" role="tablist" aria-label="Document review">
-          {(["preview", "feedback", "versions"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
+          {(["preview", "feedback", "versions", "ai helper"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
         </div>
+        {tab === 'ai helper' && <div className="applicant-panel applicant-document-review">
+          <h2>AI document helper</h2>
+          <p>Review clarity and completeness—not authenticity or admission eligibility. This is separate from mentor feedback and does not mark your file as verified.</p>
+          <Button onClick={extractText} loading={extracting}>Extract text from PDF or TXT</Button>
+          <Input.TextArea aria-label="Document text for AI review" rows={10} maxLength={30000} showCount value={reviewText} onChange={event => { setReviewText(event.target.value); aiState.reset(); }} placeholder="Check extracted text or paste the relevant text. Remove private identifiers before sending." />
+          <Popconfirm title="Send this text for AI review?" description="Only the text above will be sent to our AI provider (OpenAI). No mentor or university receives this review." onConfirm={async () => { try { await reviewWithAi({ id: documentId, text: reviewText.trim() }).unwrap(); } catch { message.error('AI review is unavailable. Try again later.'); } }}>
+            <Button type="primary" loading={aiState.isLoading} disabled={reviewText.trim().length < 30 || extracting}>Review document text</Button>
+          </Popconfirm>
+          {aiState.isError && <Alert type="warning" message="AI review unavailable" description="Your document and mentor review status have not changed." />}
+          {aiState.data?.data && <><h3>AI suggestions</h3><ul>{aiState.data.data.strengths?.map((item, index) => <li key={`strength-${index}`}>{item}</li>)}{aiState.data.data.weaknesses?.map((item, index) => <li key={`weakness-${index}`}>{item}</li>)}{aiState.data.data.suggestions?.map((item, index) => <li key={`suggestion-${index}`}>{item.text}</li>)}</ul></>}
+        </div>}
         {tab === "preview" && <div className="applicant-panel applicant-document-review">
           <div className="applicant-section-heading"><h2>{record.fileName}</h2><Button onClick={getCurrent} icon={<Download size={16} />}>Download</Button></div>
           {previewError ? <Alert type="error" message="Preview unavailable" description="Try downloading the file." />

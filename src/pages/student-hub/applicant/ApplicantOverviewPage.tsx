@@ -74,7 +74,7 @@ export default function ApplicantOverviewPage() {
     refetchOnMountOrArgChange: true,
   });
   const latest = useGetLatestMm3ReportQuery(profile?.id ?? '', {
-    skip: !needsAssessment || status.currentData?.hasCompletedMm3 === true,
+    skip: !needsAssessment,
     refetchOnMountOrArgChange: true,
   });
   let draft = false;
@@ -103,10 +103,14 @@ export default function ApplicantOverviewPage() {
   });
   const retry = () => {
     void refetch();
+    if (needsAssessment) {
+      void status.refetch();
+      void latest.refetch();
+    }
   };
   const retryAssessment = () => {
     void status.refetch();
-    if (status.currentData?.hasCompletedMm3 !== true) void latest.refetch();
+    void latest.refetch();
   };
   const sectionError = () => (
     <div className="applicant-section-error" role="status">
@@ -197,6 +201,11 @@ export default function ApplicantOverviewPage() {
       : degree === 'bachelor'
         ? [['currentSchool', profile?.currentSchool]]
         : [];
+  const matchedMajors = latest.currentData?.majors
+    ?.map((major) => major.name?.trim())
+    .filter((name): name is string => !!name)
+    .slice(0, 3) ?? [];
+  const hasViewableReport = !!latest.currentData || !!status.currentData?.latest;
   const applicationCard = (app: OverviewApplication) => (
     <article className="applicant-card applicant-application" key={app.id}>
       <h3>{getTranslation(app.major) || t('applicant.fieldNotSet')}</h3>
@@ -284,7 +293,7 @@ export default function ApplicantOverviewPage() {
 
       {needsAssessment && (
         <section
-          className="applicant-major-match"
+          className={`applicant-major-match${assessment === 'complete' ? ' applicant-major-match--complete' : ''}`}
           aria-label={t('applicant.majorMatch')}
         >
           <div>
@@ -305,42 +314,75 @@ export default function ApplicantOverviewPage() {
                   {t('applicant.retry')}
                 </Button>
               </>
+            ) : assessment === 'complete' ? (
+              <>
+                <h2>{t(hasViewableReport
+                  ? 'applicant.assessment.complete.title'
+                  : 'applicant.assessment.complete.noReportTitle')}</h2>
+                <p>{t(hasViewableReport
+                  ? 'applicant.assessment.complete.body'
+                  : 'applicant.assessment.complete.noReportBody')}</p>
+                <div className="applicant-major-match__actions">
+                  <TextLink primary to={applicantLinks.universities}>
+                    {t('applicant.assessment.complete.nextAction')}
+                  </TextLink>
+                  <TextLink
+                    to={hasViewableReport
+                      ? `${applicantLinks.majorMatch}?step=results`
+                      : applicantLinks.personal}
+                  >
+                    {hasViewableReport
+                      ? t('applicant.assessment.complete.reportAction')
+                      : t('applicant.reviewGoals')}
+                  </TextLink>
+                </div>
+              </>
             ) : (
               <>
                 <h2>{t(`applicant.assessment.${assessment}.title`)}</h2>
                 <p>{t(`applicant.assessment.${assessment}.body`)}</p>
                 <TextLink
                   primary
-                  to={
-                    assessment === 'complete' &&
-                    !status.currentData?.hasCompletedMm3 &&
-                    !latest.currentData
-                      ? applicantLinks.personal
-                      : applicantLinks.majorMatch
-                  }
+                  to={applicantLinks.majorMatch}
                 >
-                  {t(
-                    assessment === 'complete' &&
-                      !status.currentData?.hasCompletedMm3 &&
-                      !latest.currentData
-                      ? 'applicant.reviewGoals'
-                      : `applicant.assessment.${assessment}.action`,
-                  )}
+                  {t(`applicant.assessment.${assessment}.action`)}
                 </TextLink>
               </>
             )}
           </div>
-          <div
-            className="applicant-video"
-          >
-            <iframe
-              src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0"
-              title={t('applicant.watchIntroduction')}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
+          {assessment === 'complete' ? (
+            <div className="applicant-major-match__summary">
+              <p className="applicant-major-match__summary-label">
+                {t('applicant.assessment.complete.summaryTitle')}
+              </p>
+              {latest.isFetching && latest.currentData === undefined ? (
+                <Skeleton active title={false} paragraph={{ rows: 3 }} />
+              ) : matchedMajors.length > 0 ? (
+                <ol>
+                  {matchedMajors.map((major) => <li key={major}>{major}</li>)}
+                </ol>
+              ) : (
+                <p>{t('applicant.assessment.complete.summaryFallback')}</p>
+              )}
+              {latest.currentData?.meta?.generatedAt && (
+                <small>
+                  {t('applicant.assessment.complete.updated', {
+                    date: date(latest.currentData.meta.generatedAt),
+                  })}
+                </small>
+              )}
+            </div>
+          ) : (
+            <div className="applicant-video">
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0"
+                title={t('applicant.watchIntroduction')}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          )}
         </section>
       )}
 

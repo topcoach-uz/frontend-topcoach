@@ -689,9 +689,6 @@ const ProgramDashboard: React.FC = () => {
       render: (_: any, record: DashboardData) => {
         // Check if access is already granted (both payment and status must be completed)
         const hasAccess = record.paymentStatus === 'completed' && record.status === 'completed';
-        // Check if telegram is connected
-        const isTelegramConnected = record.telegramStatus === 'connected';
-        
         return (
           <Space>
             {!hasAccess ? (
@@ -700,8 +697,6 @@ const ProgramDashboard: React.FC = () => {
                 size="small"
                 icon={<CheckCircle2 size={16} />}
                 onClick={() => handleGrantAccess(record.id, record.userId, record.userName)}
-                disabled={!isTelegramConnected}
-                title={!isTelegramConnected ? 'User must have Telegram connected to grant access' : ''}
               >
                 Grant Access
               </Button>
@@ -866,4 +861,3 @@ const ProgramDashboard: React.FC = () => {
 };
 
 export default ProgramDashboard;
-

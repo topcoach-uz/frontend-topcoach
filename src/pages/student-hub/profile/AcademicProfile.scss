@@ -10,6 +10,79 @@
 .academic-profile {
   .academic-form {
     .section-card {
+      .master-goal-summary {
+        display: flex;
+        align-items: center;
+        gap: $space-3;
+        color: $text-primary;
+        font-size: $text-lg;
+        font-weight: $font-semibold;
+
+        svg {
+          color: $text-secondary;
+        }
+      }
+
+      .master-education-summary-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: $space-4;
+
+        h3 {
+          margin: 0;
+          color: $text-primary;
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+        }
+
+        p {
+          margin: $space-1 0 0;
+          color: $text-secondary;
+          font-size: $text-base;
+        }
+      }
+
+      .master-education-facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: $space-3;
+        margin-top: $space-4;
+
+        > div {
+          padding: $space-3;
+          border: 1px solid $border-light;
+          border-radius: $radius-md;
+          background: #fff;
+        }
+
+        span,
+        strong {
+          display: block;
+        }
+
+        span {
+          margin-bottom: $space-1;
+          color: $text-tertiary;
+          font-size: $text-sm;
+        }
+
+        strong {
+          color: $text-primary;
+          font-size: $text-base;
+          font-weight: $font-semibold;
+        }
+      }
+
+      .master-education-editor[hidden] {
+        display: none;
+      }
+
+      .master-education-editor-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
       .no-test-scores {
         color: $text-tertiary;
         font-size: $text-sm;
@@ -30,6 +103,68 @@
         .add-test-score-hint {
           font-size: $text-sm;
           color: $text-tertiary;
+        }
+      }
+
+      .master-test-item {
+        min-height: 44px;
+        border-bottom: 1px solid $border-light;
+
+        .master-test-summary,
+        .master-test-heading,
+        .master-test-editor {
+          display: flex;
+          align-items: center;
+          gap: $space-3;
+        }
+
+        .master-test-summary {
+          min-height: 44px;
+        }
+
+        strong {
+          font-size: $text-base;
+          color: $text-secondary;
+        }
+
+        .master-test-name {
+          display: inline-flex;
+          align-items: center;
+          gap: $space-2;
+
+          svg {
+            color: $text-tertiary;
+          }
+        }
+
+        .master-test-value {
+          font-size: $text-lg;
+          font-weight: $font-semibold;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .master-test-actions {
+          display: flex;
+          gap: $space-1;
+          margin-left: auto;
+        }
+
+        .master-test-heading {
+          justify-content: space-between;
+          margin-bottom: $space-2;
+        }
+
+        .master-test-editor {
+          padding-bottom: $space-3;
+        }
+
+        .master-test-editor .ant-form-item {
+          flex: 1;
+          margin-bottom: 0 !important;
+        }
+
+        .ant-btn-text {
+          color: $text-secondary;
         }
       }
 
@@ -93,7 +228,12 @@
 }
 
 @media (max-width: $breakpoint-md) {
+  .academic-profile .academic-form .section-card .master-education-facts {
+    grid-template-columns: 1fr;
+  }
+
   .academic-profile .academic-form .section-card .test-section .score-input {
     height: 38px;
   }
+
 }

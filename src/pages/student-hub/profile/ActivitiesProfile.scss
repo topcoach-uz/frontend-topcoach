@@ -1,25 +1,49 @@
-// Activities & Achievements, layout only.
-//
-// Section headers, controls, buttons and the save row are styled once in
-// `_profile-editorial.scss` (applied by ProfilePage.scss). What's left here
-// is the one thing specific to this tab: the "add another" dashed button
-// that opens a new activity / role / award row.
+// Activities & Achievements list layout. Shared profile controls are styled
+// in `_profile-editorial.scss`.
 
 @import 'src/styles/editorial-tokens';
 
 .activities-profile {
-  .ant-btn-dashed {
-    border-color: rgba(123, 31, 47, 0.35) !important;
-    border-radius: $radius-md !important;
-    color: $brand !important;
-    font-family: $sans !important;
-    font-weight: 600 !important;
-    height: 40px !important;
+  .profile-list-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
 
-    &:hover {
-      border-color: $brand !important;
-      color: $brand-hover !important;
-      background: $brand-soft !important;
+    p {
+      margin: 0;
+    }
+
+    .ant-btn {
+      flex-shrink: 0;
+    }
+  }
+
+  .profile-experience-entry {
+    border: 1px solid rgba(123, 31, 47, 0.14);
+    border-radius: $radius-md;
+    padding: 20px 20px 10px;
+    margin: 0 0 16px;
+    background: #fff;
+  }
+
+  .profile-entry-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: $ink-soft;
+
+    .ant-btn {
+      flex-shrink: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .profile-list-intro {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 }

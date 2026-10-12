@@ -21,6 +21,7 @@ interface StudentHubLayoutProps {
 
 const StudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
+  if (pathname.startsWith('/student-hub/ielts-prep')) return <>{children}</>;
   // Keep the legacy hooks out of the read-only overview: useStudentHub's
   // dashboard request bootstraps missing student profiles on the server.
   return isApplicantWorkspacePath(pathname)

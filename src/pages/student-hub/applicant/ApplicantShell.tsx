@@ -151,6 +151,7 @@ function ApplicantNavigation({
       Icon: CirclePlay,
       links: degree === 'bachelor'
         ? [
+            { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
               to: applicantLinks.admissions,
@@ -169,6 +170,7 @@ function ApplicantNavigation({
           ]
         : [
             { key: 'myProgress', to: applicantLinks.learning, locked: false },
+            { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
               to: applicantLinks.admissions,

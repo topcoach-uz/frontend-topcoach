@@ -197,8 +197,6 @@ export default function SubscriptionTab() {
 
   const [startSubscription] = useStartSubscriptionMutation();
   const [changePlan] = useChangeSubscriptionPlanMutation();
-  // Community is delivered via the Telegram bot, a connection is required
-  // before a new member can start a plan (the backend enforces this too).
   // Celebration overlay: appears for ~7s after the trial actually starts
   // (i.e. the /subscriptions/start call returns 2xx). Drives the
   // "card added → trial active → community unlocked" feel that was

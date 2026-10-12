@@ -12,8 +12,11 @@ import VdoCipherPlayer from './components/VdoCipherPlayer';
 import PDFViewer from './components/PDFViewer';
 import TaskSubmission from './components/TaskSubmission';
 import LiveClassSchedule from './components/LiveClassSchedule';
+import SatHtml from 'src/components/sat-prep/SatHtml';
+import 'src/pages/student-hub/sat-prep/sat-text-lesson.scss';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import './index.scss';
+import CoursePreview from './CoursePreview';
 import { useDispatch } from 'react-redux';
 import { coursesApi } from 'src/app/services/courses';
 import { useTypedSelector } from 'src/app/store';
@@ -53,7 +56,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     const ua = navigator.userAgent;
     return /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua);
   }, []);
-  const [hasShownEnrollmentMessage, setHasShownEnrollmentMessage] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isCompletingLesson, setIsCompletingLesson] = useState(false);
 
@@ -374,17 +376,6 @@ const LearningPage: React.FC<LearningPageProps> = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (!enrollmentLoading && enrollmentStatus) {
-      if (!enrollmentStatus.isEnrolled && !hasShownEnrollmentMessage) {
-        setHasShownEnrollmentMessage(true);
-        message.warning('Please enroll in the course first to access learning content', 5);
-        setTimeout(() => {
-          navigate('/programs/admissions', { replace: true });
-        }, 2000);
-      }
-    }
-  }, [enrollmentStatus, enrollmentLoading, hasShownEnrollmentMessage, navigate]);
 
   useEffect(() => {
     setVdocipherOTP(null);
@@ -664,20 +655,7 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   }
 
   if (!enrollmentStatus.isEnrolled) {
-    return (
-      <div className="learning-error">
-        <h2>Not Enrolled</h2>
-        <p>You need to enroll in the course first to access the learning content.</p>
-        <p style={{ marginTop: '8px', color: '#666' }}>Redirecting you to the enrollment page...</p>
-        <Button 
-          type="primary" 
-          onClick={() => navigate('/programs/admissions', { replace: true })}
-          style={{ marginTop: '16px' }}
-        >
-          Go to Enrollment Page
-        </Button>
-      </div>
-    );
+    return <CoursePreview course={courseName} />;
   }
 
   if (enrollmentStatus.isEnrolled && !enrollmentStatus.canAccessLearning) {
@@ -832,13 +810,15 @@ const LearningPage: React.FC<LearningPageProps> = () => {
                   <span className="lh-meta__icon">
                     {selectedLesson.lessonType === 'video'
                       ? <Video size={14} />
-                      : selectedLesson.lessonType === 'pdf'
+                      : selectedLesson.lessonType === 'pdf' || selectedLesson.lessonType === 'text'
                         ? <FileText size={14} />
                         : <Target size={14} />}
                   </span>
                   <span className="lh-meta__type">
                     {selectedLesson.lessonType === 'video'
                       ? t('Video')
+                      : selectedLesson.lessonType === 'text'
+                        ? t('Text lesson')
                       : selectedLesson.lessonType === 'pdf'
                         ? t('PDF')
                         : t('Live session')}
@@ -863,11 +843,19 @@ const LearningPage: React.FC<LearningPageProps> = () => {
               </div>
 
               <div className="lesson-content">
-                {!selectedLesson.contentUrl && !selectedLesson.useVdoCipher ? (
+                {!selectedLesson.contentUrl && selectedLesson.lessonType !== 'text' && !selectedLesson.useVdoCipher ? (
                   <div className="lesson-error">
                     <h2>{t('Content not available')}</h2>
                     <p>{t('This lesson has no video/PDF. Please contact support.')}</p>
                   </div>
+                ) : selectedLesson.lessonType === 'text' ? (
+                  <section className="sat-text-lesson" aria-label="Text lesson">
+                    {selectedLesson.isDraft && <p className="sat-text-lesson__draft">Draft lesson · Educator review pending</p>}
+                    <SatHtml html={selectedLesson.textContentHtml ?? ''} className="sat-text-lesson__body" />
+                    {selectedLesson.textPracticeUrl?.startsWith('/student-hub/sat-prep/practice?') && (
+                      <Button onClick={() => navigate(selectedLesson.textPracticeUrl!)}>Practice this skill</Button>
+                    )}
+                  </section>
                 ) : selectedLesson.lessonType === 'video' ? (
                   <div className="video-content">
                     {isSafariBrowser && (
