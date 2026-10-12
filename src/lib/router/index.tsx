@@ -277,7 +277,14 @@ function RouterProvider() {
   // showing their own loader.
   const { data: orgsData, isLoading: orgsLoading } = useGetMyOrgsQuery(
     undefined,
-    { skip: !isAuthenticated },
+    {
+      skip: !isAuthenticated,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      // Role assignments can happen in an admin's separate session. Refresh
+      // in the background so an open student/onboarding page follows them.
+      pollingInterval: 30_000,
+    },
   );
 
   // Community entitlement (preferences + subscription) decides the hub's

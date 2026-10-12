@@ -1,4 +1,5 @@
 import { configureStore, ConfigureStoreOptions } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import layout from 'src/app/slices/layoutSlice';
 import auth from 'src/app/slices/authSlice';
@@ -40,6 +41,7 @@ export const createStore = (
   });
 
 export const store = createStore();
+setupListeners(store.dispatch);
 
 export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch: () => AppDispatch = useDispatch;
