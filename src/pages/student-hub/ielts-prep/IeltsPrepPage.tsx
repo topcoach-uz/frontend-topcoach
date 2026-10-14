@@ -4,6 +4,7 @@ import { useTypedSelector } from "src/app/store";
 import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
+import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
 export default function IeltsPrepPage() {
   const location = useLocation();
@@ -11,6 +12,11 @@ export default function IeltsPrepPage() {
   const profile = useTypedSelector((state) => state.auth.profile);
   const [storageError, setStorageError] = useState(false);
   const onStorageError = useCallback(() => setStorageError(true), []);
+  const [list] = useLazyGetIeltsSubmissionsQuery();
+  const [create] = useCreateIeltsSubmissionMutation();
+  const [upload] = useUploadIeltsRecordingMutation();
+  const [assess] = useAssessIeltsSubmissionMutation();
+  const [audio] = useDownloadIeltsRecordingMutation();
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.
   // Never create a demo session or reuse another user's local practice namespace.
@@ -37,6 +43,8 @@ export default function IeltsPrepPage() {
         }}
         storagePrefix={ieltsStoragePrefix(String(profile.id))}
         onStorageError={onStorageError}
+        assessmentApi={{ list: key => list(key, false).unwrap(), create: body => create(body).unwrap(),
+          upload: (id, question, blob) => upload({ id, question, blob }).unwrap(), assess: id => assess(id).unwrap(), audio: id => audio(id).unwrap() }}
       />
     </>
   );

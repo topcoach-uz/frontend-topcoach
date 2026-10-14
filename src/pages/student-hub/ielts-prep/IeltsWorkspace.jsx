@@ -69,6 +69,259 @@ import { extraPassages, ExtraReadingQuestions } from "./reading-extra.jsx";
 import { WritingFeedback, SpeakingFeedback } from "./feedback.jsx";
 
 const WorkspaceContext = createContext(null);
+function usePracticeAssessment(r) {
+  const { assessmentApi } = useContext(WorkspaceContext);
+  const api = useRef(assessmentApi);
+  api.current = assessmentApi;
+  const practiceKey = `${storageKey(r)}:${r.part}`;
+  const [submissions, setSubmissions] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const running = useRef(false),
+    request = useRef(null),
+    generation = useRef(0);
+  const errorText = (e) =>
+    typeof e?.data?.message === "string"
+      ? e.data.message
+      : "Could not finish this request. Your local work is still here. Please retry.";
+  useEffect(() => {
+    const current = ++generation.current;
+    setSubmissions([]);
+    setError("");
+    setBusy(false);
+    running.current = false;
+    request.current = null;
+    if (api.current)
+      api.current
+        .list(practiceKey)
+        .then((rows) => {
+          if (generation.current === current && Array.isArray(rows))
+            setSubmissions(rows);
+        })
+        .catch((e) => {
+          if (generation.current === current) setError(errorText(e));
+        });
+    return () => {
+      generation.current++;
+    };
+  }, [practiceKey]);
+  const refresh = async () => {
+    const current = generation.current;
+    try {
+      const rows = await api.current.list(practiceKey);
+      if (generation.current === current) {
+        setSubmissions(rows);
+        setError("");
+      }
+    } catch (e) {
+      if (generation.current === current) setError(errorText(e));
+    }
+  };
+  const run = async ({ text, prompt, clips = [] }) => {
+    if (running.current) return false;
+    if (!api.current) {
+      setError("Assessment is unavailable in this preview.");
+      return false;
+    }
+    const current = generation.current;
+    running.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const fingerprint = JSON.stringify({
+        text,
+        prompt,
+        clips: clips.map((c) => c.url),
+      });
+      if (request.current?.fingerprint !== fingerprint)
+        request.current = { fingerprint, requestId: crypto.randomUUID() };
+      const row = await api.current.create({
+        requestId: request.current.requestId,
+        practiceKey,
+        skill: r.skill,
+        text,
+        prompt,
+      });
+      if (row.state !== "assessed") {
+        for (const clip of clips)
+          await api.current.upload(row.id, clip.question, clip.blob);
+      }
+      const result = await api.current.assess(row.id);
+      if (generation.current === current) {
+        setSubmissions(await api.current.list(practiceKey));
+        if (result.state !== "assessed")
+          setError(
+            result.error ||
+              "Assessment did not finish. Your submission is saved. Retry below.",
+          );
+      }
+      return result.state === "assessed";
+    } catch (e) {
+      if (generation.current === current) {
+        setError(errorText(e));
+        await api.current
+          .list(practiceKey)
+          .then(setSubmissions)
+          .catch(() => {});
+      }
+      return false;
+    } finally {
+      if (generation.current === current) {
+        running.current = false;
+        setBusy(false);
+      }
+    }
+  };
+  const retry = async (id) => {
+    if (running.current || !api.current) return;
+    running.current = true;
+    setBusy(true);
+    setError("");
+    const current = generation.current;
+    try {
+      const result = await api.current.assess(id);
+      if (generation.current === current) {
+        await refresh();
+        if (result.state !== "assessed")
+          setError(result.error || "Please check again shortly.");
+      }
+    } catch (e) {
+      if (generation.current === current) setError(errorText(e));
+    } finally {
+      if (generation.current === current) {
+        running.current = false;
+        setBusy(false);
+      }
+    }
+  };
+  return { submissions, busy, error, run, retry, refresh };
+}
+function SavedRecording({ recording }) {
+  const { assessmentApi } = useContext(WorkspaceContext);
+  const [url, setUrl] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  const ownedUrl = useRef("");
+  useEffect(
+    () => () => {
+      if (ownedUrl.current) URL.revokeObjectURL(ownedUrl.current);
+    },
+    [],
+  );
+  const expired = new Date(recording.expiresAt).getTime() <= Date.now();
+  return (
+    <div>
+      <p>
+        Question {recording.question + 1} ·{" "}
+        {expired
+          ? "Recording expired"
+          : `Available until ${dateLabel(recording.expiresAt)}`}
+      </p>
+      {!expired && !url && (
+        <button
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError("");
+            try {
+              const blob = await assessmentApi.audio(recording.id);
+              ownedUrl.current = URL.createObjectURL(blob);
+              setUrl(ownedUrl.current);
+            } catch {
+              setError("Recording unavailable. It may have expired.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? "Loading…" : "Play saved recording"}
+        </button>
+      )}
+      {url && (
+        <>
+          <audio controls src={url} />
+          <a href={url} download={`ielts-question-${recording.question + 1}`}>
+            Download recording
+          </a>
+        </>
+      )}
+      {error && <p role="alert">{error}</p>}
+    </div>
+  );
+}
+function PracticeFeedback({ assessment, onRestore }) {
+  return (
+    <section aria-label="Saved practice feedback">
+      <p>
+        Automated practice guidance. This is not an official IELTS result.
+        Speaking guidance covers transcript vocabulary, grammar and relevance;
+        it does not score pronunciation or delivery.
+      </p>
+      {assessment.error && (
+        <p role="alert">
+          {assessment.error}{" "}
+          <button disabled={assessment.busy} onClick={assessment.refresh}>
+            Refresh saved submissions
+          </button>
+        </p>
+      )}
+      {assessment.submissions.map((submission, index) => (
+        <details key={submission.id} open={index === 0}>
+          <summary>
+            Submission · {dateLabel(submission.createdAt)} · {submission.state}
+          </summary>
+          {onRestore && (
+            <button
+              disabled={assessment.busy}
+              onClick={() => onRestore(submission.text)}
+            >
+              Restore saved response
+            </button>
+          )}
+          {submission.feedback && (
+            <div>
+              {submission.feedback.estimatedBand != null && (
+                <p>
+                  Estimated writing band: {submission.feedback.estimatedBand}
+                </p>
+              )}
+              <p>{submission.feedback.summary}</p>
+              {["strengths", "improvements", "suggestions"].map((key) => (
+                <div key={key}>
+                  <h3>{key[0].toUpperCase() + key.slice(1)}</h3>
+                  <ul>
+                    {submission.feedback[key].map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+          {["saved", "failed"].includes(submission.state) && (
+            <button
+              disabled={assessment.busy}
+              onClick={() => assessment.retry(submission.id)}
+            >
+              Retry assessment
+            </button>
+          )}
+          {submission.state === "processing" && (
+            <button disabled={assessment.busy} onClick={assessment.refresh}>
+              Check assessment status
+            </button>
+          )}
+          {submission.recordings?.map((recording) => (
+            <SavedRecording key={recording.id} recording={recording} />
+          ))}
+        </details>
+      ))}
+      {assessment.busy && (
+        <p role="status">Saving and assessing your practice…</p>
+      )}
+    </section>
+  );
+}
 const read = (key, fallback) => {
   try {
     return JSON.parse(localStorage.getItem(key)) ?? fallback;
@@ -575,8 +828,8 @@ function InfoPage({ path, Link }) {
           : "This practice page could not be found."}
       </p>
       <p>
-        Practice content and feedback currently use representative samples.
-        Writing and speaking bands are sample feedback, not an assessment.
+        Practice content uses representative samples. Submitted writing and
+        speaking receive automated guidance on your own response.
       </p>
       <Link to="/ielts/practice/home">Browse practice tests</Link>
     </main>
@@ -1585,6 +1838,7 @@ function WritingPrompt({ r }) {
   );
 }
 function WritingEditor({ r, setToast }) {
+  const assessment = usePracticeAssessment(r);
   const [essay, setEssay] = useStored(`${storageKey(r)}:essay:${r.part}`, ""),
     [versions, setVersions] = useStored(
       `${storageKey(r)}:versions:${r.part}`,
@@ -1609,21 +1863,21 @@ function WritingEditor({ r, setToast }) {
     [r.part],
   );
   const count = wordCount(essay);
-  function submit() {
+  async function submit() {
     if (!count) {
       setToast("Please input your response.");
       return;
     }
     setVersions((v) => [{ text: essay, time: new Date().toISOString() }, ...v]);
-    setReview({ essay });
-    setToast("Showing sample feedback layout. No AI assessment was performed.");
+    const success = await assessment.run({ text: essay, prompt: writingPrompts[r.part - 1] });
+    if (success) setToast('Your practice feedback is ready.');
   }
   return (
     <>
       {essay && savedAt && (
         <div className="autosaved">Autosaved @ {dateLabel(savedAt)}.</div>
       )}
-      <div className="quota">0/2 writing feedbacks finished in 20 minutes.</div>
+      <p>Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback.</p>
       <textarea
         className="essay"
         placeholder="Please input"
@@ -1636,13 +1890,14 @@ function WritingEditor({ r, setToast }) {
       />
       <div className="editor-footer">
         <span>Words: {count}</span>
-        <button className="pill green" onClick={submit}>
+        <button className="pill green" disabled={assessment.busy || !count} onClick={submit}>
           Submit for Feedback
         </button>
       </div>
       <details open>
         <summary>Writing Feedback</summary>
-        {review && <WritingFeedback essay={review.essay} />}
+        {new URLSearchParams(location.search).get('feedback') === 'demo' && review && <><p>Sample feedback</p><WritingFeedback essay={review.essay} /></>}
+        <PracticeFeedback assessment={assessment} onRestore={value => { setEssay(value); setSavedAt(new Date().toISOString()); }} />
       </details>
       {versions.length > 0 &&
         new URLSearchParams(location.search).has("dev") && (
@@ -1732,6 +1987,7 @@ function SpeakingPrompt({ r }) {
   );
 }
 function SpeakingEditor({ r, setToast, onComplete }) {
+  const assessment = usePracticeAssessment(r);
   const d = getSpeaking(r),
     [question, setQuestion] = useState(0),
     [played, setPlayed] = useState(false),
@@ -1758,7 +2014,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
       stream.current?.getTracks().forEach((t) => t.stop());
       urls.current.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [r.part]);
+  }, [r.type, r.book, r.test, r.part]);
   async function record() {
     if (recording) {
       recorder.current?.stop();
@@ -1774,11 +2030,10 @@ function SpeakingEditor({ r, setToast, onComplete }) {
       recorder.current = rec;
       rec.ondataavailable = (e) => chunks.push(e.data);
       rec.onstop = () => {
-        const url = URL.createObjectURL(
-          new Blob(chunks, { type: rec.mimeType }),
-        );
+        const blob = new Blob(chunks, { type: rec.mimeType });
+        const url = URL.createObjectURL(blob);
         urls.current.push(url);
-        setClips((c) => [...c, { question, url }]);
+        setClips((c) => [...c, { question, url, blob }]);
         stream.current.getTracks().forEach((t) => t.stop());
       };
       rec.start();
@@ -1792,21 +2047,21 @@ function SpeakingEditor({ r, setToast, onComplete }) {
   if (new URLSearchParams(location.search).get("feedback") === "demo" || done)
     return (
       <>
-        <div className="quota">0/3 speaking practices finished in 8 hours.</div>
         <div className="speaking-complete">
           <p>This is the end of part {r.part}.</p>
           <p>All questions are completed.</p>
         </div>
         <p className="retention-note">
-          Note: Your speaking practice recordings can be played back for 7 days.
-          After that, only the transcripts will be saved.
+          Submitted recordings are private and available for seven days. Your
+          saved transcript and feedback remain in your account.
         </p>
-        <SpeakingFeedback questions={d.questions} />
+        {new URLSearchParams(location.search).get('feedback') === 'demo' ? <><p>Sample feedback</p><SpeakingFeedback questions={d.questions} /></> : <PracticeFeedback assessment={assessment} />}
       </>
     );
   return (
     <>
-      <div className="quota">0/3 speaking practices finished in 8 hours.</div>
+      <p>Finish practice to save recordings privately and send audio to OpenAI for transcription and automated feedback. Unsubmitted recordings are lost when you leave this part.</p>
+      <PracticeFeedback assessment={assessment} />
       <div className="live">
         <button
           className="blue-chip"
@@ -1819,7 +2074,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
       <div className="speaking-controls">
         <IconButton
           label="Play examiner audio"
-          disabled={playing || recording}
+          disabled={playing || recording || assessment.busy}
           onClick={() => {
             setPlaying(true);
             speak(d.questions[question], () => {
@@ -1838,7 +2093,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
         </span>
         <IconButton
           label={recording ? "Stop recording" : "Record answer"}
-          disabled={!played || playing}
+          disabled={!played || playing || assessment.busy}
           onClick={record}
         >
           {recording ? <Square fill="#bc3036" /> : played ? <Mic /> : <Hand />}
@@ -1875,7 +2130,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
       {clips.length > 0 && (
         <div className="speaking-next">
           <button
-            disabled={question === 0 || recording}
+            disabled={question === 0 || recording || assessment.busy}
             onClick={() => {
               setQuestion(question - 1);
               setPlayed(false);
@@ -1884,17 +2139,16 @@ function SpeakingEditor({ r, setToast, onComplete }) {
             Previous question
           </button>
           <button
-            disabled={!clips.some((c) => c.question === question) || recording}
-            onClick={() => {
+            disabled={!clips.some((c) => c.question === question) || recording || assessment.busy}
+            onClick={async () => {
               if (question < d.questions.length - 1) {
                 setQuestion(question + 1);
                 setPlayed(false);
               } else {
-                setDone(true);
-                onComplete?.();
-                setToast(
-                  "Showing sample feedback layout. No AI assessment was performed.",
-                );
+                const selected = d.questions.map((_, question) => [...clips].reverse().find(clip => clip.question === question)).filter(Boolean);
+                if (selected.length !== d.questions.length) { setToast('Record an answer for every question first.'); return; }
+                const success = await assessment.run({ text: transcript, prompt: d.questions.join('\n'), clips: selected });
+                if (success) { setDone(true); onComplete?.(); setToast('Your practice feedback is ready.'); }
               }
             }}
           >
