@@ -16,13 +16,13 @@ Desktop/community, mobile drawer and applicant learning navigation include IELTS
 
 `IeltsPrepPage.tsx` adapts the authenticated Redux profile and React Router location to `IeltsWorkspace.jsx`. `routes.ts` maps the preserved renderer's internal route vocabulary to TopCoach URLs. Browser Back/Forward and modified-click links work through the existing router. The JSX practice renderer has a typed public boundary. Writing and Speaking submissions connect to the authenticated IELTS practice API; representative exam content remains local.
 
-All practice styles live under `.ielts-workspace`; the theme changes this root only. Fonts and chart/cover assets use `/ielts-assets/`. The normal header, sidebar, footer and chat overlay yield to the full-width practice shell on IELTS routes, and return when leaving the module.
+All practice styles live under `.ielts-workspace`; the theme changes this root only. Fonts and chart/cover assets use `/ielts-assets/`. The overview and catalogs share the student hub’s red site header, warm background, typography, spacing and card styles. The normal header, sidebar, footer and chat overlay yield to the full-width shell on practice, vocabulary and results routes, and return when leaving the module.
 
 Local work uses `topcoach:ielts:v1:<encoded-user-id>:` keys. There is no migration of the separate replica's demo account or saved work. Answers, annotations, vocabulary, essays, timers and last practice are scoped to the stable TopCoach account ID. Storage-write failures display an alert. Unsubmitted audio recordings remain in memory. Finish practice uploads the latest recording for each question to private account storage for seven days; saved transcripts and feedback remain available after audio expires.
 
 ## TopCoach browsing design
 
-Only the overview and Academic / General Training catalogs use `IeltsBrowse.jsx` and `browse.css`. The `ielts-browse` root class scopes their burgundy, DM Sans, light-gray workspace and responsive navigation. The existing practice shell, theme preference, vocabulary and results screens retain their original components and styles.
+Only the overview and Academic / General Training catalogs use `IeltsBrowse.jsx` and `browse.css`. The `ielts-browse` root class scopes their student-hub red, DM Sans, warm workspace and responsive navigation. The shared site header renders outside this root to keep its navigation and account controls consistent with the hub. The browsing hero uses a simple white practice panel and the hub’s muted outline icons. The practice shell, vocabulary and results keep their existing components and theme preference; their light-mode fonts, controls and score cards use the hub’s warm surfaces and red accents.
 
 The overview resumes the account-scoped last practice and links each skill to the Academic catalog with a skill filter. Catalogs retain the existing books, test counts and practice/results URLs, with local search, book selection, skill selection and an empty-results reset. General Training retains its reading-only catalog.
 

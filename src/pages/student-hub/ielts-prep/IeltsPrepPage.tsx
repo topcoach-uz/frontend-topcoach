@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTypedSelector } from "src/app/store";
 import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
+import Header from "src/components/layouts/components/header";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
 import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
@@ -18,12 +19,16 @@ export default function IeltsPrepPage() {
   const [assess] = useAssessIeltsSubmissionMutation();
   const [audio] = useDownloadIeltsRecordingMutation();
 
+  const pagePath = toIeltsPath(location.pathname);
+  const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
+
   // Parent StudentHubGate owns authentication, role routing and profile loading.
   // Never create a demo session or reuse another user's local practice namespace.
   if (!profile?.id) return null;
 
   return (
     <>
+      {browsing && <Header workspace />}
       {storageError && (
         <div
           role="alert"

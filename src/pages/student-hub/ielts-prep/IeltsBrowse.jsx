@@ -6,12 +6,11 @@ import {
   Headphones,
   Mic,
   PenLine,
-  LayoutDashboard,
+  House,
   Library,
   Search,
   ChevronRight,
 } from "lucide-react";
-import { Logo } from "../../../components/logos";
 import { testPath, route, skills } from "./model.js";
 import "./browse.css";
 
@@ -22,25 +21,21 @@ const skillMeta = {
     label: "Listening",
     Icon: Headphones,
     description: "Tune your ear to conversations and lectures.",
-    color: "blue",
   },
   reading: {
     label: "Reading",
     Icon: BookOpen,
     description: "Build comprehension, one passage at a time.",
-    color: "green",
   },
   writing: {
     label: "Writing",
     Icon: PenLine,
     description: "Develop clear, well-structured responses.",
-    color: "wine",
   },
   speaking: {
     label: "Speaking",
     Icon: Mic,
     description: "Practice expressing your ideas with confidence.",
-    color: "purple",
   },
 };
 const years = {
@@ -85,21 +80,12 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
   const overview = pagePath === "/";
   const type = pagePath === generalPath ? "general-training" : "academic";
   const nav = [
-    { to: "/", label: "Overview", Icon: LayoutDashboard },
+    { to: "/", label: "Overview", Icon: House },
     { to: academicPath, label: "Academic", Icon: Library },
     { to: generalPath, label: "General Training", Icon: BookOpen },
   ];
   return (
     <div className="ib-layout">
-      <div className="ib-topbar">
-        <Link to="/student-hub" aria-label="TopCoach student hub">
-          <Logo width={112} height={36} color="white" />
-        </Link>
-        <span className="ib-topbar-label">Student workspace</span>
-        <Link className="ib-back" to="/student-hub">
-          <ArrowLeft size={16} /> Back to student hub
-        </Link>
-      </div>
       <div className="ib-workspace">
         <aside className="ib-sidebar">
           <div className="ib-profile">
@@ -136,7 +122,7 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
         </aside>
         <main className="ib-main">
           <div className="ib-breadcrumb">
-            <Link to="/student-hub">Student hub</Link>
+            <Link className="ib-hub-link" to="/student-hub"><ArrowLeft size={16} /> Student hub</Link>
             <ChevronRight size={13} />
             <Link to="/">IELTS prep</Link>
             {!overview && (
@@ -190,18 +176,17 @@ function Overview({ Link, profile, last }) {
             <ArrowRight size={17} />
           </Link>
         </div>
-        <div className="ib-hero-art" aria-hidden="true">
-          <div className="ib-art-orbit" />
-          <span className="ib-art-book">
-            <BookOpen size={50} strokeWidth={1.4} />
-          </span>
-          <span className="ib-art-dot ib-art-dot--one">
-            <Headphones size={23} />
-          </span>
-          <span className="ib-art-dot ib-art-dot--two">
-            <Mic size={22} />
-          </span>
-          <span className="ib-art-tag">A little progress. Every day.</span>
+        <div className="ib-hero-visual" aria-hidden="true">
+          <BookOpen size={32} strokeWidth={1.6} />
+          <span className="ib-visual-label">IELTS PREPARATION</span>
+          <strong>Build your confidence.</strong>
+          <span className="ib-visual-caption">A little practice, every day.</span>
+          <div className="ib-visual-skills">
+            {skills.map((skill) => {
+              const { Icon, label } = skillMeta[skill];
+              return <span key={skill}><Icon size={20} strokeWidth={1.6} />{label}</span>;
+            })}
+          </div>
         </div>
       </section>
       <section>
@@ -213,14 +198,14 @@ function Overview({ Link, profile, last }) {
         </div>
         <div className="ib-skills">
           {skills.map((skill) => {
-            const { label, Icon, description, color } = skillMeta[skill];
+            const { label, Icon, description } = skillMeta[skill];
             return (
               <Link
                 key={skill}
                 className="ib-skill-card"
                 to={`${academicPath}?skill=${skill}`}
               >
-                <span className={`ib-icon ib-icon--${color}`}>
+                <span className="ib-icon">
                   <Icon size={22} />
                 </span>
                 <h3>{label}</h3>
@@ -242,7 +227,7 @@ function Overview({ Link, profile, last }) {
         </div>
         <div className="ib-collections">
           <Link className="ib-collection" to={academicPath}>
-            <span className="ib-icon ib-icon--wine">
+            <span className="ib-icon">
               <Library size={23} />
             </span>
             <div>
@@ -253,7 +238,7 @@ function Overview({ Link, profile, last }) {
             <ArrowRight size={22} />
           </Link>
           <Link className="ib-collection" to={generalPath}>
-            <span className="ib-icon ib-icon--green">
+            <span className="ib-icon">
               <BookOpen size={23} />
             </span>
             <div>
@@ -403,10 +388,10 @@ function PracticeLibrary({ type, Link }) {
                 </div>
                 <div className="ib-test-skills">
                   {selectedSkills.map((s) => {
-                    const { Icon, label, color } = skillMeta[s];
+                    const { Icon, label } = skillMeta[s];
                     return (
                       <Link key={s} to={testPath({ type, book, test }, s)}>
-                        <span className={`ib-mini-icon ib-icon--${color}`}>
+                        <span className="ib-mini-icon">
                           <Icon size={16} />
                         </span>
                         {label}
