@@ -20,6 +20,14 @@ All practice styles live under `.ielts-workspace`; the theme changes this root o
 
 Local work uses `topcoach:ielts:v1:<encoded-user-id>:` keys. There is no migration of the separate replica's demo account or saved work. Answers, annotations, vocabulary, essays, timers and last practice are scoped to the stable TopCoach account ID. Storage-write failures display an alert. Audio recordings remain in memory; production recording storage, assessment and synchronization are not implemented.
 
+## TopCoach browsing design
+
+Only the overview and Academic / General Training catalogs use `IeltsBrowse.jsx` and `browse.css`. The `ielts-browse` root class scopes their burgundy, DM Sans, light-gray workspace and responsive navigation. The existing practice shell, theme preference, vocabulary and results screens retain their original components and styles.
+
+The overview resumes the account-scoped last practice and links each skill to the Academic catalog with a skill filter. Catalogs retain the existing books, test counts and practice/results URLs, with local search, book selection, skill selection and an empty-results reset. General Training retains its reading-only catalog.
+
+The catalogs use one navigation row, readable text, 44px action targets and immediate press feedback. Reduced-motion preferences disable press scaling.
+
 ## Development verification
 
 Normal production build: `npm run build`.

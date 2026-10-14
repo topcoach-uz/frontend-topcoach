@@ -59,6 +59,7 @@ import {
   answerKeys,
 } from "./content.js";
 import "./style.css";
+import IeltsBrowse from "./IeltsBrowse";
 import {
   generalPassages,
   GeneralReadingQuestions,
@@ -139,6 +140,8 @@ function App() {
     [toast, setToast] = useState("");
   const pagePath = path.split("?")[0];
   const r = route(path);
+  const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
+  const readBrowse = useRead();
   const dialogRef = useRef(null);
   useEffect(() => {
     if (!modal || !dialogRef.current) return;
@@ -229,7 +232,8 @@ function App() {
     </a>
   );
   return (
-    <div className={`ielts-workspace${dark ? " dark" : ""}`}>
+    <div className={`ielts-workspace${browsing ? " ielts-browse" : dark ? " dark" : ""}`}>
+      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} /> : <>
       <header>
         <div className="brand">
           <Link to="/student-hub" aria-label="Back to TopCoach">
@@ -286,19 +290,7 @@ function App() {
           </div>
         )}
       </header>
-      {pagePath === "/" ? (
-        <Home Link={Link} profile={profile} {...ctx} />
-      ) : pagePath === "/ielts/practice/home" ||
-        pagePath === "/ielts/practice/general-training" ? (
-        <Catalog
-          type={
-            pagePath.endsWith("general-training")
-              ? "general-training"
-              : "academic"
-          }
-          Link={Link}
-        />
-      ) : pagePath === "/ielts/vocabulary" ? (
+      {pagePath === "/ielts/vocabulary" ? (
         <Vocabulary {...ctx} />
       ) : r ? (
         r.skill === "score" ? (
@@ -313,6 +305,7 @@ function App() {
       ) : (
         <InfoPage path={pagePath} Link={Link} />
       )}
+      </>}
       {toast && (
         <div className="toast" role="status">
           {toast}
@@ -467,240 +460,6 @@ function Clock({ r, setModal, go }) {
         </div>
       )}
     </div>
-  );
-}
-function Home({ Link, setToast, profile }) {
-  const read = useRead();
-  const last = profile ? read("workspace:last", null) : null;
-  const [answer, setAnswer] = useState(""),
-    [reveal, setReveal] = useState(false);
-  return (
-    <main className="home">
-      <section className="home-card">
-        <div className="home-sample">
-          <h2 className="green-rule">
-            <Link to="/ielts/practice/academic/19/2/listening/1">
-              Inside Coleman's Guitar Experience
-            </Link>
-          </h2>
-          <audio controls src={homeAudio} />
-          <details open>
-            <summary>Audioscript</summary>
-            <div className="transcript">
-              <p>
-                <b>WOMAN:</b> <mark>Really?</mark> So, who runs the classes?
-              </p>
-              <p>
-                <b>COLEMAN:</b> He's called a coordinator. His name's Gary
-                Mathieson.
-              </p>
-              <p>
-                <b>WOMAN:</b> Let me note that down. Gary, how do you spell his
-                surname?
-              </p>
-              <p>
-                <b>COLEMAN:</b> It's MATHIESON.
-              </p>
-            </div>
-          </details>
-          <div className="demo-answer">
-            <b>Coordinator: Gary</b>
-            <input
-              aria-label="Coordinator surname"
-              placeholder="1"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-            />
-            <IconButton
-              label="Show correct answer"
-              onClick={() => {
-                setReveal(!reveal);
-                setToast(
-                  answer.toLowerCase() === "mathieson"
-                    ? "Correct!"
-                    : "Correct answer: Mathieson",
-                );
-              }}
-            >
-              <KeyRound size={14} />
-            </IconButton>
-            {reveal && <span>Mathieson</span>}
-          </div>
-        </div>
-        <div>
-          <h1>IELTS Practice Tests</h1>
-          <div className="covers">
-            {["21", "18", "og"].map((b) => (
-              <Link key={b} to={`/ielts/practice/academic/${b}/1/listening/1`}>
-                <img
-                  src={`/ielts-assets/cover-${b}.jpg`}
-                  alt={`IELTS Academic ${b === "og" ? "Official Guide" : b}`}
-                />
-              </Link>
-            ))}
-          </div>
-          <div className="release">
-            <Link to="/ielts/practice/academic/21/1/reading/1">
-              ✨ IELTS 21 has been released.
-            </Link>
-            <Link to="/ielts/practice/general-training">General Training</Link>
-          </div>
-          <div className="last">
-            <span>My Last Practice</span>
-            {last && <Link to={last.path}>{last.title}</Link>}
-          </div>
-          <Link className="pill red" to="/ielts/practice/home">
-            More Practice Tests <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
-      <section className="home-card second">
-        <div>
-          <h1>Vocabulary in IELTS</h1>
-          <h2>misfit</h2>
-          <p>
-            When one mentions pirates, an image springs to most people's minds
-            of a crew of misfits, daredevils and adventurers in command of a
-            tall sailing ship in the Caribbean Sea.
-          </p>
-          <Link
-            className="small-link"
-            to="/ielts/practice/academic/19/1/reading/2"
-          >
-            Academic 19 Test 1 Reading 2 ↗
-          </Link>
-          <h2>inadvertent</h2>
-          <p>
-            Moreover, people inadvertently have been sharing inaccurate
-            information with one another for thousands of years.
-          </p>
-          <Link
-            className="small-link"
-            to="/ielts/practice/academic/19/1/reading/3"
-          >
-            Academic 19 Test 1 Reading 3 ↗
-          </Link>
-          <p>
-            <Link className="pill" to="/ielts/vocabulary">
-              My Starred Words <ArrowRight size={17} />
-            </Link>
-          </p>
-        </div>
-        <div className="home-sample">
-          <h2 className="green-rule">
-            <Link to="/ielts/practice/academic/18/4/reading/2">
-              The Growth Mindset
-            </Link>
-          </h2>
-          <p>
-            <mark>
-              A major focus of the growth mindset in schools is coaxing students
-              away from seeing failure as an indication of their ability, and
-              towards seeing it as a chance to improve that ability.
-            </mark>{" "}
-            <sup>15</sup> As educationalist Jeff Howard noted several decades
-            ago: "Smart is not something that you just are, smart is something
-            that you can get."
-          </p>
-          <h2 className="green-rule">
-            <Link to="/ielts/practice/academic/19/2/reading/2">
-              Athletes and Stress
-            </Link>
-          </h2>
-          <p>
-            Anxiety can increase heart rate and perspiration, cause heart
-            palpitations, muscle tremors and shortness of breath, as well as
-            headaches, nausea, stomach pain, weakness and a desire to escape in
-            more extreme cases.
-          </p>
-        </div>
-      </section>
-      <footer>
-        {["About", "Privacy", "Terms"].map((s) => (
-          <Link key={s} to={`/${s.toLowerCase()}`}>
-            {s}
-          </Link>
-        ))}
-      </footer>
-    </main>
-  );
-}
-function Catalog({ type, Link }) {
-  const years = {
-    21: 2026,
-    20: 2025,
-    19: 2024,
-    18: 2023,
-    17: 2022,
-    16: 2021,
-    15: 2020,
-    14: 2019,
-    13: 2018,
-    12: 2017,
-    11: 2016,
-    10: 2015,
-    9: 2013,
-    8: 2011,
-    7: 2009,
-    6: 2007,
-    5: 2006,
-    4: 2005,
-    3: 2002,
-    2: 2000,
-    1: 1996,
-    eg: 2014,
-    og: 2014,
-  };
-  return (
-    <main className="catalog">
-      {(type === "academic"
-        ? [...Array.from({ length: 21 }, (_, i) => 21 - i), "eg", "og"]
-        : [...Array.from({ length: 8 }, (_, i) => 21 - i), 10]
-      ).map((book) => (
-        <section key={book}>
-          <h2 className={+book >= 19 ? "recent" : ""}>
-            IELTS {typeof book === "string" ? book.toUpperCase() : book}{" "}
-            {type === "academic" ? "Academic" : "General Training"}{" "}
-            {years[book] || ""}
-            {book === 21 && <span> ✨</span>}
-          </h2>
-          <div className="test-cards">
-            {Array.from(
-              {
-                length:
-                  book === "og"
-                    ? 8
-                    : type === "general-training" && book === 10
-                      ? 2
-                      : 4,
-              },
-              (_, i) => i + 1,
-            ).map((test) => (
-              <article className="test-card" key={test}>
-                <Link
-                  className="test-heading"
-                  to={testPath({ type, book, test }, "score")}
-                >
-                  Test {test}
-                </Link>
-                <div>
-                  {(type === "general-training" ? ["reading"] : skills).map(
-                    (skill) => (
-                      <Link
-                        key={skill}
-                        to={testPath({ type, book, test }, skill)}
-                      >
-                        {cap(skill)}
-                      </Link>
-                    ),
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))}
-    </main>
   );
 }
 function Vocabulary({ setToast }) {
