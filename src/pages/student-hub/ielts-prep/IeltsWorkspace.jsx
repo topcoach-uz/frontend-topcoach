@@ -47,6 +47,7 @@ import {
   wordCount,
 } from "./model.js";
 import {
+  homeAudio,
   passage,
   readingStatements,
   readingKeys,
