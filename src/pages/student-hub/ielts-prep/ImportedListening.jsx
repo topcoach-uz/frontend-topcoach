@@ -54,21 +54,24 @@ function Rich({ node, answer }) {
     </>
   );
 }
-function Table({ rows, answer }) {
+function Table({ rows, answer, header = true }) {
   return (
     <table className="exam-table">
       <tbody>
         {rows?.map((row, i) => (
           <tr key={i}>
-            {(Array.isArray(row) ? row : [row]).map((cell, j) => (
-              <td
-                key={j}
-                rowSpan={cell?.rowspan || undefined}
-                colSpan={cell?.colspan || undefined}
-              >
-                <Rich node={cell} answer={answer} />
-              </td>
-            ))}
+            {(Array.isArray(row) ? row : [row]).map((cell, j) => {
+              const Cell = header && i === 0 ? "th" : "td";
+              return (
+                <Cell
+                  key={j}
+                  rowSpan={cell?.rowspan || undefined}
+                  colSpan={cell?.colspan || undefined}
+                >
+                  <Rich node={cell} answer={answer} />
+                </Cell>
+              );
+            })}
           </tr>
         ))}
       </tbody>
@@ -165,6 +168,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
       {group.image && (
         <img
           src={group.image}
+          style={{ maxWidth: "100%", height: "auto" }}
           alt={`Diagram for questions ${group.start}–${group.end}`}
         />
       )}
@@ -262,7 +266,11 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
             </ol>
           )}
           {group.type === "input-table" || group.type === "input-form" ? (
-            <Table rows={body.items} answer={answer} />
+            <Table
+              rows={body.items}
+              answer={answer}
+              header={group.type === "input-table"}
+            />
           ) : (
             <Rich node={{ items: body.items }} answer={answer} />
           )}
