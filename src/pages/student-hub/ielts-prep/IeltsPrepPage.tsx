@@ -4,6 +4,8 @@ import { useTypedSelector } from "src/app/store";
 import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
+import { useGetIeltsListeningQuery, useGetIeltsReadingQuery, useGetIeltsWritingQuery, useGetIeltsSpeakingQuery } from 'src/app/services/ieltsListeningApi';
+import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
 export default function IeltsPrepPage() {
   const location = useLocation();
@@ -11,6 +13,21 @@ export default function IeltsPrepPage() {
   const profile = useTypedSelector((state) => state.auth.profile);
   const [storageError, setStorageError] = useState(false);
   const onStorageError = useCallback(() => setStorageError(true), []);
+  const [list] = useLazyGetIeltsSubmissionsQuery();
+  const [create] = useCreateIeltsSubmissionMutation();
+  const [upload] = useUploadIeltsRecordingMutation();
+  const [assess] = useAssessIeltsSubmissionMutation();
+  const [audio] = useDownloadIeltsRecordingMutation();
+
+  const pagePath = toIeltsPath(location.pathname);
+  const listeningMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(listening|score)(?:\/|$)/);
+  const listening = useGetIeltsListeningQuery({ type: listeningMatch?.[1] || '', book: listeningMatch?.[2] || '', test: Number(listeningMatch?.[3] || 1) }, { skip: !listeningMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const readingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(reading|score)(?:\/|$)/);
+  const reading = useGetIeltsReadingQuery({ type: readingMatch?.[1] || '', book: readingMatch?.[2] || '', test: Number(readingMatch?.[3] || 1) }, { skip: !readingMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const writingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/writing(?:\/|$)/);
+  const writing = useGetIeltsWritingQuery({ type: writingMatch?.[1] || '', book: writingMatch?.[2] || '', test: Number(writingMatch?.[3] || 1) }, { skip: !writingMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const speakingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/speaking(?:\/([1-3]))?(?:\/|$)/);
+  const speaking = useGetIeltsSpeakingQuery({ type: speakingMatch?.[1] || '', book: speakingMatch?.[2] || '', test: Number(speakingMatch?.[3] || 1), part: Number(speakingMatch?.[4] || 1), topic: new URLSearchParams(location.search).get('topic') || undefined }, { skip: !speakingMatch || !profile?.id, refetchOnMountOrArgChange: true });
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.
   // Never create a demo session or reuse another user's local practice namespace.
@@ -37,6 +54,12 @@ export default function IeltsPrepPage() {
         }}
         storagePrefix={ieltsStoragePrefix(String(profile.id))}
         onStorageError={onStorageError}
+        speakingLibrary={{ data: speaking.currentData, loading: speaking.isFetching, error: !!speaking.error, retry: speaking.refetch }}
+        writingLibrary={{ data: writing.currentData, loading: writing.isFetching, error: !!writing.error, retry: writing.refetch }}
+        readingLibrary={{ data: reading.currentData, loading: reading.isFetching, error: !!reading.error, retry: reading.refetch }}
+        listeningLibrary={{ data: listening.currentData, loading: listening.isFetching, error: !!listening.error, retry: listening.refetch }}
+        assessmentApi={{ list: key => list(key, false).unwrap(), create: body => create(body).unwrap(),
+          upload: (id, question, blob) => upload({ id, question, blob }).unwrap(), assess: id => assess(id).unwrap(), audio: id => audio(id).unwrap() }}
       />
     </>
   );
