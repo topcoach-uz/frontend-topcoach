@@ -28,7 +28,7 @@ export default function IeltsPrepPage() {
   const writingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/writing(?:\/|$)/);
   const writing = useGetIeltsWritingQuery({ type: writingMatch?.[1] || '', book: writingMatch?.[2] || '', test: Number(writingMatch?.[3] || 1) }, { skip: !writingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const speakingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/speaking(?:\/([1-3]))?(?:\/|$)/);
-  const speaking = useGetIeltsSpeakingQuery({ part: Number(speakingMatch?.[4] || 1), topic: new URLSearchParams(location.search).get('topic') || undefined }, { skip: !speakingMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const speaking = useGetIeltsSpeakingQuery({ type: speakingMatch?.[1] || '', book: speakingMatch?.[2] || '', test: Number(speakingMatch?.[3] || 1), part: Number(speakingMatch?.[4] || 1), topic: new URLSearchParams(location.search).get('topic') || undefined }, { skip: !speakingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.

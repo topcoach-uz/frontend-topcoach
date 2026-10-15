@@ -76,3 +76,9 @@ test("reading scores require three passages and forty unique populated keys", ()
   delete parts[1].answerKeys[15];
   assert.equal(completeListeningKeys({ parts }, 3), null);
 });
+
+test("content updates preserve the imported draft namespace", async () => {
+  const { practiceRelease } = await import('./listening-library.js');
+  assert.equal(practiceRelease({ release: 'new', practiceRelease: 'original' }), 'original');
+  assert.equal(practiceRelease({ release: 'original' }), 'original');
+});

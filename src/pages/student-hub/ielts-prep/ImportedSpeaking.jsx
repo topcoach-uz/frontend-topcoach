@@ -1,4 +1,5 @@
 import React from "react";
+import { practiceRelease } from "./listening-library.js";
 
 export function speakingQuestionText(question) {
   return [
@@ -12,7 +13,7 @@ export function speakingQuestionText(question) {
     .trim();
 }
 export function speakingStorageKey(library) {
-  return `speaking:library:${library.release}:${library.topic.id}`;
+  return `speaking:library:${practiceRelease(library)}:${library.topic.id}`;
 }
 export function ImportedSpeakingPrompt({ library, onSelect }) {
   const { topic, catalog, part } = library;
@@ -20,8 +21,9 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
     <>
       <h2>PART {part}</h2>
       <p className="muted">
-        Imported topic bank. These topics are not mapped to Cambridge books or
-        tests.
+        {topic.testIdentity
+          ? `Cambridge ${topic.testIdentity.book} Test ${topic.testIdentity.test}. Questions verified against the source practice page.`
+          : "Imported topic bank. These topics are not mapped to Cambridge books or tests."}
       </p>
       <label>
         Practice topic
@@ -33,6 +35,7 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
           style={{ width: "100%", minWidth: 0 }}
         >
           {[
+            ["cambridge", "This test"],
             ["examiner", "Examiner recordings"],
             ["topics", "Imported topics"],
           ].map(([source, title]) => (
@@ -53,11 +56,13 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
           ))}
         </select>
       </label>
-      {part === 1 && <p>The examiner asks you about familiar topics.</p>}
+      {part === 1 && (
+        <p>{topic.intro || "The examiner asks you about familiar topics."}</p>
+      )}
       {part === 2 && (
         <p>
-          You have one minute to prepare. Talk about the topic for one to two
-          minutes.
+          {topic.intro ||
+            "You have one minute to prepare. Talk about the topic for one to two minutes."}
         </p>
       )}
       {part === 3 && <h2>Discussion topics:</h2>}

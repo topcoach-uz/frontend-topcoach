@@ -3,13 +3,19 @@ import { hostName } from "./api/const";
 
 export const ieltsListeningApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
-    getIeltsSpeaking: builder.query<any, { part: number; topic?: string }>({
-      query: ({ part, topic }) =>
-        `ielts-content/speaking/${part}${topic ? `?topic=${encodeURIComponent(topic)}` : ""}`,
+    getIeltsSpeaking: builder.query<
+      any,
+      { part: number; topic?: string; type: string; book: string; test: number }
+    >({
+      query: ({ part, topic, type, book, test }) =>
+        `ielts-content/speaking/${part}?${new URLSearchParams({ type, book, test: String(test), ...(topic ? { topic } : {}) })}`,
       transformResponse: (data: any) => ({
         ...data,
         topic: {
           ...data.topic,
+          introAudio: data.topic.introAudio
+            ? `${hostName}${data.topic.introAudio}`
+            : null,
           questions: data.topic.questions.map((question: any) => ({
             ...question,
             audio: question.audio ? `${hostName}${question.audio}` : null,

@@ -151,11 +151,19 @@ test("standalone speaking topics retain cues and notes without Cambridge identit
 
 test("all normalized speaking sets render prompts, cue points and practice notes", { skip: !process.env.IELTS_SPEAKING_RECORDS }, () => {
   const records = JSON.parse(readFileSync(process.env.IELTS_SPEAKING_RECORDS, 'utf8'));
-  assert.equal(records.length, 632);
+  assert.ok(records.length >= 632);
   for (const topic of records) {
     const html = renderToStaticMarkup(<ImportedSpeakingPrompt library={{ topic, part: topic.part, catalog: [topic] }} onSelect={() => {}} />);
     assert.ok(html.includes('Practice topic'));
     assert.ok(topic.questions.every(q => speakingQuestionText(q).length > 0));
     assert.equal(speakingQuestionText(topic.questions[0]).includes('\n'), false);
   }
+});
+
+test("full Task 2 content renders its actual instructions and sample without a chart placeholder", () => {
+  const html = renderToStaticMarkup(<ImportedWritingPrompt part={2} book="20" test={1} task={{ prompt: 'Access to clean water is a basic human right.', instructions: ['Do you agree or disagree?'], sampleTitle: 'A source sample', sampleAnswer: 'An imported essay.' }} />);
+  assert.ok(html.includes('Access to clean water'));
+  assert.ok(html.includes('Do you agree or disagree?'));
+  assert.ok(html.includes('A source sample'));
+  assert.ok(!html.includes('Chart is not available'));
 });

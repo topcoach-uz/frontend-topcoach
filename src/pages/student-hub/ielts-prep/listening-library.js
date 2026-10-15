@@ -91,3 +91,7 @@ export function multiSlotCounts(body) {
   walk(body);
   return counts;
 }
+
+export function practiceRelease(library) {
+  return library?.practiceRelease || library?.release || "pending";
+}
