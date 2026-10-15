@@ -59,7 +59,7 @@ test("diagram choices come from the declared letter range when labels are inside
   for (const letter of "ABCDEFG") assert.ok(html.includes(`value="${letter}"`));
 });
 test(
-  "all imported listening question numbers render, with no duplicate input IDs",
+  "all imported listening and reading question numbers render, with no duplicate input IDs",
   { skip: !process.env.IELTS_PACKAGE_ROOT },
   () => {
     const root = process.env.IELTS_PACKAGE_ROOT;
@@ -67,8 +67,8 @@ test(
       readFileSync(join(root, "manifests/dev.json"), "utf8"),
     );
     let count = 0;
-    for (const entry of manifest.records.filter(
-      (entry) => entry.skill === "listening",
+    for (const entry of manifest.records.filter((entry) =>
+      ["listening", "reading"].includes(entry.skill),
     )) {
       const part = JSON.parse(readFileSync(join(root, entry.path), "utf8"));
       const html = render(
@@ -99,12 +99,25 @@ test(
       )) {
         assert.match(
           select[1],
-          /<option value="[A-Z]">/,
+          /<option value="(?:[A-Z]|[ivx]+)">/,
           `${part.id} has an empty matching choice list`,
         );
       }
       count++;
     }
-    assert.equal(count, 189);
+    assert.equal(count, 278);
   },
 );
+
+test("reading statements use semantic answers and heading choices retain Roman numerals", () => {
+  const html = render([
+    { start: 1, end: 1, type: "option-true-false", desc: {}, body: { items: ["A source statement"] } },
+    { start: 2, end: 2, type: "option-yes-no", desc: {}, body: { items: ["The writer's view"] } },
+    { start: 14, end: 14, type: "select-section-given-list", desc: { optionRange: ["i", "iii"], sectionRange: ["A", "B"] }, body: { list: ["First heading", "Second heading", "Third heading"], items: [{ type: "input", content: 14 }] } },
+    { start: 15, end: 15, type: "select-section", desc: { sectionRange: ["A", "G"] }, body: { items: [{ type: "input", content: 15 }] } },
+  ]);
+  for (const text of ["Answer 1: TRUE", "Answer 1: FALSE", "Answer 1: NOT GIVEN", "Answer 2: YES", "Answer 2: NO", "Answer 2: NOT GIVEN"])
+    assert.ok(html.includes(text));
+  for (const value of ["i", "ii", "iii", "G"]) assert.ok(html.includes(`value="${value}"`));
+  assert.ok(html.includes('<ol type="i">'));
+});

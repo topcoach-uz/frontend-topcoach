@@ -60,3 +60,19 @@ test("multi-field answers retain all inputs under the original question number",
     { 24: 3 },
   );
 });
+
+test("reading scores require three passages and forty unique populated keys", () => {
+  const parts = [13, 13, 14].map((count, index) => {
+    const start = [1, 14, 27][index];
+    const questionNumbers = Array.from({ length: count }, (_, i) => start + i);
+    return {
+      part: index + 1,
+      questionNumbers,
+      answerKeys: Object.fromEntries(questionNumbers.map((n) => [n, "TRUE"])),
+    };
+  });
+  assert.equal(completeListeningKeys({ parts }, 3).length, 40);
+  assert.equal(completeListeningKeys({ parts }), null);
+  delete parts[1].answerKeys[15];
+  assert.equal(completeListeningKeys({ parts }, 3), null);
+});

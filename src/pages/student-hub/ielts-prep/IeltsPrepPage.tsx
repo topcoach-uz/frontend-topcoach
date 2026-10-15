@@ -5,7 +5,7 @@ import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
 import Header from "src/components/layouts/components/header";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
-import { useGetIeltsListeningQuery } from 'src/app/services/ieltsListeningApi';
+import { useGetIeltsListeningQuery, useGetIeltsReadingQuery } from 'src/app/services/ieltsListeningApi';
 import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
 export default function IeltsPrepPage() {
@@ -23,6 +23,8 @@ export default function IeltsPrepPage() {
   const pagePath = toIeltsPath(location.pathname);
   const listeningMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(listening|score)(?:\/|$)/);
   const listening = useGetIeltsListeningQuery({ type: listeningMatch?.[1] || '', book: listeningMatch?.[2] || '', test: Number(listeningMatch?.[3] || 1) }, { skip: !listeningMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const readingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(reading|score)(?:\/|$)/);
+  const reading = useGetIeltsReadingQuery({ type: readingMatch?.[1] || '', book: readingMatch?.[2] || '', test: Number(readingMatch?.[3] || 1) }, { skip: !readingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.
@@ -51,6 +53,7 @@ export default function IeltsPrepPage() {
         }}
         storagePrefix={ieltsStoragePrefix(String(profile.id))}
         onStorageError={onStorageError}
+        readingLibrary={{ data: reading.currentData, loading: reading.isFetching, error: !!reading.error, retry: reading.refetch }}
         listeningLibrary={{ data: listening.currentData, loading: listening.isFetching, error: !!listening.error, retry: listening.refetch }}
         assessmentApi={{ list: key => list(key, false).unwrap(), create: body => create(body).unwrap(),
           upload: (id, question, blob) => upload({ id, question, blob }).unwrap(), assess: id => assess(id).unwrap(), audio: id => audio(id).unwrap() }}

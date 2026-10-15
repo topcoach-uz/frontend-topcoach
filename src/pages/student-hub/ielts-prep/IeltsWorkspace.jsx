@@ -383,7 +383,7 @@ export default function IeltsWorkspace(props) {
   );
 }
 function App() {
-  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary } =
+  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
     [modal, setModal] = useState(null),
@@ -548,7 +548,7 @@ function App() {
           <Scores r={r} Link={Link} />
         ) : (
           <Practice
-            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${r.skill === "listening" ? listeningLibrary?.data?.release || "loading" : ""}`}
+            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${["listening", "reading"].includes(r.skill) ? (r.skill === "reading" ? readingLibrary : listeningLibrary)?.data?.release || "loading" : ""}`}
             r={r}
             {...ctx}
           />
@@ -865,16 +865,13 @@ function ListeningAudio({ src }) {
   );
 }
 function Practice({ r, go, setModal, setToast }) {
-  const { storagePrefix, onStorageError, listeningLibrary } = useContext(WorkspaceContext);
+  const { storagePrefix, onStorageError, listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
+  const library = r.skill === "reading" ? readingLibrary : listeningLibrary;
   const listening = listeningPart(listeningLibrary?.data, r.part);
-  const currentKeys = r.skill === "listening" ? listeningKeys(listeningLibrary?.data) : answerKeys(r);
-  const practiceKey = r.skill === "listening" ? `${storageKey(r)}:library:${listeningLibrary?.data?.release || "pending"}` : storageKey(r);
-  const currentPassage =
-    r.type === "general-training"
-      ? generalPassages[r.part]
-      : r.part === 1
-        ? passage
-        : extraPassages[r.part];
+  const reading = listeningPart(readingLibrary?.data, r.part);
+  const currentPart = r.skill === "reading" ? reading : listening;
+  const currentKeys = ["listening", "reading"].includes(r.skill) ? listeningKeys(library?.data) : answerKeys(r);
+  const practiceKey = ["listening", "reading"].includes(r.skill) ? `${storageKey(r)}:library:${library?.data?.release || "pending"}` : storageKey(r);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
   const [answers, setAnswers] = useStored(practiceKey, {}),
     [revealed, setRevealed] = useState(false),
@@ -911,7 +908,7 @@ function Practice({ r, go, setModal, setToast }) {
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, []);
-  const imported = r.skill === "listening" ? !!listening : r.type === "academic" || r.skill === "reading";
+  const imported = r.skill === "reading" ? !!reading : r.skill === "listening" ? !!listening : r.type === "academic";
   function update(n, v) {
     setAnswers((a) => ({ ...a, [n]: v }));
   }
@@ -933,7 +930,7 @@ function Practice({ r, go, setModal, setToast }) {
           scope === "all"
             ? {}
             : Object.fromEntries(
-                Object.entries(a).filter(([n]) => r.skill === "listening" ? !listening?.questionNumbers.includes(+n) : +n <= start || +n > end),
+                Object.entries(a).filter(([n]) => ["listening", "reading"].includes(r.skill) ? !currentPart?.questionNumbers.includes(+n) : +n <= start || +n > end),
               ),
         );
         if (["writing", "speaking"].includes(r.skill)) {
@@ -1044,7 +1041,7 @@ function Practice({ r, go, setModal, setToast }) {
   const paragraph = (p, index) =>
     p.split(/(?<=[.!?])\s+(?=[A-Z])/).map((sentence, j) => {
       const match =
-        guided && evidence.find(([phrase]) => sentence.includes(phrase));
+        guided && r.skill !== "reading" && evidence.find(([phrase]) => sentence.includes(phrase));
       return (
         <span className={match ? "evidence" : ""} key={j}>
           {wordTokens(sentence, `${index}-${j}`)}
@@ -1085,7 +1082,7 @@ function Practice({ r, go, setModal, setToast }) {
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            r.skill === "listening" ? <div className="empty" role="status"><p>{listeningLibrary?.loading ? "Loading listening practice…" : "Listening content has not been imported for this test or part."}</p>{listeningLibrary?.error && <button onClick={() => listeningLibrary.retry()}>Retry loading</button>}</div> : <Missing r={r} />
+            ["listening", "reading"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
@@ -1097,37 +1094,17 @@ function Practice({ r, go, setModal, setToast }) {
                 )}
               </h2>
               <p className="muted passage-instruction">
-                {r.type === "general-training"
-                  ? `Read the text below and answer Questions ${partRange(r)[0] + 1}–${partRange(r)[1]}.`
-                  : `You should spend about 20 minutes on Questions ${partRange(r)[0] + 1}–${partRange(r)[1]}, which are based on Reading Passage ${r.part}.`}
+                You should spend about 20 minutes on Questions {reading.questionNumbers[0]}–{reading.questionNumbers.at(-1)}, which are based on Reading Passage {r.part}.
               </p>
-              <h1 className="center">{currentPassage.title}</h1>
-              {currentPassage.subtitle && (
-                <p className="subtitle">{currentPassage.subtitle}</p>
-              )}
+              <h1 className="center">{reading.article.title}</h1>
+              {reading.article.subtitles.map((text, i) => <p className="subtitle" key={i}>{text}</p>)}
               <div onClick={onWord} onContextMenu={contextMenu}>
-                {currentPassage.paragraphs.map((p, i) => (
-                  <p key={i}>
-                    {p.includes("\n") ? (
-                      <>
-                        <b className="section-letter">{p.split("\n")[0]}</b>
-                        {paragraph(p.split("\n").slice(1).join("\n"), i)}
-                      </>
-                    ) : (
-                      paragraph(p, i)
-                    )}
-                  </p>
-                ))}
+                {reading.article.blocks.map((block, i) => block.type === "heading" ? <h3 className="section-letter" key={i}>{block.text}</h3> : block.type === "image" ? (
+                  block.image ? <img key={i} src={block.image} alt="Passage illustration" style={{ maxWidth: "100%", height: "auto" }} /> : <p className="hint" key={i}>Passage illustration is not available in the imported data.</p>
+                ) : <p key={i}>{paragraph(block.text, i)}</p>)}
               </div>
-              {r.type === "academic" && r.part === 1 && (
-                <>
-                  <h3>Glossary</h3>
-                  <p>
-                    * philanthropic: seeking to promote the welfare of others,
-                    often by charitable funding
-                  </p>
-                </>
-              )}
+              {reading.article.footer.map((text, i) => <p className="muted" key={i}>{text}</p>)}
+              {!!reading.article.glossary.length && <><h3>Glossary</h3>{reading.article.glossary.map((text, i) => <p key={i}>{text}</p>)}</>}
             </>
           ) : r.skill === "listening" ? (
             <>
@@ -1179,28 +1156,7 @@ function Practice({ r, go, setModal, setToast }) {
           {!imported ? (
             <div className="empty">No answer data available</div>
           ) : r.skill === "reading" ? (
-            r.type === "general-training" ? (
-              <GeneralReadingQuestions
-                part={r.part}
-                input={input}
-                answers={answers}
-                update={update}
-              />
-            ) : r.part === 1 ? (
-              <ReadingQuestions
-                input={input}
-                answers={answers}
-                update={update}
-                revealed={revealed}
-              />
-            ) : (
-              <ExtraReadingQuestions
-                part={r.part}
-                input={input}
-                answers={answers}
-                update={update}
-              />
-            )
+            <ImportedListeningQuestions part={reading} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "listening" ? (
             <ImportedListeningQuestions part={listening} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "writing" ? (
@@ -1217,12 +1173,12 @@ function Practice({ r, go, setModal, setToast }) {
       </main>
       {mock && ["listening", "reading"].includes(r.skill) ? (
         <nav className="bottom-nav question-strip">
-          {(r.skill === "listening" ? listeningLibrary?.data?.parts.flatMap(p => p.questionNumbers) || [] : Array.from({ length: 40 }, (_, i) => i + 1)).map((n) => (
+          {(library?.data?.parts.flatMap(p => p.questionNumbers) || []).map((n) => (
             <button
               key={n}
               className={answers[n] ? "answered" : ""}
               onClick={() => {
-                const part = r.skill === "listening" ? listeningPartForQuestion(listeningLibrary?.data, n) : partForQuestion(r, n);
+                const part = listeningPartForQuestion(library?.data, n);
                 if (part !== r.part)
                   go(testPath(r, r.skill, part) + "?mode=mock");
                 else document.getElementById(`answer-${n}`)?.focus();
@@ -1404,11 +1360,11 @@ function Practice({ r, go, setModal, setToast }) {
   );
 }
 function AnswerDrawer({ r, answers, go, close }) {
-  const { listeningLibrary } = useContext(WorkspaceContext);
+  const { listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
   const [show, setShow] = useState(false),
-    keys = r.skill === "listening" ? listeningKeys(listeningLibrary?.data) : answerKeys(r);
+    keys = listeningKeys((r.skill === "reading" ? readingLibrary : listeningLibrary)?.data);
   const [start, end] = partRange(r);
-  const questionNumbers = r.skill === "listening" ? listeningPart(listeningLibrary?.data, r.part)?.questionNumbers || [] : Array.from({length: end - start}, (_, i) => start + i + 1);
+  const questionNumbers = listeningPart((r.skill === "reading" ? readingLibrary : listeningLibrary)?.data, r.part)?.questionNumbers || [];
   return (
     <>
       <h2>Answer Keys</h2>
@@ -2121,11 +2077,11 @@ function SpeakingEditor({ r, setToast, onComplete }) {
 }
 function Scores({ r, Link }) {
   const read = useRead();
-  const { listeningLibrary } = useContext(WorkspaceContext);
+  const { listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
   const a = read(`${storageKey({ ...r, skill: "listening" })}:library:${listeningLibrary?.data?.release || "pending"}`, {}),
-    b = read(storageKey({ ...r, skill: "reading" }), {}),
+    b = read(`${storageKey({ ...r, skill: "reading" })}:library:${readingLibrary?.data?.release || "pending"}`, {}),
     lk = completeListeningKeys(listeningLibrary?.data),
-    rk = answerKeys({ ...r, skill: "reading" }),
+    rk = completeListeningKeys(readingLibrary?.data, 3),
     valid = !!(lk || rk),
     l = lk ? band(grade(a, lk)) : 0,
     rd = rk ? band(grade(b, rk)) : 0;
@@ -2150,7 +2106,7 @@ function Scores({ r, Link }) {
         ].map(([label, value]) => (
           <article className={label === "Overall" ? "overall" : ""} key={label}>
             <h3>{label}</h3>
-            <strong>{label === "Listening" && !lk ? "—" : value.toFixed(1)}</strong>
+            <strong>{(label === "Listening" && !lk || label === "Reading" && !rk) ? "—" : value.toFixed(1)}</strong>
             {(label === "Listening" || label === "Reading") && (
               <small>
                 ✓ {stats[label].correct}
@@ -2170,7 +2126,7 @@ function Scores({ r, Link }) {
       {valid &&
         ["listening", "reading"].map((skill) => {
           let data = skill === "listening" ? a : b,
-            keys = skill === "listening" ? lk : answerKeys({ ...r, skill });
+            keys = skill === "listening" ? lk : rk;
           if (!keys)
             return (
               <section key={skill}>

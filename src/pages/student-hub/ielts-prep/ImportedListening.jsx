@@ -141,7 +141,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
         Questions {group.start}
         {groupEnd !== group.start ? `–${groupEnd}` : ""}
       </b>
-      {(group.desc.text || []).map((text, i) => (
+      {(group.desc.textReadable || group.desc.text || []).map((text, i) => (
         <p key={i}>{text}</p>
       ))}
       {group.desc.constraint && (
@@ -176,7 +176,49 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
           alt={`Diagram for questions ${group.start}–${group.end}`}
         />
       )}
-      {group.type === "option-abc" ? (
+      {group.imageMissing && (
+        <p className="hint" role="status">
+          Diagram is not available in the imported data.
+        </p>
+      )}
+      {group.type === "option-true-false" || group.type === "option-yes-no" ? (
+        <>
+          <p>
+            {group.type === "option-true-false"
+              ? "Do the following statements agree with the information in the passage?"
+              : "Do the following statements agree with the views of the writer?"}
+          </p>
+          {choices.map((item, i) => {
+            const n = group.start + i;
+            const options =
+              group.type === "option-true-false"
+                ? ["TRUE", "FALSE", "NOT GIVEN"]
+                : ["YES", "NO", "NOT GIVEN"];
+            return (
+              <fieldset key={n} id={`answer-${n}`} tabIndex={-1}>
+                <legend>
+                  <b>{n}</b> <Rich node={item} answer={answer} />
+                </legend>
+                {options.map((option) => (
+                  <label key={option}>
+                    <input
+                      type="radio"
+                      name={`answer-${n}`}
+                      aria-label={`Answer ${n}: ${option}`}
+                      checked={answers[n] === option}
+                      onChange={() => update(n, option)}
+                    />
+                    {option}
+                  </label>
+                ))}
+                {revealed && (
+                  <small>{keys[n - 1] || "Key not available"}</small>
+                )}
+              </fieldset>
+            );
+          })}
+        </>
+      ) : group.type === "option-abc" ? (
         <>
           <p>Choose the correct letter.</p>
           {body.items
@@ -261,7 +303,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
             </h3>
           )}
           {body.list && (
-            <ol type="A">
+            <ol type={letters[0] === "i" ? "i" : "A"}>
               {body.list.map((item, i) => (
                 <li key={i}>
                   <Rich node={item} answer={answer} />

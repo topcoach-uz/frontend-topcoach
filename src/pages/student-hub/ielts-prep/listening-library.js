@@ -10,10 +10,10 @@ export function listeningKeys(library) {
       keys[n - 1] = part.answerKeys[n] || "";
   return keys;
 }
-export function completeListeningKeys(library) {
+export function completeListeningKeys(library, expectedParts = 4) {
   const keys = listeningKeys(library);
   const numbers = library?.parts.flatMap((p) => p.questionNumbers) ?? [];
-  return library?.parts.length === 4 &&
+  return library?.parts.length === expectedParts &&
     numbers.length === 40 &&
     new Set(numbers).size === 40 &&
     keys?.length === 40 &&
@@ -25,10 +25,35 @@ export function listeningPartForQuestion(library, n) {
   return library?.parts.find((p) => p.questionNumbers.includes(n))?.part ?? 1;
 }
 export function listeningOptionLetters(group) {
+  const roman = [
+    "i",
+    "ii",
+    "iii",
+    "iv",
+    "v",
+    "vi",
+    "vii",
+    "viii",
+    "ix",
+    "x",
+    "xi",
+    "xii",
+    "xiii",
+    "xiv",
+    "xv",
+    "xvi",
+    "xvii",
+    "xviii",
+    "xix",
+    "xx",
+  ];
+  const range = group.desc.optionRange || group.desc.sectionRange || [];
+  if (roman.includes(range[0]) && roman.includes(range[1]))
+    return roman.slice(roman.indexOf(range[0]), roman.indexOf(range[1]) + 1);
   const count = (group.body.list || group.body.options || []).length;
   if (count)
     return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
-  const [start, end] = group.desc.optionRange || [];
+  const [start, end] = group.desc.optionRange || group.desc.sectionRange || [];
   if (!/^[A-Z]$/.test(start || "") || !/^[A-Z]$/.test(end || "") || end < start)
     return [];
   return Array.from(

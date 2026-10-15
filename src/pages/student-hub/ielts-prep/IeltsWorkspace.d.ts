@@ -7,6 +7,7 @@ export interface IeltsWorkspaceProps {
   profile: { name: string; email: string };
   storagePrefix: string;
   onStorageError?: () => void;
+  readingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   listeningLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   assessmentApi?: { list: (key: string) => Promise<IeltsSubmission[]>; create: (body: CreateIeltsSubmission) => Promise<IeltsSubmission>;
     upload: (id: string, question: number, blob: Blob) => Promise<{ id: string }>; assess: (id: string) => Promise<IeltsSubmission>; audio: (id: string) => Promise<Blob> };
