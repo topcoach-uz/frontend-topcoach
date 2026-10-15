@@ -38,6 +38,7 @@ import {
   storageKey,
   partRange,
   partForQuestion,
+  practicePartCount,
   pairAnswers,
   answerStats,
   hasAnswer,
@@ -1458,15 +1459,7 @@ function Practice({ r, go, setModal, setToast }) {
                 <div className="parts">
                   {Array.from(
                     {
-                      length:
-                        r.skill === "listening"
-                          ? 4
-                          : r.skill === "writing"
-                            ? 2
-                            : r.type === "general-training" &&
-                                r.skill === "reading"
-                              ? 5
-                              : 3,
+                      length: practicePartCount(r),
                     },
                     (_, i) => i + 1,
                   ).map((p) => (
