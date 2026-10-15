@@ -7,8 +7,8 @@ import { isApplicantWorkspacePath } from 'src/lib/applicantWorkspace';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import { useTranslation } from 'react-i18next';
 
-export default function Header() {
-  const applicant = isApplicantWorkspacePath(useLocation().pathname);
+export default function Header({ workspace = false }: { workspace?: boolean }) {
+  const applicant = isApplicantWorkspacePath(useLocation().pathname) || workspace;
   const { screenSize } = useScreenSize();
   const { i18n } = useTranslation();
   const isMobileVersion =
