@@ -5,7 +5,7 @@ import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
 import Header from "src/components/layouts/components/header";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
-import { useGetIeltsListeningQuery, useGetIeltsReadingQuery } from 'src/app/services/ieltsListeningApi';
+import { useGetIeltsListeningQuery, useGetIeltsReadingQuery, useGetIeltsWritingQuery } from 'src/app/services/ieltsListeningApi';
 import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
 export default function IeltsPrepPage() {
@@ -25,6 +25,8 @@ export default function IeltsPrepPage() {
   const listening = useGetIeltsListeningQuery({ type: listeningMatch?.[1] || '', book: listeningMatch?.[2] || '', test: Number(listeningMatch?.[3] || 1) }, { skip: !listeningMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const readingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(reading|score)(?:\/|$)/);
   const reading = useGetIeltsReadingQuery({ type: readingMatch?.[1] || '', book: readingMatch?.[2] || '', test: Number(readingMatch?.[3] || 1) }, { skip: !readingMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const writingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/writing(?:\/|$)/);
+  const writing = useGetIeltsWritingQuery({ type: writingMatch?.[1] || '', book: writingMatch?.[2] || '', test: Number(writingMatch?.[3] || 1) }, { skip: !writingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.
@@ -53,6 +55,7 @@ export default function IeltsPrepPage() {
         }}
         storagePrefix={ieltsStoragePrefix(String(profile.id))}
         onStorageError={onStorageError}
+        writingLibrary={{ data: writing.currentData, loading: writing.isFetching, error: !!writing.error, retry: writing.refetch }}
         readingLibrary={{ data: reading.currentData, loading: reading.isFetching, error: !!reading.error, retry: reading.refetch }}
         listeningLibrary={{ data: listening.currentData, loading: listening.isFetching, error: !!listening.error, retry: listening.refetch }}
         assessmentApi={{ list: key => list(key, false).unwrap(), create: body => create(body).unwrap(),

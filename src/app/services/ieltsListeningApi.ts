@@ -3,6 +3,21 @@ import { hostName } from "./api/const";
 
 export const ieltsListeningApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getIeltsWriting: builder.query<
+      any,
+      { type: string; book: string; test: number }
+    >({
+      query: ({ type, book, test }) =>
+        `ielts-content/writing/${type}/${book}/${test}`,
+      transformResponse: (data: any) => ({
+        ...data,
+        parts: data.parts.map((part: any) => ({
+          ...part,
+          chart: part.chart ? `${hostName}${part.chart}` : null,
+        })),
+      }),
+      keepUnusedDataFor: 60,
+    }),
     getIeltsReading: builder.query<
       any,
       { type: string; book: string; test: number }
@@ -49,5 +64,8 @@ export const ieltsListeningApi = RtkApi.injectEndpoints({
     }),
   }),
 });
-export const { useGetIeltsListeningQuery, useGetIeltsReadingQuery } =
-  ieltsListeningApi;
+export const {
+  useGetIeltsListeningQuery,
+  useGetIeltsReadingQuery,
+  useGetIeltsWritingQuery,
+} = ieltsListeningApi;

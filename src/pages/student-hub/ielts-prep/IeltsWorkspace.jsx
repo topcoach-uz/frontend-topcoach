@@ -61,17 +61,18 @@ import {
   generalPassages,
   GeneralReadingQuestions,
 } from "./general-reading.jsx";
+import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 import { listeningPart, listeningKeys, completeListeningKeys, listeningPartForQuestion } from "./listening-library.js";
 import { extraPassages, ExtraReadingQuestions } from "./reading-extra.jsx";
 import { WritingFeedback, SpeakingFeedback } from "./feedback.jsx";
 
 const WorkspaceContext = createContext(null);
-function usePracticeAssessment(r) {
+function usePracticeAssessment(r, release = "", enabled = true) {
   const { assessmentApi } = useContext(WorkspaceContext);
   const api = useRef(assessmentApi);
   api.current = assessmentApi;
-  const practiceKey = `${storageKey(r)}:${r.part}`;
+  const practiceKey = `${storageKey(r)}${release ? `:library:${release}` : ""}:${r.part}`;
   const [submissions, setSubmissions] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -89,7 +90,7 @@ function usePracticeAssessment(r) {
     setBusy(false);
     running.current = false;
     request.current = null;
-    if (api.current)
+    if (enabled && api.current)
       api.current
         .list(practiceKey)
         .then((rows) => {
@@ -102,7 +103,7 @@ function usePracticeAssessment(r) {
     return () => {
       generation.current++;
     };
-  }, [practiceKey]);
+  }, [practiceKey, enabled]);
   const refresh = async () => {
     const current = generation.current;
     try {
@@ -117,7 +118,7 @@ function usePracticeAssessment(r) {
   };
   const run = async ({ text, prompt, clips = [] }) => {
     if (running.current) return false;
-    if (!api.current) {
+    if (!enabled || !api.current) {
       setError("Assessment is unavailable in this preview.");
       return false;
     }
@@ -383,7 +384,7 @@ export default function IeltsWorkspace(props) {
   );
 }
 function App() {
-  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary } =
+  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
     [modal, setModal] = useState(null),
@@ -548,7 +549,7 @@ function App() {
           <Scores r={r} Link={Link} />
         ) : (
           <Practice
-            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${["listening", "reading"].includes(r.skill) ? (r.skill === "reading" ? readingLibrary : listeningLibrary)?.data?.release || "loading" : ""}`}
+            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${["listening", "reading", "writing"].includes(r.skill) ? (r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary)?.data?.release || "loading" : ""}`}
             r={r}
             {...ctx}
           />
@@ -865,13 +866,14 @@ function ListeningAudio({ src }) {
   );
 }
 function Practice({ r, go, setModal, setToast }) {
-  const { storagePrefix, onStorageError, listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
-  const library = r.skill === "reading" ? readingLibrary : listeningLibrary;
+  const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary } = useContext(WorkspaceContext);
+  const library = r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
   const listening = listeningPart(listeningLibrary?.data, r.part);
   const reading = listeningPart(readingLibrary?.data, r.part);
+  const writing = listeningPart(writingLibrary?.data, r.part);
   const currentPart = r.skill === "reading" ? reading : listening;
   const currentKeys = ["listening", "reading"].includes(r.skill) ? listeningKeys(library?.data) : answerKeys(r);
-  const practiceKey = ["listening", "reading"].includes(r.skill) ? `${storageKey(r)}:library:${library?.data?.release || "pending"}` : storageKey(r);
+  const practiceKey = ["listening", "reading", "writing"].includes(r.skill) ? `${storageKey(r)}:library:${library?.data?.release || "pending"}` : storageKey(r);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
   const [answers, setAnswers] = useStored(practiceKey, {}),
     [revealed, setRevealed] = useState(false),
@@ -908,7 +910,7 @@ function Practice({ r, go, setModal, setToast }) {
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, []);
-  const imported = r.skill === "reading" ? !!reading : r.skill === "listening" ? !!listening : r.type === "academic";
+  const imported = r.skill === "writing" ? !!(writing?.chart || writing?.prompt) : r.skill === "reading" ? !!reading : r.skill === "listening" ? !!listening : r.type === "academic";
   function update(n, v) {
     setAnswers((a) => ({ ...a, [n]: v }));
   }
@@ -945,7 +947,7 @@ function Practice({ r, go, setModal, setToast }) {
             try {
               localStorage.removeItem(
                 storagePrefix +
-                  `${storageKey(r)}:${r.skill === "writing" ? "essay" : "transcript"}:${part}`,
+                  `${r.skill === "writing" ? practiceKey : storageKey(r)}:${r.skill === "writing" ? "essay" : "transcript"}:${part}`,
               );
             } catch {
               onStorageError?.();
@@ -1082,7 +1084,7 @@ function Practice({ r, go, setModal, setToast }) {
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            ["listening", "reading"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
+            ["listening", "reading", "writing"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
@@ -1117,7 +1119,7 @@ function Practice({ r, go, setModal, setToast }) {
               </details>
             </>
           ) : r.skill === "writing" ? (
-            <WritingPrompt r={r} />
+            <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} />
           ) : (
             <SpeakingPrompt r={r} />
           )}
@@ -1160,7 +1162,7 @@ function Practice({ r, go, setModal, setToast }) {
           ) : r.skill === "listening" ? (
             <ImportedListeningQuestions part={listening} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "writing" ? (
-            <WritingEditor key={resetVersion} r={r} setToast={setToast} />
+            <WritingEditor key={`${r.part}-${resetVersion}`} r={r} setToast={setToast} task={writing} release={writingLibrary?.data?.release} draftKey={practiceKey} />
           ) : (
             <SpeakingEditor
               key={resetVersion}
@@ -1707,83 +1709,27 @@ function RestaurantQuestions({ input }) {
     </>
   );
 }
-function WritingPrompt({ r }) {
-  return (
-    <>
-      <h2>TASK {r.part}</h2>
-      <p>
-        You should spend about {r.part === 1 ? 20 : 40} minutes on this task.
-      </p>
-      {r.part === 2 && <p>Write about the following topic:</p>}
-      <div className="writing-prompt">
-        <p>{writingPrompts[r.part - 1]}</p>
-        <p>
-          {r.part === 1
-            ? "Summarise the information by selecting and reporting the main features, and make comparisons where relevant."
-            : "To what extent do you agree or disagree with this statement?"}
-        </p>
-      </div>
-      {r.part === 2 && (
-        <p>
-          Give reasons for your answer and include any relevant examples from
-          your own knowledge or experience.
-        </p>
-      )}
-      <p>Write at least {r.part === 1 ? 150 : 250} words.</p>
-      {r.part === 1 && (
-        <img
-          className="writing-chart"
-          src="/ielts-assets/writing-21-1.jpg"
-          alt="Number of jobs in four sectors of the economy in the US, 1960–2020"
-        />
-      )}
-      <details open className="sample-writing">
-        <summary>Sample Writing Answer</summary>
-        <h2 className="center">
-          {r.part === 1
-            ? "Number of Jobs in Four US Economic Sectors (1960-2020)"
-            : "Building Tall Apartment Blocks to Provide Enough Homes in Large Cities"}
-        </h2>
-        {writingSamples[r.part - 1].split("\n\n").map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </details>
-    </>
-  );
-}
-function WritingEditor({ r, setToast }) {
-  const assessment = usePracticeAssessment(r);
-  const [essay, setEssay] = useStored(`${storageKey(r)}:essay:${r.part}`, ""),
+function WritingEditor({ r, setToast, task, release, draftKey }) {
+  const canAssess = !!(task?.prompt && task?.assessmentAvailable);
+  const assessment = usePracticeAssessment(r, release, canAssess);
+  const [essay, setEssay] = useStored(`${draftKey}:essay:${r.part}`, ""),
     [versions, setVersions] = useStored(
-      `${storageKey(r)}:versions:${r.part}`,
+      `${draftKey}:versions:${r.part}`,
       [],
     ),
     [savedAt, setSavedAt] = useStored(
-      `${storageKey(r)}:savedAt:${r.part}`,
+      `${draftKey}:savedAt:${r.part}`,
       null,
-    ),
-    [review, setReview] = useState(
-      new URLSearchParams(location.search).get("feedback") === "demo"
-        ? { essay: writingSamples[r.part - 1] }
-        : null,
     );
-  useEffect(
-    () =>
-      setReview(
-        new URLSearchParams(location.search).get("feedback") === "demo"
-          ? { essay: writingSamples[r.part - 1] }
-          : null,
-      ),
-    [r.part],
-  );
   const count = wordCount(essay);
   async function submit() {
+    if (!canAssess) { setToast("Feedback is unavailable until the full task prompt is imported."); return; }
     if (!count) {
       setToast("Please input your response.");
       return;
     }
     setVersions((v) => [{ text: essay, time: new Date().toISOString() }, ...v]);
-    const success = await assessment.run({ text: essay, prompt: writingPrompts[r.part - 1] });
+    const success = await assessment.run({ text: essay, prompt: task.prompt });
     if (success) setToast('Your practice feedback is ready.');
   }
   return (
@@ -1791,7 +1737,7 @@ function WritingEditor({ r, setToast }) {
       {essay && savedAt && (
         <div className="autosaved">Autosaved @ {dateLabel(savedAt)}.</div>
       )}
-      <p>Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback.</p>
+      <p>{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : "Drafts are saved in this browser. Automated feedback is unavailable until the full task prompt is imported."}</p>
       <textarea
         className="essay"
         placeholder="Please input"
@@ -1804,13 +1750,12 @@ function WritingEditor({ r, setToast }) {
       />
       <div className="editor-footer">
         <span>Words: {count}</span>
-        <button className="pill green" disabled={assessment.busy || !count} onClick={submit}>
+        <button className="pill green" disabled={!canAssess || assessment.busy || !count} onClick={submit}>
           Submit for Feedback
         </button>
       </div>
       <details open>
         <summary>Writing Feedback</summary>
-        {new URLSearchParams(location.search).get('feedback') === 'demo' && review && <><p>Sample feedback</p><WritingFeedback essay={review.essay} /></>}
         <PracticeFeedback assessment={assessment} onRestore={value => { setEssay(value); setSavedAt(new Date().toISOString()); }} />
       </details>
       {versions.length > 0 &&

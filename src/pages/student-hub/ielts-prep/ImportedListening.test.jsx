@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 
 function render(groups) {
@@ -120,4 +121,16 @@ test("reading statements use semantic answers and heading choices retain Roman n
     assert.ok(html.includes(text));
   for (const value of ["i", "ii", "iii", "G"]) assert.ok(html.includes(`value="${value}"`));
   assert.ok(html.includes('<ol type="i">'));
+});
+
+
+test("writing uses the selected chart and identifies absent prompts and samples", () => {
+  const html = renderToStaticMarkup(<ImportedWritingPrompt part={1} book="20" test={2} task={{ chart: "/api/ielts-content/media/signed-chart", prompt: null, sampleAnswer: null }} />);
+  assert.ok(html.includes('src="/api/ielts-content/media/signed-chart"'));
+  assert.ok(html.includes('class="writing-chart"'));
+  assert.ok(html.includes('Academic 20 Test 2 Writing Task 1 chart'));
+  assert.ok(html.includes('written task prompt has not been imported'));
+  assert.ok(html.includes('sample writing answer has not been imported'));
+  assert.ok(!html.includes('/ielts-assets/writing-21-1.jpg'));
+  assert.ok(!html.includes('Sample Writing Answer</summary>'));
 });
