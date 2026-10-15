@@ -7,6 +7,7 @@ export interface IeltsWorkspaceProps {
   profile: { name: string; email: string };
   storagePrefix: string;
   onStorageError?: () => void;
+  speakingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   writingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   readingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   listeningLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };

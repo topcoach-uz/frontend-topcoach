@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { ImportedSpeakingPrompt, speakingQuestionText, speakingStorageKey } from "./ImportedSpeaking.jsx";
 import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 
@@ -133,4 +134,28 @@ test("writing uses the selected chart and identifies absent prompts and samples"
   assert.ok(html.includes('sample writing answer has not been imported'));
   assert.ok(!html.includes('/ielts-assets/writing-21-1.jpg'));
   assert.ok(!html.includes('Sample Writing Answer</summary>'));
+});
+
+
+test("standalone speaking topics retain cues and notes without Cambridge identity claims", () => {
+  const library = { release: 'a'.repeat(64), part: 2, catalog: [{ id: 'topic:cue', source: 'topics', title: 'A painting', season: '' }], topic: { id: 'topic:cue', title: 'A painting', questions: [{ prompt: '<Describe a painting>', cuePoints: ['where you saw it'], ideas: ['Think about colours'], vocabulary: [{ phrase: 'vivid', meaning: 'bright' }], sampleAnswer: 'I saw it in a gallery.' }] } };
+  const html = renderToStaticMarkup(<ImportedSpeakingPrompt library={library} onSelect={() => {}} />);
+  assert.ok(html.includes('not mapped to Cambridge'));
+  assert.ok(html.includes('where you saw it'));
+  assert.ok(html.includes('I saw it in a gallery.'));
+  assert.ok(html.includes('&lt;Describe a painting&gt;'));
+  assert.equal(speakingQuestionText(library.topic.questions[0]), '<Describe a painting> You should say: where you saw it');
+  assert.ok(speakingStorageKey(library).includes('topic:cue'));
+  assert.ok((speakingStorageKey(library) + ':2').length <= 160);
+});
+
+test("all normalized speaking sets render prompts, cue points and practice notes", { skip: !process.env.IELTS_SPEAKING_RECORDS }, () => {
+  const records = JSON.parse(readFileSync(process.env.IELTS_SPEAKING_RECORDS, 'utf8'));
+  assert.equal(records.length, 632);
+  for (const topic of records) {
+    const html = renderToStaticMarkup(<ImportedSpeakingPrompt library={{ topic, part: topic.part, catalog: [topic] }} onSelect={() => {}} />);
+    assert.ok(html.includes('Practice topic'));
+    assert.ok(topic.questions.every(q => speakingQuestionText(q).length > 0));
+    assert.equal(speakingQuestionText(topic.questions[0]).includes('\n'), false);
+  }
 });

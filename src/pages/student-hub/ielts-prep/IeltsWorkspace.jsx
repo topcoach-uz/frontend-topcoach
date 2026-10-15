@@ -61,18 +61,18 @@ import {
   generalPassages,
   GeneralReadingQuestions,
 } from "./general-reading.jsx";
+import { ImportedSpeakingPrompt, speakingQuestionText, speakingStorageKey } from "./ImportedSpeaking.jsx";
 import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 import { listeningPart, listeningKeys, completeListeningKeys, listeningPartForQuestion } from "./listening-library.js";
 import { extraPassages, ExtraReadingQuestions } from "./reading-extra.jsx";
-import { WritingFeedback, SpeakingFeedback } from "./feedback.jsx";
 
 const WorkspaceContext = createContext(null);
-function usePracticeAssessment(r, release = "", enabled = true) {
+function usePracticeAssessment(r, release = "", enabled = true, standaloneKey = "") {
   const { assessmentApi } = useContext(WorkspaceContext);
   const api = useRef(assessmentApi);
   api.current = assessmentApi;
-  const practiceKey = `${storageKey(r)}${release ? `:library:${release}` : ""}:${r.part}`;
+  const practiceKey = `${standaloneKey || `${storageKey(r)}${release ? `:library:${release}` : ""}`}:${r.part}`;
   const [submissions, setSubmissions] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -384,7 +384,7 @@ export default function IeltsWorkspace(props) {
   );
 }
 function App() {
-  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary } =
+  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
     [modal, setModal] = useState(null),
@@ -549,7 +549,7 @@ function App() {
           <Scores r={r} Link={Link} />
         ) : (
           <Practice
-            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${["listening", "reading", "writing"].includes(r.skill) ? (r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary)?.data?.release || "loading" : ""}`}
+            key={`${r.type}-${r.book}-${r.test}-${r.skill}-${["listening", "reading", "writing", "speaking"].includes(r.skill) ? (r.skill === "speaking" ? speakingLibrary : r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary)?.data?.release || "loading" : ""}-${r.skill === "speaking" ? speakingLibrary?.data?.topic?.id || "loading" : ""}`}
             r={r}
             {...ctx}
           />
@@ -866,14 +866,14 @@ function ListeningAudio({ src }) {
   );
 }
 function Practice({ r, go, setModal, setToast }) {
-  const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary } = useContext(WorkspaceContext);
-  const library = r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
+  const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } = useContext(WorkspaceContext);
+  const library = r.skill === "speaking" ? speakingLibrary : r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
   const listening = listeningPart(listeningLibrary?.data, r.part);
   const reading = listeningPart(readingLibrary?.data, r.part);
   const writing = listeningPart(writingLibrary?.data, r.part);
   const currentPart = r.skill === "reading" ? reading : listening;
   const currentKeys = ["listening", "reading"].includes(r.skill) ? listeningKeys(library?.data) : answerKeys(r);
-  const practiceKey = ["listening", "reading", "writing"].includes(r.skill) ? `${storageKey(r)}:library:${library?.data?.release || "pending"}` : storageKey(r);
+  const practiceKey = r.skill === "speaking" && speakingLibrary?.data ? speakingStorageKey(speakingLibrary.data) : ["listening", "reading", "writing"].includes(r.skill) ? `${storageKey(r)}:library:${library?.data?.release || "pending"}` : storageKey(r);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
   const [answers, setAnswers] = useStored(practiceKey, {}),
     [revealed, setRevealed] = useState(false),
@@ -910,7 +910,7 @@ function Practice({ r, go, setModal, setToast }) {
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, []);
-  const imported = r.skill === "writing" ? !!(writing?.chart || writing?.prompt) : r.skill === "reading" ? !!reading : r.skill === "listening" ? !!listening : r.type === "academic";
+  const imported = r.skill === "speaking" ? !!speakingLibrary?.data?.topic : r.skill === "writing" ? !!(writing?.chart || writing?.prompt) : r.skill === "reading" ? !!reading : r.skill === "listening" ? !!listening : r.type === "academic";
   function update(n, v) {
     setAnswers((a) => ({ ...a, [n]: v }));
   }
@@ -947,7 +947,7 @@ function Practice({ r, go, setModal, setToast }) {
             try {
               localStorage.removeItem(
                 storagePrefix +
-                  `${r.skill === "writing" ? practiceKey : storageKey(r)}:${r.skill === "writing" ? "essay" : "transcript"}:${part}`,
+                  `${practiceKey}:${r.skill === "writing" ? "essay" : "transcript"}:${part}`,
               );
             } catch {
               onStorageError?.();
@@ -1084,7 +1084,7 @@ function Practice({ r, go, setModal, setToast }) {
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            ["listening", "reading", "writing"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
+            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
@@ -1121,7 +1121,7 @@ function Practice({ r, go, setModal, setToast }) {
           ) : r.skill === "writing" ? (
             <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} />
           ) : (
-            <SpeakingPrompt r={r} />
+            <ImportedSpeakingPrompt library={speakingLibrary.data} onSelect={id => go(testPath(r, "speaking", r.part) + `?topic=${encodeURIComponent(id)}${mock ? "&mode=mock" : ""}`)} />
           )}
         </section>
         <section className="pane right">
@@ -1165,7 +1165,9 @@ function Practice({ r, go, setModal, setToast }) {
             <WritingEditor key={`${r.part}-${resetVersion}`} r={r} setToast={setToast} task={writing} release={writingLibrary?.data?.release} draftKey={practiceKey} />
           ) : (
             <SpeakingEditor
-              key={resetVersion}
+              key={`${speakingLibrary?.data?.topic.id}-${r.part}-${resetVersion}`}
+              library={speakingLibrary?.data}
+              draftKey={practiceKey}
               r={r}
               setToast={setToast}
               onComplete={() => setSpeakingCompleted(true)}
@@ -1777,83 +1779,15 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
     </>
   );
 }
-const speakingData = {
-  1: {
-    title: "Hairstyles",
-    intro:
-      "The examiner asks you about yourself, your home, work or studies and other familiar topics.",
-    questions: [
-      "Where do you go to get a haircut?",
-      "Have you changed your hairstyle recently?",
-      "Would you ever change the colour of your hair?",
-      "Do you enjoy going to the hairdresser/barber?",
-    ],
-  },
-  2: {
-    title: "A time when you used information for tourists",
-    intro:
-      "You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say. You can make some notes to help you if you wish.",
-    questions: [
-      "Describe a time when you used information for tourists, for example from a guidebook or online. You should say: where you got this information, what place this information was about, what information you got, and explain whether this information was very helpful for you.",
-    ],
-  },
-  3: {
-    title: "Different types of holidays & Tourist attractions",
-    questions: [
-      "What are the most popular kinds of holidays for people from your country to go on?",
-      "Do you think most people prefer to have a holiday abroad rather than in their own country?",
-      "Why do some people want to do absolutely nothing when they go away on holiday?",
-      "What are the kinds of tourist attraction that visitors to your country like to see?",
-      "Do you think tourist attractions such as museums should be free for local people to visit?",
-      "What can make a tourist attraction disappointing for visitors?",
-    ],
-  },
-};
-const cities = {
-  ...speakingData[1],
-  title: "Cities",
-  questions: [
-    "How well do you know the capital city of your country?",
-    "Do you think cities are exciting places to live?",
-    "Why do some people dislike living in a city?",
-    "If you could visit any city in the world, where would you go?",
-  ],
-};
-const getSpeaking = (r) => (r.test === 2 ? cities : speakingData[r.part]);
-function SpeakingPrompt({ r }) {
-  let d = getSpeaking(r);
-  return (
-    <>
-      <h2>PART {r.part}</h2>
-      {d.intro && <p>{d.intro}</p>}
-      <h2>
-        {r.part === 1 ? "EXAMPLE" : r.part === 3 ? "Discussion topics:" : ""}
-      </h2>
-      <h1>{d.title}</h1>
-      <p>
-        {r.part === 1
-          ? d.title
-          : r.part === 2
-            ? "Describe a time when you used information for tourists, for example from a guidebook or online."
-            : "Different types of holidays"}
-      </p>
-      <ul>
-        {d.questions.map((q, i) => (
-          <li key={i}>{q}</li>
-        ))}
-      </ul>
-    </>
-  );
-}
-function SpeakingEditor({ r, setToast, onComplete }) {
-  const assessment = usePracticeAssessment(r);
-  const d = getSpeaking(r),
+function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
+  const assessment = usePracticeAssessment(r, library.release, true, draftKey);
+  const d = { questions: library.topic.questions.map(speakingQuestionText) },
     [question, setQuestion] = useState(0),
     [played, setPlayed] = useState(false),
     [playing, setPlaying] = useState(false),
     [recording, setRecording] = useState(false),
     [transcript, setTranscript] = useStored(
-      `${storageKey(r)}:transcript:${r.part}`,
+      `${draftKey}:transcript:${r.part}`,
       "",
     ),
     [live, setLive] = useState(false),
@@ -1861,14 +1795,21 @@ function SpeakingEditor({ r, setToast, onComplete }) {
     [done, setDone] = useState(false);
   const recorder = useRef(null),
     stream = useRef(null),
-    urls = useRef([]);
+    urls = useRef([]),
+    examinerAudio = useRef(null);
+  const [audioError, setAudioError] = useState(false), [duration, setDuration] = useState(0);
+  const audioSrc = library.topic.questions[question]?.audio;
+  useEffect(() => {
+    const audio = examinerAudio.current;
+    setPlayed(false); setPlaying(false); setAudioError(false); setDuration(0);
+    return () => { audio?.pause(); };
+  }, [audioSrc, question]);
   useEffect(() => {
     setQuestion(0);
     setPlayed(false);
     setClips([]);
     setDone(false);
     return () => {
-      speechSynthesis?.cancel();
       if (recorder.current?.state === "recording") recorder.current.stop();
       stream.current?.getTracks().forEach((t) => t.stop());
       urls.current.forEach((u) => URL.revokeObjectURL(u));
@@ -1903,7 +1844,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
       );
     }
   }
-  if (new URLSearchParams(location.search).get("feedback") === "demo" || done)
+  if (done)
     return (
       <>
         <div className="speaking-complete">
@@ -1914,7 +1855,7 @@ function SpeakingEditor({ r, setToast, onComplete }) {
           Submitted recordings are private and available for seven days. Your
           saved transcript and feedback remain in your account.
         </p>
-        {new URLSearchParams(location.search).get('feedback') === 'demo' ? <><p>Sample feedback</p><SpeakingFeedback questions={d.questions} /></> : <PracticeFeedback assessment={assessment} />}
+        <PracticeFeedback assessment={assessment} />
       </>
     );
   return (
@@ -1931,42 +1872,34 @@ function SpeakingEditor({ r, setToast, onComplete }) {
         </button>
       </div>
       <div className="speaking-controls">
+        {audioSrc && <audio key={`${library.topic.id}-${question}`} ref={examinerAudio} src={audioSrc} preload="metadata" onLoadedMetadata={e => setDuration(e.currentTarget.duration)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setPlayed(true); }} onError={() => { setPlaying(false); setAudioError(true); }} />}
         <IconButton
-          label="Play examiner audio"
-          disabled={playing || recording || assessment.busy}
-          onClick={() => {
-            setPlaying(true);
-            speak(d.questions[question], () => {
-              setPlaying(false);
-              setPlayed(true);
-            });
+          label={playing ? "Pause examiner audio" : "Play examiner audio"}
+          disabled={!audioSrc || recording || assessment.busy}
+          onClick={async () => {
+            if (playing) { examinerAudio.current?.pause(); return; }
+            setAudioError(false);
+            try { await examinerAudio.current?.play(); } catch { setPlaying(false); setAudioError(true); }
           }}
         >
           {playing ? <Volume2 /> : <Play />}
         </IconButton>
-        <span>
-          0:
-          {String(
-            r.part === 2 ? 27 : r.part === 3 ? 4 : r.test === 2 ? 3 : 2,
-          ).padStart(2, "0")}
-        </span>
+        <span>{Number.isFinite(duration) ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, "0")}` : "0:00"}</span>
         <IconButton
           label={recording ? "Stop recording" : "Record answer"}
-          disabled={!played || playing || assessment.busy}
+          disabled={(!played && !!audioSrc && !audioError) || playing || assessment.busy}
           onClick={record}
         >
-          {recording ? <Square fill="#bc3036" /> : played ? <Mic /> : <Hand />}
+          {recording ? <Square fill="#bc3036" /> : played || !audioSrc || audioError ? <Mic /> : <Hand />}
         </IconButton>
         {played && <span>{r.part === 2 ? "2:00" : "0:45"}</span>}
         <p>
-          {!played
-            ? "Please play the examiner's audio first."
-            : recording
-              ? "Recording your answer…"
-              : "Keep it up!"}
+          {recording ? "Recording your answer…" : !audioSrc || audioError
+            ? "Examiner audio is unavailable. Read the prompt and record your answer."
+            : !played ? "Please play the examiner's audio first." : "Keep it up!"}
         </p>
       </div>
-      <div className="current-question">{live && transcript}</div>
+      <div className="current-question">{d.questions[question]}</div>
       {live && (
         <div className="live-transcript" aria-live="polite">
           {transcript}
