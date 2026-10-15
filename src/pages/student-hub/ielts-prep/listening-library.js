@@ -24,6 +24,18 @@ export function completeListeningKeys(library) {
 export function listeningPartForQuestion(library, n) {
   return library?.parts.find((p) => p.questionNumbers.includes(n))?.part ?? 1;
 }
+export function listeningOptionLetters(group) {
+  const count = (group.body.list || group.body.options || []).length;
+  if (count)
+    return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
+  const [start, end] = group.desc.optionRange || [];
+  if (!/^[A-Z]$/.test(start || "") || !/^[A-Z]$/.test(end || "") || end < start)
+    return [];
+  return Array.from(
+    { length: end.charCodeAt(0) - start.charCodeAt(0) + 1 },
+    (_, i) => String.fromCharCode(start.charCodeAt(0) + i),
+  );
+}
 export function selectListeningGroup(group, answers, letter) {
   const numbers = Array.from(
     { length: group.end - group.start + 1 },

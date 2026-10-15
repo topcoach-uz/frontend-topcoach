@@ -44,6 +44,20 @@ test("source text is escaped and examples do not shift numbered choices", () => 
   assert.ok(html.includes('id="answer-1"'));
   assert.ok(!html.includes('id="answer-2"'));
 });
+test("diagram choices come from the declared letter range when labels are inside the image", () => {
+  const html = render([
+    {
+      start: 17,
+      end: 17,
+      type: "select-given-diagram",
+      desc: { optionRange: ["A", "G"] },
+      body: {
+        items: [{ type: "atom", blocks: [{ type: "input", content: 17 }] }],
+      },
+    },
+  ]);
+  for (const letter of "ABCDEFG") assert.ok(html.includes(`value="${letter}"`));
+});
 test(
   "all imported listening question numbers render, with no duplicate input IDs",
   { skip: !process.env.IELTS_PACKAGE_ROOT },
@@ -80,6 +94,15 @@ test(
         fullIds.length,
         `${part.id} duplicates a question field`,
       );
+      for (const select of html.matchAll(
+        /<select[^>]*>([\s\S]*?)<\/select>/g,
+      )) {
+        assert.match(
+          select[1],
+          /<option value="[A-Z]">/,
+          `${part.id} has an empty matching choice list`,
+        );
+      }
       count++;
     }
     assert.equal(count, 189);

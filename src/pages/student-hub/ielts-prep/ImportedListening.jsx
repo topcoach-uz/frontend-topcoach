@@ -1,5 +1,9 @@
 import React from "react";
-import { multiSlotCounts, selectListeningGroup } from "./listening-library.js";
+import {
+  multiSlotCounts,
+  selectListeningGroup,
+  listeningOptionLetters,
+} from "./listening-library.js";
 
 // Imported strings are text nodes, never executable HTML. Existing workspace
 // classes provide all presentation, including tables, choices and answer fields.
@@ -85,9 +89,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
   const groupEnd =
     group.type === "option-abc" ? group.start + choices.length - 1 : group.end;
   const slots = multiSlotCounts(body);
-  const letters = (body.list || body.options || []).map((_, i) =>
-    String.fromCharCode(65 + i),
-  );
+  const letters = listeningOptionLetters(group);
   const select = (n) => (
     <span className="answer-inline">
       <span>{n}</span>
@@ -100,7 +102,9 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
       >
         <option value="">{n}</option>
         {letters.map((letter) => (
-          <option key={letter}>{letter}</option>
+          <option key={letter} value={letter}>
+            {letter}
+          </option>
         ))}
       </select>
       {revealed && <small>{keys[n - 1] || "Key not available"}</small>}
