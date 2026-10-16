@@ -311,6 +311,10 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
+    updateMentorLessonLog: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; sharedNotes: string; description?: string }>({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/log`, method: 'PATCH', body }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
     recordMentorLesson: builder.mutation<
       { data: SessionLogDto; success: boolean },
       { id: string; outcome: 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show'; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string }
@@ -776,6 +780,7 @@ export const {
   useCreateMentorSessionMutation,
   useUpdateMentorSessionMutation,
   useRecordMentorLessonMutation,
+  useUpdateMentorLessonLogMutation,
   useRescheduleMentorLessonMutation,
   useDeleteMentorSessionMutation,
   useGetMentorTasksQuery,

@@ -89,6 +89,17 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
     catch (error) { message.error((error as Error).message); }
   };
 
+  const [logOpen, setLogOpen] = useState(false);
+  const [logText, setLogText] = useState('');
+  useEffect(() => { setLogOpen(false); }, [open, lesson?.id, selectedId]);
+  const saveLog = async () => {
+    if (!selectedId) return;
+    setBusy(true);
+    try { await request(`sessions/${selectedId}`, 'PATCH', { summary: logText }); await reload(); setLogOpen(false); message.success('Session log saved'); }
+    catch (error) { message.error((error as Error).message); }
+    finally { setBusy(false); }
+  };
+
   return <Modal title={`Live classes · ${lesson?.title ?? ''}`} open={open} onCancel={onClose} footer={null} width={900} destroyOnClose>
     <Typography.Paragraph type="secondary">Schedule each class, then mark every enrolled student's attendance. Unmarked students stay unmarked until a mentor or admin records them.</Typography.Paragraph>
     <Form name="courseClassSchedule" form={form} layout="inline" onFinish={schedule} style={{ marginBottom: 20, gap: 8 }}>
@@ -99,6 +110,10 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
     </Form>
     {sessions.length === 0 ? <Typography.Paragraph type="secondary">No classes scheduled yet.</Typography.Paragraph> : <Select style={{ width: '100%', marginBottom: 16 }} value={selectedId} onChange={setSelectedId} options={sessions.map((session) => ({ value: session.id, label: `${dayjs(session.startsAt).format('DD MMM YYYY, HH:mm')} · ${session.status}` }))} />}
     {selected && <>
+      {allowReschedule && <div style={{ marginBottom: 16 }}>
+        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }} ellipsis={{ rows: 3, expandable: true }}>{selected.summary || 'No session log yet.'}</Typography.Paragraph>
+        <Button size="small" onClick={() => { setLogText(selected.summary); setLogOpen(true); }}>{selected.summary ? 'Edit log' : 'Write log'}</Button>
+      </div>}
       <Space style={{ marginBottom: 16 }}><Tag color={selected.status === 'held' ? 'green' : selected.status === 'cancelled' ? 'red' : 'blue'}>{selected.status}</Tag><Button size="small" disabled={busy || selected.status !== 'scheduled' || dayjs(selected.startsAt).isAfter(dayjs())} onClick={() => void setStatus('held')}>Mark class held</Button><Button size="small" disabled={busy || selected.status === 'cancelled'} onClick={() => void setStatus('cancelled')}>Cancel class</Button>{allowReschedule && selected.status === 'scheduled' && <Button size="small" onClick={() => { editForm.setFieldsValue({ startsAt: dayjs(selected.startsAt), durationMinutes: selected.durationMinutes, meetingUrl: selected.meetingUrl ?? '' }); setEditing(true); }}>Reschedule</Button>}{selected.meetingUrl && <a href={selected.meetingUrl} target="_blank" rel="noreferrer">Meeting link</a>}</Space>
       <Table rowKey="userId" loading={loading} dataSource={students} pagination={{ pageSize: 10 }} columns={[
         { title: 'Student', render: (_, student: Student) => <><strong>{student.name}</strong><br/><Typography.Text type="secondary">{student.email}</Typography.Text></> },
@@ -112,6 +127,10 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
         <Form.Item name="durationMinutes" label="Duration (minutes)" rules={[{ required: true }, { type: 'integer', min: 1, max: 480 }]}><InputNumber min={1} max={480} /></Form.Item>
         <Form.Item name="meetingUrl" label="Meeting link" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input /></Form.Item>
       </Form>
+    </Modal>}
+    {allowReschedule && <Modal title="Session log" open={logOpen && open} onCancel={() => setLogOpen(false)} onOk={saveLog} okText="Save log" confirmLoading={busy}>
+      <Typography.Paragraph type="secondary">Shared with students. Record what you covered, progress and next steps.</Typography.Paragraph>
+      <Input.TextArea aria-label="Session notes" value={logText} onChange={(event) => setLogText(event.target.value)} autoSize={{ minRows: 6, maxRows: 14 }} maxLength={5000} showCount />
     </Modal>}
   </Modal>;
 }

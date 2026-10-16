@@ -572,6 +572,7 @@ export default function StudentWorkspace({
       render: (_, row) => <McPill variant={row.outcome === 'held' || row.done ? 'success' : row.outcome === 'scheduled' ? 'info' : 'neutral'}>{lessonLabel(row)}</McPill>,
     },
     { title: 'Attendance', key: 'attendance', render: (_, row) => row.attendance === 'unknown' ? '—' : row.attendance },
+    { title: 'Session log', dataIndex: 'sharedNotes', key: 'sharedNotes', render: (value: string) => value ? <Typography.Paragraph ellipsis={{ rows: 3, expandable: true }} style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{value}</Typography.Paragraph> : <Text type="secondary">No log yet</Text> },
     { title: 'Actions', key: 'actions', render: (_, row) => <FullSupportLessonActions lesson={row} /> },
   ];
 
