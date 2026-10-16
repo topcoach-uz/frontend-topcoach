@@ -64,6 +64,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Test imported listening adapter
+        run: |
+          node --test src/pages/student-hub/ielts-prep/listening-library.test.js
+          yarn esbuild src/pages/student-hub/ielts-prep/ImportedListening.test.jsx --bundle --platform=node --format=cjs --outfile=/tmp/ielts-listening-renderer.test.cjs
+          node --test /tmp/ielts-listening-renderer.test.cjs
+
       - name: Build
         env:
           # Same-origin API: caddy on the dev server proxies /api → dev backend
