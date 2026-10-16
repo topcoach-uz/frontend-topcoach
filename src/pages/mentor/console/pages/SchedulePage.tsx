@@ -1,3 +1,5 @@
+import FullSupportLessonActions from '../components/FullSupportLessonActions';
+import { lessonLabel, lessonError } from '../fullSupportLessons';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -26,7 +28,6 @@ import { GoogleMeetingSvg } from 'src/assets/svg';
 import {
   useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
-  useUpdateMentorSessionMutation,
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
@@ -83,6 +84,7 @@ export default function MentorConsoleSchedulePage() {
     when: Dayjs;
     duration: string;
     description: string;
+    meetingLink?: string;
   }>();
 
   // Shared (RTK-cached) with the gate/layout, which fire it for every mentor —
@@ -108,7 +110,6 @@ export default function MentorConsoleSchedulePage() {
     includeFullSupport: hasFullSupport,
   });
   const [createSession, { isLoading: creating }] = useCreateMentorSessionMutation();
-  const [updateSession, { isLoading: marking }] = useUpdateMentorSessionMutation();
 
   const decorated = useMemo<MentorBooking[]>(() => {
     const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
@@ -137,7 +138,7 @@ export default function MentorConsoleSchedulePage() {
     const windowMs = PENDING_REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
     const now = Date.now();
     return (
-      byScope.due.find((b) => now - new Date(b.dateTime).getTime() <= windowMs) ?? null
+      byScope.due.find((b) => b.source === 'platform' && now - new Date(b.dateTime).getTime() <= windowMs) ?? null
     );
   }, [byScope.due]);
 
@@ -149,14 +150,6 @@ export default function MentorConsoleSchedulePage() {
     }
   };
 
-  const markFsDone = (b: MentorBooking) => {
-    const raw = b.raw as SessionLogDto;
-    updateSession({ id: raw.id, done: true })
-      .unwrap()
-      .then(() => message.success('Marked complete'))
-      .catch(() => message.error('Failed to update'));
-  };
-
   const submitLog = async () => {
     const values = await logForm.validateFields();
     await createSession({
@@ -164,6 +157,7 @@ export default function MentorConsoleSchedulePage() {
       dateTime: values.when.toISOString(),
       duration: values.duration,
       description: values.description || '',
+      meetingLink: values.meetingLink?.trim() || undefined,
     })
       .unwrap()
       .then(() => {
@@ -171,7 +165,7 @@ export default function MentorConsoleSchedulePage() {
         setLogOpen(false);
         logForm.resetFields();
       })
-      .catch(() => message.error('Failed to log'));
+      .catch((error) => message.error(lessonError(error)));
   };
 
   // One editorial card for every scope — a serif date, the student, a status
@@ -180,7 +174,9 @@ export default function MentorConsoleSchedulePage() {
   const renderSessionCard = (b: MentorBooking) => {
     const d = new Date(b.dateTime);
     const isUpcoming = b.status === 'upcoming';
-    const statusPill = isUpcoming ? (
+    const statusPill = b.source === 'full-support' ? (
+      <McPill variant={b.status === 'completed' ? 'success' : b.status === 'report-due' ? 'danger' : b.status === 'cancelled' ? 'neutral' : 'info'}>{lessonLabel(b.raw as SessionLogDto)}</McPill>
+    ) : isUpcoming ? (
       upcomingPill(b)
     ) : b.status === 'report-due' ? (
       <McPill variant="danger">Report due</McPill>
@@ -193,6 +189,7 @@ export default function MentorConsoleSchedulePage() {
     return (
       <div
         key={b.id}
+        id={b.source === 'full-support' ? `lesson-${(b.raw as SessionLogDto).id}` : undefined}
         className={`mc-scard${b.status === 'cancelled' ? ' mc-scard--muted' : ''}${
           b.status === 'report-due' ? ' mc-scard--due' : ''
         }${isUpcoming ? ' mc-scard--live' : ''}`}
@@ -237,16 +234,9 @@ export default function MentorConsoleSchedulePage() {
         ) : null}
 
         <div className="mc-scard-actions">
-          {b.status === 'report-due' &&
-            (b.source === 'platform' ? (
-              <Button type="primary" size="small" onClick={() => setReportBooking(b)}>
-                Write report
-              </Button>
-            ) : (
-              <Button type="primary" size="small" loading={marking} onClick={() => markFsDone(b)}>
-                Mark done
-              </Button>
-            ))}
+          {b.source === 'full-support' ? <FullSupportLessonActions lesson={b.raw as SessionLogDto} /> : b.status === 'report-due' ? (
+            <Button type="primary" size="small" onClick={() => setReportBooking(b)}>Write report</Button>
+          ) : null}
           {b.status === 'completed' && b.source === 'platform' && b.report ? (
             <Button size="small" onClick={() => setReportBooking(b)}>
               View report
@@ -350,7 +340,7 @@ export default function MentorConsoleSchedulePage() {
             { key: 'upcoming', label: 'Upcoming', count: byScope.upcoming.length },
             { key: 'due', label: 'Report due', count: byScope.due.length },
             { key: 'past', label: 'Past', count: byScope.past.length },
-            { key: 'cancelled', label: 'Cancelled', count: byScope.cancelled.length },
+            { key: 'cancelled', label: 'Cancelled / absent', count: byScope.cancelled.length },
           ] as { key: Scope; label: string; count: number }[]
         ).map((t) => (
           <button
@@ -395,7 +385,7 @@ export default function MentorConsoleSchedulePage() {
               All reports filed — nothing to close out.
             </div>
           ) : (
-            <Empty description={scope === 'past' ? 'No past sessions yet.' : 'No cancelled sessions.'} />
+            <Empty description={scope === 'past' ? 'No past sessions yet.' : 'No cancelled or absent sessions.'} />
           )}
         </div>
       ) : (
@@ -410,7 +400,7 @@ export default function MentorConsoleSchedulePage() {
         confirmLoading={creating}
         okText="Save"
       >
-        <Form form={logForm} layout="vertical" initialValues={{ duration: '60m', when: dayjs() }}>
+        <Form form={logForm} layout="vertical" initialValues={{ duration: '1h', when: dayjs() }}>
           <Form.Item
             name="studentUserId"
             label="Student"
@@ -435,13 +425,14 @@ export default function MentorConsoleSchedulePage() {
           >
             <Select
               options={[
-                { value: '30m', label: '30 min' },
-                { value: '45m', label: '45 min' },
-                { value: '60m', label: '60 min' },
-                { value: '90m', label: '90 min' },
+                { value: '0.5h', label: '30 min' },
+                { value: '0.75h', label: '45 min' },
+                { value: '1h', label: '60 min' },
+                { value: '1.5h', label: '90 min' },
               ]}
             />
           </Form.Item>
+          <Form.Item name="meetingLink" label="Meeting link" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input placeholder="https://meet.google.com/…" /></Form.Item>
           <Form.Item name="description" label="Description">
             <Input.TextArea rows={3} placeholder="What did you cover?" />
           </Form.Item>

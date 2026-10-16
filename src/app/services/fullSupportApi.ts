@@ -318,7 +318,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/record`, method: 'POST', body }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
-    rescheduleMentorLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; dateTime: string; duration: string }>({
+    rescheduleMentorLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; dateTime: string; duration: string; meetingLink?: string | null }>({
       query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/reschedule`, method: 'POST', body }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),

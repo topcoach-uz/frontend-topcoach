@@ -1,3 +1,4 @@
+import { lessonMinutes, lessonOutcome } from './fullSupportLessons';
 import { useMemo } from 'react';
 import { SessionTypeEnum, type SessionsSchema } from 'src/app/api/Api';
 import {
@@ -49,12 +50,6 @@ function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
   return { label: String(type ?? '—'), minutes: 60 };
 }
 
-function parseFullSupportDuration(raw: string | undefined | null): number {
-  const s = String(raw ?? '').trim().toLowerCase();
-  const m = s.match(/(\d+)/);
-  return m ? Number(m[1]) : 60;
-}
-
 function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
   const { label, minutes } = durationFromSessionType(s.type as SessionTypeEnum);
   const participant = (s.participants as unknown as Array<{ id?: string; profile?: { name?: string } }>)
@@ -97,16 +92,18 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
   };
 }
 
-function normalizeFullSupportSession(
+export function normalizeFullSupportSession(
   s: SessionLogDto & { studentUserId?: string },
   studentName: string | null,
 ): MentorBooking {
-  const minutes = parseFullSupportDuration(s.duration);
+  const minutes = lessonMinutes(s.duration);
   const end = new Date(s.dateTime).getTime() + minutes * 60_000;
   const now = Date.now();
 
   let status: MentorBooking['status'];
-  if (s.done) status = 'completed';
+  const outcome = lessonOutcome(s);
+  if (['cancelled', 'student_no_show', 'mentor_no_show'].includes(outcome)) status = 'cancelled';
+  else if (outcome === 'held') status = 'completed';
   else if (end < now) status = 'report-due';
   else status = 'upcoming';
 

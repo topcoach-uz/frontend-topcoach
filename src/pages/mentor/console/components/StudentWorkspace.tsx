@@ -1,3 +1,5 @@
+import FullSupportLessonActions from './FullSupportLessonActions';
+import { lessonLabel, lessonError } from '../fullSupportLessons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -213,7 +215,7 @@ export default function StudentWorkspace({
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
-  const [sessionForm] = Form.useForm<{ when: Dayjs; duration: string; description: string }>();
+  const [sessionForm] = Form.useForm<{ when: Dayjs; duration: string; description: string; meetingLink?: string }>();
   const [addPipelineOpen, setAddPipelineOpen] = useState(false);
   const [pipelineForm] = Form.useForm<{ program: string; stage?: string; status?: string; deadline?: Dayjs | null }>();
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
@@ -376,6 +378,7 @@ export default function StudentWorkspace({
       dateTime: values.when.toISOString(),
       duration: values.duration,
       description: values.description || '',
+      meetingLink: values.meetingLink?.trim() || undefined,
     })
       .unwrap()
       .then(() => {
@@ -383,7 +386,7 @@ export default function StudentWorkspace({
         setLogSessionOpen(false);
         sessionForm.resetFields();
       })
-      .catch(() => message.error('Could not log session'));
+      .catch((error) => message.error(lessonError(error)));
   };
 
   const submitPipeline = async () => {
@@ -507,7 +510,7 @@ export default function StudentWorkspace({
   };
 
   const renderBookingRow = (b: (typeof bookings)[number]) => {
-    const pill =
+    const pill = b.source === 'full-support' ? <McPill variant={b.status === 'completed' ? 'success' : b.status === 'report-due' ? 'danger' : b.status === 'cancelled' ? 'neutral' : 'info'}>{lessonLabel(b.raw as SessionLogDto)}</McPill> :
       b.status === 'completed' ? (
         <McPill variant="success">Completed</McPill>
       ) : b.status === 'report-due' ? (
@@ -566,13 +569,10 @@ export default function StudentWorkspace({
       dataIndex: 'done',
       key: 'done',
       width: 118,
-      render: (done: boolean, row) => {
-        const isPast = new Date(row.dateTime).getTime() < Date.now();
-        if (done) return <McPill variant="success">Completed</McPill>;
-        if (isPast) return <McPill variant="danger">Report due</McPill>;
-        return <McPill variant="info">Upcoming</McPill>;
-      },
+      render: (_, row) => <McPill variant={row.outcome === 'held' || row.done ? 'success' : row.outcome === 'scheduled' ? 'info' : 'neutral'}>{lessonLabel(row)}</McPill>,
     },
+    { title: 'Attendance', key: 'attendance', render: (_, row) => row.attendance === 'unknown' ? '—' : row.attendance },
+    { title: 'Actions', key: 'actions', render: (_, row) => <FullSupportLessonActions lesson={row} /> },
   ];
 
   const milestoneColumns: ColumnsType<MilestoneDto> = [
@@ -1085,6 +1085,7 @@ export default function StudentWorkspace({
           <Form.Item name="duration" label="Duration" rules={[{ required: true, message: 'e.g. 1h' }]}>
             <Input placeholder="1h" />
           </Form.Item>
+          <Form.Item name="meetingLink" label="Meeting link" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input placeholder="https://meet.google.com/…" /></Form.Item>
           <Form.Item name="description" label="Notes">
             <Input.TextArea rows={3} placeholder="What you covered…" />
           </Form.Item>

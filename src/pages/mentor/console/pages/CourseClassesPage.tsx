@@ -29,6 +29,6 @@ export default function CourseClassesPage() {
           {lesson.moduleTitle} · {lesson.courseName} · {lesson.duration} min
         </Card>)}
       </div>}
-    <LiveAttendanceModal lesson={selected} open={!!selected} onClose={() => setSelected(null)} />
+    <LiveAttendanceModal allowReschedule lesson={selected} open={!!selected} onClose={() => setSelected(null)} />
   </section>;
 }
