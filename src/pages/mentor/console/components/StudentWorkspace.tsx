@@ -513,7 +513,8 @@ export default function StudentWorkspace({
   };
 
   const renderBookingRow = (b: (typeof bookings)[number]) => {
-    const pill =
+    const lesson = b.source === 'full-support' ? fullSupportDisplay(b.raw as SessionLogDto) : null;
+    const pill = lesson ? <McPill variant={lesson.variant}>{lesson.label}</McPill> :
       b.status === 'completed' ? (
         <McPill variant="success">Completed</McPill>
       ) : b.status === 'report-due' ? (
@@ -532,6 +533,10 @@ export default function StudentWorkspace({
             {b.source === 'platform' ? ' · 1:1 session' : ''}
             {b.description ? ` · ${b.description}` : ''}
           </div>
+          {lesson && <div style={{ fontSize: 12, marginTop: 6 }}>
+            Attendance: {lesson.attendance}{lesson.actualMinutes !== null ? ` · ${lesson.actualMinutes} min actual` : ''}
+            {lesson.notes && <div style={{ whiteSpace: 'pre-wrap', marginTop: 6 }}>{lesson.notes}</div>}
+          </div>}
           {b.studentNote ? (
             <div className="mc-ws-booking-note">
               <MessageSquare size={12} />
