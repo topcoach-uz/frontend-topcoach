@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Button, Empty, Segmented, Space, Tag } from 'antd';
-import { Link } from 'react-router-dom';
+import { Button, Empty, Segmented, Tag } from 'antd';
 import { useGetMySessionsQuery } from 'src/app/services/sessions';
-import { ApplicantPage, QueryState } from '../applicant/ApplicantPage';
+import { QueryState } from '../applicant/ApplicantPage';
 import { studentAttendance, studentSessionList, studentSessionOutcome } from './studentSessions';
 
 export default function StudentSessionsPage() {
@@ -16,8 +15,8 @@ export default function StudentSessionsPage() {
     const ended = new Date(session.date).getTime() + (session.type === 'individual30m' ? 30 : 60) * 60000 <= Date.now();
     return tab === 'Past' ? recorded || ended : !recorded && !ended;
   }).sort((a,b) => tab === 'Upcoming' ? new Date(a.date).getTime()-new Date(b.date).getTime() : new Date(b.date).getTime()-new Date(a.date).getTime());
-  return <ApplicantPage title="Standalone 1:1 attendance" subtitle="Your booked sessions, attendance, teaching time, and notes from your mentor."
-    actions={<Space><Link to="/student-hub?section=others&target=full-support">Full Support attendance</Link><Link to="/student-hub/overview">Overview</Link><Button loading={query.isFetching} onClick={() => void query.refetch()}>Refresh sessions</Button></Space>}>
+  return <>
+    <Button loading={query.isFetching} onClick={() => void query.refetch()} style={{ marginBottom: 16 }}>Refresh sessions</Button>
     <Segmented options={['Upcoming','Past','Cancelled']} value={tab} onChange={value=>setTab(String(value))} style={{ marginBottom: 20 }} />
     <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
       {sessions.length === 0 ? <Empty description={`No ${tab.toLowerCase()} mentor sessions.`} /> : <div className="applicant-stack">
@@ -30,5 +29,5 @@ export default function StudentSessionsPage() {
         </article>)}
       </div>}
     </QueryState>
-  </ApplicantPage>;
+  </>;
 }

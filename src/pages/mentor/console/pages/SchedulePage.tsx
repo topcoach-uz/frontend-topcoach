@@ -3,6 +3,7 @@ import { lessonLabel, lessonError } from '../fullSupportLessons';
 import { useMemo, useState } from 'react';
 import {
   Alert,
+  Tabs,
   Button,
   DatePicker,
   Empty,
@@ -24,7 +25,7 @@ import {
   MessageSquare,
   Plus,
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import {
   useCreateMentorSessionMutation,
@@ -76,14 +77,16 @@ export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
   const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
-  const scope = SCOPES.includes(searchParams.get('scope') as Scope)
-    ? (searchParams.get('scope') as Scope)
-    : 'upcoming';
-  const attendanceType = searchParams.get('attendance');
-  const fullSupportAttendance = attendanceType === 'full-support';
-  const standaloneAttendance = attendanceType === 'standalone';
-  const attendanceTitle = fullSupportAttendance ? 'Full Support attendance' : 'Standalone 1:1 attendance';
+  const location = useLocation();
+  // Keep older dashboard attendance links working inside the unified page.
+  const attendancePage = location.pathname === '/mentor/attendance' || searchParams.has('attendance');
+  const attendanceType = searchParams.get('attendance') === 'standalone' ? 'standalone' : 'full-support';
+  const fullSupportAttendance = attendancePage && attendanceType === 'full-support';
+  const standaloneAttendance = attendancePage && attendanceType === 'standalone';
+  const requestedScope = searchParams.get('scope') as Scope;
+  const scope: Scope = SCOPES.includes(requestedScope) && !(fullSupportAttendance && requestedScope === 'attendance')
+    ? requestedScope
+    : attendancePage ? (fullSupportAttendance ? 'due' : 'attendance') : 'upcoming';
   const setScope = (next: Scope) => setSearchParams(params => {
     params.set('scope', next);
     return params;
@@ -333,7 +336,7 @@ export default function MentorConsoleSchedulePage() {
             Mentor <span className="mc-page-eyebrow-accent">· Schedule</span>
           </div>
           <h1 className="mc-page-title" style={{ marginBottom: 8 }}>
-            {fullSupportAttendance || standaloneAttendance ? attendanceTitle : `Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
+            {attendancePage ? 'Attendance' : `Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
           </h1>
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
             {fullSupportAttendance ? 'Record Full Support lesson outcomes and attendance. Open Past to review saved records.' : standaloneAttendance ? 'Record attendance for standalone 1:1 sessions. Open Past to review saved records.' : 'Your sessions — upcoming, past, and anything awaiting attendance or a report.'}
@@ -349,7 +352,7 @@ export default function MentorConsoleSchedulePage() {
         </div>
       </header>
 
-      {bookabilityKnown && !hasFullSupport && !hasAvailability && (
+      {bookabilityKnown && !hasFullSupport && !hasAvailability && !fullSupportAttendance && (
         <button
           type="button"
           className="mc-sched-nudge"
@@ -363,6 +366,12 @@ export default function MentorConsoleSchedulePage() {
         </button>
       )}
 
+      {attendancePage && <Tabs
+        aria-label="Attendance type"
+        activeKey={attendanceType}
+        onChange={value => setSearchParams({ attendance: value, scope: value === 'full-support' ? 'due' : 'attendance' })}
+        items={[{ key: 'full-support', label: 'Full Support' }, { key: 'standalone', label: 'Standalone 1:1' }]}
+      />}
       <div className="mc-sched-tabbar" role="tablist" aria-label="Session scope">
         {(
           [
@@ -387,7 +396,7 @@ export default function MentorConsoleSchedulePage() {
             <span className="mc-sched-tab-count">{t.count}</span>
           </button>
         ))}
-        {hasFullSupport && (
+        {hasFullSupport && !standaloneAttendance && (
           <div className="mc-sched-tabbar-tools">
             <Button
               type="primary"

@@ -803,6 +803,7 @@ function RouterProvider() {
                     <Route index element={<Navigate to="dashboard" replace />} />
                     {/* "dashboard" path kept for old links/bookmarks — the page is the Schedule. */}
                     <Route path="dashboard" element={<MentorConsoleScheduleLazy />} />
+                    <Route path="attendance" element={<MentorConsoleScheduleLazy />} />
                     <Route path="course-classes" element={<MentorCourseClassesLazy />} />
                     <Route path="students" element={<MentorConsoleStudentsLazy />} />
                     <Route path="essay-reviews" element={<MentorEssayReviewsLazy />} />

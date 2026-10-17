@@ -28,8 +28,7 @@ import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
-  | 'full-support-attendance'
-  | 'standalone-attendance'
+  | 'attendance'
   | 'course-classes'
   | 'availability'
   | 'students'
@@ -232,8 +231,7 @@ export default function MentorConsoleLayout() {
     return [
       { id: 'overview', label: 'Overview', items: overviewItems },
       { id: 'attendance', label: 'Attendance', items: [
-        { key: 'full-support-attendance', label: 'Full Support attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?attendance=full-support&scope=due' },
-        { key: 'standalone-attendance', label: 'Standalone 1:1 attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?attendance=standalone&scope=attendance' },
+        { key: 'attendance', label: 'Attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/attendance' },
       ] },
       { id: 'account', label: 'Account', items: accountItems },
     ];
@@ -246,11 +244,7 @@ export default function MentorConsoleLayout() {
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
-    if (p.startsWith('/mentor/dashboard')) {
-      const attendance = new URLSearchParams(location.search).get('attendance');
-      if (attendance === 'full-support') return 'full-support-attendance';
-      if (attendance === 'standalone') return 'standalone-attendance';
-    }
+    if (p.startsWith('/mentor/attendance') || (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).has('attendance'))) return 'attendance';
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
     if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
