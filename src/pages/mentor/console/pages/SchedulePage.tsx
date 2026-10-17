@@ -75,12 +75,19 @@ function upcomingPill(b: MentorBooking) {
 export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
   const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
-  const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
+  const scope = SCOPES.includes(searchParams.get('scope') as Scope)
     ? (searchParams.get('scope') as Scope)
     : 'upcoming';
-  const [scope, setScope] = useState<Scope>(initialScope);
+  const attendanceType = searchParams.get('attendance');
+  const fullSupportAttendance = attendanceType === 'full-support';
+  const standaloneAttendance = attendanceType === 'standalone';
+  const attendanceTitle = fullSupportAttendance ? 'Full Support attendance' : 'Standalone 1:1 attendance';
+  const setScope = (next: Scope) => setSearchParams(params => {
+    params.set('scope', next);
+    return params;
+  });
   const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
 
   const [recordBooking, setRecordBooking] = useState<MentorBooking | null>(null);
@@ -121,12 +128,13 @@ export default function MentorConsoleSchedulePage() {
 
   const decorated = useMemo<MentorBooking[]>(() => {
     const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
-    return relevant.map((b) => ({
+    const filtered = relevant.filter(b => fullSupportAttendance ? b.source === 'full-support' : standaloneAttendance ? b.source === 'platform' && 'type' in b.raw && ['individual30m', 'individual60m'].includes(b.raw.type) : true);
+    return filtered.map((b) => ({
       ...b,
       studentName:
         b.studentName || (b.studentUserId && rosterById.get(b.studentUserId)?.name) || null,
     }));
-  }, [bookings, hasFullSupport, rosterById]);
+  }, [bookings, hasFullSupport, rosterById, fullSupportAttendance, standaloneAttendance]);
 
   const byScope = useMemo(() => scheduleScopes(decorated), [decorated]);
 
@@ -325,10 +333,10 @@ export default function MentorConsoleSchedulePage() {
             Mentor <span className="mc-page-eyebrow-accent">· Schedule</span>
           </div>
           <h1 className="mc-page-title" style={{ marginBottom: 8 }}>
-            Welcome back, {displayName.split(' ')[0] || 'mentor'}
+            {fullSupportAttendance || standaloneAttendance ? attendanceTitle : `Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
           </h1>
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
-            Your sessions — upcoming, past, and anything awaiting attendance or a report.
+            {fullSupportAttendance ? 'Record Full Support lesson outcomes and attendance. Open Past to review saved records.' : standaloneAttendance ? 'Record attendance for standalone 1:1 sessions. Open Past to review saved records.' : 'Your sessions — upcoming, past, and anything awaiting attendance or a report.'}
           </p>
         </div>
         <div className="mc-sched-date" aria-hidden>
@@ -359,12 +367,12 @@ export default function MentorConsoleSchedulePage() {
         {(
           [
             { key: 'upcoming', label: 'Upcoming', count: byScope.upcoming.length },
-            { key: 'due', label: 'Report due', count: byScope.due.length },
+            { key: 'due', label: fullSupportAttendance ? 'Attendance due' : 'Report due', count: byScope.due.length },
             { key: 'attendance', label: 'Attendance due', count: byScope.attendance.length },
             { key: 'past', label: 'Past', count: byScope.past.length },
             { key: 'cancelled', label: 'Cancelled / absent', count: byScope.cancelled.length },
           ] as { key: Scope; label: string; count: number }[]
-        ).map((t) => (
+        ).filter(t => !fullSupportAttendance || t.key !== 'attendance').map((t) => (
           <button
             key={t.key}
             type="button"
@@ -407,7 +415,7 @@ export default function MentorConsoleSchedulePage() {
           ) : scope === 'due' ? (
             <div className="mc-sched-empty-good">
               <CheckCircle2 size={20} color="var(--mc-success)" />
-              No lesson records or reports due. Attendance is tracked in Attendance due.
+              {fullSupportAttendance ? 'No Full Support lessons awaiting attendance.' : 'No lesson records or reports due. Attendance is tracked in Attendance due.'}
             </div>
           ) : (
             <Empty description={scope === 'past' ? 'No past sessions yet.' : 'No cancelled or absent sessions.'} />
