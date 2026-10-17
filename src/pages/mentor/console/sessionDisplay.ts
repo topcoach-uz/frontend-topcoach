@@ -1,4 +1,3 @@
-import { SessionTypeEnum } from 'src/app/api/Api';
 import type { SessionLogDto } from 'src/app/services/fullSupportApi';
 import type { MentorBooking } from './sessionSources';
 import type { McPillVariant } from './components/McPill';
@@ -65,61 +64,9 @@ export function fullSupportDisplay(
   };
 }
 
-export function needsStandaloneAttendance(
-  booking: MentorBooking,
-  now = Date.now(),
-): boolean {
-  if (
-    booking.source !== 'platform' ||
-    booking.status === 'cancelled' ||
-    booking.attendanceRecord ||
-    !('type' in booking.raw)
-  )
-    return false;
-  if (
-    ![SessionTypeEnum.Individual30M, SessionTypeEnum.Individual60M].includes(
-      booking.raw.type,
-    )
-  )
-    return false;
-  return (
-    booking.raw.participants?.length === 1 &&
-    new Date(booking.dateTime).getTime() + booking.durationMinutes * 60_000 <=
-      now
-  );
-}
-
-export function bookingDisplay(
-  booking: MentorBooking,
-  now = Date.now(),
-): LessonDisplay {
-  if (booking.source === 'full-support')
-    return fullSupportDisplay(booking.raw as SessionLogDto, now);
-  const record = booking.attendanceRecord;
-  const details = {
-    attendance:
-      record?.attendance === 'unknown'
-        ? 'Not applicable'
-        : (record?.attendance ?? 'Not recorded'),
-    actualMinutes:
-      record?.outcome === 'held' ? record.actualDurationMinutes : null,
-    notes: record?.sharedNotes ?? '',
-  };
-  if (booking.status === 'cancelled')
-    return { ...details, label: 'Cancelled', variant: 'neutral' };
-  if (record?.outcome === 'student_no_show')
-    return { ...details, label: 'Student no-show', variant: 'warning' };
-  if (record?.outcome === 'mentor_no_show')
-    return { ...details, label: 'Mentor no-show', variant: 'warning' };
-  if (needsStandaloneAttendance(booking, now))
-    return { ...details, label: 'Attendance due', variant: 'danger' };
-  if (record?.outcome === 'held')
-    return { ...details, label: 'Held', variant: 'success' };
-  if (booking.status === 'report-due')
-    return { ...details, label: 'Report due', variant: 'danger' };
-  if (booking.status === 'completed')
-    return { ...details, label: 'Completed', variant: 'success' };
-  return { ...details, label: 'Upcoming', variant: 'info' };
+export function bookingDisplay(booking: MentorBooking, now = Date.now()): LessonDisplay {
+  if (booking.source === 'full-support') return fullSupportDisplay(booking.raw as SessionLogDto, now);
+  return { label: booking.status === 'report-due' ? 'Report due' : booking.status === 'completed' ? 'Completed' : booking.status === 'cancelled' ? 'Cancelled' : 'Upcoming', variant: booking.status === 'report-due' ? 'danger' : booking.status === 'completed' ? 'success' : 'neutral', attendance: '', actualMinutes: null, notes: '' };
 }
 
 export function scheduleScopes(bookings: MentorBooking[], now = Date.now()) {
@@ -129,9 +76,6 @@ export function scheduleScopes(bookings: MentorBooking[], now = Date.now()) {
     upcoming: bookings.filter((b) => b.status === 'upcoming').sort(asc),
     due: bookings
       .filter((b) => b.status === 'report-due')
-      .sort((a, b) => -asc(a, b)),
-    attendance: bookings
-      .filter((b) => needsStandaloneAttendance(b, now))
       .sort((a, b) => -asc(a, b)),
     past: bookings
       .filter((b) => b.status === 'completed' || b.status === 'report-due')

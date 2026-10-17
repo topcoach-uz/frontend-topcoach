@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Compass,
-  ClipboardCheck,
   Home,
   User,
   PlayCircle,
@@ -196,10 +195,16 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
             <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
           </button>
         )}
-          <button type="button" className={styles.navItem} onClick={() => go('/student-hub/attendance')}>
-            <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
-            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.title', 'Attendance')}</span>
-          </button>
+        <button
+          type="button"
+          className={`${styles.navItem} ${isOthers('full-support') ? styles.navItemActive : ''}`}
+          onClick={() => go('/student-hub?section=others&target=full-support')}
+        >
+          <span className={styles.navIconCircle}>
+            <UnifiedIcon name="full-support" size="md" color="primary" />
+          </span>
+          <span className={styles.navLabel}>{t('fullSupport.navLabel', 'Full Support')}</span>
+        </button>
         <button
           type="button"
           className={`${styles.navItem} ${isAiMajor ? styles.navItemActive : ''}`}

@@ -11,7 +11,6 @@ import { APPLICANT_WORKSPACE_ENABLED, isOverviewLocation } from 'src/lib/applica
 import CoursePreview from '../learning/CoursePreview';
 import ResearchIntroPreview from './research/ResearchIntroPreview';
 
-const StudentAttendancePage = lazy(() => import('./sessions/StudentAttendancePage'));
 const ApplicantOverviewPage = lazy(() => import('./applicant/ApplicantOverviewPage'));
 const LocalChangesWalkthrough = lazy(() => import('./LocalChangesWalkthrough'));
 const ApplicantApplicationsPage = lazy(() => import('./applicant/ApplicantApplicationsPage'));
@@ -126,8 +125,8 @@ const StudentHubRoutes: React.FC = () => {
           />
           <Route path="/community" element={<Navigate to="/student-hub" replace />} />
           <Route path="/" element={<HubEntry />} />
-          <Route path="/attendance" element={withSuspense(<StudentAttendancePage />)} />
-          <Route path="/sessions" element={<Navigate to="/student-hub/attendance?tab=standalone" replace />} />
+          <Route path="/attendance" element={<Navigate to="/student-hub?section=others&target=full-support" replace />} />
+          <Route path="/sessions" element={<Navigate to="/student-hub/overview" replace />} />
           <Route path="/overview" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantOverviewPage />) : <Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/dashboard" element={<Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/rewards" element={<Navigate to="/student-hub?section=account&target=rewards" replace />} />

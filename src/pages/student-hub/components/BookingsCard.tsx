@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Card, Tabs, Empty, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useMentorSessions } from 'src/hooks/useMentorSessions';
+import { useTypedSelector } from '../../../app/store';
 import { SessionTypeEnum } from '../../../app/api/Api';
 import UpcomingCard from '../../../pages/home/_components/bookings/_components/upcamingcards';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
@@ -22,7 +22,9 @@ interface BookingsCardProps {
 const BookingsCard: React.FC<BookingsCardProps> = ({ compact = true, maxItems = 3 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { joinedSessions } = useMentorSessions();
+  const { profile: meData } = useTypedSelector((state) => state.auth);
+
+  const joinedSessions = meData?.joinedSessions;
   
   const upcomingSessions = joinedSessions?.filter(
     (session: any) => new Date(session.date) > new Date() && !session.cancelStatus

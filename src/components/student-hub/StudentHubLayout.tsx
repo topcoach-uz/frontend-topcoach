@@ -65,7 +65,7 @@ const LegacyStudentHubLayout: React.FC<StudentHubLayoutProps> = ({ children }) =
   const menuItems = useMemo(
     () => [
       { key: '/student-hub', icon: <UnifiedIcon name="dashboard" size="md" color="primary" />, label: t('studentHub.nav.dashboard', 'Dashboard') },
-      { key: '/student-hub/attendance', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: t('attendanceNavigation.title', 'Attendance') },
+      { key: '/student-hub/full-support', icon: <UnifiedIcon name="full-support" size="md" color="primary" />, label: t('fullSupport.navLabel', 'Full Support') },
       { key: '/student-hub?section=others&target=profile&tab=college-lists', icon: <UnifiedIcon name="applications" size="md" color="primary" />, label: t('studentHub.nav.applications', 'Applications') },
       { key: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="activity" size="md" color="primary" />, label: t('studentHub.psychometric.majorMatch', 'Major Match') },
       { key: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="md" color="primary" />, label: t('studentHub.nav.opportunities', 'Opportunities') },
