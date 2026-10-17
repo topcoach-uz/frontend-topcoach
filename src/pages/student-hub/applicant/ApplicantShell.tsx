@@ -3,6 +3,7 @@ import { Drawer, Skeleton } from 'antd';
 import {
   ChevronRight,
   CirclePlay,
+  ClipboardCheck,
   ClipboardList,
   HeartHandshake,
   House,
@@ -344,12 +345,18 @@ function ApplicantNavigation({
         )}
         {group(groups[0])}
         {degree === 'bachelor' && group(groups[1])}
-        {degree === 'bachelor' && navLink(
+        {navLink(
           applicantLinks.fullSupport,
-          t('applicant.fullSupport'),
+          t('attendanceNavigation.fullSupport', 'Full Support attendance'),
           selected(applicantLinks.fullSupport),
           <HeartHandshake size={20} aria-hidden />,
           fullSupportLocked,
+        )}
+        {navLink(
+          '/student-hub/sessions',
+          t('attendanceNavigation.standalone', 'Standalone 1:1 attendance'),
+          selected('/student-hub/sessions'),
+          <ClipboardCheck size={20} aria-hidden />,
         )}
         {group(groups[2])}
         {(managementRole === 'SuperAdmin' ||

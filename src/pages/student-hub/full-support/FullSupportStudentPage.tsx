@@ -265,7 +265,7 @@ export default function FullSupportStudentPage() {
           <div className="fseditorial__card-head">
             <div className="fseditorial__card-head-left">
               <CalendarClock size={16} />
-              <h2 className="fseditorial__card-title">Session timeline</h2>
+              <h2 className="fseditorial__card-title">Session timeline &amp; attendance</h2>
             </div>
             <span className="fseditorial__card-meta">This month</span>
           </div>

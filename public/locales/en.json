@@ -1,4 +1,5 @@
 {
+  "attendanceNavigation": {"fullSupport": "Full Support attendance", "standalone": "Standalone 1:1 attendance"},
   "studentHub.hub.ieltsTestPrep": "IELTS test prep",
   "applicant.ieltsTestPrep": "IELTS test prep",
   "onboarding.info.searchOrEnter": "Search or enter your own",

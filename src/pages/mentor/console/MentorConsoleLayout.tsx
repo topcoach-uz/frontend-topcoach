@@ -28,6 +28,8 @@ import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
+  | 'full-support-attendance'
+  | 'standalone-attendance'
   | 'course-classes'
   | 'availability'
   | 'students'
@@ -69,7 +71,7 @@ export default function MentorConsoleLayout() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!isMobileConsole || !mobileMenuOpen) return;
@@ -229,6 +231,10 @@ export default function MentorConsoleLayout() {
 
     return [
       { id: 'overview', label: 'Overview', items: overviewItems },
+      { id: 'attendance', label: 'Attendance', items: [
+        { key: 'full-support-attendance', label: 'Full Support attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?attendance=full-support&scope=due' },
+        { key: 'standalone-attendance', label: 'Standalone 1:1 attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?attendance=standalone&scope=attendance' },
+      ] },
       { id: 'account', label: 'Account', items: accountItems },
     ];
   }, [managementRole, pendingSessionCount, pendingEssayReviews]);
@@ -240,6 +246,11 @@ export default function MentorConsoleLayout() {
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
+    if (p.startsWith('/mentor/dashboard')) {
+      const attendance = new URLSearchParams(location.search).get('attendance');
+      if (attendance === 'full-support') return 'full-support-attendance';
+      if (attendance === 'standalone') return 'standalone-attendance';
+    }
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
     if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
@@ -257,7 +268,7 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/profile')) return 'profile';
     if (p.startsWith('/new-admin') || p.startsWith('/admin')) return 'admin-console';
     return null;
-  }, [location.pathname, activeStudentId]);
+  }, [location.pathname, location.search, activeStudentId]);
 
   const roleLabel = (() => {
     // Elevated admin roles take precedence — otherwise a mentor is always "Mentor",
@@ -296,7 +307,8 @@ export default function MentorConsoleLayout() {
           navigate(item.path);
           setMobileMenuOpen(false);
         }}
-        title={collapsed && !isMobileConsole ? item.label : undefined}
+        aria-current={isActive ? 'page' : undefined}
+        title={item.label}
       >
         <span className="mentor-console-nav-item-icon">{item.icon}</span>
         {showLabels && (
@@ -339,6 +351,11 @@ export default function MentorConsoleLayout() {
             <div className="mentor-console-nav-group">
               {showLabels && <div className="mentor-console-nav-group-label">Overview</div>}
               {navGroups[0].items.map(renderNavItem)}
+            </div>
+
+            <div className="mentor-console-nav-group">
+              {showLabels && <div className="mentor-console-nav-group-label">Attendance</div>}
+              {navGroups[1].items.map(renderNavItem)}
             </div>
 
             {rosterLoading || menteesLoading ? (
@@ -474,10 +491,10 @@ export default function MentorConsoleLayout() {
               </div>
             )}
 
-            {navGroups[1].items.length > 0 && (
+            {navGroups[2].items.length > 0 && (
               <div className="mentor-console-nav-group">
                 {showLabels && <div className="mentor-console-nav-group-label">Account</div>}
-                {navGroups[1].items.map(renderNavItem)}
+                {navGroups[2].items.map(renderNavItem)}
               </div>
             )}
           </nav>

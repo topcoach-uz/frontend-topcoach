@@ -3,6 +3,7 @@ import { Button, Card, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   Compass,
+  ClipboardCheck,
   User,
   Home,
   Trophy,
@@ -726,7 +727,11 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
             }}
           >
             <span className={styles.navIconCircle}><UnifiedIcon name="full-support" size="md" color="primary" /></span>
-            <span className={styles.navLabel}>{t('fullSupport.navLabel', 'Full Support')}</span>
+            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.fullSupport', 'Full Support attendance')}</span>
+          </button>
+          <button type="button" className={styles.navItem} onClick={() => navigate('/student-hub/sessions')}>
+            <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
+            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.standalone', 'Standalone 1:1 attendance')}</span>
           </button>
 
           <button

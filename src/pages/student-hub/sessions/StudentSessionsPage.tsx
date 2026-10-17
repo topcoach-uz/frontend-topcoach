@@ -9,14 +9,15 @@ export default function StudentSessionsPage() {
   const query = useGetMySessionsQuery(undefined, { pollingInterval: 15000, refetchOnFocus: true, refetchOnMountOrArgChange: true });
   const [tab, setTab] = useState('Past');
   const sessions = studentSessionList(query.data).filter(session => {
+    if (!['individual30m', 'individual60m'].includes(session.type)) return false;
     if (tab === 'Cancelled') return !!session.cancelStatus?.id;
     if (session.cancelStatus?.id) return false;
     const recorded = !!session.attendanceRecord;
     const ended = new Date(session.date).getTime() + (session.type === 'individual30m' ? 30 : 60) * 60000 <= Date.now();
     return tab === 'Past' ? recorded || ended : !recorded && !ended;
   }).sort((a,b) => tab === 'Upcoming' ? new Date(a.date).getTime()-new Date(b.date).getTime() : new Date(b.date).getTime()-new Date(a.date).getTime());
-  return <ApplicantPage title="Mentor sessions" subtitle="Your booked sessions, attendance, teaching time, and notes from your mentor."
-    actions={<Space><Link to="/student-hub/overview">Overview</Link><Button loading={query.isFetching} onClick={() => void query.refetch()}>Refresh sessions</Button></Space>}>
+  return <ApplicantPage title="Standalone 1:1 attendance" subtitle="Your booked sessions, attendance, teaching time, and notes from your mentor."
+    actions={<Space><Link to="/student-hub?section=others&target=full-support">Full Support attendance</Link><Link to="/student-hub/overview">Overview</Link><Button loading={query.isFetching} onClick={() => void query.refetch()}>Refresh sessions</Button></Space>}>
     <Segmented options={['Upcoming','Past','Cancelled']} value={tab} onChange={value=>setTab(String(value))} style={{ marginBottom: 20 }} />
     <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
       {sessions.length === 0 ? <Empty description={`No ${tab.toLowerCase()} mentor sessions.`} /> : <div className="applicant-stack">
