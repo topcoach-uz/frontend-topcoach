@@ -20,6 +20,7 @@ import {
 } from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
 import { useMentorBookings, useMentorMentees } from './sessionSources';
+import { needsStandaloneAttendance } from './sessionDisplay';
 import { avatarStyleForId, initialsFromName } from './utils';
 import { useGetMentorEssayReviewsQuery } from 'src/app/services/student-hub/essayReviewApi';
 import './mentor-console-tokens.scss';
@@ -119,8 +120,8 @@ export default function MentorConsoleLayout() {
     [bookings, hasFullSupport],
   );
 
-  const reportDueCount = useMemo(
-    () => relevantBookings.filter((b) => b.status === 'report-due').length,
+  const pendingSessionCount = useMemo(
+    () => relevantBookings.filter((b) => b.status === 'report-due' || needsStandaloneAttendance(b)).length,
     [relevantBookings],
   );
 
@@ -136,11 +137,11 @@ export default function MentorConsoleLayout() {
     return map;
   }, [pipelineRes?.data]);
 
-  // Attention dot — a report to write or a submission awaiting review.
+  // Attention dot — attendance or a report to record, or student work to review.
   const attentionByStudent = useMemo(() => {
     const set = new Set<string>();
     relevantBookings.forEach((b) => {
-      if (b.status === 'report-due' && b.studentUserId) set.add(b.studentUserId);
+      if ((b.status === 'report-due' || needsStandaloneAttendance(b)) && b.studentUserId) set.add(b.studentUserId);
     });
     (tasksRes?.data ?? []).forEach((t) => {
       const awaiting =
@@ -157,7 +158,7 @@ export default function MentorConsoleLayout() {
         label: 'Schedule',
         icon: <CalendarClock size={18} strokeWidth={1.75} />,
         path: '/mentor/dashboard',
-        badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
+        badge: pendingSessionCount > 0 ? `${pendingSessionCount} pending` : null,
       },
       {
         key: 'course-classes',
@@ -230,7 +231,7 @@ export default function MentorConsoleLayout() {
       { id: 'overview', label: 'Overview', items: overviewItems },
       { id: 'account', label: 'Account', items: accountItems },
     ];
-  }, [managementRole, reportDueCount, pendingEssayReviews]);
+  }, [managementRole, pendingSessionCount, pendingEssayReviews]);
 
   const activeStudentId = useMemo(() => {
     const m = location.pathname.match(/^\/mentor\/students\/([^/]+)/);

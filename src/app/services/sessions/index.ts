@@ -10,6 +10,27 @@ import {
 } from 'src/app/api/Api';
 import { RtkApi } from '../api';
 
+export type AttendanceInput = {
+  outcome: 'held' | 'student_no_show' | 'mentor_no_show';
+  attendance?: 'present' | 'late';
+  actualDurationMinutes?: number;
+  sharedNotes?: string;
+  reason?: string;
+};
+export type AttendanceRecord = {
+  outcome: AttendanceInput['outcome'];
+  attendance: 'present' | 'late' | 'absent' | 'unknown';
+  actualDurationMinutes: number | null;
+  sharedNotes: string;
+  recordedAt: string;
+  recordedByUserId: string;
+};
+export type AttendanceRow = {
+  id: string; dateTime: string; type: string; mentorName: string; studentName: string;
+  cancelled: boolean; attendanceRecord: AttendanceRecord | null;
+};
+export type AttendanceHistory = Array<{ before: AttendanceRecord | null; after: AttendanceRecord; reason: string }>;
+
 export const sessionsApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
     getMySessions: build.query<SessionsSchema[], void>({
@@ -64,6 +85,18 @@ export const sessionsApi = RtkApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['MySessions'],
+    }),
+    getStandaloneAttendance: build.query<AttendanceRow[], void>({
+      query: () => ({ url: '/session-attendance' }),
+      providesTags: ['MySessions'],
+    }),
+    getStandaloneAttendanceHistory: build.query<AttendanceHistory, string>({
+      query: (id) => ({ url: `/session-attendance/${id}/history` }),
+      providesTags: ['MySessions'],
+    }),
+    recordStandaloneAttendance: build.mutation<AttendanceRecord, AttendanceInput & { id: string }>({
+      query: ({ id, ...body }) => ({ url: `/session-attendance/${id}`, method: 'POST', body }),
       invalidatesTags: ['MySessions'],
     }),
     // rate session
@@ -173,6 +206,9 @@ export const {
   useCancelSessionMutation,
   useReportSessionMutation,
   useSubmitSessionReportMutation,
+  useGetStandaloneAttendanceQuery,
+  useGetStandaloneAttendanceHistoryQuery,
+  useRecordStandaloneAttendanceMutation,
   useRateSessionMutation,
   useBuySubscriptionMutation,
   useValidateAndPayMutation,

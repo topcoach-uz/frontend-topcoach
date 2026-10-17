@@ -60,6 +60,8 @@ import MessageList from 'src/components/chat/MessageList';
 import ChatInput from 'src/components/chat/ChatInput';
 import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
 import { useMentorBookings } from '../sessionSources';
+import { bookingDisplay, fullSupportDisplay, needsStandaloneAttendance } from '../sessionDisplay';
+import { useNavigate } from 'react-router-dom';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
 import { McStat } from './McStat';
@@ -196,6 +198,7 @@ export default function StudentWorkspace({
   /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
   isFullSupport?: boolean;
 }) {
+  const navigate = useNavigate();
   const { id: mentorId, hasFullSupport, email, managementRole } = useMentorConsole();
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
@@ -291,7 +294,7 @@ export default function StudentWorkspace({
     [tasks],
   );
   const reportsFiled = useMemo(
-    () => studentBookings.filter((b) => b.status === 'completed').length,
+    () => studentBookings.filter((b) => b.source === 'platform' ? !!b.report : fullSupportDisplay(b.raw as SessionLogDto).label === 'Held').length,
     [studentBookings],
   );
   const reportsDue = useMemo(
@@ -507,16 +510,9 @@ export default function StudentWorkspace({
   };
 
   const renderBookingRow = (b: (typeof bookings)[number]) => {
-    const pill =
-      b.status === 'completed' ? (
-        <McPill variant="success">Completed</McPill>
-      ) : b.status === 'report-due' ? (
-        <McPill variant="danger">Report due</McPill>
-      ) : b.status === 'cancelled' ? (
-        <McPill variant="neutral">Cancelled</McPill>
-      ) : (
-        <McPill variant="info">Upcoming</McPill>
-      );
+    const display = bookingDisplay(b);
+    const attendanceDue = needsStandaloneAttendance(b);
+    const pill = <McPill variant={display.variant}>{display.label}</McPill>;
     return (
       <div key={b.id} className="mc-ws-booking">
         <div>
@@ -526,6 +522,11 @@ export default function StudentWorkspace({
             {b.source === 'platform' ? ' · 1:1 session' : ''}
             {b.description ? ` · ${b.description}` : ''}
           </div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>
+            Attendance: {display.attendance}{display.actualMinutes !== null ? ` · ${display.actualMinutes} min actual` : ''}
+          </div>
+          {display.notes && <div style={{ whiteSpace: 'pre-wrap', fontSize: 12, marginTop: 6 }}>{display.notes}</div>}
+          {b.status === 'report-due' && b.source === 'platform' && display.label !== 'Report due' && <McPill variant="danger">Report due</McPill>}
           {b.studentNote ? (
             <div className="mc-ws-booking-note">
               <MessageSquare size={12} />
@@ -537,6 +538,7 @@ export default function StudentWorkspace({
         </div>
         <Space size={8} align="center">
           {pill}
+          {attendanceDue && <Button size="small" onClick={() => navigate('/mentor/dashboard?scope=attendance')}>Record attendance</Button>}
           {b.status === 'upcoming' && b.joinUrl ? (
             <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
               Join
@@ -563,16 +565,16 @@ export default function StudentWorkspace({
     },
     {
       title: 'Status',
-      dataIndex: 'done',
-      key: 'done',
-      width: 118,
-      render: (done: boolean, row) => {
-        const isPast = new Date(row.dateTime).getTime() < Date.now();
-        if (done) return <McPill variant="success">Completed</McPill>;
-        if (isPast) return <McPill variant="danger">Report due</McPill>;
-        return <McPill variant="info">Upcoming</McPill>;
+      key: 'outcome',
+      width: 160,
+      render: (_, row) => {
+        const display = fullSupportDisplay(row);
+        return <McPill variant={display.variant}>{display.label}</McPill>;
       },
     },
+    { title: 'Attendance', key: 'attendance', render: (_, row) => fullSupportDisplay(row).attendance },
+    { title: 'Actual minutes', key: 'actualMinutes', render: (_, row) => fullSupportDisplay(row).actualMinutes ?? '—' },
+    { title: 'Shared notes', dataIndex: 'sharedNotes', key: 'sharedNotes', render: (notes: string) => <span style={{ whiteSpace: 'pre-wrap' }}>{notes || '—'}</span> },
   ];
 
   const milestoneColumns: ColumnsType<MilestoneDto> = [

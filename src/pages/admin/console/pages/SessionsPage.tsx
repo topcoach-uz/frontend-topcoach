@@ -17,6 +17,7 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CalendarClock, FileText, Search } from 'lucide-react';
+import StandaloneAttendanceLedger from '../components/StandaloneAttendanceLedger';
 import { useMemo, useState } from 'react';
 import {
   Bar,
@@ -240,6 +241,7 @@ export default function AdminConsoleSessionsPage() {
       <h1 className="ac-page-title">Sessions</h1>
       <p className="ac-page-lead">Session health, cancellations, and upcoming schedule.</p>
 
+      <StandaloneAttendanceLedger />
       <Row gutter={[16, 16]} className="ac-kpi-row">
         <Col xs={24} sm={12} xl={6}>
           <Card bordered={false} className="ac-kpi-card ac-kpi-card--accent-blue">

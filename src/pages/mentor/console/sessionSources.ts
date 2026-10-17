@@ -4,7 +4,7 @@ import {
   useGetMentorSessionsQuery,
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
-import { useGetMySessionsQuery } from 'src/app/services/sessions';
+import { type AttendanceRecord, useGetMySessionsQuery } from 'src/app/services/sessions';
 
 export type SessionReport = {
   topicsCovered: string;
@@ -24,6 +24,7 @@ export type MentorBooking = {
   studentUserId: string | null;
   studentName: string | null;
   status: 'upcoming' | 'completed' | 'report-due' | 'cancelled';
+  attendanceRecord?: AttendanceRecord | null;
   cancelReason?: string | null;
   joinUrl?: string | null;
   /** Submitted post-session report (platform sessions); null while pending. */
@@ -49,13 +50,14 @@ function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
   return { label: String(type ?? '—'), minutes: 60 };
 }
 
-function parseFullSupportDuration(raw: string | undefined | null): number {
-  const s = String(raw ?? '').trim().toLowerCase();
-  const m = s.match(/(\d+)/);
-  return m ? Number(m[1]) : 60;
+export function parseFullSupportDuration(raw: string | undefined | null): number {
+  // Full Support stores planned duration in hours (e.g. "1", "1h", "0.5").
+  const text = String(raw ?? '').trim();
+  const hours = Number.parseFloat(text) / (/m$/i.test(text) ? 60 : 1);
+  return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : 60;
 }
 
-function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
+export function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
   const { label, minutes } = durationFromSessionType(s.type as SessionTypeEnum);
   const participant = (s.participants as unknown as Array<{ id?: string; profile?: { name?: string } }>)
     ?.[0];
@@ -66,12 +68,14 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
 
   const isCancelled = !!(s.cancelStatus && (s.cancelStatus as { id?: string }).id);
   const report = (s as unknown as { report?: SessionReport | null }).report ?? null;
+  const attendanceRecord = (s as SessionsSchema & { attendanceRecord?: AttendanceRecord | null }).attendanceRecord ?? null;
   const studentNote = (s as unknown as { note?: string | null }).note || null;
   const end = new Date(s.date).getTime() + minutes * 60_000;
   const now = Date.now();
 
   let status: MentorBooking['status'];
   if (isCancelled) status = 'cancelled';
+  else if (attendanceRecord?.outcome === 'student_no_show' || attendanceRecord?.outcome === 'mentor_no_show') status = 'completed';
   else if (end > now) status = 'upcoming';
   else if (report) status = 'completed';
   // Past + no report: needs one only if it ended after the feature launched.
@@ -92,29 +96,30 @@ function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
       (s.cancelStatus as { reason?: string } | undefined)?.reason ?? null,
     joinUrl,
     report,
+    attendanceRecord,
     studentNote,
     raw: s,
   };
 }
 
-function normalizeFullSupportSession(
+export function normalizeFullSupportSession(
   s: SessionLogDto & { studentUserId?: string },
   studentName: string | null,
 ): MentorBooking {
   const minutes = parseFullSupportDuration(s.duration);
-  const end = new Date(s.dateTime).getTime() + minutes * 60_000;
   const now = Date.now();
 
   let status: MentorBooking['status'];
-  if (s.done) status = 'completed';
-  else if (end < now) status = 'report-due';
+  if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
+  else if (s.done || ['held', 'student_no_show', 'mentor_no_show'].includes(s.outcome)) status = 'completed';
+  else if (new Date(s.dateTime).getTime() <= now) status = 'report-due';
   else status = 'upcoming';
 
   return {
     id: `fs:${s.id}`,
     source: 'full-support',
     dateTime: s.dateTime,
-    durationLabel: s.duration || '—',
+    durationLabel: `${minutes} min`,
     durationMinutes: minutes,
     description: s.description || null,
     studentUserId: s.studentUserId ?? null,
@@ -230,7 +235,7 @@ export function useMentorBookings(
     const platformRaw = ((platformRes as unknown as { data?: SessionsSchema[] })?.data ??
       (Array.isArray(platformRes) ? (platformRes as SessionsSchema[]) : [])) as SessionsSchema[];
 
-    const platform = platformRaw.map(normalizePlatformBooking);
+    const platform = platformRaw.filter((session) => session.participants?.length).map(normalizePlatformBooking);
     const fs = (fullSupportRes?.data ?? []).map((s) =>
       normalizeFullSupportSession(
         s as SessionLogDto & { studentUserId?: string },

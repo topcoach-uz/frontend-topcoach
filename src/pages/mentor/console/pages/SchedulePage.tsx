@@ -9,6 +9,7 @@ import {
   Modal,
   Select,
   Spin,
+  Space,
   message,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
@@ -26,24 +27,27 @@ import { GoogleMeetingSvg } from 'src/assets/svg';
 import {
   useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
-  useUpdateMentorSessionMutation,
+  useRecordMentorLessonMutation,
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
 import { McPill } from '../components/McPill';
 import SessionChatButton from '../components/SessionChatButton';
 import SessionReportModal from '../components/SessionReportModal';
+import LessonRecordModal, { type LessonRecordInput } from '../components/LessonRecordModal';
+import { useRecordStandaloneAttendanceMutation, type AttendanceInput } from 'src/app/services/sessions';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { useMentorBookings, type MentorBooking } from '../sessionSources';
+import { bookingDisplay, needsStandaloneAttendance, scheduleScopes } from '../sessionDisplay';
 import { formatRelative } from '../utils';
 import './SchedulePage.scss';
 
 // Only flag recent sessions — stale 60-day-old entries just create noise.
 const PENDING_REPORT_WINDOW_DAYS = 14;
 
-type Scope = 'upcoming' | 'due' | 'past' | 'cancelled';
+type Scope = 'upcoming' | 'due' | 'attendance' | 'past' | 'cancelled';
 
-const SCOPES: Scope[] = ['upcoming', 'due', 'past', 'cancelled'];
+const SCOPES: Scope[] = ['upcoming', 'due', 'attendance', 'past', 'cancelled'];
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -77,6 +81,7 @@ export default function MentorConsoleSchedulePage() {
   const [scope, setScope] = useState<Scope>(initialScope);
   const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
 
+  const [recordBooking, setRecordBooking] = useState<MentorBooking | null>(null);
   const [logOpen, setLogOpen] = useState(false);
   const [logForm] = Form.useForm<{
     studentUserId: string;
@@ -108,7 +113,8 @@ export default function MentorConsoleSchedulePage() {
     includeFullSupport: hasFullSupport,
   });
   const [createSession, { isLoading: creating }] = useCreateMentorSessionMutation();
-  const [updateSession, { isLoading: marking }] = useUpdateMentorSessionMutation();
+  const [recordLesson, { isLoading: recordingFs }] = useRecordMentorLessonMutation();
+  const [recordAttendance, { isLoading: recordingPlatform }] = useRecordStandaloneAttendanceMutation();
 
   const decorated = useMemo<MentorBooking[]>(() => {
     const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
@@ -119,19 +125,7 @@ export default function MentorConsoleSchedulePage() {
     }));
   }, [bookings, hasFullSupport, rosterById]);
 
-  const byScope = useMemo(() => {
-    const asc = (a: MentorBooking, b: MentorBooking) =>
-      new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
-    const desc = (a: MentorBooking, b: MentorBooking) => -asc(a, b);
-    return {
-      upcoming: decorated.filter((b) => b.status === 'upcoming').sort(asc),
-      due: decorated.filter((b) => b.status === 'report-due').sort(desc),
-      past: decorated
-        .filter((b) => b.status === 'completed' || b.status === 'report-due')
-        .sort(desc),
-      cancelled: decorated.filter((b) => b.status === 'cancelled').sort(desc),
-    };
-  }, [decorated]);
+  const byScope = useMemo(() => scheduleScopes(decorated), [decorated]);
 
   const pendingReport = useMemo(() => {
     const windowMs = PENDING_REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
@@ -145,17 +139,29 @@ export default function MentorConsoleSchedulePage() {
     if (b.source === 'platform') {
       setReportBooking(b);
     } else {
-      setScope('due');
+      setRecordBooking(b);
     }
   };
 
-  const markFsDone = (b: MentorBooking) => {
-    const raw = b.raw as SessionLogDto;
-    updateSession({ id: raw.id, done: true })
-      .unwrap()
-      .then(() => message.success('Marked complete'))
-      .catch(() => message.error('Failed to update'));
+  const saveLesson = async (input: LessonRecordInput) => {
+    if (!recordBooking) return;
+    if (recordBooking.source === 'full-support') {
+      await recordLesson({ id: (recordBooking.raw as SessionLogDto).id, ...input }).unwrap();
+    } else {
+      await recordAttendance({ id: recordBooking.id, ...input, outcome: input.outcome as AttendanceInput['outcome'] }).unwrap();
+    }
   };
+  const recordValue = useMemo(() => {
+    if (!recordBooking) return null;
+    const record = recordBooking.source === 'full-support' ? recordBooking.raw as SessionLogDto : recordBooking.attendanceRecord;
+    if (!record) return null;
+    return {
+      outcome: ['held', 'student_no_show', 'mentor_no_show', 'cancelled'].includes(record.outcome) ? record.outcome as LessonRecordInput['outcome'] : 'held' as const,
+      attendance: record.attendance === 'late' ? 'late' as const : 'present' as const,
+      actualDurationMinutes: record.actualDurationMinutes ?? recordBooking.durationMinutes,
+      sharedNotes: record.sharedNotes,
+    };
+  }, [recordBooking]);
 
   const submitLog = async () => {
     const values = await logForm.validateFields();
@@ -180,21 +186,15 @@ export default function MentorConsoleSchedulePage() {
   const renderSessionCard = (b: MentorBooking) => {
     const d = new Date(b.dateTime);
     const isUpcoming = b.status === 'upcoming';
-    const statusPill = isUpcoming ? (
-      upcomingPill(b)
-    ) : b.status === 'report-due' ? (
-      <McPill variant="danger">Report due</McPill>
-    ) : b.status === 'completed' ? (
-      <McPill variant="success">Completed</McPill>
-    ) : (
-      <McPill variant="neutral">Cancelled</McPill>
-    );
+    const display = bookingDisplay(b);
+    const attendanceDue = needsStandaloneAttendance(b);
+    const statusPill = isUpcoming && display.label === 'Upcoming' ? upcomingPill(b) : <McPill variant={display.variant}>{display.label}</McPill>;
 
     return (
       <div
         key={b.id}
         className={`mc-scard${b.status === 'cancelled' ? ' mc-scard--muted' : ''}${
-          b.status === 'report-due' ? ' mc-scard--due' : ''
+          b.status === 'report-due' || attendanceDue ? ' mc-scard--due' : ''
         }${isUpcoming ? ' mc-scard--live' : ''}`}
       >
         <div className="mc-scard-top">
@@ -204,7 +204,10 @@ export default function MentorConsoleSchedulePage() {
               {d.toLocaleDateString(undefined, { month: 'short' })}
             </span>
           </div>
-          {statusPill}
+          <Space size={6} wrap>
+            {statusPill}
+            {b.source === 'platform' && b.status === 'report-due' && display.label !== 'Report due' && <McPill variant="danger">Report due</McPill>}
+          </Space>
         </div>
 
         <div className="mc-scard-name">{b.studentName || 'Student'}</div>
@@ -236,18 +239,20 @@ export default function MentorConsoleSchedulePage() {
           </a>
         ) : null}
 
+        <div className="mc-scard-meta">Attendance: {display.attendance}{display.actualMinutes !== null ? ` · ${display.actualMinutes} min actual` : ''}</div>
         <div className="mc-scard-actions">
+          {b.status !== 'cancelled' && new Date(b.dateTime).getTime() <= Date.now() && (b.source === 'platform' ? 'type' in b.raw && b.raw.type !== 'Group' && !!b.studentUserId : b.status !== 'report-due') && <Button type={attendanceDue ? 'primary' : 'default'} size="small" onClick={() => setRecordBooking(b)}>{b.source === 'platform' ? b.attendanceRecord ? 'Edit attendance' : 'Record attendance' : 'Edit lesson record'}</Button>}
           {b.status === 'report-due' &&
             (b.source === 'platform' ? (
               <Button type="primary" size="small" onClick={() => setReportBooking(b)}>
                 Write report
               </Button>
             ) : (
-              <Button type="primary" size="small" loading={marking} onClick={() => markFsDone(b)}>
-                Mark done
+              <Button type="primary" size="small" onClick={() => setRecordBooking(b)}>
+                Record lesson
               </Button>
             ))}
-          {b.status === 'completed' && b.source === 'platform' && b.report ? (
+          {b.status === 'completed' && b.source === 'platform' && b.report && (!b.attendanceRecord || b.attendanceRecord.outcome === 'held') ? (
             <Button size="small" onClick={() => setReportBooking(b)}>
               View report
             </Button>
@@ -292,10 +297,10 @@ export default function MentorConsoleSchedulePage() {
         <div className="mc-alert-banner">
           <Flag size={22} color="var(--mc-danger)" />
           <div className="mc-alert-banner-body">
-            <div className="mc-alert-banner-title">Session report pending</div>
+            <div className="mc-alert-banner-title">{pendingReport.source === 'full-support' ? 'Lesson record pending' : 'Session report pending'}</div>
             <div className="mc-alert-banner-subtitle">
               Your session{pendingReport.studentName ? ` with ${pendingReport.studentName}` : ''}{' '}
-              ended {formatRelative(pendingReport.dateTime)}. Submit your report to close it out.
+              ended {formatRelative(pendingReport.dateTime)}. {pendingReport.source === 'full-support' ? 'Record the lesson outcome and attendance.' : 'Submit your session report.'}
             </div>
           </div>
           <Button
@@ -303,7 +308,7 @@ export default function MentorConsoleSchedulePage() {
             onClick={() => openReportFor(pendingReport)}
             style={{ background: 'var(--mc-danger)', borderColor: 'var(--mc-danger)' }}
           >
-            Write report
+            {pendingReport.source === 'full-support' ? 'Record lesson' : 'Write report'}
           </Button>
         </div>
       )}
@@ -317,7 +322,7 @@ export default function MentorConsoleSchedulePage() {
             Welcome back, {displayName.split(' ')[0] || 'mentor'}
           </h1>
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
-            Your sessions — upcoming, past, and anything that still needs a report.
+            Your sessions — upcoming, past, and anything awaiting attendance or a report.
           </p>
         </div>
         <div className="mc-sched-date" aria-hidden>
@@ -349,6 +354,7 @@ export default function MentorConsoleSchedulePage() {
           [
             { key: 'upcoming', label: 'Upcoming', count: byScope.upcoming.length },
             { key: 'due', label: 'Report due', count: byScope.due.length },
+            { key: 'attendance', label: 'Attendance due', count: byScope.attendance.length },
             { key: 'past', label: 'Past', count: byScope.past.length },
             { key: 'cancelled', label: 'Cancelled', count: byScope.cancelled.length },
           ] as { key: Scope; label: string; count: number }[]
@@ -359,7 +365,7 @@ export default function MentorConsoleSchedulePage() {
             role="tab"
             aria-selected={scope === t.key}
             className={`mc-sched-tab${scope === t.key ? ' mc-sched-tab--active' : ''}${
-              t.key === 'due' && t.count > 0 ? ' mc-sched-tab--alert' : ''
+              (t.key === 'due' || t.key === 'attendance') && t.count > 0 ? ' mc-sched-tab--alert' : ''
             }`}
             onClick={() => setScope(t.key)}
           >
@@ -381,18 +387,21 @@ export default function MentorConsoleSchedulePage() {
         )}
       </div>
 
+      {scope === 'attendance' && <p className="mc-page-lead">Ended standalone 1:1 sessions without an attendance record, including sessions that already have a report.</p>}
       {isError && (
         <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Failed to load sessions" />
       )}
 
-      {rows.length === 0 ? (
+      {isError && rows.length === 0 ? null : rows.length === 0 ? (
         <div className="mc-sched-empty">
           {scope === 'upcoming' ? (
             <Empty description="No upcoming sessions on the calendar." />
+          ) : scope === 'attendance' ? (
+            <Empty description="No standalone 1:1 sessions awaiting attendance." />
           ) : scope === 'due' ? (
             <div className="mc-sched-empty-good">
               <CheckCircle2 size={20} color="var(--mc-success)" />
-              All reports filed — nothing to close out.
+              No lesson records or reports due. Attendance is tracked in Attendance due.
             </div>
           ) : (
             <Empty description={scope === 'past' ? 'No past sessions yet.' : 'No cancelled sessions.'} />
@@ -410,7 +419,7 @@ export default function MentorConsoleSchedulePage() {
         confirmLoading={creating}
         okText="Save"
       >
-        <Form form={logForm} layout="vertical" initialValues={{ duration: '60m', when: dayjs() }}>
+        <Form form={logForm} layout="vertical" initialValues={{ duration: '1h', when: dayjs() }}>
           <Form.Item
             name="studentUserId"
             label="Student"
@@ -435,10 +444,10 @@ export default function MentorConsoleSchedulePage() {
           >
             <Select
               options={[
-                { value: '30m', label: '30 min' },
-                { value: '45m', label: '45 min' },
-                { value: '60m', label: '60 min' },
-                { value: '90m', label: '90 min' },
+                { value: '0.5h', label: '30 min' },
+                { value: '0.75h', label: '45 min' },
+                { value: '1h', label: '60 min' },
+                { value: '1.5h', label: '90 min' },
               ]}
             />
           </Form.Item>
@@ -448,6 +457,10 @@ export default function MentorConsoleSchedulePage() {
         </Form>
       </Modal>
 
+      <LessonRecordModal open={!!recordBooking} title={recordBooking?.source === 'full-support' ? 'Record Full Support lesson' : 'Record 1:1 attendance'}
+        value={recordValue} plannedMinutes={recordBooking?.durationMinutes ?? 60} allowCancelled={recordBooking?.source === 'full-support'}
+        correction={recordBooking?.source === 'platform' && !!recordBooking.attendanceRecord}
+        saving={recordingFs || recordingPlatform} onClose={() => setRecordBooking(null)} onSave={saveLesson} />
       <SessionReportModal
         booking={reportBooking}
         open={!!reportBooking}
