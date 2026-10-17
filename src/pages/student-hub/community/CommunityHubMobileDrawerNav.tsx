@@ -196,19 +196,9 @@ export default function CommunityHubMobileDrawerNav({ onNavigate }: CommunityHub
             <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
           </button>
         )}
-        <button
-          type="button"
-          className={`${styles.navItem} ${isOthers('full-support') ? styles.navItemActive : ''}`}
-          onClick={() => go('/student-hub?section=others&target=full-support')}
-        >
-          <span className={styles.navIconCircle}>
-            <UnifiedIcon name="full-support" size="md" color="primary" />
-          </span>
-          <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.fullSupport', 'Full Support attendance')}</span>
-        </button>
-          <button type="button" className={styles.navItem} onClick={() => go('/student-hub/sessions')}>
+          <button type="button" className={styles.navItem} onClick={() => go('/student-hub/attendance')}>
             <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
-            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.standalone', 'Standalone 1:1 attendance')}</span>
+            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.title', 'Attendance')}</span>
           </button>
         <button
           type="button"

@@ -227,6 +227,7 @@ export default function FullSupportStudentPage() {
       )}
       actions={
         <>
+          <Button onClick={() => navigate('/student-hub/attendance?tab=full-support')}>View attendance</Button>
           <button
             type="button"
             className="fseditorial__btn fseditorial__btn--primary"

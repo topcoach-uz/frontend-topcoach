@@ -717,21 +717,9 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
             <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
           </button>
 
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'full-support' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setOthersTarget('full-support');
-              setActiveSection('others');
-              navigate('/student-hub?section=others&target=full-support', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><UnifiedIcon name="full-support" size="md" color="primary" /></span>
-            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.fullSupport', 'Full Support attendance')}</span>
-          </button>
-          <button type="button" className={styles.navItem} onClick={() => navigate('/student-hub/sessions')}>
+          <button type="button" className={styles.navItem} onClick={() => navigate('/student-hub/attendance')}>
             <span className={styles.navIconCircle}><ClipboardCheck size={20} color="#8b0000" /></span>
-            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.standalone', 'Standalone 1:1 attendance')}</span>
+            <span className={`${styles.navLabel} ${styles.attendanceNavLabel}`}>{t('attendanceNavigation.title', 'Attendance')}</span>
           </button>
 
           <button

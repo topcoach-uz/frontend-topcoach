@@ -1,5 +1,5 @@
 {
-  "attendanceNavigation": {"fullSupport": "Full Support қатысуы", "standalone": "Жеке 1:1 сабақтарға қатысу"},
+  "attendanceNavigation": {"title": "Қатысу", "fullSupport": "Full Support қатысуы", "standalone": "Жеке 1:1 сабақтарға қатысу"},
   "studentHub.hub.ieltsTestPrep": "IELTS-ке дайындық",
   "applicant.ieltsTestPrep": "IELTS-ке дайындық",
   "onboarding.info.searchOrEnter": "Izleń yamasa ózińiz kiritiń",

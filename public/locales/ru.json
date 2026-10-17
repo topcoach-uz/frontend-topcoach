@@ -1,5 +1,5 @@
 {
-  "attendanceNavigation": {"fullSupport": "Посещаемость Full Support", "standalone": "Посещаемость отдельных 1:1"},
+  "attendanceNavigation": {"title": "Посещаемость", "fullSupport": "Посещаемость Full Support", "standalone": "Посещаемость отдельных 1:1"},
   "studentHub.hub.ieltsTestPrep": "Подготовка к IELTS",
   "applicant.ieltsTestPrep": "Подготовка к IELTS",
   "onboarding.info.searchOrEnter": "Найдите или введите свой вариант",

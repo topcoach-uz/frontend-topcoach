@@ -5,7 +5,6 @@ import {
   CirclePlay,
   ClipboardCheck,
   ClipboardList,
-  HeartHandshake,
   House,
   Lock,
   Menu,
@@ -24,7 +23,6 @@ import {
 } from './ApplicantOverviewContext';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { useGetEnrollmentMeQuery } from 'src/app/services/fullSupportApi';
 import { ApplicantTopBarContext } from './ApplicantTopBarContext';
 import './applicantWorkspace.scss';
 
@@ -112,11 +110,7 @@ function ApplicantNavigation({
   );
   const { isCommunityEnrolled, isEntitlementLoading } =
     useJourneyExperience();
-  const { data: fullSupportEnrollment, isLoading: fullSupportLoading } =
-    useGetEnrollmentMeQuery();
   const communityLocked = !isEntitlementLoading && !isCommunityEnrolled;
-  const fullSupportLocked =
-    !fullSupportLoading && !fullSupportEnrollment?.data?.enrolled;
   const { t } = useTranslation();
   const { pathname, search } = useLocation();
   const current = new URLSearchParams(search);
@@ -346,16 +340,9 @@ function ApplicantNavigation({
         {group(groups[0])}
         {degree === 'bachelor' && group(groups[1])}
         {navLink(
-          applicantLinks.fullSupport,
-          t('attendanceNavigation.fullSupport', 'Full Support attendance'),
-          selected(applicantLinks.fullSupport),
-          <HeartHandshake size={20} aria-hidden />,
-          fullSupportLocked,
-        )}
-        {navLink(
-          '/student-hub/sessions',
-          t('attendanceNavigation.standalone', 'Standalone 1:1 attendance'),
-          selected('/student-hub/sessions'),
+          '/student-hub/attendance',
+          t('attendanceNavigation.title', 'Attendance'),
+          pathname === '/student-hub/attendance' || pathname === '/student-hub/sessions',
           <ClipboardCheck size={20} aria-hidden />,
         )}
         {group(groups[2])}
