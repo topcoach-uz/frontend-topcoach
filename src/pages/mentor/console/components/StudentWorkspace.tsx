@@ -512,7 +512,7 @@ export default function StudentWorkspace({
     );
   };
 
-export   const renderBookingRow = (b: (typeof bookings)[number]) => {
+  const renderBookingRow = (b: (typeof bookings)[number]) => {
     const pill =
       b.status === 'completed' ? (
         <McPill variant="success">Completed</McPill>

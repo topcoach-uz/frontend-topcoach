@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { Form, Input, InputNumber, Modal, Select, message } from "antd";
-import type { AttendanceInput } from "src/app/services/sessions";
-
-export type LessonRecordInput = Omit<AttendanceInput, "outcome"> & {
-  outcome: AttendanceInput["outcome"] | "cancelled";
+export type LessonRecordInput = {
+  outcome: 'held' | 'student_no_show' | 'mentor_no_show' | 'cancelled';
+  attendance?: 'present' | 'late';
+  actualDurationMinutes?: number;
+  sharedNotes?: string;
 };
 
 export default function LessonRecordModal({
@@ -12,7 +13,6 @@ export default function LessonRecordModal({
   value,
   plannedMinutes,
   allowCancelled = false,
-  correction = false,
   saving,
   onClose,
   onSave,
@@ -22,7 +22,6 @@ export default function LessonRecordModal({
   value?: Partial<LessonRecordInput> | null;
   plannedMinutes: number;
   allowCancelled?: boolean;
-  correction?: boolean;
   saving: boolean;
   onClose: () => void;
   onSave: (input: LessonRecordInput) => Promise<void>;
@@ -115,15 +114,7 @@ export default function LessonRecordModal({
         <Form.Item name="sharedNotes" label="Shared notes">
           <Input.TextArea rows={3} maxLength={5000} />
         </Form.Item>
-        {correction && (
-          <Form.Item
-            name="reason"
-            label="Correction reason"
-            rules={[{ required: true, whitespace: true }]}
-          >
-            <Input.TextArea rows={2} maxLength={500} />
-          </Form.Item>
-        )}
+
       </Form>
     </Modal>
   );
