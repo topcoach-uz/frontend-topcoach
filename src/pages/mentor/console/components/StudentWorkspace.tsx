@@ -62,7 +62,7 @@ import MessageList from 'src/components/chat/MessageList';
 import ChatInput from 'src/components/chat/ChatInput';
 import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
 import { useMentorBookings } from '../sessionSources';
-import { bookingDisplay, fullSupportDisplay, needsStandaloneAttendance } from '../sessionDisplay';
+import { fullSupportDisplay } from '../sessionDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
@@ -512,10 +512,17 @@ export default function StudentWorkspace({
     );
   };
 
-  const renderBookingRow = (b: (typeof bookings)[number]) => {
-    const display = bookingDisplay(b);
-    const attendanceDue = needsStandaloneAttendance(b);
-    const pill = <McPill variant={display.variant}>{display.label}</McPill>;
+export   const renderBookingRow = (b: (typeof bookings)[number]) => {
+    const pill =
+      b.status === 'completed' ? (
+        <McPill variant="success">Completed</McPill>
+      ) : b.status === 'report-due' ? (
+        <McPill variant="danger">Report due</McPill>
+      ) : b.status === 'cancelled' ? (
+        <McPill variant="neutral">Cancelled</McPill>
+      ) : (
+        <McPill variant="info">Upcoming</McPill>
+      );
     return (
       <div key={b.id} className="mc-ws-booking">
         <div>
@@ -525,11 +532,6 @@ export default function StudentWorkspace({
             {b.source === 'platform' ? ' · 1:1 session' : ''}
             {b.description ? ` · ${b.description}` : ''}
           </div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>
-            Attendance: {display.attendance}{display.actualMinutes !== null ? ` · ${display.actualMinutes} min actual` : ''}
-          </div>
-          {display.notes && <div style={{ whiteSpace: 'pre-wrap', fontSize: 12, marginTop: 6 }}>{display.notes}</div>}
-          {b.status === 'report-due' && b.source === 'platform' && display.label !== 'Report due' && <McPill variant="danger">Report due</McPill>}
           {b.studentNote ? (
             <div className="mc-ws-booking-note">
               <MessageSquare size={12} />
@@ -541,7 +543,6 @@ export default function StudentWorkspace({
         </div>
         <Space size={8} align="center">
           {pill}
-          {attendanceDue && <Button size="small" onClick={() => navigate('/mentor/dashboard?scope=attendance')}>Record attendance</Button>}
           {b.status === 'upcoming' && b.joinUrl ? (
             <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
               Join

@@ -4,7 +4,6 @@ import type { MentorBooking } from './sessionSources';
 import {
   bookingDisplay,
   fullSupportDisplay,
-  needsStandaloneAttendance,
   scheduleScopes,
 } from './sessionDisplay';
 
@@ -29,7 +28,6 @@ const booking = (extra: Partial<MentorBooking> = {}) =>
     durationMinutes: 60,
     status: 'completed',
     studentUserId: 'student-1',
-    attendanceRecord: null,
     raw: { type: 'individual60m', participants: [{ id: 'student-1' }] },
     ...extra,
   }) as MentorBooking;
@@ -103,86 +101,5 @@ describe('Attendance display and pending queue', () => {
       attendance: 'Not recorded',
       actualMinutes: null,
     });
-  });
-  it('includes ended standalone bookings even when a report already marked them completed', () => {
-    const reported = booking({
-      report: {
-        topicsCovered: 'Planning',
-        submittedAt: '2026-10-16T12:00:00Z',
-      },
-    });
-    expect(needsStandaloneAttendance(reported, now)).toBe(true);
-    expect(bookingDisplay(reported, now).label).toBe('Attendance due');
-    expect(scheduleScopes([reported], now).attendance).toEqual([reported]);
-  });
-  it('excludes future, ongoing, cancelled, group, unbooked and Full Support sessions', () => {
-    const fixtures = [
-      booking({ dateTime: '2026-10-18T10:00:00Z', status: 'upcoming' }),
-      booking({ dateTime: '2026-10-17T11:30:00Z', status: 'upcoming' }),
-      booking({ status: 'cancelled' }),
-      booking({
-        raw: {
-          type: 'Group',
-          participants: [{ id: 'student-1' }],
-        } as unknown as MentorBooking['raw'],
-      }),
-      booking({
-        raw: {
-          type: 'individual60m',
-          participants: [],
-        } as unknown as MentorBooking['raw'],
-      }),
-      booking({
-        raw: {
-          type: 'individual60m',
-          participants: [{ id: 'student-1' }, { id: 'student-2' }],
-        } as unknown as MentorBooking['raw'],
-      }),
-      booking({ source: 'full-support', raw: lesson() }),
-    ];
-    for (const fixture of fixtures)
-      expect(needsStandaloneAttendance(fixture, now)).toBe(false);
-    expect(scheduleScopes(fixtures, now).attendance).toEqual([]);
-  });
-  it('removes recorded attendance from its queue without hiding a remaining report requirement', () => {
-    const recorded = booking({
-      status: 'report-due',
-      attendanceRecord: {
-        outcome: 'held',
-        attendance: 'present',
-        actualDurationMinutes: 50,
-        sharedNotes: 'Notes',
-        recordedAt: '2026-10-16T12:00:00Z',
-        recordedByUserId: 'mentor-1',
-      },
-    });
-    expect(scheduleScopes([recorded], now).attendance).toEqual([]);
-    expect(scheduleScopes([recorded], now).due).toEqual([recorded]);
-    expect(bookingDisplay(recorded, now)).toMatchObject({
-      label: 'Held',
-      attendance: 'present',
-      actualMinutes: 50,
-      notes: 'Notes',
-    });
-  });
-  it('shows recorded platform no-shows in the workspace and excludes them from attendance due', () => {
-    for (const [outcome, label] of [
-      ['student_no_show', 'Student no-show'],
-      ['mentor_no_show', 'Mentor no-show'],
-    ] as const) {
-      const recorded = booking({
-        attendanceRecord: { outcome } as NonNullable<
-          MentorBooking['attendanceRecord']
-        >,
-      });
-      expect(bookingDisplay(recorded, now).label).toBe(label);
-      expect(needsStandaloneAttendance(recorded, now)).toBe(false);
-    }
-  });
-  it('uses the same Full Support outcome display in booking rows and the session log', () => {
-    const raw = lesson({ outcome: 'student_no_show' });
-    expect(
-      bookingDisplay(booking({ source: 'full-support', raw }), now),
-    ).toEqual(fullSupportDisplay(raw, now));
   });
 });

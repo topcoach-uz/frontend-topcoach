@@ -66,33 +66,4 @@ describe("Mentor session attendance states", () => {
   it("marks Full Support lessons awaiting a record once their scheduled time has passed", () => {
     expect(normalizeFullSupportSession(fs({ dateTime: '2026-10-17T11:30:00Z', duration: '1h' }), null).status).toBe('report-due');
   });
-  it("completes platform no-shows without requiring a teaching report", () => {
-    for (const outcome of ["student_no_show", "mentor_no_show"])
-      expect(
-        normalizePlatformBooking(platform({ attendanceRecord: { outcome } }))
-          .status,
-      ).toBe("completed");
-  });
-  it("still requires the teaching report for held platform lessons", () => {
-    expect(
-      normalizePlatformBooking(
-        platform({ attendanceRecord: { outcome: "held" } }),
-      ).status,
-    ).toBe("report-due");
-    expect(
-      normalizePlatformBooking(
-        platform({
-          attendanceRecord: { outcome: "held" },
-          report: { topicsCovered: "Planning" },
-        }),
-      ).status,
-    ).toBe("completed");
-  });
-  it("does not infer attendance from an old report", () => {
-    expect(
-      normalizePlatformBooking(
-        platform({ report: { topicsCovered: "Planning" } }),
-      ).attendanceRecord,
-    ).toBeNull();
-  });
 });

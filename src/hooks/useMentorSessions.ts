@@ -7,12 +7,12 @@
  * sessions" rail widget — reads the exact same data + logic instead of
  * re-deriving it and risking drift.
  *
- * Data source: authenticated `/sessions/me`, including explicit attendance.
- * Refreshes on focus and polls while the student view is open.
+ * Data source: `profile.joinedSessions` on the auth slice (populated by
+ * `/users/me`). No new endpoint — this mirrors the pre-existing
+ * My Progress logic 1:1.
  */
 import { useMemo } from 'react';
-import { useGetMySessionsQuery, type AttendanceRecord } from 'src/app/services/sessions';
-import { studentSessionList } from 'src/pages/student-hub/sessions/studentSessions';
+import { useTypedSelector } from 'src/app/store';
 import { SessionTypeEnum } from 'src/app/api/Api';
 
 export interface MentorSessionItem {
@@ -23,7 +23,6 @@ export interface MentorSessionItem {
   mentorId?: string;
   durationMin: number;
   meetingLink?: string;
-  attendanceRecord?: AttendanceRecord | null;
 }
 
 /** Map a raw joinedSession row to a normalized MentorSessionItem. */
@@ -34,7 +33,6 @@ const mapSession = (s: any, i: number): MentorSessionItem => ({
   mentorId: s.mentor?.id,
   durationMin: s.type === SessionTypeEnum.Individual30M ? 30 : 60,
   meetingLink: s.calendarInfo?.meetingLink,
-  attendanceRecord: s.attendanceRecord ?? null,
 });
 
 export interface UseMentorSessionsResult {
@@ -49,14 +47,14 @@ export interface UseMentorSessionsResult {
  * into upcoming / past / cancelled, exactly like My Progress does.
  */
 export function useMentorSessions(): UseMentorSessionsResult {
-  const { data } = useGetMySessionsQuery(undefined, { pollingInterval: 15000, refetchOnFocus: true, refetchOnMountOrArgChange: true });
-  const joinedSessions = useMemo(() => studentSessionList(data), [data]);
+  const profile = useTypedSelector((s) => s.auth.profile);
+  const joinedSessions = (profile as any)?.joinedSessions as any[] | undefined;
 
   const upcomingSessions: MentorSessionItem[] = useMemo(() => {
     if (!joinedSessions?.length) return [];
     const now = Date.now();
     return joinedSessions
-      .filter((s) => s?.date && new Date(s.date).getTime() + (s.type === SessionTypeEnum.Individual30M ? 30 : 60) * 60000 > now && !s.cancelStatus && !s.attendanceRecord)
+      .filter((s) => s?.date && new Date(s.date).getTime() > now && !s.cancelStatus)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map(mapSession);
   }, [joinedSessions]);
@@ -68,7 +66,7 @@ export function useMentorSessions(): UseMentorSessionsResult {
       .filter((s) => {
         if (!s?.date || s.cancelStatus) return false;
         const dur = s.type === SessionTypeEnum.Individual30M ? 30 : 60;
-        return !!s.attendanceRecord || Date.now() > new Date(s.date).getTime() + dur * 60 * 1000;
+        return Date.now() > new Date(s.date).getTime() + dur * 60 * 1000;
       })
       // Newest past session first.
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

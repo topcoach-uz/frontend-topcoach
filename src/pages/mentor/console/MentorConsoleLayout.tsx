@@ -20,7 +20,6 @@ import {
 } from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
 import { useMentorBookings, useMentorMentees } from './sessionSources';
-import { needsStandaloneAttendance } from './sessionDisplay';
 import { avatarStyleForId, initialsFromName } from './utils';
 import { useGetMentorEssayReviewsQuery } from 'src/app/services/student-hub/essayReviewApi';
 import './mentor-console-tokens.scss';
@@ -28,7 +27,7 @@ import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
-  | 'attendance'
+  | 'full-support'
   | 'course-classes'
   | 'availability'
   | 'students'
@@ -121,8 +120,8 @@ export default function MentorConsoleLayout() {
     [bookings, hasFullSupport],
   );
 
-  const pendingSessionCount = useMemo(
-    () => relevantBookings.filter((b) => b.status === 'report-due' || needsStandaloneAttendance(b)).length,
+  const reportDueCount = useMemo(
+    () => relevantBookings.filter((b) => b.status === 'report-due').length,
     [relevantBookings],
   );
 
@@ -138,11 +137,11 @@ export default function MentorConsoleLayout() {
     return map;
   }, [pipelineRes?.data]);
 
-  // Attention dot — attendance or a report to record, or student work to review.
+  // Attention dot — a report to write or a submission awaiting review.
   const attentionByStudent = useMemo(() => {
     const set = new Set<string>();
     relevantBookings.forEach((b) => {
-      if ((b.status === 'report-due' || needsStandaloneAttendance(b)) && b.studentUserId) set.add(b.studentUserId);
+      if (b.status === 'report-due' && b.studentUserId) set.add(b.studentUserId);
     });
     (tasksRes?.data ?? []).forEach((t) => {
       const awaiting =
@@ -159,8 +158,9 @@ export default function MentorConsoleLayout() {
         label: 'Schedule',
         icon: <CalendarClock size={18} strokeWidth={1.75} />,
         path: '/mentor/dashboard',
-        badge: pendingSessionCount > 0 ? `${pendingSessionCount} pending` : null,
+        badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
       },
+      { key: 'full-support', label: 'Full Support', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?program=full-support&scope=due' },
       {
         key: 'course-classes',
         label: 'Course classes',
@@ -230,21 +230,18 @@ export default function MentorConsoleLayout() {
 
     return [
       { id: 'overview', label: 'Overview', items: overviewItems },
-      { id: 'attendance', label: 'Attendance', items: [
-        { key: 'attendance', label: 'Attendance', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/attendance' },
-      ] },
       { id: 'account', label: 'Account', items: accountItems },
     ];
-  }, [managementRole, pendingSessionCount, pendingEssayReviews]);
+  }, [managementRole, reportDueCount, pendingEssayReviews]);
 
   const activeStudentId = useMemo(() => {
     const m = location.pathname.match(/^\/mentor\/students\/([^/]+)/);
     return m ? m[1] : null;
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
-    if (p.startsWith('/mentor/attendance') || (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).has('attendance'))) return 'attendance';
+    if (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).get('program') === 'full-support') return 'full-support';
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
     if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
@@ -301,8 +298,7 @@ export default function MentorConsoleLayout() {
           navigate(item.path);
           setMobileMenuOpen(false);
         }}
-        aria-current={isActive ? 'page' : undefined}
-        title={item.label}
+        title={collapsed && !isMobileConsole ? item.label : undefined}
       >
         <span className="mentor-console-nav-item-icon">{item.icon}</span>
         {showLabels && (
@@ -345,11 +341,6 @@ export default function MentorConsoleLayout() {
             <div className="mentor-console-nav-group">
               {showLabels && <div className="mentor-console-nav-group-label">Overview</div>}
               {navGroups[0].items.map(renderNavItem)}
-            </div>
-
-            <div className="mentor-console-nav-group">
-              {showLabels && <div className="mentor-console-nav-group-label">Attendance</div>}
-              {navGroups[1].items.map(renderNavItem)}
             </div>
 
             {rosterLoading || menteesLoading ? (
@@ -485,10 +476,10 @@ export default function MentorConsoleLayout() {
               </div>
             )}
 
-            {navGroups[2].items.length > 0 && (
+            {navGroups[1].items.length > 0 && (
               <div className="mentor-console-nav-group">
                 {showLabels && <div className="mentor-console-nav-group-label">Account</div>}
-                {navGroups[2].items.map(renderNavItem)}
+                {navGroups[1].items.map(renderNavItem)}
               </div>
             )}
           </nav>
