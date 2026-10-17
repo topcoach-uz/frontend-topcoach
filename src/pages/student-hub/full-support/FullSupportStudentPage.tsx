@@ -97,7 +97,7 @@ export default function FullSupportStudentPage() {
   const menteeMilestones = milestonesData?.data ?? [];
   const { data: pipelineData } = useGetMenteePipelineQuery(undefined, { skip: !isEnrolled });
   const menteePipeline = pipelineData?.data ?? [];
-  const { data: sessionsData } = useGetMenteeSessionsQuery(undefined, { skip: !isEnrolled });
+  const { data: sessionsData } = useGetMenteeSessionsQuery(undefined, { skip: !isEnrolled, pollingInterval: 15000, refetchOnFocus: true, refetchOnMountOrArgChange: true });
   const menteeSessions = sessionsData?.data?.sessions ?? [];
   const usedHours = sessionsData?.data?.usedHours ?? 0;
   const allocatedHours = sessionsData?.data?.allocatedHours ?? 0;

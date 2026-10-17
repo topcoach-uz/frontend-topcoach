@@ -52,6 +52,7 @@ import {
   formatCaafRegistrationFeeUsd,
   isPastCaafRegistrationDeadline,
 } from 'src/pages/events/central-asian-admissions-forum/constants';
+import { studentSessionOutcome, type StudentSession } from './sessions/studentSessions';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import { ApplicantPage } from './applicant/ApplicantPage';
@@ -875,7 +876,7 @@ const MyProgressEditorialView: React.FC = () => {
                   <div className="myprog__session-time">
                     {date.format('h:mm A')}
                     {sessionTab === 'past' &&
-                      ` · ${t('studentHub.myProgress.sessionCompleted', 'Completed')}`}
+                      ` · ${studentSessionOutcome({ attendanceRecord: s.attendanceRecord } as StudentSession)}`}
                     {sessionTab === 'cancelled' &&
                       ` · ${t('studentHub.myProgress.sessionCancelled', 'Cancelled')}`}
                   </div>
@@ -889,6 +890,11 @@ const MyProgressEditorialView: React.FC = () => {
                       {s.mentor}
                     </button>
                   </div>
+                  {s.attendanceRecord && <div className="myprog__session-with">
+                    Attendance: {s.attendanceRecord.attendance === 'unknown' ? 'Not applicable' : s.attendanceRecord.attendance}
+                    {s.attendanceRecord.actualDurationMinutes !== null && ` · ${s.attendanceRecord.actualDurationMinutes} min actual`}
+                    {s.attendanceRecord.sharedNotes && <p style={{ whiteSpace: 'pre-wrap' }}>{s.attendanceRecord.sharedNotes}</p>}
+                  </div>}
                   {/* Chat is also available for past sessions so the
                       student can follow up on the meeting (notes, recap,
                       next steps). Hidden for cancelled. */}
