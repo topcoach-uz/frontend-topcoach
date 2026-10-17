@@ -607,6 +607,7 @@ export default function ApplicantOverviewPage() {
                 <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
               </>
             )}
+            <TextLink to="/student-hub/sessions">View all sessions and attendance</TextLink>
           </section>
 
           <section className="applicant-card">

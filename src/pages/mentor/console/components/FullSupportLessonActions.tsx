@@ -13,7 +13,7 @@ type Outcome = 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show';
 type RecordValues = { outcome: Outcome; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string };
 type ScheduleValues = { when: Dayjs; minutes: number; meetingLink?: string };
 
-export default function FullSupportLessonActions({ lesson }: { lesson: SessionLogDto }) {
+export default function FullSupportLessonActions({ lesson, showAttendance = true }: { lesson: SessionLogDto; showAttendance?: boolean }) {
   const [mode, setMode] = useState<'record' | 'reschedule' | 'log' | null>(null);
   const [logForm] = Form.useForm<{ description: string; sharedNotes: string }>();
   const [updateLog, { isLoading: savingLog }] = useUpdateMentorLessonLogMutation();
@@ -66,9 +66,9 @@ export default function FullSupportLessonActions({ lesson }: { lesson: SessionLo
     <Space wrap size="small">
       <Button size="small" onClick={() => { logForm.setFieldsValue({ description: lesson.description ?? '', sharedNotes: lesson.sharedNotes ?? '' }); setMode('log'); }}>{lesson.sharedNotes ? 'Edit log' : 'Write log'}</Button>
       {scheduled && <Button size="small" onClick={openSchedule}>Reschedule</Button>}
-      <Button size="small" type={scheduled && !future ? 'primary' : 'default'} onClick={openRecord}>
+      {showAttendance && <Button size="small" type={scheduled && !future ? 'primary' : 'default'} onClick={openRecord}>
         {future ? 'Cancel class' : scheduled ? 'Record attendance' : 'Edit attendance'}
-      </Button>
+      </Button>}
     </Space>
     <Modal title="Session log" open={mode === 'log'} onCancel={() => setMode(null)} onOk={saveLog} okText="Save log" confirmLoading={savingLog}>
       <Form name={`lesson-log-${lesson.id}`} form={logForm} layout="vertical">

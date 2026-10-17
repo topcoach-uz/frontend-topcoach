@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
 import { SessionsSchema, SessionTypeEnum, UserRole } from 'src/app/api/Api';
 import {
+  type AttendanceRecord,
   useCancelSessionAsStudentMutation,
   useCancelSessionMutation,
 } from 'src/app/services/sessions';
@@ -26,6 +27,7 @@ import {
 import { useGetMeQuery } from 'src/app/services/users';
 
 interface UpcomingCardProps extends SessionsSchema {
+  attendanceRecord?: AttendanceRecord | null;
   id: string;
   time?: string;
   duration?: number;
@@ -56,6 +58,7 @@ export default function UpcomingCard({
   type,
   duration,
   reviews,
+  attendanceRecord,
 }: UpcomingCardProps) {
   const { colors } = useTypedSelector((state) => state.layout);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -615,6 +618,11 @@ export default function UpcomingCard({
           {dayjs(date).format('h:mm A')}
         </CustomText>
       </div>
+      {attendanceRecord && <div style={{ marginTop: 12 }}>
+        <strong>Lesson:</strong> {attendanceRecord.outcome.replaceAll('_', ' ')} · Attendance: {attendanceRecord.attendance === 'unknown' ? 'Not applicable' : attendanceRecord.attendance}
+        {attendanceRecord.actualDurationMinutes ? ` · ${attendanceRecord.actualDurationMinutes} min` : ''}
+        {attendanceRecord.sharedNotes && <p style={{ whiteSpace: 'pre-wrap' }}>{attendanceRecord.sharedNotes}</p>}
+      </div>}
       <div className={styles.bottom}>
         <CustomText
           fontSize={16}
