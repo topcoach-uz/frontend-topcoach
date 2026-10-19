@@ -2095,9 +2095,9 @@
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Durıs telefon nomerin kirgiziń.",
   "onboarding.contact.skip": "Házirshe ótkerip jiberiw",
-  "onboarding.trial.title": "Click арқылы төлеу",
-  "onboarding.trial.subtitle": "Community мерзімін таңдап, Click бетінде төлеңіз.",
-  "onboarding.trial.pitch": "Community мерзімін таңдап, Click бетінде төлеңіз.",
+  "onboarding.trial.title": "Click arqalı tólew",
+  "onboarding.trial.subtitle": "Community múddetin tańlań hám Click betinde tóleń.",
+  "onboarding.trial.pitch": "Community múddetin tańlań hám Click betinde tóleń.",
   "onboarding.trial.loadingPlans": "Tarifler júklenip atır…",
   "onboarding.trial.skip": "Keyinirek",
   "onboarding.academic.title": "Akademiyalıq dárejeńizdi anıqlayıq",
@@ -3047,7 +3047,7 @@
   "studentHub.myProgress.topCoachPresents": "Top Coach usınadı",
   "studentHub.myProgress.totalPrefix": "jalpı",
   "studentHub.myProgress.tracksEmptyDesc": "Bul jerde progresińizdi baqlawdı baslaw ushın Kirıw Programmasına, SAT tayarlıǵına yamasa Izertlew tayarlıǵına jazılıń.",
-  "studentHub.myProgress.trialMicro": "Click арқылы төлеу · автоматты ұзартусыз",
+  "studentHub.myProgress.trialMicro": "Click arqalı tólew · avtomatik uzaytıwsız",
   "studentHub.myProgress.viewDetails": "Tәпsilatlar",
   "studentHub.myProgress.viewTicket": "Bilet kóriw",
   "studentHub.myProgress.withdrawBody": "Mentorıńız neliktен qatnasa almaytuǵınıńızdı bilıwi ushın sebepti tańlań.",
@@ -3806,5 +3806,5 @@
   "applicant.taskStatus.pending": "Күтілуде",
   "applicant.taskStatus.in_progress": "Орындалуда",
   "applicant.taskStatus.overdue": "Мерзімі өткен",
-  "landing.pricing.continueToClick": "Click арқылы төлеу"
+  "landing.pricing.continueToClick": "Click arqalı tólew"
 }

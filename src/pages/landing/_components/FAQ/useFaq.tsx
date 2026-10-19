@@ -71,15 +71,15 @@ const itemsEn: CollapseProps['items'] = [
   },
   {
     key: 'community-5',
-    label: 'Does TopCoach Community offer a free trial?',
+    label: 'How do I pay for Community?',
     children:
-      'Yes. Every plan includes a 7-day free trial, so you can explore all features before subscribing.',
+      'Choose your access period and continue to Click. Access starts after Click confirms payment; this checkout has no free trial.',
   },
   {
     key: 'community-6',
-    label: 'Can I cancel or switch my TopCoach Community plan anytime?',
+    label: 'Will my Click payment renew automatically?',
     children:
-      'Yes. You can cancel or switch between Monthly and Yearly plans at any time.',
+      'No. Click purchases cover one selected period. Access ends on the displayed date unless you purchase another period. Existing recurring subscriptions can still be managed in settings.',
   },
   {
     key: '2',
@@ -343,15 +343,15 @@ const itemsUz: CollapseProps['items'] = [
   },
   {
     key: 'community-5',
-    label: 'TopCoach Community bepul sinov muddatini taklif qiladimi?',
+    label: 'Community uchun qanday to‘layman?',
     children:
-      'Ha. Har bir tarif 7 kunlik bepul sinov muddatini o‘z ichiga oladi, shuning uchun obuna bo‘lishdan oldin barcha imkoniyatlarni sinab ko‘rishingiz mumkin.',
+      'Muddatni tanlang va Click sahifasiga o‘ting. Click to‘lovni tasdiqlagach kirish ochiladi; bu to‘lovda bepul sinov yo‘q.',
   },
   {
     key: 'community-6',
-    label: 'TopCoach Community tarifimni istalgan vaqtda bekor qilish yoki almashtirish mumkinmi?',
+    label: 'Click to‘lovi avtomatik uzaytiriladimi?',
     children:
-      'Ha. Oylik va Yillik tariflar o‘rtasida istalgan vaqtda bekor qilishingiz yoki almashtirishingiz mumkin.',
+      'Yo‘q. Click orqali tanlangan bir muddat uchun to‘laysiz. Yangi muddat sotib olinmasa, kirish ko‘rsatilgan sanada tugaydi. Mavjud avtomatik obunalarni sozlamalarda boshqarish mumkin.',
   },
   {
     key: '2',
@@ -587,15 +587,15 @@ const itemsRu: CollapseProps['items'] = [
   },
   {
     key: 'community-5',
-    label: 'Есть ли у TopCoach Community бесплатный пробный период?',
+    label: 'Как оплатить Community?',
     children:
-      'Да. Каждый план включает 7-дневный бесплатный пробный период, чтобы вы могли изучить все функции перед оформлением подписки.',
+      'Выберите период доступа и перейдите на страницу Click. Доступ откроется после подтверждения оплаты; бесплатного пробного периода нет.',
   },
   {
     key: 'community-6',
-    label: 'Можно ли отменить или сменить план TopCoach Community в любое время?',
+    label: 'Продлевается ли оплата через Click автоматически?',
     children:
-      'Да. Вы можете отменить подписку или переключаться между ежемесячным и ежегодным планами в любое время.',
+      'Нет. Оплата через Click действует один выбранный период. Доступ закончится в указанную дату, если не оплатить следующий период. Существующими подписками с автопродлением можно управлять в настройках.',
   },
   {
     key: '2',
@@ -861,15 +861,15 @@ const itemsKk: CollapseProps['items'] = [
   },
   {
     key: 'community-5',
-    label: 'TopCoach Community biypul sınaq múddetin usına ma?',
+    label: 'Community ushın qalay tóleymen?',
     children:
-      'Awa. Hár bir tarif 7 kúnlik biypul sınaq múddetin óz ishine aladı, sonlıqtan jazılıwdan aldın barlıq múmkinshiliklerdi sınap kóre alasız.',
+      'Múddetti tańlań hám Click betine ótiń. Click tólemdi tastıyıqlaǵannan keyin kiriw ashıladı; biypul sınaq joq.',
   },
   {
     key: 'community-6',
-    label: 'TopCoach Community tarifimdi qálegen waqıtta biykar etiw yamasa almastırıw múmkin be?',
+    label: 'Click tólemi avtomatik uzaytılıp baradı ma?',
     children:
-      'Awa. Aylıq hám Jıllıq tarifler arasında qálegen waqıtta biykar ete alasız yamasa almastıra alasız.',
+      'Yaq. Click arqalı bir tańlanǵan múddet ushın tóleysiz. Jańa múddet satıp alınbasa, kiriw kórsetilgen sánede tamamlanadı. Ámeldegi avtomatik jazılıwlardı sazlawlarda basqarıw múmkin.',
   },
   {
     key: '2',
