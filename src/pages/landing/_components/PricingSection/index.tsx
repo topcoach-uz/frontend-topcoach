@@ -15,7 +15,10 @@ import type { PlanDto } from 'src/pages/student-hub/settings/subscription/types'
 
 import styles from './pricing.module.scss';
 
-const planTitle = (plan: PlanDto, t: (k: string, d: string) => string): string =>
+const planTitle = (
+  plan: PlanDto,
+  t: (k: string, d: string) => string,
+): string =>
   plan.period === 'yearly'
     ? t('landing.pricing.plan.yearly', 'Yearly Plan')
     : t('landing.pricing.plan.monthly', 'Monthly Plan');
@@ -187,13 +190,7 @@ export default function PricingSection() {
                     }`}
                     onClick={handleStart}
                   >
-                    {plan.trialDays > 0
-                      ? t(
-                          'landing.pricing.startTrial',
-                          'Start {{days}}-day free trial',
-                          { days: plan.trialDays },
-                        )
-                      : t('landing.pricing.subscribe', 'Get started')}
+                    {t('landing.pricing.continueToClick', 'Pay with Click')}
                   </button>
                 </article>
               );

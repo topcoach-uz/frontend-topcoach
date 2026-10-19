@@ -2457,9 +2457,9 @@
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "Enter a valid phone number.",
   "onboarding.contact.skip": "Skip for now",
-  "onboarding.trial.title": "Try 7 days free",
-  "onboarding.trial.subtitle": "Unlock the full Community — mentors, sessions, and roadmap — with a free trial.",
-  "onboarding.trial.pitch": "7 days free, on us. Cancel anytime before the trial ends and you will not be charged.",
+  "onboarding.trial.title": "Pay with Click",
+  "onboarding.trial.subtitle": "Choose a Community period and pay securely on Click’s page.",
+  "onboarding.trial.pitch": "Choose a Community period and pay securely on Click’s page.",
   "onboarding.trial.loadingPlans": "Loading plans…",
   "onboarding.trial.skip": "Maybe later",
   "onboarding.academic.title": "Let's find your academic level",
@@ -3144,7 +3144,7 @@
   "studentHub.myProgress.topCoachPresents": "Top Coach presents",
   "studentHub.myProgress.totalPrefix": "total",
   "studentHub.myProgress.tracksEmptyDesc": "Enroll in the Admissions Program, SAT Prep, or Research Prep to start tracking your progress here.",
-  "studentHub.myProgress.trialMicro": "7-day free trial · cancel anytime",
+  "studentHub.myProgress.trialMicro": "Pay with Click · no automatic renewal",
   "studentHub.myProgress.viewDetails": "View details",
   "studentHub.myProgress.viewTicket": "View ticket",
   "studentHub.myProgress.withdrawBody": "Pick a reason so your mentor knows why you can't attend.",
@@ -3805,5 +3805,6 @@
   "applicant.status.deferred": "Deferred",
   "applicant.taskStatus.pending": "Pending",
   "applicant.taskStatus.in_progress": "In progress",
-  "applicant.taskStatus.overdue": "Overdue"
+  "applicant.taskStatus.overdue": "Overdue",
+  "landing.pricing.continueToClick": "Pay with Click"
 }

@@ -2183,9 +2183,9 @@
   "onboarding.contact.placeholder": "+998 90 123 45 67",
   "onboarding.contact.invalid": "To'g'ri telefon raqamini kiriting.",
   "onboarding.contact.skip": "Hozircha o'tkazib yuborish",
-  "onboarding.trial.title": "7 kun bepul sinab ko'ring",
-  "onboarding.trial.subtitle": "To'liq Jamoani — mentorlar, sessiyalar va yo'l xaritasi — bepul sinov muddati bilan oching.",
-  "onboarding.trial.pitch": "7 kun bepul, biz hisobimizdan. Sinov muddati tugashidan oldin istalgan vaqtda bekor qiling — hech narsa yechilmaydi.",
+  "onboarding.trial.title": "Click orqali to‘lash",
+  "onboarding.trial.subtitle": "Community muddatini tanlang va Click sahifasida to‘lang.",
+  "onboarding.trial.pitch": "Community muddatini tanlang va Click sahifasida to‘lang.",
   "onboarding.trial.loadingPlans": "Tariflar yuklanmoqda…",
   "onboarding.trial.skip": "Keyinroq",
   "onboarding.academic.title": "Akademik darajangizni aniqlaymiz",
@@ -3047,7 +3047,7 @@
   "studentHub.myProgress.topCoachPresents": "Top Coach taqdim etadi",
   "studentHub.myProgress.totalPrefix": "jami",
   "studentHub.myProgress.tracksEmptyDesc": "Bu yerda jarayoningizni kuzatishni boshlash uchun Qabul dasturiga, SAT tayyorgarligiga yoki Tadqiqot tayyorgarligiga yoziling.",
-  "studentHub.myProgress.trialMicro": "7 kunlik bepul sinov · istalgan vaqtda bekor qilish",
+  "studentHub.myProgress.trialMicro": "Click orqali to‘lov · avtomatik uzaytirishsiz",
   "studentHub.myProgress.viewDetails": "Batafsil",
   "studentHub.myProgress.viewTicket": "Chiptani ko'rish",
   "studentHub.myProgress.withdrawBody": "Mentoringiz nima uchun qatnasha olmasligingizni bilishi uchun sababni tanlang.",
@@ -3805,5 +3805,6 @@
   "applicant.status.deferred": "Keyinga qoldirilgan",
   "applicant.taskStatus.pending": "Kutilmoqda",
   "applicant.taskStatus.in_progress": "Bajarilmoqda",
-  "applicant.taskStatus.overdue": "Muddati o‘tgan"
+  "applicant.taskStatus.overdue": "Muddati o‘tgan",
+  "landing.pricing.continueToClick": "Click orqali to‘lash"
 }
