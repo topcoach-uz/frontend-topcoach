@@ -9,7 +9,7 @@ import { ACCESS_TOKEN } from 'src/constants/storage';
 export async function paymentRedirectWithTimeout(
   provider: string,
   payload: Record<string, unknown>,
-): Promise<{ url?: string; redirectUrl?: string }> {
+): Promise<{ url?: string; redirectUrl?: string; amountUzs?: number }> {
   const token = localStorage.getItem(ACCESS_TOKEN);
   const response = await axios.post(`${baseUrl}/payments/redirect/${provider}`, payload, {
     headers: {

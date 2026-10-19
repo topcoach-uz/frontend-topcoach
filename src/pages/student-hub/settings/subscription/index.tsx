@@ -26,6 +26,7 @@ import type {
   SubscriptionDto,
 } from './types';
 import CurrentPlanCard from './_components/CurrentPlanCard';
+import ClickCommunityCheckout from './_components/ClickCommunityCheckout';
 import AvailablePlans from './_components/AvailablePlans';
 import PaymentMethods from './_components/PaymentMethods';
 import BillingHistory, {
@@ -433,10 +434,18 @@ export default function SubscriptionTab() {
         />
       )}
 
+      {!mockMode && !isLoading && !errorAny && (
+        <ClickCommunityCheckout
+          plans={plans}
+          subscription={subscription}
+          onRefresh={subscriptionQuery.refetch}
+        />
+      )}
+
       {/* Hero. The page is opinionated about what's first:
           - Active sub  → the live plan with manage actions
           - Empty       → the plan picker, fully self-contained */}
-      {!isEmpty && subscription && (
+      {!isEmpty && subscription && subscription.autoRenew !== false && (
         <CurrentPlanCard
           subscription={subscription}
           paymentMethod={defaultPaymentMethod}
@@ -454,7 +463,7 @@ export default function SubscriptionTab() {
         />
       )}
 
-      {plans.length > 0 && (
+      {plans.length > 0 && subscription?.autoRenew !== false && (
         <section className={styles.heroPicker} ref={planPickerRef}>
           {/* One quiet subhead instead of the previous eyebrow + serif
               title + subtitle stack. The page-level "Settings · Manage
