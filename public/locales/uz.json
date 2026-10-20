@@ -3820,5 +3820,14 @@
   "accountNav.accessUntil": "Kirish muddati",
   "accountNav.noRenewal": "Click orqali to‘langan. Kirish avtomatik uzaytirilmaydi.",
   "accountNav.checkoutHint": "Kirish muddatini tanlang. To‘lov Click sahifasida amalga oshiriladi va tasdiqlangach kirish ochiladi.",
-  "accountNav.onePeriod": "Bitta muddat uchun bir to‘lov. Avtomatik uzaytirish yo‘q."
+  "accountNav.onePeriod": "Bitta muddat uchun bir to‘lov. Avtomatik uzaytirish yo‘q.",
+  "profileMembership.loading": "A’zolik tekshirilmoqda…",
+  "profileMembership.active": "Community faol",
+  "profileMembership.pending": "To‘lov kutilmoqda",
+  "profileMembership.until": "{{date}} gacha",
+  "profileMembership.organization": "Tashkilotingiz orqali",
+  "profileMembership.manage": "A’zolikni boshqarish",
+  "profileMembership.check": "Holatni tekshirish",
+  "profileMembership.renew": "Community’ni uzaytirish",
+  "profileMembership.join": "Community’ga qo‘shilish"
 }
