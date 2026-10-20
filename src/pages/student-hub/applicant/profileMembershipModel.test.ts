@@ -86,6 +86,17 @@ describe('profile membership status', () => {
       }),
     ).toEqual({ state: 'active', expiresAt: null });
   });
+  it('retains the renewal action after an expired grant returns to standard mode', () => {
+    expect(
+      profileMembership({
+        now,
+        settings: {
+          communityExperienceMode: 'standard',
+          communityAccessExpiresAt: past,
+        },
+      }).state,
+    ).toBe('expired');
+  });
   it('keeps organization members active without asking them to pay again', () => {
     expect(
       profileMembership({
