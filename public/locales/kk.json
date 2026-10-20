@@ -3820,14 +3820,5 @@
   "accountNav.accessUntil": "Kiriw múddeti",
   "accountNav.noRenewal": "Click arqalı tólengen. Kiriw avtomatik uzaytılmaydı.",
   "accountNav.checkoutHint": "Kiriw múddetin tańlań. Tólem Click betinde ámelge asırıladı, tastıyıqlanǵannan keyin kiriw ashıladı.",
-  "accountNav.onePeriod": "Bir múddet ushın bir tólem. Avtomatik uzaytıw joq.",
-  "profileMembership.loading": "Мүшелік тексерілуде…",
-  "profileMembership.active": "Community белсенді",
-  "profileMembership.pending": "Төлем күтілуде",
-  "profileMembership.until": "{{date}} дейін",
-  "profileMembership.organization": "Ұйымыңыз арқылы",
-  "profileMembership.manage": "Мүшелікті басқару",
-  "profileMembership.check": "Күйін тексеру",
-  "profileMembership.renew": "Community мерзімін ұзарту",
-  "profileMembership.join": "Community-ге қосылу"
+  "accountNav.onePeriod": "Bir múddet ushın bir tólem. Avtomatik uzaytıw joq."
 }
