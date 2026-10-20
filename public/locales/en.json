@@ -3820,5 +3820,14 @@
   "accountNav.accessUntil": "Access until",
   "accountNav.noRenewal": "Paid with Click. Your access will not renew automatically.",
   "accountNav.checkoutHint": "Choose your access period. You’ll pay securely on Click’s page, and access starts after payment is confirmed.",
-  "accountNav.onePeriod": "One payment for one period. No automatic renewal."
+  "accountNav.onePeriod": "One payment for one period. No automatic renewal.",
+  "profileMembership.loading": "Checking membership…",
+  "profileMembership.active": "Community active",
+  "profileMembership.pending": "Payment pending",
+  "profileMembership.until": "Until {{date}}",
+  "profileMembership.organization": "Through your organization",
+  "profileMembership.manage": "Manage membership",
+  "profileMembership.check": "Check status",
+  "profileMembership.renew": "Renew Community",
+  "profileMembership.join": "Join Community"
 }
