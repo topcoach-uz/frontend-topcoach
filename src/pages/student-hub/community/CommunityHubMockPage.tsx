@@ -10,6 +10,7 @@ import {
   UserPlus,
   GraduationCap,
   Settings,
+  CreditCard,
   Lock,
   FlaskConical,
   Presentation,
@@ -21,6 +22,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ACCOUNT_SETTINGS_PATH, MEMBERSHIP_BILLING_PATH } from 'src/lib/accountNavigation';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import MyProgressEditorialView from '../MyProgressEditorialView';
@@ -848,16 +850,22 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
             {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
           </button>
 
+          <button type="button" className={`${styles.navItem} ${accountTarget === 'settings' && new URLSearchParams(location.search).get('tab') === 'subscription' ? styles.navItemActive : ''}`}
+            onClick={() => { setActiveSection('account'); navigate(MEMBERSHIP_BILLING_PATH); }}>
+            <span className={styles.navIconCircle}><CreditCard size={20} color="#8b0000" aria-hidden /></span>
+            <span className={styles.navLabel}>{t('accountNav.membership', 'Membership & billing')}</span>
+          </button>
+
           <button
             type="button"
-            className={`${styles.navItem} ${activeSection === 'account' && accountTarget === 'settings' ? styles.navItemActive : ''}`}
+            className={`${styles.navItem} ${activeSection === 'account' && accountTarget === 'settings' && new URLSearchParams(location.search).get('tab') !== 'subscription' ? styles.navItemActive : ''}`}
             onClick={() => {
               setActiveSection('account');
-              navigate('/student-hub?section=account&target=settings', { replace: true });
+              navigate(ACCOUNT_SETTINGS_PATH);
             }}
           >
             <span className={styles.navIconCircle}><Settings size={20} color="#8b0000" /></span>
-            <span className={styles.navLabel}>{t('studentHub.nav.settings', 'Settings')}</span>
+            <span className={styles.navLabel}>{t('accountNav.settings', 'Account settings')}</span>
           </button>
 
           {((profile as { managementRole?: string } | null | undefined)?.managementRole === 'SuperAdmin' ||

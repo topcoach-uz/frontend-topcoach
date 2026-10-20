@@ -3806,5 +3806,19 @@
   "applicant.taskStatus.pending": "Ожидает выполнения",
   "applicant.taskStatus.in_progress": "В работе",
   "applicant.taskStatus.overdue": "Просрочено",
-  "landing.pricing.continueToClick": "Оплатить через Click"
+  "landing.pricing.continueToClick": "Оплатить через Click",
+  "accountNav.settings": "Настройки аккаунта",
+  "accountNav.membership": "Подписка и платежи",
+  "accountNav.menu": "Открыть меню аккаунта",
+  "accountNav.account": "Аккаунт",
+  "accountNav.sections": "Разделы настроек",
+  "accountNav.transaction": "Транзакция",
+  "accountNav.payments": "Подтверждённые платежи",
+  "accountNav.historyHint": "Подтверждённые платежи и номера транзакций.",
+  "accountNav.community": "Подписка Community",
+  "accountNav.active": "Активна",
+  "accountNav.accessUntil": "Доступ до",
+  "accountNav.noRenewal": "Оплачено через Click. Доступ не продлевается автоматически.",
+  "accountNav.checkoutHint": "Выберите период доступа. Оплата пройдёт на странице Click, а доступ откроется после подтверждения платежа.",
+  "accountNav.onePeriod": "Один платёж за один период. Без автопродления."
 }

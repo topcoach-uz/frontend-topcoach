@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Gift,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useInvalidateGetMeMutation, useGetTelegramStatusQuery } from 'src/app/services/users';
@@ -22,6 +22,8 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
+import { settingsSection } from 'src/lib/accountNavigation';
+import SettingsNavigation from './SettingsNavigation';
 import SubscriptionTab from './subscription';
 import ReferralsTab from './ReferralsTab';
 import { sanitizeName } from 'src/utils/displayName';
@@ -66,60 +68,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
   );
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  /**
-   * Editorial tab state. We expose Profile / Experience / Notifications.
-   * Security is intentionally omitted — password resets happen via email
-   * today and there's no UI to manage 2FA yet, so surfacing an empty tab
-   * would feel broken. Study buddy preferences moved into the Find Study
-   * Buddy hub (see the `?tab=studyBuddy` redirect below).
-   */
-  type SettingsTabKey =
-    | 'profile'
-    | 'experience'
-    | 'notifications'
-    | 'subscription'
-    | 'referrals';
-
-  // Read initial tab from URL `?tab=` so other pages can deep-link
-  // (e.g. the Community lock popup → subscription tab). When no tab is
-  // specified we open on Subscription & billing — that's the most common
-  // reason students land here.
-  const initialTab: SettingsTabKey = (() => {
-    if (typeof window === 'undefined') return 'subscription';
-    const fromUrl = new URLSearchParams(window.location.search).get('tab');
-    const allowed: SettingsTabKey[] = [
-      'profile',
-      'experience',
-      'notifications',
-      'subscription',
-      'referrals',
-    ];
-    return allowed.includes(fromUrl as SettingsTabKey)
-      ? (fromUrl as SettingsTabKey)
-      : 'subscription';
-  })();
-  const [activeTab, setActiveTab] = useState<SettingsTabKey>(initialTab);
-
-  // Re-sync on URL changes (in-app navigation between sections shares
-  // the same component tree, so `popstate` / pushState updates need
-  // to be reflected here).
-  useEffect(() => {
-    const onPop = () => {
-      const fromUrl = new URLSearchParams(window.location.search).get('tab');
-      const allowed: SettingsTabKey[] = [
-        'profile',
-        'experience',
-        'notifications',
-        'subscription',
-        'referrals',
-      ];
-      if (allowed.includes(fromUrl as SettingsTabKey)) {
-        setActiveTab(fromUrl as SettingsTabKey);
-      }
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  const [searchParams] = useSearchParams();
+  const activeTab = settingsSection(searchParams.get('tab'));
 
   // The rich "Profile" tab (Personal / Academic / Activities) used to
   // live here as `?tab=studentProfile`, duplicating the profile hub at
@@ -230,57 +180,8 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     >
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
 
-      {/* Tab strip — Subscription / Account / Experience / Notifications.
-          Roadmap moved to the profile hub (see the redirect effect
-          above). Security tab intentionally omitted (no UI to back it). */}
-      <nav className={styles.tabs} aria-label="Settings sections">
-        {/* Subscription first — it's the most common reason students open
-            settings, and the default tab on a bare ?tab-less load. */}
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'subscription' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('subscription')}
-        >
-          {t('settings.subscription.tab', 'Subscription & billing')}
-        </button>
-        {/* "Account" = the basic identity card (name / username / email /
-            photo). Key stays `profile` so existing ?tab=profile deep-links
-            keep working. */}
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'profile' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          {t('studentHub.settingsMock.account', 'Account')}
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'referrals' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('referrals')}
-        >
-          <Gift size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} />
-          {t('settings.referrals.tab', 'Referrals')}
-        </button>
-        {/* Experience tab is the SuperAdmin/Owner toggle between the
-            standard and community experiences. Regular students never
-            need it — their experience is driven by their actual
-            subscription / Full Support enrollment — so we hide the tab
-            button entirely for non-admin users. The render block below
-            still has a friendly fallback for the rare case a non-admin
-            lands on `?tab=experience` via a stale link. */}
-        {isSuperAdmin && (
-          <button
-            type="button"
-            className={`${styles.tab} ${activeTab === 'experience' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('experience')}
-          >
-            {t('studentHub.settingsMock.experience', 'Experience')}
-          </button>
-        )}
-        {/* Notifications tab hidden until the per-channel toggle backend
-            ships — surfacing static text felt half-baked. The render
-            block below stays in place so re-enabling is a one-line flip. */}
-      </nav>
+      {/* URL-backed section links preserve deep links and browser history. */}
+      <SettingsNavigation activeTab={activeTab} showExperience={isSuperAdmin} />
 
       {/* The two "this moved" pointers that used to sit here (profile hub,
           study buddy preferences) have been removed. Both surfaces are one

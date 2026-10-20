@@ -3806,5 +3806,19 @@
   "applicant.taskStatus.pending": "Күтілуде",
   "applicant.taskStatus.in_progress": "Орындалуда",
   "applicant.taskStatus.overdue": "Мерзімі өткен",
-  "landing.pricing.continueToClick": "Click arqalı tólew"
+  "landing.pricing.continueToClick": "Click arqalı tólew",
+  "accountNav.settings": "Akkaunt sazlawları",
+  "accountNav.membership": "Aǵzalıq hám tólemler",
+  "accountNav.menu": "Akkaunt menyusın ashıw",
+  "accountNav.account": "Akkaunt",
+  "accountNav.sections": "Sazlaw bólimleri",
+  "accountNav.transaction": "Tranzakciya",
+  "accountNav.payments": "Tastıyıqlanǵan tólemler",
+  "accountNav.historyHint": "Tastıyıqlanǵan tólemler hám tranzakciya nomerleri.",
+  "accountNav.community": "Community aǵzalıǵı",
+  "accountNav.active": "Aktiv",
+  "accountNav.accessUntil": "Kiriw múddeti",
+  "accountNav.noRenewal": "Click arqalı tólengen. Kiriw avtomatik uzaytılmaydı.",
+  "accountNav.checkoutHint": "Kiriw múddetin tańlań. Tólem Click betinde ámelge asırıladı, tastıyıqlanǵannan keyin kiriw ashıladı.",
+  "accountNav.onePeriod": "Bir múddet ushın bir tólem. Avtomatik uzaytıw joq."
 }

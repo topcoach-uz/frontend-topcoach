@@ -119,7 +119,7 @@ $st-brand-soft: $brand-tint;
    heavy card chrome) so empty states feel inline, not loud. */
 .bottomGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 28px;
   padding-top: 8px;
   border-top: 1px solid $st-hairline;
@@ -175,3 +175,15 @@ $st-brand-soft: $brand-tint;
     color: $st-brand !important;
   }
 }
+
+.page, .compactSection, .bottomGrid, .heroPicker { min-width: 0; max-width: 100%; }
+.singleColumn { grid-template-columns: minmax(0, 1fr); }
+.membershipCard { padding: clamp(1.1rem, 3vw, 1.75rem); border: 1px solid $st-hairline; border-radius: 20px; background: white; display: grid; gap: 1.25rem; min-width: 0; }
+.membershipHeader { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; h2 { font-family: inherit; font-size: clamp(1.25rem, 3vw, 1.5rem); letter-spacing: -0.025em; line-height: 1.25; } }
+.activeBadge { padding: 0.3rem 0.75rem; background: #e7f4ea; color: #24593e; font-size: 0.8rem; font-weight: 600; border-radius: 999px; white-space: nowrap; }
+.membershipDate { font-size: clamp(1.25rem, 4vw, 1.75rem); font-weight: 600; letter-spacing: -0.025em; margin: 0; line-height: 1.3; }
+.checkoutControls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; label { display: grid; flex: 1 1 15rem; gap: 0.5rem; min-width: 0; font-weight: 500; } :global(.ant-select) { width: 100%; min-width: 0; } :global(.ant-btn) { min-height: 44px; height: auto; white-space: normal; } }
+@media (max-width: 600px) { .checkoutControls { flex-direction: column; align-items: stretch; label { flex-basis: auto; } } }
+
+.subSectionTitle { font-family: inherit; line-height: 1.3; letter-spacing: -0.015em; }
+.checkoutControls :global(.ant-select-single) { height: 44px; }

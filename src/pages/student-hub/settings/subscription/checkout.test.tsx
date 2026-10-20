@@ -77,7 +77,7 @@ describe('Community purchase routes', () => {
       currentPeriodEnd: '2026-11-18T12:58:41Z',
     };
     const html = renderToStaticMarkup(<SubscriptionTab />);
-    expect(html).toContain('Your Community access is paid through');
+    expect(html).toContain('Access until');
     expect(html).not.toContain('Continue to Click');
     expect(html).not.toContain('Saved card form');
   });

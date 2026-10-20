@@ -1,123 +1,124 @@
-/* BillingHistory — receipts table styled to match the editorial palette. */
-
-$bh-brand: #7a1f2b;
-$bh-ink: #1c1a17;
-$bh-muted: #6b6258;
-$bh-hairline: #e5e3da;
-$bh-success-bg: #e7f4ea;
-$bh-success-fg: #2d6a4f;
-
 .wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
-
 .tableWrap {
   overflow-x: auto;
-  border: 1px solid $bh-hairline;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid #e7e2dc;
+  border-radius: 16px;
+  background: white;
 }
-
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
-
   th,
   td {
-    padding: 12px 14px;
+    padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid $bh-hairline;
-    vertical-align: middle;
+    border-bottom: 1px solid #e7e2dc;
   }
-
   th {
-    background: #fafafa;
-    color: $bh-muted;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-weight: 700;
+    background: #f7f5f2;
+    color: #606976;
+    font-size: 0.78rem;
+    font-weight: 600;
   }
-
-  tbody tr {
-    cursor: pointer;
-    transition: background 0.12s ease;
-
-    &:hover {
-      background: rgba(122, 31, 43, 0.04);
-    }
-  }
-
   tbody tr:last-child td {
     border-bottom: none;
   }
 }
-
-.amountUsd {
-  color: $bh-ink;
-  font-weight: 600;
+.amount {
+  color: #302f2d;
+  font-weight: 650;
+  white-space: nowrap;
 }
-
-.amountUzs {
-  color: $bh-muted;
-  font-size: 0.78rem;
+.reference {
+  overflow-wrap: anywhere;
 }
-
 .statusPill {
   display: inline-flex;
   align-items: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border-radius: 999px;
-  text-transform: uppercase;
-}
-
-.statusPaid {
-  background: $bh-success-bg;
-  color: $bh-success-fg;
-}
-
-.invoiceLink {
-  color: $bh-brand;
+  font-size: 0.78rem;
   font-weight: 600;
-  text-decoration: none;
-  font-size: 0.85rem;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
 }
-
-.headerActions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.statusPaid {
+  background: #e7f4ea;
+  color: #24593e;
 }
-
-.btnGhost {
-  border-color: $bh-hairline !important;
-  color: $bh-ink !important;
-  background: #fff !important;
-  border-radius: 999px !important;
-  font-weight: 500 !important;
-
-  &:hover,
-  &:focus {
-    border-color: $bh-brand !important;
-    color: $bh-brand !important;
-  }
-}
-
-/* Subtle inline empty state — no boxed-card chrome, just a muted line
-   that reads as a status note rather than a placeholder feature. */
 .empty {
-  color: $bh-muted;
-  font-size: 0.85rem;
-  font-style: italic;
-  padding: 4px 0;
+  color: #606976;
+  font-size: 0.9rem;
+  margin: 0;
+}
+.mobileList {
+  display: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.paymentCard {
+  padding: 1.1rem;
+  border: 1px solid #e7e2dc;
+  border-radius: 16px;
+  background: white;
+  min-width: 0;
+}
+.cardHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+  }
+}
+.cardAmount {
+  font-size: 1.4rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  margin: 1rem 0;
+  color: #302f2d;
+}
+.details {
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  dt {
+    color: #606976;
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 680px) {
+  .tableWrap {
+    display: none;
+  }
+  .mobileList {
+    display: grid;
+    gap: 0.8rem;
+  }
 }
