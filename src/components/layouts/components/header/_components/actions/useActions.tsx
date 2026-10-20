@@ -4,9 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { loginCheck, logout } from 'src/app/slices/authSlice';
 import { changeTheme } from 'src/app/slices/layoutSlice';
 import { useAppDispatch, useTypedSelector } from 'src/app/store';
-import { EditIcon, LogoutIcon, UserIcon } from 'src/components/icons';
+import { LogoutIcon, UserIcon } from 'src/components/icons';
 import useColors from 'src/hooks/useColors';
 import styles from './actions.module.scss';
+import {
+  ACCOUNT_SETTINGS_PATH,
+  MEMBERSHIP_BILLING_PATH,
+} from 'src/lib/accountNavigation';
+import { CreditCard, Settings } from 'lucide-react';
 import { UserRole } from 'src/app/api/Api';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +24,7 @@ export default function useActions() {
   const isDark = useTypedSelector((state) => state.layout.darkMode);
   const dispatch = useAppDispatch();
   const isAuthenticated = useTypedSelector(
-    (state) => state.auth.isAuthenticated
+    (state) => state.auth.isAuthenticated,
   );
   const userData = useTypedSelector((state) => state.auth.profile);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -44,7 +49,7 @@ export default function useActions() {
       const timer = setTimeout(() => {
         setIsAuthLoading(false);
       }, 50);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated]);
@@ -67,26 +72,38 @@ export default function useActions() {
   const isStudent = role === UserRole.Student;
 
   const profileMenuItems: MenuProps['items'] = [
-    ...((isMentor || isStudent)
+    ...(isMentor || isStudent
       ? [
           {
             // Mentors open their profile page (view) and edit from there;
             // students keep the existing settings shortcut.
-            label: isMentor ? t('header.viewProfile') : t('header.editProfile'),
+            label: isMentor
+              ? t('header.viewProfile')
+              : t('accountNav.settings', 'Account settings'),
             key: '1',
             icon: isMentor ? (
               <UserIcon size={16} className={styles.dropdown_icon} />
             ) : (
-              <EditIcon className={styles.dropdown_icon} />
+              <Settings size={16} aria-hidden />
             ),
             onClick: () => {
               if (isStudent) {
-                navigate('/student-hub/settings');
+                navigate(ACCOUNT_SETTINGS_PATH);
               } else {
                 navigate('/mentor/profile');
               }
             },
           },
+          ...(isStudent
+            ? [
+                {
+                  key: 'membership',
+                  label: t('accountNav.membership', 'Membership & billing'),
+                  icon: <CreditCard size={16} aria-hidden />,
+                  onClick: () => navigate(MEMBERSHIP_BILLING_PATH),
+                },
+              ]
+            : []),
           {
             key: '3',
             type: 'divider' as const,
@@ -119,7 +136,7 @@ export default function useActions() {
     // Edit Profile Modal
     isModalVisible,
     setIsModalVisible,
-    
+
     // Auth loading state
     isAuthLoading,
   };

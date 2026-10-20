@@ -28,9 +28,7 @@ import CurrentPlanCard from './_components/CurrentPlanCard';
 import ClickCommunityCheckout from './_components/ClickCommunityCheckout';
 import AvailablePlans from './_components/AvailablePlans';
 import PaymentMethods from './_components/PaymentMethods';
-import BillingHistory, {
-  BillingHistoryHeaderActions,
-} from './_components/BillingHistory';
+import BillingHistory from './_components/BillingHistory';
 import { formatLongDate } from './_components/format';
 import styles from './subscription.module.scss';
 
@@ -372,7 +370,7 @@ export default function SubscriptionTab() {
       {/* Payment methods + Billing history live in a tighter two-column
           grid below the hero so the page reads top-down: pick → pay →
           history. Empty states stay subtle (no giant dashed cards).  */}
-      <div className={styles.bottomGrid}>
+      <div className={`${styles.bottomGrid} ${!legacyRecurring ? styles.singleColumn : ''}`}>
         {legacyRecurring && (
           <section className={styles.compactSection}>
             <header className={styles.compactHead}>
@@ -399,12 +397,12 @@ export default function SubscriptionTab() {
               <h3 className={styles.subSectionTitle}>
                 {t('settings.subscription.billingHistory', 'Billing history')}
               </h3>
-              {billingHistory.length > 0 && <BillingHistoryHeaderActions />}
+
             </div>
             <p className={styles.compactHint}>
               {t(
-                'settings.subscription.billingHistoryHint',
-                'Receipts auto-emailed. Click any line to download a PDF.',
+                'accountNav.historyHint',
+                'Confirmed payments and transaction references.',
               )}
             </p>
           </header>

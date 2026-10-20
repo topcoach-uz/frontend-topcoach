@@ -10,11 +10,14 @@ import {
   Menu,
   User,
   UserPlus,
+  CreditCard,
+  Settings,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import { useGetApplicantOverviewQuery } from 'src/app/services/student-hub/applicantOverviewApi';
+import { ACCOUNT_SETTINGS_PATH, MEMBERSHIP_BILLING_PATH } from 'src/lib/accountNavigation';
 import { applicantLinks, isOverviewLocation } from 'src/lib/applicantWorkspace';
 import { applicantDegree, displayName } from './applicantOverviewModel';
 import {
@@ -352,6 +355,12 @@ function ApplicantNavigation({
           fullSupportLocked,
         )}
         {group(groups[2])}
+        <div className="applicant-account-nav">
+          {navLink(MEMBERSHIP_BILLING_PATH, t('accountNav.membership', 'Membership & billing'),
+            current.get('target') === 'settings' && current.get('tab') === 'subscription', <CreditCard size={20} aria-hidden />)}
+          {navLink(ACCOUNT_SETTINGS_PATH, t('accountNav.settings', 'Account settings'),
+            current.get('target') === 'settings' && current.get('tab') !== 'subscription', <Settings size={20} aria-hidden />)}
+        </div>
         {(managementRole === 'SuperAdmin' ||
           (managementRole as string) === 'Owner') && (
           <div className="applicant-nav-children">

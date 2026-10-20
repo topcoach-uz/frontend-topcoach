@@ -3806,5 +3806,19 @@
   "applicant.taskStatus.pending": "Pending",
   "applicant.taskStatus.in_progress": "In progress",
   "applicant.taskStatus.overdue": "Overdue",
-  "landing.pricing.continueToClick": "Pay with Click"
+  "landing.pricing.continueToClick": "Pay with Click",
+  "accountNav.settings": "Account settings",
+  "accountNav.membership": "Membership & billing",
+  "accountNav.menu": "Open account menu",
+  "accountNav.account": "Account",
+  "accountNav.sections": "Settings sections",
+  "accountNav.transaction": "Transaction",
+  "accountNav.payments": "Confirmed payments",
+  "accountNav.historyHint": "Confirmed payments and transaction references.",
+  "accountNav.community": "Community membership",
+  "accountNav.active": "Active",
+  "accountNav.accessUntil": "Access until",
+  "accountNav.noRenewal": "Paid with Click. Your access will not renew automatically.",
+  "accountNav.checkoutHint": "Choose your access period. You’ll pay securely on Click’s page, and access starts after payment is confirmed.",
+  "accountNav.onePeriod": "One payment for one period. No automatic renewal."
 }

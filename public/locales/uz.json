@@ -3806,5 +3806,19 @@
   "applicant.taskStatus.pending": "Kutilmoqda",
   "applicant.taskStatus.in_progress": "Bajarilmoqda",
   "applicant.taskStatus.overdue": "Muddati o‘tgan",
-  "landing.pricing.continueToClick": "Click orqali to‘lash"
+  "landing.pricing.continueToClick": "Click orqali to‘lash",
+  "accountNav.settings": "Hisob sozlamalari",
+  "accountNav.membership": "A’zolik va to‘lovlar",
+  "accountNav.menu": "Hisob menyusini ochish",
+  "accountNav.account": "Hisob",
+  "accountNav.sections": "Sozlamalar bo‘limlari",
+  "accountNav.transaction": "Tranzaksiya",
+  "accountNav.payments": "Tasdiqlangan to‘lovlar",
+  "accountNav.historyHint": "Tasdiqlangan to‘lovlar va tranzaksiya raqamlari.",
+  "accountNav.community": "Community a’zoligi",
+  "accountNav.active": "Faol",
+  "accountNav.accessUntil": "Kirish muddati",
+  "accountNav.noRenewal": "Click orqali to‘langan. Kirish avtomatik uzaytirilmaydi.",
+  "accountNav.checkoutHint": "Kirish muddatini tanlang. To‘lov Click sahifasida amalga oshiriladi va tasdiqlangach kirish ochiladi.",
+  "accountNav.onePeriod": "Bitta muddat uchun bir to‘lov. Avtomatik uzaytirish yo‘q."
 }
