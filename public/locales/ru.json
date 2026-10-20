@@ -3820,14 +3820,5 @@
   "accountNav.accessUntil": "Доступ до",
   "accountNav.noRenewal": "Оплачено через Click. Доступ не продлевается автоматически.",
   "accountNav.checkoutHint": "Выберите период доступа. Оплата пройдёт на странице Click, а доступ откроется после подтверждения платежа.",
-  "accountNav.onePeriod": "Один платёж за один период. Без автопродления.",
-  "profileMembership.loading": "Проверяем подписку…",
-  "profileMembership.active": "Community активна",
-  "profileMembership.pending": "Ожидаем оплату",
-  "profileMembership.until": "До {{date}}",
-  "profileMembership.organization": "Через вашу организацию",
-  "profileMembership.manage": "Управление подпиской",
-  "profileMembership.check": "Проверить статус",
-  "profileMembership.renew": "Продлить Community",
-  "profileMembership.join": "Вступить в Community"
+  "accountNav.onePeriod": "Один платёж за один период. Без автопродления."
 }

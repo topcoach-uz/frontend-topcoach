@@ -28,7 +28,6 @@ import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { useGetEnrollmentMeQuery } from 'src/app/services/fullSupportApi';
 import { ApplicantTopBarContext } from './ApplicantTopBarContext';
-import ProfileMembership from './ProfileMembership';
 import './applicantWorkspace.scss';
 
 export default function ApplicantShell({ children }: { children: ReactNode }) {
@@ -309,39 +308,36 @@ function ApplicantNavigation({
     : t('applicant.intakeNotSet');
   return (
     <>
-      <div className="applicant-summary">
-        <Link
-          to={applicantLinks.profile}
-          onClick={onNavigate}
-          className="applicant-summary__profile-link"
-        >
-          <div className="applicant-summary__identity">
-            <span className="applicant-avatar">
-              <User size={28} aria-hidden />
-            </span>
-            <div>
-              <strong>{name}</strong>
-              <p>
-                {isLoading
-                  ? t('applicant.loadingProfile')
-                  : degree
-                    ? t(`applicant.${degree}Applicant`)
-                    : t('applicant.applicant')}
-              </p>
-            </div>
+      <Link
+        to={applicantLinks.profile}
+        onClick={onNavigate}
+        className="applicant-summary"
+      >
+        <div className="applicant-summary__identity">
+          <span className="applicant-avatar">
+            <User size={28} aria-hidden />
+          </span>
+          <div>
+            <strong>{name}</strong>
+            <p>
+              {isLoading
+                ? t('applicant.loadingProfile')
+                : degree
+                  ? t(`applicant.${degree}Applicant`)
+                  : t('applicant.applicant')}
+            </p>
           </div>
-          {isLoading ? (
-            <Skeleton.Input
-              active
-              size="small"
-              style={{ height: 14, width: 150 }}
-            />
-          ) : (
-            <small>{isError ? t('applicant.profileUnavailable') : intake}</small>
-          )}
-        </Link>
-        <ProfileMembership onNavigate={onNavigate} />
-      </div>
+        </div>
+        {isLoading ? (
+          <Skeleton.Input
+            active
+            size="small"
+            style={{ height: 14, width: 150 }}
+          />
+        ) : (
+          <small>{isError ? t('applicant.profileUnavailable') : intake}</small>
+        )}
+      </Link>
       <nav aria-label={t('applicant.workspaceNavigation')}>
         {navLink(
           applicantLinks.overview,
