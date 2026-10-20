@@ -67,7 +67,7 @@ export function profileMembership({
   if (subscription?.status === 'pending')
     return { state: 'pending', expiresAt: null };
   if (
-    (directGrant && directEnd !== null && directEnd <= now) ||
+    (directEnd !== null && directEnd <= now) ||
     (subscriptionEnd > 0 && subscriptionEnd <= now) ||
     ['expired', 'canceled', 'past_due'].includes(subscription?.status ?? '')
   )
