@@ -1,3 +1,4 @@
+import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
 import { ArrowRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
@@ -454,6 +455,7 @@ export function ApplicantApplicationPage() {
   const essay = essays.data?.data.find(
     (item) => item.collegeApplicationId === applicationId,
   );
+  const hasMentorFeedback = Boolean(getMentorFeedbackText(essay?.mentorFeedback));
   const closeStatus = () => {
     const next = new URLSearchParams(params);
     next.delete("action");
@@ -563,12 +565,12 @@ export function ApplicantApplicationPage() {
                           onClick={() =>
                             navigate(
                               essay
-                                ? `/student-hub/essays/${essay.id}${essay.mentorFeedback ? "?feedback=mentor" : ""}`
+                                ? `/student-hub/essays/${essay.id}${hasMentorFeedback ? "?feedback=mentor" : ""}`
                                 : `/student-hub/essays/new?application=${app.id}`,
                             )
                           }
                         >
-                          {essay?.mentorFeedback
+                          {hasMentorFeedback
                             ? "Review mentor feedback"
                             : essay
                               ? "Continue writing"
