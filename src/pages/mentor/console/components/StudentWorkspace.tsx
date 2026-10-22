@@ -1,3 +1,4 @@
+import { calendarDateValue } from '../calendarDate';
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
 import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import FullSupportLessonActions from './FullSupportLessonActions';
@@ -334,7 +335,7 @@ export default function StudentWorkspace({
       studentUserId: studentId,
       task: title,
       description: quickTaskDescription.trim() || undefined,
-      deadline: quickTaskDeadline.toISOString(),
+      deadline: calendarDateValue(quickTaskDeadline)!,
     })
       .unwrap()
       .then(() => {
@@ -368,7 +369,7 @@ export default function StudentWorkspace({
     await createMilestone({
       studentUserId: studentId,
       label: values.label,
-      date: values.date ? values.date.toISOString() : null,
+      date: calendarDateValue(values.date),
     })
       .unwrap()
       .then(() => {
@@ -404,7 +405,7 @@ export default function StudentWorkspace({
       program: values.program,
       stage: values.stage,
       status: values.status,
-      deadline: values.deadline ? values.deadline.toISOString() : null,
+      deadline: calendarDateValue(values.deadline),
     })
       .unwrap()
       .then(() => {
