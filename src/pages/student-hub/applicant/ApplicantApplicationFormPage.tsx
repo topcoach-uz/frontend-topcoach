@@ -140,7 +140,7 @@ export default function ApplicantApplicationFormPage() {
       universityName: applicationValues.universityId
         ? undefined
         : applicationValues.universityName,
-      deadline: deadline?.format("YYYY-MM-DD"),
+      deadline: deadline?.format("YYYY-MM-DD") ?? null,
     };
     try {
       const result = await (

@@ -1,3 +1,5 @@
+import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
+import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -226,9 +228,12 @@ export default function StudentWorkspace({
     includeFullSupport: true,
   });
   const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
-    skip: !studentId,
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
   });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
+
+  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
+  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: sessionsRes, isFetching: loadingSessions } = useGetMentorSessionsQuery(
@@ -770,6 +775,16 @@ export default function StudentWorkspace({
             label: 'Add row',
             onClick: () => setAddPipelineOpen(true),
           })}
+          <div className="mc-ws-card" style={{ padding: 20, marginBottom: 16 }}>
+            <h3>Student application tracker</h3>
+            {studentApplications.isError ? <p>Student applications are unavailable for this relationship.</p> : !studentApplications.data?.data.length ? <p>No student applications saved yet.</p> :
+              studentApplications.data.data.map(application => <div key={application.id} style={{ padding: '10px 0' }}>
+                <strong>{application.universityName || application.major || 'Application'}</strong>
+                <p>{application.major} · {application.status.replaceAll('_', ' ')} · Planning deadline: {formatDate(application.deadline ?? null)}</p>
+                <p>Application mentor: {application.mentorName || (application.mentorId ? 'Previously selected mentor' : 'Not assigned')}{application.canEditRequirements ? ' (you)' : ''}</p>
+                <ApplicationRequirements key={application.id} requirements={application.requirements} updatedAt={application.updatedAt} onSave={application.canEditRequirements ? (requirements, expectedUpdatedAt) => updateApplicationRequirements({ studentUserId: studentId!, id: application.id, requirements, expectedUpdatedAt }).unwrap() : undefined} />
+              </div>)}
+          </div>
           <div className="mc-ws-card">
             {pipeline.length === 0 ? (
               <div className="mc-ws-empty">

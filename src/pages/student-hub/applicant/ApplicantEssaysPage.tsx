@@ -667,7 +667,7 @@ export function ApplicantEssayEditorPage() {
           onChange={setSelectedMentor}
           options={availableMentors.map((mentor) => ({
             value: mentor.id,
-            label: `${mentor.name} · ${mentor.source === "full_support" ? "Assigned mentor" : "1:1 mentor"}`,
+            label: `${mentor.name} · ${mentor.source !== "one_to_one" ? "Assigned mentor" : "1:1 mentor"}`,
           }))}
         />
         <label htmlFor="essay-review-note" style={{ display: "block", marginTop: 16 }}>Note for your mentor (optional)</label>

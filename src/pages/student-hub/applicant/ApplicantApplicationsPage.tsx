@@ -11,8 +11,11 @@ import {
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
   useGetApplicationTasksQuery,
+  useGetScholarshipApplicationsQuery,
   useUpdateCollegeApplicationMutation,
 } from "src/app/services/student-hub/applicationTrackingApi";
+import { useGetMenteeTasksQuery, useGetMenteePipelineQuery } from 'src/app/services/fullSupportApi';
+import { buildApplicationMilestones } from './applicationMilestones';
 import { useGetStudentEssaysQuery } from "src/app/services/student-hub/essayManagementApi";
 import type { CollegeApplication } from "src/app/services/student-hub/types";
 import { useGetGraduateProgramQuery, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
@@ -25,6 +28,8 @@ import {
   displayDate,
   applicationStatusLabels,
 } from "./ApplicantPage";
+import ApplicationRequirements from './ApplicationRequirements';
+import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
@@ -35,13 +40,17 @@ export default function ApplicantApplicationsPage() {
   // Comparison uses a stable query independent of the list URL's page parameter.
   // The current backend returns all applications for the signed-in profile.
   const allApplicationsQuery = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
-  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
+  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 }, { pollingInterval: 10000 });
   const navigate = useNavigate();
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const applications = query.data?.data ?? [];
   const active = applications.filter((app) => app.status !== "researching");
   const saved = applications.filter((app) => app.status === "researching");
   const showTimeline = listParams.get("tab") === "timeline";
+  const showScholarships = listParams.get("tab") === "scholarships";
+  const scholarships = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 }, { skip: !showTimeline && !showScholarships, pollingInterval: 10000 });
+  const assignedTasks = useGetMenteeTasksQuery(undefined, { skip: !showTimeline, pollingInterval: 10000 });
+  const mentorPlans = useGetMenteePipelineQuery(undefined, { pollingInterval: 10000 });
   const comparedIds = (listParams.get("compare") ?? "")
     .split(",")
     .filter(Boolean);
@@ -58,29 +67,13 @@ export default function ApplicantApplicationsPage() {
     ids.length ? next.set("compare", ids.join(",")) : next.delete("compare");
     setListParams(next);
   };
-  const milestones = [
-    ...applications.filter((app) => app.deadline).map((app) => ({
-      id: `application-${app.id}`,
-      date: app.deadline!,
-      title: `${app.major || app.universityName || "Application"} planning date`,
-      detail: app.universityName || "University application",
-      path: `/student-hub/applications/${encodeURIComponent(app.id)}`,
-    })),
-    ...(tasks.data?.data ?? []).filter((task) => task.dueDate).map((task) => ({
-      id: `task-${task.id}`,
-      date: task.dueDate!,
-      title: task.title,
-      detail: "Task due",
-      path: task.collegeApplicationId
-        ? `/student-hub/tasks?application=${encodeURIComponent(task.collegeApplicationId)}`
-        : "/student-hub/tasks",
-    })),
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const milestones = buildApplicationMilestones(applications, tasks.data?.data ?? [], scholarships.data?.data ?? [], assignedTasks.data?.data ?? [], mentorPlans.data?.data ?? []);
+  const selectedMilestone = milestones.find(item => item.id === listParams.get('milestone'));
   const row = (app: CollegeApplication) => {
     const nextTask = tasks.data?.data
       .filter(
         (task) =>
-          task.collegeApplicationId === app.id && task.status !== "completed",
+          task.collegeApplicationId === app.id && !["completed", "cancelled"].includes(task.status),
       )
       .sort((a, b) =>
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -146,6 +139,16 @@ export default function ApplicantApplicationsPage() {
       </div>
     );
   };
+  if (showScholarships) return <ApplicantPage title="Your scholarships" subtitle="Track funding applications and deadlines." actions={<Button onClick={() => navigate('/student-hub/applications/scholarships/new')}>Add scholarship</Button>}>
+    <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Scholarships</Breadcrumb>
+    <QueryState loading={scholarships.isLoading} error={scholarships.isError} retry={scholarships.refetch}>
+      {!scholarships.data?.data.length ? <p>No scholarships saved yet.</p> : scholarships.data.data.map(scholarship => <div key={scholarship.id} className="applicant-panel">
+        <h2>{scholarship.scholarshipName || 'Scholarship'}</h2><p>{scholarship.organization} · {scholarship.status.replaceAll('_', ' ')}</p>
+        <p>Deadline: {displayDate(scholarship.applicationDeadline)}</p>
+        {scholarship.notes && <p>{scholarship.notes}</p>}
+      </div>)}
+    </QueryState>
+  </ApplicantPage>;
   if (showTimeline) {
     return (
       <ApplicantPage
@@ -155,9 +158,9 @@ export default function ApplicantApplicationsPage() {
       >
         <Breadcrumb>Timeline</Breadcrumb>
         <QueryState
-          loading={query.isLoading || tasks.isLoading}
-          error={query.isError || tasks.isError}
-          retry={() => { query.refetch(); tasks.refetch(); }}
+          loading={query.isLoading || tasks.isLoading || scholarships.isLoading || assignedTasks.isLoading || mentorPlans.isLoading}
+          error={query.isError || tasks.isError || scholarships.isError || assignedTasks.isError || mentorPlans.isError}
+          retry={() => { query.refetch(); tasks.refetch(); scholarships.refetch(); assignedTasks.refetch(); mentorPlans.refetch(); }}
         >
           {milestones.length ? (
             <div className="applicant-panel">
@@ -178,6 +181,10 @@ export default function ApplicantApplicationsPage() {
             </div>
           )}
         </QueryState>
+        <Modal title={selectedMilestone?.title} open={!!selectedMilestone} footer={null} onCancel={() => { const next = new URLSearchParams(listParams); next.delete('milestone'); setListParams(next); }}>
+          <p>{selectedMilestone?.detail}</p><p>Deadline: {displayDate(selectedMilestone?.date)}</p>
+          {selectedMilestone?.notes && <p>{selectedMilestone.notes}</p>}
+        </Modal>
       </ApplicantPage>
     );
   }
@@ -249,6 +256,11 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
+      {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
+      {!!mentorPlans.data?.data.length && <section className="applicant-panel" aria-label="Mentor application plans">
+        <h2>Mentor application plans</h2>
+        {mentorPlans.data.data.map(plan => <div key={plan.id} className="applicant-list__row"><strong>{plan.program}</strong><span>{plan.stage} · {plan.status}</span><span>{displayDate(plan.deadline)}</span></div>)}
+      </section>}
       {!isMasters && <Breadcrumb>College List</Breadcrumb>}
       <QueryState
         loading={query.isLoading}
@@ -282,6 +294,7 @@ export default function ApplicantApplicationsPage() {
           <>
             <div className="applicant-page__heading">
               <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
+              <Link to="/student-hub/applications?tab=scholarships">Scholarships →</Link>
               <Link to="/student-hub/timeline">View deadlines →</Link>
             </div>
             {!!active.length && (
@@ -426,6 +439,8 @@ export function ApplicantApplicationPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetCollegeApplicationQuery(applicationId, {
     skip: !applicationId,
+    pollingInterval: 10000,
+    refetchOnMountOrArgChange: true,
   });
   const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
   const essays = useGetStudentEssaysQuery({ page: 1, limit: 100 });
@@ -446,7 +461,7 @@ export function ApplicantApplicationPage() {
     .filter(
       (task) =>
         task.collegeApplicationId === applicationId &&
-        task.status !== "completed",
+        !["completed", "cancelled"].includes(task.status),
     )
     .sort((a, b) =>
       (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -581,6 +596,7 @@ export function ApplicantApplicationPage() {
                 </div>
                 <div className="applicant-panel">
                   <h2>Requirements & documents</h2>
+                  <ApplicationRequirements key={app.id} requirements={app.requirements} updatedAt={app.updatedAt} onSave={(requirements, expectedUpdatedAt) => update({ id: app.id, data: { requirements, expectedUpdatedAt } }).unwrap()} />
                   <div className="applicant-form-grid">
                     <div>
                       <p>Check the university’s current requirements.</p>
@@ -610,6 +626,7 @@ export function ApplicantApplicationPage() {
                 )}
               </div>
               <aside className="applicant-stack">
+                <ApplicationMentor key={app.id} application={app} />
                 <div className="applicant-panel">
                   <div className="applicant-page__heading">
                     <h3>Your application plan</h3>

@@ -168,6 +168,7 @@ const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/Ment
 const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pages/SchedulePage"));
 const MentorCourseClassesLazy = lazy(() => import("src/pages/mentor/console/pages/CourseClassesPage"));
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
+const MentorDocumentReviewsLazy = lazy(() => import("src/pages/mentor/console/pages/DocumentReviewsPage"));
 const MentorEssayReviewsLazy = lazy(() => import("src/pages/mentor/console/pages/EssayReviewsPage"));
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
 const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
@@ -807,6 +808,7 @@ function RouterProvider() {
                     <Route path="course-classes" element={<MentorCourseClassesLazy />} />
                     <Route path="students" element={<MentorConsoleStudentsLazy />} />
                     <Route path="essay-reviews" element={<MentorEssayReviewsLazy />} />
+                    <Route path="document-reviews" element={<MentorDocumentReviewsLazy />} />
                     <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
                     <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
                     <Route path="feed" element={<MentorConsoleFeedLazy />} />

@@ -32,6 +32,7 @@ type NavKey =
   | 'availability'
   | 'students'
   | 'essay-reviews'
+  | 'document-reviews'
   | 'feed'
   | 'profile'
   | 'referrals'
@@ -96,9 +97,9 @@ export default function MentorConsoleLayout() {
   const { data: rosterRes, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
     skip: !isMentor,
   });
-  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor });
-  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor });
-  const { data: essayReviewRequests = [] } = useGetMentorEssayReviewsQuery(undefined, { skip: !isMentor });
+  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
+  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
+  const { data: essayReviewRequests = [] } = useGetMentorEssayReviewsQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
   const pendingEssayReviews = essayReviewRequests.filter((request) => request.status === 'pending' || request.status === 'in_review').length;
   const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
@@ -186,6 +187,7 @@ export default function MentorConsoleLayout() {
         path: '/mentor/essay-reviews',
         badge: pendingEssayReviews > 0 ? String(pendingEssayReviews) : null,
       },
+      { key: 'document-reviews', label: 'Document reviews', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/document-reviews' },
     ];
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
@@ -244,6 +246,7 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).get('program') === 'full-support') return 'full-support';
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
+    if (p.startsWith('/mentor/document-reviews')) return 'document-reviews';
     if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
     // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (

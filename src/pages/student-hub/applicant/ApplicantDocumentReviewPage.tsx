@@ -33,7 +33,7 @@ export default function ApplicantDocumentReviewPage() {
   const { documentId = "" } = useParams();
   const [params] = useSearchParams();
   const documentQuery = useGetDocumentQuery(documentId, { skip: !documentId });
-  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId });
+  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId, pollingInterval: 10000 });
   const versionsQuery = useGetDocumentVersionsQuery(documentId, { skip: !documentId });
   const [download] = useDownloadDocumentMutation();
   const [downloadVersion] = useDownloadDocumentVersionMutation();

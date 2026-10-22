@@ -88,6 +88,7 @@ export default function ApplicantTasksPage() {
   const taskId = params.get("task");
   const editingQuery = useGetApplicationTaskQuery(taskId ?? "", {
     skip: action !== "edit" || !taskId,
+    refetchOnMountOrArgChange: true,
   });
   useEffect(() => {
     if (action === "new") {
@@ -98,18 +99,18 @@ export default function ApplicantTasksPage() {
         status: "pending",
         collegeApplicationId: application === "all" ? undefined : application,
       });
-    } else if (action === "edit" && taskId && editingQuery.data?.data) {
-      const task = editingQuery.data.data;
+    } else if (action === "edit" && taskId && !editingQuery.isFetching && editingQuery.currentData?.data.id === taskId) {
+      const task = editingQuery.currentData!.data;
       setEditing(task);
       form.setFieldsValue({
         ...task,
         dueDate: task.dueDate ? dayjs(task.dueDate) : undefined,
       });
     }
-  }, [action, taskId, editingQuery.data?.data?.id]);
+  }, [action, taskId, editingQuery.currentData?.data, editingQuery.isFetching]);
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    if (value === "all" || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
+    if ((value === "all" && key !== "status") || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
       next.delete(key);
     } else {
       next.set(key, value);
@@ -118,6 +119,7 @@ export default function ApplicantTasksPage() {
   };
   const open = (task?: ApplicationTask) => {
     setEditing(task ?? null);
+    form.resetFields();
     form.setFieldsValue(
       task
         ? { ...task, dueDate: task.dueDate ? dayjs(task.dueDate) : undefined }
@@ -146,7 +148,8 @@ export default function ApplicantTasksPage() {
   const save = async (values: TaskForm) => {
     const payload: CreateApplicationTaskRequest = {
       ...values,
-      dueDate: values.dueDate?.format("YYYY-MM-DD"),
+      dueDate: values.dueDate?.format("YYYY-MM-DD") ?? null,
+      collegeApplicationId: values.collegeApplicationId ?? null,
     };
     try {
       if (action === "edit") {
