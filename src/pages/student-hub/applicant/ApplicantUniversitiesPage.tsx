@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -24,8 +24,11 @@ export default function ApplicantUniversitiesPage() {
   const search = params.get("q") ?? "";
   const major = params.get("major") ?? "";
   const country = params.get("country") ?? "";
-  const page = Math.max(1, Number(params.get("page")) || 1);
+  const requestedPage = Number(params.get("page"));
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const [value, setValue] = useState(search);
+  // Back/forward navigation changes the URL without remounting this page.
+  useEffect(() => setValue(search), [search]);
   const universityQuery = useGetUniversitiesQuery({ page, limit: 40, search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: "undergraduate" }, { skip: isMasters });
   const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
   const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
