@@ -3,11 +3,12 @@ import dayjs from 'dayjs';
 import { calendarDateValue, calendarDateForDisplay } from './calendarDate';
 
 describe('mentor calendar deadlines', () => {
-  it.each(['Asia/Tashkent', 'America/Los_Angeles', 'Pacific/Auckland', 'Europe/London', 'UTC'])('preserves the selected and displayed day in %s', (zone) => {
+  it.each([['Asia/Tashkent', 300], ['America/Los_Angeles', -480], ['Pacific/Auckland', 780], ['Europe/London', 0], ['UTC', 0]] as const)('preserves the selected and displayed day in %s', (zone, offset) => {
     const previous = process.env.TZ;
     process.env.TZ = zone;
     try {
       const selected = dayjs(new Date(2026, 10, 7));
+      expect(selected.utcOffset()).toBeCloseTo(offset);
       const payload = calendarDateValue(selected);
       expect(payload).toBe('2026-11-07');
       const displayed = calendarDateForDisplay(payload!);
