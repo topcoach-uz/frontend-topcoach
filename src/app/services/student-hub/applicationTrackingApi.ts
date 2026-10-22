@@ -20,6 +20,17 @@ const asApiResponse = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
 
 export const applicationTrackingApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getApplicationMentors: builder.query<{ data: Array<{ id: string; name: string }> }, void>({
+      query: () => '/application-tracking/mentors',
+    }),
+    updateMentorApplicationRequirements: builder.mutation<CollegeApplication, { studentUserId: string; id: string; requirements: Record<string, any>; expectedUpdatedAt?: string }>({
+      query: ({ studentUserId, id, requirements, expectedUpdatedAt }) => ({ url: `/application-tracking/mentor/students/${studentUserId}/applications/${id}/requirements`, method: 'PATCH', body: { requirements, expectedUpdatedAt } }),
+      invalidatesTags: ['CollegeApplications'],
+    }),
+    getMentorStudentApplications: builder.query<{ data: CollegeApplication[] }, string>({
+      query: studentUserId => `/application-tracking/mentor/students/${studentUserId}/applications`,
+      providesTags: ['CollegeApplications'],
+    }),
     // ========================================
     // 🎓 COLLEGE APPLICATIONS
     // ========================================
@@ -314,6 +325,9 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetApplicationMentorsQuery,
+  useUpdateMentorApplicationRequirementsMutation,
+  useGetMentorStudentApplicationsQuery,
   // College Applications
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
