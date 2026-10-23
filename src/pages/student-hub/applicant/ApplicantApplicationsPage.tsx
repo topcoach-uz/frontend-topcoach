@@ -9,6 +9,9 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
+  useGetArchivedCollegeApplicationsQuery,
+  useArchiveCollegeApplicationMutation,
+  useRestoreCollegeApplicationMutation,
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
   useGetApplicationTasksQuery,
@@ -29,6 +32,7 @@ import {
   displayDate,
   applicationStatusLabels,
 } from "./ApplicantPage";
+import ScholarshipManagement from "./ScholarshipManagement";
 import ApplicationRequirements from './ApplicationRequirements';
 import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
@@ -36,6 +40,10 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 export default function ApplicantApplicationsPage() {
   const [listParams, setListParams] = useSearchParams();
+  const showArchived = listParams.get("view") === "archived";
+  const archived = useGetArchivedCollegeApplicationsQuery(undefined, { skip: !showArchived });
+  const [archive, archiveState] = useArchiveCollegeApplicationMutation();
+  const [restore, restoreState] = useRestoreCollegeApplicationMutation();
   const page = Math.max(1, Number(listParams.get("page")) || 1);
   const query = useGetCollegeApplicationsQuery({ page, limit: 100 });
   // Comparison uses a stable query independent of the list URL's page parameter.
@@ -129,6 +137,12 @@ export default function ApplicantApplicationsPage() {
         >
           Open workspace <ArrowRight size={14} />
         </Button>
+        <Button loading={archiveState.isLoading} onClick={() => Modal.confirm({
+          title: 'Archive this application?',
+          content: 'The application and its linked planning tasks will leave active lists and the timeline. Writing and documents stay saved. You can restore it from Archived applications.',
+          okText: 'Archive application',
+          onOk: async () => { try { await archive(app.id).unwrap(); message.success('Application archived.'); } catch { message.error('Could not archive this application.'); throw new Error('Archive failed'); } },
+        })}>Archive</Button>
         {isMasters && app.status === "researching" && (
           <Checkbox
             checked={comparedIds.includes(app.id)}
@@ -140,13 +154,16 @@ export default function ApplicantApplicationsPage() {
       </div>
     );
   };
-  if (showScholarships) return <ApplicantPage title="Your scholarships" subtitle="Track funding applications and deadlines." actions={<Button onClick={() => navigate('/student-hub/applications/scholarships/new')}>Add scholarship</Button>}>
-    <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Scholarships</Breadcrumb>
-    <QueryState loading={scholarships.isLoading} error={scholarships.isError} retry={scholarships.refetch}>
-      {!scholarships.data?.data.length ? <p>No scholarships saved yet.</p> : scholarships.data.data.map(scholarship => <div key={scholarship.id} className="applicant-panel">
-        <h2>{scholarship.scholarshipName || 'Scholarship'}</h2><p>{scholarship.organization} · {scholarship.status.replaceAll('_', ' ')}</p>
-        <p>Deadline: {displayDate(scholarship.applicationDeadline)}</p>
-        {scholarship.notes && <p>{scholarship.notes}</p>}
+  if (showScholarships) return <ScholarshipManagement />;
+  if (showArchived) return <ApplicantPage title="Archived applications" subtitle="Restore an application to resume planning. Writing and documents are retained." actions={<Button onClick={() => navigate('/student-hub/applications')}>View active applications</Button>}>
+    <QueryState loading={archived.isLoading} error={archived.isError} retry={archived.refetch}>
+      {!archived.data?.data.length ? <p>No archived applications.</p> : archived.data.data.map(app => <div className="applicant-panel" key={app.id}>
+        <UniversityIdentity id={app.universityId} name={app.universityName} subtitle={app.major} />
+        <p>{applicationStatusLabels[app.status] ?? app.status}</p>
+        <Button loading={restoreState.isLoading} onClick={async () => {
+          try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
+          catch { message.error('Could not restore this application. Please try again.'); }
+        }}>Restore application</Button>
       </div>)}
     </QueryState>
   </ApplicantPage>;
@@ -257,6 +274,7 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
+      <div className="applicant-actions"><Button onClick={() => navigate("/student-hub/applications?view=archived")}>Archived applications</Button><Link to="/student-hub/applications?tab=scholarships">Manage scholarships</Link></div>
       {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
       {!!mentorPlans.data?.data.length && <section className="applicant-panel" aria-label="Mentor application plans">
         <h2>Mentor application plans</h2>

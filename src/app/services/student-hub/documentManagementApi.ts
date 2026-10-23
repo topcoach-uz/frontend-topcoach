@@ -32,10 +32,12 @@ export interface DocumentVersion {
 }
 
 export interface DocumentReview {
+  currentVersionId: string;
+  currentVersion: number;
   status: 'private' | 'pending' | 'in_progress' | 'approved' | 'needs_revision';
   reviewer: { id: string; name?: string } | null;
   reviewerAccess?: boolean;
-  feedback: Array<{ id: string; content: string; annotationType?: string; createdAt: string; isResolved?: boolean }>;
+  feedback: Array<{ id: string; content: string; annotationType?: string; createdAt: string; isResolved?: boolean; documentVersion?: number | null; reviewDecision?: string | null }>;
 }
 
 const asData = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
@@ -102,7 +104,7 @@ export const documentManagementApi = RtkApi.injectEndpoints({
       query: () => '/document-management/shared-with-me',
       providesTags: ['StudentDocuments'],
     }),
-    submitMentorDocumentReview: builder.mutation<ApiResponse<DocumentReview>, { id: string; status: 'in_progress' | 'approved' | 'needs_revision'; feedback: string }>({
+    submitMentorDocumentReview: builder.mutation<ApiResponse<DocumentReview>, { id: string; versionId: string; status: 'in_progress' | 'approved' | 'needs_revision'; feedback: string }>({
       query: ({ id, ...body }) => ({ url: `/document-management/${id}/review`, method: 'POST', body }),
       invalidatesTags: ['StudentDocuments'],
     }),

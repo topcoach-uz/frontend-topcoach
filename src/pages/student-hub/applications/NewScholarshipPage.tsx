@@ -23,7 +23,7 @@ const NewScholarshipPage: React.FC = () => {
         organization: values.provider,
         amount: values.amount,
         status: values.status || 'researching',
-        applicationDeadline: values.applicationDeadline ? values.applicationDeadline.toISOString() : undefined,
+        applicationDeadline: values.applicationDeadline ? values.applicationDeadline.format("YYYY-MM-DD") : undefined,
         essayRequired: values.requirements && values.requirements.toLowerCase().includes('essay'),
         essayPrompt: values.requirements,
         notes: values.notes,

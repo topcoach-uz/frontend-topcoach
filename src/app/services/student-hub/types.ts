@@ -357,6 +357,8 @@ export interface StudentDocument {
   metadata: Record<string, any>;
   reviewerAccess?: boolean;
   reviewer?: { id: string; name?: string } | null;
+  currentVersionId?: string;
+  currentVersion?: number;
   reviewStatus?: 'private' | 'pending' | 'in_progress' | 'approved' | 'needs_revision';
   privateStorage?: boolean;
   legacyPublic?: boolean;
@@ -496,7 +498,7 @@ export interface ScholarshipApplication {
   organization?: string;
   applicationDeadline?: string | null;
   currency?: string;
-  status: 'researching' | 'applying' | 'submitted' | 'accepted' | 'rejected' | 'waitlisted' | 'eligible' | 'under_review' | 'awarded' | 'expired';
+  status: 'researching' | 'applying' | 'submitted' | 'rejected' | 'eligible' | 'under_review' | 'awarded' | 'expired';
   externalScholarship: boolean;
   amount?: number;
   eligibilityScore?: number;
@@ -520,10 +522,10 @@ export interface CreateScholarshipApplicationRequest {
   scholarshipId?: string;
   scholarshipName?: string;
   organization?: string;
-  amount?: number;
+  amount?: number | null;
   currency?: string;
   status?: ScholarshipApplication['status'];
-  applicationDeadline?: string;
+  applicationDeadline?: string | null;
   essayRequired?: boolean;
   essayPrompt?: string;
   notes?: string;
