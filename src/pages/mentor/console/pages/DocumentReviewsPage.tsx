@@ -23,6 +23,9 @@ export default function DocumentReviewsPage() {
     { pollingInterval: 10000 },
   );
   const [selectedId, setSelectedId] = useState<string>();
+  const [versionId, setVersionId] = useState<string>();
+  const [versionNumber, setVersionNumber] = useState<number>();
+  const [staleSubmission, setStaleSubmission] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [status, setStatus] = useState<"approved" | "needs_revision">(
     "approved",
@@ -34,20 +37,26 @@ export default function DocumentReviewsPage() {
   const [submit, submitState] = useSubmitMentorDocumentReviewMutation();
   const [download] = useDownloadDocumentMutation();
   const documents = data?.data ?? [];
+  const stale = staleSubmission || Boolean(review.data?.data.currentVersionId && versionId !== review.data.data.currentVersionId);
   const save = async () => {
-    if (!selectedId || !feedback.trim()) return;
+    if (!selectedId || !versionId || stale || !feedback.trim()) return;
     try {
       await submit({
         id: selectedId,
+        versionId,
         status,
         feedback: feedback.trim(),
       }).unwrap();
       setFeedback("");
       setSelectedId(undefined);
       message.success("Document feedback sent.");
-    } catch {
+    } catch (error) {
+      if ((error as { status?: number }).status === 409) {
+        setStaleSubmission(true);
+        void review.refetch();
+      }
       message.error(
-        "Could not send feedback. Access may have been removed; your text remains here.",
+        "Could not send feedback. Check for a new version or removed access; your text remains here.",
       );
       void refetch();
     }
@@ -79,7 +88,7 @@ export default function DocumentReviewsPage() {
           extra={document.studentName}
           style={{ marginBottom: 16 }}
         >
-          <p>{document.reviewStatus?.replaceAll("_", " ") || "Pending"}</p>
+          <p>Version {document.currentVersion ?? 1} · {document.reviewStatus?.replaceAll("_", " ") || "Pending"}</p>
           <Button
             onClick={async () => {
               try {
@@ -104,6 +113,9 @@ export default function DocumentReviewsPage() {
             style={{ marginLeft: 8 }}
             onClick={() => {
               setSelectedId(document.id);
+              setVersionId(document.currentVersionId);
+              setVersionNumber(document.currentVersion);
+              setStaleSubmission(false);
               setFeedback("");
             }}
           >
@@ -111,6 +123,14 @@ export default function DocumentReviewsPage() {
           </Button>
           {selectedId === document.id && (
             <div style={{ marginTop: 20 }}>
+              <p>Reviewing version {versionNumber ?? 1}</p>
+              {stale && <Alert type="warning" message="The student uploaded a newer version. Reload it before reviewing." description="Your existing draft describes the earlier file. Reloading clears this draft." action={<Button onClick={() => {
+                if (!review.data?.data.currentVersionId) return;
+                setVersionId(review.data.data.currentVersionId);
+                setVersionNumber(review.data.data.currentVersion);
+                setFeedback(""); setStaleSubmission(false);
+              }}>Reload current version</Button>} />}
+
               {review.isError && (
                 <Alert
                   type="error"
@@ -119,7 +139,7 @@ export default function DocumentReviewsPage() {
               )}
               {review.data?.data.feedback.map((item) => (
                 <Typography.Paragraph key={item.id}>
-                  {item.content}
+                  <small>{item.documentVersion ? `Version ${item.documentVersion}` : "Earlier feedback (version not recorded)"}{item.reviewDecision ? ` · ${item.reviewDecision.replaceAll("_", " ")}` : ""}</small><br />{item.content}
                 </Typography.Paragraph>
               ))}
               <label htmlFor="document-review-decision">Decision</label>
@@ -146,7 +166,7 @@ export default function DocumentReviewsPage() {
                 style={{ marginTop: 12 }}
                 loading={submitState.isLoading}
                 disabled={
-                  !feedback.trim() ||
+                  !versionId || stale || !feedback.trim() ||
                   review.isError ||
                   !documents.some((item) => item.id === selectedId)
                 }

@@ -20,6 +20,17 @@ const asApiResponse = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
 
 export const applicationTrackingApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getArchivedCollegeApplications: builder.query<PaginatedResponse<CollegeApplication>, void>({
+      query: () => '/application-tracking/college-applications/archived', providesTags: ['CollegeApplications'],
+    }),
+    archiveCollegeApplication: builder.mutation<CollegeApplication, string>({
+      query: id => ({ url: `/application-tracking/college-applications/${id}/archive`, method: 'POST' }),
+      invalidatesTags: ['CollegeApplications', 'ApplicationTasks'],
+    }),
+    restoreCollegeApplication: builder.mutation<CollegeApplication, string>({
+      query: id => ({ url: `/application-tracking/college-applications/${id}/restore`, method: 'POST' }),
+      invalidatesTags: ['CollegeApplications', 'ApplicationTasks'],
+    }),
     getApplicationMentors: builder.query<{ data: Array<{ id: string; name: string }> }, void>({
       query: () => '/application-tracking/mentors',
     }),
@@ -325,6 +336,9 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetArchivedCollegeApplicationsQuery,
+  useArchiveCollegeApplicationMutation,
+  useRestoreCollegeApplicationMutation,
   useGetApplicationMentorsQuery,
   useUpdateMentorApplicationRequirementsMutation,
   useGetMentorStudentApplicationsQuery,
