@@ -17,8 +17,10 @@ import {
   useSubmitMentorDocumentReviewMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 
+import { isDocumentAccessDenied } from 'src/app/services/student-hub/documentReadRecovery';
+
 export default function DocumentReviewsPage() {
-  const { data, isLoading, isError, refetch } = useGetSharedDocumentsQuery(
+  const { data, isLoading, isError, error, refetch } = useGetSharedDocumentsQuery(
     undefined,
     { pollingInterval: 10000 },
   );
@@ -73,8 +75,12 @@ export default function DocumentReviewsPage() {
       {isLoading && <Spin />}
       {isError && (
         <Alert
-          type="error"
-          message="Could not load shared documents"
+          type={data ? "warning" : "error"}
+          message={data ? "Document list could not refresh" : "Could not load shared documents"}
+          description={isDocumentAccessDenied(error)
+            ? "You do not have access to this document queue."
+            : data ? "Showing the last loaded documents. We will retry automatically; your feedback draft is saved here."
+              : "Check your connection and try again. We will also retry automatically."}
           action={<Button onClick={() => void refetch()}>Retry</Button>}
         />
       )}
@@ -134,7 +140,13 @@ export default function DocumentReviewsPage() {
               {review.isError && (
                 <Alert
                   type="error"
-                  message="Review access is no longer available."
+                  message={isDocumentAccessDenied(review.error)
+                    ? "Review access is no longer available."
+                    : "Could not refresh this review."}
+                  description={isDocumentAccessDenied(review.error)
+                    ? "The student may have removed sharing or changed their mentor."
+                    : "Your draft is saved here. Retry to check the latest version before sending."}
+                  action={<Button onClick={() => void review.refetch()}>Retry review</Button>}
                 />
               )}
               {review.data?.data.feedback.map((item) => (
