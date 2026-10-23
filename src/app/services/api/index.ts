@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
+import { recoverDocumentRead, isRecoverableDocumentRead } from '../student-hub/documentReadRecovery';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { LANGUAGE } from 'src/constants/storage';
 import { apiTagTypes, baseUrl } from './const';
@@ -38,6 +39,16 @@ const videoUploadBaseQuery = fetchBaseQuery({
 export { baseQuery, videoUploadBaseQuery };
 
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 0 });
+// Keep automatic replay limited to these safe GETs; review submissions/uploads
+// must never be duplicated after an uncertain network response.
+const baseQueryWithDocumentRecovery: typeof baseQuery = (args, api, options) => {
+  const url = typeof args === 'string' ? args : args.url;
+  const method = typeof args === 'string' ? 'GET' : (args.method ?? 'GET');
+  const documentRead = isRecoverableDocumentRead(url, method);
+  return documentRead
+    ? recoverDocumentRead(async () => baseQuery(args, api, options), api.signal)
+    : baseQueryWithRetry(args, api, options);
+};
 
 /**
  * Create a base API to inject endpoints into elsewhere.
@@ -57,7 +68,7 @@ export const RtkApi = createApi({
   /**
    * A bare bones base query would just be `baseQuery: fetchBaseQuery({ baseUrl: '/' })`
    */
-  baseQuery: baseQueryWithRetry,
+  baseQuery: baseQueryWithDocumentRecovery,
   /**
    * Tag types must be defined in the original API definition
    * for any tags that would be provided by injected endpoints
