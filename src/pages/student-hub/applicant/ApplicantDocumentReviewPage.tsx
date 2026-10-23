@@ -18,6 +18,7 @@ import {
   useReviewDocumentWithAiMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
+import { DocumentReviewDecision } from "./DocumentReviewDecision";
 import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
 
 const saveBlob = (blob: Blob, fileName: string) => {
@@ -156,6 +157,7 @@ export default function ApplicantDocumentReviewPage() {
         <div className="applicant-tabs" role="tablist" aria-label="Document review">
           {(["preview", "feedback", "versions", "ai helper"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
         </div>
+        {review && <DocumentReviewDecision status={review.status} />}
         {tab === 'ai helper' && <div className="applicant-panel applicant-document-review">
           <h2>AI document helper</h2>
           <p>Review clarity and completeness—not authenticity or admission eligibility. This is separate from mentor feedback and does not mark your file as verified.</p>
