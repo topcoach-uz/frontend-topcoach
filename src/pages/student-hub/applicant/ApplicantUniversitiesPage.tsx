@@ -3,7 +3,7 @@ import { Alert, Button, Input, Select, Tag } from "antd";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
-import { useGetUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
+import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
 import { degreeMatchesField, useGetUndergraduateDegreesQuery } from "src/app/services/undergraduateDegreesApi";
 import type { UniversitiesSchema } from "src/app/api/Api";
 import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/applicationTrackingApi";
@@ -29,12 +29,13 @@ export default function ApplicantUniversitiesPage() {
   const [value, setValue] = useState(search);
   // Back/forward navigation changes the URL without remounting this page.
   useEffect(() => setValue(search), [search]);
-  const universityQuery = useGetUniversitiesQuery({ page, limit: 40, search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: "undergraduate" }, { skip: isMasters });
+  // Only require subject coverage when the applicant selects a field.
+  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: major ? "undergraduate" : undefined }, { skip: isMasters });
   const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
   const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
-  const universities = universityQuery.data?.data ?? [];
+  const universities = (universityQuery.data?.data ?? []).slice((page - 1) * 40, page * 40);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;

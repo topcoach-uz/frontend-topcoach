@@ -278,6 +278,10 @@
     object-fit: contain;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: inherit;
   }
 }
@@ -888,7 +892,7 @@
   background: #fff;
   border-radius: 0;
   padding: 10px;
-  img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  img { display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; object-fit: contain; }
 }
 .applicant-university-detail__mark--dark { background: #293e58; }
 .applicant-university-detail__mark--ucla { background: #2774ae; }
