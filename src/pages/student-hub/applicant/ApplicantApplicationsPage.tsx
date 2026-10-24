@@ -1,3 +1,5 @@
+import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
+import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
@@ -9,11 +11,17 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
+  useGetArchivedCollegeApplicationsQuery,
+  useArchiveCollegeApplicationMutation,
+  useRestoreCollegeApplicationMutation,
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
   useGetApplicationTasksQuery,
+  useGetScholarshipApplicationsQuery,
   useUpdateCollegeApplicationMutation,
 } from "src/app/services/student-hub/applicationTrackingApi";
+import { useGetMenteeTasksQuery, useGetMenteePipelineQuery } from 'src/app/services/fullSupportApi';
+import { buildApplicationMilestones } from './applicationMilestones';
 import { useGetStudentEssaysQuery } from "src/app/services/student-hub/essayManagementApi";
 import type { CollegeApplication } from "src/app/services/student-hub/types";
 import { useGetGraduateProgramQuery, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
@@ -26,23 +34,34 @@ import {
   displayDate,
   applicationStatusLabels,
 } from "./ApplicantPage";
+import ScholarshipManagement from "./ScholarshipManagement";
+import ApplicationRequirements from './ApplicationRequirements';
+import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 export default function ApplicantApplicationsPage() {
   const [listParams, setListParams] = useSearchParams();
+  const showArchived = listParams.get("view") === "archived";
+  const archived = useGetArchivedCollegeApplicationsQuery(undefined, { skip: !showArchived });
+  const [archive, archiveState] = useArchiveCollegeApplicationMutation();
+  const [restore, restoreState] = useRestoreCollegeApplicationMutation();
   const page = Math.max(1, Number(listParams.get("page")) || 1);
   const query = useGetCollegeApplicationsQuery({ page, limit: 100 });
   // Comparison uses a stable query independent of the list URL's page parameter.
   // The current backend returns all applications for the signed-in profile.
   const allApplicationsQuery = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
-  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
+  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 }, { pollingInterval: 10000 });
   const navigate = useNavigate();
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const applications = query.data?.data ?? [];
   const active = applications.filter((app) => app.status !== "researching");
   const saved = applications.filter((app) => app.status === "researching");
   const showTimeline = listParams.get("tab") === "timeline";
+  const showScholarships = listParams.get("tab") === "scholarships";
+  const scholarships = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 }, { skip: !showTimeline && !showScholarships, pollingInterval: 10000 });
+  const assignedTasks = useGetMenteeTasksQuery(undefined, { skip: !showTimeline, pollingInterval: 10000 });
+  const mentorPlans = useGetMenteePipelineQuery(undefined, { pollingInterval: 10000 });
   const comparedIds = (listParams.get("compare") ?? "")
     .split(",")
     .filter(Boolean);
@@ -59,29 +78,13 @@ export default function ApplicantApplicationsPage() {
     ids.length ? next.set("compare", ids.join(",")) : next.delete("compare");
     setListParams(next);
   };
-  const milestones = [
-    ...applications.filter((app) => app.deadline).map((app) => ({
-      id: `application-${app.id}`,
-      date: app.deadline!,
-      title: `${app.major || app.universityName || "Application"} planning date`,
-      detail: app.universityName || "University application",
-      path: `/student-hub/applications/${encodeURIComponent(app.id)}`,
-    })),
-    ...(tasks.data?.data ?? []).filter((task) => task.dueDate).map((task) => ({
-      id: `task-${task.id}`,
-      date: task.dueDate!,
-      title: task.title,
-      detail: "Task due",
-      path: task.collegeApplicationId
-        ? `/student-hub/tasks?application=${encodeURIComponent(task.collegeApplicationId)}`
-        : "/student-hub/tasks",
-    })),
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const milestones = buildApplicationMilestones(applications, tasks.data?.data ?? [], scholarships.data?.data ?? [], assignedTasks.data?.data ?? [], mentorPlans.data?.data ?? []);
+  const selectedMilestone = milestones.find(item => item.id === listParams.get('milestone'));
   const row = (app: CollegeApplication) => {
     const nextTask = tasks.data?.data
       .filter(
         (task) =>
-          task.collegeApplicationId === app.id && task.status !== "completed",
+          task.collegeApplicationId === app.id && !["completed", "cancelled"].includes(task.status),
       )
       .sort((a, b) =>
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -136,6 +139,12 @@ export default function ApplicantApplicationsPage() {
         >
           Open workspace <ArrowRight size={14} />
         </Button>
+        <Button loading={archiveState.isLoading} onClick={() => Modal.confirm({
+          title: 'Archive this application?',
+          content: 'The application and its linked planning tasks will leave active lists and the timeline. Writing and documents stay saved. You can restore it from Archived applications.',
+          okText: 'Archive application',
+          onOk: async () => { try { await archive(app.id).unwrap(); message.success('Application archived.'); } catch { message.error('Could not archive this application.'); throw new Error('Archive failed'); } },
+        })}>Archive</Button>
         {isMasters && app.status === "researching" && (
           <Checkbox
             checked={comparedIds.includes(app.id)}
@@ -147,6 +156,19 @@ export default function ApplicantApplicationsPage() {
       </div>
     );
   };
+  if (showScholarships) return <ScholarshipManagement />;
+  if (showArchived) return <ApplicantPage title="Archived applications" subtitle="Restore an application to resume planning. Writing and documents are retained." actions={<Button onClick={() => navigate('/student-hub/applications')}>View active applications</Button>}>
+    <QueryState loading={archived.isLoading} error={archived.isError} retry={archived.refetch}>
+      {!archived.data?.data.length ? <p>No archived applications.</p> : archived.data.data.map(app => <div className="applicant-panel" key={app.id}>
+        <UniversityIdentity id={app.universityId} name={app.universityName} subtitle={app.major} />
+        <p>{applicationStatusLabels[app.status] ?? app.status}</p>
+        <Button loading={restoreState.isLoading} onClick={async () => {
+          try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
+          catch { message.error('Could not restore this application. Please try again.'); }
+        }}>Restore application</Button>
+      </div>)}
+    </QueryState>
+  </ApplicantPage>;
   if (showTimeline) {
     return (
       <ApplicantPage
@@ -156,9 +178,9 @@ export default function ApplicantApplicationsPage() {
       >
         <Breadcrumb>Timeline</Breadcrumb>
         <QueryState
-          loading={query.isLoading || tasks.isLoading}
-          error={query.isError || tasks.isError}
-          retry={() => { query.refetch(); tasks.refetch(); }}
+          loading={query.isLoading || tasks.isLoading || scholarships.isLoading || assignedTasks.isLoading || mentorPlans.isLoading}
+          error={query.isError || tasks.isError || scholarships.isError || assignedTasks.isError || mentorPlans.isError}
+          retry={() => { query.refetch(); tasks.refetch(); scholarships.refetch(); assignedTasks.refetch(); mentorPlans.refetch(); }}
         >
           {milestones.length ? (
             <div className="applicant-panel">
@@ -179,6 +201,10 @@ export default function ApplicantApplicationsPage() {
             </div>
           )}
         </QueryState>
+        <Modal title={selectedMilestone?.title} open={!!selectedMilestone} footer={null} onCancel={() => { const next = new URLSearchParams(listParams); next.delete('milestone'); setListParams(next); }}>
+          <p>{selectedMilestone?.detail}</p><p>Deadline: {displayDate(selectedMilestone?.date)}</p>
+          {selectedMilestone?.notes && <p>{selectedMilestone.notes}</p>}
+        </Modal>
       </ApplicantPage>
     );
   }
@@ -250,6 +276,12 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
+      <div className="applicant-actions"><Link to="/student-hub/applications?tab=timeline">View deadlines →</Link><Button onClick={() => navigate("/student-hub/applications?view=archived")}>Archived applications</Button><Link to="/student-hub/applications?tab=scholarships">Manage scholarships</Link></div>
+      {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
+      {!!mentorPlans.data?.data.length && <section className="applicant-panel" aria-label="Mentor application plans">
+        <h2>Mentor application plans</h2>
+        {mentorPlans.data.data.map(plan => <div key={plan.id} className="applicant-list__row"><strong>{plan.program}</strong><span>{plan.stage} · {plan.status}</span><span>{displayDate(plan.deadline)}</span></div>)}
+      </section>}
       {!isMasters && <Breadcrumb>College List</Breadcrumb>}
       <QueryState
         loading={query.isLoading}
@@ -283,7 +315,8 @@ export default function ApplicantApplicationsPage() {
           <>
             <div className="applicant-page__heading">
               <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
-              <Link to="/student-hub/timeline">View deadlines →</Link>
+              <Link to="/student-hub/applications?tab=scholarships">Scholarships →</Link>
+              
             </div>
             {!!active.length && (
               <div className="applicant-panel applicant-list">
@@ -427,6 +460,8 @@ export function ApplicantApplicationPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetCollegeApplicationQuery(applicationId, {
     skip: !applicationId,
+    pollingInterval: 10000,
+    refetchOnMountOrArgChange: true,
   });
   const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
   const essays = useGetStudentEssaysQuery({ page: 1, limit: 100 });
@@ -447,7 +482,7 @@ export function ApplicantApplicationPage() {
     .filter(
       (task) =>
         task.collegeApplicationId === applicationId &&
-        task.status !== "completed",
+        !["completed", "cancelled"].includes(task.status),
     )
     .sort((a, b) =>
       (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -583,18 +618,11 @@ export function ApplicantApplicationPage() {
                 </div>
                 <div className="applicant-panel">
                   <h2>Requirements & documents</h2>
+                  <ApplicationRequirements key={app.id} requirements={app.requirements} updatedAt={app.updatedAt} onSave={(requirements, expectedUpdatedAt) => update({ id: app.id, data: { requirements, expectedUpdatedAt } }).unwrap()} />
                   <div className="applicant-form-grid">
                     <div>
                       <p>Check the university’s current requirements.</p>
-                      <Link
-                        to={
-                          app.universityId
-                            ? `/student-hub/universities/${app.universityId}`
-                            : `/student-hub/applications/${app.id}/edit`
-                        }
-                      >
-                        Review application details →
-                      </Link>
+                      <ApplicationSourceLink app={app} />
                     </div>
                     <div>
                       <p>Files shared across applications.</p>
@@ -612,6 +640,7 @@ export function ApplicantApplicationPage() {
                 )}
               </div>
               <aside className="applicant-stack">
+                <ApplicationMentor key={app.id} application={app} />
                 <div className="applicant-panel">
                   <div className="applicant-page__heading">
                     <h3>Your application plan</h3>
@@ -705,4 +734,15 @@ export function ApplicantApplicationPage() {
       </QueryState>
     </ApplicantPage>
   );
+}
+
+function ApplicationSourceLink({ app }: { app: CollegeApplication }) {
+  const degrees = useGetUndergraduateDegreesQuery(app.universityId ?? '', { skip: !app.universityId || !app.undergraduateDegreeId });
+  const university = useGetUniversityDetailQuery(app.universityId ?? '', { skip: !app.universityId || app.degreeLevel !== 'bachelor' || !!app.undergraduateDegreeId || !app.major });
+  const degree = degrees.data?.find(item => item.id === app.undergraduateDegreeId);
+  const major = university.data?.majors?.find(item => item.type === 'undergraduate' && getTranslation(item.name).trim().toLowerCase() === app.major?.trim().toLowerCase());
+  const href = degree ? `/student-hub/universities/${app.universityId}/degrees/${degree.slug}`
+    : major ? `/student-hub/universities/${app.universityId}/study-areas/${major.id}`
+    : app.universityId ? `/student-hub/universities/${app.universityId}` : `/student-hub/applications/${app.id}/edit`;
+  return <Link to={href}>Review application details →</Link>;
 }

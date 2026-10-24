@@ -357,6 +357,8 @@ export interface StudentDocument {
   metadata: Record<string, any>;
   reviewerAccess?: boolean;
   reviewer?: { id: string; name?: string } | null;
+  currentVersionId?: string;
+  currentVersion?: number;
   reviewStatus?: 'private' | 'pending' | 'in_progress' | 'approved' | 'needs_revision';
   privateStorage?: boolean;
   legacyPublic?: boolean;
@@ -386,6 +388,8 @@ export interface ApplicationActivityEvent {
 }
 
 export interface CollegeApplication {
+  canEditRequirements?: boolean;
+  mentorName?: string;
   id: string;
   studentProfileId: string;
   /** Stable graduate-program identity; universityId alone is not a program identity. */
@@ -400,11 +404,11 @@ export interface CollegeApplication {
   status: 'researching' | 'applying' | 'submitted' | 'under_review' | 'accepted' | 'rejected' | 'waitlisted' | 'deferred';
   category?: 'reach' | 'target' | 'safety' | null;
   priority: number;
-  deadline?: string;
+  deadline?: string | null;
   submittedAt?: string | null;
   financialInfo: Record<string, any>;
   requirements?: Record<string, any>;
-  mentorId?: string;
+  mentorId?: string | null;
   notes?: string;
   whyThisSchool?: string;
   activity?: ApplicationActivityEvent[];
@@ -424,15 +428,16 @@ export interface CreateCollegeApplicationRequest {
   status?: CollegeApplication['status'];
   category?: CollegeApplication['category'];
   priority?: CollegeApplication['priority'];
-  deadline?: string;
+  deadline?: string | null;
   financialInfo?: Record<string, any>;
   requirements?: Record<string, any>;
-  mentorId?: string;
+  mentorId?: string | null;
   notes?: string;
   whyThisSchool?: string;
 }
 
 export interface UpdateCollegeApplicationRequest extends Partial<CreateCollegeApplicationRequest> {
+  expectedUpdatedAt?: string;
   activityEvent?: { type: string; payload?: Record<string, unknown> };
   submittedAt?: string | null;
 }
@@ -444,13 +449,13 @@ export interface UpdateCollegeApplicationRequest extends Partial<CreateCollegeAp
 export interface ApplicationTask {
   id: string;
   studentProfileId: string;
-  collegeApplicationId?: string;
+  collegeApplicationId?: string | null;
   title: string;
   description?: string;
   taskType: 'essay' | 'recommendation' | 'transcript' | 'test_score' | 'interview' | 'financial_aid' | 'supplement' | 'other';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'overdue';
-  dueDate?: string;
+  dueDate?: string | null;
   completedDate?: string;
   completedAt?: string | null;
   isRecurring: boolean;
@@ -463,13 +468,13 @@ export interface ApplicationTask {
 }
 
 export interface CreateApplicationTaskRequest {
-  collegeApplicationId?: string;
+  collegeApplicationId?: string | null;
   title: string;
   description?: string;
   taskType: ApplicationTask['taskType'];
   priority?: ApplicationTask['priority'];
   status?: ApplicationTask['status'];
-  dueDate?: string;
+  dueDate?: string | null;
   isRecurring?: boolean;
   recurringPattern?: string;
   isAiGenerated?: boolean;
@@ -489,7 +494,11 @@ export interface ScholarshipApplication {
   id: string;
   studentProfileId: string;
   scholarshipId: string;
-  status: 'researching' | 'applying' | 'submitted' | 'accepted' | 'rejected' | 'waitlisted';
+  scholarshipName?: string;
+  organization?: string;
+  applicationDeadline?: string | null;
+  currency?: string;
+  status: 'researching' | 'applying' | 'submitted' | 'rejected' | 'eligible' | 'under_review' | 'awarded' | 'expired';
   externalScholarship: boolean;
   amount?: number;
   eligibilityScore?: number;
@@ -513,10 +522,10 @@ export interface CreateScholarshipApplicationRequest {
   scholarshipId?: string;
   scholarshipName?: string;
   organization?: string;
-  amount?: number;
+  amount?: number | null;
   currency?: string;
   status?: ScholarshipApplication['status'];
-  applicationDeadline?: string;
+  applicationDeadline?: string | null;
   essayRequired?: boolean;
   essayPrompt?: string;
   notes?: string;
@@ -531,7 +540,7 @@ export interface UpdateScholarshipApplicationRequest extends Partial<CreateSchol
 export interface StudentEssay {
   id: string;
   studentProfileId: string;
-  collegeApplicationId?: string;
+  collegeApplicationId?: string | null;
   scholarshipApplicationId?: string;
   essayType: 'personal_statement' | 'supplemental' | 'scholarship' | 'why_school' | 'why_major' | 'activity' | 'diversity' | 'leadership' | 'challenge' | 'other';
   title: string;
@@ -608,7 +617,7 @@ export interface StudentEssay {
     strengths?: string[];
     areasForImprovement?: string[];
     suggestions?: string[];
-    mentorId?: string;
+    mentorId?: string | null;
     mentorName?: string;
     lastReviewed?: string;
     isApproved?: boolean;
@@ -638,7 +647,7 @@ export interface StudentEssay {
 }
 
 export interface CreateStudentEssayRequest {
-  collegeApplicationId?: string;
+  collegeApplicationId?: string | null;
   scholarshipApplicationId?: string;
   essayType: StudentEssay['essayType'];
   title: string;
@@ -820,6 +829,7 @@ export interface UserPreferences {
     defaultPriority?: string;
     communityExperienceMode?: 'community' | 'standard';
     communityAccessExpiresAt?: string | null;
+    polarCommunityAccess?: Partial<Record<'production' | 'sandbox', string | null>>;
     studyBuddyInterests?: {
       examPrep?: string[];
       applicationGoals?: string[];

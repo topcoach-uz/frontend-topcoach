@@ -429,7 +429,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
           <div className="mm3-results__uni-meta">
             {[university.country, university.matchedMajor].filter(Boolean).join(' · ')}
           </div>
-          <div className="mm3-university__tier-explanation"><span className={`mm3-results__tier ${tierClass(university.tier)}`}>{university.tier}</span><span>{university.tier === 'Reach'
+          <div className="mm3-university__tier-explanation"><span className={`mm3-results__tier ${tierClass(university.tier)}`}>{university.catalogueOnly ? 'Catalogue option' : university.tier}</span><span>{university.catalogueOnly ? 'Verified field and degree offering. Personal admission fit has not been assessed.' : university.tier === 'Reach'
             ? t('majorMatch3.results.tierReachDef', 'A stretch for your current profile.')
             : university.tier === 'Match' ? t('majorMatch3.results.tierMatchDef', 'A realistic, well-aligned fit.')
             : t('majorMatch3.results.tierSafetyDef', 'Likely admission based on your profile.')} {t('majorMatch3.results.tierNotProbability', 'Not an admission probability or guarantee.')}</span></div>
@@ -976,7 +976,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
                           key={u.id}
                           onClick={() => setSelectedUniversity(u)}
                         >
-                          <span className="mm3-results__university-card-top"><Building2 size={23} aria-hidden="true" /><span className={`mm3-results__tier ${tierClass(u.tier)}`}>{u.tier}</span></span>
+                          <span className="mm3-results__university-card-top"><Building2 size={23} aria-hidden="true" /><span className={`mm3-results__tier ${tierClass(u.tier)}`}>{u.catalogueOnly ? 'Catalogue option' : u.tier}</span></span>
                           <span className="mm3-results__uni-list-row-main">
                             <span className="mm3-results__uni-list-row-name">{u.name}</span>
                             <span className="mm3-results__uni-list-row-meta">

@@ -278,6 +278,10 @@
     object-fit: contain;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: inherit;
   }
 }
@@ -888,7 +892,7 @@
   background: #fff;
   border-radius: 0;
   padding: 10px;
-  img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  img { display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; object-fit: contain; }
 }
 .applicant-university-detail__mark--dark { background: #293e58; }
 .applicant-university-detail__mark--ucla { background: #2774ae; }
@@ -1256,4 +1260,16 @@
   &__item a { display: inline-flex; align-items: center; gap: 4px; margin: 0 12px 12px 0; }
   &__item button { display: block; }
   @media (max-width: 600px) { &__head, &__top { flex-direction: column; } }
+}
+
+.applicant-university-detail__catalogue-field {
+  small { margin-top: 8px; color: #596575; font-size: 12px; }
+  .applicant-university-detail__program-link { display: flex; align-items: center; gap: 5px; margin: 8px 0 0; }
+}
+a.applicant-university-detail__catalogue-field--linked {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover { border-color: #8b0000; background: #fff8f7; }
+  &:focus-visible { outline: 3px solid #8b0000; outline-offset: 3px; }
 }

@@ -19,7 +19,7 @@ const statusLabels: Record<TaskDto['status'], string> = {
 const EMPTY_TASKS: TaskDto[] = [];
 
 export default function MentorAssignedTasks({ selectedTaskId }: { selectedTaskId?: string | null }) {
-  const { data, isLoading, isError, refetch } = useGetMenteeTasksQuery();
+  const { data, isLoading, isError, refetch } = useGetMenteeTasksQuery(undefined, { pollingInterval: 10000, refetchOnMountOrArgChange: true });
   const [submitTask, submitState] = useSubmitMenteeTaskMutation();
   const [uploadFile] = useUploadTaskSubmissionFileMutation();
   const [active, setActive] = useState<TaskDto | null>(null);

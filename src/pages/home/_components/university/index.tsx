@@ -1,3 +1,4 @@
+import { formatAnnualTuition } from './tuition';
 import React from 'react';
 import useUniversity from 'src/pages/home/_components/university/useUniversity';
 
@@ -247,7 +248,7 @@ export default function UniversitySection({
                   name={university.name}
                   image={university.media[0]?.url}
                   // @ts-ignore
-                  tuition={`${university.tuitionFees[0].currency?.symbol}${(university.tuitionFees[0].fee * 1000).toLocaleString()}`}
+                  tuition={formatAnnualTuition(university.tuitionFees)}
                   isLiked={true}
                   aiSummary={university.aiSummary}
                 />
@@ -278,7 +279,7 @@ export default function UniversitySection({
                 name={university.name}
                 image={university.media[0]?.url}
                 // @ts-ignore
-                tuition={`${university.tuitionFees[0].currency?.symbol}${(university.tuitionFees[0].fee * 1000).toLocaleString()}`}
+                tuition={formatAnnualTuition(university.tuitionFees)}
                 isLiked={likedUnis?.some((uni) => uni.id === university.id)}
                 aiSummary={university.aiSummary}
               />

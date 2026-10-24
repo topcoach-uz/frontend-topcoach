@@ -3,7 +3,7 @@ import { Alert, Button, Input, Select, Tag } from "antd";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
-import { useGetUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
+import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
 import { degreeMatchesField, useGetUndergraduateDegreesQuery } from "src/app/services/undergraduateDegreesApi";
 import type { UniversitiesSchema } from "src/app/api/Api";
 import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/applicationTrackingApi";
@@ -12,6 +12,8 @@ import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantP
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
+import { UniversityStudyAreas, normalizeStudyArea } from "./UniversityStudyAreas";
+import type { UniversityDetail } from "src/app/services/universities";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
 
 const factValue = (value: GraduateProgramFact) => !value || !Object.keys(value).length
@@ -29,12 +31,13 @@ export default function ApplicantUniversitiesPage() {
   const [value, setValue] = useState(search);
   // Back/forward navigation changes the URL without remounting this page.
   useEffect(() => setValue(search), [search]);
-  const universityQuery = useGetUniversitiesQuery({ page, limit: 40, search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: "undergraduate" }, { skip: isMasters });
+  // Only require subject coverage when the applicant selects a field.
+  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: major ? "undergraduate" : undefined }, { skip: isMasters });
   const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
   const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
-  const universities = universityQuery.data?.data ?? [];
+  const universities = (universityQuery.data?.data ?? []).slice((page - 1) * 40, page * 40);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;
@@ -115,7 +118,7 @@ function GraduateDetail({ program, existingId, applicationsError, applicationsLo
   return <><div className="applicant-university-hero applicant-panel"><div><span className="applicant-kicker">Graduate program · verified {program.lastVerifiedAt ? displayDate(program.lastVerifiedAt) : "date unavailable"}</span><h1>{program.programName}</h1><p>{getTranslation(program.university.name)}</p><div className="applicant-actions">{existingId && <Button type="primary" onClick={onOpen}>Open application workspace</Button>}<Button disabled={applicationsLoading || applicationsError} onClick={onAdd}>{existingId ? "Add another application" : "Add to your program list"}</Button>{program.officialSourceUrl && <Button href={program.officialSourceUrl} target="_blank" rel="noreferrer">Official source</Button>}</div>{applicationsError && <p>We could not check your saved applications. Try again before adding this program.</p>}</div></div><div className="applicant-two-columns"><div className="applicant-panel"><h2>Program requirements</h2><dl className="applicant-facts"><dt>Eligibility</dt><dd>{factValue(program.eligibility)}</dd><dt>Language evidence</dt><dd>{factValue(program.languageEvidence)}</dd><dt>Funding</dt><dd>{factValue(program.funding)}</dd></dl></div><aside className="applicant-panel"><h2>Application facts</h2><dl className="applicant-facts"><dt>Intake</dt><dd>{program.intake ?? "Verification needed"}</dd><dt>Deadline</dt><dd>{program.deadline ? displayDate(program.deadline) : "Verification needed"}</dd><dt>Last verified</dt><dd>{program.lastVerifiedAt ? displayDate(program.lastVerifiedAt) : "Verification needed"}</dd></dl></aside></div></>;
 }
 
-type UniversityProfileContent = UniversitiesSchema & {
+type UniversityProfileContent = UniversityDetail & {
   profileOverview?: string | null;
   officialWebsiteUrl?: string | null;
   undergraduateCoursesUrl?: string | null;
@@ -149,6 +152,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const matchingDegreeCount = degrees.filter((degree) => degreeMatchesField(degree, selectedField)).length;
   const catalogueFields = buildUniversityFieldOptions(university.majors ?? [])
     .sort((a, b) => Number(b.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()) - Number(a.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()));
+  const remainingFields = catalogueFields.filter(field => !degrees.some(degree => degreeMatchesField(degree, field.value) || normalizeStudyArea(degree.name) === normalizeStudyArea(field.value)));
   const matchingCatalogueFieldCount = catalogueFields.filter((field) => field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()).length;
   const name = getTranslation(university.name);
   const location = [getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(", ");
@@ -181,11 +185,11 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
-      {!degreesQuery.isLoading && !degreesQuery.isError && (degrees.length > 0
-        ? <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>
-        : catalogueFields.length > 0
-          ? <div className="applicant-university-detail__catalogue"><div className="applicant-university-detail__catalogue-note"><h3>Undergraduate study areas</h3><p>Detailed course pages are still being verified. These subjects are already associated with {name} in the university catalogue.</p></div><div className="applicant-university-detail__catalogue-grid">{catalogueFields.map((field) => <div className={field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() ? "applicant-university-detail__catalogue-field applicant-university-detail__catalogue-field--match" : "applicant-university-detail__catalogue-field"} key={field.value}>{field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() && <span>Matches selected field</span>}<strong>{field.label}</strong></div>)}</div></div>
-        : <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>{selectedField ? `We have not verified an undergraduate degree in ${selectedField} at ${name} yet.` : `We don't have a confirmed undergraduate course list for ${name} yet.`}</p></div>)}
+      {!degreesQuery.isLoading && !degreesQuery.isError && degrees.length > 0 && <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>
+}
+      {!degreesQuery.isLoading && <UniversityStudyAreas universityId={university.id} fields={remainingFields} majors={university.majors ?? []} links={profile.verifiedProgramLinks} selectedField={selectedField} />}
+      {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>{selectedField ? `We have not verified an undergraduate degree in ${selectedField} at ${name} yet.` : `We don't have a confirmed undergraduate course list for ${name} yet.`}</p></div>}
+
     </section>
 
     <div className="applicant-university-detail__lower">

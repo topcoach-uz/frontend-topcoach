@@ -95,10 +95,10 @@ export default function UniversityCard({
                 {location?.toString()}
               </CustomText>
               <CustomText color={colors.colorTextSecondary} mb={8}>
-                #{ranking} in QS world ranking
+                {ranking ? `#${ranking} in QS world ranking` : 'Ranking not available'}
               </CustomText>
               <CustomText color={colors.colorTextSecondary}>
-                {tuition && tuition + '/year'}
+                {tuition ? tuition + '/year' : 'See official page for tuition'}
               </CustomText>
             </>
           )}
