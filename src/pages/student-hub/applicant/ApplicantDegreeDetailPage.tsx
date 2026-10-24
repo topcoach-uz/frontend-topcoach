@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Select } from 'antd';
-import { applicationPlanHref, planningSteps, qualificationOptions, type PlanningStepId } from './degreePlanning';
+import { applicationPlanHref, planningSteps, qualificationOptions, selectedQualification, type PlanningStepId } from './degreePlanning';
 import { ArrowRight, ArrowUpRight, Building2 } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
@@ -64,7 +64,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
 }) {
   const [qualification, setQualification] = useState(() => qualificationOptions(degree)[0].value);
   const [completedSteps, setCompletedSteps] = useState<PlanningStepId[]>([]);
-  const publishedQualification = qualification === degree.qualificationLabel && Boolean(degree.qualificationValue);
+  const publishedQualification = selectedQualification(degree, qualification);
   const saveHref = saveHrefOverride ?? '/student-hub/applications/new?university=' + encodeURIComponent(degree.universityId)
     + '&undergraduateDegreeId=' + encodeURIComponent(degree.id) + '&degreeLevel=bachelor';
   return <>
@@ -94,7 +94,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
           <p>{degree.entrySummary ?? 'Degree-specific entry requirements have not been verified in the catalogue.'}</p>
           <div className="applicant-degree-page__qualification">
             <div className="applicant-degree-page__qualification-control"><label htmlFor="degree-qualification">Published qualification</label><Select id="degree-qualification" aria-label="Published qualification" value={qualification} onChange={setQualification} options={qualificationOptions(degree)} /></div>
-            {publishedQualification ? <><strong>{degree.qualificationValue}</strong>{degree.qualificationNote && <p>{degree.qualificationNote}</p>}</> : <p className="applicant-degree-page__note">{qualification} requirements have not been verified in this catalogue. Check the university’s official requirements for your qualification.</p>}
+            {publishedQualification ? <><strong>{publishedQualification.value}</strong>{publishedQualification.note && <p>{publishedQualification.note}</p>}{publishedQualification.scope && <p className="applicant-degree-page__note">{publishedQualification.scope}</p>}{publishedQualification.sourceUrl && <><OfficialLink href={publishedQualification.sourceUrl}>{publishedQualification.sourceTitle}</OfficialLink><p className="applicant-degree-page__note">Requirements checked {displayDate(publishedQualification.verifiedAt)}</p></>}</> : <p className="applicant-degree-page__note">{qualification} requirements have not been verified in this catalogue. Check the university’s official requirements for your qualification.</p>}
             <p className="applicant-degree-page__note">Published requirements—not a personal eligibility result.</p>
           </div>
           {degree.admissionsTest && <p className="applicant-degree-page__fact-box">{degree.admissionsTest}{degree.admissionsTestNote && <span>{degree.admissionsTestNote}</span>}</p>}
