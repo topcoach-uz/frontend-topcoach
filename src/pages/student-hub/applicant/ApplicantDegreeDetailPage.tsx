@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from 'react';
+import { Select } from 'antd';
+import { applicationPlanHref, planningSteps, qualificationOptions, type PlanningStepId } from './degreePlanning';
 import { ArrowRight, ArrowUpRight, Building2 } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
@@ -42,7 +44,7 @@ export default function ApplicantDegreeDetailPage() {
   return <section className="applicant-page applicant-degree-page">
     <ApplicantMobileTrail><Link to="/student-hub/universities">Find universities</Link><span> / </span><Link to={universityHref}>{name}</Link><span> / </span>{degree?.name ?? 'Degree'}</ApplicantMobileTrail>
     <QueryState loading={universityQuery.isLoading || degreeQuery.isLoading} error={universityQuery.isError || (degreeQuery.isError && !degreeMissing)} retry={() => { universityQuery.refetch(); degreeQuery.refetch(); }}>
-      {university && degree ? <DegreeContent
+      {university && degree ? <DegreeContent key={degree.id}
         universityName={name}
         location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')}
         logoUrl={logoUrl}
@@ -52,18 +54,23 @@ export default function ApplicantDegreeDetailPage() {
   </section>;
 }
 
-function DegreeContent({ universityName, location, logoUrl, degree }: {
+export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false }: {
   universityName: string;
   location: string;
   logoUrl?: string;
   degree: UndergraduateDegree;
+  saveHrefOverride?: string;
+  studyArea?: boolean;
 }) {
-  const saveHref = '/student-hub/applications/new?university=' + encodeURIComponent(degree.universityId)
+  const [qualification, setQualification] = useState(() => qualificationOptions(degree)[0].value);
+  const [completedSteps, setCompletedSteps] = useState<PlanningStepId[]>([]);
+  const publishedQualification = qualification === degree.qualificationLabel && Boolean(degree.qualificationValue);
+  const saveHref = saveHrefOverride ?? '/student-hub/applications/new?university=' + encodeURIComponent(degree.universityId)
     + '&undergraduateDegreeId=' + encodeURIComponent(degree.id) + '&degreeLevel=bachelor';
   return <>
     <header className="applicant-degree-page__hero">
       <div className="applicant-degree-page__university"><DegreeUniversityLogo url={logoUrl} name={universityName} /><div><strong>{universityName}</strong>{location && <p>{location}</p>}</div></div>
-      <span className="applicant-degree-page__eyebrow">UNDERGRADUATE DEGREE</span>
+      <span className="applicant-degree-page__eyebrow">{studyArea ? 'UNDERGRADUATE STUDY AREA' : 'UNDERGRADUATE DEGREE'}</span>
       <h1>{degree.name}</h1>
       <p className="applicant-degree-page__degree-type">{degree.degreeType}</p>
       <div className="applicant-degree-page__facts">
@@ -85,7 +92,11 @@ function DegreeContent({ universityName, location, logoUrl, degree }: {
         </section>
         <section className="applicant-degree-page__section"><h2>Entry requirements</h2>
           <p>{degree.entrySummary ?? 'Degree-specific entry requirements have not been verified in the catalogue.'}</p>
-          {degree.qualificationValue && <div className="applicant-degree-page__qualification"><span>{degree.qualificationLabel}</span><strong>{degree.qualificationValue}</strong>{degree.qualificationNote && <p>{degree.qualificationNote}</p>}</div>}
+          <div className="applicant-degree-page__qualification">
+            <div className="applicant-degree-page__qualification-control"><label htmlFor="degree-qualification">Published qualification</label><Select id="degree-qualification" aria-label="Published qualification" value={qualification} onChange={setQualification} options={qualificationOptions(degree)} /></div>
+            {publishedQualification ? <><strong>{degree.qualificationValue}</strong>{degree.qualificationNote && <p>{degree.qualificationNote}</p>}</> : <p className="applicant-degree-page__note">{qualification} requirements have not been verified in this catalogue. Check the university’s official requirements for your qualification.</p>}
+            <p className="applicant-degree-page__note">Published requirements—not a personal eligibility result.</p>
+          </div>
           {degree.admissionsTest && <p className="applicant-degree-page__fact-box">{degree.admissionsTest}{degree.admissionsTestNote && <span>{degree.admissionsTestNote}</span>}</p>}
           <OfficialLink href={degree.requirementsUrl}>Read official requirements</OfficialLink>
         </section>
@@ -105,14 +116,22 @@ function DegreeContent({ universityName, location, logoUrl, degree }: {
       <aside className="applicant-degree-page__side"><div className="applicant-degree-page__save">
         <h2>Keep your options open</h2><p>Save this degree to revisit with your other choices.</p>
         <Link className="applicant-degree-page__primary" to={saveHref}>Save to College List</Link>
-        <a className="applicant-degree-page__secondary" href={degree.officialDegreeUrl} target="_blank" rel="noreferrer">Official degree page <ArrowUpRight size={18} aria-hidden="true" /></a>
+        {degree.officialDegreeUrl && <a className="applicant-degree-page__secondary" href={degree.officialDegreeUrl} target="_blank" rel="noreferrer">{studyArea ? 'Official programme information' : 'Official degree page'} <ArrowUpRight size={18} aria-hidden="true" /></a>}
         <div className="applicant-degree-page__deadline"><span>APPLICATION DEADLINE</span>
           <strong>{degree.deadlineAt ? displayDate(degree.deadlineAt) : 'Not yet verified'}</strong>
           {degree.deadlineNote && <p>{degree.deadlineNote}</p>}
           <OfficialLink href={degree.applicationUrl}>Application dates</OfficialLink>
         </div>
-        <Link className="applicant-degree-page__plan" to={saveHref}>Plan my application <span aria-hidden="true">+</span></Link>
-      </div><p className="applicant-degree-page__source">Degree source: <a href={degree.sourceUrl} target="_blank" rel="noreferrer">{degree.sourceTitle} <ArrowUpRight size={14} aria-hidden="true" /></a><br />Checked {displayDate(degree.verifiedAt)}</p></aside>
+        <details className="applicant-degree-page__planning">
+          <summary className="applicant-degree-page__plan">Plan my application</summary>
+          <div className="applicant-degree-page__planning-body">
+            <fieldset><legend className="applicant-sr-only">Application planning checklist</legend>{planningSteps.map(step => <label key={step.id}><input type="checkbox" checked={completedSteps.includes(step.id)} onChange={event => setCompletedSteps(current => event.target.checked ? [...current, step.id] : current.filter(id => id !== step.id))} />{step.title}</label>)}</fieldset>
+            <p>{completedSteps.length} of {planningSteps.length} planning steps complete</p>
+            <p className="applicant-degree-page__note">Your checklist is a preview until you save the application. Submit through the university’s official platform.</p>
+            <Link className="applicant-degree-page__primary" to={applicationPlanHref(saveHref, completedSteps)}>Continue with this plan</Link>
+          </div>
+        </details>
+      </div><p className="applicant-degree-page__source">{degree.sourceUrl ? <a href={degree.sourceUrl} target="_blank" rel="noreferrer">{degree.sourceTitle} <ArrowUpRight size={14} aria-hidden="true" /></a> : 'Official programme source has not yet been verified.'}{!studyArea && <><br />Checked {displayDate(degree.verifiedAt)}</>}</p></aside>
     </div>
   </>;
 }
