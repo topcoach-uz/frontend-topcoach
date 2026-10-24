@@ -84,6 +84,19 @@ describe('document reads through the real RTK request layer', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
+  it('bounds a response body that stalls after HTTP 200 headers', async () => {
+    const fetch = vi.fn().mockImplementationOnce((request: Request) => new Response(new ReadableStream({
+      start(controller) {
+        request.signal.addEventListener('abort', () => controller.error(new DOMException('Aborted', 'AbortError')), { once: true });
+      },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockImplementation(response);
+    vi.stubGlobal('fetch', fetch);
+    const pending = store.dispatch(documentManagementApi.endpoints.getDocument.initiate(id));
+    await vi.advanceTimersByTimeAsync(12500);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect((await pending).data?.data).toEqual(record);
+  });
+
   it('does not retry malformed JSON or denied access', async () => {
     for (const reply of [() => new Response('{invalid', { status: 200 }), () => new Response('{}', { status: 403 })]) {
       const fetch = vi.fn().mockImplementation(reply);
