@@ -47,19 +47,28 @@ const baseQueryWithDocumentRecovery: typeof baseQuery = (args, api, options) => 
   const documentRead = isRecoverableDocumentRead(url, method);
   return documentRead
     ? recoverDocumentRead(async () => {
-        // This RTK version invokes api.abort() on timeout. Isolate that abort
-        // to one attempt so a timeout cannot cancel the entire retry sequence.
+        // Keep the deadline active through body reading. RTK's own timer ends
+        // at headers and aborts the whole query, so isolate each attempt here.
         const controller = new AbortController();
         const abort = () => controller.abort();
         api.signal.addEventListener('abort', abort, { once: true });
         if (api.signal.aborted) abort();
+        let timedOut = false;
+        const deadline = setTimeout(() => {
+          timedOut = true;
+          abort();
+        }, 10000);
         try {
-          return await baseQuery(
-            { ...(typeof args === 'string' ? { url: args } : args), timeout: 10000 },
+          const result = await baseQuery(
+            { ...(typeof args === 'string' ? { url: args } : args), timeout: 0 },
             { ...api, signal: controller.signal, abort },
             options,
           );
+          return timedOut
+            ? { error: { status: 'TIMEOUT_ERROR' as const, error: 'Document read attempt timed out' }, meta: result.meta }
+            : result;
         } finally {
+          clearTimeout(deadline);
           api.signal.removeEventListener('abort', abort);
         }
       }, api.signal)
