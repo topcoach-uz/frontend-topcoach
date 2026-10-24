@@ -3,12 +3,13 @@ import { isDocumentAccessDenied, recoverDocumentRead, isRecoverableDocumentRead 
 
 afterEach(() => vi.useRealTimers());
 describe('document read recovery', () => {
-  it('limits recovery to document queue and version-review GETs, excluding every mutation and unrelated endpoint', () => {
-    for (const url of ['/document-management/shared-with-me', '/document-management/qa/review']) {
+  it('limits recovery to known JSON document GETs, excluding mutations and binary files', () => {
+    const id = '12345678-1234-4234-8234-123456789abc';
+    for (const url of ['/document-management', '/document-management/shared-with-me', `/document-management/${id}`, `/document-management/${id}/review`, `/document-management/${id}/versions`]) {
       expect(isRecoverableDocumentRead(url)).toBe(true);
       for (const method of ['POST', 'PATCH', 'PUT', 'DELETE']) expect(isRecoverableDocumentRead(url, method)).toBe(false);
     }
-    for (const url of ['/document-management/upload', '/document-management/qa/versions', '/essay-management/reviews']) expect(isRecoverableDocumentRead(url)).toBe(false);
+    for (const url of ['/document-management/upload', '/document-management/stats', `/document-management/${id}/download`, `/document-management/${id}/versions/${id}/download`, '/document-management/not-an-id', '/essay-management/reviews']) expect(isRecoverableDocumentRead(url)).toBe(false);
   });
   it.each(['FETCH_ERROR', 'TIMEOUT_ERROR', 408, 500, 502, 503, 504])('recovers a temporary %s without exposing an intermediate failure', async (status) => {
     vi.useFakeTimers();

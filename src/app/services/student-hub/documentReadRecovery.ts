@@ -1,6 +1,15 @@
 /** Retry only idempotent document reads after temporary transport/server failures. */
 export function isTemporaryDocumentError(error: unknown): boolean {
-  const status = (error as { status?: unknown } | undefined)?.status;
+  const failure = error as { status?: unknown; originalStatus?: number; error?: string } | undefined;
+  const status = failure?.status;
+  // fetchBaseQuery calls interrupted response-body reads PARSING_ERROR, even
+  // after a server has successfully sent HTTP 200. Invalid JSON stays an error.
+  if (status === 'PARSING_ERROR') {
+    const original = failure?.originalStatus;
+    return original === 408 || (typeof original === 'number' && original >= 500 && original <= 599) ||
+      (typeof original === 'number' && original >= 200 && original < 300 &&
+        /^TypeError: (?:Failed to fetch|Load failed|terminated|NetworkError(?: when attempting to fetch resource\.)?|network error)$/i.test(failure?.error ?? ''));
+  }
   return status === 'FETCH_ERROR' || status === 'TIMEOUT_ERROR' ||
     status === 408 ||
     (typeof status === 'number' && status >= 500 && status <= 599);
@@ -34,6 +43,9 @@ export async function recoverDocumentRead<T extends { error?: unknown }>(
 }
 
 export function isRecoverableDocumentRead(url: string, method = 'GET'): boolean {
-  return method.toUpperCase() === 'GET' &&
-    /^\/?document-management\/(shared-with-me|[^/]+\/review)$/.test(url);
+  if (method.toUpperCase() !== 'GET') return false;
+  const path = url.replace(/^\//, '');
+  if (path === 'document-management' || path === 'document-management/shared-with-me') return true;
+  // Only the known JSON read routes; never uploads, decisions or binary files.
+  return /^document-management\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}(?:\/(?:review|versions))?$/i.test(path);
 }
