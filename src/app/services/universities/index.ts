@@ -7,10 +7,13 @@ import reviewedUniversityIds from './reviewedUniversityIds.json';
 const reviewedIds = new Set(reviewedUniversityIds);
 export { normalizeUniversityList, universityListParams } from './universityQuery';
 
+export interface VerifiedProgramLink { majorId: string; degreeLevel: string; url: string; programmeName: string }
+export type UniversityDetail = UniversitiesSchema & { verifiedProgramLinks?: VerifiedProgramLink[] };
+
 export const universityApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
     // Get university detail by ID
-    getUniversityDetail: build.query<UniversitiesSchema, string>({
+    getUniversityDetail: build.query<UniversityDetail, string>({
       query: (id) => ({
         url: `/university/${id}`,
         method: 'GET',
@@ -23,7 +26,7 @@ export const universityApi = RtkApi.injectEndpoints({
       // Keep data in cache for 20 minutes for faster subsequent loads
       keepUnusedDataFor: 1200,
       // Transform response to optimize data structure
-      transformResponse: (response: UniversitiesSchema) => {
+      transformResponse: (response: UniversityDetail) => {
         // Pre-process university data to reduce client-side computation
         return {
           ...response,

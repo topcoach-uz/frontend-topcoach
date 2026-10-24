@@ -1,3 +1,4 @@
+import { requirementsFromDegreePlan } from './degreePlanning';
 import { buildUniversityChoices } from "./universityChoices";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, DatePicker, Form, Input, Select, message } from "antd";
@@ -59,6 +60,8 @@ export default function ApplicantApplicationFormPage() {
   const selectedProgramId = Form.useWatch("programId", form);
   const selectedUndergraduateDegreeId = Form.useWatch("undergraduateDegreeId", form);
   const degreeLevel = Form.useWatch("degreeLevel", form);
+  const selectedMajor = Form.useWatch("major", form);
+  const previewPlan = !editing ? requirementsFromDegreePlan(params, { universityId: selectedUniversity, undergraduateDegreeId: selectedUndergraduateDegreeId, major: selectedMajor }) : undefined;
   const isMastersApplication = degreeLevel === "master" || (!degreeLevel && targetDegree === "master");
   const selectedUniversityQuery = useGetUniversityDetailQuery(
     selectedUniversity ?? "",
@@ -84,6 +87,7 @@ export default function ApplicantApplicationFormPage() {
         programId: params.get("programId") ?? undefined,
         undergraduateDegreeId: params.get("undergraduateDegreeId") ?? undefined,
         degreeLevel: params.get("degreeLevel") === "bachelor" ? "bachelor" : targetDegree === "master" || targetDegree === "bachelor" ? targetDegree : undefined,
+        major: params.get("major")?.slice(0, 255) ?? undefined,
         status: "researching",
       });
     }
@@ -133,6 +137,7 @@ export default function ApplicantApplicationFormPage() {
     const { deadline, ...applicationValues } = values;
     const payload: CreateCollegeApplicationRequest = {
       ...applicationValues,
+      ...(!editing && !applicationValues.requirements ? { requirements: requirementsFromDegreePlan(params, applicationValues) } : {}),
       // A catalogue university is identified by ID. The database reserves
       // universityName for custom universities without an ID.
       universityName: applicationValues.universityId
@@ -170,6 +175,7 @@ export default function ApplicantApplicationFormPage() {
         <span>/</span>
         {editing ? "Edit application" : "Add application"}
       </Breadcrumb>
+      {previewPlan && <Alert type="info" showIcon message="Your degree planning checklist" description={<ul>{previewPlan.custom.items.map(item => <li key={item.id}>{item.completed ? 'Complete' : 'To do'}: {item.title}</li>)}</ul>} />}
       <QueryState
         loading={editing && query.isLoading}
         error={
