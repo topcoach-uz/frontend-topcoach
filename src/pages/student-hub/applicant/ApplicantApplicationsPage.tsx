@@ -274,7 +274,7 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
-      <div className="applicant-actions"><Button onClick={() => navigate("/student-hub/applications?view=archived")}>Archived applications</Button><Link to="/student-hub/applications?tab=scholarships">Manage scholarships</Link></div>
+      <div className="applicant-actions"><Link to="/student-hub/applications?tab=timeline">View deadlines →</Link><Button onClick={() => navigate("/student-hub/applications?view=archived")}>Archived applications</Button><Link to="/student-hub/applications?tab=scholarships">Manage scholarships</Link></div>
       {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
       {!!mentorPlans.data?.data.length && <section className="applicant-panel" aria-label="Mentor application plans">
         <h2>Mentor application plans</h2>
@@ -314,7 +314,7 @@ export default function ApplicantApplicationsPage() {
             <div className="applicant-page__heading">
               <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
               <Link to="/student-hub/applications?tab=scholarships">Scholarships →</Link>
-              <Link to="/student-hub/timeline">View deadlines →</Link>
+              
             </div>
             {!!active.length && (
               <div className="applicant-panel applicant-list">
