@@ -7,11 +7,22 @@ export const planningSteps = [
 ] as const;
 export type PlanningStepId = typeof planningSteps[number]['id'];
 
-export function qualificationOptions(degree: Pick<UndergraduateDegree, 'qualificationLabel' | 'qualificationValue'>) {
+type QualificationDegree = Pick<UndergraduateDegree, 'qualificationLabel' | 'qualificationValue'> & Partial<Pick<UndergraduateDegree, 'qualificationNote' | 'qualificationRequirements'>>;
+
+export function publishedQualifications(degree: QualificationDegree) {
+  const verified = (degree.qualificationRequirements ?? []).filter(row => row.label?.trim() && row.value?.trim() && row.sourceUrl && row.verifiedAt);
+  if (verified.length) return verified;
   const label = degree.qualificationLabel?.trim();
-  const published = label && degree.qualificationValue ? [{ value: label, label }] : [];
-  const names = ['A-levels', 'International Baccalaureate', 'Other qualifications'];
-  return [...published, ...names.filter(name => !published.some(p => p.value.toLowerCase() === name.toLowerCase())).map(name => ({ value: name, label: name }))];
+  return label && degree.qualificationValue ? [{ label, value: degree.qualificationValue, note: degree.qualificationNote, scope: '', sourceTitle: '', sourceUrl: '', verifiedAt: '' }] : [];
+}
+
+export function qualificationOptions(degree: QualificationDegree) {
+  const names = [...publishedQualifications(degree).map(row => row.label), 'A-levels', 'International Baccalaureate', 'Other qualifications'];
+  return names.filter((name, index) => names.findIndex(other => other.toLowerCase() === name.toLowerCase()) === index).map(label => ({ value: label, label }));
+}
+
+export function selectedQualification(degree: QualificationDegree, label: string) {
+  return publishedQualifications(degree).find(row => row.label === label);
 }
 
 export function applicationPlanHref(baseHref: string, completed: readonly PlanningStepId[]) {
@@ -29,4 +40,10 @@ export function requirementsFromDegreePlan(params: URLSearchParams, values: { un
   if (degreeId ? values.undergraduateDegreeId !== degreeId : values.undergraduateDegreeId || values.major !== params.get('major')) return undefined;
   const done = new Set((params.get('completedPlanSteps') ?? '').split(','));
   return { custom: { items: planningSteps.map(step => ({ id: `degree-plan-${step.id}`, title: step.title, completed: done.has(step.id) })) } };
+}
+
+export function publishedDegreeForStudyArea(degrees: UndergraduateDegree[], name: string) {
+  const normalized = (value: string) => value.trim().normalize('NFKC').replace(/\s+/g, ' ').toLocaleLowerCase('en');
+  const matches = degrees.filter(degree => normalized(degree.name) === normalized(name));
+  return matches.length === 1 ? matches[0] : undefined;
 }
