@@ -1,3 +1,4 @@
+import { buildUniversityChoices } from "./universityChoices";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, DatePicker, Form, Input, Select, message } from "antd";
 import dayjs from "dayjs";
@@ -115,10 +116,7 @@ export default function ApplicantApplicationFormPage() {
       university && !rows.some((item) => item.id === university.id)
         ? [university, ...rows]
         : rows;
-    const options = withSelected.map((item) => ({
-      value: item.id,
-      label: getTranslation(item.name),
-    }));
+    const options = buildUniversityChoices(withSelected);
     const program = selectedProgramQuery.data;
     if (program && !options.some((item) => item.value === program.universityId)) {
       options.unshift({ value: program.universityId, label: getTranslation(program.university.name) });

@@ -1,3 +1,4 @@
+import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
 import { calendarDateValue } from '../calendarDate';
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
 import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
@@ -234,6 +235,13 @@ export default function StudentWorkspace({
     skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
   });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
+
+  const essayReviews = useGetMentorEssayReviewsQuery(undefined, {
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
+  });
+  const sharedEssayCount = new Set((essayReviews.data ?? [])
+    .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
+    .map(review => review.essayId)).size;
 
   const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
   const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
@@ -773,10 +781,10 @@ export default function StudentWorkspace({
     },
     {
       key: 'essays',
-      label: tabLabel('Essays', pipeline.length),
+      label: tabLabel('Applications & plans', (studentApplications.data?.data.length ?? 0) + pipeline.length),
       children: (
         <>
-          {sectionHead('Essays & applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
+          {sectionHead('Applications & mentor plans', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
             label: 'Add row',
             onClick: () => setAddPipelineOpen(true),
           })}
@@ -1003,9 +1011,9 @@ export default function StudentWorkspace({
         {isFullSupport ? (
           <McStat
             icon={<FileText size={18} />}
-            label="Essays"
-            value={pipeline.length}
-            meta="Applications & essays"
+            label="Shared essays"
+            value={essayReviews.isError ? "—" : sharedEssayCount}
+            meta={essayReviews.isError ? "Count unavailable" : "Shared with you for review"}
             tone="neutral"
           />
         ) : (
