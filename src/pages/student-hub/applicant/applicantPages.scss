@@ -1261,3 +1261,15 @@
   &__item button { display: block; }
   @media (max-width: 600px) { &__head, &__top { flex-direction: column; } }
 }
+
+.applicant-university-detail__catalogue-field {
+  small { margin-top: 8px; color: #596575; font-size: 12px; }
+  .applicant-university-detail__program-link { display: flex; align-items: center; gap: 5px; margin: 8px 0 0; }
+}
+a.applicant-university-detail__catalogue-field--linked {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover { border-color: #8b0000; background: #fff8f7; }
+  &:focus-visible { outline: 3px solid #8b0000; outline-offset: 3px; }
+}
