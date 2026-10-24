@@ -1,3 +1,5 @@
+import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
+import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
@@ -620,15 +622,7 @@ export function ApplicantApplicationPage() {
                   <div className="applicant-form-grid">
                     <div>
                       <p>Check the university’s current requirements.</p>
-                      <Link
-                        to={
-                          app.universityId
-                            ? `/student-hub/universities/${app.universityId}`
-                            : `/student-hub/applications/${app.id}/edit`
-                        }
-                      >
-                        Review application details →
-                      </Link>
+                      <ApplicationSourceLink app={app} />
                     </div>
                     <div>
                       <p>Files shared across applications.</p>
@@ -740,4 +734,15 @@ export function ApplicantApplicationPage() {
       </QueryState>
     </ApplicantPage>
   );
+}
+
+function ApplicationSourceLink({ app }: { app: CollegeApplication }) {
+  const degrees = useGetUndergraduateDegreesQuery(app.universityId ?? '', { skip: !app.universityId || !app.undergraduateDegreeId });
+  const university = useGetUniversityDetailQuery(app.universityId ?? '', { skip: !app.universityId || app.degreeLevel !== 'bachelor' || !!app.undergraduateDegreeId || !app.major });
+  const degree = degrees.data?.find(item => item.id === app.undergraduateDegreeId);
+  const major = university.data?.majors?.find(item => item.type === 'undergraduate' && getTranslation(item.name).trim().toLowerCase() === app.major?.trim().toLowerCase());
+  const href = degree ? `/student-hub/universities/${app.universityId}/degrees/${degree.slug}`
+    : major ? `/student-hub/universities/${app.universityId}/study-areas/${major.id}`
+    : app.universityId ? `/student-hub/universities/${app.universityId}` : `/student-hub/applications/${app.id}/edit`;
+  return <Link to={href}>Review application details →</Link>;
 }

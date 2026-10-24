@@ -215,6 +215,7 @@ export default function ApplicantApplicationFormPage() {
               </Form.Item>}
               {isMastersApplication && selectedProgramQuery.data && <Alert type="info" showIcon message={`Selected graduate programme: ${selectedProgramQuery.data.programName}`} />}
               {selectedProgramQuery.isError && <Alert type="warning" message="This graduate programme could not be verified. Return to programme search and choose a current record." />}
+              {!isMastersApplication && !selectedUndergraduateDegreeId && selectedMajor && <Alert type="info" message={`Selected study area: ${selectedMajor}`} />}
               <Form.Item name="major" hidden><Input /></Form.Item>
               <Form.Item name="intake" label="Planned intake (optional)"><Input placeholder="e.g. Autumn 2027" /></Form.Item>
               <p className="applicant-save-note">Saving this choice does not submit an application.</p>
