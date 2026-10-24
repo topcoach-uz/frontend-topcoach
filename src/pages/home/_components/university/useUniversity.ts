@@ -1,3 +1,4 @@
+import { formatAnnualTuition } from './tuition';
 import { useEffect, useRef, useState } from 'react';
 import { api } from 'src/app/api';
 import {
@@ -143,11 +144,8 @@ export default function useUniversity() {
     image: '/img/some-university.png',
     // image: university?.media[0]?.url,
     major: university.majors.map((major) => getTranslation(major.name)),
-    ranking: university?.rankings[0]?.rank.toString(),
-    tuition:
-      // @ts-expect-error - Currency symbol type issue
-      university.tuitionFees[0]?.currency?.symbol +
-      university.tuitionFees[0]?.fee.toString(),
+    ranking: university.rankings?.[0]?.rank?.toString(),
+    tuition: formatAnnualTuition(university.tuitionFees),
   }));
 
   return {

@@ -1,3 +1,4 @@
+import type { VerifiedProgramLink } from 'src/app/services/universities';
 import { Breadcrumb, Flex, Modal, Skeleton } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import UniversityMajorSection from '../majors';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 
 interface IUniversityDetail extends Partial<UniversitiesSchema> {
+  verifiedProgramLinks?: VerifiedProgramLink[];
   isLoading: boolean;
   handleLike: () => void;
   handleClose: () => void;
@@ -33,6 +35,7 @@ const UniversityDetailSection = React.memo(({
   id,
   name,
   majors,
+  verifiedProgramLinks,
   isLoading,
   media,
   content,
@@ -246,7 +249,7 @@ const UniversityDetailSection = React.memo(({
             <h2>Majors</h2>
           </div>
         )}
-        <UniversityMajorSection majors={majors} isLoading={isLoading} />
+        <UniversityMajorSection verifiedProgramLinks={verifiedProgramLinks} majors={majors} isLoading={isLoading} />
         {/* <div className={styles.allMajors}>
           {majors?.map((major, index) => (
             <div key={index} className={styles.major}>

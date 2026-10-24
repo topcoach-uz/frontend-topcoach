@@ -1,3 +1,4 @@
+import type { VerifiedProgramLink } from 'src/app/services/universities';
 import { MajorsSchema } from 'src/app/api/Api';
 import styles from './majors.module.scss';
 import { CustomText } from 'src/components/common';
@@ -6,9 +7,10 @@ import { Skeleton } from 'antd';
 interface Props {
   majors: MajorsSchema[] | undefined;
   isLoading?: boolean;
+  verifiedProgramLinks?: VerifiedProgramLink[];
 }
 
-export default function UniversityMajorSection({ majors, isLoading = false }: Props) {
+export default function UniversityMajorSection({ majors, isLoading = false, verifiedProgramLinks = [] }: Props) {
   // Show skeleton loading state when data is loading
   if (isLoading) {
     return (
@@ -96,6 +98,10 @@ export default function UniversityMajorSection({ majors, isLoading = false }: Pr
       </div>
     );
   }
+  const majorContent = (major: MajorsSchema) => {
+    const link = verifiedProgramLinks.find(item => item.majorId === major.id && item.degreeLevel === major.type && /^https:\/\//.test(item.url));
+    return link ? <a href={link.url} target="_blank" rel="noopener noreferrer" aria-label={`${major.name?.toString()} — official ${major.type} program`}>{major.name?.toString()} ↗</a> : major.name?.toString();
+  };
   const underGraduateMajors = majors?.filter(
     (major) => major.type === 'undergraduate'
   );
@@ -116,7 +122,7 @@ export default function UniversityMajorSection({ majors, isLoading = false }: Pr
           <div className={styles.content}>
             {underGraduateMajors?.map((major, index) => (
               <div key={major.id + index} className={styles.major}>
-                {major.name?.toString()}
+                {majorContent(major)}
               </div>
             ))}
           </div>
@@ -136,7 +142,7 @@ export default function UniversityMajorSection({ majors, isLoading = false }: Pr
             <div className={styles.content}>
               {graduateMajors?.map((major, index) => (
                 <div key={major.id + index} className={styles.major}>
-                  {major.name?.toString()}
+                  {majorContent(major)}
                 </div>
               ))}
             </div>

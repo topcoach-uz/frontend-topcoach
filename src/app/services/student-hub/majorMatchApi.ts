@@ -171,6 +171,7 @@ export interface Mm3University {
    *  existed) doesn't crash the page — see MM3Results.tsx's fallback. */
   majorIndex?: number;
   tier: 'Reach' | 'Match' | 'Safety';
+  catalogueOnly?: boolean;
   /** Always null today — we hold no acceptance-rate data. Kept so the field
    *  populates with zero schema/UI change if that data ever lands. */
   admissionOdds: string | null;
