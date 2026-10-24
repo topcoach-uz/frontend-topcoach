@@ -46,7 +46,23 @@ const baseQueryWithDocumentRecovery: typeof baseQuery = (args, api, options) => 
   const method = typeof args === 'string' ? 'GET' : (args.method ?? 'GET');
   const documentRead = isRecoverableDocumentRead(url, method);
   return documentRead
-    ? recoverDocumentRead(async () => baseQuery(args, api, options), api.signal)
+    ? recoverDocumentRead(async () => {
+        // This RTK version invokes api.abort() on timeout. Isolate that abort
+        // to one attempt so a timeout cannot cancel the entire retry sequence.
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        api.signal.addEventListener('abort', abort, { once: true });
+        if (api.signal.aborted) abort();
+        try {
+          return await baseQuery(
+            { ...(typeof args === 'string' ? { url: args } : args), timeout: 10000 },
+            { ...api, signal: controller.signal, abort },
+            options,
+          );
+        } finally {
+          api.signal.removeEventListener('abort', abort);
+        }
+      }, api.signal)
     : baseQueryWithRetry(args, api, options);
 };
 
