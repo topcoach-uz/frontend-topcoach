@@ -11,6 +11,7 @@ name: Dev preview
 # backend. Required secrets: DEV_SSH_PRIVATE_KEY, DEV_SSH_USER, DEV_SERVER_IP.
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
@@ -49,7 +50,7 @@ jobs:
 
   deploy:
     needs: slug
-    if: github.event_name == 'push' || github.event.action != 'closed'
+    if: (github.event_name == 'push' && !contains(github.event.head_commit.message, '[preserve-dev-runtime]')) || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -130,3 +131,34 @@ jobs:
           header: preview
           message: |
             🧹 Preview environment removed.
+
+  promote-full-support:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Promote Full Support UI while preserving current dev features
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-full-support-dev.py "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-full-support-dev.py inspect'
+          scp "$DEST:/tmp/full-support-ui-snapshot.json" full-support-ui-snapshot.json
+          npm install --prefix /tmp/fs-ui-compiler --no-audit --no-fund typescript@5.7.3 esbuild@0.25.5
+          NODE_PATH=/tmp/fs-ui-compiler/node_modules node .github/scripts/compile-full-support-dev.cjs
+          scp full-support-ui-bundle.json "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-full-support-dev.py deploy' | tee full-support-ui-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-support-ui-promotion
+          path: full-support-ui-result.json
