@@ -70,6 +70,9 @@ jobs:
           yarn esbuild src/pages/student-hub/ielts-prep/ImportedListening.test.jsx --bundle --platform=node --format=cjs --outfile=/tmp/ielts-listening-renderer.test.cjs
           node --test /tmp/ielts-listening-renderer.test.cjs
 
+      - name: Check Full Support payment states
+        run: node .github/scripts/test-full-support-gate.cjs
+
       - name: Build
         env:
           # Same-origin API: caddy on the dev server proxies /api → dev backend

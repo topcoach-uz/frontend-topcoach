@@ -1,3 +1,4 @@
+import { FullSupportPaymentGate } from './FullSupportPaymentGate';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Alert, Modal, Input, Upload, Spin, message } from 'antd';
@@ -12,7 +13,6 @@ import {
   ArrowUpRight,
   MessageCircle,
   Clock,
-  LockKeyhole,
 } from 'lucide-react';
 import type { UploadFile } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -684,55 +684,7 @@ const SUPPORT_EMAIL = 'support@topcoach.uz';
  */
 function FullSupportNotEnrolled() {
   const { t } = useTranslation();
-
-  return (
-    <ApplicantPage
-      title={t('fullSupport.studentTitle', 'Full Support Mentorship Program')}
-      subtitle={t(
-        'fullSupport.notEnrolledSubtitle',
-        'A year-long admissions mentorship with individual guidance and weekly check-ins.',
-      )}
-    >
-      <div className="fseditorial fseditorial--gated applicant-full-support-page">
-      <section className="fseditorial__access-lock applicant-panel" aria-labelledby="full-support-lock-title">
-        <div className="fseditorial__access-preview" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="fseditorial__access-content">
-          <span className="fseditorial__access-icon">
-            <LockKeyhole size={20} aria-hidden />
-          </span>
-          <p className="fseditorial__eyebrow">Full Support · Mentorship</p>
-          <h2 id="full-support-lock-title" className="fseditorial__access-title">
-          You're not enrolled in Full Support yet.
-          </h2>
-          <p className="fseditorial__access-copy">
-          Full Support is a separate, year-long admissions mentorship —{' '}
-          <em>not</em> included with Community. Pairing, essay reviews, and
-          weekly check-ins are admitted by application; the team reviews
-          every request individually.
-          </p>
-          <div className="fseditorial__access-actions">
-            <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=Full%20Support%20Mentorship%20Program`}
-              className="fseditorial__btn fseditorial__btn--primary"
-            >
-              <MessageCircle size={14} />
-              Write to {SUPPORT_EMAIL}
-            </a>
-            <a href={PROGRAMS_PAGE_URL} target="_blank" rel="noreferrer noopener" className="fseditorial__btn fseditorial__btn--ghost">
-              Read the full program
-              <ArrowUpRight size={14} />
-            </a>
-          </div>
-          <p className="fseditorial__access-note">
-            {t('fullSupport.notEnrolledFooter', 'A short note works — tell us your grade and target year. We reply within a working day.')}
-          </p>
-        </div>
-      </section>
-      </div>
-    </ApplicantPage>
-  );
+  return <ApplicantPage title={t('fullSupport.studentTitle','Full Support Mentorship Program')} subtitle="Individual guidance, mentor sessions and application support.">
+    <FullSupportPaymentGate salesEmail={SUPPORT_EMAIL} programUrl={PROGRAMS_PAGE_URL}/>
+  </ApplicantPage>;
 }
