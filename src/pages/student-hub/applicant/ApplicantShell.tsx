@@ -4,6 +4,7 @@ import {
   ChevronRight,
   CirclePlay,
   ClipboardList,
+  ListChecks,
   HeartHandshake,
   House,
   Lock,
@@ -135,7 +136,6 @@ function ApplicantNavigation({
             { key: 'collegeList', to: applicantLinks.applications },
             { key: 'essays', to: applicantLinks.essays },
             { key: 'documents', to: applicantLinks.documents },
-            { key: 'tasks', to: applicantLinks.tasks },
           ]
         : [
             { key: 'exploreDirection', to: applicantLinks.studyDirection },
@@ -143,7 +143,6 @@ function ApplicantNavigation({
             { key: 'shortlist', to: applicantLinks.applications },
             { key: 'essays', to: applicantLinks.essays },
             { key: 'documents', to: applicantLinks.documents },
-            { key: 'tasks', to: applicantLinks.tasks },
           ],
     },
     {
@@ -343,7 +342,13 @@ function ApplicantNavigation({
           <House size={20} aria-hidden />,
         )}
         {group(groups[0])}
-        {degree === 'bachelor' && group(groups[1])}
+        {navLink(
+          applicantLinks.tasks,
+          t('applicant.tasks', 'Tasks'),
+          selected(applicantLinks.tasks),
+          <ListChecks size={20} aria-hidden />,
+        )}
+        {group(groups[1])}
         {navLink(
           applicantLinks.fullSupport,
           t('applicant.fullSupport'),
