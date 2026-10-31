@@ -1,3 +1,7 @@
+import LiveAttendanceModal from 'src/pages/admin/courses/modules/LiveAttendanceModal';
+import { useMentorCourseSchedule } from '../useMentorCourseSchedule';
+import type { CourseBooking } from '../courseSessions';
+type ScheduleEntry = MentorBooking | CourseBooking;
 import FullSupportLessonActions from '../components/FullSupportLessonActions';
 import { lessonLabel, lessonError } from '../fullSupportLessons';
 import { useMemo, useState } from 'react';
@@ -52,7 +56,7 @@ const SCOPES: Scope[] = ['upcoming', 'due', 'past', 'cancelled'];
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-function timeRange(b: MentorBooking): string {
+function timeRange(b: Pick<MentorBooking, 'dateTime' | 'durationMinutes'>): string {
   const start = new Date(b.dateTime);
   const end = new Date(start.getTime() + b.durationMinutes * 60_000);
   const fmt = (d: Date) =>
@@ -60,7 +64,7 @@ function timeRange(b: MentorBooking): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
-function upcomingPill(b: MentorBooking) {
+function upcomingPill(b: Pick<MentorBooking, 'dateTime'>) {
   const start = new Date(b.dateTime);
   const now = new Date();
   const isToday = start.toDateString() === now.toDateString();
@@ -75,17 +79,20 @@ export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
   const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
-  const fullSupportOnly = searchParams.get('program') === 'full-support';
+  const programFilter = ['full-support', 'course', 'platform'].includes(searchParams.get('program') ?? '') ? searchParams.get('program')! : 'all';
+  const fullSupportOnly = programFilter === 'full-support';
+  const courseSchedule = useMentorCourseSchedule();
+  const [courseBooking, setCourseBooking] = useState<CourseBooking | null>(null);
   // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
   const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
     ? (searchParams.get('scope') as Scope)
     : fullSupportOnly ? 'due' : 'upcoming';
   const scope = initialScope;
   const setScope = (next: Scope) => setSearchParams(params => { params.set('scope', next); return params; });
-  const setProgramFilter = (value: 'all' | 'full-support') => setSearchParams(params => {
+  const setProgramFilter = (value: 'all' | 'full-support' | 'course' | 'platform') => setSearchParams(params => {
     // Keep the current status tab and any other deep-link parameters.
     params.set('scope', scope);
-    if (value === 'full-support') params.set('program', value);
+    if (value !== 'all') params.set('program', value);
     else params.delete('program');
     return params;
   });
@@ -126,14 +133,15 @@ export default function MentorConsoleSchedulePage() {
   const [createSession, { isLoading: creating }] = useCreateMentorSessionMutation();
   const [recordLesson, { isLoading: recordingFs }] = useRecordMentorLessonMutation();
 
-  const decorated = useMemo<MentorBooking[]>(() => {
+  const decorated = useMemo<ScheduleEntry[]>(() => {
     const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
-    return relevant.filter(b => !fullSupportOnly || b.source === 'full-support').map((b) => ({
+    const mentoring = relevant.map((b) => ({
       ...b,
       studentName:
         b.studentName || (b.studentUserId && rosterById.get(b.studentUserId)?.name) || null,
     }));
-  }, [bookings, hasFullSupport, rosterById, fullSupportOnly]);
+    return [...mentoring, ...courseSchedule.bookings].filter(b => programFilter === 'all' || b.source === programFilter);
+  }, [bookings, hasFullSupport, rosterById, programFilter, courseSchedule.bookings]);
 
   const byScope = useMemo(() => scheduleScopes(decorated), [decorated]);
 
@@ -141,7 +149,7 @@ export default function MentorConsoleSchedulePage() {
     const windowMs = PENDING_REPORT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
     const now = Date.now();
     return (
-      byScope.due.find((b) => b.source === 'platform' && now - new Date(b.dateTime).getTime() <= windowMs) ?? null
+      byScope.due.find((b): b is MentorBooking => b.source === 'platform' && now - new Date(b.dateTime).getTime() <= windowMs) ?? null
     );
   }, [byScope.due]);
 
@@ -190,7 +198,22 @@ export default function MentorConsoleSchedulePage() {
   // One editorial card for every scope — a serif date, the student, a status
   // pill, an optional Google Meet join, then the actions. Rendered in a grid so
   // cards stay card-sized instead of stretching across the page.
-  const renderSessionCard = (b: MentorBooking) => {
+  const renderSessionCard = (b: ScheduleEntry) => {
+    if (b.source === 'course') {
+      const date = new Date(b.dateTime);
+      return <div key={b.id} className={`mc-scard${b.status === 'cancelled' ? ' mc-scard--muted' : ''}${b.status === 'report-due' ? ' mc-scard--due' : ''}`}>
+        <div className="mc-scard-top">
+          <div className="mc-scard-date" aria-hidden><span className="mc-scard-day">{date.getDate()}</span><span className="mc-scard-month">{date.toLocaleDateString(undefined, { month: 'short' })}</span></div>
+          {b.status === 'upcoming' ? upcomingPill(b) : <McPill variant={b.status === 'completed' ? 'success' : b.status === 'report-due' ? 'danger' : 'neutral'}>{b.status === 'completed' ? 'Held' : b.status === 'report-due' ? 'Class record due' : 'Cancelled'}</McPill>}
+        </div>
+        <div className="mc-scard-name">{b.lesson.title}</div>
+        <div className="mc-scard-when">{date.toLocaleDateString(undefined, { weekday: 'short' })} · {timeRange(b)} · {b.durationLabel}</div>
+        <div className="mc-scard-meta">Course class · {b.lesson.courseName} · {b.lesson.moduleTitle}</div>
+        {b.raw.summary && <div className="mc-scard-note">{b.raw.summary}</div>}
+        {b.status === 'upcoming' && b.raw.meetingUrl && <a className="mc-scard-meet" href={b.raw.meetingUrl} target="_blank" rel="noreferrer">Join class <ArrowUpRight size={13} /></a>}
+        <div className="mc-scard-actions"><Button size="small" onClick={() => setCourseBooking(b)}>Class & attendance</Button></div>
+      </div>;
+    }
     const d = new Date(b.dateTime);
     const isUpcoming = b.status === 'upcoming';
     const display = bookingDisplay(b);
@@ -291,7 +314,7 @@ export default function MentorConsoleSchedulePage() {
   const today = new Date();
   const rows = byScope[scope];
 
-  if (isLoading && decorated.length === 0) {
+  if ((isLoading || courseSchedule.isLoading) && decorated.length === 0) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
         <Spin size="large" />
@@ -330,7 +353,7 @@ export default function MentorConsoleSchedulePage() {
             {`Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
           </h1>
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
-            Your sessions — upcoming, past, and anything awaiting attendance or a report.
+            All your sessions — bookings, Full Support and course classes.
           </p>
         </div>
         <div className="mc-sched-date" aria-hidden>
@@ -357,17 +380,19 @@ export default function MentorConsoleSchedulePage() {
         </button>
       )}
 
-      {(hasFullSupport || fullSupportOnly) && (
+      {(
         <div className="mc-sched-program-filter">
           <label htmlFor="mentor-schedule-program">Sessions</label>
           <select
             id="mentor-schedule-program"
             aria-label="Filter sessions by program"
-            value={fullSupportOnly ? 'full-support' : 'all'}
-            onChange={event => setProgramFilter(event.target.value as 'all' | 'full-support')}
+            value={programFilter}
+            onChange={event => setProgramFilter(event.target.value as 'all' | 'full-support' | 'course' | 'platform')}
           >
             <option value="all">All sessions</option>
             <option value="full-support">Full Support</option>
+            <option value="course">Course classes</option>
+            <option value="platform">Platform bookings</option>
           </select>
         </div>
       )}
@@ -376,7 +401,7 @@ export default function MentorConsoleSchedulePage() {
         {(
           [
             { key: 'upcoming', label: 'Upcoming', count: byScope.upcoming.length },
-            { key: 'due', label: 'Report due', count: byScope.due.length },
+            { key: 'due', label: 'Records due', count: byScope.due.length },
             { key: 'past', label: 'Past', count: byScope.past.length },
             { key: 'cancelled', label: 'Cancelled / absent', count: byScope.cancelled.length },
           ] as { key: Scope; label: string; count: number }[]
@@ -409,6 +434,7 @@ export default function MentorConsoleSchedulePage() {
         )}
       </div>
 
+      {courseSchedule.error && <Alert type="warning" showIcon message={courseSchedule.error} action={<Button onClick={courseSchedule.refetch}>Retry</Button>} style={{ marginBottom: 12 }} />}
       {isError && (
         <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Failed to load sessions" />
       )}
@@ -477,6 +503,7 @@ export default function MentorConsoleSchedulePage() {
         </Form>
       </Modal>
 
+      <LiveAttendanceModal key={courseBooking?.id ?? 'course-closed'} lesson={courseBooking?.lesson ?? null} initialSessionId={courseBooking?.raw.id} open={!!courseBooking} allowReschedule onClose={() => { setCourseBooking(null); courseSchedule.refetch(); }} />
       <LessonRecordModal open={!!recordBooking} title="Record Full Support lesson"
         value={recordValue} plannedMinutes={recordBooking?.durationMinutes ?? 60} allowCancelled
         saving={recordingFs} onClose={() => setRecordBooking(null)} onSave={saveLesson} />
