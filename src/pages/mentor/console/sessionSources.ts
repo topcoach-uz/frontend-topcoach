@@ -106,7 +106,7 @@ export function normalizeFullSupportSession(
   let status: MentorBooking['status'];
   if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
   else if (s.done || ['held', 'student_no_show', 'mentor_no_show'].includes(s.outcome)) status = 'completed';
-  else if (new Date(s.dateTime).getTime() <= now) status = 'report-due';
+  else if (new Date(s.dateTime).getTime() + minutes * 60_000 <= now) status = 'report-due';
   else status = 'upcoming';
 
   return {

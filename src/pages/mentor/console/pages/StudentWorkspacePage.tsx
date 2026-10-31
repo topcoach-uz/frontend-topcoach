@@ -128,7 +128,7 @@ export default function MentorStudentWorkspacePage() {
         </div>
       </div>
 
-      <StudentWorkspace student={student} isFullSupport={isFullSupport} />
+      <StudentWorkspace student={student} isFullSupport={isFullSupport} showStudentName={false} />
     </div>
   );
 }
