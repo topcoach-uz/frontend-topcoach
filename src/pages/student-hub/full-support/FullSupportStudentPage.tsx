@@ -378,7 +378,7 @@ export function FullSupportOverview({
   );
 }
 
-export default function FullSupportStudentPage() {
+function LegacyFullSupportStudentPage() {
   const enrollment = useGetEnrollmentMeQuery();
   const isEnrolled = enrollment.data?.data?.enrolled ?? false;
   const tasks = useGetMenteeTasksQuery(undefined, { skip: !isEnrolled });
@@ -495,3 +495,5 @@ function FullSupportNotEnrolled() {
     <FullSupportPaymentGate salesEmail={SUPPORT_EMAIL} programUrl={PROGRAMS_PAGE_URL}/>
   </ApplicantPage>;
 }
+
+export { default } from "../my-programs/MyProgramsStudentPage";

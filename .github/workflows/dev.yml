@@ -13,6 +13,10 @@ name: Dev preview
 on:
   workflow_dispatch:
     inputs:
+      my_programs_mode:
+        type: choice
+        required: false
+        options: [inspect, deploy]
       workspace_mode:
         type: choice
         required: false
@@ -150,7 +154,7 @@ jobs:
             🧹 Preview environment removed.
 
   promote-full-support:
-    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode && !inputs.shared_applications_mode && !inputs.schedule_filter_mode && !inputs.course_schedule_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
+    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode && !inputs.shared_applications_mode && !inputs.schedule_filter_mode && !inputs.course_schedule_mode && !inputs.my_programs_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -327,3 +331,40 @@ jobs:
           path: |
             course-schedule-ui-snapshot.json
             course-schedule-ui-result.json
+
+  my-programs:
+    if: github.event_name == 'workflow_dispatch' && inputs.my_programs_mode && github.ref_name == 'feat/my-programs-dev-20261031'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Inspect or publish My Programs
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          MODE: ${{ inputs.my_programs_mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-my-programs-dev.py "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-my-programs-dev.py inspect'
+          scp "$DEST:/tmp/my-programs-ui-snapshot.json" my-programs-ui-snapshot.json
+          if [ "$MODE" = deploy ]; then
+            yarn install --frozen-lockfile
+            node .github/scripts/compile-my-programs-dev.cjs
+            scp my-programs-ui-bundle.json "$DEST:/tmp/"
+            ssh "$DEST" 'python3 /tmp/promote-my-programs-dev.py deploy' | tee my-programs-ui-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: my-programs-ui-${{ inputs.my_programs_mode }}
+          path: |
+            my-programs-ui-snapshot.json
+            my-programs-ui-result.json

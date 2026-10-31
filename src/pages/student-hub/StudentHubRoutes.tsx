@@ -11,6 +11,7 @@ import { APPLICANT_WORKSPACE_ENABLED, isOverviewLocation } from 'src/lib/applica
 import CoursePreview from '../learning/CoursePreview';
 import ResearchIntroPreview from './research/ResearchIntroPreview';
 
+const MyProgramsStudentPage = lazy(() => import('./my-programs/MyProgramsStudentPage'));
 const ApplicantOverviewPage = lazy(() => import('./applicant/ApplicantOverviewPage'));
 const LocalChangesWalkthrough = lazy(() => import('./LocalChangesWalkthrough'));
 const ApplicantApplicationsPage = lazy(() => import('./applicant/ApplicantApplicationsPage'));
@@ -227,6 +228,7 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/opportunities/*" element={<Navigate to="/student-hub?section=others&target=opportunities" replace />} />
           <Route path="/programs" element={<Navigate to="/student-hub?section=others&target=programs" replace />} />
           <Route path="/programs/*" element={<Navigate to="/student-hub?section=others&target=programs" replace />} />
+          <Route path="/my-programs" element={withSuspense(<MyProgramsStudentPage />)} />
           <Route path="/full-support" element={<Navigate to="/student-hub?section=others&target=full-support" replace />} />
           <Route path="/full-support/*" element={<Navigate to="/student-hub?section=others&target=full-support" replace />} />
           <Route path="/timeline" element={<Navigate to="/student-hub/applications?tab=timeline" replace />} />
