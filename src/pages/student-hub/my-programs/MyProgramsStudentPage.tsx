@@ -25,7 +25,7 @@ export default function MyProgramsStudentPage(){
  if(q.isLoading||(!data&&q.isFetching))return <section className="my-programs"><h1>My Programs</h1><p role="status">Loading your programs…</p></section>;
  if(q.isError||!data)return <section className="my-programs"><h1>My Programs</h1><div role="alert"><p>We couldn’t load your programs. Please try again.</p><button className="mp-secondary" onClick={()=>void q.refetch()}>Try again</button></div></section>;
  if(legacy&&!program)return <FullSupportPaymentGate/>;
- const shared=(!program||current.length===1)&&!!(data.unscopedSessions.length||data.unscopedTasks.length);
+ const shared=!!(data.unscopedSessions.length||data.unscopedTasks.length);
  const sessionRows=(sessions:SessionLogDto[])=><div className="mp-rows">{sessions.length?sessions.map(s=><div className="mp-row" key={s.id}><div><button className="mp-link" onClick={()=>setLesson(s)}>{s.description||'Mentoring session'}</button><p>{time(s.dateTime)} · {s.mentorName} · {s.actualDurationMinutes!=null?s.actualDurationMinutes+' min actual':s.duration+' planned'}</p></div><span className="mp-badge">{lessonLabel(s)}</span></div>):<p className="mp-empty">No lessons recorded for this program yet.</p>}</div>;
  return <section className="my-programs">
  <header className="mp-heading"><div><h1>{program?programNames[program.program]:'My Programs'}</h1><p>{program?'Your mentors, lessons, and next steps.':'Your next lessons and tasks across your programs.'}</p></div>{q.isFetching&&<small role="status">Updating…</small>}</header>
