@@ -69,8 +69,8 @@ export function bookingDisplay(booking: MentorBooking, now = Date.now()): Lesson
   return { label: booking.status === 'report-due' ? 'Report due' : booking.status === 'completed' ? 'Completed' : booking.status === 'cancelled' ? 'Cancelled' : 'Upcoming', variant: booking.status === 'report-due' ? 'danger' : booking.status === 'completed' ? 'success' : 'neutral', attendance: '', actualMinutes: null, notes: '' };
 }
 
-export function scheduleScopes(bookings: MentorBooking[], now = Date.now()) {
-  const asc = (a: MentorBooking, b: MentorBooking) =>
+export function scheduleScopes<T extends Pick<MentorBooking, 'dateTime' | 'status'>>(bookings: T[], now = Date.now()) {
+  const asc = (a: T, b: T) =>
     new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
   return {
     upcoming: bookings.filter((b) => b.status === 'upcoming').sort(asc),

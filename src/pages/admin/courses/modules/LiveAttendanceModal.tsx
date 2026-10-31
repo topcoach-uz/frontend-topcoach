@@ -16,7 +16,7 @@ async function request<T>(path: string, method = 'GET', body?: object): Promise<
   return response.json();
 }
 
-export default function LiveAttendanceModal({ lesson, open, onClose, allowReschedule = false }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void; allowReschedule?: boolean }) {
+export default function LiveAttendanceModal({ lesson, open, onClose, allowReschedule = false, initialSessionId }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void; allowReschedule?: boolean; initialSessionId?: string }) {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [editing, setEditing] = useState(false);
@@ -33,10 +33,10 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
     try {
       const list = await request<Session[]>(`lessons/${lesson.id}/sessions`);
       setSessions(list);
-      setSelectedId((previous) => list.some((session) => session.id === previous) ? previous : list[0]?.id ?? null);
+      setSelectedId((previous) => list.some((session) => session.id === previous) ? previous : list.find(session => session.id === initialSessionId)?.id ?? list[0]?.id ?? null);
     } catch (error) { message.error((error as Error).message); }
     finally { setLoading(false); }
-  }, [lesson]);
+  }, [lesson, initialSessionId]);
 
   const reloadRoster = useCallback(async () => {
     if (!selectedId) { setStudents([]); return; }
@@ -46,7 +46,7 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
     } catch (error) { message.error((error as Error).message); }
   }, [selectedId]);
 
-  useEffect(() => { setEditing(false); }, [lesson, open]);
+  useEffect(() => { setEditing(false); setSelectedId(null); setStudents([]); }, [lesson?.id, open, initialSessionId]);
   useEffect(() => { if (open) void reload(); }, [open, reload]);
   useEffect(() => { if (open) void reloadRoster(); }, [open, reloadRoster]);
   useEffect(() => { if (open && lesson) form.setFieldValue('durationMinutes', lesson.duration); }, [form, lesson, open]);
