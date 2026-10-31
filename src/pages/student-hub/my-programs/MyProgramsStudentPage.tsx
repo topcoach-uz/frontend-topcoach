@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { CalendarDays, ArrowUpRight, Users, Clock } from 'lucide-react';
-import { useGetStudentProgramsQuery, type StudentProgram, type ProgramTask } from 'src/app/services/studentProgramsApi';
+import { useGetMyMentoringProgramsQuery, type StudentProgram, type ProgramTask } from 'src/app/services/studentProgramsApi';
 import type {SessionLogDto} from 'src/app/services/fullSupportApi';
 import { programNames, roleNames, currentPrograms, latestPrograms, programUrl, safeWebUrl, taskStatus } from './programModel';
 import {nextLesson,lessonLabel,mentorTaskLink} from '../full-support/fullSupportOverviewModel';
@@ -12,7 +12,7 @@ const date=(value:string)=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:
 const stateLabels={active:'Active',scheduled:'Starts soon',expired:'Access ended',revoked:'Enrollment ended'};
 const tabs=['Overview','Lessons','Tasks','Mentors'] as const;
 export default function MyProgramsStudentPage(){
- const q=useGetStudentProgramsQuery(undefined,{pollingInterval:30000,refetchOnMountOrArgChange:true,refetchOnFocus:true});
+ const q=useGetMyMentoringProgramsQuery(undefined,{pollingInterval:30000,refetchOnMountOrArgChange:true,refetchOnFocus:true});
  const [params,setParams]=useSearchParams();const location=useLocation();const [lesson,setLesson]=useState<SessionLogDto|null>(null);
  const data=q.currentData?.data;const all=latestPrograms(data?.programs??[]);const current=currentPrograms(all);
  const legacy=location.pathname!=='/student-hub/my-programs';const requested=params.get('program')||(legacy?'full_support':null);

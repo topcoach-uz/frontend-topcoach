@@ -9,6 +9,6 @@ export type StudentProgram = {
 };
 export type StudentPrograms = { programs: StudentProgram[]; unscopedSessions: SessionLogDto[]; unscopedTasks: ProgramTask[] };
 export const studentProgramsApi = RtkApi.injectEndpoints({endpoints: build => ({
- getStudentPrograms: build.query<{data:StudentPrograms},void>({ query:()=>'/academic-programs/workspace', keepUnusedDataFor: 15 }),
+ getMyMentoringPrograms: build.query<{data:StudentPrograms},void>({ query:()=>'/academic-programs/workspace', keepUnusedDataFor: 15 }),
 })});
-export const {useGetStudentProgramsQuery} = studentProgramsApi;
+export const {useGetMyMentoringProgramsQuery} = studentProgramsApi;
