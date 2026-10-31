@@ -1,9 +1,8 @@
+import SharedApplications from './SharedApplications';
 import FullSupportLessonActions from './FullSupportLessonActions';
 import { lessonError } from '../fullSupportLessons';
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
 import { calendarDateValue } from '../calendarDate';
-import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
-import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -41,22 +40,18 @@ import {
 } from 'lucide-react';
 import {
   useCreateMentorMilestoneMutation,
-  useCreateMentorPipelineRowMutation,
   useCreateMentorSessionMutation,
   useCreateMentorTaskMutation,
   useDeleteMentorMilestoneMutation,
-  useDeleteMentorPipelineRowMutation,
   useDeleteMentorTaskMutation,
   useGetMentorCurriculumProgressQuery,
   useGetMentorMilestonesQuery,
-  useGetMentorPipelineQuery,
   useGetMentorSessionsQuery,
   useGetMentorTasksQuery,
   useUpdateMentorMilestoneMutation,
   useUpdateMentorTaskFeedbackMutation,
   type CurriculumWatchlistItemDto,
   type MilestoneDto,
-  type PipelineDto,
   type SessionLogDto,
   type TaskDto,
 } from 'src/app/services/fullSupportApi';
@@ -67,7 +62,7 @@ import ChatInput from 'src/components/chat/ChatInput';
 import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
 import { useMentorBookings } from '../sessionSources';
 import { fullSupportDisplay } from '../sessionDisplay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
 import { McStat } from './McStat';
@@ -107,15 +102,6 @@ function taskStatus(t: TaskDto): TaskScope {
   if (t.status === 'approved') return 'done';
   if (t.status === 'submitted') return 'awaiting-review';
   return 'open';
-}
-
-function pipelineStatusVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'neutral' {
-  const s = (status || '').toLowerCase();
-  if (s === 'accepted' || s === 'admitted') return 'success';
-  if (s === 'rejected' || s === 'denied') return 'danger';
-  if (s === 'waitlist' || s === 'deferred') return 'warning';
-  if (s === 'submitted' || s === 'applied') return 'info';
-  return 'neutral';
 }
 
 function tabLabel(label: string, count?: number) {
@@ -207,12 +193,13 @@ export default function StudentWorkspace({
   isFullSupport?: boolean;
 }) {
   const navigate = useNavigate();
+  const location=useLocation();
   const { id: mentorId, hasFullSupport, email, managementRole } = useMentorConsole();
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
 
   // Tasks first — the mockup's everyday view. Heavy sections load lazily.
-  const [activeTab, setActiveTab] = useState('tasks');
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get('tab')==='applications'?'essays':'tasks');
   const [taskSearch, setTaskSearch] = useState('');
   const [taskFilter, setTaskFilter] = useState('all');
   const [moreView, setMoreView] = useState<MoreView>('milestones');
@@ -227,8 +214,6 @@ export default function StudentWorkspace({
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
   const [sessionForm] = Form.useForm<{ when: Dayjs; duration: string; description: string; meetingLink?: string }>();
-  const [addPipelineOpen, setAddPipelineOpen] = useState(false);
-  const [pipelineForm] = Form.useForm<{ program: string; stage?: string; status?: string; deadline?: Dayjs | null }>();
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
 
   // Always loaded — power the stat cards + tab badges.
@@ -238,7 +223,6 @@ export default function StudentWorkspace({
   const { data: tasksRes, isLoading: loadingTasks, isError: tasksError, refetch: retryTasks } = useGetMentorTasksQuery(undefined, {
     skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
   });
-  const { data: pipelineRes, isError: pipelineError } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
 
   const essayReviews = useGetMentorEssayReviewsQuery(undefined, {
     skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
@@ -247,8 +231,6 @@ export default function StudentWorkspace({
     .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
     .map(review => review.essayId)).size;
 
-  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
-  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: sessionsRes, isFetching: loadingSessions, refetch: retrySessionLog } = useGetMentorSessionsQuery(
@@ -270,10 +252,6 @@ export default function StudentWorkspace({
   const tasks = useMemo<TaskDto[]>(
     () => (tasksRes?.data ?? []).filter((t) => t.studentUserId === studentId),
     [tasksRes?.data, studentId],
-  );
-  const pipeline = useMemo<PipelineDto[]>(
-    () => (pipelineRes?.data ?? []).filter((p) => p.studentUserId === studentId),
-    [pipelineRes?.data, studentId],
   );
   const sessions = sessionsRes?.data ?? [];
   const milestones = milestonesRes?.data ?? [];
@@ -334,8 +312,6 @@ export default function StudentWorkspace({
   const [updateMilestone] = useUpdateMentorMilestoneMutation();
   const [deleteMilestone] = useDeleteMentorMilestoneMutation();
   const [createSession, { isLoading: creatingSession }] = useCreateMentorSessionMutation();
-  const [createPipeline, { isLoading: creatingPl }] = useCreateMentorPipelineRowMutation();
-  const [deletePipeline] = useDeleteMentorPipelineRowMutation();
 
   const submitQuickTask = async () => {
     if (!canAssignTask) { message.warning('You can assign tasks after your first completed 1:1 meeting.'); return; }
@@ -415,28 +391,7 @@ export default function StudentWorkspace({
       .catch(error => message.error(lessonError(error)));
   };
 
-  const submitPipeline = async () => {
-    const values = await pipelineForm.validateFields();
-    await createPipeline({
-      studentUserId: studentId,
-      program: values.program,
-      stage: values.stage,
-      status: values.status,
-      deadline: calendarDateValue(values.deadline),
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Application row added');
-        setAddPipelineOpen(false);
-        pipelineForm.resetFields();
-      })
-      .catch(() => message.error('Could not add'));
-  };
-
-  const openFeedbackModal = (t: TaskDto) => {
-    setFeedbackTask(t);
-    feedbackForm.setFieldsValue({ feedback: '', decision: 'approved' });
-  };
+  const openFeedbackModal = (t: TaskDto) => {setFeedbackTask(t);feedbackForm.setFieldsValue({feedback:'',decision:'approved'});};
 
   const sectionHead = (
     title: string,
@@ -659,39 +614,6 @@ export default function StudentWorkspace({
     },
   ];
 
-  const pipelineColumns: ColumnsType<PipelineDto> = [
-    { title: 'Program', dataIndex: 'program', key: 'program' },
-    { title: 'Stage', dataIndex: 'stage', key: 'stage', width: 120 },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 120,
-      render: (s: string) => <McPill variant={pipelineStatusVariant(s)}>{s || '—'}</McPill>,
-    },
-    { title: 'Deadline', dataIndex: 'deadline', key: 'deadline', width: 116, render: (v: string | null) => formatDate(v) },
-    {
-      title: '',
-      key: 'del',
-      width: 72,
-      render: (_, row) => (
-        <Popconfirm
-          title="Remove this row?"
-          onConfirm={() =>
-            deletePipeline(row.id)
-              .unwrap()
-              .then(() => message.success('Removed'))
-              .catch(() => message.error('Failed'))
-          }
-        >
-          <Button size="small" danger type="text">
-            Delete
-          </Button>
-        </Popconfirm>
-      ),
-    },
-  ];
-
   const moreOptions = [
     { label: 'Milestones', value: 'milestones' },
     ...(hasFullSupport && researchPrepLive ? [{ label: 'Research', value: 'research' }] : []),
@@ -791,41 +713,7 @@ export default function StudentWorkspace({
       ),
       children: <StudentMessageTab mentorId={mentorId} studentId={studentId} />,
     },
-    {
-      key: 'essays',
-      label: tabLabel('Applications', studentApplications.data?.data.length ?? 0),
-      children: (
-        <>
-          {sectionHead('Applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />)}<p className="mc-ws-section-copy">The student’s saved applications. Requirement editing follows the existing mentor permissions.</p>
-          <div className="mc-ws-card" style={{ padding: 20, marginBottom: 16 }}>
-            <h3>Student application tracker</h3>
-            {studentApplications.isLoading ? <Spin/> : studentApplications.isError ? <p>Student applications are unavailable for this relationship.</p> : !studentApplications.data?.data.length ? <p>No student applications saved yet.</p> :
-              studentApplications.data.data.map(application => <div key={application.id} style={{ padding: '10px 0' }}>
-                <strong>{application.universityName || application.major || 'Application'}</strong>
-                <p>{application.major} · {application.status.replaceAll('_', ' ')} · Planning deadline: {formatDate(application.deadline ?? null)}</p>
-                <p>Application mentor: {application.mentorName || (application.mentorId ? 'Previously selected mentor' : 'Not assigned')}{application.canEditRequirements ? ' (you)' : ''}</p>
-                <ApplicationRequirements key={application.id} requirements={application.requirements} updatedAt={application.updatedAt} onSave={application.canEditRequirements ? (requirements, expectedUpdatedAt) => updateApplicationRequirements({ studentUserId: studentId!, id: application.id, requirements, expectedUpdatedAt }).unwrap() : undefined} />
-              </div>)}
-          </div>
-          <details className="mc-ws-archive"><summary>Mentor planning notes · {pipeline.length}</summary><p>Existing planning rows are separate from the student’s saved applications.</p><Button onClick={() => setAddPipelineOpen(true)}>Add planning row</Button><div className="mc-ws-card" style={{marginTop:12}}>
-            {pipelineError ? <p>Planning notes could not be loaded.</p> : pipeline.length === 0 ? (
-              <div className="mc-ws-empty">
-                Track schools and essay stages — add a pipeline row to get started.
-              </div>
-            ) : (
-              <Table<PipelineDto>
-                rowKey="id"
-                columns={pipelineColumns}
-                dataSource={pipeline}
-                pagination={false}
-                size="small"
-                scroll={{ x: true }}
-              />
-            )}
-          </div></details>
-        </>
-      ),
-    },
+    {key:'essays',label:'Applications',children:<SharedApplications studentId={studentId}/>},
     {
       key: 'session-log',
       label: tabLabel('Session log', sessionsRes ? sessions.length : undefined),
@@ -1140,41 +1028,7 @@ export default function StudentWorkspace({
         </Form>
       </Modal>
 
-      <Modal
-        title="Add application / essay row"
-        open={addPipelineOpen}
-        onCancel={() => setAddPipelineOpen(false)}
-        onOk={submitPipeline}
-        confirmLoading={creatingPl}
-        okText="Add"
-        destroyOnClose
-      >
-        <Form form={pipelineForm} layout="vertical">
-          <Form.Item name="program" label="Program or school" rules={[{ required: true, message: 'Required' }]}>
-            <Input placeholder="e.g. Oxford PPE" />
-          </Form.Item>
-          <Form.Item name="stage" label="Stage">
-            <Input placeholder="e.g. Supplemental draft" />
-          </Form.Item>
-          <Form.Item name="status" label="Status">
-            <Select
-              allowClear
-              placeholder="Select status"
-              options={[
-                { value: 'draft', label: 'Draft' },
-                { value: 'in progress', label: 'In progress' },
-                { value: 'submitted', label: 'Submitted' },
-                { value: 'waitlist', label: 'Waitlist' },
-                { value: 'accepted', label: 'Accepted' },
-                { value: 'rejected', label: 'Rejected' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name="deadline" label="Deadline (optional)">
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-        </Form>
-      </Modal>
+
 
       <SubmissionDrawer open={!!researchPick} submission={researchPick} onClose={() => setResearchPick(null)} />
     </>

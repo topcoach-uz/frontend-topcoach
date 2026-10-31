@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { ISC_2026_ENABLED } from 'src/lib/iscAccess';
 import {
-  useGetMentorPipelineQuery,
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
 } from 'src/app/services/fullSupportApi';
@@ -32,6 +31,7 @@ type NavKey =
   | 'availability'
   | 'students'
   | 'essay-reviews'
+  | 'document-reviews'
   | 'feed'
   | 'profile'
   | 'referrals'
@@ -96,9 +96,8 @@ export default function MentorConsoleLayout() {
   const { data: rosterRes, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
     skip: !isMentor,
   });
-  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor });
-  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !isMentor });
-  const { data: essayReviewRequests = [] } = useGetMentorEssayReviewsQuery(undefined, { skip: !isMentor });
+  const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
+  const { data: essayReviewRequests = [] } = useGetMentorEssayReviewsQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
   const pendingEssayReviews = essayReviewRequests.filter((request) => request.status === 'pending' || request.status === 'in_review').length;
   const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
@@ -124,18 +123,6 @@ export default function MentorConsoleLayout() {
     () => relevantBookings.filter((b) => b.status === 'report-due').length,
     [relevantBookings],
   );
-
-  // Program label per student — first essays/applications row, mockup-style
-  // ("Oxford PPE" under the name). Falls back to hours + session count.
-  const programByStudent = useMemo(() => {
-    const map = new Map<string, string>();
-    (pipelineRes?.data ?? []).forEach((p) => {
-      if (p.studentUserId && p.program && !map.has(p.studentUserId)) {
-        map.set(p.studentUserId, p.program);
-      }
-    });
-    return map;
-  }, [pipelineRes?.data]);
 
   // Attention dot — a report to write or a submission awaiting review.
   const attentionByStudent = useMemo(() => {
@@ -185,6 +172,10 @@ export default function MentorConsoleLayout() {
         icon: <ClipboardCheck size={18} strokeWidth={1.75} />,
         path: '/mentor/essay-reviews',
         badge: pendingEssayReviews > 0 ? String(pendingEssayReviews) : null,
+      },
+      {
+        key: 'document-reviews', label: 'Document reviews',
+        icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/document-reviews',
       },
     ];
 
@@ -244,6 +235,7 @@ export default function MentorConsoleLayout() {
     if (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).get('program') === 'full-support') return 'full-support';
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
+    if (p.startsWith('/mentor/document-reviews')) return 'document-reviews';
     if (p.startsWith('/mentor/essay-reviews')) return 'essay-reviews';
     // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (
@@ -375,7 +367,6 @@ export default function MentorConsoleLayout() {
                 )}
                 {roster.map((r) => {
                   const isActive = activeStudentId === r.id;
-                  const program = programByStudent.get(r.id);
                   const needsAttention = attentionByStudent.has(r.id);
                   return (
                     <button
@@ -401,7 +392,7 @@ export default function MentorConsoleLayout() {
                           <span className="mentor-console-student-meta">
                             <span className="mentor-console-student-name">{r.name}</span>
                             <span className="mentor-console-student-program">
-                              {program || `${r.sessionsCount} session${r.sessionsCount === 1 ? '' : 's'}`}
+                              {`${r.sessionsCount} session${r.sessionsCount === 1 ? '' : 's'}`}
                             </span>
                           </span>
                           <span

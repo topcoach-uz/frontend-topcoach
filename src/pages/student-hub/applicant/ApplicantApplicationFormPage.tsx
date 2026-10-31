@@ -1,3 +1,5 @@
+import { requirementsFromDegreePlan } from './degreePlanning';
+import { buildUniversityChoices } from "./universityChoices";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, DatePicker, Form, Input, Select, message } from "antd";
 import dayjs from "dayjs";
@@ -38,6 +40,7 @@ type ApplicationForm = Omit<CreateCollegeApplicationRequest, "deadline"> & {
 export default function ApplicantApplicationFormPage() {
   const { applicationId } = useParams();
   const editing = !!applicationId;
+  const [editVersion,setEditVersion]=useState<string>();
   const query = useGetCollegeApplicationQuery(applicationId ?? "", {
     skip: !applicationId,
   });
@@ -58,6 +61,8 @@ export default function ApplicantApplicationFormPage() {
   const selectedProgramId = Form.useWatch("programId", form);
   const selectedUndergraduateDegreeId = Form.useWatch("undergraduateDegreeId", form);
   const degreeLevel = Form.useWatch("degreeLevel", form);
+  const selectedMajor = Form.useWatch("major", form);
+  const previewPlan = !editing ? requirementsFromDegreePlan(params, { universityId: selectedUniversity, undergraduateDegreeId: selectedUndergraduateDegreeId, major: selectedMajor }) : undefined;
   const isMastersApplication = degreeLevel === "master" || (!degreeLevel && targetDegree === "master");
   const selectedUniversityQuery = useGetUniversityDetailQuery(
     selectedUniversity ?? "",
@@ -73,6 +78,7 @@ export default function ApplicantApplicationFormPage() {
   useEffect(() => {
     if (editing && query.data?.data) {
       const app = query.data.data;
+      setEditVersion(app.updatedAt);
       form.setFieldsValue({
         ...app,
         deadline: app.deadline ? dayjs(app.deadline) : undefined,
@@ -83,6 +89,7 @@ export default function ApplicantApplicationFormPage() {
         programId: params.get("programId") ?? undefined,
         undergraduateDegreeId: params.get("undergraduateDegreeId") ?? undefined,
         degreeLevel: params.get("degreeLevel") === "bachelor" ? "bachelor" : targetDegree === "master" || targetDegree === "bachelor" ? targetDegree : undefined,
+        major: params.get("major")?.slice(0, 255) ?? undefined,
         status: "researching",
       });
     }
@@ -115,10 +122,7 @@ export default function ApplicantApplicationFormPage() {
       university && !rows.some((item) => item.id === university.id)
         ? [university, ...rows]
         : rows;
-    const options = withSelected.map((item) => ({
-      value: item.id,
-      label: getTranslation(item.name),
-    }));
+    const options = buildUniversityChoices(withSelected);
     const program = selectedProgramQuery.data;
     if (program && !options.some((item) => item.value === program.universityId)) {
       options.unshift({ value: program.universityId, label: getTranslation(program.university.name) });
@@ -135,17 +139,18 @@ export default function ApplicantApplicationFormPage() {
     const { deadline, ...applicationValues } = values;
     const payload: CreateCollegeApplicationRequest = {
       ...applicationValues,
+      ...(!editing && !applicationValues.requirements ? { requirements: requirementsFromDegreePlan(params, applicationValues) } : {}),
       // A catalogue university is identified by ID. The database reserves
       // universityName for custom universities without an ID.
       universityName: applicationValues.universityId
         ? undefined
         : applicationValues.universityName,
-      deadline: deadline?.format("YYYY-MM-DD"),
+      deadline: deadline?.format("YYYY-MM-DD") ?? null,
     };
     try {
       const result = await (
         editing
-          ? update({ id: applicationId!, data: payload })
+          ? update({ id: applicationId!, data: {...payload,expectedUpdatedAt:editVersion} })
           : create(payload)
       ).unwrap();
       const entity =
@@ -156,10 +161,8 @@ export default function ApplicantApplicationFormPage() {
         editing ? "Application details updated." : "Application added.",
       );
       navigate(`/student-hub/applications/${entity?.id || applicationId}`);
-    } catch {
-      message.error(
-        "Could not save these application details. Your entries are still here.",
-      );
+    } catch(error:any) {
+      message.error(error?.data?.message || "Could not save these application details. Your entries are still here.");
     }
   };
   return (
@@ -172,6 +175,7 @@ export default function ApplicantApplicationFormPage() {
         <span>/</span>
         {editing ? "Edit application" : "Add application"}
       </Breadcrumb>
+      {previewPlan && <Alert type="info" showIcon message="Your degree planning checklist" description={<ul>{previewPlan.custom.items.map(item => <li key={item.id}>{item.completed ? 'Complete' : 'To do'}: {item.title}</li>)}</ul>} />}
       <QueryState
         loading={editing && query.isLoading}
         error={
@@ -211,6 +215,7 @@ export default function ApplicantApplicationFormPage() {
               </Form.Item>}
               {isMastersApplication && selectedProgramQuery.data && <Alert type="info" showIcon message={`Selected graduate programme: ${selectedProgramQuery.data.programName}`} />}
               {selectedProgramQuery.isError && <Alert type="warning" message="This graduate programme could not be verified. Return to programme search and choose a current record." />}
+              {!isMastersApplication && !selectedUndergraduateDegreeId && selectedMajor && <Alert type="info" message={`Selected study area: ${selectedMajor}`} />}
               <Form.Item name="major" hidden><Input /></Form.Item>
               <Form.Item name="intake" label="Planned intake (optional)"><Input placeholder="e.g. Autumn 2027" /></Form.Item>
               <p className="applicant-save-note">Saving this choice does not submit an application.</p>
@@ -220,6 +225,7 @@ export default function ApplicantApplicationFormPage() {
               </div>
             </>}
             {editing && <>
+            {!query.data?.data?.universityId && <Form.Item name="universityName" label="University" rules={[{required:true,whitespace:true},{max:255}]}><Input/></Form.Item>}
             {!editing && (
               <Form.Item
                 name="universityId"
@@ -343,6 +349,7 @@ export default function ApplicantApplicationFormPage() {
             <Form.Item name="whyThisSchool" label="Why this programme?">
               <Input.TextArea rows={3} />
             </Form.Item>
+            <Form.Item name="sharedNotes" label="Shared application notes" extra="Visible to your current application support mentors." rules={[{max:20000}]}><Input.TextArea rows={4}/></Form.Item>
             <Form.Item name="notes" label="Private notes">
               <Input.TextArea rows={3} />
             </Form.Item>

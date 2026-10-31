@@ -15,7 +15,11 @@ on:
     inputs:
       workspace_mode:
         type: choice
-        required: true
+        required: false
+        options: [inspect, deploy]
+      shared_applications_mode:
+        type: choice
+        required: false
         options: [inspect, deploy]
   push:
     branches:
@@ -138,7 +142,7 @@ jobs:
             🧹 Preview environment removed.
 
   promote-full-support:
-    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
+    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode && !inputs.shared_applications_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,7 +173,7 @@ jobs:
           path: full-support-ui-result.json
 
   workspaces:
-    if: github.event_name == 'workflow_dispatch' && inputs.workspace_mode
+    if: github.event_name == 'workflow_dispatch' && inputs.workspace_mode && !inputs.shared_applications_mode
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -206,3 +210,40 @@ jobs:
           path: |
             workspace-ui-snapshot.json
             workspace-ui-result.json
+
+  shared-applications:
+    if: github.event_name == 'workflow_dispatch' && inputs.shared_applications_mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Inspect or promote shared application screens
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          MODE: ${{ inputs.shared_applications_mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-shared-applications-dev.py "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-shared-applications-dev.py inspect'
+          scp "$DEST:/tmp/shared-applications-ui-snapshot.json" shared-applications-ui-snapshot.json
+          if [ "$MODE" = deploy ]; then
+            yarn install --frozen-lockfile
+            node .github/scripts/compile-shared-applications-dev.cjs
+            scp shared-applications-ui-bundle.json "$DEST:/tmp/"
+            ssh "$DEST" 'python3 /tmp/promote-shared-applications-dev.py deploy' | tee shared-applications-ui-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shared-applications-ui-${{ inputs.shared_applications_mode }}
+          path: |
+            shared-applications-ui-snapshot.json
+            shared-applications-ui-result.json
