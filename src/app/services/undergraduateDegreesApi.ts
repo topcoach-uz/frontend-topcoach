@@ -1,6 +1,9 @@
 import { RtkApi } from './api';
 
+export interface QualificationRequirement {label:string;value:string;note?:string|null;scope:string;sourceTitle:string;sourceUrl:string;verifiedAt:string;}
+
 export interface UndergraduateDegree {
+  qualificationRequirements?: QualificationRequirement[];
   id: string;
   universityId: string;
   slug: string;
