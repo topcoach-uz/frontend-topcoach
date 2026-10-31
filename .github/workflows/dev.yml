@@ -12,6 +12,11 @@ name: Dev preview
 
 on:
   workflow_dispatch:
+    inputs:
+      workspace_mode:
+        type: choice
+        required: true
+        options: [inspect, deploy]
   push:
     branches:
       - dev
@@ -133,7 +138,7 @@ jobs:
             🧹 Preview environment removed.
 
   promote-full-support:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]'))
+    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -162,3 +167,42 @@ jobs:
         with:
           name: full-support-ui-promotion
           path: full-support-ui-result.json
+
+  workspaces:
+    if: github.event_name == 'workflow_dispatch' && inputs.workspace_mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Snapshot or promote main dev workspaces
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          MODE: ${{ inputs.workspace_mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-workspaces-dev.py "$DEST:/tmp/"
+          if [ "$MODE" = inspect ]; then
+            ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py inspect'
+            scp "$DEST:/tmp/workspace-ui-snapshot.json" workspace-ui-snapshot.json
+          else
+            scp "$DEST:/tmp/workspace-ui-snapshot.json" workspace-ui-snapshot.json
+            yarn install --frozen-lockfile
+            node .github/scripts/compile-workspaces-dev.cjs
+            scp workspace-ui-bundle.json "$DEST:/tmp/"
+            ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py deploy' | tee workspace-ui-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-ui-${{ inputs.workspace_mode }}
+          path: |
+            workspace-ui-snapshot.json
+            workspace-ui-result.json

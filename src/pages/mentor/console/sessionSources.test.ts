@@ -63,7 +63,8 @@ describe("Mentor session attendance states", () => {
   it("leaves unrecorded Full Support lessons awaiting a record", () => {
     expect(normalizeFullSupportSession(fs(), null).status).toBe("report-due");
   });
-  it("marks Full Support lessons awaiting a record once their scheduled time has passed", () => {
-    expect(normalizeFullSupportSession(fs({ dateTime: '2026-10-17T11:30:00Z', duration: '1h' }), null).status).toBe('report-due');
+  it("keeps ongoing lessons upcoming until their planned end", () => {
+    expect(normalizeFullSupportSession(fs({ dateTime: '2026-10-17T11:30:00Z', duration: '1h' }), null).status).toBe('upcoming');
+    expect(normalizeFullSupportSession(fs({ dateTime: '2026-10-17T11:00:00Z', duration: '1h' }), null).status).toBe('report-due');
   });
 });

@@ -1,0 +1,30 @@
+.task-workspace-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.task-workspace-hint {
+  color: #706b65;
+  line-height: 1.6;
+  margin: 8px 0 18px;
+}
+.assigned-task-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+  > .ant-input-affix-wrapper {
+    flex: 1;
+    min-width: 180px;
+  }
+  > .ant-select {
+    min-width: 190px;
+  }
+}
+.mentor-assigned-tasks__item.is-selected {
+  border-left: 3px solid #7b1f2f;
+  background: #fcf8f4;
+  padding-left: 18px;
+  scroll-margin-top: 100px;
+}

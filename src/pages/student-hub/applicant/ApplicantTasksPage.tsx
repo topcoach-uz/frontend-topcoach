@@ -34,6 +34,7 @@ import {
   displayDate,
 } from "./ApplicantPage";
 import MentorAssignedTasks from "./MentorAssignedTasks";
+import "./taskWorkspace.scss";
 
 type TaskForm = Omit<CreateApplicationTaskRequest, "dueDate"> & {
   dueDate?: dayjs.Dayjs;
@@ -54,6 +55,8 @@ export default function ApplicantTasksPage() {
   const [editing, setEditing] = useState<ApplicationTask | null>(null);
   const [changingIds, setChangingIds] = useState<Set<string>>(new Set());
   const [form] = Form.useForm<TaskForm>();
+  const source = params.get("source") ?? (params.get("mentorTask") ? "assigned" : "all");
+  const showPersonal = source !== "assigned";
   const status = params.get("status") ?? "open";
   const application = params.get("application") ?? "all";
   const sort = params.get("sort") ?? "due";
@@ -109,7 +112,7 @@ export default function ApplicantTasksPage() {
   }, [action, taskId, editingQuery.data?.data?.id]);
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    if (value === "all" || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
+    if ((value === "all" && key !== "status") || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
       next.delete(key);
     } else {
       next.set(key, value);
@@ -189,7 +192,7 @@ export default function ApplicantTasksPage() {
   return (
     <ApplicantPage
       title="Your tasks"
-      subtitle="Plan the work behind every application."
+      subtitle="Personal reminders and work assigned by your mentors, together."
       actions={
         <Button type="primary" icon={<Plus size={16} />} onClick={() => open()}>
           Add task
@@ -197,8 +200,13 @@ export default function ApplicantTasksPage() {
       }
     >
       <Breadcrumb>Tasks</Breadcrumb>
-      <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />
-      <h2>My tasks</h2>
+      <div className="task-workspace-sources" role="group" aria-label="Task type">
+        {[['all','All tasks'],['assigned','Assigned to you'],['personal','Personal tasks']].map(([value,label]) => <Button key={value} type={source===value?'primary':'default'} aria-pressed={source===value} onClick={() => { const next=new URLSearchParams(params); next.set('source',value); next.delete('mentorTask'); next.delete('page'); setParams(next); }}>{label}</Button>)}
+      </div>
+      {source !== 'personal' && <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />}
+      {showPersonal && <>
+      <h2>Personal tasks</h2>
+      <p className="task-workspace-hint">Your own reminders. Mark them complete when done; mentor assignments require submission and review.</p>
       <div className="applicant-filters applicant-panel">
         <label>
           Status
@@ -328,6 +336,7 @@ export default function ApplicantTasksPage() {
           </div>
         )}
       </QueryState>
+      </>}
       <Modal
         rootClassName="applicant-modal"
         title={action === "edit" ? "Edit task" : "Add task"}

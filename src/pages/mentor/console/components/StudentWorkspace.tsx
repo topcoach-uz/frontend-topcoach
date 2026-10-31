@@ -1,5 +1,9 @@
 import FullSupportLessonActions from './FullSupportLessonActions';
-import { lessonLabel, lessonError } from '../fullSupportLessons';
+import { lessonError } from '../fullSupportLessons';
+import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
+import { calendarDateValue } from '../calendarDate';
+import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
+import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -195,8 +199,10 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
 export default function StudentWorkspace({
   student,
   isFullSupport = true,
+  showStudentName = true,
 }: {
   student: WorkspaceStudent;
+  showStudentName?: boolean;
   /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
   isFullSupport?: boolean;
 }) {
@@ -207,6 +213,8 @@ export default function StudentWorkspace({
 
   // Tasks first — the mockup's everyday view. Heavy sections load lazily.
   const [activeTab, setActiveTab] = useState('tasks');
+  const [taskSearch, setTaskSearch] = useState('');
+  const [taskFilter, setTaskFilter] = useState('all');
   const [moreView, setMoreView] = useState<MoreView>('milestones');
 
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -224,18 +232,28 @@ export default function StudentWorkspace({
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
 
   // Always loaded — power the stat cards + tab badges.
-  const { bookings, isLoading: loadingBookings } = useMentorBookings(studentId, {
+  const { bookings, isLoading: loadingBookings, isError: bookingsError } = useMentorBookings(studentId, {
     includeFullSupport: true,
   });
-  const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
-    skip: !studentId,
+  const { data: tasksRes, isLoading: loadingTasks, isError: tasksError, refetch: retryTasks } = useGetMentorTasksQuery(undefined, {
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
   });
-  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
+  const { data: pipelineRes, isError: pipelineError } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
+
+  const essayReviews = useGetMentorEssayReviewsQuery(undefined, {
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
+  });
+  const sharedEssayCount = new Set((essayReviews.data ?? [])
+    .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
+    .map(review => review.essayId)).size;
+
+  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
+  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
-  const { data: sessionsRes, isFetching: loadingSessions } = useGetMentorSessionsQuery(
+  const { data: sessionsRes, isFetching: loadingSessions, refetch: retrySessionLog } = useGetMentorSessionsQuery(
     studentId || null,
-    { skip: activeTab !== 'session-log' },
+    { skip: activeTab !== 'sessions' },
   );
   const { data: milestonesRes, isFetching: loadingMilestones } = useGetMentorMilestonesQuery(
     studentId,
@@ -287,6 +305,11 @@ export default function StudentWorkspace({
     [inbox, studentId],
   );
 
+  const filteredTasks = tasks.filter(t => {
+    const status = taskStatus(t);
+    return (taskFilter === 'all' || status === taskFilter) && `${t.task} ${t.description ?? ''}`.toLowerCase().includes(taskSearch.trim().toLowerCase());
+  }).sort((a,b) => Number(taskStatus(b) === 'awaiting-review') - Number(taskStatus(a) === 'awaiting-review'));
+
   const openTasksCount = useMemo(
     () => tasks.filter((t) => taskStatus(t) !== 'done').length,
     [tasks],
@@ -329,7 +352,7 @@ export default function StudentWorkspace({
       studentUserId: studentId,
       task: title,
       description: quickTaskDescription.trim() || undefined,
-      deadline: quickTaskDeadline.toISOString(),
+      deadline: calendarDateValue(quickTaskDeadline)!,
     })
       .unwrap()
       .then(() => {
@@ -363,7 +386,7 @@ export default function StudentWorkspace({
     await createMilestone({
       studentUserId: studentId,
       label: values.label,
-      date: values.date ? values.date.toISOString() : null,
+      date: calendarDateValue(values.date),
     })
       .unwrap()
       .then(() => {
@@ -381,15 +404,15 @@ export default function StudentWorkspace({
       dateTime: values.when.toISOString(),
       duration: values.duration,
       description: values.description || '',
-      meetingLink: values.meetingLink?.trim() || undefined,
+      meetingLink: values.meetingLink,
     })
       .unwrap()
       .then(() => {
-        message.success('Session logged');
+        message.success('Session scheduled');
         setLogSessionOpen(false);
         sessionForm.resetFields();
       })
-      .catch((error) => message.error(lessonError(error)));
+      .catch(error => message.error(lessonError(error)));
   };
 
   const submitPipeline = async () => {
@@ -399,7 +422,7 @@ export default function StudentWorkspace({
       program: values.program,
       stage: values.stage,
       status: values.status,
-      deadline: values.deadline ? values.deadline.toISOString() : null,
+      deadline: calendarDateValue(values.deadline),
     })
       .unwrap()
       .then(() => {
@@ -437,7 +460,7 @@ export default function StudentWorkspace({
     const s = taskStatus(t);
     const done = s === 'done';
     const overdue =
-      !done && t.deadline && new Date(t.deadline).getTime() < Date.now();
+      s === 'open' && t.deadline && new Date(t.deadline).getTime() < Date.now();
     const expanded = expandedTaskId === t.id;
     const hasDetail = !!(t.description || t.submissionText || t.feedback);
 
@@ -548,6 +571,7 @@ export default function StudentWorkspace({
         </div>
         <Space size={8} align="center">
           {pill}
+          {b.source === 'full-support' && <FullSupportLessonActions lesson={b.raw as SessionLogDto}/>}
           {b.status === 'upcoming' && b.joinUrl ? (
             <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
               Join
@@ -583,8 +607,8 @@ export default function StudentWorkspace({
     },
     { title: 'Attendance', key: 'attendance', render: (_, row) => fullSupportDisplay(row).attendance },
     { title: 'Actual minutes', key: 'actualMinutes', render: (_, row) => fullSupportDisplay(row).actualMinutes ?? '—' },
+    { title:'Actions',key:'actions',render:(_,row)=><FullSupportLessonActions lesson={row}/> },
     { title: 'Shared notes', dataIndex: 'sharedNotes', key: 'sharedNotes', render: (notes: string) => <span style={{ whiteSpace: 'pre-wrap' }}>{notes || '—'}</span> },
-    { title: 'Actions', key: 'actions', render: (_, row) => <FullSupportLessonActions lesson={row} /> },
   ];
 
   const milestoneColumns: ColumnsType<MilestoneDto> = [
@@ -680,16 +704,18 @@ export default function StudentWorkspace({
       label: tabLabel('Tasks', openTasksCount),
       children: (
         <>
-          {sectionHead('Tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+          {sectionHead('Assigned tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+          <p className="mc-ws-section-copy">Assignments and reviews here appear in the student’s Tasks workspace.</p>
+          <div className="mc-ws-task-toolbar"><Input aria-label="Search student tasks" placeholder="Search tasks or instructions…" value={taskSearch} onChange={e => setTaskSearch(e.target.value)} allowClear/><Select aria-label="Task status" value={taskFilter} onChange={setTaskFilter} options={[{value:'all',label:'All tasks'},{value:'awaiting-review',label:'Awaiting review'},{value:'open',label:'With student'},{value:'done',label:'Approved'}]}/></div>
           <div className="mc-ws-card">
-            {loadingTasks ? (
+            {tasksError ? <div className="mc-ws-empty">Tasks could not be loaded. <Button onClick={() => retryTasks()}>Retry</Button></div> : loadingTasks ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
                 <Spin />
               </div>
             ) : tasks.length === 0 ? (
               <div className="mc-ws-empty">No tasks yet — assign the first one below.</div>
             ) : (
-              <div className="mc-ws-tasklist">{tasks.map(renderTaskRow)}</div>
+              <div className="mc-ws-tasklist">{filteredTasks.length ? filteredTasks.map(renderTaskRow) : <div className="mc-ws-empty">No tasks match your search or filter.</div>}</div>
             )}
             {!canAssignTask && !loadingBookings && <div className="mc-ws-empty">Task assignment becomes available after your first completed 1:1 meeting with this student.</div>}
             {canAssignTask && <div className="mc-ws-task-add">
@@ -727,9 +753,9 @@ export default function StudentWorkspace({
       label: tabLabel('Sessions', upcomingSessions.length),
       children: (
         <>
-          {sectionHead('Upcoming sessions', <Calendar size={18} color="var(--mc-accent)" aria-hidden />)}
+          {sectionHead('Upcoming sessions', <Calendar size={18} color="var(--mc-accent)" aria-hidden />, isFullSupport ? {label:'Schedule session',onClick:()=>setLogSessionOpen(true)} : undefined)}
           <div className="mc-ws-card">
-            {loadingBookings ? (
+            {bookingsError ? <div className="mc-ws-empty">Session information could not be loaded.</div> : loadingBookings ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
                 <Spin />
               </div>
@@ -742,7 +768,7 @@ export default function StudentWorkspace({
 
           {sectionHead('Past sessions', <CalendarCheck size={18} color="var(--mc-accent)" aria-hidden />)}
           <div className="mc-ws-card">
-            {loadingBookings ? (
+            {bookingsError ? <div className="mc-ws-empty">Session information could not be loaded.</div> : loadingBookings ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
                 <Spin />
               </div>
@@ -767,15 +793,22 @@ export default function StudentWorkspace({
     },
     {
       key: 'essays',
-      label: tabLabel('Essays', pipeline.length),
+      label: tabLabel('Applications', studentApplications.data?.data.length ?? 0),
       children: (
         <>
-          {sectionHead('Essays & applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
-            label: 'Add row',
-            onClick: () => setAddPipelineOpen(true),
-          })}
-          <div className="mc-ws-card">
-            {pipeline.length === 0 ? (
+          {sectionHead('Applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />)}<p className="mc-ws-section-copy">The student’s saved applications. Requirement editing follows the existing mentor permissions.</p>
+          <div className="mc-ws-card" style={{ padding: 20, marginBottom: 16 }}>
+            <h3>Student application tracker</h3>
+            {studentApplications.isLoading ? <Spin/> : studentApplications.isError ? <p>Student applications are unavailable for this relationship.</p> : !studentApplications.data?.data.length ? <p>No student applications saved yet.</p> :
+              studentApplications.data.data.map(application => <div key={application.id} style={{ padding: '10px 0' }}>
+                <strong>{application.universityName || application.major || 'Application'}</strong>
+                <p>{application.major} · {application.status.replaceAll('_', ' ')} · Planning deadline: {formatDate(application.deadline ?? null)}</p>
+                <p>Application mentor: {application.mentorName || (application.mentorId ? 'Previously selected mentor' : 'Not assigned')}{application.canEditRequirements ? ' (you)' : ''}</p>
+                <ApplicationRequirements key={application.id} requirements={application.requirements} updatedAt={application.updatedAt} onSave={application.canEditRequirements ? (requirements, expectedUpdatedAt) => updateApplicationRequirements({ studentUserId: studentId!, id: application.id, requirements, expectedUpdatedAt }).unwrap() : undefined} />
+              </div>)}
+          </div>
+          <details className="mc-ws-archive"><summary>Mentor planning notes · {pipeline.length}</summary><p>Existing planning rows are separate from the student’s saved applications.</p><Button onClick={() => setAddPipelineOpen(true)}>Add planning row</Button><div className="mc-ws-card" style={{marginTop:12}}>
+            {pipelineError ? <p>Planning notes could not be loaded.</p> : pipeline.length === 0 ? (
               <div className="mc-ws-empty">
                 Track schools and essay stages — add a pipeline row to get started.
               </div>
@@ -789,7 +822,7 @@ export default function StudentWorkspace({
                 scroll={{ x: true }}
               />
             )}
-          </div>
+          </div></details>
         </>
       ),
     },
@@ -799,7 +832,7 @@ export default function StudentWorkspace({
       children: (
         <>
           {sectionHead('Session log', <ClipboardList size={18} color="var(--mc-accent)" aria-hidden />, {
-            label: 'Log session',
+            label: 'Schedule session',
             onClick: () => setLogSessionOpen(true),
           })}
           <div className="mc-ws-card">
@@ -825,7 +858,7 @@ export default function StudentWorkspace({
     },
     {
       key: 'more',
-      label: tabLabel('More'),
+      label: tabLabel('Progress'),
       children: (
         <>
           <div className="mc-ws-more-switch">
@@ -944,12 +977,15 @@ export default function StudentWorkspace({
   // 1:1 mentees only get the tabs backed by data that exists for them —
   // Full-Support-only surfaces (essays, FS session log, milestones/research/
   // curriculum) are hidden.
-  const visibleItems = isFullSupport
-    ? items
-    : items.filter((it) => ['tasks', 'sessions', 'message'].includes(it.key));
+  const mergedItems = items.filter(it => it.key !== 'session-log').map(it => it.key === 'sessions' && isFullSupport ? {...it, children:<>{it.children}<details className="mc-ws-archive" onToggle={e => {if(e.currentTarget.open) retrySessionLog();}}><summary>Detailed session records</summary>{items.find(row => row.key === 'session-log')?.children}</details></>} : it);
+  const visibleItems = isFullSupport ? mergedItems : mergedItems.filter(it => ['tasks','sessions','message'].includes(it.key));
 
   return (
     <>
+      <div className="mc-ws-focus">
+        <div><span className="mc-ws-eyebrow">STUDENT WORKSPACE · {isFullSupport ? 'FULL SUPPORT' : '1:1 MENTORING'}</span><h1>{showStudentName ? student.name : 'Mentoring overview'}</h1><p>Plan the next step, review work, and keep your student moving forward.</p><Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>Message student</Button></div>
+        <div className="mc-ws-next"><span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>{bookingsError ? <p>Session information could not be loaded.</p> : loadingBookings ? <Spin/> : upcomingSessions[0] ? <><h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2><p>{upcomingSessions[0].description || 'Mentoring session'} · {upcomingSessions[0].durationLabel}</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></> : <><h2>No upcoming session</h2><p>Check session history or arrange the next meeting.</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></>}</div>
+      </div>
       <div className="mc-stat-grid mc-ws-stats">
         <McStat
           icon={<Calendar size={18} />}
@@ -966,9 +1002,9 @@ export default function StudentWorkspace({
         />
         <McStat
           icon={<CalendarCheck size={18} />}
-          label="Reports filed"
+          label={isFullSupport ? "Lessons recorded" : "Reports filed"}
           value={reportsFiled}
-          meta={reportsDue > 0 ? `${reportsDue} report${reportsDue === 1 ? '' : 's'} due` : 'All filed'}
+          meta={reportsDue > 0 ? `${reportsDue} report${reportsDue === 1 ? '' : 's'} due` : 'No records pending'}
           tone={reportsDue > 0 ? 'alert' : 'good'}
         />
         <McStat
@@ -987,9 +1023,9 @@ export default function StudentWorkspace({
         {isFullSupport ? (
           <McStat
             icon={<FileText size={18} />}
-            label="Essays"
-            value={pipeline.length}
-            meta="Applications & essays"
+            label="Shared essays"
+            value={essayReviews.isError ? "—" : sharedEssayCount}
+            meta={essayReviews.isError ? "Count unavailable" : "Shared with you for review"}
             tone="neutral"
           />
         ) : (
@@ -1046,7 +1082,7 @@ export default function StudentWorkspace({
               </>
             ) : null}
             {feedbackTask.submissionFileUrls?.map((file) => (
-              <a key={file.url} href={`${hostName}${file.url}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 8 }}>
+              <a key={file.url} href={/^https?:\/\//i.test(file.url) ? file.url : `${hostName}${file.url}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 8 }}>
                 {file.fileName}
               </a>
             ))}
@@ -1082,7 +1118,7 @@ export default function StudentWorkspace({
       </Modal>
 
       <Modal
-        title="Log session"
+        title="Schedule session"
         open={logSessionOpen}
         onCancel={() => setLogSessionOpen(false)}
         onOk={submitSession}
@@ -1097,9 +1133,9 @@ export default function StudentWorkspace({
           <Form.Item name="duration" label="Duration" rules={[{ required: true, message: 'e.g. 1h' }]}>
             <Input placeholder="1h" />
           </Form.Item>
-          <Form.Item name="meetingLink" label="Meeting link" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input placeholder="https://meet.google.com/…" /></Form.Item>
-          <Form.Item name="description" label="Notes">
-            <Input.TextArea rows={3} placeholder="What you covered…" />
+          <Form.Item name="meetingLink" label="Meeting link (optional)" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input placeholder="https://…"/></Form.Item>
+          <Form.Item name="description" label="Session topic">
+            <Input.TextArea rows={3} placeholder="What will you work on together?" />
           </Form.Item>
         </Form>
       </Modal>
