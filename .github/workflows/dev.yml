@@ -173,6 +173,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
       - uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
@@ -189,6 +193,9 @@ jobs:
             ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py inspect'
             scp "$DEST:/tmp/workspace-ui-snapshot.json" workspace-ui-snapshot.json
           else
+            scp "$DEST:/tmp/workspace-ui-snapshot.json" workspace-ui-snapshot.json
+            yarn install --frozen-lockfile
+            node .github/scripts/compile-workspaces-dev.cjs
             scp workspace-ui-bundle.json "$DEST:/tmp/"
             ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py deploy' | tee workspace-ui-result.json
           fi
