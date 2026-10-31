@@ -316,7 +316,7 @@ export default function ApplicantApplicationsPage() {
             <div className="applicant-page__heading">
               <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
               <Link to="/student-hub/applications?tab=scholarships">Scholarships →</Link>
-              
+
             </div>
             {!!active.length && (
               <div className="applicant-panel applicant-list">
