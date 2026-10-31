@@ -24,9 +24,9 @@ import {
 } from './ApplicantOverviewContext';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { useGetEnrollmentMeQuery } from 'src/app/services/fullSupportApi';
 import { ApplicantTopBarContext } from './ApplicantTopBarContext';
 import './applicantWorkspace.scss';
+import ProgramNavigationLink from '../my-programs/ProgramNavigationLink';
 
 export default function ApplicantShell({ children }: { children: ReactNode }) {
   const userId = useTypedSelector((state) => state.auth.profile?.id);
@@ -112,11 +112,7 @@ function ApplicantNavigation({
   );
   const { isCommunityEnrolled, isEntitlementLoading } =
     useJourneyExperience();
-  const { data: fullSupportEnrollment, isLoading: fullSupportLoading } =
-    useGetEnrollmentMeQuery();
   const communityLocked = !isEntitlementLoading && !isCommunityEnrolled;
-  const fullSupportLocked =
-    !fullSupportLoading && !fullSupportEnrollment?.data?.enrolled;
   const { t } = useTranslation();
   const { pathname, search } = useLocation();
   const current = new URLSearchParams(search);
@@ -349,13 +345,7 @@ function ApplicantNavigation({
           <ListChecks size={20} aria-hidden />,
         )}
         {group(groups[1])}
-        {navLink(
-          applicantLinks.fullSupport,
-          t('applicant.fullSupport'),
-          selected(applicantLinks.fullSupport),
-          <HeartHandshake size={20} aria-hidden />,
-          fullSupportLocked,
-        )}
+        <ProgramNavigationLink onNavigate={onNavigate} />
         {group(groups[2])}
         {(managementRole === 'SuperAdmin' ||
           (managementRole as string) === 'Owner') && (
