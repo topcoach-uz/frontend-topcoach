@@ -1,0 +1,41 @@
+name: Promote workspaces to main dev
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        required: true
+        options: [inspect, deploy]
+permissions:
+  contents: read
+jobs:
+  workspaces:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Snapshot or promote main dev workspaces
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-workspaces-dev.py "$DEST:/tmp/"
+          if [ "$MODE" = inspect ]; then
+            ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py inspect'
+            scp "$DEST:/tmp/workspace-ui-snapshot.json" workspace-ui-snapshot.json
+          else
+            scp workspace-ui-bundle.json "$DEST:/tmp/"
+            ssh "$DEST" 'python3 /tmp/promote-workspaces-dev.py deploy' | tee workspace-ui-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-ui-${{ inputs.mode }}
+          path: |
+            workspace-ui-snapshot.json
+            workspace-ui-result.json
