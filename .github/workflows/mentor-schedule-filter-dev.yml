@@ -1,0 +1,45 @@
+name: Mentor schedule filter dev
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [inspect, deploy]
+        default: inspect
+        required: true
+jobs:
+  schedule-filter:
+    if: github.ref_name == 'feat/mentor-schedule-filter-20261031'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Inspect or publish mentor schedule filter
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-schedule-filter-dev.py "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-schedule-filter-dev.py inspect'
+          scp "$DEST:/tmp/schedule-filter-ui-snapshot.json" schedule-filter-ui-snapshot.json
+          if [ "$MODE" = deploy ]; then
+            npm install --prefix /tmp/schedule-filter-compiler --no-audit --no-fund typescript@5.7.3 sass@1.83.4
+            NODE_PATH=/tmp/schedule-filter-compiler/node_modules node .github/scripts/compile-schedule-filter-dev.cjs
+            scp schedule-filter-ui-bundle.json "$DEST:/tmp/"
+            ssh "$DEST" 'python3 /tmp/promote-schedule-filter-dev.py deploy' | tee schedule-filter-ui-result.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schedule-filter-${{ inputs.mode }}
+          path: |
+            schedule-filter-ui-snapshot.json
+            schedule-filter-ui-result.json

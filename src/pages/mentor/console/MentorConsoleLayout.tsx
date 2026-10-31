@@ -26,7 +26,6 @@ import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
-  | 'full-support'
   | 'course-classes'
   | 'availability'
   | 'students'
@@ -147,7 +146,6 @@ export default function MentorConsoleLayout() {
         path: '/mentor/dashboard',
         badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
       },
-      { key: 'full-support', label: 'Full Support', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?program=full-support&scope=due' },
       {
         key: 'course-classes',
         label: 'Course classes',
@@ -232,7 +230,6 @@ export default function MentorConsoleLayout() {
 
   const activeKey = useMemo((): NavKey | null => {
     const p = location.pathname;
-    if (p.startsWith('/mentor/dashboard') && new URLSearchParams(location.search).get('program') === 'full-support') return 'full-support';
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/referrals')) return 'referrals';
     if (p.startsWith('/mentor/document-reviews')) return 'document-reviews';

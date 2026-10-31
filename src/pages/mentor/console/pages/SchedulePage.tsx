@@ -75,13 +75,20 @@ export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
   const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
-  const fullSupportPage = searchParams.get('program') === 'full-support';
+  const fullSupportOnly = searchParams.get('program') === 'full-support';
   // Honor `?scope=past` / `?scope=due` deep-links (old dashboard KPIs, emails).
   const initialScope = SCOPES.includes(searchParams.get('scope') as Scope)
     ? (searchParams.get('scope') as Scope)
-    : fullSupportPage ? 'due' : 'upcoming';
+    : fullSupportOnly ? 'due' : 'upcoming';
   const scope = initialScope;
   const setScope = (next: Scope) => setSearchParams(params => { params.set('scope', next); return params; });
+  const setProgramFilter = (value: 'all' | 'full-support') => setSearchParams(params => {
+    // Keep the current status tab and any other deep-link parameters.
+    params.set('scope', scope);
+    if (value === 'full-support') params.set('program', value);
+    else params.delete('program');
+    return params;
+  });
   const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
 
   const [recordBooking, setRecordBooking] = useState<MentorBooking | null>(null);
@@ -121,12 +128,12 @@ export default function MentorConsoleSchedulePage() {
 
   const decorated = useMemo<MentorBooking[]>(() => {
     const relevant = hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform');
-    return relevant.filter(b => !fullSupportPage || b.source === 'full-support').map((b) => ({
+    return relevant.filter(b => !fullSupportOnly || b.source === 'full-support').map((b) => ({
       ...b,
       studentName:
         b.studentName || (b.studentUserId && rosterById.get(b.studentUserId)?.name) || null,
     }));
-  }, [bookings, hasFullSupport, rosterById, fullSupportPage]);
+  }, [bookings, hasFullSupport, rosterById, fullSupportOnly]);
 
   const byScope = useMemo(() => scheduleScopes(decorated), [decorated]);
 
@@ -320,7 +327,7 @@ export default function MentorConsoleSchedulePage() {
             Mentor <span className="mc-page-eyebrow-accent">· Schedule</span>
           </div>
           <h1 className="mc-page-title" style={{ marginBottom: 8 }}>
-            {fullSupportPage ? 'Full Support' : `Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
+            {`Welcome back, ${displayName.split(' ')[0] || 'mentor'}`}
           </h1>
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
             Your sessions — upcoming, past, and anything awaiting attendance or a report.
@@ -348,6 +355,21 @@ export default function MentorConsoleSchedulePage() {
           </span>
           <ArrowRight size={15} />
         </button>
+      )}
+
+      {(hasFullSupport || fullSupportOnly) && (
+        <div className="mc-sched-program-filter">
+          <label htmlFor="mentor-schedule-program">Sessions</label>
+          <select
+            id="mentor-schedule-program"
+            aria-label="Filter sessions by program"
+            value={fullSupportOnly ? 'full-support' : 'all'}
+            onChange={event => setProgramFilter(event.target.value as 'all' | 'full-support')}
+          >
+            <option value="all">All sessions</option>
+            <option value="full-support">Full Support</option>
+          </select>
+        </div>
       )}
 
       <div className="mc-sched-tabbar" role="tablist" aria-label="Session scope">
