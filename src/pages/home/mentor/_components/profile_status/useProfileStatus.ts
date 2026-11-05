@@ -4,13 +4,12 @@ import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useTypedSelector } from 'src/app/store';
 import { CheckListProps } from '../CheckListItem';
 import { useTranslation } from 'react-i18next';
-import { useConnectGoogleCalendar, GOOGLE_CALENDAR_SCOPES, scopes } from '../useConnectGoogleCalendar';
+import { GOOGLE_CALENDAR_SCOPES, scopes } from '../useConnectGoogleCalendar';
 
 export default function useProfileStatus() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const { t } = useTranslation();
-  const { connectCalendar } = useConnectGoogleCalendar();
 
   const handleCancel = () => {
     setModalOpen(false);
@@ -54,12 +53,6 @@ export default function useProfileStatus() {
       onClick: () => {
         setModalOpen(true);
       },
-    },
-    {
-      stepName: t('homeMentor.googleCalendar'),
-      isComplete: !!meRes?.hasGoogleCredentials,
-      buttonText: t('homeMentor.googleCalendarButton'),
-      onClick: () => connectCalendar(),
     },
   ];
 
