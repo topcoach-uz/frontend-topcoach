@@ -10,11 +10,6 @@ import { useGetMentorsQuery } from 'src/app/services/mentors';
  * to feed it into the PDF generator, so it lives here as a pure hook.
  */
 
-const MASTER_PROGRAM_BLOCKLIST = new Set([
-  'ahmadullayevarabboy@gmail.com',
-  'mamadjanovjamshidbek@gmail.com',
-]);
-
 /** Quality bias so we never fall back to a stale junior mentor when
  * the personalization signals don't match anyone. */
 const LEVEL_QUALITY_BONUS: Record<string, number> = {
@@ -85,7 +80,10 @@ export function useRankedMentors(
       (m) =>
         m.mentorProfile &&
         m.mentorProfile.status === 'accepted' &&
-        !MASTER_PROGRAM_BLOCKLIST.has((m.email ?? '').toLowerCase()),
+        // Roadmap recommendations are for bachelor applicants. The API no longer
+        // exposes mentor emails, so use the profile's mentorship type instead
+        // of the old hardcoded email blocklist.
+        (m.mentorProfile as { mentorshipType?: string }).mentorshipType !== 'master',
     );
 
     return [...eligible]
