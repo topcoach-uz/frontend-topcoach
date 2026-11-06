@@ -76,6 +76,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
+        // Module workers need a JavaScript MIME type. Use a fresh .js URL so
+        // cached octet-stream headers on an older .mjs URL cannot break PDFs.
+        assetFileNames: (asset) => asset.name?.endsWith('.mjs')
+          ? 'assets/[name]-[hash].js'
+          : 'assets/[name]-[hash][extname]',
         // Only do ROUTE-level code splitting here. Manual vendor chunks are a
         // well-known footgun with React — any lib that imports React hooks
         // (antd, @sentry/react, recharts, react-redux, @reduxjs/toolkit, etc.)

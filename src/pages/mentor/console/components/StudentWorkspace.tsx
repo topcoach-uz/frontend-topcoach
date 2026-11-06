@@ -1,3 +1,7 @@
+import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
+import { calendarDateValue } from '../calendarDate';
+import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
+import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -226,9 +230,19 @@ export default function StudentWorkspace({
     includeFullSupport: true,
   });
   const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
-    skip: !studentId,
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
   });
   const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
+
+  const essayReviews = useGetMentorEssayReviewsQuery(undefined, {
+    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
+  });
+  const sharedEssayCount = new Set((essayReviews.data ?? [])
+    .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
+    .map(review => review.essayId)).size;
+
+  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
+  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: sessionsRes, isFetching: loadingSessions } = useGetMentorSessionsQuery(
@@ -327,7 +341,7 @@ export default function StudentWorkspace({
       studentUserId: studentId,
       task: title,
       description: quickTaskDescription.trim() || undefined,
-      deadline: quickTaskDeadline.toISOString(),
+      deadline: calendarDateValue(quickTaskDeadline)!,
     })
       .unwrap()
       .then(() => {
@@ -361,7 +375,7 @@ export default function StudentWorkspace({
     await createMilestone({
       studentUserId: studentId,
       label: values.label,
-      date: values.date ? values.date.toISOString() : null,
+      date: calendarDateValue(values.date),
     })
       .unwrap()
       .then(() => {
@@ -396,7 +410,7 @@ export default function StudentWorkspace({
       program: values.program,
       stage: values.stage,
       status: values.status,
-      deadline: values.deadline ? values.deadline.toISOString() : null,
+      deadline: calendarDateValue(values.deadline),
     })
       .unwrap()
       .then(() => {
@@ -763,13 +777,23 @@ export default function StudentWorkspace({
     },
     {
       key: 'essays',
-      label: tabLabel('Essays', pipeline.length),
+      label: tabLabel('Applications & plans', (studentApplications.data?.data.length ?? 0) + pipeline.length),
       children: (
         <>
-          {sectionHead('Essays & applications', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
+          {sectionHead('Applications & mentor plans', <FileText size={18} color="var(--mc-accent)" aria-hidden />, {
             label: 'Add row',
             onClick: () => setAddPipelineOpen(true),
           })}
+          <div className="mc-ws-card" style={{ padding: 20, marginBottom: 16 }}>
+            <h3>Student application tracker</h3>
+            {studentApplications.isError ? <p>Student applications are unavailable for this relationship.</p> : !studentApplications.data?.data.length ? <p>No student applications saved yet.</p> :
+              studentApplications.data.data.map(application => <div key={application.id} style={{ padding: '10px 0' }}>
+                <strong>{application.universityName || application.major || 'Application'}</strong>
+                <p>{application.major} · {application.status.replaceAll('_', ' ')} · Planning deadline: {formatDate(application.deadline ?? null)}</p>
+                <p>Application mentor: {application.mentorName || (application.mentorId ? 'Previously selected mentor' : 'Not assigned')}{application.canEditRequirements ? ' (you)' : ''}</p>
+                <ApplicationRequirements key={application.id} requirements={application.requirements} updatedAt={application.updatedAt} onSave={application.canEditRequirements ? (requirements, expectedUpdatedAt) => updateApplicationRequirements({ studentUserId: studentId!, id: application.id, requirements, expectedUpdatedAt }).unwrap() : undefined} />
+              </div>)}
+          </div>
           <div className="mc-ws-card">
             {pipeline.length === 0 ? (
               <div className="mc-ws-empty">
@@ -983,9 +1007,9 @@ export default function StudentWorkspace({
         {isFullSupport ? (
           <McStat
             icon={<FileText size={18} />}
-            label="Essays"
-            value={pipeline.length}
-            meta="Applications & essays"
+            label="Shared essays"
+            value={essayReviews.isError ? "—" : sharedEssayCount}
+            meta={essayReviews.isError ? "Count unavailable" : "Shared with you for review"}
             tone="neutral"
           />
         ) : (

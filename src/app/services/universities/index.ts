@@ -2,12 +2,18 @@ import { UniversitiesSchema } from 'src/app/api/Api';
 import type { MajorsSchema } from 'src/app/api/Api';
 import { RtkApi } from '../api';
 import { normalizeUniversityList, universityListParams } from './universityQuery';
+import reviewedUniversityIds from './reviewedUniversityIds.json';
+
+const reviewedIds = new Set(reviewedUniversityIds);
 export { normalizeUniversityList, universityListParams } from './universityQuery';
+
+export interface VerifiedProgramLink { majorId: string; degreeLevel: string; url: string; programmeName: string }
+export type UniversityDetail = UniversitiesSchema & { verifiedProgramLinks?: VerifiedProgramLink[] };
 
 export const universityApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
     // Get university detail by ID
-    getUniversityDetail: build.query<UniversitiesSchema, string>({
+    getUniversityDetail: build.query<UniversityDetail, string>({
       query: (id) => ({
         url: `/university/${id}`,
         method: 'GET',
@@ -20,7 +26,7 @@ export const universityApi = RtkApi.injectEndpoints({
       // Keep data in cache for 20 minutes for faster subsequent loads
       keepUnusedDataFor: 1200,
       // Transform response to optimize data structure
-      transformResponse: (response: UniversitiesSchema) => {
+      transformResponse: (response: UniversityDetail) => {
         // Pre-process university data to reduce client-side computation
         return {
           ...response,
@@ -54,6 +60,31 @@ export const universityApi = RtkApi.injectEndpoints({
       },
     }),
 
+    // Fetch complete results before filtering the reviewed catalogue. Filtering
+    // after server pagination would leave gaps and incorrect page totals.
+    getReviewedUniversities: build.query<{ data: UniversitiesSchema[]; total: number }, { search?: string; majorName?: string; country?: string; majorType?: "undergraduate" | "graduate" }>({
+      async queryFn(filters, _api, _extraOptions, baseQuery) {
+        const rows = new Map<string, UniversitiesSchema>();
+        let page = 1;
+        let fetched = 0;
+        let total = 0;
+        do {
+          const result = await baseQuery({ url: '/university', method: 'GET', params: universityListParams({ ...filters, page, limit: 400 }) });
+          if (result.error) return { error: result.error };
+          const batch = normalizeUniversityList(result.data as UniversitiesSchema[] | { data: UniversitiesSchema[]; total: number });
+          total = batch.total;
+          if (!batch.data.length && fetched < total) return { error: { status: 'CUSTOM_ERROR', error: 'The university catalogue could not be loaded completely.' } };
+          for (const university of batch.data) if (reviewedIds.has(university.id)) rows.set(university.id, university);
+          fetched += batch.data.length;
+          page += 1;
+        } while (fetched < total);
+        const data = Array.from(rows.values());
+        return { data: { data, total: data.length } };
+      },
+      providesTags: ['Universities'],
+      keepUnusedDataFor: 600,
+    }),
+
     getUniversityFilters: build.query<{ majors: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries: string[] }, void>({
       query: () => ({ url: '/university/filters', method: 'GET' }),
     }),
@@ -76,6 +107,7 @@ export const universityApi = RtkApi.injectEndpoints({
 export const {
   useGetUniversityDetailQuery,
   useGetUniversitiesQuery,
+  useGetReviewedUniversitiesQuery,
   useGetUniversityFiltersQuery,
   useLazyGetUniversityDetailQuery,
   usePrefetchUniversityQuery,
