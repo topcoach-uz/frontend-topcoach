@@ -1,5 +1,5 @@
+import {useLocation} from 'react-router-dom';
 import SharedApplications from './SharedApplications';
-import { SessionRecording } from 'src/components/session-recording/SessionRecording';
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
 import { calendarDateValue } from '../calendarDate';
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
@@ -199,8 +199,10 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
 export default function StudentWorkspace({
   student,
   isFullSupport = true,
+  showStudentName = true,
 }: {
   student: WorkspaceStudent;
+  showStudentName?: boolean;
   /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
   isFullSupport?: boolean;
 }) {
@@ -209,7 +211,8 @@ export default function StudentWorkspace({
   const studentId = student.id;
 
   // Tasks first — the mockup's everyday view. Heavy sections load lazily.
-  const [activeTab, setActiveTab] = useState('tasks');
+  const location=useLocation();
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get('tab')==='applications'?'essays':'tasks');
   const [moreView, setMoreView] = useState<MoreView>('milestones');
 
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -227,7 +230,7 @@ export default function StudentWorkspace({
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
 
   // Always loaded — power the stat cards + tab badges.
-  const { bookings, isLoading: loadingBookings } = useMentorBookings(studentId, {
+  const { bookings, isLoading: loadingBookings, isError:bookingsError } = useMentorBookings(studentId, {
     includeFullSupport: true,
   });
   const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
@@ -556,7 +559,6 @@ export default function StudentWorkspace({
               Join
             </Button>
           ) : null}
-          <SessionRecording source={b.source} sessionId={b.raw.id} />
           {sessionActions.renderActions(b)}
         </Space>
       </div>
@@ -887,6 +889,10 @@ export default function StudentWorkspace({
 
   return (
     <>
+      <div className="mc-ws-focus">
+        <div><span className="mc-ws-eyebrow">STUDENT WORKSPACE · {isFullSupport ? 'FULL SUPPORT' : '1:1 MENTORING'}</span><h1>{showStudentName ? student.name : 'Mentoring overview'}</h1><p>Plan the next step, review work, and keep your student moving forward.</p><Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>Message student</Button></div>
+        <div className="mc-ws-next"><span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>{bookingsError ? <p>Session information could not be loaded.</p> : loadingBookings ? <Spin/> : upcomingSessions[0] ? <><h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2><p>{upcomingSessions[0].description || 'Mentoring session'} · {upcomingSessions[0].durationLabel}</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></> : <><h2>No upcoming session</h2><p>Check session history or arrange the next meeting.</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></>}</div>
+      </div>
       <div className="mc-stat-grid mc-ws-stats">
         <McStat
           icon={<Calendar size={18} />}
