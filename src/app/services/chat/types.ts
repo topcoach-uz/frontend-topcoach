@@ -1,6 +1,6 @@
 // Chat feature types for frontend
 
-export type ConversationKind = 'MENTOR_STUDENT' | 'PEER';
+export type ConversationKind = 'MENTOR_STUDENT' | 'PEER' | 'COUNSELOR_STUDENT' | 'ADMIN_MENTOR';
 
 export interface Conversation {
   id: string;

@@ -64,8 +64,9 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
   const otherUser = getOtherUser();
   const userName = otherUser?.profile?.name || otherUser?.email || 'User';
   const isMentorSide = conversation?.mentorId === currentUser?.id;
+  const isAdminMentor = conversation?.conversationType === 'ADMIN_MENTOR';
   const otherIsMentor =
-    conversation?.conversationType !== 'PEER' && !isMentorSide && !!conversation?.mentorId;
+    !isAdminMentor && conversation?.conversationType !== 'PEER' && !isMentorSide && !!conversation?.mentorId;
 
   // Pull mentor detail (university, title) so the thread header can
   // surface a richer subtitle like "Mentor · Yale NUS" instead of just
@@ -79,7 +80,9 @@ const MessengerExperience: React.FC<MessengerExperienceProps> = ({
     ?.mentorProfile?.university;
 
   const subtitle =
-    conversation?.conversationType === 'PEER'
+    isAdminMentor
+      ? isMentorSide ? 'Mentor' : 'TopCoach Admin'
+      : conversation?.conversationType === 'PEER'
       ? 'Peer · Study Buddy'
       : threadId
         ? 'Session thread'
