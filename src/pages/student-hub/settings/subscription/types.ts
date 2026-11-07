@@ -66,6 +66,7 @@ export type PaymentMethodDto = {
 export type SubscriptionDto = {
   id: string;
   status: SubscriptionStatus;
+  autoRenew?: boolean;
   plan: PlanDto;
   paymentMethodId: string | null;
   /** ISO timestamp; null while pending. */

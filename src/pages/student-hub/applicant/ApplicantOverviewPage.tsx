@@ -17,7 +17,7 @@ import {
 } from 'src/lib/applicantWorkspace';
 import { useApplicantOverview } from './ApplicantOverviewContext';
 import {
-  applicantDegree,
+  applicantDegreeOrNull,
   assessmentState,
   displayName,
   hasAssessmentDraft,
@@ -25,6 +25,14 @@ import {
   safeMeetingLink,
 } from './applicantOverviewModel';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
+import { useGetMySessionsQuery } from 'src/app/services/sessions';
+import { useTypedSelector } from 'src/app/store';
+import {
+  mentorName,
+  needsRating,
+  splitSessions,
+  unwrapSessions,
+} from './studentSessionsModel';
 
 const TextLink = ({
   to,
@@ -66,8 +74,23 @@ export default function ApplicantOverviewPage() {
       window.removeEventListener('offline', update);
     };
   }, []);
+  useEffect(() => {
+    const previous = document.title;
+    document.title = t('applicant.pageTitle', 'Overview · TopCoach');
+    return () => {
+      document.title = previous;
+    };
+  }, [t]);
+  const authUserId = useTypedSelector((state) => state.auth.profile?.id);
+  const mySessions = useGetMySessionsQuery(undefined, {
+    skip: !authUserId,
+    refetchOnMountOrArgChange: true,
+  });
+  const unratedSession = splitSessions(unwrapSessions(mySessions.data)).past.find((session) =>
+    needsRating(session, authUserId),
+  );
   const profile = data?.profile;
-  const degree = applicantDegree(profile?.targetDegree);
+  const degree = applicantDegreeOrNull(profile?.targetDegree);
   const needsAssessment = degree === 'bachelor' && !!profile?.id;
   const status = useGetMajorMatchStatusQuery(profile?.id ?? '', {
     skip: !needsAssessment,
@@ -140,13 +163,35 @@ export default function ApplicantOverviewPage() {
         aria-label={t('applicant.loading')}
       >
         <p className="applicant-muted">{t('applicant.loading')}</p>
-        <Skeleton active title paragraph={{ rows: 2 }} />
+        <header className="applicant-page-heading">
+          <div style={{ flex: 1 }}>
+            <Skeleton
+              active
+              title={{ width: '40%' }}
+              paragraph={{ rows: 1, width: '55%' }}
+            />
+          </div>
+        </header>
         <div className="applicant-card applicant-loading-card">
           <Skeleton active paragraph={{ rows: 5 }} />
         </div>
         <div className="applicant-columns">
-          <Skeleton active paragraph={{ rows: 6 }} />
-          <Skeleton active paragraph={{ rows: 6 }} />
+          <div className="applicant-stack">
+            <div className="applicant-card">
+              <Skeleton active paragraph={{ rows: 6 }} />
+            </div>
+            <div className="applicant-card">
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </div>
+          </div>
+          <div className="applicant-stack">
+            <div className="applicant-card">
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </div>
+            <div className="applicant-card">
+              <Skeleton active paragraph={{ rows: 5 }} />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -258,9 +303,11 @@ export default function ApplicantOverviewPage() {
           <h1>{greeting}</h1>
           <p>
             {t(
-              degree
-                ? `applicant.${degree}Workspace`
-                : 'applicant.workspaceSubtitle',
+              degree === 'bachelor'
+                ? 'applicant.bachelorWorkspaceLabel'
+                : degree
+                  ? `applicant.${degree}Workspace`
+                  : 'applicant.workspaceSubtitle',
             )}
           </p>
         </div>
@@ -352,7 +399,7 @@ export default function ApplicantOverviewPage() {
           </div>
           {assessment === 'complete' ? (
             <div className="applicant-major-match__summary">
-              <p className="applicant-major-match__summary-label">
+              <p className="applicant-eyebrow applicant-major-match__summary-label">
                 {t('applicant.assessment.complete.summaryTitle')}
               </p>
               {latest.isFetching && latest.currentData === undefined ? (
@@ -377,6 +424,7 @@ export default function ApplicantOverviewPage() {
               <iframe
                 src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0"
                 title={t('applicant.watchIntroduction')}
+                loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
@@ -412,7 +460,12 @@ export default function ApplicantOverviewPage() {
 
       <div className="applicant-columns">
         <div className="applicant-stack">
-          {degree === 'master' && visit === 'new' && (
+          {degree === 'master' &&
+            (visit === 'new' ||
+              (visit === 'returning' &&
+                !!apps &&
+                apps.active.total === 0 &&
+                apps.shortlist.total === 0)) && (
             <section className="applicant-card applicant-master-start">
               <p className="applicant-eyebrow">{t('applicant.nextStep')}</p>
               <h2>{t('applicant.masterStartTitle')}</h2>
@@ -596,6 +649,10 @@ export default function ApplicantOverviewPage() {
                     rel="noreferrer"
                   >
                     {t('applicant.joinSession')}
+                    <span className="applicant-sr-only">
+                      {' '}
+                      {t('applicant.opensInNewTab')}
+                    </span>
                     <ArrowRight size={16} aria-hidden />
                   </a>
                 )}
@@ -607,6 +664,15 @@ export default function ApplicantOverviewPage() {
                 <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
               </>
             )}
+            {unratedSession && (
+              <p className="applicant-muted">
+                How was your session with {mentorName(unratedSession)}?{' '}
+                <Link className="applicant-text-link" to={applicantLinks.sessions}>
+                  Rate it
+                </Link>
+              </p>
+            )}
+            <TextLink to={applicantLinks.sessions}>View all sessions</TextLink>
           </section>
 
           <section className="applicant-card">
@@ -670,7 +736,7 @@ export default function ApplicantOverviewPage() {
                   {t(
                     degree === 'master'
                       ? 'applicant.masterDocumentsBody'
-                      : 'applicant.documentsBody',
+                      : 'applicant.documentsCardBody',
                   )}
                 </p>
                 <p className="applicant-muted">

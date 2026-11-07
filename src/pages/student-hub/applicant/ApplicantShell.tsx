@@ -1,3 +1,4 @@
+import { adminPanelUrl } from 'src/lib/adminPanel';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Drawer, Skeleton } from 'antd';
 import {
@@ -146,6 +147,7 @@ function ApplicantNavigation({
       Icon: CirclePlay,
       links: degree === 'bachelor'
         ? [
+            { key: 'mySessions', to: applicantLinks.sessions, locked: false },
             { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
@@ -165,6 +167,7 @@ function ApplicantNavigation({
           ]
         : [
             { key: 'myProgress', to: applicantLinks.learning, locked: false },
+            { key: 'mySessions', to: applicantLinks.sessions, locked: false },
             { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
@@ -275,6 +278,7 @@ function ApplicantNavigation({
                 link.to,
                 t(
                   `applicant.${entry.key === 'myLearning' && link.key === 'researchPrep' ? 'researchPrepShort' : link.key}`,
+                  { defaultValue: link.key === 'mySessions' ? 'My sessions' : link.key },
                 ),
                 selected(link.to),
                 undefined,
@@ -350,11 +354,7 @@ function ApplicantNavigation({
         {(managementRole === 'SuperAdmin' ||
           (managementRole as string) === 'Owner') && (
           <div className="applicant-nav-children">
-            {navLink(
-              '/new-admin/dashboard',
-              t('studentHub.nav.adminConsole', 'Admin console'),
-              false,
-            )}
+            <a href={adminPanelUrl}>{t('studentHub.nav.adminConsole', 'Admin')}</a>
           </div>
         )}
       </nav>

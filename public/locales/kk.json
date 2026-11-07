@@ -3805,5 +3805,9 @@
   "applicant.status.deferred": "Кейінге қалдырылған",
   "applicant.taskStatus.pending": "Күтілуде",
   "applicant.taskStatus.in_progress": "Орындалуда",
-  "applicant.taskStatus.overdue": "Мерзімі өткен"
+  "applicant.taskStatus.overdue": "Мерзімі өткен",
+  "applicant.bachelorWorkspaceLabel": "Бакалавриатқа арналған жұмыс аймағыңыз",
+  "applicant.documentsCardBody": "Өтініштеріңізге қажеттінің бәрі бір жерде.",
+  "applicant.opensInNewTab": "(жаңа қойындыда ашылады)",
+  "applicant.pageTitle": "Шолу · TopCoach"
 }

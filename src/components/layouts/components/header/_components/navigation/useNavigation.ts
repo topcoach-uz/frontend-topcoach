@@ -25,11 +25,13 @@ export default function useNavigation() {
   // work from their mentor dashboard. Non-mentor SuperAdmins keep it;
   // org staff get the console as home instead.
   const shouldShowMyJourney = !isMentor && !isOrgStaff;
-  // Mentors: Home. Org staff: the console is home.
-  const showHome = isMentor && !isOrgStaff;
+  // Mentors (who aren't org staff) get a link-free header — see below.
+  const isMentorOnly = isMentor && !isOrgStaff;
 
-  const navLinks: INavLink[] = [
-    ...(showHome ? [{ path: '/', text: t('header.home', 'Home') }] : []),
+  // Mentors work from their console sidebar; the student/marketing pages
+  // (Mentors, Programs, Workshops, Resources) only add noise, so the header
+  // shows no links for them. The logo still leads home ("/" → console).
+  const navLinks: INavLink[] = isMentorOnly ? [] : [
     // Org staff keep the FULL site nav — they are ordinary users who happen to
     // run an organization, and they browse Mentors/Programs/Events like anyone
     // else. Landing them on the console is the gates' job (HomeRouter); the nav
@@ -79,7 +81,7 @@ export default function useNavigation() {
 
   const isActive = (linkPath?: string) => {
     if (!linkPath) return false;
-    
+
     if (linkPath === '/') {
       return pathname === '/';
     } else if (linkPath !== '/' && pathname.startsWith(linkPath)) {

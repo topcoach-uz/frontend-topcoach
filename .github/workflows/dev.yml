@@ -99,6 +99,7 @@ jobs:
         env:
           # Same-origin API: caddy on the dev server proxies /api → dev backend
           VITE_API_HOST: ''
+          VITE_ADMIN_PANEL_URL: https://admin.dev.topcoachuni.com/panel
           NODE_OPTIONS: --max-old-space-size=4096
         run: yarn build
 

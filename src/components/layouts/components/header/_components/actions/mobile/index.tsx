@@ -1,12 +1,13 @@
 import { MenuProps } from 'antd/lib';
 import { useTypedSelector } from 'src/app/store';
+import { UserRole } from 'src/app/api/Api';
 import { MoonIcon, SunIcon } from 'src/components/icons';
 import LanguageSelect from 'src/components/language_select';
 import { useScreenSize } from 'src/hooks/useScreenSize';
 import HamburgerMenu from '../../hamburger';
 import ProfileDropdown from '../_components/ProfileDropdown';
 import styles from '../actions.module.scss';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import ChatIcon from 'src/components/chat/ChatIcon';
 import NotificationBell from 'src/components/notifications/NotificationBell';
@@ -27,9 +28,14 @@ export default function ActionsMobileVersion({
   isAuthLoading,
 }: Props) {
   const { screenSize } = useScreenSize();
+  const { pathname } = useLocation();
+  const isMentorPage = pathname === '/mentor' || pathname.startsWith('/mentor/');
   const isDark = useTypedSelector((state) => state.layout.darkMode);
   const isAuthenticated = useTypedSelector(
     (state) => state.auth.isAuthenticated
+  );
+  const isMentor = useTypedSelector(
+    (state) => state.auth.profile?.profile?.role === UserRole.Mentor
   );
 
   return (
@@ -41,9 +47,11 @@ export default function ActionsMobileVersion({
       */}
       {screenSize > 560 && (
         <>
-          <Link to="/contact" className={styles.contactIcon}>
-            <Mail size={20} color="white" />
-          </Link>
+          {!isMentor && (
+            <Link to="/contact" className={styles.contactIcon}>
+              <Mail size={20} color="white" />
+            </Link>
+          )}
           <LanguageSelect />
         </>
       )}
@@ -54,7 +62,7 @@ export default function ActionsMobileVersion({
       ) : (
         <></>
       )}
-      <HamburgerMenu isOpen={isOpen} toggleMenu={toggleMenu} />
+      {!isMentorPage && <HamburgerMenu isOpen={isOpen} toggleMenu={toggleMenu} />}
     </div>
   );
 }

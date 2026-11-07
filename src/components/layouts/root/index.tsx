@@ -18,11 +18,14 @@ export default function RootLayout() {
     dispatch(changeTheme(theme));
   }, [pathname]);
 
-  // Hide the AI chat FAB on admin pages and inside the SAT runner so it
-  // doesn't overlap the test surface.
+  // Hide the AI chat FAB on admin pages, in the mentor console (the student
+  // AI assistant isn't for mentors) and inside the SAT runner so it doesn't
+  // overlap the test surface.
   const hideChatFab =
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/admin') ||
+    pathname === '/mentor' ||
+    pathname.startsWith('/mentor/') ||
     pathname.startsWith('/student-hub/sat-prep/runner') ||
     pathname.startsWith('/student-hub/ielts-prep') ||
     isApplicantWorkspacePath(pathname);

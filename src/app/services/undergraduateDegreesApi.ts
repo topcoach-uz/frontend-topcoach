@@ -3,7 +3,6 @@ import { RtkApi } from './api';
 export interface QualificationRequirement {label:string;value:string;note?:string|null;scope:string;sourceTitle:string;sourceUrl:string;verifiedAt:string;}
 
 export interface UndergraduateDegree {
-  qualificationRequirements?: QualificationRequirement[];
   id: string;
   universityId: string;
   slug: string;
@@ -19,6 +18,7 @@ export interface UndergraduateDegree {
   qualificationLabel: string | null;
   qualificationValue: string | null;
   qualificationNote: string | null;
+  qualificationRequirements?: QualificationRequirement[];
   admissionsTest: string | null;
   admissionsTestNote: string | null;
   feesSummary: string | null;

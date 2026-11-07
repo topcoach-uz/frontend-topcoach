@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applicantDegree,
+  applicantDegreeOrNull,
   assessmentState,
   displayName,
   hasAssessmentDraft,
@@ -35,6 +36,19 @@ describe('legacy applicant degree fallback', () => {
   });
   it('preserves an explicit Master’s selection', () => {
     expect(applicantDegree('master')).toBe('master');
+  });
+});
+
+describe('strict applicant degree', () => {
+  it.each([undefined, null, '', 'unknown', 'Master', 0, {}])(
+    'keeps %s unknown instead of defaulting to Bachelor’s',
+    (degree) => {
+      expect(applicantDegreeOrNull(degree)).toBeNull();
+    },
+  );
+  it('returns exact matches', () => {
+    expect(applicantDegreeOrNull('bachelor')).toBe('bachelor');
+    expect(applicantDegreeOrNull('master')).toBe('master');
   });
 });
 

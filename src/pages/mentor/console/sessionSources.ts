@@ -6,6 +6,7 @@ import {
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMySessionsQuery } from 'src/app/services/sessions';
+import type { LiveClassSessionDto } from 'src/app/services/courses';
 
 export type SessionReport = {
   topicsCovered: string;
@@ -17,7 +18,7 @@ export type SessionReport = {
 
 export type MentorBooking = {
   id: string;
-  source: 'platform' | 'full-support';
+  source: 'platform' | 'full-support' | 'course-class';
   dateTime: string;
   durationLabel: string;
   durationMinutes: number;
@@ -31,7 +32,15 @@ export type MentorBooking = {
   report?: SessionReport | null;
   /** Student's "Notes for your mentor" left when confirming the booking. */
   studentNote?: string | null;
-  raw: SessionsSchema | SessionLogDto;
+  /** Set only for `course-class` bookings. */
+  courseClass?: {
+    lessonId: string;
+    lessonTitle: string;
+    lessonDuration: number;
+    moduleTitle: string;
+    courseName: string;
+  };
+  raw: SessionsSchema | SessionLogDto | LiveClassSessionDto;
 };
 
 /**

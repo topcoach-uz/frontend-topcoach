@@ -54,6 +54,7 @@ import {
 } from 'src/pages/events/central-asian-admissions-forum/constants';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
+import { useStudentProfile } from 'src/hooks/useStudentHub';
 import { ApplicantPage } from './applicant/ApplicantPage';
 import { joinNameParts, sanitizeName } from 'src/utils/displayName';
 import {
@@ -115,11 +116,17 @@ function LockedShell({
 
   return (
     <article className={`${className} myprog__locked`}>
-      <div className="myprog__locked-content" aria-hidden="true">
+      {/* `inert` (not typed in React 18) also removes the hidden content from
+          the tab order, which aria-hidden alone does not. */}
+      <div
+        className="myprog__locked-content"
+        aria-hidden="true"
+        {...{ inert: '' }}
+      >
         {children}
       </div>
       <div className={`myprog__locked-veil myprog__locked-veil--${tone}`}>
-        <Lock size={18} className="myprog__locked-icon" />
+        <Lock size={18} className="myprog__locked-icon" aria-hidden />
         <p className="myprog__locked-title">
           {t('studentHub.myProgress.lockedTitle', 'Complete AI Major Match to unlock')}
         </p>
@@ -127,7 +134,7 @@ function LockedShell({
           {isMastersGoal
             ? t('studentHub.myProgress.lockedMastersCta', 'Explore graduate fields')
             : t('studentHub.myProgress.lockedCta', 'Find My Best-Fit Majors')}
-          <ArrowRight size={13} />
+          <ArrowRight size={13} aria-hidden />
         </button>
       </div>
     </article>
@@ -145,10 +152,15 @@ const MyProgressEditorialView: React.FC = () => {
   // should route (assessment start, or the community gate destination
   // if their one free attempt is already used).
   const mm = useMajorMatchPromptState();
+  // Same RTK Query as useMajorMatchPromptState (deduped). isLoading is true
+  // only until the first response, so a failed profile query falls back to
+  // today's behaviour instead of holding a skeleton forever.
+  const { isLoading: profileResolving } = useStudentProfile();
   const isMastersGoal = mm.profile?.academicProfile?.targetDegree === 'master';
   /* AI Major Match is an undergraduate gate; graduate applicants can use
      their mentor and event cards without taking an unavailable assessment. */
-  const mmLocked = !isMastersGoal && !mm.hasCompletedAssessment;
+  const mmLocked =
+    !profileResolving && !isMastersGoal && !mm.hasCompletedAssessment;
   // Use the same source the profile sidebar card uses
   // (auth.profile.profile.name) so the greeting matches what the user
   // sees in the avatar card — e.g. "Sherali Ozodov" instead of the
@@ -541,6 +553,14 @@ const MyProgressEditorialView: React.FC = () => {
           faint program links. */}
       {!isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
+          {profileResolving ? (
+            <article
+              className="myprog__card myprog__mmhero applicant-panel"
+              aria-busy="true"
+            >
+              <Skeleton active paragraph={{ rows: 4 }} />
+            </article>
+          ) : (
           <article className="myprog__card myprog__mmhero applicant-panel">
             <div className="myprog__mmhero__left">
               <span className="myprog__mmhero__eyebrow">
@@ -563,7 +583,7 @@ const MyProgressEditorialView: React.FC = () => {
                       onClick={() => navigate('/student-hub/profile?tab=academic')}
                     >
                       {t('studentHub.myProgress.mastersProfileCta', 'Review academic profile')}
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} aria-hidden />
                     </button>
                   </div>
                 </>
@@ -582,7 +602,7 @@ const MyProgressEditorialView: React.FC = () => {
                       onClick={() => navigate('/student-hub?section=ai-major-match')}
                     >
                       {t('studentHub.myProgress.majorMatchViewResults', 'View your results')}
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} aria-hidden />
                     </button>
                   </div>
                 </>
@@ -607,7 +627,7 @@ const MyProgressEditorialView: React.FC = () => {
                       onClick={() => navigate(mm.destination)}
                     >
                       {t('studentHub.myProgress.majorMatchCta', 'Find My Best-Fit Majors')}
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} aria-hidden />
                     </button>
                   </div>
                 </>
@@ -631,6 +651,7 @@ const MyProgressEditorialView: React.FC = () => {
               </div>
             </div>
           </article>
+          )}
         </section>
       ) : null}
 
@@ -684,7 +705,7 @@ const MyProgressEditorialView: React.FC = () => {
                   onClick={() => navigate('/programs')}
                 >
                   {t('studentHub.myProgress.browsePrograms', 'Browse programs')}{' '}
-                  <ArrowRight size={13} />
+                  <ArrowRight size={13} aria-hidden />
                 </button>
               </div>
             ) : (
@@ -739,7 +760,7 @@ const MyProgressEditorialView: React.FC = () => {
                       onClick={() => navigate(track.ctaPath)}
                     >
                       {t('studentHub.myProgress.continueLearning', 'Continue learning')}{' '}
-                      <ArrowRight size={13} />
+                      <ArrowRight size={13} aria-hidden />
                     </button>
                   </div>
                 );
@@ -821,7 +842,7 @@ const MyProgressEditorialView: React.FC = () => {
                           onClick={() => window.open(s.meetingLink, '_blank')}
                         >
                           {t('studentHub.myProgress.joinSession', 'Join the session')}
-                          <ArrowRight size={11} />
+                          <ArrowRight size={11} aria-hidden />
                         </button>
                       ) : (
                         <span className="myprog__session-join myprog__session-join--idle">
@@ -864,7 +885,7 @@ const MyProgressEditorialView: React.FC = () => {
                           className="myprog__session-more"
                           aria-label={t('studentHub.myProgress.sessionOptions', 'Session options')}
                         >
-                          <MoreVertical size={16} />
+                          <MoreVertical size={16} aria-hidden />
                         </button>
                       </Dropdown>
                     </div>
@@ -895,7 +916,7 @@ const MyProgressEditorialView: React.FC = () => {
                   {sessionTab !== 'cancelled' && (
                     <button
                       type="button"
-                      className="myprog__btn myprog__btn--primary myprog__session-chat"
+                      className="myprog__btn myprog__btn--ghost myprog__session-chat"
                       onClick={() => navigate('/student-hub?section=messages')}
                     >
                       {t('studentHub.myProgress.chatWithMentor', 'Chat with mentor')}
@@ -910,7 +931,7 @@ const MyProgressEditorialView: React.FC = () => {
             className="myprog__btn myprog__btn--ghost myprog__sessions-book"
             onClick={() => navigate('/mentors')}
           >
-            <Plus size={13} /> {t('studentHub.myProgress.bookAMentor', 'Book a mentor')}
+            <Plus size={13} aria-hidden /> {t('studentHub.myProgress.bookAMentor', 'Book a mentor')}
           </button>
         </LockedShell>
 
@@ -1209,7 +1230,7 @@ const MyProgressEditorialView: React.FC = () => {
         <article className="myprog__card myprog__airecs applicant-panel">
           <div className="myprog__airecs-head">
             <span className="myprog__airecs-glyph">
-              <Wand2 size={13} />
+              <Wand2 size={13} aria-hidden />
             </span>
             <span className="myprog__airecs-eyebrow">
               {t('studentHub.myProgress.aiRecommendations', 'AI recommendations')}
@@ -1248,7 +1269,10 @@ const MyProgressEditorialView: React.FC = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') navigate((rec as any).ctaPath ?? '/student-hub');
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate((rec as any).ctaPath ?? '/student-hub');
+                    }
                   }}
                 >
                   <span className="myprog__airecs-num">{rec.number}</span>

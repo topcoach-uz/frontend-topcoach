@@ -3805,5 +3805,9 @@
   "applicant.status.deferred": "Keyinga qoldirilgan",
   "applicant.taskStatus.pending": "Kutilmoqda",
   "applicant.taskStatus.in_progress": "Bajarilmoqda",
-  "applicant.taskStatus.overdue": "Muddati o‘tgan"
+  "applicant.taskStatus.overdue": "Muddati o‘tgan",
+  "applicant.bachelorWorkspaceLabel": "Bakalavriat uchun ish maydoningiz",
+  "applicant.documentsCardBody": "Arizalaringiz uchun hamma narsa bir joyda.",
+  "applicant.opensInNewTab": "(yangi oynada ochiladi)",
+  "applicant.pageTitle": "Umumiy ko‘rinish · TopCoach"
 }

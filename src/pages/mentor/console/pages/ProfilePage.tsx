@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { Avatar, Button, Card, Col, Descriptions, Row, Space, Typography } from 'antd';
+import { Avatar, Button, Card, Col, Descriptions, Row, Space, Tabs, Typography } from 'antd';
 import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import EditProfileModal from 'src/components/layouts/components/header/_components/actions/_components/EditProfileModal';
 import { McPill } from '../components/McPill';
 import { cleanName } from '../utils';
+import MentorConsoleAvailabilityPage from './AvailabilityPage';
+import MentorReferralsPage from './ReferralsPage';
+
+type AccountTab = 'profile' | 'availability' | 'referrals';
+const ACCOUNT_TABS: AccountTab[] = ['profile', 'availability', 'referrals'];
 
 const { Text, Paragraph } = Typography;
 
@@ -24,6 +29,18 @@ type MentorProfileShape = {
 
 export default function MentorConsoleProfilePage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as AccountTab | null;
+  const activeTab: AccountTab = tabParam && ACCOUNT_TABS.includes(tabParam) ? tabParam : 'profile';
+  const setTab = (next: string) =>
+    setSearchParams(
+      (params) => {
+        if (next === 'profile') params.delete('tab');
+        else params.set('tab', next);
+        return params;
+      },
+      { replace: true },
+    );
   const [editOpen, setEditOpen] = useState(false);
 
   const { data: me } = useGetMeQuery();
@@ -74,12 +91,25 @@ export default function MentorConsoleProfilePage() {
         <div className="mc-page-eyebrow">
           Mentor <span className="mc-page-eyebrow-accent">· Account</span>
         </div>
-        <h1 className="mc-page-title">Profile</h1>
+        <h1 className="mc-page-title">Account</h1>
         <p className="mc-page-lead">
-          Your public mentor profile. This is what students see when browsing mentors.
+          Your public profile, weekly availability and referral code.
         </p>
       </div>
 
+      <Tabs
+        activeKey={activeTab}
+        onChange={setTab}
+        items={[
+          { key: 'profile', label: 'Profile' },
+          { key: 'availability', label: 'Availability' },
+          { key: 'referrals', label: 'Referrals' },
+        ]}
+      />
+
+      {activeTab === 'availability' && <MentorConsoleAvailabilityPage embedded />}
+      {activeTab === 'referrals' && <MentorReferralsPage embedded />}
+      {activeTab === 'profile' && (
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={8}>
           <Card bordered={false} className="mc-panel">
@@ -220,7 +250,7 @@ export default function MentorConsoleProfilePage() {
                     Open slots let students book sessions with you.
                   </Text>
                 </div>
-                <Button type="text" onClick={() => navigate('/mentor/availability')}>
+                <Button type="text" onClick={() => setTab('availability')}>
                   Open <ArrowUpRight size={14} />
                 </Button>
               </div>
@@ -248,6 +278,7 @@ export default function MentorConsoleProfilePage() {
           </Card>
         </Col>
       </Row>
+      )}
 
       <EditProfileModal isModalVisible={editOpen} setIsModalVisible={setEditOpen} />
     </div>

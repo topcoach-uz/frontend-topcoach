@@ -278,6 +278,10 @@
     object-fit: contain;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: inherit;
   }
 }
@@ -508,6 +512,7 @@
   white-space: nowrap;
 }
 .applicant-find-save--disabled { opacity: .5; cursor: not-allowed; }
+.applicant-find-save svg { flex-shrink: 0; }
 .applicant-find-open-list {
   display: inline-flex;
   align-items: center;
@@ -540,9 +545,9 @@
   .applicant-find-card .applicant-university__logo { width: 64px; height: 64px; flex-basis: 64px; }
   .applicant-find-card .applicant-university strong { font-size: 19px; }
   .applicant-find-card .applicant-university p { font-size: 14px; }
-  .applicant-find-card__actions { order: 2; justify-content: space-between; gap: 8px; }
+  .applicant-find-card__actions { order: 2; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .applicant-find-card__actions > a:first-child { gap: 5px; font-size: 14px; }
-  .applicant-find-save { min-width: 0; min-height: 44px; font-size: 14px; }
+  .applicant-find-save { min-width: 0; min-height: 44px; font-size: 14px; flex-shrink: 0; gap: 6px; padding: 10px; }
   .applicant-find-open-list { width: 100%; min-width: 0; }
 }
 .applicant-form-grid {
@@ -869,6 +874,8 @@
   align-items: center;
   gap: 24px;
   min-width: 0;
+  > div { flex: 1; min-width: 0; }
+  h1, p { overflow-wrap: anywhere; }
   h1 { font-size: clamp(29px, 3vw, 40px); line-height: 1.2; font-weight: 500; }
   p { margin-top: 8px; font-size: 17px; }
 }
@@ -888,7 +895,7 @@
   background: #fff;
   border-radius: 0;
   padding: 10px;
-  img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  img { display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; object-fit: contain; }
 }
 .applicant-university-detail__mark--dark { background: #293e58; }
 .applicant-university-detail__mark--ucla { background: #2774ae; }
@@ -913,6 +920,7 @@
   text-decoration: none;
   font-weight: 500;
 }
+.applicant-university-detail a svg { flex-shrink: 0; }
 .applicant-university-detail__notice { font-size: 13px; }
 .applicant-university-detail__degrees {
   display: flex;
@@ -1102,7 +1110,7 @@
   .applicant-university-detail__overview { font-size: 16px; }
   .applicant-university-detail__hero-actions > .ant-btn { width: 100%; min-width: 0; }
   .applicant-university-detail__degree-card { flex-direction: column; padding: 20px; }
-  .applicant-university-detail__degree-button { width: 100%; }
+  .applicant-university-detail__degree-button { width: 100%; min-width: 0; }
   .applicant-university-detail__catalogue-grid { grid-template-columns: 1fr; }
   .applicant-university-detail__lower { grid-template-columns: 1fr; gap: 18px; }
   .applicant-page {
@@ -1256,4 +1264,34 @@
   &__item a { display: inline-flex; align-items: center; gap: 4px; margin: 0 12px 12px 0; }
   &__item button { display: block; }
   @media (max-width: 600px) { &__head, &__top { flex-direction: column; } }
+}
+
+@media (max-width: 360px) {
+  .applicant-university-detail__identity { gap: 12px; }
+  .applicant-university-detail__identity h1 { font-size: 22px; }
+}
+
+.applicant-university-detail__catalogue-field--linked { text-decoration:none; color:inherit; border:1px solid #d9e1ee; &:hover { border-color:#8b0000; } }
+.applicant-university-detail__program-link { display:flex; align-items:center; gap:6px; color:#8b0000; font-size:14px; }
+
+.applicant-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 16px 0;
+    border-top: 1px solid #e5e3da;
+    &.is-cancelled {
+      opacity: 0.6;
+    }
+  }
+  &__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 }

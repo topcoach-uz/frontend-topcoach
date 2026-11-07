@@ -17,6 +17,7 @@ const LocalChangesWalkthrough = lazy(() => import('./LocalChangesWalkthrough'));
 const ApplicantApplicationsPage = lazy(() => import('./applicant/ApplicantApplicationsPage'));
 const ApplicantApplicationPage = lazy(() => import('./applicant/ApplicantApplicationsPage').then(module => ({ default: module.ApplicantApplicationPage })));
 const ApplicantApplicationFormPage = lazy(() => import('./applicant/ApplicantApplicationFormPage'));
+const ApplicantSessionsPage = lazy(() => import('./applicant/ApplicantSessionsPage'));
 const ApplicantTasksPage = lazy(() => import('./applicant/ApplicantTasksPage'));
 const ApplicantDocumentsPage = lazy(() => import('./applicant/ApplicantDocumentsPage'));
 const ApplicantDocumentReviewPage = lazy(() => import('./applicant/ApplicantDocumentReviewPage'));
@@ -24,6 +25,7 @@ const ApplicantEssaysPage = lazy(() => import('./applicant/ApplicantEssaysPage')
 const ApplicantEssayEditorPage = lazy(() => import('./applicant/ApplicantEssaysPage').then(module => ({ default: module.ApplicantEssayEditorPage })));
 const ApplicantUniversitiesPage = lazy(() => import('./applicant/ApplicantUniversitiesPage'));
 const ApplicantUniversityDetailPage = lazy(() => import('./applicant/ApplicantUniversitiesPage').then(module => ({ default: module.ApplicantUniversityDetailPage })));
+const ApplicantStudyAreaDetailPage = lazy(() => import('./applicant/ApplicantStudyAreaDetailPage'));
 const ApplicantDegreeDetailPage = lazy(() => import('./applicant/ApplicantDegreeDetailPage'));
 const ApplicantStudyDirectionPage = lazy(() => import('./applicant/ApplicantStudyDirectionPage'));
 
@@ -127,7 +129,7 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/community" element={<Navigate to="/student-hub" replace />} />
           <Route path="/" element={<HubEntry />} />
           <Route path="/attendance" element={<Navigate to="/student-hub?section=others&target=full-support" replace />} />
-          <Route path="/sessions" element={<Navigate to="/student-hub/overview" replace />} />
+          <Route path="/sessions" element={withSuspense(<ApplicantSessionsPage />)} />
           <Route path="/overview" element={withSuspense(<ApplicantOverviewPage />)} />
           <Route path="/dashboard" element={<Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/rewards" element={<Navigate to="/student-hub?section=account&target=rewards" replace />} />
@@ -152,8 +154,10 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/gpa-calculator/*" element={<Navigate to="/student-hub?section=others&target=gpa-calculator" replace />} />
           <Route path="/admissions-program" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
           <Route path="/admissions-program/*" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
+
           <Route path="/documents" element={withSuspense(<ApplicantDocumentsPage />)} />
           <Route path="/documents/:documentId" element={withSuspense(<ApplicantDocumentReviewPage />)} />
+          <Route path="/universities/:universityId/study-areas/:majorId" element={withSuspense(<ApplicantStudyAreaDetailPage />)} />
           <Route path="/universities/:universityId/degrees/:degreeSlug" element={withSuspense(<ApplicantDegreeDetailPage />)} />
           <Route path="/universities/:universityId" element={withSuspense(<ApplicantUniversityDetailPage />)} />
           <Route path="/universities" element={withSuspense(<ApplicantUniversitiesPage />)} />

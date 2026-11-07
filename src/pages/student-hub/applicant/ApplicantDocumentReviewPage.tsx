@@ -18,6 +18,7 @@ import {
   useReviewDocumentWithAiMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
+import { DocumentReviewDecision } from "./DocumentReviewDecision";
 import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
 
 const saveBlob = (blob: Blob, fileName: string) => {
@@ -33,7 +34,7 @@ export default function ApplicantDocumentReviewPage() {
   const { documentId = "" } = useParams();
   const [params] = useSearchParams();
   const documentQuery = useGetDocumentQuery(documentId, { skip: !documentId });
-  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId });
+  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId, pollingInterval: 10000 });
   const versionsQuery = useGetDocumentVersionsQuery(documentId, { skip: !documentId });
   const [download] = useDownloadDocumentMutation();
   const [downloadVersion] = useDownloadDocumentVersionMutation();
@@ -156,6 +157,7 @@ export default function ApplicantDocumentReviewPage() {
         <div className="applicant-tabs" role="tablist" aria-label="Document review">
           {(["preview", "feedback", "versions", "ai helper"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
         </div>
+        {review && <><p>Current file: version {review.currentVersion}</p><DocumentReviewDecision status={review.status} /></>}
         {tab === 'ai helper' && <div className="applicant-panel applicant-document-review">
           <h2>AI document helper</h2>
           <p>Review clarity and completeness—not authenticity or admission eligibility. This is separate from mentor feedback and does not mark your file as verified.</p>
@@ -186,7 +188,7 @@ export default function ApplicantDocumentReviewPage() {
         {tab === "feedback" && <div className="applicant-panel applicant-document-review">
           <QueryState loading={reviewQuery.isLoading} error={reviewQuery.isError} retry={reviewQuery.refetch}>
             <h2>Reviewer feedback</h2>
-            {review?.feedback.length ? review.feedback.map((item) => <div className="applicant-document-review__feedback" key={item.id}><strong>{item.annotationType || "Comment"}</strong><small>{displayDate(item.createdAt)}{item.isResolved ? " · Resolved" : ""}</small><p>{item.content}</p></div>) : <p>No reviewer feedback has been shared yet.</p>}
+            {review?.feedback.length ? review.feedback.map((item) => <div className="applicant-document-review__feedback" key={item.id}><strong>{item.documentVersion ? `Version ${item.documentVersion}` : "Earlier feedback (version not recorded)"}{item.reviewDecision ? ` · ${item.reviewDecision.replaceAll("_", " ")}` : ""}</strong><small>{displayDate(item.createdAt)}{item.isResolved ? " · Resolved" : ""}</small><p>{item.content}</p></div>) : <p>No reviewer feedback has been shared yet.</p>}
           </QueryState>
         </div>}
         {tab === "versions" && <div className="applicant-panel applicant-document-review">
@@ -207,7 +209,7 @@ export default function ApplicantDocumentReviewPage() {
       <Form form={form} layout="vertical" onFinish={submitVersion}>
         <Form.Item label="File" required><Upload.Dragger fileList={fileList} maxCount={1} beforeUpload={(next) => { setFile(next); setFileList([next]); return false; }} onRemove={() => { setFile(undefined); setFileList([]); }} accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"><UploadCloud size={28} /><p>Choose a new version of this document</p></Upload.Dragger></Form.Item>
         <Form.Item name="changeSummary" label="What changed? (optional)"><Input.TextArea rows={2} /></Form.Item>
-        <p>Uploading a version preserves the earlier file.</p>
+        <p>Uploading a version preserves the earlier file and resets its review decision.</p>
         <div className="applicant-actions applicant-actions--end"><Button onClick={() => setModalOpen(false)}>Cancel</Button><Button type="primary" htmlType="submit" loading={uploadState.isLoading}>Upload version</Button></div>
       </Form>
     </Modal>

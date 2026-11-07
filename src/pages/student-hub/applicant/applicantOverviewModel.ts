@@ -14,6 +14,13 @@ export function applicantDegree(value: unknown): 'bachelor' | 'master' {
   return value === 'master' ? 'master' : 'bachelor';
 }
 
+/** Strict variant: an unset or unrecognised degree stays unknown (null). */
+export function applicantDegreeOrNull(
+  value: unknown,
+): 'bachelor' | 'master' | null {
+  return value === 'master' || value === 'bachelor' ? value : null;
+}
+
 export function hasAssessmentDraft(raw: string | null): boolean {
   try {
     const answers: unknown = JSON.parse(raw ?? 'null')?.answers;

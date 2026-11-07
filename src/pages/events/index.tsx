@@ -1,3 +1,4 @@
+import RecordedWorkshopGridCards from './_components/RecordedWorkshopGridCards';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Spin } from 'antd';
 import { api } from 'src/app/api';
@@ -23,6 +24,7 @@ import IvyEssayWorkshopGridCard from './_components/IvyEssayWorkshopGridCard';
 import CheveningWorkshopCard from './_components/CheveningWorkshopCard';
 import HaverfordWorkshopCard from './_components/HaverfordWorkshopCard';
 import MastersAbroadWorkshopCard from './_components/MastersAbroadWorkshopCard';
+import HolisticReviewWorkshopCard from './_components/HolisticReviewWorkshopCard';
 import PersonalStatementWorkshopGridCard from './_components/PersonalStatementWorkshopGridCard';
 import TopcoachLaunchEventCard from './_components/TopcoachLaunchEventCard';
 import CustomSelect from 'src/components/common/select';
@@ -241,6 +243,7 @@ export default function EventsPage() {
           />
         </div>
         {/* <YouthLeadersProgramCard /> */}
+        {selectedType !== 'event' && <HolisticReviewWorkshopCard />}
         {selectedType !== 'event' && <MastersAbroadWorkshopCard />}
         <HaverfordWorkshopCard />
         <CheveningWorkshopCard />
@@ -279,6 +282,7 @@ export default function EventsPage() {
                 <>
                   <IvyEssayWorkshopGridCard />
                   <EssayMasterclassGridCard />
+                  <RecordedWorkshopGridCards />
                   <PersonalStatementWorkshopGridCard />
                 </>
               )}

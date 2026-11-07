@@ -182,8 +182,36 @@ export interface TaskResultDto {
   explanation?: string;
 }
 
+/** A live-session lesson assigned to the current mentor (`courses/live/my-lessons`). */
+export interface LiveLessonDto { id: string; title: string; duration: number; moduleTitle: string; courseName: string }
+/** One dated class meeting of a live lesson (`courses/live/lessons/:id/sessions`). */
+export interface LiveClassSessionDto {
+  id: string;
+  lessonId: string;
+  startsAt: string;
+  durationMinutes: number;
+  meetingUrl: string | null;
+  status: 'scheduled' | 'held' | 'cancelled';
+  summary: string;
+}
+
 export const coursesApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getMyLiveLessons: builder.query<LiveLessonDto[], void>({
+      query: () => 'courses/live/my-lessons',
+    }),
+    // There is no mentor-wide endpoint, so fan out over the mentor's lessons.
+    getLiveClassSessions: builder.query<LiveClassSessionDto[], string[]>({
+      async queryFn(lessonIds, _api, _extra, baseQuery) {
+        const results = await Promise.all(
+          lessonIds.map((id) => baseQuery(`courses/live/lessons/${id}/sessions`)),
+        );
+        const failed = results.find((result) => result.error);
+        if (failed?.error && results.every((result) => result.error)) return { error: failed.error };
+        // A lesson that fails alone (e.g. mentor unassigned meanwhile) is skipped.
+        return { data: results.flatMap((result) => (result.data as LiveClassSessionDto[] | undefined) ?? []) };
+      },
+    }),
     getCoursePreview: builder.query<CoursePreviewModule[], 'admissions' | 'sat'>({
       query: courseName => ({ url: 'courses/learning/preview', params: { courseName } }),
     }),
@@ -404,6 +432,8 @@ export const coursesApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetMyLiveLessonsQuery,
+  useGetLiveClassSessionsQuery,
   useGetCoursePreviewQuery,
   useGetActivePricingQuery,
   useGetEnrollmentStatusQuery,

@@ -10,6 +10,7 @@ export const applicantLinks = {
   applications: '/student-hub/applications',
   universities: '/student-hub/universities',
   tasks: '/student-hub/tasks',
+  sessions: '/student-hub/sessions',
   satPrep: '/student-hub/sat-prep',
   newApplication: '/student-hub/applications/new',
   profile: '/student-hub?section=others&target=profile&tab=academic',

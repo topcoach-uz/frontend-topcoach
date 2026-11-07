@@ -1,3 +1,8 @@
+import { groupStudentSessions } from '../sessionDisplay';
+import { useSessionActions } from './sessions/useSessionActions';
+import { useReviewCounts } from './reviews/reviewCounts';
+import { useUpdateMentorApplicationRequirementsMutation,useGetMentorStudentApplicationsQuery } from 'src/app/services/student-hub/applicationTrackingApi';
+import { ClipboardList } from 'lucide-react';
 import SharedApplications from './SharedApplications';
 import FullSupportLessonActions from './FullSupportLessonActions';
 import { lessonError } from '../fullSupportLessons';
@@ -30,7 +35,6 @@ import {
   CheckCircle2,
   CheckSquare,
   Circle,
-  ClipboardList,
   FileText,
   Flag,
   MessageSquare,
@@ -119,7 +123,7 @@ function tabLabel(label: string, count?: number) {
  * Inline message thread for the "Message" tab — resolves (or creates) the
  * mentor↔student PEER conversation lazily on first mount, then reuses the
  * existing MessageList + ChatInput primitives for the live thread. No
- * thread picker (mirrors FullSupportMentorDashboard's
+ * thread picker (mirrors the former FullSupportMentorDashboard's
  * `openToGeneralConversation` usage — general conversation, no threadId).
  */
 function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentId: string }) {
@@ -231,6 +235,9 @@ export default function StudentWorkspace({
     .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
     .map(review => review.essayId)).size;
 
+  const { essayCount: pendingEssayCount, documentCount: pendingDocCount } = useReviewCounts(false, studentId);
+  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
+  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: sessionsRes, isFetching: loadingSessions, refetch: retrySessionLog } = useGetMentorSessionsQuery(
@@ -257,22 +264,15 @@ export default function StudentWorkspace({
   const milestones = milestonesRes?.data ?? [];
   const curriculumItems = (curriculumRes?.data ?? []).filter((c) => c.percent >= 0);
 
+  // The Full Support query is already scoped to this student server-side.
   const studentBookings = useMemo(
-    () => bookings.filter((b) => b.studentUserId === studentId),
+    () => bookings.filter((b) => b.source === 'full-support' || b.studentUserId === studentId),
     [bookings, studentId],
   );
-  const upcomingSessions = useMemo(
-    () =>
-      studentBookings
-        .filter((b) => b.status === 'upcoming')
-        .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()),
-    [studentBookings],
-  );
+  const grouped = useMemo(() => groupStudentSessions(studentBookings), [studentBookings]);
+  const upcomingSessions = grouped.upcoming;
   const pastSessions = useMemo(
-    () =>
-      studentBookings
-        .filter((b) => b.status !== 'upcoming')
-        .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()),
+    () => studentBookings.filter((b) => b.status !== 'upcoming'),
     [studentBookings],
   );
   const canAssignTask = isFullSupport !== false || studentBookings.some(
@@ -301,8 +301,8 @@ export default function StudentWorkspace({
     [studentBookings],
   );
   const reportsDue = useMemo(
-    () => studentBookings.filter((b) => b.status === 'report-due').length,
-    [studentBookings],
+    () => grouped.needsAction.length,
+    [grouped.needsAction],
   );
 
   const [createTask, { isLoading: creatingTask }] = useCreateMentorTaskMutation();
@@ -311,6 +311,7 @@ export default function StudentWorkspace({
   const [createMilestone, { isLoading: creatingMs }] = useCreateMentorMilestoneMutation();
   const [updateMilestone] = useUpdateMentorMilestoneMutation();
   const [deleteMilestone] = useDeleteMentorMilestoneMutation();
+  const sessionActions = useSessionActions();
   const [createSession, { isLoading: creatingSession }] = useCreateMentorSessionMutation();
 
   const submitQuickTask = async () => {
@@ -508,8 +509,9 @@ export default function StudentWorkspace({
           <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
           <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
             {b.durationLabel}
-            {b.source === 'platform' ? ' · 1:1 session' : ''}
+            {b.source === 'full-support' ? ' · Full Support' : ' · 1:1 session'}
             {b.description ? ` · ${b.description}` : ''}
+            {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
           </div>
           {lesson && <div style={{ fontSize: 12, marginTop: 6 }}>
             Attendance: {lesson.attendance}{lesson.actualMinutes !== null ? ` · ${lesson.actualMinutes} min actual` : ''}
@@ -532,6 +534,7 @@ export default function StudentWorkspace({
               Join
             </Button>
           ) : null}
+          {sessionActions.renderActions(b)}
         </Space>
       </div>
     );
@@ -672,7 +675,8 @@ export default function StudentWorkspace({
     },
     {
       key: 'sessions',
-      label: tabLabel('Sessions', upcomingSessions.length),
+      // Badge = sessions waiting on the mentor only, so a number always means "act here".
+      label: tabLabel('Sessions', reportsDue),
       children: (
         <>
           {sectionHead('Upcoming sessions', <Calendar size={18} color="var(--mc-accent)" aria-hidden />, isFullSupport ? {label:'Schedule session',onClick:()=>setLogSessionOpen(true)} : undefined)}
@@ -863,7 +867,7 @@ export default function StudentWorkspace({
   ];
 
   // 1:1 mentees only get the tabs backed by data that exists for them —
-  // Full-Support-only surfaces (essays, FS session log, milestones/research/
+  // Full-Support-only surfaces (essays, milestones/research/
   // curriculum) are hidden.
   const mergedItems = items.filter(it => it.key !== 'session-log').map(it => it.key === 'sessions' && isFullSupport ? {...it, children:<>{it.children}<details className="mc-ws-archive" onToggle={e => {if(e.currentTarget.open) retrySessionLog();}}><summary>Detailed session records</summary>{items.find(row => row.key === 'session-log')?.children}</details></>} : it);
   const visibleItems = isFullSupport ? mergedItems : mergedItems.filter(it => ['tasks','sessions','message'].includes(it.key));
@@ -894,6 +898,8 @@ export default function StudentWorkspace({
           value={reportsFiled}
           meta={reportsDue > 0 ? `${reportsDue} report${reportsDue === 1 ? '' : 's'} due` : 'No records pending'}
           tone={reportsDue > 0 ? 'alert' : 'good'}
+          cta={reportsDue > 0 ? 'Open sessions' : undefined}
+          onClick={reportsDue > 0 ? () => setActiveTab('sessions') : undefined}
         />
         <McStat
           icon={<CheckSquare size={18} />}
@@ -915,6 +921,8 @@ export default function StudentWorkspace({
             value={essayReviews.isError ? "—" : sharedEssayCount}
             meta={essayReviews.isError ? "Count unavailable" : "Shared with you for review"}
             tone="neutral"
+            cta="Open reviews"
+            onClick={() => setActiveTab('reviews')}
           />
         ) : (
           <McStat
@@ -1030,6 +1038,7 @@ export default function StudentWorkspace({
 
 
 
+      {sessionActions.modals}
       <SubmissionDrawer open={!!researchPick} submission={researchPick} onClose={() => setResearchPick(null)} />
     </>
   );
