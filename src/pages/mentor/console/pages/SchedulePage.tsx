@@ -1,3 +1,4 @@
+import StructuredSessionReports from '../components/StructuredSessionReports';
 import LiveAttendanceModal from 'src/pages/admin/courses/modules/LiveAttendanceModal';
 import { useMentorCourseSchedule } from '../useMentorCourseSchedule';
 import type { CourseBooking } from '../courseSessions';
@@ -324,6 +325,7 @@ export default function MentorConsoleSchedulePage() {
 
   return (
     <div className="mc-sched">
+      <StructuredSessionReports />
       {pendingReport && (
         <div className="mc-alert-banner">
           <Flag size={22} color="var(--mc-danger)" />
