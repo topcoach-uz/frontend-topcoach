@@ -22,7 +22,6 @@ import ActivitiesProfile from './ActivitiesProfile';
 import ApplicationsPage from '../applications/ApplicationsPage';
 import DocumentsPage from '../documents/DocumentsPage';
 import { ApplicantPage } from '../applicant/ApplicantPage';
-import { APPLICANT_WORKSPACE_ENABLED } from 'src/lib/applicantWorkspace';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
 
@@ -54,7 +53,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, isLoading, error } = useStudentProfile(hookOptions);
   const isMasters = profile?.academicProfile?.targetDegree === 'master';
-  const useSeparateWorkspaces = APPLICANT_WORKSPACE_ENABLED && !isReadOnly;
+  const useSeparateWorkspaces = !isReadOnly;
 
   // Applicant workspaces have their own routes. Keep old profile tab links useful.
   useEffect(() => {

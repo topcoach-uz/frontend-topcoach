@@ -22,4 +22,4 @@ Updated 23 September 2026 against the available Master’s frames in the TopCoac
 
 ## Data and QA prerequisites
 
-Run the additive backend migrations, add sourced graduate program records through the admin API, and enable `VITE_APPLICANT_WORKSPACE_ENABLED=true` in the QA environment. The code deliberately leaves unsupported program facts as “Verification needed.” The local Postgres/API are currently stopped, so entitlement, upload, reviewer and mobile behavior still need signed-in browser QA. Graduate-specific course suitability remains unknown; the admissions course is shared content.
+Run the additive backend migrations, add sourced graduate program records through the admin API, and verify the default applicant workspace in the QA environment. The code deliberately leaves unsupported program facts as “Verification needed.” The local Postgres/API are currently stopped, so entitlement, upload, reviewer and mobile behavior still need signed-in browser QA. Graduate-specific course suitability remains unknown; the admissions course is shared content.

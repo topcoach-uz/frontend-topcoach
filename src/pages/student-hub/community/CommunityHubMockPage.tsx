@@ -2,21 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Card, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
-  Compass,
-  User,
-  Home,
-  Trophy,
-  PlayCircle,
   UserPlus,
   GraduationCap,
-  Settings,
-  Lock,
-  FlaskConical,
-  Presentation,
-  Coins,
-  MessageCircle,
   Play,
-  Shield,
   ArrowLeft,
   BookOpen,
 } from 'lucide-react';
@@ -34,14 +22,11 @@ import CoursePreview from 'src/pages/learning/CoursePreview';
 // standalone /student-hub/research-prep surface (non-community users).
 // The in-hub branch no longer renders the blurred preview.
 import { useGetEnrollmentMeQuery } from '../../../app/services/fullSupportApi';
-import { useGetCoinBalanceQuery } from '../../../app/services/coinsApi';
-import { useStudentProfile } from '../../../hooks/useStudentHub';
 // Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover) — replaces the
 // legacy PsychometricAssessmentPage at both mounts in this file. Same prop
 // contract (readOnly/studentId/onExit), so it's a drop-in swap.
 import MajorMatchV2Page from '../major-match-v2/MajorMatchV2Page';
 import OpportunitiesPage from '../opportunities/OpportunitiesPage';
-import EssaysPage from '../essays/EssaysPage';
 import ProfilePage from '../profile/ProfilePage';
 import MenteeSettingsPageMock from '../settings/MenteeSettingsPageMock';
 // Community-membership funnel pages — mounted as internal hub sections
@@ -62,13 +47,12 @@ import {
 } from 'src/constants/admissionsPreviewVideos';
 import { useTypedSelector } from 'src/app/store';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
-import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { canUseMyRewards } from 'src/lib/myRewardsAccess';
 import MyRewardsEditorialView, { MyRewardsComingSoon } from '../MyRewardsEditorialView';
-import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
-import { getLatestCreatedImg } from 'src/utils';
-import { displayName, sanitizeName } from 'src/utils/displayName';
 import CommunityMentorsView from './CommunityMentorsView';
+import { getLatestCreatedImg } from 'src/utils';
+import { displayName } from 'src/utils/displayName';
+import { applicantLinks } from 'src/lib/applicantWorkspace';
 
 type CommunitySectionKey =
   | 'feed'
@@ -77,7 +61,6 @@ type CommunitySectionKey =
   | 'more'
   | 'others'
   | 'account'
-  | 'dashboard'
   | 'myLearning'
   | 'aiMajorMatch'
   | 'admissionsProgram'
@@ -93,19 +76,6 @@ type CommunitySectionKey =
   // URLs: ?section=placement-profile, ?section=placement-roadmap
   | 'placementProfile'
   | 'placementRoadmap';
-type CommunityNavItem = {
-  key: CommunitySectionKey;
-  label: string;
-  icon: React.ReactNode;
-};
-
-const MOCK_COUNTS = {
-  feed: 0,
-  buddies: 0,
-  mentors: 0,
-  admissions: 6,
-};
-
 /**
  * Wraps ResearchPrepPage and resolves the current user's Full Support
  * enrollment, which gates the "Book a mentor review" CTA on each
@@ -118,23 +88,16 @@ function ResearchPrepSection() {
   return <ResearchPrepPage isFullSupport={isFullSupport} />;
 }
 
-export default function CommunityHubMockPage({ embedded = false }: { embedded?: boolean }) {
+export default function CommunityHubMockPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isCommunityEnrolled, unlockPremiumJourney, isEntitlementLoading } = useJourneyExperience();
+  const { isCommunityEnrolled } = useJourneyExperience();
   const profile = useTypedSelector((s) => s.auth.profile);
-  // Coin balance for the sidebar card. The profile card (and its coin
-  // chip) now renders for every student, not just community-enrolled
-  // ones, so this query always runs for any authenticated user.
-  const { data: coinBalance } = useGetCoinBalanceQuery();
-  // Profile-completion percentage for the sidebar card's progress bar.
-  // Reuses the same student-profile query the profile/dashboard pages
-  // already subscribe to (see Dashboard.tsx / MyProgressEditorialView.tsx),
-  // so this is a cache hit, not an extra request, once either page has loaded.
-  const { profile: studentProfileForCard, isLoading: studentProfileCardLoading } =
-    useStudentProfile();
-  const profileCompletionPercentage = studentProfileForCard?.completionPercentage;
+  const currentProfile = {
+    name: displayName(profile?.profile?.name, profile?.email, t('common.user', 'User')),
+    avatar: getLatestCreatedImg(profile?.profile?.media || []),
+  };
   const researchPrepLive = useMemo(
     () =>
       canUseResearchPrepLive(
@@ -144,14 +107,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
       ),
     [profile?.email, profile?.managementRole, isCommunityEnrolled],
   );
-  const satPrepLive = useMemo(
-    () =>
-      canUseSatPrep(
-        profile?.managementRole as string | undefined,
-        profile?.email,
-      ) || isCommunityEnrolled,
-    [profile?.managementRole, profile?.email, isCommunityEnrolled],
-  );
   // My Rewards editorial UI is gated to SuperAdmin/Owner during the
   // internal preview (see MY_REWARDS_SHOW_ALL). Everyone else sees the
   // "Coming soon" placeholder so the page stops feeling broken.
@@ -159,33 +114,10 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
     () => canUseMyRewards(profile?.managementRole as string | undefined),
     [profile?.managementRole],
   );
-  const currentProfile = useMemo(() => {
-    // displayName/sanitizeName keep legacy "Asila undefined" profile names —
-    // and the "@asilaundefined" handle derived from them — off the card.
-    const fullName = displayName(
-      profile?.profile?.name,
-      profile?.email,
-      t('common.user', 'User'),
-    );
-    const username =
-      sanitizeName((profile?.profile as any)?.username) ||
-      `${fullName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'}`;
-    return {
-      name: fullName,
-      username: username.startsWith('@') ? username : `@${username}`,
-      avatar: getLatestCreatedImg(profile?.profile?.media || []),
-    };
-  }, [profile?.profile, profile?.email, t]);
-
-  // Feed-allowed users (community-enrolled + staff) land on `feed` by
-  // default. Everyone else lands on the existing "My progress" panel,
-  // so the page always has content. Profile is hydrated by the parent
-  // layout before this component mounts, so the check is synchronous
-  // in practice.
   const [activeSection, setActiveSection] = useState<CommunitySectionKey>(() => {
     // Start embedded panes on the requested section, without mounting an
     // unrelated dashboard (and its data/video requests) for the first render.
-    if (embedded) {
+    {
       const section = new URLSearchParams(location.search).get('section');
       const aliases: Record<string, CommunitySectionKey> = {
         'my-learning': 'myLearning', 'ai-major-match': 'aiMajorMatch',
@@ -194,13 +126,13 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
         'placement-roadmap': 'placementRoadmap',
       };
       if (section && aliases[section]) return aliases[section];
-      if (section && ['feed', 'messages', 'buddies', 'more', 'others', 'account', 'dashboard', 'mentors'].includes(section)) return section as CommunitySectionKey;
+      if (section && ['feed', 'messages', 'buddies', 'more', 'others', 'account', 'mentors'].includes(section)) return section as CommunitySectionKey;
     }
     if (ENABLE_COMMUNITY_FEED) return 'feed';
     return 'myLearning';
   });
-  const [othersTarget, setOthersTarget] = useState<string | null>(() => embedded ? new URLSearchParams(location.search).get('target') : null);
-  const [accountTarget, setAccountTarget] = useState<string | null>(() => embedded ? new URLSearchParams(location.search).get('target') : null);
+  const [othersTarget, setOthersTarget] = useState<string | null>(() => new URLSearchParams(location.search).get('target'));
+  const [accountTarget, setAccountTarget] = useState<string | null>(() => new URLSearchParams(location.search).get('target'));
   // Study Buddy is free; the editorial header shows once the user has accepted
   // the community guidelines (the consent gate renders the standalone intro
   // until then). Only fetched while on the buddies section.
@@ -208,7 +140,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
     skip: activeSection !== 'buddies',
   });
   const buddyConsented = !!buddyConsent?.consented;
-  const [satSampleQuizChoice, setSatSampleQuizChoice] = useState<string | null>(null);
   const [admissionsVideoModal, setAdmissionsVideoModal] = useState<AdmissionsYoutubePreviewSpec | null>(null);
   // Ad-hoc CommunityLockedPage variant — set when a CTA needs to surface
   // the unlock modal on-demand (e.g. "Go to admissions lessons" while not
@@ -217,22 +148,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
   const [adHocLockVariant, setAdHocLockVariant] = useState<CommunityLockVariant | null>(null);
   const [messagesConversationId, setMessagesConversationId] = useState<string | null>(null);
   const [messagesThreadId, setMessagesThreadId] = useState<string | null>(null);
-  const defaultHubSectionPath = isCommunityEnrolled
-    ? ENABLE_COMMUNITY_FEED
-      ? '/student-hub?section=feed'
-      : '/student-hub?section=my-learning'
-    : '/student-hub?section=dashboard';
-
-  /** Default landing: dashboard when not enrolled; feed/my-progress when enrolled. */
-  useEffect(() => {
-    if (location.pathname !== '/student-hub' && location.pathname !== '/student-hub/') return;
-    if (location.search && location.search.length > 1) return;
-    // Don't commit to the not-enrolled default while entitlement is still
-    // resolving on a fresh device — otherwise an enrolled user lands on the
-    // dashboard upsell and then gets yanked to Feed a beat later.
-    if (isEntitlementLoading) return;
-    navigate(defaultHubSectionPath, { replace: true });
-  }, [location.pathname, location.search, defaultHubSectionPath, navigate, isEntitlementLoading]);
+  const defaultHubSectionPath = applicantLinks.overview;
 
   /**
    * Scroll-to-top on in-hub section change.
@@ -248,13 +164,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [location.search]);
-
-  // `?section=dashboard` used to bounce community-enrolled users back to
-  // the feed/my-progress default — that redirect is gone. Enrolled users
-  // can now reach Dashboard via the nav item below; the DEFAULT landing
-  // for them is still the feed (see `defaultHubSectionPath` above and the
-  // effect at the top of this file), this only affects reachability once
-  // they're already in the hub.
 
   /** Rollout guard: feed UI disabled → route feed to My Progress. */
   useEffect(() => {
@@ -309,25 +218,12 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
 
   
 
-  // Support simple deep-linking inside this mock:
-  // /student-hub?section=more|others|account|dashboard|buddies|messages|ai-major-match|…
+  // Resolve community and learning sections within ApplicantShell:
+  // /student-hub?section=more|others|account|buddies|messages|ai-major-match|…
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const section = params.get('section');
     const target = params.get('target');
-
-    // "College Lists" and "Documents" used to be standalone others-targets;
-    // they now live as tabs inside the Profile hub. Redirect old deep-links
-    // (bookmarks, StudentHubRoutes legacy-route redirects, in-app CTAs that
-    // haven't been repointed) instead of rendering an empty pane. Preserves
-    // any other params (e.g. applicationFlow=new) via the copied URLSearchParams.
-    if (section === 'others' && (target === 'college-lists' || target === 'documents')) {
-      const next = new URLSearchParams(params);
-      next.set('target', 'profile');
-      next.set('tab', target);
-      navigate(`/student-hub?${next.toString()}`, { replace: true });
-      return;
-    }
 
     if (
       section === 'feed' ||
@@ -336,7 +232,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
       section === 'more' ||
       section === 'others' ||
       section === 'account' ||
-      section === 'dashboard' ||
       section === 'my-learning' ||
       section === 'ai-major-match' ||
       section === 'admissions-program' ||
@@ -375,40 +270,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
 
   // Everyone can read the feed; posting and interactions remain gated.
   const isFeedAllowed = ENABLE_COMMUNITY_FEED;
-
-  const navItems: CommunityNavItem[] = useMemo(
-    () => [
-      ...(isFeedAllowed
-        ? [{ key: 'feed' as const, label: 'Feed', icon: <Compass size={16} color="#fff" /> }]
-        : []),
-      { key: 'messages', label: 'Messages', icon: <MessageCircle size={16} color="#fff" /> },
-      { key: 'buddies', label: 'Find Study Buddy', icon: <User size={16} color="#fff" /> },
-    ],
-    [isFeedAllowed]
-  );
-
-  const dashboardNav = useMemo(
-    () => ({
-      label: 'Dashboard',
-      route: '/student-hub/dashboard',
-      icon: <UnifiedIcon name="dashboard" size="sm" color="#fff" />,
-      bg: '#8b0000',
-    }),
-    []
-  );
-
-  const yourJourneyOthersNav = useMemo(
-    () => [
-      { label: 'Full Support', route: '/student-hub/full-support', icon: <UnifiedIcon name="full-support" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'College Lists', route: '/student-hub/applications', icon: <UnifiedIcon name="applications" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'Major Match', route: '/student-hub/psychometric-assessment', icon: <UnifiedIcon name="major-match" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'Opportunities', route: '/student-hub/opportunities', icon: <UnifiedIcon name="opportunities" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'Essays', route: '/student-hub/essays', icon: <UnifiedIcon name="essays" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'Documents', route: '/student-hub/documents', icon: <UnifiedIcon name="documents" size="sm" color="#fff" />, bg: '#8b0000' },
-      { label: 'My Profile', route: '/student-hub/profile', icon: <UnifiedIcon name="profile" size="sm" color="#fff" />, bg: '#8b0000' },
-    ],
-    []
-  );
 
   const pageHeader = useMemo((): { title: string; subtitle: string } | null => {
     switch (activeSection) {
@@ -476,7 +337,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
     return null;
   }, [isCommunityEnrolled, activeSection, accountTarget, researchPrepLive]);
 
-  const hideHubChrome = true;
 
   const needsExtraSubtitleGap =
     activeSection === 'satCourse' ||
@@ -496,7 +356,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
 
   return (
     <div
-      className={`${styles.hubPageOuter} ${embedded ? styles.hubEmbedded : ''} ${
+      className={`${styles.hubPageOuter} ${styles.hubEmbedded} ${
         activeSection === 'feed' && ENABLE_COMMUNITY_FEED
           ? styles.hubPageOuterFeedCream
           : ''
@@ -509,371 +369,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
           isFullBleed ? styles.hubFullBleed : styles.hubNoRight
         } ${isAdmissionsFullBleed ? styles.admissionsShellHub : ''}`}
       >
-      {!embedded && <div
-        className={`${styles.leftCol} ${isFullBleed ? styles.leftColHidden : ''}`}
-      >
-        <div className={styles.leftColInner}>
-        <Card
-          className={styles.profileCard}
-          bordered={false}
-          role="button"
-          tabIndex={0}
-          aria-label="View my profile"
-          onClick={() => navigate('/student-hub?section=others&target=profile')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              navigate('/student-hub?section=others&target=profile');
-            }
-          }}
-        >
-          {/* Compact row + coin chip layout (Option B from the design
-              explorations). Avatar + identity on one row, coin chip +
-              "View profile" CTA on the next. Drops the hero photo band
-              and shadow that the old single-column layout used. Renders
-              for every student, not just community-enrolled ones — the
-              coin balance and completion bar are both real, per-user
-              data that any student has. */}
-          <div className={styles.profileTopRow}>
-            <div className={styles.profilePhoto}>
-              {currentProfile.avatar ? (
-                <img
-                  src={currentProfile.avatar}
-                  alt={currentProfile.name}
-                  className={styles.profilePhotoImg}
-                />
-              ) : (
-                <div className={styles.profilePhotoFallback} aria-hidden>
-                  <User size={28} />
-                </div>
-              )}
-            </div>
-            <div className={styles.profileMeta}>
-              <div className={styles.profileName} title={currentProfile.name}>
-                {currentProfile.name}
-              </div>
-              <div className={styles.profileHandle} title={currentProfile.username}>
-                {currentProfile.username}
-              </div>
-            </div>
-          </div>
-          {!studentProfileCardLoading && typeof profileCompletionPercentage === 'number' && (
-            profileCompletionPercentage >= 100 ? (
-              <button
-                type="button"
-                className={styles.profileCompletionDone}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/student-hub/profile');
-                }}
-              >
-                {t('studentHub.profileCard.complete', 'Profile complete ✓')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={styles.profileCompletion}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/student-hub/profile');
-                }}
-                aria-label={t(
-                  'studentHub.profileCard.completionAria',
-                  'Profile {{percent}}% complete — go to profile',
-                  { percent: profileCompletionPercentage },
-                )}
-              >
-                <span className={styles.profileCompletionLabel}>
-                  {t('studentHub.profileCard.completion', 'Profile {{percent}}% complete', {
-                    percent: profileCompletionPercentage,
-                  })}
-                </span>
-                <span className={styles.profileCompletionTrack}>
-                  <span
-                    className={styles.profileCompletionFill}
-                    style={{ width: `${Math.min(100, Math.max(0, profileCompletionPercentage))}%` }}
-                  />
-                </span>
-              </button>
-            )
-          )}
-          <div className={styles.profileBottomRow}>
-            <button
-              type="button"
-              className={styles.profileCoinsInline}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate('/student-hub?section=account&target=rewards');
-              }}
-              aria-label={`View ${coinBalance?.balance ?? 0} TopCoach coins`}
-            >
-              <Coins size={13} aria-hidden />
-              <span className={styles.profileCoinsValue}>
-                {(coinBalance?.balance ?? 0).toLocaleString()}
-              </span>
-            </button>
-            <div className={styles.profileFooter}>
-              <span>{t('studentHub.hub.viewProfile', 'View profile')}</span>
-              <span className={styles.profileFooterArrow} aria-hidden>→</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Organization membership. Lives here rather than on a single page so
-            it is visible throughout the hub: its previous mount point was the
-            legacy Dashboard, which no longer renders, so students in an org
-            were never told they were in one. */}
-        <OrgMembershipSidebar />
-
-        <div className={styles.leftNav}>
-          {/* Dashboard is reachable for every student, enrolled or not —
-              it renders the same MyProgressEditorialView as "My progress"
-              below (see the isCommunityEnrolled branch inside that
-              component for what each cohort actually sees). */}
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'dashboard' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('dashboard');
-              navigate('/student-hub?section=dashboard', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><Home size={20} color="#8b0000" /></span>
-            <span className={styles.navLabel}>{t('studentHub.nav.dashboard', 'Dashboard')}</span>
-          </button>
-
-          {/* ISC Reviewer link removed from the sidebar. The console itself is
-              untouched and still reachable at /isc-2026/review; only the nav
-              entry is gone, so restoring it is a small revert. */}
-
-          {/* Feed is now ALWAYS shown when the feature flag is on — even to
-              students who aren't community-enrolled. Non-enrolled users get
-              the lock icon + tooltip and land on CommunityLockedPage (see
-              `communityLockVariant`) when they click it, same pattern as
-              SAT/Admissions/Research/My Rewards below. This mirrors the
-              mobile drawer (CommunityHubMobileDrawerNav) so the Feed
-              nav item is no longer invisible to the exact audience the
-              pitch page is written for. `isFeedAllowed` (enrolled OR
-              staff) still gates the real feed CONTENT render further
-              down — that backend-matching gate is untouched. */}
-          {ENABLE_COMMUNITY_FEED && (
-            <button
-              type="button"
-              className={`${styles.navItem} ${activeSection === 'feed' ? styles.navItemActive : ''}`}
-              onClick={() => {
-                setActiveSection('feed');
-                navigate('/student-hub?section=feed', { replace: true });
-              }}
-            >
-              <span className={styles.navIconCircle}>
-                <Compass size={20} color="#8b0000" />
-              </span>
-              <span className={styles.navLabel}>{t('studentHub.hub.feed', 'Feed')}</span>
-              {/* Match the shared lock-icon pattern used by SAT/Admissions/
-                  Research/My Rewards so the Feed row reads as part of the
-                  same locked-items family — same size, same SCSS class. */}
-            </button>
-          )}
-
-          <div className={styles.leftNavHeader}>{t('studentHub.hub.navCommunity', 'COMMUNITY')}</div>
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'buddies' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('buddies');
-              navigate('/student-hub?section=buddies', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <UserPlus size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.findStudyBuddy', 'Find study buddy')}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'mentors' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('mentors');
-              navigate('/student-hub?section=mentors', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><UnifiedIcon name="mentors" size="md" color="primary" /></span>
-            <span className={styles.navLabel}>{t('studentHub.hub.mentors', 'Mentors')}</span>
-          </button>
-
-          <div className={styles.leftNavHeader}>{t('studentHub.hub.navLearning', 'LEARNING')}</div>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'myLearning' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('myLearning');
-              navigate('/student-hub?section=my-learning', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><PlayCircle size={18} color="#8b0000" /></span>
-            <span className={styles.navLabel}>{t('studentHub.hub.myProgress', 'My progress')}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'full-support' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setOthersTarget('full-support');
-              setActiveSection('others');
-              navigate('/student-hub?section=others&target=full-support', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><UnifiedIcon name="full-support" size="md" color="primary" /></span>
-            <span className={styles.navLabel}>{t('fullSupport.navLabel', 'Full Support')}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'aiMajorMatch' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('aiMajorMatch');
-              navigate('/student-hub?section=ai-major-match', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <UnifiedIcon name="major-match" size="md" color="primary" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.aiMajorMatch', 'AI Major Match')}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'others' && othersTarget === 'profile' && new URLSearchParams(location.search).get('tab') === 'college-lists' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setOthersTarget('profile');
-              setActiveSection('others');
-              navigate('/student-hub?section=others&target=profile&tab=college-lists', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><UnifiedIcon name="applications" size="md" color="primary" /></span>
-            <span className={styles.navLabel}>{t('studentHub.nav.applications', 'Applications')}</span>
-          </button>
-
-          <button type="button" className={styles.navItem} onClick={() => navigate('/student-hub/ielts-prep')}>
-            <span className={styles.navIconCircle}><UnifiedIcon name="language" size="md" color="primary" /></span>
-            <span className={styles.navLabel}>{t('studentHub.hub.ieltsTestPrep', 'IELTS test prep')}</span>
-          </button>
-
-          <button
-            type="button"
-            className={styles.navItem}
-            onClick={() => navigate('/student-hub/sat-prep')}
-          >
-            <span className={styles.navIconCircle}>
-              <UnifiedIcon name="sat" size="md" color="primary" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.satTestPrep', 'SAT test prep')}</span>
-            {!satPrepLive && <Lock size={14} className={styles.navLockIcon} />}
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'admissionsProgram' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              // Community-enrolled users skip the marketing landing
-              // page and jump straight into the lesson player. Non-
-              // enrolled users still see the landing page (with the
-              // free preview videos); the "Go to admissions lessons"
-              // button on that page triggers the unlock popup.
-              if (isCommunityEnrolled) {
-                navigate('/learning?course=admissions');
-                return;
-              }
-              setActiveSection('admissionsProgram');
-              navigate('/student-hub?section=admissions-program', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <UnifiedIcon name="admissions" size="md" color="primary" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.admissionsCourse', 'Admissions course')}</span>
-            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'researchProgram' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              // Non-community users go to the standalone, edge-to-edge
-              // locked surface (blurred preview + unlock modal, no hub
-              // sidebar). Community users stay in-hub on the real page.
-              if (!isCommunityEnrolled) {
-                navigate('/student-hub/research-prep');
-                return;
-              }
-              setActiveSection('researchProgram');
-              navigate('/student-hub?section=research-program', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}>
-              <FlaskConical size={20} color="#8b0000" />
-            </span>
-            <span className={styles.navLabel}>{t('studentHub.hub.researchPrep', 'Research Prep')}</span>
-            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
-          </button>
-
-          {/* Opportunities entry hidden for now — feature still building.
-              Restore by un-commenting when the page is ready. */}
-          {false && (
-            <button
-              type="button"
-              className={styles.navItem}
-              onClick={() => navigate('/events')}
-            >
-              <span className={styles.navIconCircle}>
-                <Presentation size={20} color="#8b0000" />
-              </span>
-              <span className={styles.navLabel}>{t('studentHub.hub.opportunitiesNav', 'Opportunities')}</span>
-            </button>
-          )}
-
-          <div className={styles.leftNavHeader}>{t('studentHub.hub.navAccount', 'ACCOUNT')}</div>
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'account' && accountTarget === 'rewards' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('account');
-              navigate('/student-hub?section=account&target=rewards', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><Trophy size={20} color="#8b0000" /></span>
-            <span className={styles.navLabel}>{t('studentHub.hub.myRewards', 'My Rewards')}</span>
-            {!isCommunityEnrolled && <Lock size={14} className={styles.navLockIcon} />}
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${activeSection === 'account' && accountTarget === 'settings' ? styles.navItemActive : ''}`}
-            onClick={() => {
-              setActiveSection('account');
-              navigate('/student-hub?section=account&target=settings', { replace: true });
-            }}
-          >
-            <span className={styles.navIconCircle}><Settings size={20} color="#8b0000" /></span>
-            <span className={styles.navLabel}>{t('studentHub.nav.settings', 'Settings')}</span>
-          </button>
-
-          {((profile as { managementRole?: string } | null | undefined)?.managementRole === 'SuperAdmin' ||
-            (profile as { managementRole?: string } | null | undefined)?.managementRole === 'Owner') && (
-            <button
-              type="button"
-              className={styles.navItem}
-              onClick={() => navigate('/new-admin/dashboard')}
-            >
-              <span className={styles.navIconCircle}><Shield size={20} color="#8b0000" /></span>
-              <span className={styles.navLabel}>{t('studentHub.nav.adminConsole', 'Admin console')}</span>
-            </button>
-          )}
-        </div>
-        </div>
-      </div>}
 
       <div
         className={`${styles.centerCol} ${
@@ -1056,7 +551,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                     key: 'buddies' as const,
                     label: t('studentHub.hub.findStudyBuddy', 'Find Study Buddy'),
                     icon: <UserPlus size={18} color="#8b0000" />,
-                    count: MOCK_COUNTS.buddies,
                     preview: t('studentHub.hub.buddiesPreview', 'Accountability: SAT Math 3x/week'),
                     accent: '#b91c1c',
                   },
@@ -1064,7 +558,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                     key: 'mentors' as const,
                     label: t('studentHub.hub.mentors', 'Mentors'),
                     icon: <GraduationCap size={18} color="#8b0000" />,
-                    count: MOCK_COUNTS.mentors,
                     preview: t('studentHub.hub.mentorsPreview', 'Admissions + Research'),
                     accent: '#b91c1c',
                   },
@@ -1081,7 +574,7 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                         </div>
                       </div>
                       <div className={styles.moreCountBadge} style={{ backgroundColor: 'rgba(139, 0, 0, 0.06)', borderColor: 'rgba(139, 0, 0, 0.25)' }}>
-                        {c.count}
+                        0
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 14 }}>
@@ -1120,7 +613,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
                     </div>
                   )}
                   {othersTarget === 'opportunities' && <OpportunitiesPage />}
-                  {othersTarget === 'essays' && <EssaysPage />}
                   {othersTarget === 'profile' && <ProfilePage />}
                 </div>
               ) : (
@@ -1191,16 +683,6 @@ export default function CommunityHubMockPage({ embedded = false }: { embedded?: 
             </>
           )}
 
-          {activeSection === 'dashboard' && (
-            <div className={styles.hubDashEmbed}>
-              {/* Non-community (Standard) mode used to render the legacy
-                  `<Dashboard />` here, which felt out-of-place next to the
-                  rest of the editorial pages. Both modes now share the
-                  same editorial My Progress view so Standard ≠ visually
-                  stale. */}
-              <MyProgressEditorialView />
-            </div>
-          )}
           {activeSection === 'myLearning' && (
             <div className={styles.hubDashEmbed}>
               <MyProgressEditorialView />

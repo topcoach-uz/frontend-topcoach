@@ -7,7 +7,7 @@ import CommunityHubMockPage from './community/CommunityHubMockPage';
 import { useTypedSelector } from 'src/app/store';
 import { canUseSatPrep } from 'src/lib/satPrepAccess';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { APPLICANT_WORKSPACE_ENABLED, isOverviewLocation } from 'src/lib/applicantWorkspace';
+import { isOverviewLocation, legacyWorkspaceRedirect } from 'src/lib/applicantWorkspace';
 import CoursePreview from '../learning/CoursePreview';
 import ResearchIntroPreview from './research/ResearchIntroPreview';
 
@@ -28,7 +28,6 @@ const ApplicantDegreeDetailPage = lazy(() => import('./applicant/ApplicantDegree
 const ApplicantStudyDirectionPage = lazy(() => import('./applicant/ApplicantStudyDirectionPage'));
 
 const NewScholarshipPage = lazy(() => import('./applications/NewScholarshipPage'));
-const EditApplicationPage = lazy(() => import('./applications/EditApplicationPage'));
 // Legacy engine (MAJOR_MATCH_V2_PLAN.md §0/§7) — the module stays compiled
 // (src/pages/student-hub/psychometric-assessment/, backend module, DB
 // tables) but as of the Stage 5 cutover it is no longer imported from this
@@ -53,10 +52,12 @@ const withSuspense = (node: React.ReactNode) => <Suspense fallback={<RouteFallba
 
 const HubEntry = () => {
   const location = useLocation();
-  if (APPLICANT_WORKSPACE_ENABLED && isOverviewLocation(location.pathname, location.search)) {
+  const redirect = legacyWorkspaceRedirect(location.search);
+  if (redirect) return <Navigate to={redirect} replace />;
+  if (isOverviewLocation(location.pathname, location.search)) {
     return withSuspense(<ApplicantOverviewPage />);
   }
-  return <CommunityHubMockPage embedded={APPLICANT_WORKSPACE_ENABLED} />;
+  return <CommunityHubMockPage />;
 };
 
 /** Full-width shell for standalone psychometric route — matches hub vertical rhythm (hubDashEmbed ≈ 20px) */
@@ -111,8 +112,7 @@ const ResearchPrepLockedSurface: React.FC = () => {
 };
 
 /**
- * All mentees use the unified Community Hub shell (`CommunityHubMockPage`) with the same left column.
- * Enrollment state (mock) controls feed vs dashboard default and locked learning items.
+ * All students use ApplicantShell. Community and learning sections share its navigation.
  */
 const StudentHubRoutes: React.FC = () => {
   return (
@@ -128,38 +128,36 @@ const StudentHubRoutes: React.FC = () => {
           <Route path="/" element={<HubEntry />} />
           <Route path="/attendance" element={<Navigate to="/student-hub?section=others&target=full-support" replace />} />
           <Route path="/sessions" element={<Navigate to="/student-hub/overview" replace />} />
-          <Route path="/overview" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantOverviewPage />) : <Navigate to="/student-hub?section=dashboard" replace />} />
+          <Route path="/overview" element={withSuspense(<ApplicantOverviewPage />)} />
           <Route path="/dashboard" element={<Navigate to="/student-hub?section=dashboard" replace />} />
           <Route path="/rewards" element={<Navigate to="/student-hub?section=account&target=rewards" replace />} />
           <Route path="/profile" element={<ProfileRedirect />} />
           <Route path="/profile/*" element={<ProfileRedirect />} />
 
-          {/* College list flows must be real routes — ApplicationsPage switches on pathname for new/edit.
-              College List now lives as a tab inside the Profile hub (target=profile&tab=college-lists). */}
+          {/* Applications use dedicated workspace routes. */}
           <Route
             path="/applications/new"
-            element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantApplicationFormPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=college-lists&applicationFlow=new" replace />}
+            element={withSuspense(<ApplicantApplicationFormPage />)}
           />
           <Route path="/applications/scholarships/new" element={withSuspense(<NewScholarshipPage />)} />
-          <Route path="/applications/:applicationId/edit" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantApplicationFormPage />) : withSuspense(<EditApplicationPage />)} />
-          <Route path="/applications/:applicationId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantApplicationPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=college-lists" replace />} />
-          <Route path="/applications" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantApplicationsPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=college-lists" replace />} />
-          <Route path="/tasks" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantTasksPage />) : <Navigate to="/student-hub/applications?tab=tasks" replace />} />
+          <Route path="/applications/:applicationId/edit" element={withSuspense(<ApplicantApplicationFormPage />)} />
+          <Route path="/applications/:applicationId" element={withSuspense(<ApplicantApplicationPage />)} />
+          <Route path="/applications" element={withSuspense(<ApplicantApplicationsPage />)} />
+          <Route path="/tasks" element={withSuspense(<ApplicantTasksPage />)} />
 
-          <Route path="/essays/new" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantEssaysPage />) : <Navigate to="/student-hub?section=others&target=essays" replace />} />
-          <Route path="/essays/:essayId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantEssayEditorPage />) : <Navigate to="/student-hub?section=others&target=essays" replace />} />
-          <Route path="/essays" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantEssaysPage />) : <Navigate to="/student-hub?section=others&target=essays" replace />} />
+          <Route path="/essays/new" element={withSuspense(<ApplicantEssaysPage />)} />
+          <Route path="/essays/:essayId" element={withSuspense(<ApplicantEssayEditorPage />)} />
+          <Route path="/essays" element={withSuspense(<ApplicantEssaysPage />)} />
           <Route path="/gpa-calculator" element={<Navigate to="/student-hub?section=others&target=gpa-calculator" replace />} />
           <Route path="/gpa-calculator/*" element={<Navigate to="/student-hub?section=others&target=gpa-calculator" replace />} />
           <Route path="/admissions-program" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
           <Route path="/admissions-program/*" element={<Navigate to="/student-hub?section=learning&tab=admissions" replace />} />
-          {/* Documents now lives as a tab inside the Profile hub (target=profile&tab=documents). */}
-          <Route path="/documents" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDocumentsPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=documents" replace />} />
-          <Route path="/documents/:documentId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDocumentReviewPage />) : <Navigate to="/student-hub/documents" replace />} />
-          <Route path="/universities/:universityId/degrees/:degreeSlug" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantDegreeDetailPage />) : <Navigate to="/universities" replace />} />
-          <Route path="/universities/:universityId" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversityDetailPage />) : <Navigate to="/universities" replace />} />
-          <Route path="/universities" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantUniversitiesPage />) : <Navigate to="/universities" replace />} />
-          <Route path="/study-direction" element={APPLICANT_WORKSPACE_ENABLED ? withSuspense(<ApplicantStudyDirectionPage />) : <Navigate to="/student-hub?section=others&target=profile&tab=academic" replace />} />
+          <Route path="/documents" element={withSuspense(<ApplicantDocumentsPage />)} />
+          <Route path="/documents/:documentId" element={withSuspense(<ApplicantDocumentReviewPage />)} />
+          <Route path="/universities/:universityId/degrees/:degreeSlug" element={withSuspense(<ApplicantDegreeDetailPage />)} />
+          <Route path="/universities/:universityId" element={withSuspense(<ApplicantUniversityDetailPage />)} />
+          <Route path="/universities" element={withSuspense(<ApplicantUniversitiesPage />)} />
+          <Route path="/study-direction" element={withSuspense(<ApplicantStudyDirectionPage />)} />
 
           {/* Major Match v2 (MAJOR_MATCH_V2_PLAN.md Stage 5 cutover).
               Old URL kept per plan §6 Q10 — deep links in the wild — but now
