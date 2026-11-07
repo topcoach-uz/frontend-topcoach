@@ -1,9 +1,11 @@
+import { verifiedUniversityFinance, type VerifiedUniversityFinance } from './verifiedUniversityFinance';
+import { UniversityStudyAreas, normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
-import { useGetUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
+import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
 import { degreeMatchesField, useGetUndergraduateDegreesQuery } from "src/app/services/undergraduateDegreesApi";
 import type { UniversitiesSchema } from "src/app/api/Api";
 import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/applicationTrackingApi";
@@ -29,12 +31,14 @@ export default function ApplicantUniversitiesPage() {
   const [value, setValue] = useState(search);
   // Back/forward navigation changes the URL without remounting this page.
   useEffect(() => setValue(search), [search]);
-  const universityQuery = useGetUniversitiesQuery({ page, limit: 40, search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: "undergraduate" }, { skip: isMasters });
+  // Subject coverage is incomplete; only require an undergraduate subject when
+  // the applicant explicitly chooses a field, rather than hiding universities.
+  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: major ? "undergraduate" : undefined }, { skip: isMasters });
   const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
   const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
-  const universities = universityQuery.data?.data ?? [];
+  const universities = (universityQuery.data?.data ?? []).slice((page - 1) * 40, page * 40);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;
@@ -116,6 +120,7 @@ function GraduateDetail({ program, existingId, applicationsError, applicationsLo
 }
 
 type UniversityProfileContent = UniversitiesSchema & {
+  undergraduateFinanceContent?: VerifiedUniversityFinance | null;
   profileOverview?: string | null;
   officialWebsiteUrl?: string | null;
   undergraduateCoursesUrl?: string | null;
@@ -144,6 +149,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   onOpen: () => void;
 }) {
   const profile = university as UniversityProfileContent;
+  const finance = verifiedUniversityFinance(university.id, profile.undergraduateFinanceContent);
   const degreesQuery = useGetUndergraduateDegreesQuery(university.id);
   const degrees = [...(degreesQuery.data ?? [])].sort((a, b) => Number(degreeMatchesField(b, selectedField)) - Number(degreeMatchesField(a, selectedField)));
   const matchingDegreeCount = degrees.filter((degree) => degreeMatchesField(degree, selectedField)).length;
@@ -181,16 +187,21 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
-      {!degreesQuery.isLoading && !degreesQuery.isError && (degrees.length > 0
-        ? <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>
-        : catalogueFields.length > 0
-          ? <div className="applicant-university-detail__catalogue"><div className="applicant-university-detail__catalogue-note"><h3>Undergraduate study areas</h3><p>Detailed course pages are still being verified. These subjects are already associated with {name} in the university catalogue.</p></div><div className="applicant-university-detail__catalogue-grid">{catalogueFields.map((field) => <div className={field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() ? "applicant-university-detail__catalogue-field applicant-university-detail__catalogue-field--match" : "applicant-university-detail__catalogue-field"} key={field.value}>{field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase() && <span>Matches selected field</span>}<strong>{field.label}</strong></div>)}</div></div>
-        : <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>{selectedField ? `We have not verified an undergraduate degree in ${selectedField} at ${name} yet.` : `We don't have a confirmed undergraduate course list for ${name} yet.`}</p></div>)}
+      {!degreesQuery.isLoading && !degreesQuery.isError && degrees.length > 0 && <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>}
+      {!degreesQuery.isLoading && !degreesQuery.isError && <UniversityStudyAreas universityId={university.id} fields={catalogueFields.filter(field => !degrees.some(degree => degreeMatchesField(degree, field.value) || normalizeStudyArea(degree.name) === normalizeStudyArea(field.value)))} majors={university.majors ?? []} links={(university as UniversityProfileContent & { verifiedProgramLinks?: import('src/app/services/universities').VerifiedProgramLink[] }).verifiedProgramLinks} selectedField={selectedField} />}
+      {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 
     <div className="applicant-university-detail__lower">
       <section className="applicant-university-detail__life"><h2>Life at {name}</h2>{profile.studentLifeIntro || profile.studentLifeDetail ? <><p>{profile.studentLifeIntro}</p>{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}<p>{profile.studentLifeDetail}</p>{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Student-life information is being checked against official university sources.</p>}</section>
-      <section className="applicant-university-detail__funding"><h2>Fees &amp; financial support</h2>{profile.fundingIntro || profile.fundingDetail ? <><p>{profile.fundingIntro}</p><p>{profile.fundingDetail} {profile.fundingPolicyUrl && <a href={profile.fundingPolicyUrl} target="_blank" rel="noreferrer">International applicant policy <ArrowUpRight size={17} aria-hidden="true" /></a>}</p>{profile.fundingUrl && <a href={profile.fundingUrl} target="_blank" rel="noreferrer">Explore funding <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Current tuition and funding details are being checked against official university sources.</p>}</section>
+      <section className="applicant-university-detail__funding"><h2>Fees &amp; financial support</h2>{finance ? <>
+        <h3>Tuition and fees</h3><p>{finance.content.feesSummary}</p>
+        <a href={finance.content.feesUrl} target="_blank" rel="noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a>
+        <h3>Scholarships and financial support</h3><p>{finance.content.fundingSummary}</p>
+        {finance.content.fundingPolicyNote && <p>{finance.content.fundingPolicyNote}</p>}
+        <a href={finance.content.fundingPolicyUrl} target="_blank" rel="noreferrer">Official scholarships and funding policy <ArrowUpRight size={17} aria-hidden="true" /></a>
+        <p>Checked {displayDate(finance.verifiedAt)}</p>
+      </> : profile.fundingIntro || profile.fundingDetail ? <><p>{profile.fundingIntro}</p><p>{profile.fundingDetail} {profile.fundingPolicyUrl && <a href={profile.fundingPolicyUrl} target="_blank" rel="noreferrer">International applicant policy <ArrowUpRight size={17} aria-hidden="true" /></a>}</p>{profile.fundingUrl && <a href={profile.fundingUrl} target="_blank" rel="noreferrer">Explore funding <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Current tuition and funding details are being checked against official university sources.</p>}</section>
     </div>
     <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>
   </>;

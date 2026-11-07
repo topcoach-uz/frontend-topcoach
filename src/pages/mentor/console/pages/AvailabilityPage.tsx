@@ -1,9 +1,10 @@
 import { Card } from 'antd';
 import AvailabilitySettings from 'src/pages/home/mentor/bookings/_components/AvailabilitySettings';
 
-export default function MentorConsoleAvailabilityPage() {
+export default function MentorConsoleAvailabilityPage({ embedded = false }: { embedded?: boolean } = {}) {
   return (
     <div>
+      {!embedded && (
       <div className="mc-page-head mc-page-head--ruled">
         <div className="mc-page-eyebrow">
           Mentor <span className="mc-page-eyebrow-accent">· Availability</span>
@@ -14,6 +15,7 @@ export default function MentorConsoleAvailabilityPage() {
           converted to each student&apos;s timezone.
         </p>
       </div>
+      )}
 
       <Card bordered={false} className="mc-panel">
         <AvailabilitySettings />

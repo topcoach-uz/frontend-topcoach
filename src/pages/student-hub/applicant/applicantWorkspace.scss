@@ -8,7 +8,7 @@
   --applicant-border: #e7e2dc;
   font-family: $font-primary;
   color: var(--applicant-ink);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
   a,
   button {
@@ -57,6 +57,13 @@
   padding: 15px;
   box-shadow: 0 2px 3px #302b2808;
   margin-bottom: 16px;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+.applicant-summary:hover {
+  border-color: #cfc8c0;
+  box-shadow: 0 4px 12px #302b2814;
 }
 .applicant-summary__identity {
   display: flex;
@@ -70,17 +77,19 @@
 }
 .applicant-summary strong {
   display: block;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 .applicant-summary p {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
   color: var(--applicant-muted);
 }
 .applicant-summary small {
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
   color: var(--applicant-muted);
 }
 .applicant-avatar {
@@ -108,8 +117,11 @@
   border: 0;
   border-radius: 8px;
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
   cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
 }
 .applicant-shell .applicant-nav-link:focus-visible,
 .applicant-drawer .applicant-nav-link:focus-visible {
@@ -121,6 +133,9 @@
 .applicant-nav-link svg {
   flex-shrink: 0;
   color: #647084;
+  transition:
+    color 150ms ease-out,
+    transform 150ms ease-out;
 }
 .applicant-nav-link .applicant-nav-lock {
   color: #8b0000;
@@ -147,7 +162,7 @@
   padding-left: 40px;
 }
 .applicant-nav-children .applicant-nav-link {
-  font-size: 14px;
+  font-size: 0.875rem;
   min-height: 40px;
 }
 .applicant-mobile-bar {
@@ -178,24 +193,26 @@
 .applicant-overview h1,
 .applicant-page-error h1 {
   color: #302b28;
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 500;
-  line-height: 1.45;
-  letter-spacing: -0.4px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 .applicant-overview h2,
 .applicant-goal-prompt h2 {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   margin: 0 0 14px;
   color: #302b28;
 }
 .applicant-overview h3 {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   margin: 0;
   color: #302b28;
 }
@@ -213,7 +230,7 @@
 }
 .applicant-page-heading p {
   color: #655c55;
-  font-size: 16px;
+  font-size: 1rem;
   margin: 10px 0 0;
 }
 .applicant-page-heading .ant-btn {
@@ -246,15 +263,18 @@
 }
 .applicant-muted {
   color: #667085;
-  font-size: 13px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
 }
 .applicant-text-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: #8b0000;
-  font-size: 13px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
   min-height: 32px;
+  transition: color 150ms ease-out;
 }
 .applicant-text-link svg {
   flex-shrink: 0;
@@ -274,10 +294,20 @@
   border: 1px solid #8b0000;
   border-radius: 8px;
   padding: 12px 24px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.45;
   text-align: center;
   font-weight: 500;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    transform 150ms ease-out;
+}
+.applicant-button:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
 }
 .applicant-button svg {
   flex: 0 0 16px;
@@ -296,11 +326,11 @@
   color: #8b0000;
 }
 .applicant-eyebrow {
-  font-size: 12px;
+  font-size: 0.75rem;
   text-transform: uppercase;
   color: #8b0000;
-  font-weight: 500;
-  letter-spacing: 0.3px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 .applicant-major-match {
   display: grid;
@@ -312,14 +342,14 @@
   padding: 32px;
 }
 .applicant-major-match h2 {
-  font-size: 32px;
-  line-height: 1.45;
-  letter-spacing: -0.4px;
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   margin-bottom: 16px;
 }
 .applicant-major-match p:not(.applicant-eyebrow) {
   color: #655c55;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .applicant-major-match .applicant-button {
   min-width: min(100%, 280px);
@@ -344,11 +374,6 @@
 }
 .applicant-major-match__summary-label {
   margin: 0 0 12px;
-  color: #8b0000 !important;
-  font-size: 13px !important;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 .applicant-major-match__summary ol {
   display: grid;
@@ -428,6 +453,15 @@
   font: inherit;
   min-height: 44px;
   cursor: pointer;
+  transition:
+    color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+.applicant-tabs button:hover {
+  color: #302b28;
+}
+.applicant-tabs button:not(.is-active):hover {
+  border-bottom-color: #d8d1c9;
 }
 .applicant-tabs button.is-active {
   color: #302b28;
@@ -462,7 +496,8 @@
   border-radius: 6px;
   padding: 6px 8px;
   color: #596579;
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
 }
 .applicant-empty h3 {
   margin-bottom: 8px;
@@ -495,6 +530,7 @@
 }
 .applicant-task-list a {
   color: #302b28;
+  transition: color 150ms ease-out;
 }
 .applicant-task-list a:hover {
   color: #8b0000;
@@ -507,12 +543,14 @@
 .applicant-task-list time {
   flex-shrink: 0;
   max-width: 110px;
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
   color: #667085;
 }
 .applicant-overdue {
   color: #a12020;
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
 }
 .applicant-session {
   display: flex;
@@ -537,22 +575,27 @@
   gap: 10px;
 }
 .applicant-study-fields dt {
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
   color: #667085;
 }
 .applicant-study-fields dd {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
 }
 .applicant-profile-progress {
   margin-top: 18px !important;
   border-top: 1px solid #e7e2dc;
   padding-top: 14px;
   color: #667085;
-  font-size: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
 }
 .applicant-master-start h2 {
-  font-size: 26px;
+  font-size: 1.625rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 .applicant-master-start > p:not(.applicant-eyebrow) {
   color: #655c55;
@@ -576,12 +619,13 @@
   padding: 18px;
 }
 .applicant-toolkit h3 {
-  font-size: 17px;
+  font-size: 1.0625rem;
   margin-bottom: 8px;
 }
 .applicant-toolkit p {
   color: #667085;
-  font-size: 13px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
   margin-bottom: 8px;
 }
 .applicant-section-error {
@@ -634,6 +678,19 @@
     font: inherit;
     cursor: pointer;
     flex: none;
+    transition:
+      background-color 150ms ease-out,
+      color 150ms ease-out,
+      border-color 150ms ease-out,
+      transform 150ms ease-out;
+  }
+  .applicant-menu-button:hover {
+    background: #fbf9f6;
+    border-color: #d8d1c9;
+  }
+  .applicant-menu-button:active {
+    transform: scale(0.97);
+    transition-duration: 100ms;
   }
   .applicant-mobile-bar__trail {
     min-width: 0;
@@ -645,7 +702,8 @@
     gap: 8px;
     min-width: 0;
     color: #606976;
-    font-size: 13px;
+    font-size: 0.8125rem;
+    letter-spacing: 0.01em;
     white-space: nowrap;
   }
   .applicant-mobile-trail a {
@@ -673,10 +731,10 @@
   }
   .applicant-overview h1,
   .applicant-page-error h1 {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
   .applicant-page-heading p {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   .applicant-columns {
     grid-template-columns: minmax(0, 1fr);
@@ -687,10 +745,10 @@
     gap: 24px;
   }
   .applicant-major-match h2 {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
   .applicant-major-match p:not(.applicant-eyebrow) {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   .applicant-video {
     max-width: 370px;
@@ -725,5 +783,79 @@
   }
   .applicant-task-list time {
     max-width: 82px;
+  }
+}
+
+/* Visually hidden text for assistive tech (e.g. "opens in a new tab"). */
+.applicant-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applicant-shell,
+  .applicant-drawer {
+    .applicant-button,
+    .applicant-menu-button,
+    .applicant-summary,
+    .applicant-nav-link svg {
+      transition-property: color, background-color, border-color;
+    }
+    .applicant-button:active,
+    .applicant-menu-button:active {
+      transform: none;
+    }
+    .ant-skeleton-active * {
+      animation: none !important;
+    }
+  }
+}
+
+@media (prefers-contrast: more) {
+  .applicant-shell,
+  .applicant-drawer {
+    --applicant-muted: #3f3a36;
+    --applicant-border: #8a8178;
+    .applicant-muted,
+    .applicant-study-fields dt,
+    .applicant-task-list time,
+    .applicant-profile-progress,
+    .applicant-toolkit p,
+    .applicant-section-error p,
+    .applicant-empty p,
+    .applicant-tabs button {
+      color: #3f3a36;
+    }
+    .applicant-tabs button.is-active {
+      color: #302b28;
+    }
+    .applicant-status {
+      color: #3f3a36;
+    }
+    .applicant-card,
+    .applicant-summary,
+    .applicant-major-match__summary,
+    .applicant-menu-button,
+    .applicant-button--secondary {
+      border-color: #8a8178;
+    }
+    .applicant-card--muted,
+    .applicant-first-steps .applicant-card,
+    .applicant-toolkit .applicant-card {
+      border-color: #8a8178;
+    }
+    .applicant-tabs,
+    .applicant-task-list li,
+    .applicant-application > .applicant-text-link,
+    .applicant-profile-progress {
+      border-color: #8a8178;
+    }
   }
 }

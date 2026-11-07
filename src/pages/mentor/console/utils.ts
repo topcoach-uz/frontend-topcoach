@@ -1,3 +1,4 @@
+import { calendarDateForDisplay } from './calendarDate';
 import { displayName, sanitizeName } from 'src/utils/displayName';
 
 export function initialsFromName(name: string | null | undefined): string {
@@ -46,7 +47,7 @@ export function cleanName(
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return calendarDateForDisplay(iso).toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

@@ -53,6 +53,10 @@ export type AdminDirectoryResponse = {
   page: number;
   pageSize: number;
   telegramProfilesTotal: number;
+  /** Whole-filtered-set counts for the stat tiles (absent on older backends). */
+  mentorsWithAdminRole?: number;
+  mentorsWithTier?: number;
+  superAdminsTotal?: number;
 };
 
 export type AdminDirectoryQuery = {
@@ -487,6 +491,9 @@ export const adminConsoleApi = RtkApi.injectEndpoints({
           page: raw.page ?? 1,
           pageSize: raw.pageSize ?? 20,
           telegramProfilesTotal: raw.telegramProfilesTotal ?? 0,
+          mentorsWithAdminRole: raw.mentorsWithAdminRole,
+          mentorsWithTier: raw.mentorsWithTier,
+          superAdminsTotal: raw.superAdminsTotal,
         };
       },
       providesTags: ['AdminConsoleDirectory'],

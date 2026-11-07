@@ -37,7 +37,12 @@ const JourneyExperienceContext = createContext<JourneyExperienceValue | null>(nu
 export function JourneyExperienceProvider({ children }: { children: React.ReactNode }) {
   const profile = useTypedSelector((s) => s.auth.profile);
   const isAuthenticated = useTypedSelector((s) => s.auth.isAuthenticated);
-  const { data: rawPreferences, isLoading: preferencesLoading } = useGetUserPreferencesQuery();
+  const { data: rawPreferences, isLoading: preferencesLoading } = useGetUserPreferencesQuery(undefined, {
+    skip: !isAuthenticated,
+    pollingInterval: 30_000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
   // Subscription state is the second source of community entitlement.
   // Anyone whose current subscription is `trialing` or `active` must
   // be treated as community-enrolled — that's the whole point of the

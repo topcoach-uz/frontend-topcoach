@@ -10,6 +10,7 @@ import {
 import { SessionTypeEnum } from 'src/app/api/Api';
 import { TIMEZONE_OPTIONS } from 'src/constants/timezones';
 import styles from './availability.module.scss';
+import { useConnectGoogleCalendar } from '../../../_components/useConnectGoogleCalendar';
 
 const MIN_SAVE_LOADING_MS = 600;
 
@@ -36,6 +37,7 @@ export default function AvailabilitySettings() {
   const { t } = useTranslation();
   const getMe = useTypedSelector((state) => state.auth.profile);
   const mentorId = getMe?.id;
+  const { connectCalendar, isConnecting } = useConnectGoogleCalendar();
   const [form] = Form.useForm();
   const [, forceUpdate] = useState(0);
 
@@ -222,6 +224,16 @@ export default function AvailabilitySettings() {
           {t('availability.subtitle')}
         </p>
       </div>
+
+      <Button
+        onClick={() => connectCalendar()}
+        loading={isConnecting}
+        style={{ marginBottom: 16 }}
+      >
+        {getMe?.hasGoogleCredentials
+          ? t('homeMentor.reconnectGoogleCalendarTitle', 'Reconnect Google Calendar')
+          : t('homeMentor.connectGoogleCalendar', 'Connect Google Calendar')}
+      </Button>
 
       <Form
         form={form}

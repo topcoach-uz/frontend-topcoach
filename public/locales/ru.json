@@ -3805,5 +3805,9 @@
   "applicant.status.deferred": "Отложена",
   "applicant.taskStatus.pending": "Ожидает выполнения",
   "applicant.taskStatus.in_progress": "В работе",
-  "applicant.taskStatus.overdue": "Просрочено"
+  "applicant.taskStatus.overdue": "Просрочено",
+  "applicant.bachelorWorkspaceLabel": "Ваша рабочая область бакалавриата",
+  "applicant.documentsCardBody": "Всё для ваших заявок — в одном месте.",
+  "applicant.opensInNewTab": "(откроется в новой вкладке)",
+  "applicant.pageTitle": "Обзор · TopCoach"
 }

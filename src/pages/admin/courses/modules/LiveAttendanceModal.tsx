@@ -16,7 +16,7 @@ async function request<T>(path: string, method = 'GET', body?: object): Promise<
   return response.json();
 }
 
-export default function LiveAttendanceModal({ lesson, open, onClose, allowReschedule = false, initialSessionId }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void; allowReschedule?: boolean; initialSessionId?: string }) {
+export default function LiveAttendanceModal({ lesson, open, onClose, allowReschedule = false, initialSessionId }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void; allowReschedule?: boolean; initialSessionId?: string | null }) {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [editing, setEditing] = useState(false);
@@ -46,7 +46,8 @@ export default function LiveAttendanceModal({ lesson, open, onClose, allowResche
     } catch (error) { message.error((error as Error).message); }
   }, [selectedId]);
 
-  useEffect(() => { setEditing(false); setSelectedId(null); setStudents([]); }, [lesson?.id, open, initialSessionId]);
+  // Start on the class the caller clicked (Schedule); reload() keeps it if it exists.
+  useEffect(() => { if (open) setSelectedId(initialSessionId ?? null); }, [open, initialSessionId]);
   useEffect(() => { if (open) void reload(); }, [open, reload]);
   useEffect(() => { if (open) void reloadRoster(); }, [open, reloadRoster]);
   useEffect(() => { if (open && lesson) form.setFieldValue('durationMinutes', lesson.duration); }, [form, lesson, open]);
