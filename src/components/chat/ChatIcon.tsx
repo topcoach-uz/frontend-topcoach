@@ -160,6 +160,7 @@ const ChatIcon: React.FC<ChatIconProps> = ({ className }) => {
         className={`${styles.chatIconWrapper} ${className || ''}`}
         onClick={handleIconClick}
         role="button"
+        aria-label="Messages"
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleIconClick(); } }}
         style={{
