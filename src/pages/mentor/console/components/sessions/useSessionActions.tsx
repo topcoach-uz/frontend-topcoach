@@ -55,7 +55,7 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
     </Button>
   ) : (
     <>
-      {b.source === 'full-support' && b.status === 'upcoming' && <>
+      {b.source === 'full-support' && b.status === 'upcoming' && Date.parse(b.dateTime) > Date.now() && !(b.raw as SessionLogDto).recordedAt && !(b.raw as SessionLogDto).done && <>
         {(b.raw as SessionLogDto).recurrence?.repeat !== 'none' && (b.raw as SessionLogDto).recurrence && <span style={{fontSize:12}}>Repeats {(b.raw as SessionLogDto).recurrence?.repeat === 'weekly' ? 'weekly' : 'every two weeks'}</span>}
         <Button size="small" onClick={() => setChangeBooking({lesson:b.raw as SessionLogDto,action:'reschedule'})}>Reschedule</Button>
         <Button size="small" danger onClick={() => setChangeBooking({lesson:b.raw as SessionLogDto,action:'cancel'})}>Cancel</Button>
