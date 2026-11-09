@@ -1,18 +1,13 @@
+import LessonPlanModal from '../components/LessonPlanModal';
 import { useMemo, useState } from 'react';
 import {
   Alert,
   Button,
-  DatePicker,
   Empty,
-  Form,
-  Input,
-  Modal,
-  Select,
   Spin,
   Space,
   message,
 } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -25,7 +20,6 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import {
-  useCreateMentorSessionMutation,
   useGetMentorRosterQuery,
 } from 'src/app/services/fullSupportApi';
 import { useGetMentorAvailabilityQuery } from 'src/app/services/availability';
@@ -90,12 +84,7 @@ export default function MentorConsoleSchedulePage() {
   const scope = initialScope;
   const setScope = (next: Scope) => setSearchParams(params => { params.set('scope', next); return params; });
   const [logOpen, setLogOpen] = useState(false);
-  const [logForm] = Form.useForm<{
-    studentUserId: string;
-    when: Dayjs;
-    duration: string;
-    description: string;
-  }>();
+
 
   // Shared (RTK-cached) with the gate/layout, which fire it for every mentor —
   // `hasFullSupport` is derived from this same query, so its loading flag tells
@@ -121,7 +110,7 @@ export default function MentorConsoleSchedulePage() {
   });
   const courseClasses = useMentorCourseClasses(isMentor);
   const sessionActions = useSessionActions({ onClassesChanged: courseClasses.refetch });
-  const [createSession, { isLoading: creating }] = useCreateMentorSessionMutation();
+
   const allSessions = useMemo<MentorBooking[]>(
     () => [
       ...(hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform')),
@@ -163,23 +152,6 @@ export default function MentorConsoleSchedulePage() {
       byScope.due.find((b) => now - new Date(b.dateTime).getTime() <= windowMs) ?? null
     );
   }, [byScope.due]);
-
-  const submitLog = async () => {
-    const values = await logForm.validateFields();
-    await createSession({
-      studentUserId: values.studentUserId,
-      dateTime: values.when.toISOString(),
-      duration: values.duration,
-      description: values.description || '',
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Session logged');
-        setLogOpen(false);
-        logForm.resetFields();
-      })
-      .catch(() => message.error('Failed to log'));
-  };
 
   // One editorial card for every scope — a serif date, the student, a status
   // pill, an optional Google Meet join, then the actions. Rendered in a grid so
@@ -390,7 +362,7 @@ export default function MentorConsoleSchedulePage() {
               onClick={() => setLogOpen(true)}
               disabled={roster.length === 0}
             >
-              Log Full Support session
+              Schedule Full Support lessons
             </Button>
           </div>
         )}
@@ -427,51 +399,7 @@ export default function MentorConsoleSchedulePage() {
         <div className="mc-sched-grid">{rows.map(renderSessionCard)}</div>
       )}
 
-      <Modal
-        title="Log a Full Support session"
-        open={logOpen}
-        onCancel={() => setLogOpen(false)}
-        onOk={submitLog}
-        confirmLoading={creating}
-        okText="Save"
-      >
-        <Form form={logForm} layout="vertical" initialValues={{ duration: '1h', when: dayjs() }}>
-          <Form.Item
-            name="studentUserId"
-            label="Student"
-            rules={[{ required: true, message: 'Pick a student' }]}
-          >
-            <Select
-              placeholder="Select a student"
-              options={roster.map((r) => ({ value: r.id, label: r.name }))}
-            />
-          </Form.Item>
-          <Form.Item
-            name="when"
-            label="Date & time"
-            rules={[{ required: true, message: 'Pick a time' }]}
-          >
-            <DatePicker showTime style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item
-            name="duration"
-            label="Duration"
-            rules={[{ required: true, message: 'Pick a duration' }]}
-          >
-            <Select
-              options={[
-                { value: '0.5h', label: '30 min' },
-                { value: '0.75h', label: '45 min' },
-                { value: '1h', label: '60 min' },
-                { value: '1.5h', label: '90 min' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name="description" label="Description">
-            <Input.TextArea rows={3} placeholder="What did you cover?" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <LessonPlanModal open={logOpen} onClose={() => setLogOpen(false)} />
 
       {sessionActions.modals}
     </div>

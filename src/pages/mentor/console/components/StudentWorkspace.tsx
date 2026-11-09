@@ -1,3 +1,4 @@
+import LessonPlanModal from './LessonPlanModal';
 import {useLocation} from 'react-router-dom';
 import SharedApplications from './SharedApplications';
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
@@ -41,7 +42,6 @@ import {
 import {
   useCreateMentorMilestoneMutation,
   useCreateMentorPipelineRowMutation,
-  useCreateMentorSessionMutation,
   useCreateMentorTaskMutation,
   useDeleteMentorMilestoneMutation,
   useDeleteMentorPipelineRowMutation,
@@ -84,6 +84,7 @@ export type WorkspaceStudent = {
   initials: string;
   used: number;
   allocated: number;
+  scheduledHours?: number;
   sessionsCount: number;
 };
 
@@ -224,7 +225,7 @@ export default function StudentWorkspace({
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
-  const [sessionForm] = Form.useForm<{ when: Dayjs; duration: string; description: string }>();
+
   const [addPipelineOpen, setAddPipelineOpen] = useState(false);
   const [pipelineForm] = Form.useForm<{ program: string; stage?: string; status?: string; deadline?: Dayjs | null }>();
   const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
@@ -316,7 +317,7 @@ export default function StudentWorkspace({
   const [updateMilestone] = useUpdateMentorMilestoneMutation();
   const [deleteMilestone] = useDeleteMentorMilestoneMutation();
   const sessionActions = useSessionActions();
-  const [createSession, { isLoading: creatingSession }] = useCreateMentorSessionMutation();
+
   const [createPipeline, { isLoading: creatingPl }] = useCreateMentorPipelineRowMutation();
   const [deletePipeline] = useDeleteMentorPipelineRowMutation();
 
@@ -378,23 +379,6 @@ export default function StudentWorkspace({
         milestoneForm.resetFields();
       })
       .catch(() => message.error('Could not add'));
-  };
-
-  const submitSession = async () => {
-    const values = await sessionForm.validateFields();
-    await createSession({
-      studentUserId: studentId,
-      dateTime: values.when.toISOString(),
-      duration: values.duration,
-      description: values.description || '',
-    })
-      .unwrap()
-      .then(() => {
-        message.success('Session logged');
-        setLogSessionOpen(false);
-        sessionForm.resetFields();
-      })
-      .catch(() => message.error('Could not log session'));
   };
 
   const submitPipeline = async () => {
@@ -721,7 +705,7 @@ export default function StudentWorkspace({
           {isFullSupport && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <Button type="primary" icon={<Plus size={14} />} onClick={() => setLogSessionOpen(true)}>
-                Log session
+                Schedule lessons
               </Button>
             </div>
           )}
@@ -900,7 +884,7 @@ export default function StudentWorkspace({
           value={student.sessionsCount}
           meta={
             isFullSupport
-              ? `${student.used}h of ${student.allocated}h used`
+              ? `${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled`
               : upcomingSessions.length > 0
                 ? `${upcomingSessions.length} upcoming`
                 : 'All past'
@@ -1028,27 +1012,7 @@ export default function StudentWorkspace({
         </Form>
       </Modal>
 
-      <Modal
-        title="Log session"
-        open={logSessionOpen}
-        onCancel={() => setLogSessionOpen(false)}
-        onOk={submitSession}
-        confirmLoading={creatingSession}
-        okText="Save"
-        destroyOnClose
-      >
-        <Form form={sessionForm} layout="vertical" initialValues={{ when: dayjs(), duration: '1h' }}>
-          <Form.Item name="when" label="When" rules={[{ required: true, message: 'Pick date & time' }]}>
-            <DatePicker showTime style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="duration" label="Duration" rules={[{ required: true, message: 'e.g. 1h' }]}>
-            <Input placeholder="1h" />
-          </Form.Item>
-          <Form.Item name="description" label="Notes">
-            <Input.TextArea rows={3} placeholder="What you covered…" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <LessonPlanModal open={logSessionOpen} onClose={() => setLogSessionOpen(false)} studentId={studentId} />
 
       <Modal
         title="Add application / essay row"

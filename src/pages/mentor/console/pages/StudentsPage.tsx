@@ -22,6 +22,7 @@ type ConsoleStudent = {
   initials: string;
   used: number;
   allocated: number;
+  scheduledHours?: number;
   sessionsCount: number;
   isFullSupport: boolean;
 };
@@ -44,6 +45,7 @@ export default function MentorConsoleStudentsPage() {
       name: r.name,
       initials: r.initials,
       used: r.used,
+      scheduledHours: r.scheduledHours,
       allocated: r.allocated,
       sessionsCount: r.sessionsCount,
       isFullSupport: true,
@@ -147,13 +149,13 @@ export default function MentorConsoleStudentsPage() {
       },
     },
     {
-      title: 'Hours used',
+      title: 'Lesson hours',
       key: 'hours',
       width: 130,
       render: (_, row) =>
         row.isFullSupport ? (
           <Text style={{ color: 'var(--mc-text)' }}>
-            {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
+            {row.used}h completed <span style={{ color: 'var(--mc-text-muted)' }}>· {row.scheduledHours ?? 0}h scheduled</span>
           </Text>
         ) : (
           <Text style={{ color: 'var(--mc-text-muted)' }}>—</Text>

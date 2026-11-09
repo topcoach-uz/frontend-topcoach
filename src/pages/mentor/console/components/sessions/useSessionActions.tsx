@@ -1,3 +1,4 @@
+import LessonChangeModal from '../LessonChangeModal';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Button } from 'antd';
 import {
@@ -15,6 +16,7 @@ import type { MentorBooking } from '../../sessionSources';
  * modals they open. Used by the Schedule page and the student workspace.
  */
 export function useSessionActions(options?: { onClassesChanged?: () => void }) {
+  const [changeBooking, setChangeBooking] = useState<{ lesson: SessionLogDto; action: "reschedule" | "cancel" } | null>(null);
   const [classBooking, setClassBooking] = useState<MentorBooking | null>(null);
   const [reportBooking, setReportBooking] = useState<MentorBooking | null>(null);
   const [recordBooking, setRecordBooking] = useState<MentorBooking | null>(null);
@@ -53,7 +55,12 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
     </Button>
   ) : (
     <>
-      {b.source === 'full-support' && b.status === 'completed' && (
+      {b.source === 'full-support' && b.status === 'upcoming' && <>
+        {(b.raw as SessionLogDto).recurrence?.repeat !== 'none' && (b.raw as SessionLogDto).recurrence && <span style={{fontSize:12}}>Repeats {(b.raw as SessionLogDto).recurrence?.repeat === 'weekly' ? 'weekly' : 'every two weeks'}</span>}
+        <Button size="small" onClick={() => setChangeBooking({lesson:b.raw as SessionLogDto,action:'reschedule'})}>Reschedule</Button>
+        <Button size="small" danger onClick={() => setChangeBooking({lesson:b.raw as SessionLogDto,action:'cancel'})}>Cancel</Button>
+      </>}
+      {b.source === 'full-support' && b.status === 'completed'  && (
         <Button size="small" onClick={() => setRecordBooking(b)}>
           Edit lesson record
         </Button>
@@ -77,6 +84,7 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
 
   const modals = (
     <>
+      <LessonChangeModal lesson={changeBooking?.lesson ?? null} action={changeBooking?.action ?? "reschedule"} onClose={() => setChangeBooking(null)} />
       <LiveAttendanceModal
         lesson={classLesson}
         initialSessionId={(classBooking?.raw as { id?: string } | undefined)?.id ?? null}
