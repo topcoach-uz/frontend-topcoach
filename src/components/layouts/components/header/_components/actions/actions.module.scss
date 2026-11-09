@@ -143,3 +143,14 @@
     transform: scale(1.1);
   }
 }
+
+:global(header[data-mentor-workspace]) {
+  .actions_wrapper {
+    gap: 16px;
+    @media (max-width: 560px) { gap: 8px; }
+  }
+
+  .authContainer {
+    min-width: 0;
+  }
+}
