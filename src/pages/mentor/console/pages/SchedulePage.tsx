@@ -1,3 +1,5 @@
+import AcademicProgramWork from '../components/AcademicProgramWork';
+import { canLogLegacySession } from '../programDisplay';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -104,6 +106,7 @@ export default function MentorConsoleSchedulePage() {
     skip: !isMentor,
   });
   const roster = useMemo(() => rosterRes?.data ?? [], [rosterRes?.data]);
+  const legacyRoster = roster.filter(canLogLegacySession);
   const rosterById = useMemo(() => new Map(roster.map((r) => [r.id, r])), [roster]);
 
   // Non-FS mentors get a "students can't book you yet" nudge instead of tiles.
@@ -336,6 +339,8 @@ export default function MentorConsoleSchedulePage() {
         </button>
       )}
 
+      <AcademicProgramWork />
+
       {showProgramFilter && (
         <div className="mc-sched-tabbar" role="group" aria-label="Session program">
           {[{ key: 'all' as ProgramFilter, label: 'All sessions' }, ...programOptions].map((o) => (
@@ -375,7 +380,7 @@ export default function MentorConsoleSchedulePage() {
             <span className="mc-sched-tab-count">{t.count}</span>
           </button>
         ))}
-        {hasFullSupport && (
+        {hasFullSupport && legacyRoster.length > 0 && (
           <div className="mc-sched-tabbar-tools">
             <Button
               type="primary"
@@ -436,7 +441,7 @@ export default function MentorConsoleSchedulePage() {
           >
             <Select
               placeholder="Select a student"
-              options={roster.map((r) => ({ value: r.id, label: r.name }))}
+              options={legacyRoster.map((r) => ({ value: r.id, label: r.name }))}
             />
           </Form.Item>
           <Form.Item

@@ -60,6 +60,7 @@ export const apiTagTypes = [
   'FullSupportEnrollment',
   'FullSupportAdmin',
   'FullSupportMentorRoster',
+  'MentorProgramEnrollments',
   'FullSupportMentorSessions',
   'FullSupportMentorTasks',
   'FullSupportMenteeTasks',

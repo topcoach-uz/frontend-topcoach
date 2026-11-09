@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { studentHoursLabel, studentProgramLabel } from '../programDisplay';
+import type { MentorRosterStudent } from 'src/app/services/fullSupportApi';
 import { Alert, Button, Card, Input, Spin, Table, Tabs, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Search } from 'lucide-react';
@@ -16,14 +18,8 @@ import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
 const { Text } = Typography;
 
 /** Row model unifying Full Support roster students and 1:1 platform mentees. */
-type ConsoleStudent = {
-  id: string;
-  name: string;
-  initials: string;
-  used: number;
-  allocated: number;
-  sessionsCount: number;
-  isFullSupport: boolean;
+type ConsoleStudent = MentorRosterStudent & {
+  isAssigned: boolean;
 };
 
 export default function MentorConsoleStudentsPage() {
@@ -46,7 +42,9 @@ export default function MentorConsoleStudentsPage() {
       used: r.used,
       allocated: r.allocated,
       sessionsCount: r.sessionsCount,
-      isFullSupport: true,
+      isAssigned: true,
+      programs: r.programs,
+      hasLegacyFullSupport: r.hasLegacyFullSupport,
     }));
     const fsIds = new Set(fs.map((r) => r.id));
     const oneOnOne: ConsoleStudent[] = mentees
@@ -58,7 +56,7 @@ export default function MentorConsoleStudentsPage() {
         used: 0,
         allocated: 0,
         sessionsCount: m.sessionsCount,
-        isFullSupport: false,
+        isAssigned: false,
       }));
     return [...fs, ...oneOnOne];
   }, [data?.data, mentees]);
@@ -123,12 +121,12 @@ export default function MentorConsoleStudentsPage() {
       ),
     },
     {
-      title: 'Type',
+      title: 'Program',
       key: 'type',
       width: 130,
       render: (_, row) =>
-        row.isFullSupport ? (
-          <McPill variant="accent">Full Support</McPill>
+        row.isAssigned ? (
+          <McPill variant="accent">{studentProgramLabel(row)}</McPill>
         ) : (
           <McPill variant="info">1:1 mentee</McPill>
         ),
@@ -149,11 +147,11 @@ export default function MentorConsoleStudentsPage() {
     {
       title: 'Hours used',
       key: 'hours',
-      width: 130,
+      width: 240,
       render: (_, row) =>
-        row.isFullSupport ? (
+        row.isAssigned ? (
           <Text style={{ color: 'var(--mc-text)' }}>
-            {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
+            {studentHoursLabel(row)}
           </Text>
         ) : (
           <Text style={{ color: 'var(--mc-text-muted)' }}>—</Text>
@@ -211,7 +209,7 @@ export default function MentorConsoleStudentsPage() {
         </div>
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
-          Your Full Support students and 1:1 mentees. Open a workspace to manage tasks, review
+          Your assigned program students and 1:1 mentees. Open a workspace to manage tasks, review
           essays, documents, sessions and message them in one place.
         </p>
       </div>
@@ -262,7 +260,7 @@ export default function MentorConsoleStudentsPage() {
             message="No students yet"
             description={
               rows.length === 0
-                ? 'Students appear here once you have a 1:1 session booked or an admin assigns you Full Support students.'
+                ? 'Students appear here once you have a 1:1 session booked or an admin assigns you program students.'
                 : 'Try clearing the search.'
             }
           />

@@ -27,6 +27,18 @@ export type MentorRosterStudent = {
   used: number;
   allocated: number;
   sessionsCount: number;
+  hasLegacyFullSupport?: boolean;
+  programs?: MentorRosterProgram[];
+};
+
+export type AcademicProgram = 'admissions' | 'full_support' | 'research' | 'customized' | 'bootcamp';
+export type MentorRosterProgram = {
+  enrollmentId: string;
+  program: AcademicProgram;
+  roles: string[];
+  usedMinutes: number;
+  allocatedMinutes: number | null;
+  remainingMinutes: number | null;
 };
 
 export type StudentGoalDto = {
@@ -43,6 +55,7 @@ export type StudentGoalDto = {
 
 export type SessionLogDto = {
   id: string;
+  academicEnrollmentId?: string | null;
   mentorUserId?: string;
   studentUserId?: string;
   studentName?: string;

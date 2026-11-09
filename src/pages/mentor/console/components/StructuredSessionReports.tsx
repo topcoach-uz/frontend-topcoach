@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { baseUrl } from 'src/app/services/api/const';
+import { ACCESS_TOKEN } from 'src/constants/storage';
 import "./StructuredSessionReports.css";
 type Row = {
   source: string;
@@ -39,10 +41,10 @@ const labels: Record<string, string> = {
 const day = (d: Date) =>
   new Date(d.getTime() + 5 * 3600000).toISOString().slice(0, 10);
 async function request(path: string, body?: any) {
-  const response = await fetch("/api/lesson-reports" + path, {
+  const response = await fetch(baseUrl + "/lesson-reports" + path, {
     method: body ? "POST" : "GET",
     headers: {
-      Authorization: "Bearer " + localStorage.getItem("TOP_COACH_ACCESS_TOKEN"),
+      Authorization: "Bearer " + localStorage.getItem(ACCESS_TOKEN),
       "Content-Type": "application/json",
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -199,6 +201,7 @@ export default function StructuredSessionReports() {
   return (
     <>
       <button
+        type="button"
         ref={triggerRef}
         className="sr-launch"
         onClick={() => setOpen(true)}

@@ -17,6 +17,7 @@ import { useGetMentorTasksQuery } from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
 import { useMentorBookings } from './sessionSources';
 import { initialsFromName } from './utils';
+import StructuredSessionReports from './components/StructuredSessionReports';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
@@ -335,6 +336,9 @@ export default function MentorConsoleLayout() {
       </aside>
 
       <main className="mentor-console-main">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+          <StructuredSessionReports />
+        </div>
         {isMobileConsole ? (
           <div className="mentor-console-mobile-bar">
             <button
