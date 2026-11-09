@@ -160,18 +160,18 @@ export default function MentorConsoleLayout() {
         path: '/mentor/dashboard',
         badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
       },
+      {
+        key: 'availability',
+        label: 'Availability',
+        icon: <ClipboardList size={18} strokeWidth={1.75} />,
+        path: '/mentor/availability',
+      },
       { key: 'full-support', label: 'Full Support', icon: <ClipboardCheck size={18} strokeWidth={1.75} />, path: '/mentor/dashboard?program=full-support&scope=due' },
       {
         key: 'course-classes',
         label: 'Course classes',
         icon: <ClipboardCheck size={18} strokeWidth={1.75} />,
         path: '/mentor/course-classes',
-      },
-      {
-        key: 'availability',
-        label: 'Availability',
-        icon: <ClipboardList size={18} strokeWidth={1.75} />,
-        path: '/mentor/availability',
       },
       {
         key: 'feed',
