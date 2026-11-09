@@ -80,6 +80,24 @@
     line-height: 40px !important;
   }
 
+  // The number field's wrapper grows to the 42px min-height but its inner
+  // <input> keeps its natural height, pinning text to the top. Stretch the
+  // input to fill the wrapper so value and placeholder centre like a select.
+  .ant-input-number {
+    display: inline-flex !important;
+    align-items: stretch;
+  }
+
+  .ant-input-number .ant-input-number-input-wrap {
+    display: flex;
+    flex: 1;
+  }
+
+  .ant-input-number .ant-input-number-input {
+    height: auto !important;
+    min-height: 40px;
+  }
+
   // Maroon focus instead of AntD's blue, the accent is already the
   // page's only non-neutral colour, so focus needs no new hue.
   .ant-input:focus,
