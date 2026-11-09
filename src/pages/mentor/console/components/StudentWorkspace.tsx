@@ -1,3 +1,6 @@
+import AcademicProgramWork from './AcademicProgramWork';
+import { canLogLegacySession, studentHoursLabel, studentProgramLabel } from '../programDisplay';
+import type { MentorRosterStudent } from 'src/app/services/fullSupportApi';
 import {useLocation} from 'react-router-dom';
 import SharedApplications from './SharedApplications';
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
@@ -78,14 +81,7 @@ import './StudentWorkspace.scss';
 
 const { Text } = Typography;
 
-export type WorkspaceStudent = {
-  id: string;
-  name: string;
-  initials: string;
-  used: number;
-  allocated: number;
-  sessionsCount: number;
-};
+export type WorkspaceStudent = MentorRosterStudent;
 
 const RG_MC: Record<ResearchSubmission['status'], McPillVariant> = {
   submitted: 'info',
@@ -718,7 +714,7 @@ export default function StudentWorkspace({
       label: tabLabel('Sessions', reportsDue),
       children: (
         <>
-          {isFullSupport && (
+          {isFullSupport && canLogLegacySession(student) && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <Button type="primary" icon={<Plus size={14} />} onClick={() => setLogSessionOpen(true)}>
                 Log session
@@ -890,7 +886,7 @@ export default function StudentWorkspace({
   return (
     <>
       <div className="mc-ws-focus">
-        <div><span className="mc-ws-eyebrow">STUDENT WORKSPACE · {isFullSupport ? 'FULL SUPPORT' : '1:1 MENTORING'}</span><h1>{showStudentName ? student.name : 'Mentoring overview'}</h1><p>Plan the next step, review work, and keep your student moving forward.</p><Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>Message student</Button></div>
+        <div><span className="mc-ws-eyebrow">STUDENT WORKSPACE · {isFullSupport ? studentProgramLabel(student) : '1:1 MENTORING'}</span><h1>{showStudentName ? student.name : 'Mentoring overview'}</h1><p>Plan the next step, review work, and keep your student moving forward.</p><Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>Message student</Button></div>
         <div className="mc-ws-next"><span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>{bookingsError ? <p>Session information could not be loaded.</p> : loadingBookings ? <Spin/> : upcomingSessions[0] ? <><h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2><p>{upcomingSessions[0].description || 'Mentoring session'} · {upcomingSessions[0].durationLabel}</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></> : <><h2>No upcoming session</h2><p>Check session history or arrange the next meeting.</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></>}</div>
       </div>
       <div className="mc-stat-grid mc-ws-stats">
@@ -900,7 +896,7 @@ export default function StudentWorkspace({
           value={student.sessionsCount}
           meta={
             isFullSupport
-              ? `${student.used}h of ${student.allocated}h used`
+              ? studentHoursLabel(student)
               : upcomingSessions.length > 0
                 ? `${upcomingSessions.length} upcoming`
                 : 'All past'
@@ -949,6 +945,8 @@ export default function StudentWorkspace({
           />
         )}
       </div>
+
+      {isFullSupport && <AcademicProgramWork studentId={studentId} />}
 
       <Tabs
         activeKey={activeTab}

@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import {
   CalendarClock,
+  CalendarDays,
   Users,
   ChevronLeft,
   Menu,
@@ -17,11 +18,13 @@ import { useGetMentorTasksQuery } from 'src/app/services/fullSupportApi';
 import { useMentorConsole } from './MentorConsoleContext';
 import { useMentorBookings } from './sessionSources';
 import { initialsFromName } from './utils';
+import StructuredSessionReports from './components/StructuredSessionReports';
 import './mentor-console-tokens.scss';
 import './MentorConsoleLayout.scss';
 
 type NavKey =
   | 'schedule'
+  | 'availability'
   | 'course-classes'
   | 'students'
   | 'feed'
@@ -119,6 +122,12 @@ export default function MentorConsoleLayout() {
         badge: reportDueCount > 0 ? `${reportDueCount} pending` : null,
       },
       {
+        key: 'availability',
+        label: 'Availability',
+        icon: <CalendarDays size={18} strokeWidth={1.75} />,
+        path: '/mentor/availability',
+      },
+      {
         key: 'students',
         label: 'Students',
         icon: <Users size={18} strokeWidth={1.75} />,
@@ -142,7 +151,7 @@ export default function MentorConsoleLayout() {
 
     const isSuperAdmin = managementRole === 'SuperAdmin' || managementRole === 'Owner';
 
-    // Profile, Availability and Referrals live in the Account page, opened
+    // Profile and Referrals live in the Account page, opened
     // from the user card at the bottom of the sidebar. This group only holds
     // staff shortcuts.
     const accountItems: NavItem[] = [];
@@ -183,6 +192,7 @@ export default function MentorConsoleLayout() {
     const p = location.pathname;
     if (p.startsWith('/isc-2026/review')) return 'isc-reviewer';
     if (p.startsWith('/mentor/course-classes')) return 'course-classes';
+    if (p.startsWith('/mentor/availability')) return 'availability';
     // Sessions and To review folded into Schedule; legacy paths highlight it.
     if (
       p.startsWith('/mentor/dashboard') ||
@@ -335,6 +345,9 @@ export default function MentorConsoleLayout() {
       </aside>
 
       <main className="mentor-console-main">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+          <StructuredSessionReports />
+        </div>
         {isMobileConsole ? (
           <div className="mentor-console-mobile-bar">
             <button

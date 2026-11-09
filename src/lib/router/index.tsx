@@ -172,6 +172,7 @@ const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pa
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
 const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
+const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
 );
@@ -684,7 +685,7 @@ function RouterProvider() {
                     <Route path="essay-reviews" element={<Navigate to="/mentor/students?tab=reviews&type=essay" replace />} />
                     <Route path="document-reviews" element={<Navigate to="/mentor/students?tab=reviews&type=document" replace />} />
                     <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
-                    <Route path="availability" element={<Navigate to="/mentor/profile?tab=availability" replace />} />
+                    <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
                     <Route path="feed" element={<MentorConsoleFeedLazy />} />
                     {/* Sessions merged into the Schedule; per-student review lives in each workspace. */}
                     <Route path="sessions" element={<Navigate to="/mentor/dashboard" replace />} />

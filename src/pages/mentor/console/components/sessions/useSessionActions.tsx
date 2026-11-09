@@ -54,7 +54,9 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
   ) : (
     <>
       {b.source === 'full-support' && b.status === 'completed' && (
-        <Button size="small" onClick={() => setRecordBooking(b)}>
+        (b.raw as SessionLogDto).academicEnrollmentId
+        ? <span>Program work recorded</span>
+        : <Button size="small" onClick={() => setRecordBooking(b)}>
           Edit lesson record
         </Button>
       )}

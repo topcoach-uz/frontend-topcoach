@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import { Avatar, Button, Card, Col, Descriptions, Row, Space, Tabs, Typography } from 'antd';
 import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { MEDIA_TAGS } from 'src/app/api/Api';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
 import EditProfileModal from 'src/components/layouts/components/header/_components/actions/_components/EditProfileModal';
 import { McPill } from '../components/McPill';
 import { cleanName } from '../utils';
-import MentorConsoleAvailabilityPage from './AvailabilityPage';
 import MentorReferralsPage from './ReferralsPage';
 
-type AccountTab = 'profile' | 'availability' | 'referrals';
-const ACCOUNT_TABS: AccountTab[] = ['profile', 'availability', 'referrals'];
+type AccountTab = 'profile' | 'referrals';
+const ACCOUNT_TABS: AccountTab[] = ['profile', 'referrals'];
 
 const { Text, Paragraph } = Typography;
 
@@ -85,6 +84,11 @@ export default function MentorConsoleProfilePage() {
     ? { label: 'Visible on Mentors page', variant: 'success' as const }
     : { label: 'Hidden from Mentors page', variant: 'neutral' as const };
 
+  // Keep links to the former account tab working after moving the page.
+  if (searchParams.get('tab') === 'availability') {
+    return <Navigate to="/mentor/availability" replace />;
+  }
+
   return (
     <div>
       <div className="mc-page-head mc-page-head--ruled">
@@ -93,7 +97,7 @@ export default function MentorConsoleProfilePage() {
         </div>
         <h1 className="mc-page-title">Account</h1>
         <p className="mc-page-lead">
-          Your public profile, weekly availability and referral code.
+          Your public profile and referral code.
         </p>
       </div>
 
@@ -102,12 +106,10 @@ export default function MentorConsoleProfilePage() {
         onChange={setTab}
         items={[
           { key: 'profile', label: 'Profile' },
-          { key: 'availability', label: 'Availability' },
           { key: 'referrals', label: 'Referrals' },
         ]}
       />
 
-      {activeTab === 'availability' && <MentorConsoleAvailabilityPage embedded />}
       {activeTab === 'referrals' && <MentorReferralsPage embedded />}
       {activeTab === 'profile' && (
       <Row gutter={[16, 16]}>
@@ -250,7 +252,7 @@ export default function MentorConsoleProfilePage() {
                     Open slots let students book sessions with you.
                   </Text>
                 </div>
-                <Button type="text" onClick={() => setTab('availability')}>
+                <Button type="text" onClick={() => navigate('/mentor/availability')}>
                   Open <ArrowUpRight size={14} />
                 </Button>
               </div>

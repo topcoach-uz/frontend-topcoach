@@ -8,6 +8,7 @@ import {
 } from 'src/app/services/fullSupportApi';
 import StudentWorkspace, { type WorkspaceStudent } from '../components/StudentWorkspace';
 import { useMentorMentees } from '../sessionSources';
+import { studentHoursLabel, studentProgramLabel } from '../programDisplay';
 import { McPill } from '../components/McPill';
 import { avatarStyleForId, initialsFromName } from '../utils';
 import '../components/StudentWorkspace.scss';
@@ -95,15 +96,13 @@ export default function MentorStudentWorkspacePage() {
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="mc-ws-identity-name">
             {student.name}
-            {!isFullSupport && (
-              <McPill variant="info" style={{ marginLeft: 10, verticalAlign: 'middle' }}>
-                1:1 mentee
-              </McPill>
-            )}
+            <McPill variant="info" style={{ marginLeft: 10, verticalAlign: 'middle' }}>
+              {isFullSupport ? studentProgramLabel(student) : '1:1 mentee'}
+            </McPill>
           </div>
           <div className="mc-ws-identity-meta">
             {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
-            {isFullSupport ? ` · ${student.used}h of ${student.allocated}h used` : ''}
+            {isFullSupport ? ` · ${studentHoursLabel(student)}` : ''}
           </div>
           {goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">

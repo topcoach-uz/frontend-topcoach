@@ -1,3 +1,5 @@
+import AcademicProgramWork from '../components/AcademicProgramWork';
+import { canLogLegacySession } from '../programDisplay';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -104,6 +106,7 @@ export default function MentorConsoleSchedulePage() {
     skip: !isMentor,
   });
   const roster = useMemo(() => rosterRes?.data ?? [], [rosterRes?.data]);
+  const legacyRoster = roster.filter(canLogLegacySession);
   const rosterById = useMemo(() => new Map(roster.map((r) => [r.id, r])), [roster]);
 
   // Non-FS mentors get a "students can't book you yet" nudge instead of tiles.
@@ -311,6 +314,13 @@ export default function MentorConsoleSchedulePage() {
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
             Your sessions — upcoming, past, and anything awaiting attendance or a report.
           </p>
+          <Button
+            icon={<CalendarPlus size={16} />}
+            onClick={() => navigate('/mentor/availability')}
+            style={{ marginTop: 16 }}
+          >
+            Manage availability
+          </Button>
         </div>
         <div className="mc-sched-date" aria-hidden>
           <span className="mc-sched-date-day">{today.getDate()}</span>
@@ -326,7 +336,7 @@ export default function MentorConsoleSchedulePage() {
         <button
           type="button"
           className="mc-sched-nudge"
-          onClick={() => navigate('/mentor/profile?tab=availability')}
+          onClick={() => navigate('/mentor/availability')}
         >
           <CalendarPlus size={17} />
           <span>
@@ -335,6 +345,8 @@ export default function MentorConsoleSchedulePage() {
           <ArrowRight size={15} />
         </button>
       )}
+
+      <AcademicProgramWork />
 
       {showProgramFilter && (
         <div className="mc-sched-tabbar" role="group" aria-label="Session program">
@@ -375,7 +387,7 @@ export default function MentorConsoleSchedulePage() {
             <span className="mc-sched-tab-count">{t.count}</span>
           </button>
         ))}
-        {hasFullSupport && (
+        {hasFullSupport && legacyRoster.length > 0 && (
           <div className="mc-sched-tabbar-tools">
             <Button
               type="primary"
@@ -436,7 +448,7 @@ export default function MentorConsoleSchedulePage() {
           >
             <Select
               placeholder="Select a student"
-              options={roster.map((r) => ({ value: r.id, label: r.name }))}
+              options={legacyRoster.map((r) => ({ value: r.id, label: r.name }))}
             />
           </Form.Item>
           <Form.Item
