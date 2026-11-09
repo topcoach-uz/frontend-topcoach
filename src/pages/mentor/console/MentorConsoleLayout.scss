@@ -3,7 +3,7 @@
 .mentor-console-app {
   background: var(--mc-bg);
   color: var(--mc-text);
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 64px);
   display: flex;
 }
 
@@ -13,8 +13,8 @@
   transition: width 0.2s ease;
   flex-shrink: 0;
   position: sticky;
-  top: 80px;
-  height: calc(100vh - 80px);
+  top: 64px;
+  height: calc(100vh - 64px);
   // visible (not clipped) so the edge-mounted collapse tab can straddle the
   // right border; the nav itself scrolls internally (.mentor-console-nav).
   overflow: visible;
@@ -918,13 +918,13 @@ img.mentor-console-user-avatar--image {
 
   .mentor-console-app--mobile-layout .mentor-console-sider--mobile {
     position: fixed;
-    top: 80px;
+    top: 64px;
     left: 0;
     bottom: 0;
     width: min(288px, 88vw) !important;
     flex: none !important;
-    height: calc(100dvh - 80px) !important;
-    max-height: calc(100dvh - 80px) !important;
+    height: calc(100dvh - 64px) !important;
+    max-height: calc(100dvh - 64px) !important;
     z-index: 1060;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
@@ -1034,7 +1034,7 @@ img.mentor-console-user-avatar--image {
   .mentor-console-nav-backdrop--visible {
     display: block;
     position: fixed;
-    top: 80px;
+    top: 64px;
     left: 0;
     right: 0;
     bottom: 0;
