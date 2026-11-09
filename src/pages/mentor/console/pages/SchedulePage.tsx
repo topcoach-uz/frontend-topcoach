@@ -319,6 +319,13 @@ export default function MentorConsoleSchedulePage() {
           <p className="mc-page-lead" style={{ marginBottom: 0 }}>
             Your sessions — upcoming, past, and anything awaiting attendance or a report.
           </p>
+          <Button
+            icon={<CalendarPlus size={16} />}
+            onClick={() => navigate('/mentor/availability')}
+            style={{ marginTop: 16 }}
+          >
+            Manage availability
+          </Button>
         </div>
         <div className="mc-sched-date" aria-hidden>
           <span className="mc-sched-date-day">{today.getDate()}</span>
