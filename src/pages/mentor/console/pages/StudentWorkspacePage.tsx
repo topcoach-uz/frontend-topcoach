@@ -103,7 +103,7 @@ export default function MentorStudentWorkspacePage() {
           </div>
           <div className="mc-ws-identity-meta">
             {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
-            {isFullSupport ? ` · ${student.used}h of ${student.allocated}h used` : ''}
+            {isFullSupport ? ` · ${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled` : ''}
           </div>
           {goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">

@@ -26,6 +26,7 @@ export type MentorRosterStudent = {
   initials: string;
   used: number;
   allocated: number;
+  scheduledHours?: number;
   sessionsCount: number;
 };
 
@@ -42,6 +43,7 @@ export type StudentGoalDto = {
 };
 
 export type SessionLogDto = {
+  recurrence?: { seriesId: string; position: number; timezone: string; repeat: "none" | "weekly" | "biweekly" } | null;
   id: string;
   mentorUserId?: string;
   studentUserId?: string;
