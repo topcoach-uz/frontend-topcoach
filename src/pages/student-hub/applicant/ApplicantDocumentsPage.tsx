@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
 import { Download, FileText, Info, Plus, Search, Trash2, UploadCloud } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   DocumentType,
   useDeleteDocumentMutation,
@@ -70,6 +70,7 @@ export default function ApplicantDocumentsPage() {
   const [remove] = useDeleteDocumentMutation();
   const [download] = useDownloadDocumentMutation();
   const objectUrl = useRef<string>();
+  const navigate = useNavigate();
   const open = () => {
     form.setFieldsValue({ documentType: DocumentType.TRANSCRIPT, category: "uploaded" });
     const next = new URLSearchParams(params);
@@ -207,9 +208,9 @@ export default function ApplicantDocumentsPage() {
                       : document.isVerified ? "Verified" : document.metadata?.status === "draft" ? "Draft" : "Uploaded"}
                 </span>
                 <span className="applicant-document__access">{document.legacyPublic ? "Legacy file" : document.reviewerAccess ? "Assigned mentor" : document.privateStorage ? "Only you" : "Access to verify"}</span>
-                <Link className="ant-btn ant-btn-default" to={`/student-hub/documents/${encodeURIComponent(document.id)}`}>
+                <Button onClick={() => navigate(`/student-hub/documents/${encodeURIComponent(document.id)}`)}>
                   {document.documentType === DocumentType.ESSAY ? "Review" : "View"}
-                </Link>
+                </Button>
                 <Button
                   icon={<Download size={16} />}
                   onClick={() => getFile(document)}
@@ -272,7 +273,7 @@ export default function ApplicantDocumentsPage() {
                 setFile(undefined);
                 setFileList([]);
               }}
-              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
             >
               <UploadCloud size={30} />
               <p>Choose a file or drag it here</p>
