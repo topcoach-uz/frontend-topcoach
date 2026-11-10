@@ -375,6 +375,12 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  // Destructive action stays quiet until hovered, then turns red.
+  .applicant-list__icon-btn--danger.ant-btn:not(:disabled):hover {
+    color: #b42318 !important;
+    border-color: #f1b5ae !important;
+    background: #fdf1ef !important;
+  }
   .applicant-list__icon-btn.ant-btn {
     width: 40px;
     min-width: 40px;
