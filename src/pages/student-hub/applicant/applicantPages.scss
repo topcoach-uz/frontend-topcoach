@@ -699,6 +699,11 @@
 .applicant-writing-desk__versions { margin: 0; padding-left: 20px; }
 .applicant-writing-desk__ideas li,
 .applicant-writing-desk__versions li { padding: 10px 0; border-top: 1px solid #e7e2dc; }
+.applicant-writing-desk__versions li small {
+  display: block;
+  margin-top: 2px;
+  color: #655c55;
+}
 .applicant-writing-desk__stage-label { font-weight: 600; }
 .applicant-feedback {
   position: sticky;
@@ -1294,4 +1299,33 @@
     flex-direction: column;
     gap: 4px;
   }
+}
+.applicant-document-review__docx {
+  width: 100%;
+  min-width: 0;
+  max-height: 80vh;
+  overflow: auto;
+  border-radius: 12px;
+  background: #f1eee9;
+  .applicant-docx-wrapper {
+    background: transparent;
+    padding: 24px 16px;
+  }
+  .applicant-docx-wrapper > section.applicant-docx {
+    max-width: 100%;
+    box-shadow: 0 2px 14px rgb(0 0 0 / 10%);
+    margin-bottom: 24px;
+  }
+}
+
+.applicant-writing-card-wrap {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  > .applicant-writing-card { flex: 1; padding-right: 56px; }
+}
+.applicant-writing-card__delete.ant-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
 }
