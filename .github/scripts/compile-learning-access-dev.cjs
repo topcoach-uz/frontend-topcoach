@@ -11,7 +11,13 @@ for(const [name,body] of Object.entries(snapshot.files)){
   ts.forEachChild(n,visit);
  }visit(sf);
  let out=body;
- if(provider){
+ if(provider && provider.getText(sf).includes('const __learningAccess=')){
+  const [query,auth]=provider.body.statements;
+  if(!query.getText(sf).startsWith('const __learningAccess=')||!auth.getText(sf).includes('.auth.isAuthenticated'))throw Error('Unexpected query repair layout');
+  out=body.slice(0,auth.end)+query.getText(sf)+body.slice(auth.end);
+  out=out.slice(0,query.getStart(sf))+out.slice(query.end);
+  providers++;
+ } else if(provider){
   let api;
   function findApi(n){if(ts.isCallExpression(n)&&ts.isPropertyAccessExpression(n.expression)&&n.expression.name.text==='injectEndpoints'&&n.getText(sf).includes('getMyOrgMembership:'))api=n.expression.expression.getText(sf);ts.forEachChild(n,findApi)}findApi(sf);
   if(!api)throw Error('Authenticated API missing');
@@ -23,7 +29,7 @@ for(const [name,body] of Object.entries(snapshot.files)){
   if(!authenticated||!declarations.has(enrolled)||!declarations.has(loading))throw Error('Entitlement bindings missing');
   const e=declarations.get(enrolled).initializer,l=declarations.get(loading).initializer;
   if(!ts.isBinaryExpression(l)||l.operatorToken.kind!==ts.SyntaxKind.AmpersandAmpersandToken)throw Error('Unexpected loading gate');
-  const edits=[{start:provider.getStart(sf),end:provider.getStart(sf),text:`const __learningAccessApi=${api}.injectEndpoints({endpoints:build=>({getCommunityProgramAccess:build.query({query:()=>"courses/enrollment-status?courseName=admissions",providesTags:["CourseEnrollment"]})})});`},{start:e.getStart(sf),end:e.end,text:`(${e.getText(sf)})||__learningAccess.data?.communityIncluded===true`},{start:l.getStart(sf),end:l.end,text:`!${enrolled}&&(${l.right.getText(sf)}||__learningAccess.isLoading)`},{start:provider.body.getStart(sf)+1,end:provider.body.getStart(sf)+1,text:`const __learningAccess=${hook}("admissions",{skip:!${authenticated},pollingInterval:30000,refetchOnFocus:true,refetchOnReconnect:true});`}];
+  const edits=[{start:provider.getStart(sf),end:provider.getStart(sf),text:`const __learningAccessApi=${api}.injectEndpoints({endpoints:build=>({getCommunityProgramAccess:build.query({query:()=>"courses/enrollment-status?courseName=admissions",providesTags:["CourseEnrollment"]})})});`},{start:e.getStart(sf),end:e.end,text:`(${e.getText(sf)})||__learningAccess.data?.communityIncluded===true`},{start:l.getStart(sf),end:l.end,text:`!${enrolled}&&(${l.right.getText(sf)}||__learningAccess.isLoading)`},{start:provider.body.statements[0].end,end:provider.body.statements[0].end,text:`const __learningAccess=${hook}("admissions",{skip:!${authenticated},pollingInterval:30000,refetchOnFocus:true,refetchOnReconnect:true});`}];
   for(const edit of edits.sort((a,b)=>b.start-a.start))out=out.slice(0,edit.start)+edit.text+out.slice(edit.end);
   providers++;
  }
@@ -33,6 +39,7 @@ for(const [name,body] of Object.entries(snapshot.files)){
   const count=out.split(old).length-1;if(count!==1)throw Error('Ambiguous program learning link');
   out=out.replace(old,'"/student-hub?section=learning&tab=admissions"');links++;
  }
+ if(out.includes('Open My Learning')&&out.includes('"/student-hub?section=learning&tab=admissions"')&&!body.includes(old))links++;
  if(out!==body)changed[name]=out;
 }
 if(providers!==1||links!==1)throw Error(`Expected one policy and link, found ${providers}/${links}`);
